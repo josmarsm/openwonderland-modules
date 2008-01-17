@@ -179,29 +179,4 @@ ERROR! Project Wonderland comes bundled with the latest version of Java3D
     </switch>
 
     <property name="wl.xapps" value="${platform-supports-x}"/>
-
-    <property name="voicelib-jar" value="voicelib.jar"/>
-
-    <property name="voicelib-filter" value=""/>
-
-    <if>
-	<istrue value="${voicebridge.enabled}"/>
-	<then>
-	    <property name="voicebridge.enabled.set" value="true"/>
-	</then>
-	<else>
-	    <property name="voicebridge.enabled.set" value="false"/>
-	</else>
-    </if>
-
-    <if>
-	<istrue value="${registrar.timeout}"/>
-	<then>
-	    <property name="registrar.timeout.set" value="true"/>
-	</then>
-	<else>
-	    <property name="registrar.timeout.set" value="false"/>
-	</else>
-    </if>
-
 </project>

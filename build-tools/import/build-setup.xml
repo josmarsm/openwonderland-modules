@@ -14,13 +14,13 @@
             <pathelement location="${imported.basedir}/ant-contrib.jar"/>
         </classpath>
     </taskdef>
-
-    <!-- load properties -->
-    <property file="${modules.dir}/build.properties"/>
     
     <!-- Do platform specific setup -->
     <import file="${imported.basedir}/platform-setup.xml"/>
-
+    
+    <!-- load properties -->
+    <property file="${modules.dir}/build.properties"/>
+    
     <!-- 
 	To better support daily builds on multiple architectures and OS'es
 	the platformBuild flag will cause the build files to go into platform
@@ -33,28 +33,11 @@
 	       else="current/${build.level}">
 	<istrue value="${platformBuild}"/>
     </condition>
+
+    <!-- properties that depend on build level -->
     <propertycopy name="build.debuglevel" from="build.debuglevel.${build.level}"/>
-
-    <property name="javaext.dir" location="${wonderland.dir}/ext"/>
-    <property name="os.javaext.dir" location="${javaext.dir}/${ostype}"/>
-
-    <property name="zip.javaext.dir" location="${javaext.dir}/zip"/>
-    <property name="os.zip.javaext.dir" location="${zip.javaext.dir}/${ostype}"/>
-
-    <!-- Platform specific libs/jars -->
-    <property name="native.javaext.dir" location="${os.javaext.dir}/native"/>
-    <property name="jars.javaext.dir" location="${os.javaext.dir}/jars"/>
-
-    <!-- Platform independant jars -->
-    <property name="common.javaext.dir" location="${javaext.dir}/common"/>
-
-    <property name="sgs.javaext.dir" location="${javaext.dir}/sgs/darkstar"/>
-    <property name="sgs.lib.dir" location="${sgs.javaext.dir}/lib"/>
-
-    <property name="wonderland.bin.dir" location="${os.javaext.dir}/bin"/>
-    <property name="wonderland.xvfb.dir" location="${wonderland.bin.dir}"/>
     <property name="wonderland.lib.dir" location="${wonderland.dir}/build/${build.location}/lib"/>
-
+    
     <!-- Jars needed to use Java3d-->
     <pathconvert property="j3d.classpath">
 	<path location="${jars.javaext.dir}/j3dcore.jar"/>
