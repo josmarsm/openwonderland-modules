@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." name="whiteboard">
-    <property name="top.dir" location="../../../../../.."/>
+<project basedir="." default="jar" name="whiteboard">
+    <property name="modules.dir" location="../../../../.."/>
     <property name="current.dir" location="."/>
 
     <!-- Use my-build.properties to override default values in build.properties -->
     <property file="my.build.properties"/>
-    <property file="build.properties"/>
 
     <!-- set the project name -->
     <property name="project.name" value="${ant.project.name}"/>
 
     <!-- import the common build attributes -->
-    <import file="${wonderland.dir}/build-tools/import/module-common.xml"/>
+    <import file="${modules.dir}/build-tools/import/module-common.xml"/>
     
     <!-- the name of the client jar file -->
     <property name="module.client.jar" value="whiteboard-client.jar"/>
@@ -33,6 +32,11 @@
     
     <!-- extra classes for compiling the server -->
     <!-- <path refid="extra-server.classpath"/> -->
+    
+    <!-- copy targets so NetBeans will recognize them -->
+    <target name="compile" depends="compile-client, compile-server"/>
+    <target name="jar" depends="jar-client, jar-server"/>
+    <target name="clean" depends="clean-all"/>
     
     <!-- You can override default methods to add functions at various
          points.  See module-common.xml for more information:
