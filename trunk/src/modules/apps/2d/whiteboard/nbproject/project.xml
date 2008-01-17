@@ -8,7 +8,9 @@
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <!-- Do not use Project Properties customizer when editing this file manually. -->
             <name>wonderland-whiteboard</name>
-            <properties/>
+            <properties>
+                <property-file>nbproject/nb.properties</property-file>
+            </properties>
             <folders>
                 <source-folder>
                     <label>src/classes</label>
@@ -54,7 +56,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../lg3d-wonderland/build/current/debug/classes:../../../lg3d-wonderland/ext/macosx/jars/j3dcore.jar:../../../lg3d-wonderland/ext/macosx/jars/j3dutils.jar:../../../lg3d-wonderland/ext/macosx/jars/vecmath.jar:../../../lg3d-wonderland/ext/common/j3d-contrib-utils.jar:../../../lg3d-wonderland/ext/common/lg3d-awt-toolkit.jar:../../../lg3d-wonderland/ext/common/lg3d-core.jar:../../../lg3d-wonderland/ext/common/lg3d-demo-apps.jar:../../../lg3d-wonderland/ext/common/swing-layout-1.0.jar:../../../lg3d-wonderland/ext/sgs/darkstar/lib/sgs-client.jar:../../../lg3d-wonderland/ext/sgs/darkstar/lib/sgs.jar</classpath>
+                <classpath mode="compile">${wonderland.client.classpath}:${wonderland.server.classpath}</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
