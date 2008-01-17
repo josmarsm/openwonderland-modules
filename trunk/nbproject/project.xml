@@ -31,7 +31,10 @@
                     <ide-action name="clean"/>
                 </context-menu>
             </view>
-            <subprojects/>
+            <subprojects>
+                <project>src/modules/apps/2d/pdfviewer</project>
+                <project>src/modules/apps/2d/whiteboard</project>
+            </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1"/>
     </configuration>
