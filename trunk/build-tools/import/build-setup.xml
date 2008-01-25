@@ -1,5 +1,5 @@
-<project basedir="." default="..." name="build-setup">
-    <dirname property="imported.basedir" file="${ant.file.build-setup}"/>
+<project basedir="." default="..." name="wonderland-modules.build-setup">
+    <dirname property="imported.basedir" file="${ant.file.wonderland-modules.build-setup}"/>
 
     <tstamp>
 	<format property="build.stamp" pattern="yyMMddHHmm"/>

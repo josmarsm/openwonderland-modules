@@ -1,4 +1,4 @@
-<project basedir="." default="..." name="wonderland.module-common">
+<project basedir="." default="..." name="wonderland-modules.module-common">
     
     <property name="build.debug" value="true"/>
     
