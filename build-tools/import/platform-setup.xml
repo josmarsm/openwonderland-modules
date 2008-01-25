@@ -1,4 +1,4 @@
-<project basedir="." default="..." name="platform-setup">
+<project basedir="." default="..." name="wonderland-modules.platform-setup">
 
     <!-- Make sure that we are building/running under Java 6+ -->
     <if>
