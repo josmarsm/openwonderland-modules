@@ -23,7 +23,7 @@
    
     <!-- extra classes for compiling the client -->
     <pathconvert property="extra-client.classpath">
-        <path location="lib/pdflib.jar"/>
+        <path location="lib/PDFRenderer.jar"/>
     </pathconvert>
         
     <!-- the name of the server jar file -->
