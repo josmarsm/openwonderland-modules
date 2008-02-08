@@ -9,11 +9,11 @@
     </tstamp>
 
     <!-- extended ant tasks -->
-    <taskdef resource="net/sf/antcontrib/antlib.xml">
+    <!--taskdef resource="net/sf/antcontrib/antlib.xml">
         <classpath>
             <pathelement location="${imported.basedir}/ant-contrib.jar"/>
         </classpath>
-    </taskdef>
+    </taskdef-->
     
     <!-- Do platform specific setup -->
     <import file="${imported.basedir}/platform-setup.xml"/>
