@@ -9,6 +9,9 @@
                 <void property="document"> 
                     <string>http://research.sun.com/projects/mc/OH07MPK20-revised.pdf</string>
                 </void> 
+                <void property="page"> 
+                    <int>1</int>
+                </void> 
             </object>
         </void>
         <void property="origin"> 
