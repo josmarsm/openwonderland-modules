@@ -5,7 +5,6 @@
  */
 package org.jdesktop.lg3d.wonderland.pdfviewer.client.cell;
 
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**

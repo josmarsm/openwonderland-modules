@@ -3,7 +3,7 @@
  *
  * $RCSfile$
  *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -29,7 +29,6 @@ import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3d;
-import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SharedApp2DImageCellGLO;
@@ -53,7 +52,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
     // including document URL, current page and current scroll position
     // within the page. It's updated every time a client makes a change
     // to the document so that when new clients join, they receive the
-    // current state
+    // current state.
     private BasicCellGLOSetup<PDFViewerCellSetup> setup;
     
     public PDFViewerCellGLO() {
@@ -70,6 +69,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
      * this cell on the client
      * @return the class name of the corresponding client cell
      */
+    @Override
     public String getClientCellClassName() {
         return "org.jdesktop.lg3d.wonderland.pdfviewer.client.cell.PDFViewerCell";
     }
@@ -78,6 +78,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
      * Get the setup data for this cell
      * @return the cell setup data
      */
+    @Override
     public PDFViewerCellSetup getSetupData() {
         return setup.getCellSetup();
     }
