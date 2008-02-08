@@ -3,7 +3,7 @@
  *
  * $RCSfile$
  *
- * Copyright (c) 2004-2007, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -21,7 +21,6 @@ package org.jdesktop.lg3d.wonderland.pdfviewer.client.cell;
 
 import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.SessionId;
-import java.net.URL;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4d;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListener;
@@ -57,9 +56,10 @@ public class PDFViewerCell extends SharedApp2DImageCell
         viewer = new PDFViewerApp(this);
         pdfSetup = (PDFViewerCellSetup)setupData;
         if (pdfSetup != null) {
-            viewer.openDocument(pdfSetup.getDocument());
-            viewer.showPage(pdfSetup.getPage());
-            viewer.setViewPosition(pdfSetup.getPosition());
+            viewer.openDocument(pdfSetup.getDocument(),
+                    pdfSetup.getPage(),
+                    pdfSetup.getPosition(),
+                    false);
         }
     }
     
