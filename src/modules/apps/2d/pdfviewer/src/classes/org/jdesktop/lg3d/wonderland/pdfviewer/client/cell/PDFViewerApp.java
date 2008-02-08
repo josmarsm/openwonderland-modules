@@ -53,11 +53,17 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DCell;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 import com.sun.sgs.client.ClientChannel;
 
+import java.awt.Font;
 import java.util.Date;
 import java.util.logging.Logger;
 
 
+import javax.swing.SwingUtilities;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
+import org.jdesktop.lg3d.wonderland.scenemanager.EventController;
+import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
+import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
+import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
 
 /**
  * A PDF Viewer Application
@@ -69,6 +75,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerApp.class.getName());
+    private PDFDocumentDialog pdfDialog;
+    private HUDButton msgButton;
     private ClientChannel channel;
     private URL docURL;
     private PDFFile currentFile;
@@ -94,6 +102,104 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         setShowing(true);
     }
 
+    private void showPDFDialog() {
+        if (pdfDialog == null) {
+            pdfDialog = new PDFDocumentDialog(null, false);
+            pdfDialog.addActionListener(new java.awt.event.ActionListener() {
+
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    hidePDFDialog();
+                    if (evt.getActionCommand().equals("OK")) {
+                        // attempt to open PDF document
+                        openDocument(pdfDialog.getDocumentURL());
+                    }
+                }
+            });
+        }
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                pdfDialog.setVisible(true);
+            }
+        });
+    }
+
+    public void hidePDFDialog() {
+        if (pdfDialog != null) {
+            pdfDialog.setVisible(false);
+        }
+    }
+
+    private void showHUDMessage(String message) {
+        showHUDMessage(message, HUD.NO_TIMEOUT);
+    }
+
+    private void showHUDMessage(String message, int timeout) {
+        URL[] imgURLs = {HUD.SIMPLE_BOX_IMAGE_URL,
+            EventController.class.getResource("resources/preferences-system-windows.png")
+        };
+
+        Point[] imagePoints = {new Point(), new Point(10, 10)};
+
+        // dismiss currently active HUD message
+        if ((msgButton != null) && msgButton.isActive()) {
+            hideHUDMessage(true);
+        }
+
+        // display a new HUD message
+        msgButton = HUDFactory.getHUD().addHUDMultiImageButton(imgURLs,
+                imagePoints, message, new Point(50, 25),
+                Font.decode(Font.DIALOG + "-BOLD-14"),
+                -300, 50, 300, 50,
+                timeout, true);
+    }
+
+    private void hideHUDMessage(boolean immediately) {
+        if (msgButton != null) {
+            if (!immediately) {
+                msgButton.changeLocation(new Point(-45, 50));
+            }
+            msgButton.setActive(false);
+        }
+    }
+
+    private class DocumentLoader extends Thread {
+
+        private String doc;
+
+        public DocumentLoader(String doc) {
+            this.doc = doc;
+        }
+
+        @Override
+        public void run() {
+            PDFFile loadingFile = null;
+
+            if (doc != null) {
+                try {
+                    docURL = new URL(doc);
+
+                    logger.info("opening PDF document: " + doc);
+                    showHUDMessage("Opening PDF: " + docURL.getFile());
+
+                    Date then = new Date();
+                    loadingFile = new PDFFile(getDocumentData(docURL));
+                    Date now = new Date();
+
+                    logger.info("document loaded in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
+                } catch (Exception e) {
+                    logger.warning("failed to open PDF: " + docURL + ": " + e);
+                    showHUDMessage("Failed to open PDF", 5000);
+                }
+                if (loadingFile != null) {
+                    currentFile = loadingFile;
+                    showPage(1, false);
+                }
+            }
+        }
+    }
+
     /**
      * Open a PDF document
      * @param doc the URL of the PDF document to open
@@ -108,36 +214,28 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param notify whether to notify other clients
      */
     public void openDocument(String doc, boolean notify) {
+        if ((doc == null) || (doc.length() == 0)) {
+            return;
+        }
+
         // close the currently open document if there is one
         if (docURL != null) {
             closeDocument(docURL.toString(), notify);
         }
 
-        if (doc != null) {
-            try {
-                docURL = new URL(doc);
+        // load document in a new thread
+        new DocumentLoader(doc).start();
 
-                logger.info("loading PDF document: " + doc);
-                Date then = new Date();
-                currentFile = new PDFFile(getDocumentData(docURL));
-                Date now = new Date();
-                logger.info("document loaded in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
+        if (notify == true) {
+            // notify other clients
+            PDFCellMessage msg = new PDFCellMessage(this.getCell().getCellID(),
+                    PDFCellMessage.Action.OPEN_DOCUMENT,
+                    docURL.toString(),
+                    1,
+                    mousePos);
 
-                if (notify == true) {
-                    // notify other clients
-                    PDFCellMessage msg = new PDFCellMessage(this.getCell().getCellID(),
-                            PDFCellMessage.Action.OPEN_DOCUMENT,
-                            docURL.toString(),
-                            1,
-                            mousePos);
-
-                    logger.info("sending message: " + msg);
-                    ChannelController.getController().sendMessage(msg);
-                }
-                showPage(1, false);
-            } catch (Exception e) {
-                logger.warning("failed to open document: " + docURL + ": " + e);
-            }
+            logger.info("sending message: " + msg);
+            ChannelController.getController().sendMessage(msg);
         }
     }
 
@@ -169,11 +267,15 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 logger.info("sending message: " + msg);
                 ChannelController.getController().sendMessage(msg);
             }
+
             this.docURL = null;
-            currentPage = null;
-            currentFile = null;
+            currentPage =
+                    null;
+            currentFile =
+                    null;
             mousePos.setLocation(0, 0);
         }
+
     }
 
     /**
@@ -181,7 +283,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param docURL the URL of the PDF document to open
      * @return the PDF document data
      */
-    public ByteBuffer getDocumentData(URL docURL) throws IOException {
+    public ByteBuffer getDocumentData(
+            URL docURL) throws IOException {
         ByteBuffer buf = null;
 
         if (docURL != null) {
@@ -199,8 +302,10 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             // read the document into the buffer
             is.readFully(data, 0, docSize);
 
-            buf = ByteBuffer.wrap((byte[]) data, 0, ((byte[]) data).length);
+            buf =
+                    ByteBuffer.wrap((byte[]) data, 0, ((byte[]) data).length);
         }
+
         return buf;
     }
 
@@ -209,14 +314,17 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param file the file name of the PDF document to open
      * @return the PDF document data
      */
-    public ByteBuffer getDocumentData(File file) throws IOException {
+    public ByteBuffer getDocumentData(
+            File file) throws IOException {
         ByteBuffer buf = null;
 
         if (file != null) {
             FileInputStream fis = new FileInputStream(file);
             FileChannel fc = fis.getChannel();
-            buf = fc.map(MapMode.READ_ONLY, 0, file.length());
+            buf =
+                    fc.map(MapMode.READ_ONLY, 0, file.length());
         }
+
         return buf;
     }
 
@@ -242,7 +350,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param p the page number
      * @return the image of the specified page
      */
-    public BufferedImage getPageImage(int p) {
+    public BufferedImage getPageImage(
+            int p) {
         BufferedImage image = null;
 
         try {
@@ -268,6 +377,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 } else {
                     logger.warning("failed to get image for page: " + p);
                 }
+
             }
         } catch (Exception e) {
             logger.severe("failed to get page image: " + e);
@@ -294,7 +404,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * Display the currently selected page
      */
     public void showPage() {
-        showPage(getPageNumber(), false);
+        showPage(getPageNumber(), true);
     }
 
     /**
@@ -302,7 +412,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param p the page to display
      */
     public void showPage(int p) {
-        showPage(p, false);
+        showPage(p, true);
     }
 
     /**
@@ -317,6 +427,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             currentPage = currentFile.getPage(p);
             pageDirty = true;
             repaint();
+
+            showHUDMessage("Page: " + p, 3000);
 
             if (notify == true) {
                 // notify other clients that the page changed
@@ -361,7 +473,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      */
     public void setViewPosition(Point position, boolean notify) {
         xScroll = (int) position.getX();
-        yScroll = (int) position.getY();
+        yScroll =
+                (int) position.getY();
 
         repaint();
 
@@ -376,6 +489,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             logger.info("sending message: " + msg.getAction());
             ChannelController.getController().sendMessage(msg);
         }
+
     }
 
     /**
@@ -388,21 +502,27 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
         if (pageDirty == true) {
             pageImage = getPageImage();
-            xScroll = 0;
-            yScroll = 0;
-            isDragging = false;
-            pageDirty = false;
+            xScroll =
+                    0;
+            yScroll =
+                    0;
+            isDragging =
+                    false;
+            pageDirty =
+                    false;
         }
+
         if (pageImage != null) {
             // calculate page to view scale
-            double scale = (double)this.getWidth()/pageImage.getWidth();
+            double scale = (double) this.getWidth() / pageImage.getWidth();
             // handle short pages that won't fit the page height
-            double subHeight = Math.min((double)this.getHeight()/scale, pageImage.getHeight());
-            
+            double subHeight = Math.min((double) this.getHeight() / scale, pageImage.getHeight());
+
             // get a sub-image of the page that fits the view
             BufferedImage visibleImage = pageImage.getSubimage(xScroll, yScroll, pageImage.getWidth(), (int) subHeight);
             g.drawImage(visibleImage, 0, 0, this.getWidth(), this.getHeight(), null);
         }
+
     }
 
     /**
@@ -411,7 +531,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      */
     public void mouseMoved(MouseEvent evt) {
         logger.finest("mouseMoved: " + evt);
-        isDragging = false;
+        isDragging =
+                false;
         mousePos.setLocation(evt.getX(), evt.getY());
     }
 
@@ -438,6 +559,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
                 setViewPosition(new Point(xScroll, yScroll), true);
             }
+
         }
         mousePos.setLocation(evt.getX(), evt.getY());
     }
@@ -454,6 +576,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         } else {
             previousPage();
         }
+
     }
 
     /**
@@ -472,6 +595,12 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         logger.finest("keyReleased: " + evt);
 
         switch (evt.getKeyCode()) {
+            case KeyEvent.VK_O:
+                if (evt.isControlDown() == true) {
+                    showPDFDialog();
+                }
+
+                break;
             case KeyEvent.VK_PAGE_UP:
                 nextPage();
                 break;
@@ -487,6 +616,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 //prevDocument();
                 break;
         }
+
     }
 
     /**
