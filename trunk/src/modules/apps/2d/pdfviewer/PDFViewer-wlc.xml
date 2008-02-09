@@ -9,6 +9,12 @@
                 <void property="document"> 
                     <string>http://research.sun.com/projects/mc/OH07MPK20-revised.pdf</string>
                 </void> 
+                <void property="preferredWidth"> 
+                    <int>1024</int>
+                </void> 
+                <void property="preferredHeight"> 
+                    <int>768</int>
+                </void> 
                 <void property="page"> 
                     <int>1</int>
                 </void> 
@@ -16,15 +22,15 @@
         </void>
         <void property="origin"> 
             <void index="0"> 
-                <double>0</double> 
+                <double>-0.81</double> 
             </void> 
             <void index="1"> 
-                <double>2</double> 
+                <double>1.9</double> 
             </void> 
             <void index="2"> 
-                <double>-16.2</double> 
+                <double>-0.5</double> 
             </void> 
-        </void> 
+        </void>  
         <void property="rotation"> 
             <void index="1"> 
                 <double>0.0</double> 
