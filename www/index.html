@@ -27,8 +27,8 @@
             non-visual components such as authentication plug-ins.
         </p>
         
-	<iframe align="center" src="http://www.flickr.com/slideShow/index.gne?set_id=72157603866070724&" frameBorder="0" width="500" scrolling="no" height="500"></iframe>
-
+        <iframe align="center" src="http://www.flickr.com/slideShow/index.gne?set_id=72157603866070724&" frameBorder="0" width="500" scrolling="no" height="500"></iframe>
+        
         <!--table border="0" cellspacing="10" cellpadding="3">
             <tr>
                 <td bgcolor="#CCCCFF"><font size="+1"><a href="">Download Binary</a></font</td>
@@ -62,20 +62,24 @@
             </tr>
             <tr>
                 <td><a href="#goals">Vision and goals</a></td>
-                <!--td><a href="#involved">Getting involved</a></td>
+                <td><br/></td>
                 <td><a href="#involved-dev">Getting involved</a></td>
-                <td></td-->
             </tr>
-            <!--tr>
-                <td><a href="#images">Images and Web Resources</a></td>
+            <tr>
+                <td><br/></td>
                 <td><br/></td>
                 <td><a href="#building">Getting and building from source code</a></td>
+            </tr>
+            <tr>
+                <td><br/></td>
+                <td><br/></td>
+                <td><a href="#loading">Loading a module</a></td>
             </tr>
             <tr>
                 <td><br></td>
                 <td><br></td>
                 <td><a href="http://wonderland-modules.dev.java.net/servlets/ForumMessageList?forumID=2985">Discussion forum</a></td>
-            </tr-->
+            </tr>
         </table>
         
         
@@ -96,51 +100,13 @@
             We'll release several Wonderland applications in this project using a
             preliminary version of the module system.
         </p>
-        <!--
-        <a name="images">
-        <h4>Images and Web Resources</h4></a>
         
-        <p>Screenshots of Wonderland applications: </P>
-        
-        <table cellpadding="15">
-            <tr>
-                <th align="left">Screen Shots<br></th>
-            </tr>
-        </table>
-        <br><br>
-        
-        <table cellpadding="15">
-            <tr>
-                <th align="left">Web Resources<br>
-                <a href="http://wonderland.dev.java.net">Project Wonderland</a><br></th>
-            </tr>
-        </table>
-        
-        <a name="end-users">
-        <h3>For End Users</h3></a>
-        
-        <a name="involved">
+        <h3>For Developers</h3>
+        <a name="involved-dev">    
         <h4>Getting Involved</h4></a>
         
         <p>
-            There are a variety of ways to participate actively in the Project
-            Wonderland community. Anyone with an interest is welcome to join the
-            Wonderland Modules interest forum:
-        </p>
-        
-        <ul>
-            <a href="http://wonderland-modules.dev.java.net/servlets/ForumMessageList?forumID=2985">Wonderland Modules Interest Forum</a>
-        </ul>
-        
-        <a name="developers">
-            <h3>For Developers</h3>
-            
-        <h4>Getting Involved</h4></a>
-        
-        <p>
-            There are a variety of ways to participate actively in the Project
-            Wonderland community. Anyone with an interest is welcome to join the
-            Wonderland Modules interest forum:
+            If you're insterested in Wonderland Modules, please join the interest forum:
         </p>
         
         <ul>
@@ -151,28 +117,126 @@
         <h4>Getting and Building from source code</h4></a>
         
         <p>
-            If you are comfortable building projects from source with ant, you can
-            check out the source code from the Subversion repository, build it and run
-            the system on your machine.
+            To use Wonderland Modules with Wonderland, you need to check out the 
+            <code>wonderland-modules</code> project and re-build <code>lg3d-wonderland</code>.
         </p>
+        <p>
+            Follow these steps:
+        </p>
+        <ul>
+            <li>Change directory to the parent directory of <code>lg3d-wonderland</code></li>
+            <li><code>cd lg3d-wonderland/modules</code></li>
+            <li>
+                Check out source code with a Subversion client using the following command. 
+                Note: replace the last <code>username</code> with your own username.
+                <p>
+                    <code>svn checkout https://wonderland-modules.dev.java.net/svn/wonderland-modules/trunk wonderland-modules --username username</code>
+                </p>
+                <p>
+                    If you are new to Subversion, you may want to visit the <a href="http://subversion.tigris.org/">Subversion Project website</a>
+                    and read <a href="http://svnbook.red-bean.com/">Version Control with Subversion</a>.
+                </p>
+            </li>
+            <li>
+                Change directory to <code>lg3d-wonderland</code>
+                <p>
+                    <code>cd lg3d-wonderland</code>
+                </p>
+            </li>
+            <li>
+                Build the <code>lg3d-wonderland</code> project:
+                <p>
+                    <code>ant</code>
+                </p>
+                <p>
+                    You can also build the project in netbeans.
+                </p>
+                <p>
+                <b>Note:</b> Wonderland modules can only be built from the <code>lg3d-wonderland</code>
+                project.
+            </li>
+        </ul>
+        
+        <a name="loading">
+        <h4>Loading a module into Wonderland</h4></a>
         
         <p>
-            The build system makes a few assumptions about the location of various
-            systems on which this project relies. To make life easy, follow the directory
-            hierarchy described here.
+            Modules are loaded using WFS. Each module contains a WFS property file, 
+            which provides Wonderland with the information it need to load the module
+            and initialize it.
         </p>
-        
+        <p>
+            For example, the PDF Viewer's WFS property file is located here:
+        </p>
+        <p>
+            <code>wonderland-modules/src/modules/apps/2d/pdfviewer/PDFViewer-wlc.xml</code>
+        </p>
+        <p>
+            To load the PDF Viewer module into the default Wonderland world, follow these steps:
+        </p>
         <ul>
-            <li>Confirm that you have JDK 6 installed </li>
-            <li>Change directory to your lg3d-wonderland/modules directory:</li>
-            <li><code>cd lg3d-wonderland/modules</code></li>
-            <li>Check out the Wonderland modules:
-            <li><code>svn checkout https://wonderland-modules.dev.java.net/svn/wonderland-modules/trunk wonderland-modules</code> </li>
-            <li>Now that the module source has been re-installed, rebuild Wonderland. 
-            The build scripts will automatically build any modules in lg3d-wonderland/modules.            
-            <li><code>cd ..</code> </li>
-            <li><code>ant</code></li>
+            <li>Change directory to the building in the default world
+                <p>
+                    <code>cd lg3d-wonderland/src/worlds/default-wfs/building-wld</code>
+                </p>
+            </li>
+            <li>Now change directory to the Demo Floor region:
+            <p>
+                <code>cd DemoFloor-wld</code>
+            </p>
+            <li>Now copy the PDF Viewer's WFS property file into this directory:
+                <p>
+                    <code>cp ../../../../../../wonderland-modules/src/modules/apps/2d/pdfviewer/PDFViewer-wlc.xml .</code>
+                </p>
+                <p>
+                    The property file specifies the following properties:
+                    <ul>
+                        <li>The URL of the PDF document to open<br/>
+                            Note that this URL must be accessible by all Wonderland clients
+                        </li>
+                        <li>The preferred width and height of the PDF Viewer application window<br>
+                            (defaults to 791x1024 (matches the aspect ratio of an 8.5"x11" page))
+                        </li>
+                        <li>The page to open<br/>
+                            (defaults to the first page)
+                        </li>
+                    </ul>
+                </p>
+            </li>
+            <li>Restart the Wonderland server on the system where you installed the WFS property file
+                <p>
+                    <code>ant run-sgs</code>
+                </p>
+            </li>
+            <li>Now start the Wonderland client
+                <p>
+                    <code>ant run</code>
+                </p>
+                <p>
+                    You should see a message indicating that the PDF Viewer is loading a document.
+                    When the client has finished initializing, you should see the document in front
+                    of you at the default entry point into the world.
+                </p>
+            </li>
+            <li>
+                
+                <p>
+                    To interact with the application, first take control with a <code>shift+left mouse click</code>
+                    on the application.
+                </p>
+                <p>
+                    To change pages, use <code>PageUp</code> and <code>PageDown</code>. You can also use the
+                    mouse wheel.
+                </p>
+                <p>
+                    If the page is taller then the window, you can drag it up and down with the left mouse
+                    button.
+                </p>
+                <p>
+                To open a new document, press <code>ctrl+o</code> and enter the URL of the document 
+                in the dialog.
+                <p>
+            </li>
         </ul>
-        -->
     </body>
 </html>
