@@ -38,31 +38,35 @@ import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFViewerCellSetup;
  */
 public class PDFViewerCell extends SharedApp2DImageCell
         implements ExtendedClientChannelListener {
-    
+
     private static final Logger logger =
             Logger.getLogger(PDFViewerCell.class.getName());
     private PDFViewerApp viewer;
     private PDFViewerCellSetup pdfSetup;
-    
+
     public PDFViewerCell(final CellID cellID, String channelName, Matrix4d origin) {
         super(cellID, channelName, origin);
     }
-    
+
     /**
      * Initialize the PDF Viewer and load the document
      * @param setupData the setup data to initialize the cell with
      */
+    @Override
     public void setup(CellSetup setupData) {
-        viewer = new PDFViewerApp(this);
-        pdfSetup = (PDFViewerCellSetup)setupData;
+        pdfSetup = (PDFViewerCellSetup) setupData;
+
         if (pdfSetup != null) {
+            viewer = new PDFViewerApp(this, 0, 0,
+                    (int) pdfSetup.getPreferredWidth(),
+                    (int) pdfSetup.getPreferredHeight());
             viewer.openDocument(pdfSetup.getDocument(),
                     pdfSetup.getPage(),
                     pdfSetup.getPosition(),
                     false);
         }
     }
-    
+
     /**
      * Set the channel associated with this cell
      * @param channel the channel to associate with this cell
@@ -70,7 +74,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
     public void setChannel(ClientChannel channel) {
         this.channel = channel;
     }
-    
+
     /**
      * Process a cell message
      * @param channel the channel
@@ -81,7 +85,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
             byte[] data) {
         PDFCellMessage msg = Message.extractMessage(data, PDFCellMessage.class);
         logger.info("receivedMessage: " + msg);
-        
+
         switch (msg.getAction()) {
             case OPEN_DOCUMENT:
                 viewer.openDocument(msg.getDocument());
@@ -97,7 +101,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
                 break;
         }
     }
-    
+
     /**
      * Process a channel leave event
      * @param channel the left channel

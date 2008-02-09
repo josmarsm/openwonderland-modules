@@ -73,6 +73,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerApp.class.getName());
+    private static final int DEFAULT_WIDTH = 791;
+    private static final int DEFAULT_HEIGHT = 1024;
     private PDFDocumentDialog pdfDialog;
     private HUDButton msgButton;
     private URL docURL;
@@ -86,7 +88,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     private boolean isDragging = false;
 
     public PDFViewerApp(SharedApp2DCell cell) {
-        this(cell, 0, 0, 1024, 768);
+        this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
     public PDFViewerApp(SharedApp2DCell cell, int x, int y, int width, int height) {
