@@ -611,9 +611,9 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         logger.finest("mouseWheelMoved: " + evt);
 
         if (evt.getWheelRotation() < 0) {
-            nextPage();
-        } else {
             previousPage();
+        } else {
+            nextPage();
         }
     }
 
@@ -639,10 +639,10 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 }
                 break;
             case KeyEvent.VK_PAGE_UP:
-                nextPage();
+                previousPage();
                 break;
             case KeyEvent.VK_PAGE_DOWN:
-                previousPage();
+                nextPage();
                 break;
             case KeyEvent.VK_PLUS:
             case KeyEvent.VK_EQUALS:
