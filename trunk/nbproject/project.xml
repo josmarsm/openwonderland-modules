@@ -33,7 +33,7 @@
             </view>
             <subprojects>
                 <project>src/modules/apps/2d/pdfviewer</project>
-                <project>src/modules/apps/2d/sample</project>
+                <project>src/modules/apps/3d/sample</project>
             </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1"/>
