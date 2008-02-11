@@ -179,4 +179,6 @@ ERROR! Project Wonderland comes bundled with the latest version of Java3D
     </switch>
 
     <property name="wl.xapps" value="${platform-supports-x}"/>
+    
+    <property name="voicelib-jar" value="voicelib.jar"/>
 </project>
