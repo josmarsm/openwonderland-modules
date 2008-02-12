@@ -174,7 +174,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         // display a new HUD message
         msgButton = HUDFactory.getHUD().addHUDMultiImageButton(imgURLs,
                 imagePoints, message, new Point(50, 25),
-                Font.decode(Font.DIALOG + "-BOLD-14"),
+                Font.decode("dialog" + "-BOLD-14"),
                 -300, 50, 300, 50,
                 timeout, true);
     }
