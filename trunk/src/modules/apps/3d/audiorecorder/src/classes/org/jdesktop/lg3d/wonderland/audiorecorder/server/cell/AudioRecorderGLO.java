@@ -131,7 +131,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     }
 
     private void setPlaying(boolean isPlaying) {
-        if (!!getSetupData().isPlaying()) {
+        if (!getSetupData().isPlaying()) {
             //Not already playing
             if (isPlaying) {
                 startPlaying();
