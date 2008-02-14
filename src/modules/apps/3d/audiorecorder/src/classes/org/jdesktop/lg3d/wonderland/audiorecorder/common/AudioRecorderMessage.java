@@ -28,9 +28,14 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
  *
  */
 public class AudioRecorderMessage extends Message {
-     private boolean isRecording;
-     private boolean isPlaying;
-     private String userName;
+    public enum RecorderAction {
+	SETUP_RECORDER,
+	SET_VOLUME
+    };
+
+    private boolean isRecording;
+    private boolean isPlaying;
+    private String userName;
     
     public AudioRecorderMessage() {
         this (false, false, null);

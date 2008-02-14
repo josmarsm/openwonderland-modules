@@ -38,10 +38,14 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.StationaryCellGLO;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage;
+import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage.RecorderAction;
+import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage;
+import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.VoiceHandler;
 import com.sun.mpk20.voicelib.impl.app.VoiceHandlerImpl;
 import java.io.IOException;
 import java.util.logging.Logger;
+
 
 public class AudioRecorderGLO extends StationaryCellGLO 
         implements BeanSetupGLO, CellMessageListener {
@@ -77,20 +81,37 @@ public class AudioRecorderGLO extends StationaryCellGLO
 
     public void receivedMessage(ClientSession client, CellMessage message) {
         AudioRecorderCellMessage ntcm = (AudioRecorderCellMessage) message;
-        setRecording(ntcm.isRecording());
-        setPlaying(ntcm.isPlaying());
-        getSetupData().setUserName(ntcm.getUserName());
 
-        // send a message to all clients except the sender to notify of 
-        // the updated selection
-        AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(), getSetupData().isPlaying(), getSetupData().getUserName());
+	if (ntcm.getAction().equals(RecorderAction.SETUP_RECORDER)) {
+            setRecording(ntcm.isRecording());
+            setPlaying(ntcm.isPlaying());
+            getSetupData().setUserName(ntcm.getUserName());
 
-        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
-        sessions.remove(client);
-        getCellChannel().send(sessions, msg.getBytes());
+            // send a message to all clients except the sender to notify of 
+            // the updated selection
+            AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(), 
+		getSetupData().isPlaying(), getSetupData().getUserName());
+
+            Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+            sessions.remove(client);
+            getCellChannel().send(sessions, msg.getBytes());
+	} else if (ntcm.getAction().equals(RecorderAction.SET_VOLUME)) {
+	    /*
+	     * Set the private volume for this client for playback
+	     */
+	    String clientName = client.getName();
+
+            DefaultSpatializer spatializer = new DefaultSpatializer();
+
+            spatializer.setAttenuator(ntcm.getVolume());
+
+	    logger.warning(clientName + " setting private spatializer for "
+                + getCellID().toString() + " volume " + ntcm.getVolume());
+
+            getVoiceHandler().setPrivateSpatializer(clientName, getCellID().toString(), spatializer);
+	}
     }
     
-
     /**
      * Set up the properties of this cell GLO from a JavaBean.  After calling
      * this method, the state of the cell GLO should contain all the information

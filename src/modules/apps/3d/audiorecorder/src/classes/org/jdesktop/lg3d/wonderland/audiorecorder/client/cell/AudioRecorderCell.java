@@ -40,6 +40,8 @@ import org.jdesktop.lg3d.wg.event.MouseButtonEvent3D;
 import org.jdesktop.lg3d.wg.internal.j3d.j3dnodes.J3dLgBranchGroup;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListener;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.Cell;
+import org.jdesktop.lg3d.wonderland.darkstar.client.cell.CellMenu;
+import org.jdesktop.lg3d.wonderland.darkstar.client.cell.CellMenuListener;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage;
@@ -52,7 +54,9 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
  * @author Marc Davies
  * @author Bernard Horan
  */
-public class AudioRecorderCell extends Cell implements ExtendedClientChannelListener {
+public class AudioRecorderCell extends Cell implements ExtendedClientChannelListener,
+	CellMenuListener {
+
     private static final Logger logger = Logger.getLogger(AudioRecorderCell.class.getName());
     
     private Button recordButton;
@@ -77,6 +81,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     private static final Appearance PLAY_BUTTON_DEFAULT = new Appearance();
     private static final Appearance PLAY_BUTTON_SELECTED = new Appearance();
     
+    private Cell cell;
  
     static {
         RECORD_BUTTON_DEFAULT.setColoringAttributes(new ColoringAttributes(
@@ -95,6 +100,10 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     
     public AudioRecorderCell(CellID cellID, String channelName, Matrix4d cellOrigin) {
         super(cellID, channelName, cellOrigin);
+
+	cell = this;
+
+        CellMenu.getInstance().addCellMenuListener(this);
     }
     
     public void setChannel(ClientChannel channel) {
@@ -285,8 +294,6 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         isPlaying = b;
     }
     
-    
-    
     private String getCurrentUserName() {
         return ChannelController.getController().getLocalUserName();
     }
@@ -297,6 +304,22 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         }
     }
     
+    public void cellMenuChanged(boolean isClosed) {
+    }
+
+    public void volumeChanged(String name, double volume) {
+	AudioRecorderCellMessage msg = 
+	    new AudioRecorderCellMessage(cell.getCellID(),
+		isRecording, isPlaying, name, volume);
+
+	if (isRecording == true) {
+	    // TODO set the recording volume.
+	} else {
+	    ChannelController.getController().sendMessage(msg);
+	}
+	
+    }
+
     class MouseSelectionListener implements LgEventListener {
         private Button button;
         
@@ -305,7 +328,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         }
         
         public void processEvent(LgEvent lge) {
-            if (lge instanceof MouseButtonEvent3D) {                           // Handle Mouse Clicks
+            if (lge instanceof MouseButtonEvent3D) {                  // Handle Mouse Clicks
                 MouseButtonEvent3D mbe3D = (MouseButtonEvent3D) lge;
                 
                 if (mbe3D.isClicked()) {
@@ -314,19 +337,24 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
                     if (!button.isSelected()) {
                         if (button == recordButton) {
                             startRecording();
-                        } 
-                        if (button == playButton) {
+                        } else if (button == playButton) {
                             startPlaying();
-                        }
-                        if (button == stopButton) {
+                        } else if (button == stopButton) {
                             stop();
-                        }
-                        AudioRecorderCellMessage msg = new AudioRecorderCellMessage(getCellID(), isRecording, isPlaying, userName);
+                        } 
+                        AudioRecorderCellMessage msg = new 
+			    AudioRecorderCellMessage(getCellID(), isRecording, isPlaying, userName);
                         
                         // Send a message to the server indicating the new selection.
                         // The server will repeat it out to all other clients.
                         ChannelController.getController().sendMessage(msg);
-                    }
+                    } else {
+                        if (button == playButton) {
+			    CellMenu.getInstance().displayMenuFor(cell.getCellID().toString(),
+				"Recorder " + getCellID().toString());
+			    return;
+			}
+		    }
                 }
             }
         }

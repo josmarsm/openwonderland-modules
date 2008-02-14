@@ -29,7 +29,6 @@ public class AudioRecorderCellSetup implements CellSetup {
     private boolean isPlaying;
     private String userName;
     
-    
     public boolean isRecording() {
         return isRecording;
     }
@@ -53,4 +52,5 @@ public class AudioRecorderCellSetup implements CellSetup {
     public void setUserName(String userName) {
         this.userName = userName;
     }
+
 }
