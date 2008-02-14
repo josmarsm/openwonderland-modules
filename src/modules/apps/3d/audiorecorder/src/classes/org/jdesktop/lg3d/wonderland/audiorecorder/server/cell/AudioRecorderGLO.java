@@ -21,6 +21,7 @@
 package org.jdesktop.lg3d.wonderland.audiorecorder.server.cell;
 
 import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedReference;
 import java.util.HashSet;
 import java.util.Set;
 import javax.media.j3d.Bounds;
@@ -40,12 +41,17 @@ import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage;
 import com.sun.mpk20.voicelib.app.VoiceHandler;
 import com.sun.mpk20.voicelib.impl.app.VoiceHandlerImpl;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public class AudioRecorderGLO extends StationaryCellGLO 
         implements BeanSetupGLO, CellMessageListener {
+    private static final Logger logger = Logger.getLogger(AudioRecorderGLO.class.getName()); 
     
+    private double[] rotation;
+    private double[] origin;
+    private double scale;
+
     private BasicCellGLOSetup<AudioRecorderCellSetup> setup;
-    
             
     public AudioRecorderGLO() {
         this(null, null);
@@ -95,23 +101,33 @@ public class AudioRecorderGLO extends StationaryCellGLO
     public void setupCell(CellGLOSetup setupData) {
         setup = (BasicCellGLOSetup<AudioRecorderCellSetup>) setupData;
 
-        AxisAngle4d aa = new AxisAngle4d(setup.getRotation());
+	rotation = setup.getRotation();
+	origin = setup.getOrigin();
+	scale = setup.getScale();
+    }
+
+    @Override
+    protected void addParentCell(ManagedReference parent) {
+        super.addParentCell(parent);
+
+        AxisAngle4d aa = new AxisAngle4d(rotation);
         Matrix3d rot = new Matrix3d();
         rot.set(aa);
-        Vector3d origin = new Vector3d(setup.getOrigin());
+        Vector3d localOrigin = new Vector3d(this.origin);
 
-        Matrix4d o = new Matrix4d(rot, origin, setup.getScale());
+        Matrix4d o = new Matrix4d(rot, localOrigin, scale);
         setOrigin(o);
 
         if (setup.getBoundsType().equals("SPHERE")) {
-            setBounds(createBoundingSphere(origin, (float) setup.getBoundsRadius()));
+            setBounds(createBoundingSphere(localOrigin, (float) setup.getBoundsRadius()));
         } else {
             throw new RuntimeException("Unimplemented bounds type");
         }
+
         setupRecorder();
     }
-
-    /**
+ 
+    /*
      * Called when the properties of a cell have changed.
      *
      * @param setup a Java bean with updated properties
@@ -135,10 +151,9 @@ public class AudioRecorderGLO extends StationaryCellGLO
             //Not already playing
             if (isPlaying) {
                 startPlaying();
-                getSetupData().setPlaying(isPlaying);
             }
         }
-        
+        getSetupData().setPlaying(isPlaying);
     }
 
     private void setRecording(boolean isRecording) {
@@ -162,6 +177,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private void setupRecorder() {
         Vector3d currentPosition = new Vector3d();
         getOriginWorld().get(currentPosition);
+
         try {
             getVoiceHandler().setupRecorder(getCellID().toString(), currentPosition.getX(), currentPosition.getY(), currentPosition.getZ(), "/tmp");
         } catch (IOException e) {
@@ -170,6 +186,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     }
 
     private void startPlaying() {
+        logger.info("Start Playing");
         try {
             getVoiceHandler().playRecording(getCellID().toString(), "test.au");
         } catch (IOException e) {
@@ -178,6 +195,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     }
 
     private void startRecording() {
+        logger.info("Start Recording");
         try {
             getVoiceHandler().startRecording(getCellID().toString(), "test.au");
         } catch (IOException e) {
@@ -186,6 +204,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     }
 
     private void stopRecording() {
+        logger.info("Stop Recording");
         try {
             getVoiceHandler().stopRecording(getCellID().toString());
         } catch (IOException e) {
