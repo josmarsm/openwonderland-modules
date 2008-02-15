@@ -312,12 +312,11 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
 	    new AudioRecorderCellMessage(cell.getCellID(),
 		isRecording, isPlaying, name, volume);
 
-	if (isRecording == true) {
-	    // TODO set the recording volume.
-	} else {
-	    ChannelController.getController().sendMessage(msg);
-	}
-	
+	ChannelController.getController().sendMessage(msg);
+    }
+
+    public String getUserName() {
+	return cell.getCellID().toString();
     }
 
     class MouseSelectionListener implements LgEventListener {
@@ -350,8 +349,12 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
                         ChannelController.getController().sendMessage(msg);
                     } else {
                         if (button == playButton) {
-			    CellMenu.getInstance().displayMenuFor(cell.getCellID().toString(),
-				"Recorder " + getCellID().toString());
+			    CellMenu.getInstance().displayMenuFor(getCellID().toString(),
+				"Playback " + getCellID().toString());
+			    return;
+			} else if (button == recordButton) {
+			    CellMenu.getInstance().displayMenuFor(getCellID().toString(),
+				"Recording " + getCellID().toString());
 			    return;
 			}
 		    }

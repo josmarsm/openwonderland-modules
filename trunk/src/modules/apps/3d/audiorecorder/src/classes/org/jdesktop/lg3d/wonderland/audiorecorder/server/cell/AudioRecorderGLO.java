@@ -96,19 +96,30 @@ public class AudioRecorderGLO extends StationaryCellGLO
             sessions.remove(client);
             getCellChannel().send(sessions, msg.getBytes());
 	} else if (ntcm.getAction().equals(RecorderAction.SET_VOLUME)) {
-	    /*
-	     * Set the private volume for this client for playback
-	     */
-	    String clientName = client.getName();
+	    if (ntcm.isRecording()) {
+		logger.warning("set recording volume of " + getCellID().toString()
+		    + " to " + ntcm.getVolume());
 
-            DefaultSpatializer spatializer = new DefaultSpatializer();
+		getVoiceHandler().setMasterVolume(getCellID().toString(), ntcm.getVolume());
+		/*
+		 * XXX Need to send message to all clients so volume is updated.
+		 */
+	    } else {
+	        /*
+	         * Set the private volume for this client for playback
+	         */
+	        String clientName = client.getName();
 
-            spatializer.setAttenuator(ntcm.getVolume());
+                DefaultSpatializer spatializer = new DefaultSpatializer();
 
-	    logger.warning(clientName + " setting private spatializer for "
-                + getCellID().toString() + " volume " + ntcm.getVolume());
+                spatializer.setAttenuator(ntcm.getVolume());
 
-            getVoiceHandler().setPrivateSpatializer(clientName, getCellID().toString(), spatializer);
+	        logger.warning(clientName + " setting private playback volume for "
+                    + getCellID().toString() + " volume " + ntcm.getVolume());
+
+                getVoiceHandler().setPrivateSpatializer(clientName, getCellID().toString(), 
+		    spatializer);
+	    }
 	}
     }
     
