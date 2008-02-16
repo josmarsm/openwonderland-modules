@@ -356,15 +356,9 @@ public class VideoModuleApp extends AppWindowGraphics2DApp {
         // perform local play action
         if (play == true) {
             start();
-
+            showHUDMessage("Playing", 2000);
         } else {
             stop();
-
-        }
-        // report the actual state, not just what was requested
-        if (isPlaying()) {
-            showHUDMessage("Play", 2000);
-        } else {
             showHUDMessage("Paused");
         }
     }
@@ -486,18 +480,18 @@ public class VideoModuleApp extends AppWindowGraphics2DApp {
                         VideoModuleCellMessage.Action.ZOOM_OUT);
                 break;
             case KeyEvent.VK_LEFT:
-                logger.fine("panning right");
-                showHUDMessage("pan right", 1000);
-                // ask the server to pan the camera right
-                msg = new VideoModuleCellMessage(this.getCell().getCellID(),
-                        VideoModuleCellMessage.Action.PAN_RIGHT);
-                break;
-            case KeyEvent.VK_RIGHT:
                 logger.fine("panning left");
                 showHUDMessage("pan left", 1000);
-                // ask the server to pan the camera left
+                // ask the server to pan the camera right
                 msg = new VideoModuleCellMessage(this.getCell().getCellID(),
                         VideoModuleCellMessage.Action.PAN_LEFT);
+                break;
+            case KeyEvent.VK_RIGHT:
+                logger.fine("panning right");
+                showHUDMessage("pan right", 1000);
+                // ask the server to pan the camera left
+                msg = new VideoModuleCellMessage(this.getCell().getCellID(),
+                        VideoModuleCellMessage.Action.PAN_RIGHT);
                 break;
             case KeyEvent.VK_UP:
                 logger.fine("tilt up");
