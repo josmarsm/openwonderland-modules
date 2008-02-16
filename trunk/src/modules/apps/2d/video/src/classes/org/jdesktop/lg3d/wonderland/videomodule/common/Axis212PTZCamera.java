@@ -49,9 +49,9 @@ public class Axis212PTZCamera implements PTZCamera {
     private int MIN_ZOOM = 200;
     private int MAX_ZOOM = 9740;
     
-    private int pan = 0;
-    private int tilt = 0;
-    private int zoom = 0;
+    private static int pan = 0;
+    private static int tilt = 0;
+    private static int zoom = 0;
     
     public Axis212PTZCamera() {
         
@@ -87,22 +87,25 @@ public class Axis212PTZCamera implements PTZCamera {
         }
     }
     
-    public synchronized void tiltTo(int tilt) {
-        this.tilt = (tilt < MIN_TILT) ? MIN_TILT : ((tilt > MAX_TILT) ? MAX_TILT : tilt);
+    public synchronized void tiltTo(int newtilt) {
+        tilt = (newtilt < MIN_TILT) ? MIN_TILT : ((newtilt > MAX_TILT) ? MAX_TILT : newtilt);
+        logger.info("tilt = " + tilt);
         
         sendCameraCommand(cameraAddress + "/" + commandCGI + "&" + tiltCommand + "=" + tilt);
     }
     
-    public synchronized void panTo(int pan) {
-        this.pan = (pan < MIN_PAN) ? MIN_PAN : ((pan > MAX_PAN) ? MAX_PAN : pan);
+    public synchronized void panTo(int newpan) {
+        pan = (newpan < MIN_PAN) ? MIN_PAN : ((newpan > MAX_PAN) ? MAX_PAN : newpan);
+        logger.info("pan = " + pan);
         
         sendCameraCommand(cameraAddress + "/" + commandCGI + "&" + panCommand + "=" + pan);
     }
     
-    public synchronized void zoomTo(int zoom) {
-        this.zoom = (zoom < MIN_ZOOM) ? MIN_ZOOM : ((zoom > MAX_ZOOM) ? MAX_ZOOM : zoom);
+    public synchronized void zoomTo(int newzoom) {
+        zoom = (newzoom < MIN_ZOOM) ? MIN_ZOOM : ((newzoom > MAX_ZOOM) ? MAX_ZOOM : newzoom);
+        logger.info("zoom = " + zoom);
         
-        sendCameraCommand(cameraAddress + "/" + commandCGI + "&" + zoomCommand + "=" + this.zoom);
+        sendCameraCommand(cameraAddress + "/" + commandCGI + "&" + zoomCommand + "=" + zoom);
     }
     
     public int getMinPan() {
