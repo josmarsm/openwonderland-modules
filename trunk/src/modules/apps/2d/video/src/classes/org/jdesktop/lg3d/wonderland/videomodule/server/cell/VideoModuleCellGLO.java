@@ -139,10 +139,10 @@ public class VideoModuleCellGLO extends SharedApp2DImageCellGLO
             if (ptz != null) {
                 switch (action) {
                     case PAN_LEFT:
-                        ptz.panBy(10);
+                        ptz.panBy(-10);
                         break;
                     case PAN_RIGHT:
-                        ptz.panBy(-10);
+                        ptz.panBy(10);
                         break;
                     case PAN_CENTER:
                         ptz.panTo(0);
