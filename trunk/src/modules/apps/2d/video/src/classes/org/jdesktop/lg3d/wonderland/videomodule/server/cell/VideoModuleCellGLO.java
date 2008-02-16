@@ -43,7 +43,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
 import org.jdesktop.lg3d.wonderland.videomodule.common.PTZCamera;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoModuleCellMessage.Action;
-import org.jdesktop.lg3d.wonderland.videomodule.common.VideoSourcer;
+import org.jdesktop.lg3d.wonderland.videomodule.common.VideoSource;
 
 /**
  * @author nsimpson
@@ -55,7 +55,7 @@ public class VideoModuleCellGLO extends SharedApp2DImageCellGLO
             Logger.getLogger(VideoModuleCellGLO.class.getName());
     
     private BasicCellGLOSetup<VideoModuleCellSetup> setup;
-    private transient VideoSourcer videoInstance;
+    private transient VideoSource videoInstance;
     
     public VideoModuleCellGLO() {
         this(null, null, null, null);
@@ -176,7 +176,7 @@ public class VideoModuleCellGLO extends SharedApp2DImageCellGLO
         }
     }
     
-    private void processCameraAction(VideoSourcer videoInstance, Action action) {
+    private void processCameraAction(VideoSource videoInstance, Action action) {
         if (videoInstance instanceof PTZCamera) {
             logger.info("--- processing PTZ action: " + action);
             

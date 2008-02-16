@@ -25,7 +25,7 @@ import java.io.Serializable;
  *
  * @author nsimpson
  */
-public interface VideoSourcer extends Serializable {
+public interface VideoSource extends Serializable {
     public void setSource(String source);
     public String getSource();
 }

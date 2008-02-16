@@ -35,7 +35,7 @@ public class VideoModuleCellSetup extends SharedApp2DCellSetup {
     
     private String source;
     private String videoClass;
-    private VideoSourcer videoInstance;
+    private VideoSource videoInstance;
     private float frameRate = 2.0f;  // frames per second
     private boolean playOnLoad = false;
     private boolean syncPlayback = true;
@@ -103,7 +103,7 @@ public class VideoModuleCellSetup extends SharedApp2DCellSetup {
         try {
             Class clss = Class.forName(this.videoClass);
             Constructor cons = clss.getConstructor(new Class[] { String.class });
-            videoInstance = (VideoSourcer)cons.newInstance(this.source);
+            videoInstance = (VideoSource)cons.newInstance(this.source);
         } catch (ClassNotFoundException e) {
             logger.warning("unrecognized camera class: " + this.videoClass + ": " + e);
         } catch (Exception e) {
@@ -115,7 +115,7 @@ public class VideoModuleCellSetup extends SharedApp2DCellSetup {
         return videoClass;
     }
     
-    public VideoSourcer getVideoInstance() {
+    public VideoSource getVideoInstance() {
         return videoInstance;
     }
 }

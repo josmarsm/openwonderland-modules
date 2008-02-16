@@ -23,6 +23,6 @@ package org.jdesktop.lg3d.wonderland.videomodule.common;
  *
  * @author nsimpson
  */
-public interface Camera extends VideoSourcer {
+public interface Camera extends VideoSource {
 
 }
