@@ -62,6 +62,14 @@
             <mapper type="flatten"/>
         </copy>
         
+        <!-- make a release zip file -->
+        <mkdir dir="release"/>
+        <tstamp>
+            <format property="build.stamp.pkg" pattern="yyyyMMdd"/>
+        </tstamp>
+        <zip basedir="dist" zipfile="release/wonderland-modules-${build.version}-${build.stamp.pkg}.zip">
+            <include name="**"/>
+        </zip>
     </target>
     
     <!-- clean all sub-projects -->
