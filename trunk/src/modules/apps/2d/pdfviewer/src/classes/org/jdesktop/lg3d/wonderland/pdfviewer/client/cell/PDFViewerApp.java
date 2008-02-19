@@ -217,7 +217,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
                 try {
                     logger.info("opening: " + url);
-                    showHUDMessage("Opening: " + fileName);
+                    showHUDMessage("Opening " + fileName);
                     pdfDialog.setDocumentURL(docURL.toString());
 
                     // attempt to load the document
@@ -228,7 +228,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                     logger.info("PDF loaded in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
                 } catch (Exception e) {
                     logger.warning("failed to open: " + url + ": " + e);
-                    showHUDMessage("Failed to open: " + fileName, 5000);
+                    showHUDMessage("Failed to open " + fileName, 5000);
                 }
                 if (loadingFile != null) {
                     currentFile = loadingFile;
@@ -471,7 +471,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             pageDirty = true;
             repaint();
 
-            showHUDMessage("Page: " + p, 3000);
+            showHUDMessage("Page " + p, 3000);
 
             if (notify == true) {
                 // notify other clients that the page changed
@@ -483,6 +483,12 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
                 logger.info("sending message: " + msg.getAction());
                 ChannelController.getController().sendMessage(msg);
+            }
+
+            // pre-cache the next page
+            if (isValidPage(p + 1)) {
+                logger.fine("pre-caching page: " + (p + 1));
+                currentFile.getPage(p + 1);
             }
         }
     }
