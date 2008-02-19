@@ -46,9 +46,14 @@ import com.sun.mpk20.voicelib.impl.app.VoiceHandlerImpl;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
+
+import com.sun.voip.client.connector.CallStatus;
 
 public class AudioRecorderGLO extends StationaryCellGLO 
-        implements BeanSetupGLO, CellMessageListener {
+        implements BeanSetupGLO, CellMessageListener, 
+	ManagedCallStatusListener {
+
     private static final Logger logger = Logger.getLogger(AudioRecorderGLO.class.getName()); 
     
     private double[] rotation;
@@ -63,6 +68,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
     
     public AudioRecorderGLO(Bounds bounds, Matrix4d center) {
         super(bounds, center); 
+
+	getVoiceHandler().addCallStatusListener(this);
     }
         
     
@@ -123,6 +130,19 @@ public class AudioRecorderGLO extends StationaryCellGLO
 	}
     }
     
+    public void callStatusChanged(CallStatus status) {
+	switch(status.getCode()) {
+	case CallStatus.TREATMENTDONE:
+            AudioRecorderMessage msg = new AudioRecorderMessage(true);
+
+	    /*
+	     * Send message to all clients
+	     */
+            getCellChannel().send(getCellChannel().getSessions(), msg.getBytes());
+	    break;
+	}
+    }
+
     /**
      * Set up the properties of this cell GLO from a JavaBean.  After calling
      * this method, the state of the cell GLO should contain all the information

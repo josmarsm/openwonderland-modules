@@ -46,6 +46,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage;
+import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage.RecorderAction;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 
@@ -182,9 +183,14 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
        
     public void receivedMessage(ClientChannel client, SessionId session, byte[] input) {
         AudioRecorderMessage message = Message.extractMessage(input, AudioRecorderMessage.class);
-        setRecording(message.isRecording());
-        setPlaying(message.isPlaying());
-        userName = message.getUserName();
+
+	if (message.getAction().equals(RecorderAction.PLAYBACK_DONE) == false) {
+            setRecording(message.isRecording());
+            setPlaying(message.isPlaying());
+            userName = message.getUserName();
+	} else {
+	    setPlaying(false);
+	}
     }    
     
     public void leftChannel(ClientChannel arg0) {       
