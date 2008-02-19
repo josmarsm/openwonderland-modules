@@ -21,8 +21,10 @@ package org.jdesktop.lg3d.wonderland.audiorecorder.common;
 
 import java.nio.ByteBuffer;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataBoolean;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataInt;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataString;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
+
 
 /**
  *
@@ -30,21 +32,35 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 public class AudioRecorderMessage extends Message {
     public enum RecorderAction {
 	SETUP_RECORDER,
-	SET_VOLUME
+	SET_VOLUME,
+	PLAYBACK_DONE
     };
+
+    private RecorderAction action;
 
     private boolean isRecording;
     private boolean isPlaying;
     private String userName;
+    private boolean playbackDone;
     
     public AudioRecorderMessage() {
         this (false, false, null);
     }
     
+    public AudioRecorderMessage(boolean playbackDone) {
+	action = RecorderAction.PLAYBACK_DONE;
+	this.playbackDone = playbackDone;
+    }
+
     public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName) {
+	action = RecorderAction.SETUP_RECORDER;
         this.isRecording = isRecording;
         this.isPlaying = isPlaying;
         this.userName = userName;
+    }
+
+    public RecorderAction getAction() {
+	return action;
     }
 
     public boolean isRecording() {
@@ -59,17 +75,33 @@ public class AudioRecorderMessage extends Message {
         return userName;
     }
     
+    public boolean playbackDone() {
+	return playbackDone;
+    }
 
     protected void extractMessageImpl(ByteBuffer data) {
-        isRecording = DataBoolean.value(data);
-        isPlaying = DataBoolean.value(data);
-        userName = DataString.value(data);
+	action = RecorderAction.values()[DataInt.value(data)];
+
+	if (action.equals(RecorderAction.PLAYBACK_DONE) == false) {
+            isRecording = DataBoolean.value(data);
+            isPlaying = DataBoolean.value(data);
+            userName = DataString.value(data);
+	} else {
+	    playbackDone = DataBoolean.value(data);
+	}
     }
 
     protected void populateDataElements() {
         dataElements.clear();
-        dataElements.add(new DataBoolean(isRecording));
-        dataElements.add(new DataBoolean(isPlaying));
-        dataElements.add(new DataString(userName));
+
+	dataElements.add(new DataInt(action.ordinal()));
+
+	if (action.equals(RecorderAction.PLAYBACK_DONE) == false) {
+            dataElements.add(new DataBoolean(isRecording));
+            dataElements.add(new DataBoolean(isPlaying));
+            dataElements.add(new DataString(userName));
+	} else {
+            dataElements.add(new DataBoolean(playbackDone));
+	}
     }    
 }
