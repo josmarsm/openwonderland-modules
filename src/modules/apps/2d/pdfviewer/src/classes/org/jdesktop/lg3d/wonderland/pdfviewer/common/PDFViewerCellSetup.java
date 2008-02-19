@@ -40,6 +40,12 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
     private String document;
     private int page = 1;
     private Point position = new Point(0, 0);
+    private boolean slideShow = false;
+    private int slideShowStartPage = 0;     // page to start slideshow at
+    private int slideShowEndPage = 0;       // page to end slideshow at
+    private int slideShowDuration = 5000;   // milliseconds
+    private int slideShowLoopDelay = 10000; // milliseconds
+    private int slideShowCount = 0;         // don't do a slide show
     private String checksum;
 
     public PDFViewerCellSetup() {
@@ -98,6 +104,117 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
         return position;
     }
 
+    /**
+     * Set slide show mode
+     * @param slideShow if true, display document as a slide show
+     */
+    public void setSlideShow(boolean slideShow) {
+        this.slideShow = slideShow;
+    }
+
+    /**
+     * Returns whether the application is in slideshow mode
+     * @return true if in slideshow mode, false otherwise
+     */
+    public boolean getSlideShow() {
+        return slideShow;
+    }
+
+    /**
+     * Sets the first page of the slide show
+     * @param slideShowStartPage the first page in the slide show
+     */
+    public void setStartPage(int slideShowStartPage) {
+        this.slideShowStartPage = slideShowStartPage;
+    }
+
+    /**
+     * Gets the first page of the slide sh ow
+     * @return the first page of the slideshow
+     */
+    public int getStartPage() {
+        return slideShowStartPage;
+    }
+
+    /**
+     * Sets the last page of the slide show
+     * @param slideShowEndPage the last page in the slide show
+     */
+    public void setEndPage(int slideShowEndPage) {
+        this.slideShowEndPage = slideShowEndPage;
+    }
+
+    /**
+     * Gets the last page of the slide show
+     * @return the last page of the slide show (-1 == end of document)
+     */
+    public int getEndPage() {
+        return slideShowEndPage;
+    }
+
+    /**
+     * Sets the duration to show each slide for
+     * @param setShowDuration the duration (in milliseconds) to display each
+     * slide
+     */
+    public void setShowDuration(int slideShowDuration) {
+        this.slideShowDuration = slideShowDuration;
+    }
+
+    /**
+     * Gets the duration to show each slide for
+     * @return the duration (in milliseconds) to display each slide
+     */
+    public int getShowDuration() {
+        return slideShowEndPage;
+    }
+    
+    /**
+     * Sets the duration to pause before restarting the slide show
+     * @param slideShowLoopDelay the duration (in milliseconds) to pause
+     * before restarting the slide show
+     */
+    public void setLoopDelay(int slideShowLoopDelay) {
+        this.slideShowLoopDelay = slideShowLoopDelay;
+    }
+
+    /**
+     * Gets the duration to pause before restarting the slide show
+     * @return the duration (in milliseconds) to pause before restarting the
+     * slide show
+     */
+    public int getLoopDelay() {
+        return slideShowLoopDelay;
+    }
+            
+    /**
+     * Sets the number of times to show the slide show (1 == once)
+     * @param slideShowCount the number of times to show the slide show
+     */
+    public void setShowCount(int slideShowCount) {
+        this.slideShowCount = slideShowCount;
+    }
+
+    /**
+     * Gets the number of times to show the slide show
+     * @return the number of times to show the slide show
+     */
+    public int getLoopCount() {
+        return slideShowCount;
+    }
+    
+    public void startSlideShow() {
+        
+    }
+    
+    public void stopSlideShow() {
+        
+    }
+    
+    public boolean isSlideShowActive() {
+        return false;
+    }
+    
     /*
      * Set the preferred width
      * @param preferredWidth the preferred width in pixels
