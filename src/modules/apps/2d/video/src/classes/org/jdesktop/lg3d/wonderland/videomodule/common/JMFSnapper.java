@@ -286,6 +286,28 @@ public class JMFSnapper implements ControllerListener {
     }
     
     /**
+     * Mute or unmute the player audio
+     * @param muting if true mutes audio, else unmutes audio
+     */
+    public void mute(boolean muting) {
+        if (hasPlayer() == true) {
+            p.getGainControl().setMute(muting);
+        }
+    }
+    
+    /**
+     * Gets whether the audio is muted
+     * @return true if audio is muted, false otherwise
+     */
+    public boolean isMuted() {
+        boolean muted = false;
+        if (hasPlayer() == true) {
+            muted = p.getGainControl().getMute();
+        }
+        return muted;
+    }
+    
+    /**
      * Show or hide timer
      */
     public void showTimer(boolean show) {

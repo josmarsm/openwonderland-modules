@@ -443,6 +443,7 @@ public class VideoModuleApp extends AppWindowGraphics2DApp {
                 cueTimer = new Timer();
                 setPosition(start - cueLeadIn);
                 snapper.setStopTime(start);
+                mute(true);
                 play(true);
                 logger.fine("*** scheduling cue in from: " + (start - cueLeadIn) + " to " + start);
                 cueTimer.schedule(new CueCompleteTask(), (long) cueLeadIn);
@@ -454,11 +455,20 @@ public class VideoModuleApp extends AppWindowGraphics2DApp {
             public void run() {
                 logger.fine("*** cue complete");
                 stop();
+                mute(false);
                 cueTimer.cancel();
             }
         }
     }
 
+    public void mute(boolean muting) {
+        snapper.mute(muting);
+    }
+    
+    public boolean isMuted() {
+        return snapper.isMuted();
+    }
+    
     private void dispatchKeyEvent(KeyEvent e) {
         VideoModuleCellMessage msg = null;
 
@@ -513,21 +523,6 @@ public class VideoModuleApp extends AppWindowGraphics2DApp {
                 msg = new VideoModuleCellMessage(this.getCell().getCellID(),
                         VideoModuleCellMessage.Action.CENTER);
                 break;
-            case KeyEvent.VK_Z:
-                if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
-                    logger.fine("zooming in fully");
-                    showHUDMessage("max zoom", 1000);
-                    // ask the server to zoom in fully
-                    msg = new VideoModuleCellMessage(this.getCell().getCellID(),
-                            VideoModuleCellMessage.Action.ZOOM_IN_FULLY);
-                } else {
-                    logger.fine("zooming out fully");
-                    showHUDMessage("min zoom", 1000);
-                    // ask the server to zoom out fully
-                    msg = new VideoModuleCellMessage(this.getCell().getCellID(),
-                            VideoModuleCellMessage.Action.ZOOM_OUT_FULLY);
-                }
-                break;
             case KeyEvent.VK_F:
                 if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
                     logger.fine("increasing frame rate");
@@ -545,8 +540,8 @@ public class VideoModuleApp extends AppWindowGraphics2DApp {
                     }
                 }
                 break;
-            case KeyEvent.VK_S:
-                setSynced(!isSynced());
+            case KeyEvent.VK_M:
+                mute(!isMuted());
                 break;
             case KeyEvent.VK_P:
                 boolean willPlay = !isPlaying();
@@ -554,6 +549,24 @@ public class VideoModuleApp extends AppWindowGraphics2DApp {
                 play(willPlay);
                 // notify other clients of play state change
                 requestPlay(willPlay);
+                break;
+            case KeyEvent.VK_S:
+                setSynced(!isSynced());
+                break;
+            case KeyEvent.VK_Z:
+                if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
+                    logger.fine("zooming in fully");
+                    showHUDMessage("max zoom", 1000);
+                    // ask the server to zoom in fully
+                    msg = new VideoModuleCellMessage(this.getCell().getCellID(),
+                            VideoModuleCellMessage.Action.ZOOM_IN_FULLY);
+                } else {
+                    logger.fine("zooming out fully");
+                    showHUDMessage("min zoom", 1000);
+                    // ask the server to zoom out fully
+                    msg = new VideoModuleCellMessage(this.getCell().getCellID(),
+                            VideoModuleCellMessage.Action.ZOOM_OUT_FULLY);
+                }
                 break;
         }
 

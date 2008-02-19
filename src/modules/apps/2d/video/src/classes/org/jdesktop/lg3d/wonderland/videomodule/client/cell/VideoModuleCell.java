@@ -76,7 +76,7 @@ public class VideoModuleCell extends SharedApp2DImageCell
             if (setup.getPlayOnLoad() == true) {
                 app.play(true);
             } else {
-                app.cue(0.5, -0.1);
+                app.cue(0.5, 0.1);
             }
         }
     }
