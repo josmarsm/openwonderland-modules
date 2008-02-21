@@ -133,6 +133,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
     public void callStatusChanged(CallStatus status) {
 	switch(status.getCode()) {
 	case CallStatus.TREATMENTDONE:
+            getSetupData().setPlaying(false);
+
             AudioRecorderMessage msg = new AudioRecorderMessage(true);
 
 	    /*
