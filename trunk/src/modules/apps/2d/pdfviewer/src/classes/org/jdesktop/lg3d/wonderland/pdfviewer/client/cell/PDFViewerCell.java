@@ -93,6 +93,9 @@ public class PDFViewerCell extends SharedApp2DImageCell
             case CLOSE_DOCUMENT:
                 viewer.closeDocument(msg.getDocument());
                 break;
+            case NEXT_PAGE:
+                viewer.nextPage();
+                break;
             case SHOW_PAGE:
                 viewer.showPage(msg.getPage());
                 break;

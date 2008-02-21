@@ -58,6 +58,7 @@ import org.jdesktop.lg3d.wonderland.appshare.SimpleControlArb;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DCell;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
+import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage.Action;
 import org.jdesktop.lg3d.wonderland.scenemanager.EventController;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
@@ -86,7 +87,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     private int yScroll = 0;
     private Point mousePos = new Point();
     private boolean isDragging = false;
-
+    private boolean paused = true;
+    
     public PDFViewerApp(SharedApp2DCell cell) {
         this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
@@ -231,10 +233,21 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                     showHUDMessage("Failed to open " + fileName, 5000);
                 }
                 if (loadingFile != null) {
+                    // document was loaded successfully
                     currentFile = loadingFile;
                     showPage(page, false);
                     setViewPosition(position, false);
+                    // notify other clients
+                    PDFCellMessage msg = new PDFCellMessage(getCell().getCellID(),
+                            PDFCellMessage.Action.DOCUMENT_OPENED,
+                            docURL.toString(),
+                            page,
+                            position);
+                    msg.setPageCount(currentFile.getNumPages());
+                    logger.fine("sending message: " + msg);
+                    ChannelController.getController().sendMessage(msg);
                 } else {
+                    // document failed to load, update the view
                     pageDirty = true;
                     repaint();
                 }
@@ -272,8 +285,9 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             docURL = new URL(doc);
             new DocumentLoader(docURL, page, position).start();
 
+            // while it's loading, notify other clients so they can load the
+            // document in parallel
             if (notify == true) {
-                // notify other clients
                 PDFCellMessage msg = new PDFCellMessage(this.getCell().getCellID(),
                         PDFCellMessage.Action.OPEN_DOCUMENT,
                         docURL.toString(),
@@ -285,7 +299,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             }
         } catch (Exception e) {
             logger.warning("failed to open: " + docURL + ": " + e);
-            showHUDMessage("Failed to open: " + doc, 5000);
+            showHUDMessage("Failed to open " + doc, 5000);
         }
     }
 
@@ -497,14 +511,20 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * Display the next page after the currently selected page
      */
     public void nextPage() {
-        showPage(getPageNumber() + 1, true);
+        int next = getPageNumber() + 1;
+        next = (isValidPage(next)) ? next : 1;
+
+        showPage(next, true);
     }
 
     /**
      * Display the previous page to the currently selected page
      */
     public void previousPage() {
-        showPage(getPageNumber() - 1, true);
+        int prev = getPageNumber() - 1;
+        prev = isValidPage(prev) ? prev : 1;
+
+        showPage(prev, true);
     }
 
     /**
@@ -539,6 +559,34 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         }
     }
 
+    public Point getViewPosition() {
+        return mousePos;
+    }
+    
+    public void pause(boolean toPause) {
+        pause(toPause, false);
+    }
+    
+    /**
+     * Set the view position
+     * @param position the desired position
+     * @param whether to notify other clients
+     */
+    public void pause(boolean toPause, boolean notify) {
+        paused = toPause;
+        if (notify == true) {
+            // notify other clients that the page moved
+            PDFCellMessage msg = new PDFCellMessage(this.getCell().getCellID(),
+                    Action.PAUSE,
+                    docURL.toString(),
+                    getPageNumber(),
+                    getViewPosition());
+
+            logger.info("sending message: " + msg.getAction());
+            ChannelController.getController().sendMessage(msg);
+        }
+    }
+    
     /**
      * Render the current page of the PDF document
      * @param g the surface on which to draw the page
@@ -650,13 +698,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             case KeyEvent.VK_PAGE_DOWN:
                 nextPage();
                 break;
-            case KeyEvent.VK_PLUS:
-            case KeyEvent.VK_EQUALS:
-                //nextDocument();
-                break;
-            case KeyEvent.VK_MINUS:
-            case KeyEvent.VK_UNDERSCORE:
-                //prevDocument();
+            case KeyEvent.VK_P:
+                pause(!paused, true);
                 break;
         }
     }
