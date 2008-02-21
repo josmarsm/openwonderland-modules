@@ -15,9 +15,21 @@
                 <void property="preferredHeight"> 
                     <int>768</int>
                 </void> 
-                <void property="page"> 
+                <void property="slideShow">
+                    <boolean>true</boolean>
+                </void>
+                <!--void property="startPage">
                     <int>1</int>
-                </void> 
+                </void-->
+                <!--void property="endPage">
+                    <int>0</int>
+                </void-->
+                <void property="showDuration">
+                    <long>5000</long>
+                </void>
+                <!--void property="showCount">
+                    <int>2</int>
+                </void-->
             </object>
         </void>
         <void property="origin"> 
