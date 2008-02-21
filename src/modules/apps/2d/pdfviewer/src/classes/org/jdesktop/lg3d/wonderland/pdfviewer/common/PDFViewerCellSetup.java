@@ -19,6 +19,7 @@
  */
 package org.jdesktop.lg3d.wonderland.pdfviewer.common;
 
+import com.sun.sgs.app.ManagedObject;
 import java.awt.Point;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4f;
@@ -29,23 +30,26 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DCellSetup;
  *
  * @author nsimpson
  */
-public class PDFViewerCellSetup extends SharedApp2DCellSetup {
+public class PDFViewerCellSetup extends SharedApp2DCellSetup implements ManagedObject {
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerCellSetup.class.getName());
+    
     private static final int DEFAULT_WIDTH = 791;   // 8.5"x11" page format
     private static final int DEFAULT_HEIGHT = 1024; //
+    public static final int LOOP_FOREVER = -1;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
     private String document;
-    private int page = 1;
-    private Point position = new Point(0, 0);
-    private boolean slideShow = false;
-    private int slideShowStartPage = 0;     // page to start slideshow at
-    private int slideShowEndPage = 0;       // page to end slideshow at
-    private int slideShowDuration = 5000;   // milliseconds
-    private int slideShowLoopDelay = 10000; // milliseconds
-    private int slideShowCount = 0;         // don't do a slide show
+    private int page = 1;                       // current page
+    private int pageCount = 0;                  // number of pages in document
+    private Point position = new Point(0, 0);   // page pan/scroll position
+    private boolean slideShow = false;          // whether in slide show mode
+    private int slideShowStartPage = 1;         // page to start slideshow at
+    private int slideShowEndPage = 0;           // page to end slideshow at
+    private long slideShowDuration = 5000;      // milliseconds
+    private long slideShowLoopDelay = 10000;    // milliseconds
+    private int slideShowCount = LOOP_FOREVER;  // continuous slide show
     private String checksum;
 
     public PDFViewerCellSetup() {
@@ -72,6 +76,22 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
         return document;
     }
 
+    /**
+     * Sets the number of pages in the document
+     * @param pageCount the number of pages
+     */
+    public void setPageCount(int pageCount) {
+        this.pageCount = pageCount;
+    }
+    
+    /**
+     * Gets the number of pages in the document
+     * @return the number of pages
+     */
+    public int getPageCount() {
+        return pageCount;
+    }
+    
     /*
      * Set the current page
      * @param page the current page in the PDF document
@@ -129,7 +149,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
     }
 
     /**
-     * Gets the first page of the slide sh ow
+     * Gets the first page of the slide show
      * @return the first page of the slideshow
      */
     public int getStartPage() {
@@ -157,7 +177,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param setShowDuration the duration (in milliseconds) to display each
      * slide
      */
-    public void setShowDuration(int slideShowDuration) {
+    public void setShowDuration(long slideShowDuration) {
         this.slideShowDuration = slideShowDuration;
     }
 
@@ -165,16 +185,16 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * Gets the duration to show each slide for
      * @return the duration (in milliseconds) to display each slide
      */
-    public int getShowDuration() {
-        return slideShowEndPage;
+    public long getShowDuration() {
+        return slideShowDuration;
     }
-    
+
     /**
      * Sets the duration to pause before restarting the slide show
      * @param slideShowLoopDelay the duration (in milliseconds) to pause
      * before restarting the slide show
      */
-    public void setLoopDelay(int slideShowLoopDelay) {
+    public void setLoopDelay(long slideShowLoopDelay) {
         this.slideShowLoopDelay = slideShowLoopDelay;
     }
 
@@ -183,10 +203,10 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the duration (in milliseconds) to pause before restarting the
      * slide show
      */
-    public int getLoopDelay() {
+    public long getLoopDelay() {
         return slideShowLoopDelay;
     }
-            
+
     /**
      * Sets the number of times to show the slide show (1 == once)
      * @param slideShowCount the number of times to show the slide show
@@ -199,22 +219,10 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * Gets the number of times to show the slide show
      * @return the number of times to show the slide show
      */
-    public int getLoopCount() {
+    public int getShowCount() {
         return slideShowCount;
     }
-    
-    public void startSlideShow() {
-        
-    }
-    
-    public void stopSlideShow() {
-        
-    }
-    
-    public boolean isSlideShowActive() {
-        return false;
-    }
-    
+
     /*
      * Set the preferred width
      * @param preferredWidth the preferred width in pixels
