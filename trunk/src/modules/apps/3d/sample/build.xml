@@ -17,8 +17,8 @@
     
     <!-- all files that should be built as part of the client jar file -->
     <patternset id="module.client.classes">
-        <include name="org/jdesktop/lg3d/wonderland/sample/client/**"/>
-        <include name="org/jdesktop/lg3d/wonderland/sample/common/**"/>
+        <include name="org/jdesktop/lg3d/wonderland/samplemodule/client/**"/>
+        <include name="org/jdesktop/lg3d/wonderland/samplemodule/common/**"/>
     </patternset>
    
     <!-- extra classes for compiling the client -->
@@ -31,8 +31,8 @@
     
     <!-- all files that should be built as part of the server jar file -->
     <patternset id="module.server.classes">
-        <include name="org/jdesktop/lg3d/wonderland/sample/server/**"/>
-        <include name="org/jdesktop/lg3d/wonderland/sample/common/**"/>
+        <include name="org/jdesktop/lg3d/wonderland/samplemodule/server/**"/>
+        <include name="org/jdesktop/lg3d/wonderland/samplemodule/common/**"/>
     </patternset>
     
     <!-- extra classes for compiling the server -->
