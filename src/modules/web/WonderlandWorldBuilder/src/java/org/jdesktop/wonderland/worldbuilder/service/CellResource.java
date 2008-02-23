@@ -1,19 +1,25 @@
-/*
- *  CellResource
+/**
+ * Project Looking Glass
  *
- * Created on February 19, 2008, 10:47 PM
+ * $RCSfile$
  *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
-
 package org.jdesktop.wonderland.worldbuilder.service;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import org.jdesktop.wonderland.worldbuilder.persistence.CellPersistence;
 import org.jdesktop.wonderland.worldbuilder.wrapper.CellWrapper;
 import java.util.logging.Logger;
@@ -24,7 +30,6 @@ import javax.ws.rs.ProduceMime;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.UriParam;
-import javax.ws.rs.core.Response;
 import org.jdesktop.wonderland.worldbuilder.Cell;
 
 /**
