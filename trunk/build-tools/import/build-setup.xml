@@ -8,12 +8,18 @@
 	<format property="build.stamp.pkg-copy" pattern="yyyy-MM-dd"/>
     </tstamp>
 
+    <!-- the library to load antcontrib tasks from.  When building from a 
+         build file where these tasks have already been loaded, this
+         property can be set to "noop.xml" to skip loading the resources -->
+    <property name="antcontrib.taskdef.resource" value="net/sf/antcontrib/antlib.xml"/>
+    
     <!-- extended ant tasks -->
-    <!--taskdef resource="net/sf/antcontrib/antlib.xml">
+    <taskdef resource="${antcontrib.taskdef.resource}">
         <classpath>
             <pathelement location="${imported.basedir}/ant-contrib.jar"/>
+            <pathelement location="${imported.basedir}"/>
         </classpath>
-    </taskdef-->
+    </taskdef>
     
     <!-- Do platform specific setup -->
     <import file="${imported.basedir}/platform-setup.xml"/>
