@@ -28,6 +28,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.GET;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.QueryParam;
 import org.jdesktop.wonderland.worldbuilder.Cell;
@@ -70,6 +71,7 @@ public class TreeCellResource extends CellResource {
     }
     
     @PUT
+    @POST
     @ConsumeMime({"application/xml", "application/json"})
     @Override
     public void put(CellWrapper data) {

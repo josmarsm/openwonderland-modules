@@ -19,7 +19,10 @@
  */
 package org.jdesktop.wonderland.worldbuilder.persistence;
 
+import java.beans.DefaultPersistenceDelegate;
+import java.beans.Encoder;
 import java.beans.ExceptionListener;
+import java.beans.Expression;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.File;
@@ -27,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -334,6 +338,15 @@ public class CellPersistence {
     {
         // write the updated data
         XMLEncoder encoder = new XMLEncoder(new FileOutputStream(file));
+        encoder.setPersistenceDelegate(URI.class, new DefaultPersistenceDelegate() {
+            @Override
+            protected Expression instantiate(
+                    final Object oldInstance, final Encoder out) {
+
+                return new Expression(oldInstance, oldInstance.getClass(), "new",
+                        new Object[]{oldInstance.toString()});
+            }
+        });
         encoder.writeObject(cell);
         encoder.close();
     }

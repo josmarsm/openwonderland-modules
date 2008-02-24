@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
@@ -70,6 +71,7 @@ public class TreeResource {
     }
     
     @PUT
+    @POST
     @ConsumeMime({"application/xml", "application/json"})
     public void put(CellWrapper data) {
         Cell root = CellPersistence.get().getRoot();

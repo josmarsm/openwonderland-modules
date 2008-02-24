@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -71,6 +72,7 @@ public class CellResource {
     }
     
     @PUT
+    @POST
     @ConsumeMime({"application/xml", "application/json"})
     public void put(CellWrapper data) {
         logger.info("Update " + cell.getCellID());
