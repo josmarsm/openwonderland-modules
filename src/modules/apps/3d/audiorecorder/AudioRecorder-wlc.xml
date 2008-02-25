@@ -5,7 +5,11 @@
             <string>org.jdesktop.lg3d.wonderland.audiorecorder.server.cell.AudioRecorderGLO</string> 
         </void> 
         <void property="cellSetup"> 
-            <object class="org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellSetup"/> 
+            <object class="org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellSetup"> 
+	        <void property="userName">
+		<string>Recorder 1</string>
+		</void>
+	    </object>
         </void>
         <void property="origin"> 
             <void index="0"> 
