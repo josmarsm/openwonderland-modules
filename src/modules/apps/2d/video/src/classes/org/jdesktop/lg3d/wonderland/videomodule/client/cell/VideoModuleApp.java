@@ -57,7 +57,7 @@ import org.jdesktop.lg3d.wonderland.videomodule.common.VideoModuleCellMessage.Pl
 
 /**
  *
- * An application for testing use of Swing components in Wonderland
+ * Video player application
  *
  * @author nsimpson
  */
