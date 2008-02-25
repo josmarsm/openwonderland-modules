@@ -42,7 +42,7 @@ public class SlideShowTask implements Serializable, Task, ManagedObject {
     private static final Logger logger =
             Logger.getLogger(SlideShowTask.class.getName());
     private ManagedReference pdfRef = null;
-    private ManagedReference pdfSetupRef = null;
+    private ManagedReference pdfStateRef = null;
     private int currentPage = 0;
     private int showIteration = 0;
 
@@ -52,11 +52,11 @@ public class SlideShowTask implements Serializable, Task, ManagedObject {
         DataManager dataMgr = AppContext.getDataManager();
         pdfRef = dataMgr.createReference(glo);
 
-        PDFViewerCellSetup pdfSetup = glo.getSetupData();
-        pdfSetupRef = dataMgr.createReference(pdfSetup);
-
+        PDFViewerStateMO pdfStateMO = glo.getStateMO();
+        pdfStateRef = dataMgr.createReference(pdfStateMO);
+        
         // start at the first page of the slide show
-        currentPage = pdfSetup.getStartPage();
+        currentPage = pdfStateMO.getStartPage();
     }
 
     /**
@@ -81,31 +81,31 @@ public class SlideShowTask implements Serializable, Task, ManagedObject {
      */
     public void run() {
         PDFViewerCellGLO glo = pdfRef.get(PDFViewerCellGLO.class);
-        PDFViewerCellSetup pdfSetup = pdfSetupRef.get(PDFViewerCellSetup.class);
+        PDFViewerStateMO pdfState = pdfStateRef.get(PDFViewerStateMO.class);
 
-        if ((pdfSetup.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER) ||
-                (showIteration < pdfSetup.getShowCount())) {
+        if ((pdfState.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER) ||
+                (showIteration < pdfState.getShowCount())) {
             logger.fine("* slide show: showing page " + currentPage +
-                    " in range " + pdfSetup.getStartPage() + "-" + pdfSetup.getEndPage());
+                    " in range " + pdfState.getStartPage() + "-" + pdfState.getEndPage());
 
             // send a message to all clients to show the next page in the 
             // slide show
             PDFCellMessage msg = new PDFCellMessage(PDFCellMessage.Action.SHOW_PAGE,
-                    pdfSetup.getDocument(), currentPage, new Point());
+                    pdfState.getDocument(), currentPage, new Point());
 
             Set<ClientSession> sessions = new HashSet<ClientSession>(glo.getCellChannel2().getSessions());
             glo.getCellChannel2().send(sessions, msg.getBytes());
 
-            if (currentPage >= pdfSetup.getEndPage()) {
+            if (currentPage >= pdfState.getEndPage()) {
                 // end of a slide show iteration, there may be more
                 showIteration++;
                 logger.fine("* slide show: end of iteration " + showIteration + " of " +
-                        ((pdfSetup.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER)
+                        ((pdfState.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER)
                         ? "an infinite "
-                        : ("a " + pdfSetup.getShowCount() + " loop ")) + "slide show");
+                        : ("a " + pdfState.getShowCount() + " loop ")) + "slide show");
             }
             // determine next page to show
-            currentPage = (currentPage >= pdfSetup.getEndPage()) ? pdfSetup.getStartPage() : currentPage + 1;
+            currentPage = (currentPage >= pdfState.getEndPage()) ? pdfState.getStartPage() : currentPage + 1;
         }
     }
 }
