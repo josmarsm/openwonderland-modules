@@ -17,54 +17,38 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.lg3d.wonderland.pdfviewer.common;
+package org.jdesktop.lg3d.wonderland.pdfviewer.server.cell;
 
+import com.sun.sgs.app.ManagedObject;
 import java.awt.Point;
+import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.vecmath.Matrix4f;
-import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DCellSetup;
+import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFViewerCellSetup;
 
 /**
- * Container for PDF Viewer cell data
  *
  * @author nsimpson
  */
-public class PDFViewerCellSetup extends SharedApp2DCellSetup {
+public class PDFViewerStateMO implements Serializable, ManagedObject {
 
     private static final Logger logger =
-            Logger.getLogger(PDFViewerCellSetup.class.getName());
+            Logger.getLogger(PDFViewerStateMO.class.getName());
+
+    private PDFViewerCellSetup setup;
     
-    private static final int DEFAULT_WIDTH = 791;   // 8.5"x11" page format
-    private static final int DEFAULT_HEIGHT = 1024; //
-    public static final int LOOP_FOREVER = -1;
-    private int preferredWidth = DEFAULT_WIDTH;
-    private int preferredHeight = DEFAULT_HEIGHT;
-    private String document;
-    private int page = 1;                       // current page
-    private int pageCount = 0;                  // number of pages in document
-    private Point position = new Point(0, 0);   // page pan/scroll position
-    private boolean slideShow = false;          // whether in slide show mode
-    private int slideShowStartPage = 1;         // page to start slideshow at
-    private int slideShowEndPage = 0;           // page to end slideshow at
-    private long slideShowDuration = 5000;      // milliseconds
-    private long slideShowLoopDelay = 10000;    // milliseconds
-    private int slideShowCount = LOOP_FOREVER;  // continuous slide show
-    private String checksum;
-
-    public PDFViewerCellSetup() {
-        this(null, null);
+    public PDFViewerStateMO(PDFViewerCellSetup setup) {
+        this.setup = setup;
     }
 
-    public PDFViewerCellSetup(String appName, Matrix4f viewRectMat) {
-        super(appName, viewRectMat);
+    public PDFViewerCellSetup getCellSetup() {
+        return setup;
     }
-
     /*
      * Set the URL of the PDF document associated with this cell
      * @param doc the URL of the PDF document
      */
     public void setDocument(String document) {
-        this.document = document;
+        setup.setDocument(document);
     }
 
     /*
@@ -72,7 +56,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the URL of the PDF document
      */
     public String getDocument() {
-        return document;
+        return setup.getDocument();
     }
 
     /**
@@ -80,7 +64,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param pageCount the number of pages
      */
     public void setPageCount(int pageCount) {
-        this.pageCount = pageCount;
+        setup.setPageCount(pageCount);
     }
     
     /**
@@ -88,7 +72,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the number of pages
      */
     public int getPageCount() {
-        return pageCount;
+        return setup.getPageCount();
     }
     
     /*
@@ -96,7 +80,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param page the current page in the PDF document
      */
     public void setPage(int page) {
-        this.page = page;
+        setup.setPage(page);
     }
 
     /*
@@ -104,7 +88,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the current page
      */
     public int getPage() {
-        return page;
+        return setup.getPage();
     }
 
     /*
@@ -112,7 +96,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param position the scroll position in x and y coordinates
      */
     public void setPosition(Point position) {
-        this.position = position;
+        setup.setPosition(position);
     }
 
     /*
@@ -120,7 +104,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the scroll position of the page
      */
     public Point getPosition() {
-        return position;
+        return setup.getPosition();
     }
 
     /**
@@ -128,7 +112,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param slideShow if true, display document as a slide show
      */
     public void setSlideShow(boolean slideShow) {
-        this.slideShow = slideShow;
+        setup.setSlideShow(slideShow);
     }
 
     /**
@@ -136,7 +120,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return true if in slideshow mode, false otherwise
      */
     public boolean getSlideShow() {
-        return slideShow;
+        return setup.getSlideShow();
     }
 
     /**
@@ -144,7 +128,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param slideShowStartPage the first page in the slide show
      */
     public void setStartPage(int slideShowStartPage) {
-        this.slideShowStartPage = slideShowStartPage;
+        setup.setStartPage(slideShowStartPage);
     }
 
     /**
@@ -152,7 +136,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the first page of the slideshow
      */
     public int getStartPage() {
-        return slideShowStartPage;
+        return setup.getStartPage();
     }
 
     /**
@@ -160,7 +144,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param slideShowEndPage the last page in the slide show
      */
     public void setEndPage(int slideShowEndPage) {
-        this.slideShowEndPage = slideShowEndPage;
+        setup.setEndPage(slideShowEndPage);
     }
 
     /**
@@ -168,7 +152,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the last page of the slide show (-1 == end of document)
      */
     public int getEndPage() {
-        return slideShowEndPage;
+        return setup.getEndPage();
     }
 
     /**
@@ -177,7 +161,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * slide
      */
     public void setShowDuration(long slideShowDuration) {
-        this.slideShowDuration = slideShowDuration;
+        setup.setShowDuration(slideShowDuration);
     }
 
     /**
@@ -185,7 +169,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the duration (in milliseconds) to display each slide
      */
     public long getShowDuration() {
-        return slideShowDuration;
+        return setup.getShowDuration();
     }
 
     /**
@@ -194,7 +178,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * before restarting the slide show
      */
     public void setLoopDelay(long slideShowLoopDelay) {
-        this.slideShowLoopDelay = slideShowLoopDelay;
+        setup.setLoopDelay(slideShowLoopDelay);
     }
 
     /**
@@ -203,7 +187,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * slide show
      */
     public long getLoopDelay() {
-        return slideShowLoopDelay;
+        return setup.getLoopDelay();
     }
 
     /**
@@ -211,7 +195,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param slideShowCount the number of times to show the slide show
      */
     public void setShowCount(int slideShowCount) {
-        this.slideShowCount = slideShowCount;
+        setup.setShowCount(slideShowCount);
     }
 
     /**
@@ -219,7 +203,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the number of times to show the slide show
      */
     public int getShowCount() {
-        return slideShowCount;
+        return setup.getShowCount();
     }
 
     /*
@@ -227,7 +211,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param preferredWidth the preferred width in pixels
      */
     public void setPreferredWidth(int preferredWidth) {
-        this.preferredWidth = preferredWidth;
+        setup.setPreferredWidth(preferredWidth);
     }
 
     /*
@@ -235,7 +219,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the preferred width, in pixels
      */
     public int getPreferredWidth() {
-        return preferredWidth;
+        return setup.getPreferredWidth();
     }
 
     /*
@@ -243,7 +227,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @param preferredHeight the preferred height, in pixels
      */
     public void setPreferredHeight(int preferredHeight) {
-        this.preferredHeight = preferredHeight;
+        setup.setPreferredHeight(preferredHeight);
     }
 
     /*
@@ -251,22 +235,6 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
      * @return the preferred height, in pixels
      */
     public int getPreferredHeight() {
-        return preferredHeight;
-    }
-
-    /*
-     * Get the checksum for the PDF document
-     * @return the checksm of the PDF document
-     */
-    public String getChecksum() {
-        return checksum;
-    }
-
-    /*
-     * Set the checksum of the PDF document
-     * @param checksum the checksum of the PDF document
-     */
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
+        return setup.getPreferredHeight();
     }
 }

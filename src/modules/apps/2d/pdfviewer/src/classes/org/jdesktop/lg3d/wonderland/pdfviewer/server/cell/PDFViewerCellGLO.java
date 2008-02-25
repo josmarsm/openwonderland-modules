@@ -59,7 +59,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
     // within the page. It's updated every time a client makes a change
     // to the document so that when new clients join, they receive the
     // current state.
-    private ManagedReference setupRef = null;
+    private ManagedReference stateRef = null;
     private PeriodicTaskHandle slideShowTask;
     private boolean haveClients = false;
 
@@ -96,9 +96,13 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
      */
     @Override
     public PDFViewerCellSetup getSetupData() {
-        return setupRef.get(PDFViewerCellSetup.class);
+        return stateRef.get(PDFViewerStateMO.class).getCellSetup();
     }
 
+    public PDFViewerStateMO getStateMO() {
+        return stateRef.get(PDFViewerStateMO.class);
+    }
+    
     /**
      * Set up the properties of this cell GLO from a JavaBean.  After calling
      * this method, the state of the cell GLO should contain all the information
@@ -111,7 +115,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
         PDFViewerCellSetup setup = setupData.getCellSetup();
 
         DataManager dataMgr = AppContext.getDataManager();
-        setupRef = dataMgr.createReference(setup);
+        stateRef = dataMgr.createReference(new PDFViewerStateMO(setup));
 
         AxisAngle4d aa = new AxisAngle4d(setupData.getRotation());
         Matrix3d rot = new Matrix3d();
@@ -165,7 +169,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
         logger.fine("receivedMessage: " + pdfmsg);
 
         // update setup data with the latest shared state
-        PDFViewerCellSetup setup = setupRef.get(PDFViewerCellSetup.class);
+        PDFViewerCellSetup setup = stateRef.get(PDFViewerStateMO.class).getCellSetup();
 
         setup.setDocument(pdfmsg.getDocument());
         setup.setPage(pdfmsg.getPage());
@@ -210,7 +214,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
         if (slideShowTask == null) {
             logger.fine("starting slide show");
 
-            PDFViewerCellSetup setup = setupRef.get(PDFViewerCellSetup.class);
+            PDFViewerCellSetup setup = stateRef.get(PDFViewerStateMO.class).getCellSetup();
 
             // create a task to run the slide show
             SlideShowTask slideTask = new SlideShowTask(this);
