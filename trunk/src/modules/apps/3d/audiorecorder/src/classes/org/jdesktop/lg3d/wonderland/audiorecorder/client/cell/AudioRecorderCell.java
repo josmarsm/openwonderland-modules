@@ -52,6 +52,8 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 
 import org.jdesktop.lg3d.wonderland.scenemanager.CellMenuManager;
 
+import org.jdesktop.j3d.util.SceneGraphUtil;
+
 /**
  * 
  * @author Marc Davies
@@ -183,7 +185,10 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     public void receivedMessage(ClientChannel client, SessionId session, byte[] input) {
         AudioRecorderMessage message = Message.extractMessage(input, AudioRecorderMessage.class);
 
-	if (message.getAction().equals(RecorderAction.PLAYBACK_DONE)) {
+	if (message.getAction().equals(RecorderAction.SET_VOLUME)) {
+	    AudioRecorderCellMenu menu = AudioRecorderCellMenu.getInstance();
+	    menu.volumeChanged(getCellID().toString(), message.getVolume());
+	} else if (message.getAction().equals(RecorderAction.PLAYBACK_DONE)) {
 	    setPlaying(false);
 	} else {
             setRecording(message.isRecording());
@@ -246,6 +251,8 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         
         buttonTransformGroup.addChild(aButton);
         buttonBG.addChild(buttonTransformGroup);
+	// Set capability bits for collision system
+	SceneGraphUtil.setCapabilitiesGraph(buttonBG, false);
         cellLocal.addChild(buttonBG);
         return aButton;
     }
@@ -311,7 +318,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         }
     }
     
-    public void volumeChanged(String name, double volume) {
+    public void setVolume(String name, double volume) {
 	AudioRecorderCellMessage msg = 
 	    new AudioRecorderCellMessage(cell.getCellID(),
 		isRecording, isPlaying, name, volume);

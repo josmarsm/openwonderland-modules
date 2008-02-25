@@ -52,8 +52,12 @@ public class AudioRecorderCellMenu extends CellMenu implements CellMenuListener 
 	super.setInactive();
     }
 
+    public void setVolume(String callId, double volume) {
+	currentCell.setVolume(callId, volume);
+    }
+
     public void volumeChanged(String callId, double volume) {
-	currentCell.volumeChanged(callId, volume);
+	super.volumeChanged(callId, volume);
     }
 
 }

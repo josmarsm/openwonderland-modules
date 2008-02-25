@@ -21,6 +21,7 @@ package org.jdesktop.lg3d.wonderland.audiorecorder.common;
 
 import java.nio.ByteBuffer;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataBoolean;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataDouble;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataInt;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataString;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
@@ -42,7 +43,8 @@ public class AudioRecorderMessage extends Message {
     private boolean isPlaying;
     private String userName;
     private boolean playbackDone;
-    
+    private double volume;
+
     public AudioRecorderMessage() {
         this (false, false, null);
     }
@@ -53,10 +55,17 @@ public class AudioRecorderMessage extends Message {
     }
 
     public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName) {
+	this(isRecording, isPlaying, userName, 1);
+    }
+
+    public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName,
+	    double volume) {
+
 	action = RecorderAction.SETUP_RECORDER;
         this.isRecording = isRecording;
         this.isPlaying = isPlaying;
         this.userName = userName;
+	this.volume = volume;
     }
 
     public RecorderAction getAction() {
@@ -79,6 +88,14 @@ public class AudioRecorderMessage extends Message {
 	return playbackDone;
     }
 
+    public void setVolume(double volume) {
+	this.volume = volume;
+    }
+
+    public double getVolume() {
+	return volume;
+    }
+
     protected void extractMessageImpl(ByteBuffer data) {
 	action = RecorderAction.values()[DataInt.value(data)];
 
@@ -86,6 +103,10 @@ public class AudioRecorderMessage extends Message {
             isRecording = DataBoolean.value(data);
             isPlaying = DataBoolean.value(data);
             userName = DataString.value(data);
+
+	    if (action.equals(RecorderAction.SET_VOLUME)) {
+		volume = DataDouble.value(data);
+	    }
 	} else {
 	    playbackDone = DataBoolean.value(data);
 	}
@@ -100,6 +121,9 @@ public class AudioRecorderMessage extends Message {
             dataElements.add(new DataBoolean(isRecording));
             dataElements.add(new DataBoolean(isPlaying));
             dataElements.add(new DataString(userName));
+	    if (action.equals(RecorderAction.SET_VOLUME)) {
+		dataElements.add(new DataDouble(volume));
+	    }
 	} else {
             dataElements.add(new DataBoolean(playbackDone));
 	}

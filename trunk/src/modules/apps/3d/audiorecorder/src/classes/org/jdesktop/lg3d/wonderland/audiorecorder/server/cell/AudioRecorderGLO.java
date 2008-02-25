@@ -108,9 +108,16 @@ public class AudioRecorderGLO extends StationaryCellGLO
 		    + " to " + ntcm.getVolume());
 
 		getVoiceHandler().setMasterVolume(getCellID().toString(), ntcm.getVolume());
+
 		/*
-		 * XXX Need to send message to all clients so volume is updated.
+		 * The volume is global so send a message to all the clients.
 		 */
+                AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(), 
+		    getSetupData().isPlaying(), getSetupData().getUserName(), ntcm.getVolume());
+
+                Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+                sessions.remove(client);
+                getCellChannel().send(sessions, msg.getBytes());
 	    } else {
 	        /*
 	         * Set the private volume for this client for playback
