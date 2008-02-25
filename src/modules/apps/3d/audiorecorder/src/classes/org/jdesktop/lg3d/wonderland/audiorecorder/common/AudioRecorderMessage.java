@@ -77,7 +77,7 @@ public class AudioRecorderMessage extends Message {
     }
     
     public boolean isPlaying() {
-        return isPlaying();
+        return isPlaying;
     }
 
     public String getUserName() {
