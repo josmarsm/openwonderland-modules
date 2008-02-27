@@ -198,8 +198,8 @@
 						} else {
 							//create non-group object
 							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"top:" + top + "px;left:" + left + "px;z-index:" +catalogData.catalog[catalogIndex].zIndex + "\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
-							insertHTML += "<img src=\"" + catalogData.catalog[catalogIndex].tileImageURL + "\" width=\"" + width + "\" height=\"" + height + "\" alt=\"" + catalogData.catalog[catalogIndex].modelURL + "\" title=\"" + catalogData.catalog[catalogIndex].name + ": " + catalogData.catalog[catalogIndex].description + "\" />";
-							insertHTML += "<var>" + catalogIndex + "</var>";
+							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + (catalogData.catalog[catalogIndex].height*unitFactor) + " " + (catalogData.catalog[catalogIndex].width*unitFactor) + "</var>";
+							insertHTML += "<img src=\"" + catalogData.catalog[catalogIndex].tileImageURL + "\" width=\"" + width + "\" height=\"" + height + "\" alt=\"" + catalogData.catalog[catalogIndex].name + "\" title=\"" + catalogData.catalog[catalogIndex].name + ": " + catalogData.catalog[catalogIndex].description + "\" />";
 							insertHTML += "</div>";
 						}
 						$('world').insert(insertHTML);
@@ -289,7 +289,7 @@
 			}
 			
 			function showRotationControls(thisObjectID) {
-				var thisObjectData = $(thisObjectID).select('var');
+				/*var thisObjectData = $(thisObjectID).select('var');
 				var catalogIndex = thisObjectData[0].innerHTML;
 				if (catalogData.catalog[catalogIndex].rotatable){
 					var thisLocation = $(thisObjectID).viewportOffset();
@@ -325,7 +325,7 @@
 					});
 					$('rotation_object').innerHTML = thisObjectID;
 				}
-			}
+			*/}
 			
 			function setRotation(thisObjectID,direction) {
 				var thisImage = $(thisObjectID).firstDescendant(); 
@@ -409,21 +409,34 @@
 			}
 			
 			function createJSON() {
-				var outputJSON = new String();
+				var outputJSON = "{\"cell\":{\"@uri\":\"http://localhost:8080/WonderlandWorldBuilder/resources/tree/root\",\"cellID\":{\"$\":\"root\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
 				var objectArray = $('world').childElements();
+				if (objectArray.length > 1) {
+					outputJSON += "["
+				}
 				var objectArrayIndex = 0;
-				outputJSON += "{\"world\":[";
+				var cellID = 1;
 				while (objectArray[objectArrayIndex]) {
-					//if (objectArray[objectArrayIndex].firstDescendant().readAttribute('alt') != null) {
-					var thisModelURL = objectArray[objectArrayIndex].firstDescendant().readAttribute('alt');
+					var thisData = $w(objectArray[objectArrayIndex].firstDescendant().innerHTML);
 					var thisLocation = objectArray[objectArrayIndex].positionedOffset();
-					var translateX = ((thisLocation[0]/(gridSize-1)))*unitFactor;
-					var translateZ = ((thisLocation[1]/(gridSize-1)))*unitFactor;
-					outputJSON += "{";
-					outputJSON += "\"modelURL\":\"" + thisModelURL + "\",";
-					outputJSON += "\"translateX\":" + translateX + ",";
-					outputJSON += "\"translateZ\":" + translateZ + ",";
-					var rotation = objectArray[objectArrayIndex].firstDescendant().readAttribute('src');
+					var thisX = ((thisLocation[0]/(gridSize-1)))*unitFactor;
+					var thisY = ((thisLocation[1]/(gridSize-1)))*unitFactor;
+					outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
+					outputJSON += "\"@uri\":\"http:\/\/localhost:8080\/WonderlandWorldBuilder\/resources\/tree\/" + cellID + "\",";
+					outputJSON += "\"catalogID\":{\"$\":\"" + thisData[0] + "\"},";
+					outputJSON += "\"catalogURI\":{\"$\":\"" + thisData[1] + "\"},";
+					outputJSON += "\"cellID\":{\"$\":\"" + cellID + "\"},";
+					outputJSON += "\"cellType\":{\"$\":\"" + thisData[2] + "\"},";
+					outputJSON += "\"children\":{},\"location\":{";
+					outputJSON += "\"x\":{\"$\":\"" + thisX + "\"},";
+					outputJSON += "\"y\":{\"$\":\"" + thisY + "\"}";
+					outputJSON += "},\"properties\":{\"property\":{\"key\":{\"$\":\"model\"},";
+					outputJSON += "\"value\":{\"$\":\"" + thisData[3] + "\"}";
+					outputJSON += "}},\"size\":{";
+					outputJSON += "\"height\":{\"$\":\"" + thisData[4] + "\"},";
+					outputJSON += "\"width\":{\"$\":\"" + thisData[5] + "\"}";
+					outputJSON += "},\"version\":{\"$\":\"0\"}}},\"location\":{\"x\":{\"$\":\"0\"},\"y\":{\"$\":\"0\"}},\"properties\":{},\"size\":{\"height\":{\"$\":\"1024\"},\"width\":{\"$\":\"1024\"}},\"version\":{\"$\":\"0\"}}}";
+					/*var rotation = objectArray[objectArrayIndex].firstDescendant().readAttribute('src');
 					if (rotation = rotation.charAt(rotation.search(/_[nsew]./) + 1)) {
 						switch (rotation) {
 							case "n":
@@ -445,19 +458,27 @@
 						outputJSON += "\"rotation\":" + rotation + ",";
 						outputJSON += "\"radians\":" + radians;
 					}
-					outputJSON += "},";
+					outputJSON += "},";*/
 					objectArrayIndex++;
+					cellID++;
 				}
-				outputJSON += "]}";
+				if (objectArray.length > 1) {
+					outputJSON += "]"
+				}
+				outputJSON += "}";
+				outputJSON = outputJSON.replace(/\//g,"\\/");
 				return outputJSON;
 			}
 			
 			function putWorld() {
-				new Ajax.Request("world_put.php", {
+				new Ajax.Request("http://localhost:8080/WonderlandWorldBuilder/resources/tree", {
 					method:'post',
-					parameters: {worldJSON:createJSON()},
+					postBody: createJSON(),
 					onSuccess: function() {
-						alert("World saved.");
+						alert("World saved");
+					},
+					onFailure: function() {
+						alert("Failed to save");
 					}
 				});
 			}
