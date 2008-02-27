@@ -71,7 +71,6 @@ public class TreeCellResource extends CellResource {
     }
     
     @PUT
-    @POST
     @ConsumeMime({"application/xml", "application/json"})
     @Override
     public void put(CellWrapper data) {

@@ -72,7 +72,6 @@ public class CellResource {
     }
     
     @PUT
-    @POST
     @ConsumeMime({"application/xml", "application/json"})
     public void put(CellWrapper data) {
         logger.info("Update " + cell.getCellID());
@@ -91,6 +90,12 @@ public class CellResource {
         }
                
         CellPersistence.get().update(data.getCell());
+    }
+    
+    @POST
+    @ConsumeMime({"application/xml", "application/json"})
+    public void post(CellWrapper data) {
+        put(data);
     }
     
     /**
