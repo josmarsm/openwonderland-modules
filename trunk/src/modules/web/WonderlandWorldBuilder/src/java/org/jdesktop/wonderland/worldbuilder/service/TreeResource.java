@@ -71,11 +71,16 @@ public class TreeResource {
     }
     
     @PUT
-    @POST
     @ConsumeMime({"application/xml", "application/json"})
     public void put(CellWrapper data) {
         Cell root = CellPersistence.get().getRoot();
         new TreeCellResource(root.getCellID(), context).put(data);
+    }
+    
+    @POST
+    @ConsumeMime({"application/xml", "application/json"})
+    public void post(CellWrapper data) {
+        put(data);
     }
     
     /**

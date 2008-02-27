@@ -474,6 +474,7 @@
 				new Ajax.Request("http://localhost:8080/WonderlandWorldBuilder/resources/tree", {
 					method:'post',
 					postBody: createJSON(),
+                                        contentType:'application/json',
 					onSuccess: function() {
 						alert("World saved");
 					},
