@@ -1,6 +1,7 @@
 {
 	catalog: [
 		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Floor Tile",
 			group: false,
 			library: ["Room Components","Floors"],
@@ -16,6 +17,7 @@
 			cellType: "org.jdesktop.lg3d.wonderland.extracells.common.MultiModelCellModel"
 		},
 		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Brick Wall",
 			group: false,
 			library: ["Room Components","Walls"],
@@ -30,6 +32,7 @@
 			cellType: "org.jdesktop.lg3d.wonderland.extracells.common.MultiModelCellModel"
 		},
 		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Chair",
 			group: false,
 			library: ["Room Accessories","Office Furniture","Chairs"],
@@ -44,6 +47,7 @@
 			cellType: "org.jdesktop.lg3d.wonderland.extracells.common.MultiModelCellModel"
 		}/*,
 		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Office",
 			group: true,
 			members: ["0 0 0","0 0 2","0 2 0","0 2 2"],
