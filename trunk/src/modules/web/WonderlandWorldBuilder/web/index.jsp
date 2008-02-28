@@ -111,7 +111,7 @@
 						var top = (gridSize - 1) * Math.floor((thisLocation.top - worldLocation.top + ($(thisObjectID).getHeight()*0.5))/(gridSize - 1));
 						var left = (gridSize - 1) * Math.floor((thisLocation.left - worldLocation.left + ($(thisObjectID).getWidth()*0.5))/(gridSize - 1));
 						if (thisLocation.left >= workspaceLeft && thisLocation.left <= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) && thisLocation.top >= workspaceTop && thisLocation.top <= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
-							createPlaceable(catalogIndex,top,left);
+							createPlaceable(catalogData.catalog[catalogIndex].catalogURI,catalogIndex,top,left);
 						}
 						$('library').setStyle({zIndex:'1'});
 						$(thisObjectID).remove();
@@ -139,7 +139,7 @@
 							var newHTML = "<img style=\"border: 3px solid yellow\" src='" + catalogData.catalog[catalogIndex].tileImageURL + "' width=" + width + " height=" + height + "/>"; 
 							$(thisObjectID).update(newHTML);
 						}
-						createLibraryObject(catalogIndex,(thisLocation.top + 1));
+						createLibraryObject(currentCatalogData,catalogIndex,(thisLocation.top + 1));
 						$('library').setStyle({zIndex:'3'});
 					},
 					onDrag:function() {
@@ -435,7 +435,7 @@
 					outputJSON += "}},\"size\":{";
 					outputJSON += "\"height\":{\"$\":\"" + thisData[4] + "\"},";
 					outputJSON += "\"width\":{\"$\":\"" + thisData[5] + "\"}";
-					outputJSON += "},\"version\":{\"$\":\"0\"}}},\"location\":{\"x\":{\"$\":\"0\"},\"y\":{\"$\":\"0\"}},\"properties\":{},\"size\":{\"height\":{\"$\":\"1024\"},\"width\":{\"$\":\"1024\"}},\"version\":{\"$\":\"0\"}}}";
+					outputJSON += "},\"version\":{\"$\":\"0\"}}";
 					/*var rotation = objectArray[objectArrayIndex].firstDescendant().readAttribute('src');
 					if (rotation = rotation.charAt(rotation.search(/_[nsew]./) + 1)) {
 						switch (rotation) {
@@ -459,13 +459,16 @@
 						outputJSON += "\"radians\":" + radians;
 					}
 					outputJSON += "},";*/
+					if (objectArray.length > 1) {
+						outputJSON += ","
+					}
 					objectArrayIndex++;
 					cellID++;
 				}
 				if (objectArray.length > 1) {
 					outputJSON += "]"
 				}
-				outputJSON += "}";
+				outputJSON += "},\"location\":{\"x\":{\"$\":\"0\"},\"y\":{\"$\":\"0\"}},\"properties\":{},\"size\":{\"height\":{\"$\":\"1024\"},\"width\":{\"$\":\"1024\"}},\"version\":{\"$\":\"0\"}}}";
 				outputJSON = outputJSON.replace(/\//g,"\\/");
 				return outputJSON;
 			}
