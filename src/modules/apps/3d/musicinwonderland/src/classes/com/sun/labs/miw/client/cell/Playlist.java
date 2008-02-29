@@ -36,16 +36,16 @@ public class Playlist {
         switch (action) {
             case NEW:
                 this.tracks = tracks;
-                UI.albumCloud.albumQueue.add(tracks.subList(0,Math.min(7,tracks.size())));
                 break;
             case APPEND_BACK:
                 this.tracks.addAll(tracks);
                 break;
             case APPEND_FRONT:
                 this.tracks.addAll(0,tracks);
-                UI.albumCloud.albumQueue.addToFront(tracks);
                 break;
         }
+        
+        UI.albumCloud.albumQueue.set(this.tracks);
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -56,8 +56,13 @@ public class Playlist {
     }
     
     public void setNowPlaying(MIWTrack track) {
-        // TODO -- update track that is visible when the server
-        // changes tracks
+        // find the track in the playist
+        int idx = tracks.indexOf(track);
+        if (idx != -1) {
+            tracks.subList(0, idx).clear();
+        }
+        
+        UI.albumCloud.albumQueue.set(tracks);
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -77,15 +82,17 @@ public class Playlist {
     }
     public int addTrack(MIWTrack track) {
         tracks.add(track);
-
+        UI.albumCloud.albumQueue.set(tracks);
+        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 UI.playlistViewer.updateView();
             }
         });
 
-        return tracks.size()-1;
+        return tracks.size() - 1;
     }
+    
     List<MIWTrack> tracks;
     PlaylistViewer playlistView;
 }

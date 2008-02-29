@@ -77,7 +77,7 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
     private URL albumListURL;
     
     /** the time in milleseconds to auto advance */
-    private long autoAdvanceTime = 5000;
+    private long autoAdvanceTime = 10000;
     
     /** whether to actually play audio */
     private boolean playAudio;

@@ -61,15 +61,6 @@ public class AlbumCloud {
         return addAlbum(album.getName(), getBaseURL(album), getImage(album));
     }
     
-    public void setNowPlaying(MIWTrack track) {
-        UI.playlist.setNowPlaying(track);
-    }
-    public void selectAlbum(MIWAlbum miwAlbum) {
-        
-    }
-    public void nextAlbum() {
-        
-    }
     public void update() {
         for (Album album : UI.albums.values()) album.update();
         albumQueue.update();
