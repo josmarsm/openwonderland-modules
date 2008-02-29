@@ -102,7 +102,7 @@ public class AlbumCloudCell extends Cell implements ExtendedClientChannelListene
         
         // create the album cloud view
         UI.albumCloud = new AlbumCloud(baseURL);
-        UI.albumCloud.addAlbums(collection, 256);
+        UI.albumCloud.addAlbums(collection, 372);
         J3dLgBranchGroup node = new J3dLgBranchGroup();
         node.addChild(UI.albumCloud.node);
         addMouseInput(node);
@@ -183,10 +183,10 @@ public class AlbumCloudCell extends Cell implements ExtendedClientChannelListene
      * Called when the track we are playing changes
      * @param trackId the id of the track to switch to
      */
-     protected void handleNowPlaying(MIWTrack track) {
-         System.out.println("NOW PLAYING: "+track);
-         UI.albumCloud.setNowPlaying(track);
-     }
+    protected void handleNowPlaying(MIWTrack track) {
+        logger.fine("NOW PLAYING: " + track.getAlbum() + " : " + track.getName());
+        UI.playlist.setNowPlaying(track);
+    }
 
      /**
       * Called when the playlist changes.
@@ -196,6 +196,15 @@ public class AlbumCloudCell extends Cell implements ExtendedClientChannelListene
      protected void handlePlayList(PlaylistAction action, 
                                    List<MIWTrack> tracks)
      {
+         if (logger.isLoggable(Level.FINE)) {
+             logger.fine(action + " Playlist: ");
+         
+            for (MIWTrack track : tracks) {
+                logger.fine("  " + track.getAlbum() + 
+                            " : " + track.getName());
+            }
+         }
+         
          UI.playlist.setPlaylist(action, tracks);
      }
 

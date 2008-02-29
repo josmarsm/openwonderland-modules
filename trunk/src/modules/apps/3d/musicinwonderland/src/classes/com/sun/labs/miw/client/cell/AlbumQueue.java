@@ -53,25 +53,35 @@ public class AlbumQueue {
         setTransforms();
     }
     
-    void add(MIWTrack track) {
-        Album album = getAlbum(track.getAlbum());
-        Album copy = album.clone();
-        copy.setActive(true);
-        albumQueue.add(copy);
-        album.setActive(true);
-        setTransforms();
-    }
-    
-    void set(MIWTrack track, int index) {
-        Album album = getAlbum(track.getAlbum());
-        Album copy = album.clone();
-        copy.setActive(true);
-        if (albumQueue.size() > index)  {
-            albumQueue.get(index).setActive(false);
-            albumQueue.set(index,copy);
+    void set(List<MIWTrack> list) {
+        List<Album> newQueue = new ArrayList<Album>(list.size());
+                    
+        synchronized (albumQueue) {
+            // go through the first 7 albums in the list, and copy any 
+            // existing albums from the old queue to the new queue
+            for (MIWTrack track : list.subList(0, Math.min(7, list.size()))) {
+                // get the album from the collection
+                Album album = getAlbum(track.getAlbum());
+                
+                // see if a copy of this album exists in the old queue
+                int idx = albumQueue.indexOf(album);
+                if (idx != -1) {
+                    // remove the *copy* of the album from the old queue
+                    // and add it to the new queue
+                    album = albumQueue.remove(idx);
+                    newQueue.add(album);
+                } else {
+                    // add a new copy of the album from the collection
+                    newQueue.add(album.clone());
+                }
+                
+            }
+            
+            // swap the old and new lists
+            albumQueue.clear();
+            albumQueue.addAll(newQueue);
         }
-        else albumQueue.add(copy);
-        album.setActive(true);
+        
         setTransforms();
     }
     
@@ -85,27 +95,6 @@ public class AlbumQueue {
         }
         
         return album;
-    }
-    
-    void add(List<MIWTrack> tracks) {
-        if (!albumQueue.isEmpty()) {
-            for (Album album : albumQueue) album.setActive(false);
-        }
-        albumQueue.clear();
-        for (MIWTrack track : tracks) add(track);
-    }
-    
-    void addToFront(List<MIWTrack> tracks) {
-        int index = 0;
-        for (MIWTrack track : tracks) {
-            set(track, index);
-            index++;
-        }
-    }
-    
-    void next() {
-        albumQueue.remove(0);
-        setTransforms();
     }
     
     void update() {

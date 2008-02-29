@@ -90,20 +90,7 @@ public class Album implements Cloneable {
         if (active) colorAttr.setColor(1,0,0);
         else colorAttr.setColor(1,1,1);
     }
-    
-    @Override
-    public Album clone() {
-        Album copy = new Album(name,texture);
-        copy.textureBase = textureBase;
-        copy.image = image;
-        copy.setTransform(getTransform());
-        Transform3D tr = new Transform3D();
-        node.getLocalToVworld(tr);
-        tr.mul(getTransform());
-        copy.nodeMover.set(tr);
-        return copy;
-    }
-    
+   
     public URL getURL() {
         try {
             return new URL(textureBase.toExternalForm() + "/" + image);
@@ -134,5 +121,40 @@ public class Album implements Cloneable {
         active = false;
         
         SceneGraphUtil.setCapabilitiesGraph(node, false);
+    }
+    
+    @Override
+    public Album clone() {
+        Album copy = new Album(name,texture);
+        copy.textureBase = textureBase;
+        copy.image = image;
+        copy.setTransform(getTransform());
+        Transform3D tr = new Transform3D();
+        node.getLocalToVworld(tr);
+        tr.mul(getTransform());
+        copy.nodeMover.set(tr);
+        return copy;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Album other = (Album) obj;
+        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 53 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
     }
 }
