@@ -198,7 +198,7 @@
 						} else {
 							//create non-group object
 							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"top:" + top + "px;left:" + left + "px;z-index:" +catalogData.catalog[catalogIndex].zIndex + "\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
-							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + (catalogData.catalog[catalogIndex].height*unitFactor) + " " + (catalogData.catalog[catalogIndex].width*unitFactor) + "</var>";
+							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + (catalogData.catalog[catalogIndex].height*unitFactor) + " " + (catalogData.catalog[catalogIndex].width*unitFactor) + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
 							insertHTML += "<img src=\"" + catalogData.catalog[catalogIndex].tileImageURL + "\" width=\"" + width + "\" height=\"" + height + "\" alt=\"" + catalogData.catalog[catalogIndex].name + "\" title=\"" + catalogData.catalog[catalogIndex].name + ": " + catalogData.catalog[catalogIndex].description + "\" />";
 							insertHTML += "</div>";
 						}
@@ -289,9 +289,9 @@
 			}
 			
 			function showRotationControls(thisObjectID) {
-				/*var thisObjectData = $(thisObjectID).select('var');
-				var catalogIndex = thisObjectData[0].innerHTML;
-				if (catalogData.catalog[catalogIndex].rotatable){
+				var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
+				var rotatable = thisData[6];
+				if (rotatable == "true") {
 					var thisLocation = $(thisObjectID).viewportOffset();
 					var thisObjectSize = $(thisObjectID).getDimensions();
 					var arrowLength = $('arrow_north').getHeight();
@@ -325,10 +325,11 @@
 					});
 					$('rotation_object').innerHTML = thisObjectID;
 				}
-			*/}
+			}
 			
 			function setRotation(thisObjectID,direction) {
-				var thisImage = $(thisObjectID).firstDescendant(); 
+				var thisImage = $(thisObjectID).firstDescendant();
+				thisImage = thisImage.next();
 				var newImage = thisImage.readAttribute('src').sub(/\_[nsew]\./,'_' + direction + '.');
 				thisImage.writeAttribute('src',newImage);
 			}
