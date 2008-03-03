@@ -170,6 +170,8 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
 	objTrans.addChild(spinTg);     
         
         reelBG.addChild(objTrans);
+        // Set capability bits for collision system
+	SceneGraphUtil.setCapabilitiesGraph(reelBG, false);
         
         cellLocal.addChild(reelBG); 
     }    
@@ -208,6 +210,8 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
                 TransparencyAttributes.BLEND_SRC_ALPHA,
                 TransparencyAttributes.BLEND_ONE)); 
         Box casing = new Box(DEPTH, HEIGHT, WIDTH, Box.ENABLE_APPEARANCE_MODIFY, casingAppearance);
+        // Set capability bits for collision system
+	SceneGraphUtil.setCapabilitiesGraph(casing, false);
         cellLocal.addChild(casing);        
     }
 
