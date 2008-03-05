@@ -198,7 +198,7 @@
 						} else {
 							//create non-group object
 							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"top:" + top + "px;left:" + left + "px;z-index:" +catalogData.catalog[catalogIndex].zIndex + "\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
-							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + " " + catalogData.catalog[catalogIndex].cellSetupType + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + (catalogData.catalog[catalogIndex].height*unitFactor) + " " + (catalogData.catalog[catalogIndex].width*unitFactor) + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
+							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellSetupType + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + catalogData.catalog[catalogIndex].scale + " " + (catalogData.catalog[catalogIndex].height*unitFactor) + " " + (catalogData.catalog[catalogIndex].width*unitFactor) + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
 							insertHTML += "<img src=\"" + catalogData.catalog[catalogIndex].tileImageURL + "\" width=\"" + width + "\" height=\"" + height + "\" alt=\"" + catalogData.catalog[catalogIndex].name + "\" title=\"" + catalogData.catalog[catalogIndex].name + ": " + catalogData.catalog[catalogIndex].description + "\" />";
 							insertHTML += "</div>";
 						}
@@ -294,7 +294,7 @@
 			
 			function showRotationControls(thisObjectID) {
 				var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
-				var rotatable = thisData[7];
+				var rotatable = thisData[8];
 				if (rotatable == "true") {
 					var thisLocation = $(thisObjectID).viewportOffset();
 					var thisObjectSize = $(thisObjectID).getDimensions();
@@ -358,7 +358,7 @@
 					while (worldData.cell.children.cell[cellIndex]) {
 						var top = (worldData.cell.children.cell[cellIndex].location.y.$/unitFactor)*(gridSize-1);
 						var left = (worldData.cell.children.cell[cellIndex].location.x.$/unitFactor)*(gridSize-1);
-						var direction = 0;
+						var direction = "0";
 						if (worldData.cell.children.cell[cellIndex].rotation) {
 							direction = worldData.cell.children.cell[cellIndex].rotation.$;
 							switch (direction) {
@@ -386,9 +386,9 @@
 				} else {
 					var top = (worldData.cell.children.cell.location.y.$/unitFactor)*(gridSize-1);
 					var left = (worldData.cell.children.cell.location.x.$/unitFactor)*(gridSize-1);
-					var direction = 0;
+					var direction = "0";
 					if (worldData.cell.children.cell.rotation) {
-						direction = worldData.cell.children.cell.rotation;
+						direction = worldData.cell.children.cell.rotation.$;
 						switch (direction) {
 							case "180":
 								direction = "n";
@@ -457,11 +457,12 @@
 					outputJSON += "\"x\":{\"$\":\"" + thisX + "\"},";
 					outputJSON += "\"y\":{\"$\":\"" + thisY + "\"}";
 					outputJSON += "},\"rotation\":{\"$\":\"" + rotation + "\"},";
+					outputJSON += "\"scale\":{\"$\":\"" + thisData[5] + "\"},";
                                         outputJSON += "\"properties\":{\"property\":{\"key\":{\"$\":\"modelFile\"},";
 					outputJSON += "\"value\":{\"$\":\"" + thisData[4] + "\"}";
 					outputJSON += "}},\"size\":{";
-					outputJSON += "\"height\":{\"$\":\"" + thisData[5] + "\"},";
-					outputJSON += "\"width\":{\"$\":\"" + thisData[6] + "\"}";
+					outputJSON += "\"height\":{\"$\":\"" + thisData[6] + "\"},";
+					outputJSON += "\"width\":{\"$\":\"" + thisData[7] + "\"}";
 					outputJSON += "},\"version\":{\"$\":\"0\"}}";
 
 					if (objectArray.length > 1) {
