@@ -129,8 +129,7 @@ public class CellPersistence {
             
             // create the root if it doesn't exist
             if (rootWFS == null) {
-                wfs.getRootDirectory().addCell(ROOT_CELL_ID);
-                rootWFS = wfs.getRootDirectory().getCellByName(ROOT_CELL_ID);
+                rootWFS = wfs.getRootDirectory().addCell(ROOT_CELL_ID);
                 rootWFS.setCellSetup(toWFS(root));
                 wfs.write();
             }
@@ -609,8 +608,7 @@ public class CellPersistence {
         {
             // create the new cell in WFS.  The file won't actually be created
             // until we write to it in the post-process method
-            parentWFS.getCellDirectory().addCell(child.getCellID());
-            WFSCell childWFS = parentWFS.getCellDirectory().getCellByName(child.getCellID());
+            WFSCell childWFS = parentWFS.getCellDirectory().addCell(child.getCellID());
                 
             // add the record to the list
             addList.add(new CellUpdateRecord(parent, child, childWFS));
