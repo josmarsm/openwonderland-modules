@@ -423,7 +423,7 @@
 					var thisX = ((thisLocation[0]/(gridSize-1)))*unitFactor;
 					var thisY = ((thisLocation[1]/(gridSize-1)))*unitFactor;
 					
-                                         /*var rotation = objectArray[objectArrayIndex].firstDescendant().readAttribute('src');
+                                        var rotation = objectArray[objectArrayIndex].firstDescendant().next().readAttribute('src');
 					if (rotation = rotation.charAt(rotation.search(/_[nsew]./) + 1)) {
 						switch (rotation) {
 							case "n":
@@ -441,7 +441,7 @@
 							default:
 								rotation = 0;
 						}
-                                        }*/
+                                        }
                                          
                                         outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
 					outputJSON += "\"@uri\":\"http:\/\/localhost:8080\/WonderlandWorldBuilder\/resources\/tree\/" + cellID + "\",";
@@ -453,8 +453,8 @@
 					outputJSON += "\"children\":{},\"location\":{";
 					outputJSON += "\"x\":{\"$\":\"" + thisX + "\"},";
 					outputJSON += "\"y\":{\"$\":\"" + thisY + "\"}";
-					//outputJSON += "},\"rotation\":{\"$\":\"" + rotation + "\"}";
-                                        outputJSON += "},\"properties\":{\"property\":{\"key\":{\"$\":\"modelFile\"},";
+					outputJSON += "},\"rotation\":{\"$\":\"" + rotation + "\"},";
+                                        outputJSON += "\"properties\":{\"property\":{\"key\":{\"$\":\"modelFile\"},";
 					outputJSON += "\"value\":{\"$\":\"" + thisData[4] + "\"}";
 					outputJSON += "}},\"size\":{";
 					outputJSON += "\"height\":{\"$\":\"" + thisData[5] + "\"},";
