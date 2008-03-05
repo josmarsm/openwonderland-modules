@@ -14,8 +14,9 @@
 			tileImageURL: "floor_tile.png",
 			iconImageURL: "floor_render.png",
 			modelURL: "models/floor.j3s.gz",
-			cellType: "org.jdesktop.lg3d.wonderland.extracells.common.MultiModelCellModel"
-		},
+                        cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+             },
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Brick Wall",
@@ -29,7 +30,8 @@
 			tileImageURL: "brick_n.png",
 			iconImageURL: "brick_icon.png",
 			modelURL: "models/brick.j3s.gz",
-			cellType: "org.jdesktop.lg3d.wonderland.extracells.common.MultiModelCellModel"
+                        cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
@@ -44,7 +46,8 @@
 			tileImageURL: "chair_n.png",
 			iconImageURL: "chair_icon.png",
 			modelURL: "models/chair.j3s.gz",
-			cellType: "org.jdesktop.lg3d.wonderland.extracells.common.MultiModelCellModel"
+                        cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",

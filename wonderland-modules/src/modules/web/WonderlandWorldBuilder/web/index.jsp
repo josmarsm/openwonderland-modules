@@ -198,7 +198,7 @@
 						} else {
 							//create non-group object
 							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"top:" + top + "px;left:" + left + "px;z-index:" +catalogData.catalog[catalogIndex].zIndex + "\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
-							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + (catalogData.catalog[catalogIndex].height*unitFactor) + " " + (catalogData.catalog[catalogIndex].width*unitFactor) + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
+							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + " " + catalogData.catalog[catalogIndex].cellSetupType + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + (catalogData.catalog[catalogIndex].height*unitFactor) + " " + (catalogData.catalog[catalogIndex].width*unitFactor) + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
 							insertHTML += "<img src=\"" + catalogData.catalog[catalogIndex].tileImageURL + "\" width=\"" + width + "\" height=\"" + height + "\" alt=\"" + catalogData.catalog[catalogIndex].name + "\" title=\"" + catalogData.catalog[catalogIndex].name + ": " + catalogData.catalog[catalogIndex].description + "\" />";
 							insertHTML += "</div>";
 						}
@@ -290,7 +290,7 @@
 			
 			function showRotationControls(thisObjectID) {
 				var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
-				var rotatable = thisData[6];
+				var rotatable = thisData[7];
 				if (rotatable == "true") {
 					var thisLocation = $(thisObjectID).viewportOffset();
 					var thisObjectSize = $(thisObjectID).getDimensions();
@@ -410,7 +410,7 @@
 			}
 			
 			function createJSON() {
-				var outputJSON = "{\"cell\":{\"@uri\":\"http://localhost:8080/WonderlandWorldBuilder/resources/tree/root\",\"cellID\":{\"$\":\"root\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
+				var outputJSON = "{\"cell\":{\"@uri\":\"http://localhost:8080/WonderlandWorldBuilder/resources/tree/root\",\"cellID\":{\"$\":\"root\"},\"cellSetupType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
 				var objectArray = $('world').childElements();
 				if (objectArray.length > 1) {
 					outputJSON += "["
@@ -422,22 +422,8 @@
 					var thisLocation = objectArray[objectArrayIndex].positionedOffset();
 					var thisX = ((thisLocation[0]/(gridSize-1)))*unitFactor;
 					var thisY = ((thisLocation[1]/(gridSize-1)))*unitFactor;
-					outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
-					outputJSON += "\"@uri\":\"http:\/\/localhost:8080\/WonderlandWorldBuilder\/resources\/tree\/" + cellID + "\",";
-					outputJSON += "\"catalogID\":{\"$\":\"" + thisData[0] + "\"},";
-					outputJSON += "\"catalogURI\":{\"$\":\"" + thisData[1] + "\"},";
-					outputJSON += "\"cellID\":{\"$\":\"" + cellID + "\"},";
-					outputJSON += "\"cellType\":{\"$\":\"" + thisData[2] + "\"},";
-					outputJSON += "\"children\":{},\"location\":{";
-					outputJSON += "\"x\":{\"$\":\"" + thisX + "\"},";
-					outputJSON += "\"y\":{\"$\":\"" + thisY + "\"}";
-					outputJSON += "},\"properties\":{\"property\":{\"key\":{\"$\":\"model\"},";
-					outputJSON += "\"value\":{\"$\":\"" + thisData[3] + "\"}";
-					outputJSON += "}},\"size\":{";
-					outputJSON += "\"height\":{\"$\":\"" + thisData[4] + "\"},";
-					outputJSON += "\"width\":{\"$\":\"" + thisData[5] + "\"}";
-					outputJSON += "},\"version\":{\"$\":\"0\"}}";
-					/*var rotation = objectArray[objectArrayIndex].firstDescendant().readAttribute('src');
+					
+                                         /*var rotation = objectArray[objectArrayIndex].firstDescendant().readAttribute('src');
 					if (rotation = rotation.charAt(rotation.search(/_[nsew]./) + 1)) {
 						switch (rotation) {
 							case "n":
@@ -455,11 +441,26 @@
 							default:
 								rotation = 0;
 						}
-						var radians = rotation * (Math.PI/180);
-						outputJSON += "\"rotation\":" + rotation + ",";
-						outputJSON += "\"radians\":" + radians;
-					}
-					outputJSON += "},";*/
+                                        }*/
+                                         
+                                        outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
+					outputJSON += "\"@uri\":\"http:\/\/localhost:8080\/WonderlandWorldBuilder\/resources\/tree\/" + cellID + "\",";
+					outputJSON += "\"catalogID\":{\"$\":\"" + thisData[0] + "\"},";
+					outputJSON += "\"catalogURI\":{\"$\":\"" + thisData[1] + "\"},";
+					outputJSON += "\"cellID\":{\"$\":\"" + cellID + "\"},";
+					outputJSON += "\"cellSetupType\":{\"$\":\"" + thisData[2] + "\"},";
+                                        outputJSON += "\"cellType\":{\"$\":\"" + thisData[3] + "\"},";
+					outputJSON += "\"children\":{},\"location\":{";
+					outputJSON += "\"x\":{\"$\":\"" + thisX + "\"},";
+					outputJSON += "\"y\":{\"$\":\"" + thisY + "\"}";
+					//outputJSON += "},\"rotation\":{\"$\":\"" + rotation + "\"}";
+                                        outputJSON += "},\"properties\":{\"property\":{\"key\":{\"$\":\"modelFile\"},";
+					outputJSON += "\"value\":{\"$\":\"" + thisData[4] + "\"}";
+					outputJSON += "}},\"size\":{";
+					outputJSON += "\"height\":{\"$\":\"" + thisData[5] + "\"},";
+					outputJSON += "\"width\":{\"$\":\"" + thisData[6] + "\"}";
+					outputJSON += "},\"version\":{\"$\":\"0\"}}";
+
 					if (objectArray.length > 1) {
 						outputJSON += ","
 					}

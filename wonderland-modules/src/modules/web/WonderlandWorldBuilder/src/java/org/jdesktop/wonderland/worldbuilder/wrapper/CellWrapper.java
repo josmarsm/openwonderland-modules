@@ -100,6 +100,15 @@ public class CellWrapper {
     }
     
     @XmlElement
+    public String getCellSetupType() {
+        return cell.getCellSetupType();
+    }
+    
+    public void setCellSetupType(String cellSetupType) {
+        cell.setCellSetupType(cellSetupType);
+    }
+    
+    @XmlElement
     public CellLocation getLocation() {
         return cell.getLocation();
     }
@@ -115,6 +124,24 @@ public class CellWrapper {
 
     public void setSize(CellDimension size) {
         cell.setSize(size);
+    }
+    
+    @XmlElement
+    public int getRotation() {
+        return cell.getRotation();
+    }
+    
+    public void setRotation(int rotation) {
+        cell.setRotation(rotation);
+    }
+    
+    @XmlElement
+    public double getScale() {
+        return cell.getScale();
+    }
+    
+    public void setScale(double scale) {
+        cell.setScale(scale);
     }
     
     @XmlElement

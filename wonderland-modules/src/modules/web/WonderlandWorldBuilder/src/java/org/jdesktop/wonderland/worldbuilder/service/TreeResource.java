@@ -21,9 +21,11 @@ package org.jdesktop.wonderland.worldbuilder.service;
 
 import org.jdesktop.wonderland.worldbuilder.persistence.CellPersistence;
 import org.jdesktop.wonderland.worldbuilder.wrapper.CellWrapper;
+import org.jdesktop.wonderland.worldbuilder.wrapper.TreeCellWrapper;
 import java.net.URI;
 import java.util.logging.Logger;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -31,7 +33,9 @@ import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.ProduceMime;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.UriParam;
+import javax.ws.rs.core.Response;
 import org.jdesktop.wonderland.worldbuilder.Cell;
 
 /**
@@ -40,44 +44,44 @@ import org.jdesktop.wonderland.worldbuilder.Cell;
  * @author jkaplan
  */
 
-@Path("/cells")
-public class CellsResource {
+@Path("/tree")
+public class TreeResource {
     private static final Logger logger =
-            Logger.getLogger(CellsResource.class.getName());
+            Logger.getLogger(TreeResource.class.getName());
     
     @HttpContext
     private UriInfo context;
     
     /** Creates a new instance of CellsResource */
-    public CellsResource() {
+    public TreeResource() {
         this (null);
     }
     
-    public CellsResource(UriInfo context) {
+    public TreeResource(UriInfo context) {
         this.context = context;
     }
     
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public CellWrapper get() {
+    public CellWrapper get(@QueryParam("depth") @DefaultValue("-1") int depth) {
         Cell root = CellPersistence.get().getRoot();
         URI baseURI = context.getAbsolutePath();
-        URI rootURI = baseURI.resolve("cells/" + root.getCellID());
+        URI rootURI = baseURI.resolve("tree/" + root.getCellID());
         
-        return new CellWrapper(root, rootURI);
+        return new TreeCellWrapper(root, rootURI, depth, true);
     }
     
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
-    public void put(CellWrapper data) {
+    public Response put(CellWrapper data) {
         Cell root = CellPersistence.get().getRoot();
-        new CellResource(root.getCellID(), context).put(data);
+        return new TreeCellResource(root.getCellID(), context).put(data);
     }
     
     @POST
     @ConsumeMime({"application/xml", "application/json"})
-    public void post(CellWrapper data) {
-        put(data);
+    public Response post(CellWrapper data) {
+        return put(data);
     }
     
     /**
@@ -85,6 +89,6 @@ public class CellsResource {
      */
     @Path("{cellId}")
     public CellResource getCellResource(@UriParam("cellId") String cellId) {
-        return new CellResource(cellId, context);
+        return new TreeCellResource(cellId, context);
     }
 }

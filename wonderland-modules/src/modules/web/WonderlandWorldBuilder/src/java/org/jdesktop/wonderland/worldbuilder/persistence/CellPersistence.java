@@ -19,18 +19,9 @@
  */
 package org.jdesktop.wonderland.worldbuilder.persistence;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.Encoder;
-import java.beans.ExceptionListener;
-import java.beans.Expression;
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,6 +42,13 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
+import org.jdesktop.lg3d.wonderland.wfs.InvalidWFSCellException;
+import org.jdesktop.lg3d.wonderland.wfs.InvalidWFSException;
+import org.jdesktop.lg3d.wonderland.wfs.WFS;
+import org.jdesktop.lg3d.wonderland.wfs.WFSCell;
+import org.jdesktop.lg3d.wonderland.wfs.WFSCellDirectory;
+import org.jdesktop.lg3d.wonderland.wfs.WFSFactory;
 import org.jdesktop.wonderland.worldbuilder.Cell;
 import org.jdesktop.wonderland.worldbuilder.CellDimension;
 
@@ -69,8 +69,8 @@ public class CellPersistence {
     /** cells we known about, mapped by id */
     private Map<String, Cell> cells;
      
-    /** map from cellID to path */
-    private Map<String, String> paths;
+    /** map from cellID to WFS cell */
+    private Map<String, WFSCell> wfsCells;
     
     /** map from path to cell info */
     private Map<String, CellInfo> cellInfo;
@@ -83,6 +83,9 @@ public class CellPersistence {
     
     /** a lock on the data */
     private ReadWriteLock lock;
+    
+    /** convert to and from WFS */
+    private WFSConverter converter;
     
     public synchronized static CellPersistence get() {
         if (persistence == null) {
@@ -100,39 +103,49 @@ public class CellPersistence {
     
         // these maps are only ever access from inside the executor, so
         // they do not need to be syncrhonized
-        paths = new HashMap();
+        wfsCells = new HashMap();
         cellInfo = new HashMap();
         
+        // create the WFS converter
+        converter = new WFSConverter();
+        
         // get the directory to synchronized with
-        String cellDir = System.getProperty("cell.dir");
-        if (cellDir == null) {
-            cellDir = System.getProperty("user.home") + 
-                      File.separator + ".worldBuilder";
+        String wfsRoot = System.getProperty("wonderland.wfs.root");
+        if (wfsRoot == null) {
+            System.out.println("Home: " + System.getProperty("user.home"));
+            wfsRoot = "file:" + System.getProperty("user.home") + 
+                         File.separator + ".worldBuilder/wb-wfs";
         }
-        File dir = new File(cellDir);
-        File rootFile = new File(dir, "root-cell.xml");
+        WFS wfs; 
         
         // create the root cell
         Cell root = new Cell(ROOT_CELL_ID);
         root.setSize(new CellDimension(1024, 1024));
 
         try {
-            // create the file if it doesn't exist
-            if (!dir.exists()) {
-                dir.mkdir();
+            // create the WFS
+            wfs = WFSFactory.open(new URL(wfsRoot));
+            WFSCell rootWFS = find(wfs.getRootDirectory(), ROOT_CELL_ID);
+            
+            // create the root if it doesn't exist
+            if (rootWFS == null) {
+                wfs.getRootDirectory().addCell(ROOT_CELL_ID);
+                rootWFS = wfs.getRootDirectory().getCellByName(ROOT_CELL_ID);
+                rootWFS.setCellSetup(toWFS(root));
+                wfs.write();
             }
             
-            if (!rootFile.exists()) {
-                write(root, rootFile);
-            }
-            
-            CellInfo info = add(null, root, rootFile);
+            CellInfo info = add(null, root, rootWFS);
             
             // make sure root gets re-read during the first scan
             info.setUpdateTime(0);   
         } catch (IOException ioe) {
             throw new RuntimeException("Error reading root file: " + ioe, ioe);
-        }    
+        } catch (InvalidWFSException iwe) {
+            throw new RuntimeException("Error creating wfs: " + wfsRoot, iwe);
+        } catch (InvalidWFSCellException iwce) {
+            throw new RuntimeException("Error creating root cell: " + wfsRoot, iwce);
+        }
         
         // initialize the lock
         lock = new ReentrantReadWriteLock();
@@ -141,7 +154,7 @@ public class CellPersistence {
         processor = Executors.newSingleThreadScheduledExecutor();
         
         // create the directory update task
-        Runnable dirTask = new ReadDirectoryTask(dir, rootFile);
+        Runnable dirTask = new ReadWFSTask(wfs);
         
         // run the directory update the first time and wait for it to
         // complete
@@ -149,7 +162,8 @@ public class CellPersistence {
             Future future = processor.submit(dirTask);
             future.get();
         } catch (Exception ex) {
-            throw new RuntimeException("Error starting persitence for " + dir, ex);
+            throw new RuntimeException("Error starting persitence for " + wfsRoot, 
+                                       ex);
         }
         
         // now schdule the directory check every second
@@ -188,16 +202,28 @@ public class CellPersistence {
      * Update properties of a single cell
      * @param cell the cell to update
      */
-    public void update(final Cell cell) {
-        processor.submit(new CellUpdateTask(cell));
+    public void update(final Cell cell) 
+            throws ExecutionException, InterruptedException
+    {
+        // submit the update job
+        Future f = processor.submit(new CellUpdateTask(cell));
+        
+        // wait for it to complete
+        f.get();
     }
     
     /**
      * Update a tree of cells
      * @param cell the cell to update
      */
-    public void updateTree(final Cell cell) {
-        processor.submit(new CellTreeUpdateTask(cell));
+    public void updateTree(final Cell cell) 
+        throws ExecutionException, InterruptedException
+    {
+        // submit the update job
+        Future f = processor.submit(new CellTreeUpdateTask(cell));
+        
+        // wait for it to complete
+        f.get();
     }
     
     /**
@@ -222,21 +248,39 @@ public class CellPersistence {
     }
     
     /**
+     * Translate a cell to wfs
+     * @param cell the cell to translate
+     * @return the corresponding WFS cell
+     */
+    protected BasicCellGLOSetup toWFS(Cell cell) {
+        return converter.toWFS(cell);
+    }
+    
+    /**
+     * Translate a wfs cell into a cell
+     * @param wfsCell the wfs cell to translate
+     * @return the corresponding cell
+     */
+    protected Cell fromWFS(WFSCell wfsCell) {
+        return converter.fromWFS(wfsCell);
+    }
+    
+    /**
      * Add a record of a cell
      * @param parent the parent cell to add to
      * @param cell the cell to add
-     * @param file the file that represents this cell
+     * @param wfsCell the cell in WFS that represents this cell
      * @return the CellInfo object that represents this cell
      */
-    private CellInfo add(Cell parent, Cell cell, File file)
+    private CellInfo add(Cell parent, Cell cell, WFSCell wfsCell)
         throws IOException
     {
         logger.info("New cell: " + cell.getCellID());
 
         if (cells.containsKey(cell.getCellID())) {
             throw new IOException("Duplicate cell ID: " + cell.getCellID() + 
-                    " in " + file.getCanonicalPath() + " and " + 
-                    paths.get(cell.getCellID()));
+                    " in " + wfsCell.getCanonicalName() + " and " + 
+                    wfsCells.get(cell.getCellID()));
         }
 
         // add the cell to its parent
@@ -246,9 +290,9 @@ public class CellPersistence {
 
         // update maps
         cells.put(cell.getCellID(), cell);
-        CellInfo info = new CellInfo(cell, file.lastModified());
-        cellInfo.put(file.getCanonicalPath(), info);
-        paths.put(cell.getCellID(), file.getCanonicalPath());
+        CellInfo info = new CellInfo(cell, wfsCell.getLastModified());
+        cellInfo.put(wfsCell.getCanonicalName(), info);
+        wfsCells.put(cell.getCellID(), wfsCell);
     
         return info;
     }
@@ -257,22 +301,22 @@ public class CellPersistence {
      * Update a cell, replacing it with the new version
      * @param parent the parent cell
      * @param cell the cell to update
-     * @param file the file representing this cell
+     * @param wfsCell the cell in WFS that represents this cell
      * @return the updated CellInfo object
      */
-    private CellInfo update(Cell parent, Cell cell, File file)
+    private CellInfo update(Cell parent, Cell cell, WFSCell wfsCell)
         throws IOException
     {
         logger.info("Updated cell: " + cell.getCellID());
 
-        CellInfo info = cellInfo.get(file.getCanonicalPath());
+        CellInfo info = cellInfo.get(wfsCell.getCanonicalName());
         if (info == null) {
-            throw new IOException("No cell for " + file.getCanonicalPath());
+            throw new IOException("No cell for " + wfsCell.getCanonicalName());
         }
         
         if (!cell.getCellID().equals(info.getCell().getCellID())) {
             throw new IOException("Attempt to change cell ID: " + 
-                    file.getCanonicalPath() + " should be: " + 
+                    wfsCell.getCanonicalName() + " should be: " + 
                     info.getCell().getCellID());
         }
 
@@ -282,7 +326,7 @@ public class CellPersistence {
         }
         
         // set the update time
-        info.setUpdateTime(file.lastModified());
+        info.setUpdateTime(wfsCell.getLastModified());
 
         // update any children
         for (Cell child : info.getCell().getChildren()) {
@@ -319,9 +363,9 @@ public class CellPersistence {
         logger.info("Cleanup cell: " + removed.getCellID());
 
         cells.remove(removed.getCellID());
-        String path = paths.remove(removed.getCellID());
-        if (path != null) {
-            cellInfo.remove(path);
+        WFSCell wfsCell = wfsCells.remove(removed.getCellID());
+        if (wfsCell != null) {
+            cellInfo.remove(wfsCell.getCanonicalName());
         }
 
         // cleanup children
@@ -331,60 +375,41 @@ public class CellPersistence {
     }
     
     /**
-     * Write a cell to disk
+     * Find a cell in wfs
+     * @param directory the directory to search
+     * @param name the name of the cell
+     * @return the cell with the given name, or null if no cell
+     * exists in the directory with the given name
      */
-    private void write(Cell cell, File file) 
-        throws IOException
-    {
-        // write the updated data
-        XMLEncoder encoder = new XMLEncoder(new FileOutputStream(file));
-        encoder.setPersistenceDelegate(URI.class, new DefaultPersistenceDelegate() {
-            @Override
-            protected Expression instantiate(
-                    final Object oldInstance, final Encoder out) {
-
-                return new Expression(oldInstance, oldInstance.getClass(), "new",
-                        new Object[]{oldInstance.toString()});
+    private WFSCell find(WFSCellDirectory dir, String cellName) {
+         WFSCell[] children = dir.getCells();
+         WFSCell out = null;
+         for (WFSCell child : children) {
+            if (child.getCellName().equals(cellName)) {
+                out = child;
+                break;
             }
-        });
-        encoder.writeObject(cell);
-        encoder.close();
-    }
-    
-    /** 
-     * Strip off the tailing "-cell.xml" from a filename
-     * @param name the name with "-cell.xml"
-     * @return the name with "-cell.xml stripped off
-     */
-    private final String basename(String name) {
-        // get the filename minus the -cell.xml
-        int len = name.length() - "-cell.xml".length();
-        return name.substring(0, len);
-    }
-    
-    /** 
-     * Get the directory name associated with a cell. Changes the 
-     * "-cell.xml" to "-dir".
-     * @param name the name with "-cell.xml"
-     * @return the name with "-cell.xml stripped off and "-dir" added
-     */
-    private final String dirname(String name) {
-        // get the filename minus the -cell.xml
-        return basename(name) + "-dir";
+         }
+         
+         return out;
     }
     
     /**
      * Read cells from disk
      */
-    class ReadDirectoryTask extends TreeChangeTask 
-            implements ExceptionListener 
-    {
-        private File rootDir;
-        private File rootFile;
+    class ReadWFSTask extends TreeChangeTask implements Runnable {
+        private WFS wfs;
          
-        public ReadDirectoryTask(File rootDir, File rootFile) {
-            this.rootDir = rootDir;
-            this.rootFile = rootFile;
+        public ReadWFSTask(WFS wfs) {
+            this.wfs = wfs;
+        }
+        
+        public void run() {
+            try {
+                call();
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "Error during directory scan", ex);
+            }
         }
         
         /**
@@ -398,33 +423,36 @@ public class CellPersistence {
                                List<CellUpdateRecord> removeList)
             throws Exception
         {
-            processFile(rootDir, null, rootFile, addList, updateList, removeList);
+            // get the directory
+            WFSCellDirectory dir = wfs.getRootDirectory();
+            
+            // find the root cell, which will be named root-wlc.xml in the
+            // base directory
+            WFSCell root = find(dir, ROOT_CELL_ID);
+            if (root == null) {
+                throw new IllegalStateException("Root cell " + ROOT_CELL_ID +
+                                   " not found in " + dir.getPathName());
+            }
+            
+            processCell(null, root, addList, updateList, removeList);
         }
 
-        private void processDirectory(File directory, Cell cell,
+        private void processDirectory(WFSCellDirectory dir, Cell parent,
                                       List<CellUpdateRecord> addList,
                                       List<CellUpdateRecord> updateList,
                                       List<CellUpdateRecord> removeList) 
                 throws IOException 
         {
             // make a list of expected children
-            Collection<Cell> expectedChildren = cell.getChildren();
+            Collection<Cell> expectedChildren = parent.getChildren();
             
-            // find all files matching "basename-cell.xml"
-            File[] files = directory.listFiles(new FilenameFilter() {
-                public boolean accept(File file, String fileName) {
-                    return fileName.endsWith("-cell.xml");
-                }
-            });
-           
             // process each file
-            for (File file : files) {
-                processFile(directory, cell, file, addList, 
-                            updateList, removeList);
+            for (WFSCell child : dir.getCells()) {
+                processCell(parent, child, addList, updateList, removeList);
            
                 // remove the corresponding cell from the set of expected
                 // children
-                CellInfo info = cellInfo.get(file.getCanonicalPath());
+                CellInfo info = cellInfo.get(child.getCanonicalName());
                 if (info != null) {
                     expectedChildren.remove(info.getCell());
                 }
@@ -433,98 +461,75 @@ public class CellPersistence {
             // now remove references to any cells that weren't removed from
             // the expected children list
             for (Cell removed : expectedChildren) {
-                removeList.add(new CellUpdateRecord(cell, removed, null));
+                removeList.add(new CellUpdateRecord(parent, removed, null));
             }
         }
         
-        private void processFile(File directory, Cell parent, File file,
+        private void processCell(Cell parent, 
+                                 WFSCell wfsCell,
                                  List<CellUpdateRecord> addList,
                                  List<CellUpdateRecord> updateList,
                                  List<CellUpdateRecord> removeList) 
                 throws IOException 
-        {            
-            final String basename = basename(file.getName());
-            Cell cell;
+        {     
+            Cell cell = null;
             
             // see if we have any information about this file
-            CellInfo info = cellInfo.get(file.getCanonicalPath());
-            if (info == null || file.lastModified() > info.getUpdateTime()) {
-                logger.info("Update file: " + file.getCanonicalPath());
+            CellInfo info = cellInfo.get(wfsCell.getCanonicalName());
+            if (info == null || wfsCell.getLastModified() > info.getUpdateTime()) {
+                logger.info("Update cell: " + wfsCell.getCanonicalName());
                 
-                // it's a new or updated record, so read the cell
-                XMLDecoder decoder = null;
+                // read the cell from WFS
+                cell = fromWFS(wfsCell);
                 
-                try {
-                    decoder = new XMLDecoder(new FileInputStream(file), null, this);
-                    cell = (Cell) decoder.readObject();     
-                } finally {
-                    if (decoder != null) {
-                        decoder.close();
-                    }
-                }
-                 
                 // now update the info record
                 if (info == null) {
-                    addList.add(new CellUpdateRecord(parent, cell, file));
+                    addList.add(new CellUpdateRecord(parent, cell, wfsCell));
                 } else {
-                    updateList.add(new CellUpdateRecord(parent, cell, file));
+                    updateList.add(new CellUpdateRecord(parent, cell, wfsCell));
                 }
             } else {
                 cell = info.getCell();
             }
             
-            // find any subdirectories matching basename-dir
-            File[] dirs = directory.listFiles(new FilenameFilter() {
-                public boolean accept(File file, String fileName) {
-                    return file.isDirectory() && 
-                            fileName.equalsIgnoreCase(basename + "-dir");
-                }
-            });
-            
-            // process subdirectories
-            if (dirs.length > 0) {
-                processDirectory(dirs[0], cell, addList, updateList, removeList);
+            if (wfsCell.getCellDirectory() != null) {
+                processDirectory(wfsCell.getCellDirectory(), cell,
+                                 addList, updateList, removeList);
             }
-        }
-         
-        public void exceptionThrown(Exception ex) {
-            logger.log(Level.WARNING, "Error reading file", ex);
         }
     }
 
-    class CellUpdateTask implements Runnable {
+    class CellUpdateTask implements Callable {
         private Cell cell;
         
         public CellUpdateTask(Cell cell) {
             this.cell = cell;
         }
         
-        public void run() {
+        public Object call() throws Exception {
             try {
                 // acquire a write lock
                 getLock().writeLock().lock();
                 
                 // find the cell in the file system
-                String path = paths.get(cell.getCellID());
-                if (path == null) {
+                WFSCell wfsCell = wfsCells.get(cell.getCellID());
+                if (wfsCell == null) {
                     throw new IllegalStateException("No such cell: " + cell.getCellID());
                 }
 
-                // get the cell's file
-                File file = new File(path);
-                
-                // write to disk
-                write(cell, file);
+                // update the cell's file
+                wfsCell.setCellSetup(toWFS(cell));
                 
                 // update the cell in memory
                 Cell orig = cells.get(cell.getCellID());
-                update(orig.getParent(), cell, file);
+                update(orig.getParent(), cell, wfsCell);
                 
-            } catch (Exception ex) {
-                logger.log(Level.WARNING, "Error updating cell", ex);
+                wfsCell.write();
             } finally {
                 getLock().writeLock().unlock();
             }
+            
+            return null;
         }
     }
     
@@ -562,8 +567,8 @@ public class CellPersistence {
                         orig.getVersion() + " got " + cell.getVersion());
             }
             
-            // get the file associated with this cell
-            File file = new File(paths.get(cell.getCellID()));
+            // get the wfs cell associated with this cell
+            WFSCell wfsCell = wfsCells.get(cell.getCellID());
             
             // get the parent cell.  The parent is the new cell's parent,
             // unless the cell doesn't have a parent, in which case we
@@ -572,15 +577,15 @@ public class CellPersistence {
             if (parent == null) {
                 parent = orig.getParent();
             }
-            updateList.add(new CellUpdateRecord(parent, cell, file));
+            updateList.add(new CellUpdateRecord(parent, cell, wfsCell));
             
             // removed children are in the original list but not the
             // new list
             List<Cell> removedChildren = orig.getChildren();
             removedChildren.removeAll(cell.getChildren());
             for (Cell child : removedChildren) {
-                File childFile = new File(file.getParent(), filename(file, child));
-                removeList.add(new CellUpdateRecord(cell, child, childFile));
+                WFSCell childWFS = wfsCells.get(child.getCellID());
+                removeList.add(new CellUpdateRecord(cell, child, childWFS));
             }
             
             // added children are in the new list but not the original
@@ -588,7 +593,7 @@ public class CellPersistence {
             List<Cell> addedChildren = cell.getChildren();
             addedChildren.removeAll(orig.getChildren());
             for (Cell child : addedChildren) {
-                addChildTree(cell, file, child, addList);
+                addChildTree(cell, wfsCell, child, addList);
             }
             
             // all other children are just updated
@@ -599,22 +604,20 @@ public class CellPersistence {
             }
         }
         
-        private void addChildTree(Cell parent, File parentFile,
+        private void addChildTree(Cell parent, WFSCell parentWFS,
                                   Cell child, List addList)
         {
-            String fileName = filename(parentFile, child);
-            
-            // create the child File.  Note this is just an abstract path
-            // name, the file won't actually be created until we write to
-            // it in postProcess().
-            File childFile = new File(parentFile.getParentFile(), fileName);
-            
+            // create the new cell in WFS.  The file won't actually be created
+            // until we write to it in the post-process method
+            parentWFS.getCellDirectory().addCell(child.getCellID());
+            WFSCell childWFS = parentWFS.getCellDirectory().getCellByName(child.getCellID());
+                
             // add the record to the list
-            addList.add(new CellUpdateRecord(parent, child, childFile));
+            addList.add(new CellUpdateRecord(parent, child, childWFS));
      
             // add children
             for (Cell grandChild : child.getChildren()) {
-                addChildTree(child, childFile, grandChild, addList);
+                addChildTree(child, childWFS, grandChild, addList);
             }
         }
         
@@ -631,66 +634,35 @@ public class CellPersistence {
                                    List<CellUpdateRecord> removeList)
             throws Exception
         {
-            // update the file system
+            // update the WFS to reflect the changes
             
             // remove and files that need removing
             for (CellUpdateRecord remove : removeList) {
-                File removeFile = remove.getFile();
-                File removeDir = new File(removeFile.getParent(), 
-                                          dirname(removeFile.getName()));
-               
-                // remove the directory
-                if (removeDir.exists() && removeDir.isDirectory()) {
-                    removeTree(removeDir);
-                    removeDir.delete();
-                }
-                
-                // remove the file
-                removeFile.delete();
+                Cell parent = remove.getParent();
+                WFSCell parentWFS = wfsCells.get(parent.getCellID());
+                parentWFS.getCellDirectory().removeCell(remove.getWFSCell());
             }
             
             // add new files
             for (CellUpdateRecord add : addList) {
-                File dir = add.getFile().getParentFile();
-                if (!dir.exists()) {
-                    dir.mkdir();
-                }
-                
-                write(add.getCell(), add.getFile());
+                WFSCell addWFS = add.getWFSCell();
+                addWFS.setCellSetup(toWFS(add.getCell()));
             }
             
             // update files
             for (CellUpdateRecord update : updateList) {
-                write(update.getCell(), update.getFile());
+                WFSCell updateWFS = update.getWFSCell();
+                updateWFS.setCellSetup(toWFS(update.getCell()));
             }
-        }
-        
-        private void removeTree(File dir) {
-            logger.info("Remove " + dir);
             
-            File[] files = dir.listFiles();
-            
-            for (File file : files) {
-                // clear out the directory
-                if (file.isDirectory()) {
-                    removeTree(file);
-                }
-                
-                file.delete();
-            }
-        }
-        
-        private String filename(File parentFile, Cell child) {
-            // calculate the child file name relative to the parent.
-            // If the parent is 1-cell.xml, the child will be
-            // 1-dir/2-cell.xml.
-            String dirName = dirname(parentFile.getName());
-            return dirName + File.separator + child.getCellID() + "-cell.xml";
+            // get the wfs cell associated with this cell
+            WFSCell wfsCell = wfsCells.get(cell.getCellID());
+            wfsCell.write();
         }
     }
     
-    abstract class TreeChangeTask implements Runnable {
-        public void run() {
+    abstract class TreeChangeTask implements Callable {
+        public Object call() throws Exception {
             try {
                 // get the write lock
                 getLock().writeLock().lock();
@@ -714,7 +686,7 @@ public class CellPersistence {
                 {
                     CellUpdateRecord added = i.next();
                     try {
-                        add(added.getParent(), added.getCell(), added.getFile());
+                        add(added.getParent(), added.getCell(), added.getWFSCell());
                     } catch (IOException ioe) {
                         logger.log(Level.WARNING, "Error adding " + 
                                    added.getCell().getCellID(), ioe);
@@ -727,7 +699,7 @@ public class CellPersistence {
                 {
                     CellUpdateRecord updated = i.next();
                     try {
-                        update(updated.getParent(), updated.getCell(), updated.getFile());
+                        update(updated.getParent(), updated.getCell(), updated.getWFSCell());
                     } catch (IOException ioe) {
                         logger.log(Level.WARNING, "Error updating " + 
                                    updated.getCell().getCellID(), ioe);
@@ -737,13 +709,12 @@ public class CellPersistence {
                 
                 // post process with updated lists
                 postProcess(addList, updateList, removeList);
-                
-            } catch (Exception ex) {
-                logger.log(Level.WARNING, "Error during directory scan", ex);
             } finally {
                 // release the lock
                 getLock().writeLock().unlock();
             }
+            
+            return null;
         }
         
         /**
@@ -802,12 +773,12 @@ public class CellPersistence {
     class CellUpdateRecord {
         private Cell parent;
         private Cell cell;
-        private File file;
+        private WFSCell wfsCell;
         
-        public CellUpdateRecord(Cell parent, Cell cell, File file) {
+        public CellUpdateRecord(Cell parent, Cell cell, WFSCell wfsCell) {
             this.parent = parent;
             this.cell = cell;
-            this.file = file;
+            this.wfsCell = wfsCell;
         }
         
         public Cell getParent() {
@@ -818,8 +789,8 @@ public class CellPersistence {
             return cell;
         }
         
-        public File getFile() {
-            return file;
+        public WFSCell getWFSCell() {
+            return wfsCell;
         }
     }
 }

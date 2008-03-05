@@ -65,10 +65,16 @@ public class PersistenceLockFilter implements Filter {
 	throws IOException, ServletException
     {
 
-        // get a read lock.  All write operations will be scheduled in a
-        // separate task, so there is no need to grab a write lock, even
-        // for post operations
-        CellPersistence.get().getLock().readLock().lock();
+        boolean hasLock = false;
+        if (request instanceof HttpServletRequest &&
+                ((HttpServletRequest) request).getMethod().equalsIgnoreCase("GET"))
+        {
+            // get a read lock.  All write operations will be scheduled in a
+            // separate task, so there is no need to grab a write lock, even
+            // for post operations
+            CellPersistence.get().getLock().readLock().lock();
+            hasLock = true;
+        }
         
 	Throwable problem = null;
 	try {
@@ -83,7 +89,9 @@ public class PersistenceLockFilter implements Filter {
 	    t.printStackTrace();
 	} finally {
             // unlock
-            CellPersistence.get().getLock().readLock().unlock();
+            if (hasLock) {
+                CellPersistence.get().getLock().readLock().unlock();
+            }
         }
 
 	//

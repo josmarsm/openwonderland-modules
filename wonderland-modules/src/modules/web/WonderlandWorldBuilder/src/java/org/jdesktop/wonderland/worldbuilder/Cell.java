@@ -48,8 +48,11 @@ public class Cell {
     private int version;
     
     private String cellType;
+    private String cellSetupType;
     private CellLocation location;
     private CellDimension size;
+    private int rotation;
+    private double scale;
     
     private URI catalogURI;
     private Integer catalogID;
@@ -67,6 +70,7 @@ public class Cell {
         
         this.size = new CellDimension(1, 1);
         this.location = new CellLocation(0, 0);
+        this.scale = 1.0;
     }
 
     public String getCellID() {
@@ -141,6 +145,14 @@ public class Cell {
         this.cellType = cellType;
     }
 
+    public String getCellSetupType() {
+        return cellSetupType;
+    }
+    
+    public void setCellSetupType(String cellSetupType) {
+        this.cellSetupType = cellSetupType;
+    }
+    
     public CellLocation getLocation() {
         return location;
     }
@@ -157,6 +169,22 @@ public class Cell {
         this.size = size;
     }
    
+    public int getRotation() {
+        return rotation;
+    }
+    
+    public void setRotation(int rotation) {
+        this.rotation = rotation;
+    }
+    
+    public double getScale() {
+        return scale;
+    }
+    
+    public void setScale(double scale) {
+        this.scale = scale;
+    }
+    
     public URI getCatalogURI() {
         return catalogURI;
     }
