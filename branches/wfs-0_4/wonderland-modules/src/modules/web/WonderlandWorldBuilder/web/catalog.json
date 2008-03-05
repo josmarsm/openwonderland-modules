@@ -1,0 +1,64 @@
+{
+	catalog: [
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Floor Tile",
+			group: false,
+			library: ["Room Components","Floors"],
+			level: "Room",
+			width: 2,
+			height: 2,
+			zIndex: 1,
+			rotatable: false,
+			description: "A simple floor tile.",
+			tileImageURL: "floor_tile.png",
+			iconImageURL: "floor_render.png",
+			modelURL: "models/floor.j3s.gz",
+                        cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+             },
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Brick Wall",
+			group: false,
+			library: ["Room Components","Walls"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: true,
+			description: "A simple brick wall.",
+			tileImageURL: "brick_n.png",
+			iconImageURL: "brick_icon.png",
+			modelURL: "models/brick.j3s.gz",
+                        cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Chair",
+			group: false,
+			library: ["Room Accessories","Office Furniture","Chairs"],
+			width: 1,
+			height: 1,
+			zIndex: 3,
+			rotatable: true,
+			description: "A simple chair, good for sitting in.",
+			tileImageURL: "chair_n.png",
+			iconImageURL: "chair_icon.png",
+			modelURL: "models/chair.j3s.gz",
+                        cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		}/*,
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Office",
+			group: true,
+			members: ["0 0 0","0 0 2","0 2 0","0 2 2"],
+			library: ["Building Components"],
+			width: 4,
+			height: 4,
+			description: "An empty office.",
+			iconImageURL: "chair_icon.png"
+		}*/
+	]
+}
