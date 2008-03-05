@@ -111,7 +111,7 @@
 						var top = (gridSize - 1) * Math.floor((thisLocation.top - worldLocation.top + ($(thisObjectID).getHeight()*0.5))/(gridSize - 1));
 						var left = (gridSize - 1) * Math.floor((thisLocation.left - worldLocation.left + ($(thisObjectID).getWidth()*0.5))/(gridSize - 1));
 						if (thisLocation.left >= workspaceLeft && thisLocation.left <= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) && thisLocation.top >= workspaceTop && thisLocation.top <= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
-							createPlaceable(catalogData.catalog[catalogIndex].catalogURI,catalogIndex,top,left);
+							createPlaceable(catalogData.catalog[catalogIndex].catalogURI,catalogIndex,top,left,null,true);
 						}
 						$('library').setStyle({zIndex:'1'});
 						$(thisObjectID).remove();
@@ -175,7 +175,7 @@
 				$(thisPanel).setStyle({visibility:'hidden'});
 			}
 			
-			function createPlaceable(catalogURI,catalogIndex,top,left,direction) {
+			function createPlaceable(catalogURI,catalogIndex,top,left,direction,newComponent) {
 				new Ajax.Request(catalogURI, {
 					method:'get',
 					onSuccess: function(data) {
@@ -215,8 +215,10 @@
 								if ((thisLocation.left - 2) <= (workspaceLeft - gridSize) || (thisLocation.left + 2) >= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) || (thisLocation.top - 2) <= (workspaceTop - gridSize) || thisLocation.top >= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
 									return true; //move object back if dropped outside workspace
 								}
-								if ($(thisObjectID).getStyle('display') == 'none') {
+								if ($(thisObjectID).getStyle('visibility') == 'hidden') {
 									$(thisObjectID).remove();
+								} else {
+									showRotationControls(thisObjectID);
 								}
 								$('workspace').setStyle({zIndex:'2'});
 							},
@@ -232,10 +234,12 @@
 						if (direction) {
 							setRotation(thisObjectID,direction);
 						}
-						showRotationControls(thisObjectID);
+						if (newComponent) {
+							showRotationControls(thisObjectID);
+						}
 					},
 					onFailure: function() {
-						alert("Failed to load catalog from " + url);
+						alert("Failed to load catalog data for this object from " + url);
 					}
 				});
 			}
@@ -339,7 +343,7 @@
 					requestHeaders: {Accept:'application/json'},
 					method: 'get',
 					onSuccess: function(data) {
-						buildWorld(data);
+						buildWorld(data.responseText);
 					},
 					onFailure: function() {
 						alert("Failed to load world from server");
@@ -348,7 +352,7 @@
 			}
 			
 			function buildWorld(data) {
-				worldData = data.responseText.evalJSON();
+				worldData = data.evalJSON();
 				var cellIndex = 0;
 				if (worldData.cell.children.cell.length > -1) {
 					while (worldData.cell.children.cell[cellIndex]) {
@@ -356,22 +360,22 @@
 						var left = (worldData.cell.children.cell[cellIndex].location.x.$/unitFactor)*(gridSize-1);
 						var direction = 0;
 						if (worldData.cell.children.cell[cellIndex].rotation) {
-							direction = worldData.cell.children.cell[cellIndex].rotation;
+							direction = worldData.cell.children.cell[cellIndex].rotation.$;
 							switch (direction) {
-								case 180:
+								case "180":
 									direction = "n";
 									break;
-								case 90:
+								case "90":
 									direction = "e";
 									break;
-								case 360:
+								case "360":
 									direction = "s";
 									break;
-								case 270:
+								case "270":
 									direction = "w";
 									break;
 								default:
-									direction = 0;
+									direction = "0";
 							}
 						}
 						var catalogURI = worldData.cell.children.cell[cellIndex].catalogURI.$;
@@ -386,27 +390,26 @@
 					if (worldData.cell.children.cell.rotation) {
 						direction = worldData.cell.children.cell.rotation;
 						switch (direction) {
-							case 180:
+							case "180":
 								direction = "n";
 								break;
-							case 90:
+							case "90":
 								direction = "e";
 								break;
-							case 360:
+							case "360":
 								direction = "s";
 								break;
-							case 270:
+							case "270":
 								direction = "w";
 								break;
 							default:
-								direction = 0;
+								direction = "0";
 						}
 					}
 					var catalogURI = worldData.cell.children.cell.catalogURI.$;
 					var catalogIndex = worldData.cell.children.cell.catalogID.$;
 					createPlaceable(catalogURI,catalogIndex,top,left,direction);
 				}
-				$('rotation_controls').setStyle({visibility:'hidden'});
 			}
 			
 			function createJSON() {
@@ -427,19 +430,19 @@
 					if (rotation = rotation.charAt(rotation.search(/_[nsew]./) + 1)) {
 						switch (rotation) {
 							case "n":
-								rotation = 180;
+								rotation = "180";
 								break;
 							case "e":
-								rotation = 90;
+								rotation = "90";
 								break;
 							case "s":
-								rotation = 360;
+								rotation = "360";
 								break;
 							case "w":
-								rotation = 270;
+								rotation = "270";
 								break;
 							default:
-								rotation = 0;
+								rotation = "0";
 						}
                                         }
                                          
@@ -499,7 +502,7 @@
 					accept: 'draggable',
 					hoverclass: 'highlight',
 					onDrop: function(element) {
-						element.setStyle({display:'none'});//set the element to not display, then remove it later instead of removing it here (to avoid conflicts between the "revert" event of the object and the "onDrop" event of the trash)
+						element.setStyle({visibility:'hidden'});//set the element to not display, then remove it later instead of removing it here (to avoid conflicts between the "revert" event of the object and the "onDrop" event of the trash)
 						$('highlight_n').setStyle({visibility: 'hidden'});
 						$('highlight_e').setStyle({visibility: 'hidden'});
 						$('highlight_s').setStyle({visibility: 'hidden'});
