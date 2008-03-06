@@ -13,7 +13,7 @@
 			description: "A floor tile suitable for a meeting room.",
 			tileImageURL: "crossroom_floortile_tile.png",
 			iconImageURL: "crossroom_floortile_icon.png",
-			modelURL: "models/crossroom_floortile.j3s.gz",
+			modelURL: "models/worldbuilder/crossroom_floortile.j3s.gz",
 			scale: 0.0545,
                         cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
@@ -30,7 +30,7 @@
 			description: "A straight wall section suitable for a meeting room.",
 			tileImageURL: "crossroom_wall_tile_n.png",
 			iconImageURL: "crossroom_wall_icon.png",
-			modelURL: "models/crossroom_wall.j3s.gz",
+			modelURL: "models/worldbuilder/crossroom_wall.j3s.gz",
 			scale: 0.0545,
                         cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
@@ -47,24 +47,8 @@
 			description: "A corner wall section suitable for a meeting room.",
 			tileImageURL: "crossroom_corner_tile_n.png",
 			iconImageURL: "crossroom_corner_icon.png",
-			modelURL: "models/crossroom_corner.j3s.gz",
+			modelURL: "models/worldbuilder/crossroom_corner.j3s.gz",
 			scale: 0.0545,
-                        cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
-			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
-		},
-		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Chair",
-			group: false,
-			library: ["Room Accessories","Office Furniture","Chairs"],
-			width: 1,
-			height: 1,
-			zIndex: 3,
-			rotatable: true,
-			description: "A simple chair, good for sitting in.",
-			tileImageURL: "chair_n.png",
-			iconImageURL: "chair_icon.png",
-			modelURL: "models/chair.j3s.gz",
                         cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
