@@ -332,8 +332,7 @@
 			}
 			
 			function setRotation(thisObjectID,direction) {
-				var thisImage = $(thisObjectID).firstDescendant();
-				thisImage = thisImage.next();
+				var thisImage = $(thisObjectID).firstDescendant().next();
 				var newImage = thisImage.readAttribute('src').sub(/\_[nsew]\./,'_' + direction + '.');
 				thisImage.writeAttribute('src',newImage);
 			}
@@ -427,23 +426,21 @@
 					var thisY = ((thisLocation[1]/(gridSize-1)))*unitFactor;
 					
                                         var rotation = objectArray[objectArrayIndex].firstDescendant().next().readAttribute('src');
-					if (rotation = rotation.charAt(rotation.search(/_[nsew]./) + 1)) {
-						switch (rotation) {
-							case "n":
-								rotation = "180";
-								break;
-							case "e":
-								rotation = "90";
-								break;
-							case "s":
-								rotation = "360";
-								break;
-							case "w":
-								rotation = "270";
-								break;
-							default:
-								rotation = "0";
-						}
+					switch (rotation.charAt(rotation.search(/_[nsew]\./) + 1)) {
+						case "n":
+							rotation = "180";
+							break;
+						case "e":
+							rotation = "90";
+							break;
+						case "s":
+							rotation = "360";
+							break;
+						case "w":
+							rotation = "270";
+							break;
+						default:
+							rotation = "0";
                                         }
                                          
                                         outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
