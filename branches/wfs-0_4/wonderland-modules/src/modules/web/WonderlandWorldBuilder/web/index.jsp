@@ -198,7 +198,7 @@
 						} else {
 							//create non-group object
 							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"top:" + top + "px;left:" + left + "px;z-index:" +catalogData.catalog[catalogIndex].zIndex + "\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
-							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellSetupType + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + catalogData.catalog[catalogIndex].scale + " " + (catalogData.catalog[catalogIndex].height*unitFactor) + " " + (catalogData.catalog[catalogIndex].width*unitFactor) + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
+							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellSetupType + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + catalogData.catalog[catalogIndex].height + " " + catalogData.catalog[catalogIndex].width + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
 							insertHTML += "<img src=\"" + catalogData.catalog[catalogIndex].tileImageURL + "\" width=\"" + width + "\" height=\"" + height + "\" alt=\"" + catalogData.catalog[catalogIndex].name + "\" title=\"" + catalogData.catalog[catalogIndex].name + ": " + catalogData.catalog[catalogIndex].description + "\" />";
 							insertHTML += "</div>";
 						}
@@ -294,7 +294,7 @@
 			
 			function showRotationControls(thisObjectID) {
 				var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
-				var rotatable = thisData[8];
+				var rotatable = thisData[7];
 				if (rotatable == "true") {
 					var thisLocation = $(thisObjectID).viewportOffset();
 					var thisObjectSize = $(thisObjectID).getDimensions();
@@ -355,8 +355,9 @@
 				var cellIndex = 0;
 				if (worldData.cell.children.cell.length > -1) {
 					while (worldData.cell.children.cell[cellIndex]) {
-						var top = (worldData.cell.children.cell[cellIndex].location.y.$/unitFactor)*(gridSize-1);
-						var left = (worldData.cell.children.cell[cellIndex].location.x.$/unitFactor)*(gridSize-1);
+						var top = ((worldData.cell.children.cell[cellIndex].location.y.$-(worldData.cell.children.cell[cellIndex].size.height.$*0.5))/unitFactor)*(gridSize-1);
+						var left = ((worldData.cell.children.cell[cellIndex].location.x.$-(worldData.cell.children.cell[cellIndex].size.width.$*0.5))/unitFactor)*(gridSize-1);
+						
 						var direction = "0";
 						if (worldData.cell.children.cell[cellIndex].rotation) {
 							direction = worldData.cell.children.cell[cellIndex].rotation.$;
@@ -422,10 +423,9 @@
 				while (objectArray[objectArrayIndex]) {
 					var thisData = $w(objectArray[objectArrayIndex].firstDescendant().innerHTML);
 					var thisLocation = objectArray[objectArrayIndex].positionedOffset();
-					var thisX = ((thisLocation[0]/(gridSize-1)))*unitFactor;
-					var thisY = ((thisLocation[1]/(gridSize-1)))*unitFactor;
-					
-                                        var rotation = objectArray[objectArrayIndex].firstDescendant().next().readAttribute('src');
+					var thisX = ((thisLocation[0]/(gridSize-1))+(thisData[6]*0.5))*unitFactor;
+					var thisY = ((thisLocation[1]/(gridSize-1))+(thisData[5]*0.5))*unitFactor;
+					var rotation = objectArray[objectArrayIndex].firstDescendant().next().readAttribute('src');
 					switch (rotation.charAt(rotation.search(/_[nsew]\./) + 1)) {
 						case "n":
 							rotation = "180";
@@ -454,12 +454,11 @@
 					outputJSON += "\"x\":{\"$\":\"" + thisX + "\"},";
 					outputJSON += "\"y\":{\"$\":\"" + thisY + "\"}";
 					outputJSON += "},\"rotation\":{\"$\":\"" + rotation + "\"},";
-					outputJSON += "\"scale\":{\"$\":\"" + thisData[5] + "\"},";
-                                        outputJSON += "\"properties\":{\"property\":{\"key\":{\"$\":\"modelFile\"},";
+					outputJSON += "\"properties\":{\"property\":{\"key\":{\"$\":\"modelFile\"},";
 					outputJSON += "\"value\":{\"$\":\"" + thisData[4] + "\"}";
 					outputJSON += "}},\"size\":{";
-					outputJSON += "\"height\":{\"$\":\"" + thisData[6] + "\"},";
-					outputJSON += "\"width\":{\"$\":\"" + thisData[7] + "\"}";
+					outputJSON += "\"height\":{\"$\":\"" + (thisData[5]*unitFactor) + "\"},";
+					outputJSON += "\"width\":{\"$\":\"" + (thisData[6]*unitFactor) + "\"}";
 					outputJSON += "},\"version\":{\"$\":\"0\"}}";
 
 					if (objectArray.length > 1) {
@@ -568,7 +567,7 @@
 				<img id="arrow_east" src="arrow_east.png" title="Click to face object east" onmouseover="setRotation($('rotation_object').innerHTML,'e')" onclick="$('rotation_controls').setStyle({visibility:'hidden'})" />
 				<img id="arrow_west" src="arrow_west.png" title="Click to face object west" onmouseover="setRotation($('rotation_object').innerHTML,'w')" onclick="$('rotation_controls').setStyle({visibility:'hidden'})" />
 			</div>
-			<!--<div id="debug" style="position: absolute; top: 0px; right: 0px; width: 200px; height: 200px; overflow: scroll; background-color: white; z-index: 9999"></div>-->
+			<!--<div id="debug" style="position: absolute; bottom: 0px; right: 0px; width: 200px; height: 200px; overflow: scroll; background-color: white; z-index: 9999"></div>-->
 			<div class="button" onclick="zoomIn()">Zoom In</div>
 			<div class="button" onclick="zoomOut()">Zoom Out</div>
 			<div class="button" onclick="putWorld()">Save World</div>
