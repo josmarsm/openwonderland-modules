@@ -112,26 +112,47 @@ public class CellPersistence {
         // get the directory to synchronized with
         String wfsRoot = System.getProperty("wonderland.wfs.root");
         if (wfsRoot == null) {
-            System.out.println("Home: " + System.getProperty("user.home"));
             wfsRoot = "file:" + System.getProperty("user.home") + 
-                         File.separator + ".worldBuilder/wb-wfs";
+                         File.separator + ".wonderland/worldbuilder-wfs";
         }
+        
+        logger.info("Loading WFS from " + wfsRoot);
+        
         WFS wfs; 
         
         // create the root cell
         Cell root = new Cell(ROOT_CELL_ID);
         root.setSize(new CellDimension(1024, 1024));
-
+        root.setCellType("org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO");
+        root.setCellSetupType("org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}");
+        
         try {
-            // create the WFS
-            wfs = WFSFactory.open(new URL(wfsRoot));
-            WFSCell rootWFS = find(wfs.getRootDirectory(), ROOT_CELL_ID);
+            // decide whether to create or open the WFS
+            boolean create = false;
+            WFSCell rootWFS;
             
-            // create the root if it doesn't exist
-            if (rootWFS == null) {
+            URL wfsRootURL = new URL(wfsRoot);
+            if (wfsRootURL.getProtocol().equals(WFS.FILE_PROTOCOL)) {
+                create = !(new File(wfsRootURL.getPath()).exists());
+            }
+           
+            if (create) {
+                // create a new WFS
+                wfs = WFSFactory.create(wfsRootURL);
                 rootWFS = wfs.getRootDirectory().addCell(ROOT_CELL_ID);
                 rootWFS.setCellSetup(toWFS(root));
                 wfs.write();
+                
+                logger.info("Created new WFS at " + wfsRootURL);
+            } else {
+                // open existing WFS
+                wfs = WFSFactory.open(wfsRootURL);
+                rootWFS = find(wfs.getRootDirectory(), ROOT_CELL_ID);
+            }
+            
+            if (rootWFS == null) {
+                throw new InvalidWFSException("Unable to find root cell in " +
+                                              wfsRootURL);
             }
             
             CellInfo info = add(null, root, rootWFS);
@@ -608,7 +629,12 @@ public class CellPersistence {
         {
             // create the new cell in WFS.  The file won't actually be created
             // until we write to it in the post-process method
-            WFSCell childWFS = parentWFS.getCellDirectory().addCell(child.getCellID());
+            WFSCellDirectory parentDir = parentWFS.getCellDirectory();
+            if (parentDir == null) {
+                parentDir = parentWFS.createCellDirectory();
+            }
+            
+            WFSCell childWFS = parentDir.addCell(child.getCellID());
                 
             // add the record to the list
             addList.add(new CellUpdateRecord(parent, child, childWFS));
