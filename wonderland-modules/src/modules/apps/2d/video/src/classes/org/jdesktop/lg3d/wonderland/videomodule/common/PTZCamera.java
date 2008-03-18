@@ -24,30 +24,48 @@ package org.jdesktop.lg3d.wonderland.videomodule.common;
  * @author nsimpson
  */
 public interface PTZCamera extends Camera {
+
     public void resetCameraPosition();
-    
-    public int getMinPan();
-    public int getMaxPan();
-    public int getPan();
-    
-    public int getMinTilt();
-    public int getMaxTilt();
-    public int getTilt();
-    
-    public int getMinZoom();
-    public int getMaxZoom();
-    public int getZoom();
-    
-    public void panTo(int pan);
-    public void tiltTo(int tilt);
-    public void zoomTo(int zoom);
-    
-    public void panBy(int delta);
-    public void tiltBy(int delta);
-    public void zoomBy(int delta);
-    
+
+    public void setPTZPosition(float p, float t, float z);
+            
+    public float getMinPan();
+
+    public float getMaxPan();
+
+    public float getPan();
+
+    public float getMinTilt();
+
+    public float getMaxTilt();
+
+    public float getTilt();
+
+    public float getMinZoom();
+
+    public float getMaxZoom();
+
+    public float getZoom();
+
+    public float getMinHorizontalFOV();
+
+    public float getMinVerticalFOV();
+
+    public void panTo(float pan);
+
+    public void tiltTo(float tilt);
+
+    public void zoomTo(float zoom);
+
+    public void panBy(float delta);
+
+    public void tiltBy(float delta);
+
+    public void zoomBy(float delta);
+
     public void center();
-    
+
     public void zoomInFully();
+
     public void zoomOutFully();
 }

@@ -17,27 +17,19 @@
  * $Date$
  * $State$
  */
-package org.jdesktop.lg3d.wonderland.videomodule.common;
+package org.jdesktop.lg3d.wonderland.videomodule.client.cell;
+
+import javax.vecmath.Point3f;
 
 /**
- *
- * @author nsimpson
+ * A listener for motion events from a LinearMover
  */
-public class SimpleMovie implements MovieSource {
-    private String movie;
-
-    public SimpleMovie() {
-    }
+public interface MoveListener {
+    /**
+     * Called when the mover wants to change the position
+     * @param position the point in space to move to
+     */
+    public void move(Point3f position);
     
-    public SimpleMovie(String movie) {
-        setSource(movie);
-    }
-    
-    public void setSource(String movie) {
-        this.movie = movie;
-    }
-    
-    public String getSource() {
-        return movie;
-    }
+    public void moveComplete();
 }
