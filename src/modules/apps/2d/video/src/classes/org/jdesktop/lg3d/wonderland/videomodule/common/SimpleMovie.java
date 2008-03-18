@@ -29,6 +29,10 @@ public class SimpleMovie implements MovieSource {
     public SimpleMovie() {
     }
     
+    public SimpleMovie(String movie) {
+        setSource(movie);
+    }
+    
     public void setSource(String movie) {
         this.movie = movie;
     }
