@@ -55,6 +55,7 @@ public class PDFDocumentDialog extends javax.swing.JDialog {
         documentLabel.setFont(new java.awt.Font("Dialog", 1, 12));
         documentLabel.setText("Document URL:");
 
+        documentTextField.setFont(new java.awt.Font("DialogInput", 0, 12));
         documentTextField.setText("http://");
         documentTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -103,7 +104,7 @@ public class PDFDocumentDialog extends javax.swing.JDialog {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(cancelButton)
                     .add(okButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(7, Short.MAX_VALUE))
         );
 
         pack();
