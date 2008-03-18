@@ -12,12 +12,11 @@
  * License, Version 2 (the "License"); you may not use this file
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
- *
+ * 
  * $Revision$
  * $Date$
  * $State$
  */
-
 /**
  * This code derived from:
  *
@@ -25,33 +24,28 @@
  * Andrew Davison, May 2005, ad@fivedots.coe.psu.ac.th
  */
 /* The specified movie is loaded into a JMF player, and
-   played continuously in a loop until stopMovie() is called.
- 
-   The player is not displayed, instead the user accesses
-   the current frame in the movie by called getFrame(). It
-   returns the image as a BufferedImage object of type
-   BufferedImage.TYPE_3BYTE_BGR, and dimensions
-   FORMAT_SIZE x FORMAT_SIZE. The image has the current time
-   in hours:minutes.seconds.milliseconds written on top of it.
- 
-   The original dimensions of the image in the movie can be
-   retrieved by calling getImageWidth() and getImageHeight().
- 
-   ----
-   For best performance, the movie should be in MPEG-1 format
-   with _no_ audio track.
- 
-   If the movie does have an audio track, then the JMF player
-   used here will be slow to start, and frame grabbing (using
-   JMF's FrameGrabbingControl class) will be erratic --
-   e.g. there may be several seconds when the frame does not
-   change.
- 
-   ----
-   This code does not allow the user to retrieve a specific
-   frame. I did want to do this (e.g. see the Quicktime version
-   of this application), but I couldn't get JMF's
-   FramePositioningControl class to work in a reliable manner.
+played continuously in a loop until stopMovie() is called.
+The player is not displayed, instead the user accesses
+the current frame in the movie by called getFrame(). It
+returns the image as a BufferedImage object of type
+BufferedImage.TYPE_3BYTE_BGR, and dimensions
+FORMAT_SIZE x FORMAT_SIZE. The image has the current time
+in hours:minutes.seconds.milliseconds written on top of it.
+The original dimensions of the image in the movie can be
+retrieved by calling getImageWidth() and getImageHeight().
+----
+For best performance, the movie should be in MPEG-1 format
+with _no_ audio track.
+If the movie does have an audio track, then the JMF player
+used here will be slow to start, and frame grabbing (using
+JMF's FrameGrabbingControl class) will be erratic --
+e.g. there may be several seconds when the frame does not
+change.
+----
+This code does not allow the user to retrieve a specific
+frame. I did want to do this (e.g. see the Quicktime version
+of this application), but I couldn't get JMF's
+FramePositioningControl class to work in a reliable manner.
  */
 package org.jdesktop.lg3d.wonderland.videomodule.common;
 
@@ -71,63 +65,63 @@ import javax.media.format.*;
 import javax.media.util.*;
 
 public class JMFSnapper implements ControllerListener {
+
     /** a logger */
     private static final Logger logger =
             Logger.getLogger(JMFSnapper.class.getName());
-    
     // size of BufferedImage; should be a power of 2, less than 512,
     // or older graphic cards may get upset when using it as a texture
     private static final int FORMAT_SIZE = 512;
-    
     // used while waiting for the BufferToImage object to be initialized
     private static final int MAX_TRIES = 5;
     private static final int TRY_PERIOD = 2000;   // ms
-    
     // when getting the next frame, wait up to
     // PER_FRAME_MAX_TRIES*PER_FRAME_TRY_PERIOD milliseconds
     // The default is 50ms which allows for a maximum frame rate of 20fps
     private static final int PER_FRAME_MAX_TRIES = 10;
     private static final int PER_FRAME_TRY_PERIOD = 5;   // ms
-    
+    public static final int RESET_STOP_TIME = -1;
     private Player p;
     private FrameGrabbingControl fg;
     private BufferToImage bufferToImage = null;
-    
-    private BufferedImage formatImg;    // for the frame image
-    private int width, height;          // frame dimensions
-    
+    private int width,  height;          // frame dimensions
     // used for waiting until the player has started
     private Object waitSync = new Object();
     private boolean stateTransitionOK = true;
-    
     private boolean showTimer = false;
-    
+    private BufferedImage bi = null;
+    private Graphics graphics = null;
+    private int biWidth = 0;
+    private int biHeight = 0;
+
     public JMFSnapper(String fnm) {
         // utilise the native modular player so frame grabbing is available
         Manager.setHint(Manager.PLUGIN_PLAYER, new Boolean(true));
-        
+//      Manager.setHint(Manager.CACHING, new Boolean(true));
+//      Manager.setHint(Manager.LIGHTWEIGHT_RENDERER, new Boolean(true));
+
         // create a realized player
         try {
-            if ((new File(fnm)).exists())
+            if ((new File(fnm)).exists()) {
                 p = Manager.createRealizedPlayer(new URL("file:" + fnm));
-            else
+            } else {
                 p = Manager.createRealizedPlayer(new MediaLocator(fnm));
-            
+            }
+
             logger.fine("created player for: " + fnm);
         } catch (Exception e) {
             logger.severe("failed to create player for: " + fnm + ": " + e);
         }
-        
+
         if (p != null) {
             p.addControllerListener(this);
-            
+
             // create the frame grabber
             fg = (FrameGrabbingControl) p.getControl(
                     "javax.media.control.FrameGrabbingControl");
             if (fg == null) {
                 logger.severe("frame grabber could not be created");
             } else {
-                
                 // check if the player has a visual component
                 if (p.getVisualComponent() == null) {
                     logger.severe("no visual component found");
@@ -144,7 +138,7 @@ public class JMFSnapper implements ControllerListener {
             }
         }
     }
-    
+
     /**
      * Get if a player exists
      * @return true if a player exists, false otherwise
@@ -152,7 +146,7 @@ public class JMFSnapper implements ControllerListener {
     public boolean hasPlayer() {
         return (p != null);
     }
-    
+
     /**
      * wait for the player to enter its Started state
      */
@@ -162,11 +156,12 @@ public class JMFSnapper implements ControllerListener {
                 while (p.getState() != Controller.Started && stateTransitionOK) {
                     waitSync.wait();
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
         return stateTransitionOK;
     }
-    
+
     /**
      * Wait for the BufferToImage object to be initialized.
      * Movies with an audio track may take several seconds to
@@ -177,7 +172,7 @@ public class JMFSnapper implements ControllerListener {
     private synchronized boolean waitForBufferToImage(int wait, int tries) {
         boolean hasImage = false;
         int tryCount = tries;
-        
+
         while (tryCount > 0) {
             if (hasBufferToImage()) {   // initialization succeeded
                 hasImage = true;
@@ -191,13 +186,13 @@ public class JMFSnapper implements ControllerListener {
             }
             tryCount--;
         }
-        
+
         if (tryCount == 0) {
             logger.severe("timed out waiting for image");
         }
         return hasImage;
     }
-    
+
     /**
      * The BufferToImage object is initialized here, so that when
      * getFrame() is called later, the snap can be quickly changed to
@@ -214,27 +209,27 @@ public class JMFSnapper implements ControllerListener {
      */
     private boolean hasBufferToImage() {
         Buffer buf = fg.grabFrame();     // take a snap
-        
+
         if (buf == null) {
             logger.warning("no grabbed frame");
             return false;
         }
-        
+
         // there is a buffer, but check if it's empty or not
         VideoFormat vf = (VideoFormat) buf.getFormat();
         if (vf == null) {
             logger.warning("no video format");
             return false;
         }
-        
+
         width = vf.getSize().width;     // extract the image's dimensions
         height = vf.getSize().height;
-        
+
         // initialize bufferToImage with the video format info.
         bufferToImage = new BufferToImage(vf);
         return true;
     }
-    
+
     /**
      * stopMovie() and getFrame() are synchronized so that it's not
      * possible to close down the player while a frame is being
@@ -245,7 +240,7 @@ public class JMFSnapper implements ControllerListener {
             p.stop();
         }
     }
-    
+
     /**
      * startMovie() and getFrame() are synchronized so that it's not
      * possible to close down the player while a frame is being
@@ -254,47 +249,58 @@ public class JMFSnapper implements ControllerListener {
     public synchronized void startMovie() {
         if (p != null) {
             p.start();
+            if (!waitForStart()) {
+                logger.severe("failed to start the player.");
+            }
         }
     }
-    
+
     public synchronized void setPosition(double time) {
         if (p != null) {
             // can only set time on a stopped player
             if (p.getState() == Player.Started) {
                 p.stop();
-                // REMIND: restart now?
+            // REMIND: restart now?
             }
-            p.setMediaTime(new Time((long)time));
+            p.setMediaTime(new Time((long) time));
         }
     }
-    
-    public synchronized void setStopTime(double time) {
-        if (p != null) {
-            p.setStopTime(new Time(time));
-        }
-    }
-    
+
     public synchronized double getPosition() {
         double position = 0;
-        
+
         if (p != null) {
             logger.fine("--- media time: " + p.getMediaTime());
             position = p.getMediaTime().getNanoseconds();
         }
-        
+
         return position;
     }
-    
+
+    public synchronized void setStopTime(double time) {
+        if (p != null) {
+            if (time == RESET_STOP_TIME) {
+                if (p.getStopTime() != Clock.RESET) {
+                    p.setStopTime(Clock.RESET);
+                }
+            } else {
+                p.setStopTime(new Time(time));
+            }
+        }
+    }
+
     /**
      * Mute or unmute the player audio
      * @param muting if true mutes audio, else unmutes audio
      */
     public void mute(boolean muting) {
         if (hasPlayer() == true) {
-            p.getGainControl().setMute(muting);
+            if (p.getGainControl() != null) {
+                p.getGainControl().setMute(muting);
+            }
         }
     }
-    
+
     /**
      * Gets whether the audio is muted
      * @return true if audio is muted, false otherwise
@@ -302,18 +308,28 @@ public class JMFSnapper implements ControllerListener {
     public boolean isMuted() {
         boolean muted = false;
         if (hasPlayer() == true) {
-            muted = p.getGainControl().getMute();
+            if (p.getGainControl() != null) {
+                muted = p.getGainControl().getMute();
+            }
         }
         return muted;
     }
-    
+
+    public long getDuration() {
+        long duration = 0;
+        if (p != null) {
+            duration = p.getDuration().getNanoseconds();
+        }
+        return duration;
+    }
+
     /**
      * Show or hide timer
      */
     public void showTimer(boolean show) {
         showTimer = show;
     }
-    
+
     public int getPlayerState() {
         int state = 0;
         if (p != null) {
@@ -321,6 +337,7 @@ public class JMFSnapper implements ControllerListener {
         }
         return state;
     }
+
     /**
      * Grab a frame from the movie.
      * The frame must be converted from Buffer object to Image,
@@ -328,22 +345,20 @@ public class JMFSnapper implements ControllerListener {
      * on top of the image when it's converted to a BufferedImage.
      */
     synchronized public BufferedImage getFrame() {
-        BufferedImage bi = null;
-
         if (fg != null) {
             // grab the current frame as a buffer object
             Buffer buf = fg.grabFrame();
-            
+
 //            waitForBufferToImage(PER_FRAME_TRY_PERIOD, PER_FRAME_MAX_TRIES);
-            
+
             if (buf == null) {
                 logger.warning("no grabbed buffer");
                 return null;
             }
-            
+
             // use JMF to decode frame into a java.awt.Image
             Image im = bufferToImage.createImage(buf);
-            
+
             if (im == null) {
                 // if there was no luck converting the data using JMF, try imageIO
                 // XXX this could be very expensive XXX
@@ -358,12 +373,14 @@ public class JMFSnapper implements ControllerListener {
                 }
             } else {
                 // convert the Image to a BufferedImage
-                bi = new BufferedImage(im.getWidth(null), im.getHeight(null),
-                        BufferedImage.TYPE_INT_ARGB);
-                Graphics g = bi.createGraphics();
-                g.drawImage(im, 0, 0, im.getWidth(null), im.getHeight(null), null);
+                if ((bi == null) || (im.getWidth(null) != biWidth) || (im.getHeight(null) != biHeight)) {
+                    bi = new BufferedImage(im.getWidth(null), im.getHeight(null),
+                            BufferedImage.TYPE_INT_ARGB);
+                    graphics = bi.createGraphics();
+                }
+                graphics.drawImage(im, 0, 0, im.getWidth(null), im.getHeight(null), null);
             }
-            
+
             // Overlay current time on top of the image
             if ((bi != null) && (showTimer == true)) {
                 Graphics g = bi.createGraphics();
@@ -376,16 +393,16 @@ public class JMFSnapper implements ControllerListener {
         }
         return bi;
     }
-    
+
     /**
      * return hours:minutes.seconds.milliseconds
      */
     private String timeNow() {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm.ss.SSS");
         Calendar now = Calendar.getInstance();
-        return ( sdf.format(now.getTime()) );
+        return (sdf.format(now.getTime()));
     }
-    
+
     /**
      * respond to events
      */
@@ -407,11 +424,11 @@ public class JMFSnapper implements ControllerListener {
             p.stop();
         }
     }
-    
+
     public int getImageWidth() {
         return width;
     }
-    
+
     public int getImageHeight() {
         return height;
     }
