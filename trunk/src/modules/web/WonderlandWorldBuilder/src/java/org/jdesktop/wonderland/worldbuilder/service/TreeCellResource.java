@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.worldbuilder.service;
 
 import java.net.URI;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.worldbuilder.wrapper.CellWrapper;
 import org.jdesktop.wonderland.worldbuilder.wrapper.TreeCellWrapper;
 import java.util.logging.Logger;
@@ -28,9 +29,9 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.GET;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 import org.jdesktop.wonderland.worldbuilder.Cell;
 import org.jdesktop.wonderland.worldbuilder.persistence.CellPersistence;
 import org.jdesktop.wonderland.worldbuilder.persistence.UnmodifiedCell;
@@ -73,7 +74,7 @@ public class TreeCellResource extends CellResource {
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
     @Override
-    public void put(CellWrapper data) {
+    public Response put(CellWrapper data) {
         logger.info("Update tree " + getCell().getCellID());
         
         // make sure the ids match
@@ -97,7 +98,14 @@ public class TreeCellResource extends CellResource {
         logger.info("Tree is:\n" + sb.toString());
         
         // write the changes
-        CellPersistence.get().updateTree(data.getCell());
+        try {
+            CellPersistence.get().updateTree(data.getCell());
+            return Response.ok().build();
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "Error writing tree " + data.getCellID(),
+                       ex);
+            return Response.serverError().build();
+        }
     }
    
     @Override

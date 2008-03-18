@@ -35,6 +35,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.UriParam;
+import javax.ws.rs.core.Response;
 import org.jdesktop.wonderland.worldbuilder.Cell;
 
 /**
@@ -72,15 +73,15 @@ public class TreeResource {
     
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
-    public void put(CellWrapper data) {
+    public Response put(CellWrapper data) {
         Cell root = CellPersistence.get().getRoot();
-        new TreeCellResource(root.getCellID(), context).put(data);
+        return new TreeCellResource(root.getCellID(), context).put(data);
     }
     
     @POST
     @ConsumeMime({"application/xml", "application/json"})
-    public void post(CellWrapper data) {
-        put(data);
+    public Response post(CellWrapper data) {
+        return put(data);
     }
     
     /**

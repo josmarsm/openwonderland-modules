@@ -111,7 +111,7 @@
 						var top = (gridSize - 1) * Math.floor((thisLocation.top - worldLocation.top + ($(thisObjectID).getHeight()*0.5))/(gridSize - 1));
 						var left = (gridSize - 1) * Math.floor((thisLocation.left - worldLocation.left + ($(thisObjectID).getWidth()*0.5))/(gridSize - 1));
 						if (thisLocation.left >= workspaceLeft && thisLocation.left <= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) && thisLocation.top >= workspaceTop && thisLocation.top <= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
-							createPlaceable(catalogData.catalog[catalogIndex].catalogURI,catalogIndex,top,left);
+							createPlaceable(catalogData.catalog[catalogIndex].catalogURI,catalogIndex,top,left,null,true);
 						}
 						$('library').setStyle({zIndex:'1'});
 						$(thisObjectID).remove();
@@ -175,7 +175,7 @@
 				$(thisPanel).setStyle({visibility:'hidden'});
 			}
 			
-			function createPlaceable(catalogURI,catalogIndex,top,left,direction) {
+			function createPlaceable(catalogURI,catalogIndex,top,left,direction,newComponent) {
 				new Ajax.Request(catalogURI, {
 					method:'get',
 					onSuccess: function(data) {
@@ -198,7 +198,7 @@
 						} else {
 							//create non-group object
 							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"top:" + top + "px;left:" + left + "px;z-index:" +catalogData.catalog[catalogIndex].zIndex + "\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
-							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + (catalogData.catalog[catalogIndex].height*unitFactor) + " " + (catalogData.catalog[catalogIndex].width*unitFactor) + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
+							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellSetupType + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + catalogData.catalog[catalogIndex].height + " " + catalogData.catalog[catalogIndex].width + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
 							insertHTML += "<img src=\"" + catalogData.catalog[catalogIndex].tileImageURL + "\" width=\"" + width + "\" height=\"" + height + "\" alt=\"" + catalogData.catalog[catalogIndex].name + "\" title=\"" + catalogData.catalog[catalogIndex].name + ": " + catalogData.catalog[catalogIndex].description + "\" />";
 							insertHTML += "</div>";
 						}
@@ -215,8 +215,10 @@
 								if ((thisLocation.left - 2) <= (workspaceLeft - gridSize) || (thisLocation.left + 2) >= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) || (thisLocation.top - 2) <= (workspaceTop - gridSize) || thisLocation.top >= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
 									return true; //move object back if dropped outside workspace
 								}
-								if ($(thisObjectID).getStyle('display') == 'none') {
+								if ($(thisObjectID).getStyle('visibility') == 'hidden') {
 									$(thisObjectID).remove();
+								} else {
+									showRotationControls(thisObjectID);
 								}
 								$('workspace').setStyle({zIndex:'2'});
 							},
@@ -232,10 +234,12 @@
 						if (direction) {
 							setRotation(thisObjectID,direction);
 						}
-						showRotationControls(thisObjectID);
+						if (newComponent) {
+							showRotationControls(thisObjectID);
+						}
 					},
 					onFailure: function() {
-						alert("Failed to load catalog from " + url);
+						alert("Failed to load catalog data for this object from " + url);
 					}
 				});
 			}
@@ -290,7 +294,7 @@
 			
 			function showRotationControls(thisObjectID) {
 				var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
-				var rotatable = thisData[6];
+				var rotatable = thisData[7];
 				if (rotatable == "true") {
 					var thisLocation = $(thisObjectID).viewportOffset();
 					var thisObjectSize = $(thisObjectID).getDimensions();
@@ -328,8 +332,7 @@
 			}
 			
 			function setRotation(thisObjectID,direction) {
-				var thisImage = $(thisObjectID).firstDescendant();
-				thisImage = thisImage.next();
+				var thisImage = $(thisObjectID).firstDescendant().next();
 				var newImage = thisImage.readAttribute('src').sub(/\_[nsew]\./,'_' + direction + '.');
 				thisImage.writeAttribute('src',newImage);
 			}
@@ -339,7 +342,7 @@
 					requestHeaders: {Accept:'application/json'},
 					method: 'get',
 					onSuccess: function(data) {
-						buildWorld(data);
+						buildWorld(data.responseText);
 					},
 					onFailure: function() {
 						alert("Failed to load world from server");
@@ -348,30 +351,31 @@
 			}
 			
 			function buildWorld(data) {
-				worldData = data.responseText.evalJSON();
+				worldData = data.evalJSON();
 				var cellIndex = 0;
 				if (worldData.cell.children.cell.length > -1) {
 					while (worldData.cell.children.cell[cellIndex]) {
-						var top = (worldData.cell.children.cell[cellIndex].location.y.$/unitFactor)*(gridSize-1);
-						var left = (worldData.cell.children.cell[cellIndex].location.x.$/unitFactor)*(gridSize-1);
-						var direction = 0;
+						var top = ((worldData.cell.children.cell[cellIndex].location.y.$-(worldData.cell.children.cell[cellIndex].size.height.$*0.5))/unitFactor)*(gridSize-1);
+						var left = ((worldData.cell.children.cell[cellIndex].location.x.$-(worldData.cell.children.cell[cellIndex].size.width.$*0.5))/unitFactor)*(gridSize-1);
+						
+						var direction = "0";
 						if (worldData.cell.children.cell[cellIndex].rotation) {
-							direction = worldData.cell.children.cell[cellIndex].rotation;
+							direction = worldData.cell.children.cell[cellIndex].rotation.$;
 							switch (direction) {
-								case 180:
+								case "180":
 									direction = "n";
 									break;
-								case 90:
+								case "90":
 									direction = "e";
 									break;
-								case 360:
+								case "360":
 									direction = "s";
 									break;
-								case 270:
+								case "270":
 									direction = "w";
 									break;
 								default:
-									direction = 0;
+									direction = "0";
 							}
 						}
 						var catalogURI = worldData.cell.children.cell[cellIndex].catalogURI.$;
@@ -382,35 +386,34 @@
 				} else {
 					var top = (worldData.cell.children.cell.location.y.$/unitFactor)*(gridSize-1);
 					var left = (worldData.cell.children.cell.location.x.$/unitFactor)*(gridSize-1);
-					var direction = 0;
+					var direction = "0";
 					if (worldData.cell.children.cell.rotation) {
-						direction = worldData.cell.children.cell.rotation;
+						direction = worldData.cell.children.cell.rotation.$;
 						switch (direction) {
-							case 180:
+							case "180":
 								direction = "n";
 								break;
-							case 90:
+							case "90":
 								direction = "e";
 								break;
-							case 360:
+							case "360":
 								direction = "s";
 								break;
-							case 270:
+							case "270":
 								direction = "w";
 								break;
 							default:
-								direction = 0;
+								direction = "0";
 						}
 					}
 					var catalogURI = worldData.cell.children.cell.catalogURI.$;
 					var catalogIndex = worldData.cell.children.cell.catalogID.$;
 					createPlaceable(catalogURI,catalogIndex,top,left,direction);
 				}
-				$('rotation_controls').setStyle({visibility:'hidden'});
 			}
 			
 			function createJSON() {
-				var outputJSON = "{\"cell\":{\"@uri\":\"http://localhost:8080/WonderlandWorldBuilder/resources/tree/root\",\"cellID\":{\"$\":\"root\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
+				var outputJSON = "{\"cell\":{\"@uri\":\"http://localhost:8080/WonderlandWorldBuilder/resources/tree/root\",\"cellID\":{\"$\":\"root\"},\"cellSetupType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
 				var objectArray = $('world').childElements();
 				if (objectArray.length > 1) {
 					outputJSON += "["
@@ -420,46 +423,44 @@
 				while (objectArray[objectArrayIndex]) {
 					var thisData = $w(objectArray[objectArrayIndex].firstDescendant().innerHTML);
 					var thisLocation = objectArray[objectArrayIndex].positionedOffset();
-					var thisX = ((thisLocation[0]/(gridSize-1)))*unitFactor;
-					var thisY = ((thisLocation[1]/(gridSize-1)))*unitFactor;
-					outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
+					var thisX = ((thisLocation[0]/(gridSize-1))+(thisData[6]*0.5))*unitFactor;
+					var thisY = ((thisLocation[1]/(gridSize-1))+(thisData[5]*0.5))*unitFactor;
+					var rotation = objectArray[objectArrayIndex].firstDescendant().next().readAttribute('src');
+					switch (rotation.charAt(rotation.search(/_[nsew]\./) + 1)) {
+						case "n":
+							rotation = "180";
+							break;
+						case "e":
+							rotation = "90";
+							break;
+						case "s":
+							rotation = "360";
+							break;
+						case "w":
+							rotation = "270";
+							break;
+						default:
+							rotation = "0";
+                                        }
+                                         
+                                        outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
 					outputJSON += "\"@uri\":\"http:\/\/localhost:8080\/WonderlandWorldBuilder\/resources\/tree\/" + cellID + "\",";
 					outputJSON += "\"catalogID\":{\"$\":\"" + thisData[0] + "\"},";
 					outputJSON += "\"catalogURI\":{\"$\":\"" + thisData[1] + "\"},";
 					outputJSON += "\"cellID\":{\"$\":\"" + cellID + "\"},";
-					outputJSON += "\"cellType\":{\"$\":\"" + thisData[2] + "\"},";
+					outputJSON += "\"cellSetupType\":{\"$\":\"" + thisData[2] + "\"},";
+                                        outputJSON += "\"cellType\":{\"$\":\"" + thisData[3] + "\"},";
 					outputJSON += "\"children\":{},\"location\":{";
 					outputJSON += "\"x\":{\"$\":\"" + thisX + "\"},";
 					outputJSON += "\"y\":{\"$\":\"" + thisY + "\"}";
-					outputJSON += "},\"properties\":{\"property\":{\"key\":{\"$\":\"model\"},";
-					outputJSON += "\"value\":{\"$\":\"" + thisData[3] + "\"}";
+					outputJSON += "},\"rotation\":{\"$\":\"" + rotation + "\"},";
+					outputJSON += "\"properties\":{\"property\":{\"key\":{\"$\":\"modelFile\"},";
+					outputJSON += "\"value\":{\"$\":\"" + thisData[4] + "\"}";
 					outputJSON += "}},\"size\":{";
-					outputJSON += "\"height\":{\"$\":\"" + thisData[4] + "\"},";
-					outputJSON += "\"width\":{\"$\":\"" + thisData[5] + "\"}";
+					outputJSON += "\"height\":{\"$\":\"" + (thisData[5]*unitFactor) + "\"},";
+					outputJSON += "\"width\":{\"$\":\"" + (thisData[6]*unitFactor) + "\"}";
 					outputJSON += "},\"version\":{\"$\":\"0\"}}";
-					/*var rotation = objectArray[objectArrayIndex].firstDescendant().readAttribute('src');
-					if (rotation = rotation.charAt(rotation.search(/_[nsew]./) + 1)) {
-						switch (rotation) {
-							case "n":
-								rotation = 180;
-								break;
-							case "e":
-								rotation = 90;
-								break;
-							case "s":
-								rotation = 360;
-								break;
-							case "w":
-								rotation = 270;
-								break;
-							default:
-								rotation = 0;
-						}
-						var radians = rotation * (Math.PI/180);
-						outputJSON += "\"rotation\":" + rotation + ",";
-						outputJSON += "\"radians\":" + radians;
-					}
-					outputJSON += "},";*/
+
 					if (objectArray.length > 1) {
 						outputJSON += ","
 					}
@@ -498,7 +499,7 @@
 					accept: 'draggable',
 					hoverclass: 'highlight',
 					onDrop: function(element) {
-						element.setStyle({display:'none'});//set the element to not display, then remove it later instead of removing it here (to avoid conflicts between the "revert" event of the object and the "onDrop" event of the trash)
+						element.setStyle({visibility:'hidden'});//set the element to not display, then remove it later instead of removing it here (to avoid conflicts between the "revert" event of the object and the "onDrop" event of the trash)
 						$('highlight_n').setStyle({visibility: 'hidden'});
 						$('highlight_e').setStyle({visibility: 'hidden'});
 						$('highlight_s').setStyle({visibility: 'hidden'});
@@ -566,7 +567,7 @@
 				<img id="arrow_east" src="arrow_east.png" title="Click to face object east" onmouseover="setRotation($('rotation_object').innerHTML,'e')" onclick="$('rotation_controls').setStyle({visibility:'hidden'})" />
 				<img id="arrow_west" src="arrow_west.png" title="Click to face object west" onmouseover="setRotation($('rotation_object').innerHTML,'w')" onclick="$('rotation_controls').setStyle({visibility:'hidden'})" />
 			</div>
-			<!--<div id="debug" style="position: absolute; top: 0px; right: 0px; width: 200px; height: 200px; overflow: scroll; background-color: white; z-index: 9999"></div>-->
+			<!--<div id="debug" style="position: absolute; bottom: 0px; right: 0px; width: 200px; height: 200px; overflow: scroll; background-color: white; z-index: 9999"></div>-->
 			<div class="button" onclick="zoomIn()">Zoom In</div>
 			<div class="button" onclick="zoomOut()">Zoom Out</div>
 			<div class="button" onclick="putWorld()">Save World</div>
