@@ -41,6 +41,7 @@ public class SlideShowTask implements Serializable, Task, ManagedObject {
 
     private static final Logger logger =
             Logger.getLogger(SlideShowTask.class.getName());
+    
     private ManagedReference pdfRef = null;
     private ManagedReference pdfStateRef = null;
     private int currentPage = 0;
