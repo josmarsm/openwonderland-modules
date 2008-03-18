@@ -60,6 +60,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private double[] origin;
     private double scale;
 
+    private String callId;
+
     private BasicCellGLOSetup<AudioRecorderCellSetup> setup;
             
     public AudioRecorderGLO() {
@@ -70,6 +72,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
         super(bounds, center); 
 
 	getVoiceHandler().addCallStatusListener(this);
+
+	callId = toString();
     }
         
     
@@ -104,10 +108,10 @@ public class AudioRecorderGLO extends StationaryCellGLO
             getCellChannel().send(sessions, msg.getBytes());
 	} else if (ntcm.getAction().equals(RecorderAction.SET_VOLUME)) {
 	    if (ntcm.isRecording()) {
-		logger.warning("set recording volume of " + getCellID().toString()
+		logger.warning("set recording volume of " + callId
 		    + " to " + ntcm.getVolume());
 
-		getVoiceHandler().setMasterVolume(getCellID().toString(), ntcm.getVolume());
+		getVoiceHandler().setMasterVolume(callId, ntcm.getVolume());
 
 		/*
 		 * The volume is global so send a message to all the clients.
@@ -129,10 +133,9 @@ public class AudioRecorderGLO extends StationaryCellGLO
                 spatializer.setAttenuator(ntcm.getVolume());
 
 	        logger.warning(clientName + " setting private playback volume for "
-                    + getCellID().toString() + " volume " + ntcm.getVolume());
+                    + callId + " volume " + ntcm.getVolume());
 
-                getVoiceHandler().setPrivateSpatializer(clientName, getCellID().toString(), 
-		    spatializer);
+                getVoiceHandler().setPrivateSpatializer(clientName, callId, spatializer);
 	    }
 	}
     }
@@ -240,7 +243,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
         getOriginWorld().get(currentPosition);
 
         try {
-            getVoiceHandler().setupRecorder(getCellID().toString(), currentPosition.getX(), currentPosition.getY(), currentPosition.getZ(), "/tmp");
+            getVoiceHandler().setupRecorder(toString(), currentPosition.getX(), currentPosition.getY(), currentPosition.getZ(), "/tmp");
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -249,7 +252,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private void startPlaying() {
         logger.info("Start Playing");
         try {
-            getVoiceHandler().playRecording(getCellID().toString(), "test.au");
+            getVoiceHandler().playRecording(callId, "test.au");
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -258,7 +261,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private void startRecording() {
         logger.info("Start Recording");
         try {
-            getVoiceHandler().startRecording(getCellID().toString(), "test.au");
+            getVoiceHandler().startRecording(callId, "test.au");
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -267,7 +270,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private void stopRecording() {
         logger.info("Stop Recording");
         try {
-            getVoiceHandler().stopRecording(getCellID().toString());
+            getVoiceHandler().stopRecording(callId);
         } catch (IOException e) {
             System.err.println(e);
         }
