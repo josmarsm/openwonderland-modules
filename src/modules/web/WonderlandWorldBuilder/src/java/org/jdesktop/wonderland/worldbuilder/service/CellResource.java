@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.worldbuilder.service;
 
 import java.net.URI;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.worldbuilder.persistence.CellPersistence;
 import org.jdesktop.wonderland.worldbuilder.wrapper.CellWrapper;
 import java.util.logging.Logger;
@@ -31,6 +32,7 @@ import javax.ws.rs.ProduceMime;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.UriParam;
+import javax.ws.rs.core.Response;
 import org.jdesktop.wonderland.worldbuilder.Cell;
 
 /**
@@ -73,7 +75,7 @@ public class CellResource {
     
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
-    public void put(CellWrapper data) {
+    public Response put(CellWrapper data) {
         logger.info("Update " + cell.getCellID());
         
         // make sure the ids match
@@ -88,14 +90,20 @@ public class CellResource {
                     "was " + data.getVersion() + " current is " + 
                     cell.getVersion());
         }
-               
-        CellPersistence.get().update(data.getCell());
+           
+        try {
+            CellPersistence.get().update(data.getCell());
+            return Response.ok().build();
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "Error updating " + data.getCellID(), ex);
+            return Response.serverError().build();
+        }
     }
     
     @POST
     @ConsumeMime({"application/xml", "application/json"})
-    public void post(CellWrapper data) {
-        put(data);
+    public Response post(CellWrapper data) {
+        return put(data);
     }
     
     /**
