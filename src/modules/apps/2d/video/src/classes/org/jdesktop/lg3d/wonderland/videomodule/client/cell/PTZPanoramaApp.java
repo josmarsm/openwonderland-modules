@@ -326,7 +326,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
             logger.fine("+++ position: " + px + ", " + py);
             logger.fine("+++ dimensions: " + videoWidth + "x" + videoHeight);
             
-            g.drawImage(snapshot, px, py, (int)videoWidth, (int)videoHeight, null);
+            g.drawImage(snapshot, px, py, (int)videoWidth + 12, (int)videoHeight, null);
             snapshot = null;
         }
     }
