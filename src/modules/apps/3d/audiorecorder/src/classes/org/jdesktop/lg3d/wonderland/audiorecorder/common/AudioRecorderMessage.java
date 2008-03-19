@@ -33,44 +33,45 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
  * @author Joe Provino
  */
 public class AudioRecorderMessage extends Message {
-    public enum RecorderAction {
+
+    public enum RecorderGLOAction {
 	SETUP_RECORDER,
 	SET_VOLUME,
 	PLAYBACK_DONE
     };
 
-    private RecorderAction action;
-
+    private RecorderGLOAction action;
     private boolean isRecording;
     private boolean isPlaying;
     private String userName;
-    private boolean playbackDone;
     private double volume;
 
     public AudioRecorderMessage() {
-        this (false, false, null);
+        super();
     }
     
-    public AudioRecorderMessage(boolean playbackDone) {
-	action = RecorderAction.PLAYBACK_DONE;
-	this.playbackDone = playbackDone;
+    public static AudioRecorderMessage playbackDone() {
+        AudioRecorderMessage msg = new AudioRecorderMessage();
+        msg.action = RecorderGLOAction.PLAYBACK_DONE;
+        return msg;
     }
+    
+    
 
     public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName) {
 	this(isRecording, isPlaying, userName, 1);
     }
 
-    public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName,
-	    double volume) {
-
-	action = RecorderAction.SETUP_RECORDER;
+    public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName, double volume) {
+        this();
+        action = RecorderGLOAction.SETUP_RECORDER;
         this.isRecording = isRecording;
         this.isPlaying = isPlaying;
         this.userName = userName;
 	this.volume = volume;
     }
 
-    public RecorderAction getAction() {
+    public RecorderGLOAction getAction() {
 	return action;
     }
 
@@ -86,9 +87,7 @@ public class AudioRecorderMessage extends Message {
         return userName;
     }
     
-    public boolean playbackDone() {
-	return playbackDone;
-    }
+    
 
     public void setVolume(double volume) {
 	this.volume = volume;
@@ -99,7 +98,7 @@ public class AudioRecorderMessage extends Message {
     }
 
     protected void extractMessageImpl(ByteBuffer data) {
-        action = RecorderAction.values()[DataInt.value(data)];
+        action = RecorderGLOAction.values()[DataInt.value(data)];
         switch (action) {
             case SETUP_RECORDER:
                 isRecording = DataBoolean.value(data);
@@ -110,7 +109,6 @@ public class AudioRecorderMessage extends Message {
                 volume = DataDouble.value(data);
                 break;
             case PLAYBACK_DONE:
-                playbackDone = DataBoolean.value(data);
                 break;
             default:
                 
@@ -130,7 +128,6 @@ public class AudioRecorderMessage extends Message {
                 dataElements.add(new DataDouble(volume));
                 break;
             case PLAYBACK_DONE:
-                 dataElements.add(new DataBoolean(playbackDone));
                  break;
             default:
                  System.err.println("No such action: " + action);

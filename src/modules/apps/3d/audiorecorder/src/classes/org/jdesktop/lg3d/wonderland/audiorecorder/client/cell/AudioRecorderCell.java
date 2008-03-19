@@ -44,7 +44,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage;
-import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage.RecorderAction;
+import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage.RecorderGLOAction;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 
@@ -184,10 +184,10 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     public void receivedMessage(ClientChannel client, SessionId session, byte[] input) {
         AudioRecorderMessage message = Message.extractMessage(input, AudioRecorderMessage.class);
 
-	if (message.getAction().equals(RecorderAction.SET_VOLUME)) {
+	if (message.getAction().equals(RecorderGLOAction.SET_VOLUME)) {
 	    AudioRecorderCellMenu menu = AudioRecorderCellMenu.getInstance();
 	    menu.volumeChanged(getCellID().toString(), message.getVolume());
-	} else if (message.getAction().equals(RecorderAction.PLAYBACK_DONE)) {
+	} else if (message.getAction().equals(RecorderGLOAction.PLAYBACK_DONE)) {
 	    setPlaying(false);
 	} else {
             setRecording(message.isRecording());
@@ -257,11 +257,15 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         cellLocal.addChild(buttonBG);
         return aButton;
     }
+
+    
     
     private void startRecording() {
         if (!isPlaying) {
             userName = getCurrentUserName();
             setRecording(true);
+            AudioRecorderCellMessage msg = AudioRecorderCellMessage.recordingMessage(getCellID(), isRecording, userName);
+            ChannelController.getController().sendMessage(msg);
         } else {
             logger.warning("Can't start recording when already playing");
         }
@@ -271,6 +275,8 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         if (!isRecording) {
 	    userName = getCurrentUserName();
 	    setPlaying(true);
+            AudioRecorderCellMessage msg = AudioRecorderCellMessage.playingMessage(getCellID(), isPlaying, userName);
+            ChannelController.getController().sendMessage(msg);
         } else {
             logger.warning("Can't start playing when already recording");
         }
@@ -278,14 +284,17 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     
     
     private void stop() {
-	if (userName == null) {
-	    setRecording(false);
-	    setPlaying(false);
-	    return;
-	}
-
-        if (userName.equals(getCurrentUserName())) {
-            userName = null;
+	if (userName.equals(getCurrentUserName())) {
+            AudioRecorderCellMessage msg = null;
+            if (isRecording) {
+                msg = AudioRecorderCellMessage.recordingMessage(getCellID(), false, userName);
+            }
+            if (isPlaying) {
+                msg = AudioRecorderCellMessage.playingMessage(getCellID(), false, userName);
+            }
+            if (msg != null) {
+                ChannelController.getController().sendMessage(msg);
+            }
             setRecording(false);
             setPlaying(false);
         } else {
@@ -320,11 +329,8 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     }
     
     public void setVolume(String name, double volume) {
-	AudioRecorderCellMessage msg = 
-	    new AudioRecorderCellMessage(getCellID(),
-		isRecording, isPlaying, name, volume);
-
-	ChannelController.getController().sendMessage(msg);
+	AudioRecorderCellMessage msg = AudioRecorderCellMessage.volumeMessage(getCellID(), name, volume);
+        ChannelController.getController().sendMessage(msg);
     }
 
     class MouseSelectionListener implements LgEventListener {
@@ -358,13 +364,6 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
                             startPlaying();
 			}
 
-                        AudioRecorderCellMessage msg = new 
-			    AudioRecorderCellMessage(getCellID(), isRecording, isPlaying, 
-			    userName);
-                        
-                        // Send a message to the server indicating the new selection.
-                        // The server will repeat it out to all other clients.
-                        ChannelController.getController().sendMessage(msg);
                     } else {
 			String callId = getCellID().toString();
 

@@ -38,7 +38,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.StationaryCellGLO;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage;
-import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage.RecorderAction;
+import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage.RecorderGLOAction;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.VoiceHandler;
@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 
 import com.sun.voip.client.connector.CallStatus;
+import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage.RecorderCellAction;
 
 public class AudioRecorderGLO extends StationaryCellGLO 
         implements BeanSetupGLO, CellMessageListener, 
@@ -100,60 +101,85 @@ public class AudioRecorderGLO extends StationaryCellGLO
 
     public void receivedMessage(ClientSession client, CellMessage message) {
         AudioRecorderCellMessage ntcm = (AudioRecorderCellMessage) message;
+        switch (ntcm.getAction()) {
+            case PLAY:
+                processPlayMessage(client, ntcm);
+                break;
+            case RECORD:
+                processRecordMessage(client, ntcm);
+                break;
+            case SET_VOLUME:
+                processVolumeMessage(client, ntcm);
+                break;
+        }
+    }
+    
+    private void processPlayMessage(ClientSession client, AudioRecorderCellMessage ntcm) {
+        setPlaying(ntcm.isPlaying());
+        getSetupData().setUserName(ntcm.getUserName());
 
-	if (ntcm.getAction().equals(RecorderAction.SETUP_RECORDER)) {
-            setRecording(ntcm.isRecording());
-            setPlaying(ntcm.isPlaying());
-            getSetupData().setUserName(ntcm.getUserName());
+        // send a message to all clients except the sender to notify of 
+        // the updated selection
+        AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(),
+                getSetupData().isPlaying(), getSetupData().getUserName());
 
-            // send a message to all clients except the sender to notify of 
-            // the updated selection
-            AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(), 
-		getSetupData().isPlaying(), getSetupData().getUserName());
+        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+        sessions.remove(client);
+        getCellChannel().send(sessions, msg.getBytes());
+    }
+    
+    private void processRecordMessage(ClientSession client, AudioRecorderCellMessage ntcm) {
+        setRecording(ntcm.isRecording());
+        getSetupData().setUserName(ntcm.getUserName());
+
+        // send a message to all clients except the sender to notify of 
+        // the updated selection
+        AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(),
+                getSetupData().isPlaying(), getSetupData().getUserName());
+
+        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+        sessions.remove(client);
+        getCellChannel().send(sessions, msg.getBytes());
+    }
+    
+    private void processVolumeMessage(ClientSession client, AudioRecorderCellMessage ntcm) {
+        if (ntcm.isRecording()) {
+            logger.info("set recording volume of " + callId + " to " + ntcm.getVolume());
+
+            getVoiceHandler().setMasterVolume(callId, ntcm.getVolume());
+
+            /*
+             * The volume is global so send a message to all the clients.
+             */
+            AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(),
+                    getSetupData().isPlaying(), getSetupData().getUserName(), ntcm.getVolume());
 
             Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
             sessions.remove(client);
             getCellChannel().send(sessions, msg.getBytes());
-	} else if (ntcm.getAction().equals(RecorderAction.SET_VOLUME)) {
-	    if (ntcm.isRecording()) {
-		logger.warning("set recording volume of " + callId
-		    + " to " + ntcm.getVolume());
+        } else {
+            /*
+             * Set the private volume for this client for playback
+             */
+            String clientName = client.getName();
 
-		getVoiceHandler().setMasterVolume(callId, ntcm.getVolume());
+            DefaultSpatializer spatializer = new DefaultSpatializer();
 
-		/*
-		 * The volume is global so send a message to all the clients.
-		 */
-                AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(), 
-		    getSetupData().isPlaying(), getSetupData().getUserName(), ntcm.getVolume());
+            spatializer.setAttenuator(ntcm.getVolume());
 
-                Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
-                sessions.remove(client);
-                getCellChannel().send(sessions, msg.getBytes());
-	    } else {
-	        /*
-	         * Set the private volume for this client for playback
-	         */
-	        String clientName = client.getName();
+            logger.info(clientName + " setting private playback volume for " + callId + " volume " + ntcm.getVolume());
 
-                DefaultSpatializer spatializer = new DefaultSpatializer();
-
-                spatializer.setAttenuator(ntcm.getVolume());
-
-	        logger.warning(clientName + " setting private playback volume for "
-                    + callId + " volume " + ntcm.getVolume());
-
-                getVoiceHandler().setPrivateSpatializer(clientName, callId, spatializer);
-	    }
-	}
+            getVoiceHandler().setPrivateSpatializer(clientName, callId, spatializer);
+        }
     }
+    
     
     public void callStatusChanged(CallStatus status) {
 	switch(status.getCode()) {
 	case CallStatus.TREATMENTDONE:
             getSetupData().setPlaying(false);
 
-            AudioRecorderMessage msg = new AudioRecorderMessage(true);
+            AudioRecorderMessage msg = AudioRecorderMessage.playbackDone();
 
 	    /*
 	     * Send message to all clients

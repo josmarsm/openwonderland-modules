@@ -27,47 +27,56 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataDouble;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataInt;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataString;
 
-import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage.RecorderAction;
 
 /**
  *
  */
 public class AudioRecorderCellMessage extends CellMessage {
-    private RecorderAction action;
-
-    private boolean isRecording;
-    private boolean isPlaying;
-    private String userName;
     
+    public enum RecorderCellAction {
+	RECORD,
+	PLAY,
+        SET_VOLUME
+    };
+    private RecorderCellAction action;
+    private boolean isRecording = false;
+    private boolean isPlaying = false;
+    private String userName;
     private double volume;
 
     public AudioRecorderCellMessage() {
         super();
     }
     
-    public AudioRecorderCellMessage(CellID cellID, boolean isRecording, boolean isPlaying, String userName) {
-
-	super(cellID);
-
-	this.action = RecorderAction.SETUP_RECORDER;
-        this.isRecording = isRecording;
-        this.isPlaying = isPlaying;
-        this.userName = userName;
+    public static AudioRecorderCellMessage playingMessage(CellID cellID, boolean playing, String userName) {
+        AudioRecorderCellMessage msg = new AudioRecorderCellMessage();
+        msg.setCellID(cellID);
+        msg.userName = userName;
+        msg.action = RecorderCellAction.PLAY;
+        msg.isPlaying = playing;
+        return msg;
     }
+    
+    public static AudioRecorderCellMessage recordingMessage(CellID cellID, boolean recording, String userName) {
+        AudioRecorderCellMessage msg = new AudioRecorderCellMessage();
+        msg.setCellID(cellID);
+        msg.userName = userName;
+        msg.action = RecorderCellAction.RECORD;
+        msg.isRecording = recording;
+        return msg;
+    }
+    
    
-    public AudioRecorderCellMessage(CellID cellID, boolean isRecording, boolean isPlaying, String userName,
-	    double volume) {
-
-	super(cellID);
-
-	this.action = RecorderAction.SET_VOLUME;
-        this.isRecording = isRecording;
-        this.isPlaying = isPlaying;
-        this.userName = userName;
-	this.volume = volume;
+    public static AudioRecorderCellMessage volumeMessage(CellID cellID, String userName, double volume) {
+        AudioRecorderCellMessage msg = new AudioRecorderCellMessage();
+        msg.setCellID(cellID);
+        msg.userName = userName;
+	msg.action = RecorderCellAction.SET_VOLUME;
+        msg.volume = volume;
+        return msg;
     }
 
-    public RecorderAction getAction() {
+    public RecorderCellAction getAction() {
 	return action;
     }
 
@@ -82,38 +91,51 @@ public class AudioRecorderCellMessage extends CellMessage {
     public double getVolume() {
 	return volume;
     }
+    
+    public String getUserName() {
+        return userName;
+    }
 
     @Override
     protected void extractMessageImpl(ByteBuffer data) {
 	super.extractMessageImpl(data);
-
-	action = RecorderAction.values()[DataInt.value(data)];
-
-        isRecording = DataBoolean.value(data);
-        isPlaying = DataBoolean.value(data);
+        action = RecorderCellAction.values()[DataInt.value(data)];
         userName = DataString.value(data);
-
-	if (action.equals(RecorderAction.SET_VOLUME)) {
-	    volume = DataDouble.value(data);
-	}
+        switch (action) {
+            case RECORD:
+                isRecording = DataBoolean.value(data);
+                break;
+            case PLAY:
+                isPlaying = DataBoolean.value(data);
+                break;
+            case SET_VOLUME:
+                volume = DataDouble.value(data);
+                break;
+            default:
+                System.err.println("Unknown action");     
+        }
     }
 
     @Override
     protected void populateDataElements() {
 	super.populateDataElements();
-
 	dataElements.add(new DataInt(action.ordinal()));
-        dataElements.add(new DataBoolean(isRecording));
-        dataElements.add(new DataBoolean(isPlaying));
         dataElements.add(new DataString(userName));
-
-	if (action.equals(RecorderAction.SET_VOLUME)) {
-	    dataElements.add(new DataDouble(volume));
-	}
+        switch(action) {
+            case RECORD:
+                dataElements.add(new DataBoolean(isRecording));
+                break;
+            case PLAY:
+                dataElements.add(new DataBoolean(isPlaying));
+                break;
+            case SET_VOLUME:
+                dataElements.add(new DataDouble(volume));
+                break;
+            default:
+                System.err.println("Unknown action");
+        }
     }
 
-    public String getUserName() {
-        return userName;
-    }
+    
 
 }
