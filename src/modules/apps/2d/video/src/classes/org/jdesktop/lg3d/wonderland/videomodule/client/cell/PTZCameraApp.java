@@ -55,56 +55,56 @@ public class PTZCameraApp extends VideoApp {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_PLUS:
             case KeyEvent.VK_EQUALS:
-                logger.fine("zooming in");
+                logger.info("zooming in");
                 showHUDMessage("zoom in", 1000);
                 sendCameraRequest(Action.SET_PTZ,
                         new Point3f(pan, tilt, zoom + 1000));
                 break;
             case KeyEvent.VK_MINUS:
             case KeyEvent.VK_UNDERSCORE:
-                logger.fine("zooming out");
+                logger.info("zooming out");
                 showHUDMessage("zoom out", 1000);
                 sendCameraRequest(Action.SET_PTZ,
                         new Point3f(pan, tilt, zoom - 1000));
                 break;
             case KeyEvent.VK_LEFT:
-                logger.fine("panning left");
+                logger.info("panning left");
                 showHUDMessage("pan left", 1000);
                 sendCameraRequest(Action.SET_PTZ,
                         new Point3f(pan - (1.0f - horizOverlapPercent) * ptz.getMinHorizontalFOV(), tilt, zoom));
                 break;
             case KeyEvent.VK_RIGHT:
-                logger.fine("panning right");
+                logger.info("panning right");
                 showHUDMessage("pan right", 1000);
                 sendCameraRequest(Action.SET_PTZ,
                         new Point3f(pan + (1.0f - horizOverlapPercent) * ptz.getMinHorizontalFOV(), tilt, zoom));
                 break;
             case KeyEvent.VK_UP:
-                logger.fine("tilting up");
+                logger.info("tilting up");
                 showHUDMessage("tilt up", 1000);
                 sendCameraRequest(Action.SET_PTZ,
                         new Point3f(pan, tilt + (1.0f - vertOverlapPercent) * ptz.getMinVerticalFOV(), zoom));
                 break;
             case KeyEvent.VK_DOWN:
-                logger.fine("tilting down");
+                logger.info("tilting down");
                 showHUDMessage("tilt down", 1000);
                 sendCameraRequest(Action.SET_PTZ,
                         new Point3f(pan, tilt - (1.0f - vertOverlapPercent) * ptz.getMinVerticalFOV(), zoom));
                 break;
             case KeyEvent.VK_C:
-                logger.fine("centering");
+                logger.info("centering");
                 showHUDMessage("centering", 1000);
                 sendCameraRequest(Action.SET_PTZ,
                         new Point3f(0, 0, ptz.getZoom()));
                 break;
             case KeyEvent.VK_Z:
                 if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
-                    logger.fine("zooming in fully");
+                    logger.info("zooming in fully");
                     showHUDMessage("max zoom", 1000);
                     sendCameraRequest(Action.SET_PTZ,
                             new Point3f(pan, tilt, ptz.getMaxZoom()));
                 } else {
-                    logger.fine("zooming out fully");
+                    logger.info("zooming out fully");
                     showHUDMessage("min zoom", 1000);
                     sendCameraRequest(Action.SET_PTZ,
                             new Point3f(pan, tilt, ptz.getMinZoom()));
@@ -148,7 +148,7 @@ public class PTZCameraApp extends VideoApp {
 
         if (msg != null) {
             // send request to server
-            logger.info("--- sending camera request: " + msg);
+            logger.fine("sending camera request: " + msg);
             ChannelController.getController().sendMessage(msg);
         }
     }
@@ -179,7 +179,7 @@ public class PTZCameraApp extends VideoApp {
                 // only adjust the camera if this cell has control of the camera
                 if (forMe == true) {
                     // change the camera's pan, tilt or zoom settings
-                    logger.fine("--- performing action: " + msg.getAction());
+                    logger.info("setting PTZ to pan: " + pan + ", tilt: " + tilt + ", zoom: " + zoom);
                     moveCamera(msg.getAction(), pan, tilt, zoom);
 
                     // notify everyone that the request has completed
@@ -196,10 +196,10 @@ public class PTZCameraApp extends VideoApp {
                 // with pending actions, so thye can resubmit their requests
                 synchronized (actionLock) {
                     try {
-                        logger.fine("--- waking retry threads");
+                        logger.finest("waking retry threads");
                         actionLock.notify();
                     } catch (Exception e) {
-                        logger.warning("--- exception notifying retry threads: " + e);
+                        logger.warning("exception notifying retry threads: " + e);
                     }
                 }
                 break;
@@ -208,7 +208,7 @@ public class PTZCameraApp extends VideoApp {
                 break;
         }
         if (vcm != null) {
-            logger.info("--- sending message: " + vcm);
+            logger.fine("sending message: " + vcm);
             ChannelController.getController().sendMessage(vcm);
         }
     }

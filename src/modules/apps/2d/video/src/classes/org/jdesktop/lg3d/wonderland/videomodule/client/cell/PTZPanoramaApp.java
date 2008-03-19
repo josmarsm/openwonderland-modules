@@ -49,16 +49,14 @@ public class PTZPanoramaApp extends PTZCameraApp {
     private static final float VIDEO_OVERLAY_Z = 0.01f;
     private float horizFOV = 0.0f;
     private float vertFOV = 0.0f;
-    private float pixelsPerDegree = 0.0f;
-    private float aspectRatio = 1.0f;
+    private float horizPixelsPerDegree = 0.0f;
+    private float vertPixelsPerDegree = 0.0f;
     private float panoramaWidth;
     private float panoramaHeight;
     private float videoWidth;
     private float videoHeight;
     private BufferedImage snapshot = null;
     private PanoramaVideo video;
-    private static final Color inControlColor = Color.GREEN;
-    private static final Color notInControlColor = Color.RED;
 
     public PTZPanoramaApp(SharedApp2DImageCell cell) {
         super(cell);
@@ -82,35 +80,36 @@ public class PTZPanoramaApp extends PTZCameraApp {
             // visible vertical field of view in degrees
             vertFOV = ptz.getMaxTilt() - ptz.getMinTilt() + ptz.getMinVerticalFOV();
 
-            pixelsPerDegree = (((float) this.getHeight()) / vertFOV);
-            aspectRatio = horizFOV / vertFOV;
             panoramaHeight = this.getHeight();
-            panoramaWidth = this.getWidth(); //(int) (horizFOV * pixelsPerDegree);
+            panoramaWidth = this.getWidth();
 
-            videoWidth = ptz.getMinHorizontalFOV() * pixelsPerDegree;
-            videoHeight = ptz.getMinVerticalFOV() * pixelsPerDegree;
+            horizPixelsPerDegree = panoramaWidth / horizFOV;
+            vertPixelsPerDegree = panoramaHeight / vertFOV;
+
+            videoWidth = ptz.getMinHorizontalFOV() * horizPixelsPerDegree;
+            videoHeight = ptz.getMinVerticalFOV() * vertPixelsPerDegree;
 
             setPreferredWidth(panoramaWidth);
             setPreferredHeight(panoramaHeight);
 
-            logger.fine("horizontal FOV: " + horizFOV);
-            logger.fine("vertical FOV: " + vertFOV);
-            logger.fine("aspect ratio: " + aspectRatio);
-            logger.fine("pixels per degree: " + pixelsPerDegree);
-            logger.fine("panorama w: " + panoramaWidth);
-            logger.fine("panorama h: " + panoramaHeight);
-            logger.fine("video w: " + videoWidth);
-            logger.fine("video h: " + videoHeight);
-            logger.fine("my preferred dimensions: " + panoramaWidth + "x" + panoramaHeight);
-            logger.fine("panorama native to physical width: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaWidth));
-            logger.fine("panorama native to physical height: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaHeight));
-            logger.fine("video native to physical width: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) videoWidth));
-            logger.fine("video native to physical height: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) videoHeight));
+            logger.finest("horizontal FOV: " + horizFOV);
+            logger.finest("vertical FOV: " + vertFOV);
+            logger.finest("horiz pixels per degree: " + horizPixelsPerDegree);
+            logger.finest("vert pixels per degree: " + vertPixelsPerDegree);
+            logger.finest("panorama w: " + panoramaWidth);
+            logger.finest("panorama h: " + panoramaHeight);
+            logger.finest("video w: " + videoWidth);
+            logger.finest("video h: " + videoHeight);
+            logger.finest("my preferred dimensions: " + panoramaWidth + "x" + panoramaHeight);
+            logger.finest("panorama native to physical width: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaWidth));
+            logger.finest("panorama native to physical height: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaHeight));
+            logger.finest("video native to physical width: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) videoWidth));
+            logger.finest("video native to physical height: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) videoHeight));
 
             // force maximum zoom
             ptz.zoomTo(ptz.getMaxZoom());
 
-            video = new PanoramaVideo(panTiltToPhysical(ptz.getPan(), ptz.getTilt()),
+            video = new PanoramaVideo(PTZToPhysical(ptz.getPan(), ptz.getTilt(), VIDEO_OVERLAY_Z),
                     Toolkit3D.getToolkit3D().widthNativeToPhysical((int) videoWidth));
             video.setVideo(null);
             ((SharedApp2DImageCell) cell).getCellLocal().addChild(video);
@@ -124,8 +123,8 @@ public class PTZPanoramaApp extends PTZCameraApp {
     protected void dispatchKeyEvent(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_R:
-                logger.fine("refresh panorama");
-                showHUDMessage("refreshing...", 30000);
+                logger.info("refreshing panorama");
+                showHUDMessage("refreshing...", 60000);
                 refreshPanorama();
                 break;
             default:
@@ -146,17 +145,12 @@ public class PTZPanoramaApp extends PTZCameraApp {
     }
 
     private int panAngleToPixels(float angle) {
-        int pixels = (int)(((horizFOV/2f) + (angle - ptz.getMinHorizontalFOV()/2f)) * pixelsPerDegree);
-        logger.fine("+++ horizFOV/2f = " + horizFOV/2f);
-        logger.fine("+++ angle = " + angle);
-        logger.fine("+++ ptz.getMinHorizontalFOV = " + ptz.getMinHorizontalFOV());
-        logger.fine("+++ horiz angle: " + angle + " = " + pixels);
+        int pixels = (int) ((angle + ptz.getMaxPan()) * horizPixelsPerDegree);
         return pixels;
     }
 
     private int tiltAngleToPixels(float angle) {
-        int pixels = (int) ((getHeight() / 2) - (angle * pixelsPerDegree) - ((ptz.getMinVerticalFOV() * pixelsPerDegree) / 2));
-        logger.fine("+++ vert angle: " + angle + " = " + pixels);
+        int pixels = (int) Math.abs((angle - ptz.getMaxTilt()) * vertPixelsPerDegree);
         return pixels;
     }
 
@@ -186,15 +180,15 @@ public class PTZPanoramaApp extends PTZCameraApp {
         return angle;
     }
 
-    public Point3f panTiltToPhysical(float pan, float tilt) {
+    public Point3f PTZToPhysical(float pan, float tilt, float zoom) {
         Point3f physical = new Point3f();
         float panoramaPhysicalWidth = Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaWidth);
         float panoramaPhysicalHeight = Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaHeight);
 
         // pan angular range (+/-) from center of panorama
-        float panRange = ptz.getMaxPan() + ptz.getMinHorizontalFOV() / 2;
+        float panRange = ptz.getMaxPan() + ptz.getMinHorizontalFOV() / 2f;
         // tilt angular range (+/-) from center of panorama
-        float tiltRange = ptz.getMaxTilt() + ptz.getMinVerticalFOV() / 2;
+        float tiltRange = ptz.getMaxTilt() + ptz.getMinVerticalFOV() / 2f;
 
         // x center of video window
         float centerX = 0.0f;
@@ -207,20 +201,11 @@ public class PTZPanoramaApp extends PTZCameraApp {
         float tiltPercent = tilt / tiltRange;
 
         // physical pan position
-        float panPhysical = centerX + panPercent * panoramaPhysicalWidth / 2;
+        float panPhysical = centerX + panPercent * panoramaPhysicalWidth / 2f;
         // physical tilt position
-        float tiltPhysical = centerY + tiltPercent * panoramaPhysicalHeight / 2;
+        float tiltPhysical = centerY + tiltPercent * panoramaPhysicalHeight / 2f;
 
-        physical.set(panPhysical, tiltPhysical, VIDEO_OVERLAY_Z);
-
-        logger.finest("pan: " + pan + ", tilt: " + tilt);
-        logger.finest("pan range: " + panRange);
-        logger.finest("tilt range: " + tiltRange);
-        logger.finest("pan percent: " + panPercent);
-        logger.finest("tilt percent: " + tiltPercent);
-        logger.finest("panPhysical: " + panPhysical);
-        logger.finest("tiltPhysical: " + tiltPhysical);
-        logger.finest("physical: " + physical);
+        physical.set(panPhysical, tiltPhysical, zoom);
 
         return physical;
     }
@@ -228,11 +213,16 @@ public class PTZPanoramaApp extends PTZCameraApp {
     protected void refreshPanorama() {
         int horizontalPasses = (int) Math.ceil((double) panoramaWidth / (double) videoWidth);
         int verticalPasses = (int) Math.ceil((double) panoramaHeight / (double) videoHeight);
+        int vw = (int) (horizPixelsPerDegree * ptz.getMinHorizontalFOV());
+        int vh = (int) (vertPixelsPerDegree * ptz.getMinVerticalFOV());
 
         for (int v = 0; v < verticalPasses; v++) {
-            float vy = 0.5f * videoHeight + (float)v * videoHeight;
+            float vy = 0.5f * vh + (float) v * vh;
             for (int h = 0; h < horizontalPasses; h++) {
-                float vx = 0.5f * videoWidth + (float)h * videoWidth;
+                float vx = 0.5f * vw + (float) h * vw;
+                logger.info("requesting refresh of location: " + 
+                        xCoordToAngle(vx) + ", " + yCoordToAngle(vy));
+
                 sendCameraRequest(Action.SET_PTZ,
                         new Point3f(xCoordToAngle(vx), yCoordToAngle(vy),
                         ptz.getZoom()));
@@ -257,7 +247,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
 
                 // take a snapshot of the current position of the camera before
                 // commencing the move
-                logger.fine("--- ptz changing: taking snapshot");
+                logger.finest("ptz changing: taking snapshot");
                 snapshot = snapper.getFrame();
                 repaint();
 
@@ -269,7 +259,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
                 // only adjust the camera if this cell has control of the camera
                 if (forMe == true) {
                     // change the camera's pan, tilt or zoom settings
-                    logger.fine("--- performing action: " + msg.getAction());
+                    logger.finest("performing action: " + msg.getAction());
                     moveCamera(msg.getAction(), pan, tilt, zoom);
 
                     // notify everyone that the request has completed
@@ -277,15 +267,15 @@ public class PTZPanoramaApp extends PTZCameraApp {
                     vcm.setAction(Action.REQUEST_COMPLETE);
                 }
 
-                logger.fine("--- moving video window to: " + pan + ", " + tilt);
-                moveVideo(pan, tilt, zoom);
+                logger.finest("moving video window to: " + pan + ", " + tilt);
+                moveVideo(pan, tilt, VIDEO_OVERLAY_Z);
                 break;
             default:
                 super.handleResponse(msg);
                 break;
         }
         if (vcm != null) {
-            logger.info("--- sending message: " + vcm);
+            logger.fine("sending message: " + vcm);
             ChannelController.getController().sendMessage(vcm);
         }
     }
@@ -297,7 +287,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
      * @param zoom the zoom angle
      */
     public void moveVideo(float pan, float tilt, float zoom) {
-        video.moveTo(panTiltToPhysical(pan, tilt));
+        video.moveTo(PTZToPhysical(pan, tilt, zoom));
     }
 
     /**
@@ -318,15 +308,10 @@ public class PTZPanoramaApp extends PTZCameraApp {
         if (snapshot != null) {
             int px = panAngleToPixels(ptz.getPan());
             int py = tiltAngleToPixels(ptz.getTilt());
-            int vw = (int) (pixelsPerDegree * ptz.getMinHorizontalFOV());
-            int vh = (int) (pixelsPerDegree * ptz.getMinVerticalFOV());
-            
-            logger.fine("+++ pan angle: " + ptz.getPan());
-            logger.fine("+++ snapshot: " + snapshot.getWidth() + "x" + snapshot.getHeight());
-            logger.fine("+++ position: " + px + ", " + py);
-            logger.fine("+++ dimensions: " + videoWidth + "x" + videoHeight);
-            
-            g.drawImage(snapshot, px, py, (int)videoWidth + 12, (int)videoHeight, null);
+
+            logger.info("painting snapshot at: " + ptz.getPan() + ", " + ptz.getTilt());
+
+            g.drawImage(snapshot, px, py, (int) videoWidth, (int) videoHeight, null);
             snapshot = null;
         }
     }

@@ -210,7 +210,7 @@ public class PanoramaVideo extends Shape3D {
         try {
             setGeometry(geometry);
         } catch (Exception e) {
-            logger.warning("--- failed to set video window geometry: " + e);
+            logger.warning("failed to set video window geometry: " + e);
         }
     }
 
@@ -227,15 +227,15 @@ public class PanoramaVideo extends Shape3D {
             synchronized (moveLock) {
                 try {
                     if (moveTimer != null) {
-                        logger.fine("--- move in progress, waiting for lock");
+                        logger.fine("move in progress, waiting for lock");
                         moveLock.wait();
                     }
 
                 } catch (Exception e) {
-                    logger.warning("--- exception waiting for move lock");
+                    logger.warning("exception waiting for move lock");
                 }
             }
-            logger.fine("--- move to: " + destination + " starting");
+            logger.fine("move to: " + destination + " starting");
             moveTimer = new Timer("move timer");
             LinearMover scroller = new LinearMover(getPosition(), moveTimer, this);
             scroller.moveTo(destination);
@@ -280,7 +280,7 @@ public class PanoramaVideo extends Shape3D {
 
         public void moveComplete() {
             synchronized (moveLock) {
-                logger.fine("---- move complete, notifying waiting movers");
+                logger.fine("move complete, notifying waiting movers");
                 moveTimer = null;
                 moveLock.notify();
             }
@@ -288,7 +288,7 @@ public class PanoramaVideo extends Shape3D {
     }
 
     public void moveTo(Point3f destination) {
-        logger.fine("---- move to: " + destination);
+        logger.fine("move to: " + destination);
         new Mover(destination).start();
     }
 
@@ -316,13 +316,10 @@ public class PanoramaVideo extends Shape3D {
         if (frame != null) {
             Graphics2D g = im.createGraphics();
 
-            logger.finest("frame w: " + frame.getWidth() + ", h: " + frame.getHeight() +
-                    ", im w: " + im.getWidth() + ", h: " + im.getHeight());
-
             g.drawImage(frame, 0, 0, im.getWidth(), im.getHeight(), 0, 0, frame.getWidth(), frame.getHeight(), null);
             g.setColor(frameColor);
-            g.setStroke(new BasicStroke(5));
-            g.drawRoundRect(2, 2, im.getWidth() - 4, im.getHeight() - 4, 8, 8);
+            g.setStroke(new BasicStroke(6));
+            g.drawRoundRect(3, 3, im.getWidth() - 6, im.getHeight() - 6, 8, 8);
             ic.set(im);
         }
     }
