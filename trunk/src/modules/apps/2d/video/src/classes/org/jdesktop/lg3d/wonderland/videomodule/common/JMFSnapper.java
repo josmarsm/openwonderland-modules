@@ -270,7 +270,7 @@ public class JMFSnapper implements ControllerListener {
         double position = 0;
 
         if (p != null) {
-            logger.fine("--- media time: " + p.getMediaTime());
+            logger.fine("media time: " + p.getMediaTime());
             position = p.getMediaTime().getNanoseconds();
         }
 

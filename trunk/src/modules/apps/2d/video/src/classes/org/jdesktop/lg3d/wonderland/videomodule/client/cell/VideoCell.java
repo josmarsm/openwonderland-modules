@@ -92,9 +92,9 @@ public class VideoCell extends SharedApp2DImageCell
                 app.setVideoInstance(setup.getVideoInstance());
             }
 
-            logger.fine("loading video: " + setup.getSource());
-            logger.fine("play on load: " + setup.getPlayOnLoad());
-            logger.fine("sync playback: " + setup.getSynced());
+            logger.info("loading video: " + setup.getSource());
+            logger.info("play on load: " + setup.getPlayOnLoad());
+            logger.info("sync playback: " + setup.getSynced());
 
             app.setPreferredWidth(setup.getPreferredWidth());
             app.setPreferredHeight(setup.getPreferredHeight());
@@ -105,10 +105,8 @@ public class VideoCell extends SharedApp2DImageCell
                 app.getSynced();
             } else {
                 if (setup.getPlayOnLoad() == true) {
-                    logger.fine("--- play on load is true, playing");
                     app.play(true);
                 } else {
-                    logger.fine("--- play on load is false, cueing");
                     app.cue(0.5, 0.1);
                 }
             }
@@ -140,15 +138,7 @@ public class VideoCell extends SharedApp2DImageCell
         if (status != getStatus()) {
             logger.fine("cell status changed: " + getStatus() + "-> " + status);
         }
-//        if ((getStatus() != CellStatus.VISIBLE) && (status == CellStatus.VISIBLE)) {
-//            // video has come into view
-//            logger.fine("video out of view");
-//            //app.play(true);
-//        } else if ((getStatus() != CellStatus.ACTIVE) && (status == CellStatus.ACTIVE)) {
-//            // video is no longer in view
-//            logger.fine("video in view");
-//            //app.play(false);
-//        }
+
         return super.setStatus(status);
     }
 
@@ -167,10 +157,10 @@ public class VideoCell extends SharedApp2DImageCell
     }
 
     public void enterCell(String source) {
-        logger.fine("--- enter cell from: " + source);
+        logger.fine("enter cell from: " + source);
     }
 
     public void exitCell(String source) {
-        logger.fine("--- exit cell from: " + source);
+        logger.fine("exit cell from: " + source);
     }
 }

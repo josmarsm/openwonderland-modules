@@ -267,7 +267,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
     }
 
     public void setFrameRate(float rate) {
-        logger.info("--- setting frame rate to: " + rate);
+        logger.info("setting frame rate to: " + rate + "fps");
         showHUDMessage("fps: " + (int) rate, 2000);
     }
 
@@ -364,10 +364,10 @@ public class VideoApp extends AppWindowGraphics2DApp {
         if (audioEnabled == true) {
             if (audioUserMuted == false) {
                 // user hasn't manually muted video
-                mute(false);
+                mute(false, true);
             }
         } else {
-            mute(true);
+            mute(true, true);
         }
     }
 
@@ -439,7 +439,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
     }
 
     public void play(boolean play) {
-        logger.fine("--- play: " + play);
+        logger.info("play: " + play);
 
         // perform local play action
         if (play == true) {
@@ -458,7 +458,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
             // ask the player for the play state, this has the most
             // accurate status of what the user is seeing
             playing = snapper.getPlayerState() == Player.Started;
-            logger.finest("--- playing == " + playing + " (" + snapper.getPlayerState() + ")");
+            logger.finest("playing == " + playing + " (" + snapper.getPlayerState() + ")");
         }
 
         return playing;
@@ -476,7 +476,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
 
         if (!isPlaying()) {
             if (preferredFrameRate > 0) {
-                logger.info("--- starting playback");
+                logger.info("starting playback");
                 snapper.startMovie();
                 frameRate = preferredFrameRate;
                 frameTimer = new Timer();
@@ -491,7 +491,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
             return;
         }
 
-        logger.info("--- stopping playback");
+        logger.info("stopping playback");
         snapper.stopMovie();
         frameRate = 0;
         if (frameTimer != null) {
@@ -520,7 +520,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
         }
 
         public void run() {
-            logger.fine("--- scheduling cue in from: " + (start - cueLeadIn) + " to " + start);
+            logger.info("scheduling cue in from: " + (start - cueLeadIn) + " to " + start);
             muteState = isMuted();
             hudState = isHUDEnabled();
             setHUDEnabled(false);
@@ -537,21 +537,31 @@ public class VideoApp extends AppWindowGraphics2DApp {
 
             public void run() {
                 if (snapper.getPlayerState() == 600) {
-                    logger.fine("--- premature stop !!");
+                    logger.warning("premature stop !!");
                 }
                 stop();
                 snapper.setStopTime(JMFSnapper.RESET_STOP_TIME);
                 mute(muteState);
                 setHUDEnabled(hudState);
                 cueTimer.cancel();
-                logger.fine("--- cue complete");
+                logger.info("cue complete");
             }
         }
     }
 
+    public void mute(boolean muting, boolean quietly) {
+        boolean hudOn = isHUDEnabled();
+        
+        if ((quietly == true) && (hudOn == true)) {
+            setHUDEnabled(false);
+        }
+        mute(muting);
+        setHUDEnabled(hudOn);
+    }
+    
     public void mute(boolean muting) {
         if (snapper != null) {
-            logger.fine("--- " + ((muting == true) ? "muting" : "unmuting"));
+            logger.info((muting == true) ? "muting" : "unmuting");
             snapper.mute(muting);
             showHUDMessage(isMuted() ? "Muted" : "Unmuted", 2000);
         }
@@ -643,14 +653,14 @@ public class VideoApp extends AppWindowGraphics2DApp {
             // wait for a retry window
             synchronized (actionLock) {
                 try {
-                    logger.fine("--- waiting for retry window");
+                    logger.finest("waiting for retry window");
                     actionLock.wait();
                 } catch (Exception e) {
-                    logger.warning("--- exception waiting for retry: " + e);
+                    logger.warning("exception waiting for retry: " + e);
                 }
             }
             // retry this request
-            logger.fine("--- retrying");
+            logger.finest("retrying");
             sendCameraRequest(action, point);
         }
     }
@@ -685,7 +695,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
 
         if (msg != null) {
             // send request to server
-            logger.info("--- sending camera request: " + msg);
+            logger.fine("sending camera request: " + msg);
             ChannelController.getController().sendMessage(msg);
         }
     }
@@ -715,7 +725,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
                 break;
             case SET_SOURCE:
                 if (isSynced() == true) {
-                    logger.fine("--- performing action: " + msg.getAction());
+                    logger.info("performing action: " + msg.getAction());
                     loadVideo(msg.getSource());
                     cue(0.4, 0.1);
                 }
@@ -731,7 +741,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
                 // only change playback if this cell has control
                 if (isSynced()) {
                     // change the play state of the video
-                    logger.fine("--- performing action: " + msg.getAction());
+                    logger.info("performing action: " + msg.getAction());
                     if (msg.getAction() == Action.PLAY) {
                         // starting to play
                         setPosition(msg.getPosition());
@@ -751,7 +761,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
             case SET_STATE:
                 if (forMe == true) {
                     if (isSynced()) {
-                        logger.fine("--- syncing to state: " + msg);
+                        logger.fine("syncing with state: " + msg);
                         loadVideo(msg.getSource());
                         //setPosition(msg.getPosition());
                         if (msg.getState() == PlayerState.PLAYING) {
@@ -759,7 +769,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
                         } else {
                             cue(msg.getPosition(), 0.1);
                         }
-                        logger.fine("--- video synced");
+                        logger.info("video synced");
                         showHUDMessage("sync complete", 2000);
                     }
                     // notify everyone that the request has completed
@@ -770,22 +780,22 @@ public class VideoApp extends AppWindowGraphics2DApp {
             case REQUEST_COMPLETE:
                 synchronized (actionLock) {
                     try {
-                        logger.fine("--- waking retry threads");
+                        logger.finest("waking retry threads");
                         actionLock.notify();
                     } catch (Exception e) {
-                        logger.warning("--- exception notifying retry threads: " + e);
+                        logger.warning("exception notifying retry threads: " + e);
                     }
                 }
                 break;
         }
         if (vcm != null) {
-            logger.info("--- sending message: " + vcm);
+            logger.fine("sending message: " + vcm);
             ChannelController.getController().sendMessage(vcm);
         }
     }
 
     public void getSynced() {
-        logger.fine("--- syncing to shared state");
+        logger.info("video requesting sync with shared state");
         sendCameraRequest(Action.GET_STATE, null);
     }
 
@@ -802,14 +812,14 @@ public class VideoApp extends AppWindowGraphics2DApp {
 
     @Override
     public void takeControl(MouseEvent me) {
-        logger.fine("--- video has control");
+        logger.info("video has control");
         super.takeControl(me);
         setInControl(true);
     }
 
     @Override
     public void releaseControl(MouseEvent me) {
-        logger.fine("--- video lost control");
+        logger.info("video lost control");
         super.releaseControl(me);
         setInControl(false);
     }
@@ -826,7 +836,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
             if (snapper.getPlayerState() == Player.Started) {
                 VideoApp.this.repaint();
             } else {
-                logger.info("--- stopping frame update task because movie isn't playing: " + snapper.getPlayerState());
+                logger.info("stopping frame update task because movie isn't playing: " + snapper.getPlayerState());
                 stop();
             }
         }

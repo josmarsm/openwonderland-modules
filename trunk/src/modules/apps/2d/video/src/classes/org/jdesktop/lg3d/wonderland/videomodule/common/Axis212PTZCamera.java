@@ -49,7 +49,7 @@ public class Axis212PTZCamera implements PTZCamera {
     private static float MIN_ZOOM = 200;
     private static float MAX_ZOOM = 9740;
     private static final float MIN_HORIZONTAL_FOV = 46f;   // degrees
-    private static final float MIN_VERTICAL_FOV = 33;     // degrees
+    private static final float MIN_VERTICAL_FOV = 33f;     // degrees
     private static float pan = 0;
     private static float tilt = 0;
     private static float zoom = 0;
@@ -100,21 +100,21 @@ public class Axis212PTZCamera implements PTZCamera {
 
     public synchronized void tiltTo(float newtilt) {
         tilt = (newtilt < MIN_TILT) ? MIN_TILT : ((newtilt > MAX_TILT) ? MAX_TILT : newtilt);
-        logger.info("tilt = " + tilt);
+        logger.fine("tilt to: " + tilt);
 
         sendCameraCommand(cameraAddress + "/" + commandCGI + "&" + tiltCommand + "=" + (int)tilt);
     }
 
     public synchronized void panTo(float newpan) {
         pan = (newpan < MIN_PAN) ? MIN_PAN : ((newpan > MAX_PAN) ? MAX_PAN : newpan);
-        logger.info("pan = " + pan);
+        logger.fine("pan to: " + pan);
 
         sendCameraCommand(cameraAddress + "/" + commandCGI + "&" + panCommand + "=" + (int)pan);
     }
 
     public synchronized void zoomTo(float newzoom) {
         zoom = (newzoom < MIN_ZOOM) ? MIN_ZOOM : ((newzoom > MAX_ZOOM) ? MAX_ZOOM : newzoom);
-        logger.info("zoom = " + zoom);
+        logger.fine("zoom to: " + zoom);
 
         sendCameraCommand(cameraAddress + "/" + commandCGI + "&" + zoomCommand + "=" + (int)zoom);
     }
@@ -196,7 +196,7 @@ public class Axis212PTZCamera implements PTZCamera {
 
     public void zoomTest() {
         for (float z = MIN_ZOOM - 800; z <= MAX_ZOOM + 800; z += 200) {
-            logger.fine("zooming to: " + z);
+            logger.fine("zoom to: " + z);
             zoomTo(z);
         }
     }
