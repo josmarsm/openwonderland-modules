@@ -55,10 +55,12 @@ public class AudioRecorderGLO extends StationaryCellGLO
 	ManagedCallStatusListener {
 
     private static final Logger logger = Logger.getLogger(AudioRecorderGLO.class.getName()); 
+    private static int INSTANCE_COUNT = 0;
     
     private double[] rotation;
     private double[] origin;
     private double scale;
+    private int instanceNumber;
 
     private String callId;
 
@@ -72,8 +74,9 @@ public class AudioRecorderGLO extends StationaryCellGLO
         super(bounds, center); 
 
 	getVoiceHandler().addCallStatusListener(this);
-
+        instanceNumber = ++INSTANCE_COUNT;
 	callId = toString();
+        
     }
         
     
@@ -252,7 +255,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private void startPlaying() {
         logger.info("Start Playing");
         try {
-            getVoiceHandler().playRecording(callId, "test.au");
+            getVoiceHandler().playRecording(callId, getRecorderFilename());
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -261,7 +264,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private void startRecording() {
         logger.info("Start Recording");
         try {
-            getVoiceHandler().startRecording(callId, "test.au");
+            getVoiceHandler().startRecording(callId, getRecorderFilename());
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -278,6 +281,11 @@ public class AudioRecorderGLO extends StationaryCellGLO
 
     private VoiceHandler getVoiceHandler() {
         return VoiceHandlerImpl.getInstance();
+    }
+    
+    private String getRecorderFilename() {
+        //MUST end in '.au'
+        return getClass().getSimpleName() + instanceNumber + ".au";
     }
     
 }
