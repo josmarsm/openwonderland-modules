@@ -1,5 +1,5 @@
 /**
- * Project Wonderland
+ * Project Looking Glass
  *
  * $RCSfile: AudioRecorderCell.java,v $
  *
@@ -13,9 +13,10 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.1.2.4 $
- * $Date: 2008/02/06 12:05:17 $
+ * $Revision$
+ * $Date$
  * $State: Exp $
+ * $Id$
  */
 
 package org.jdesktop.lg3d.wonderland.audiorecorder.client.cell;
