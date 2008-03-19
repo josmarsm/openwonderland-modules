@@ -28,7 +28,9 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 
 
 /**
- *
+ * Message from GLO to Cell to indicate state of server object.
+ * @author Bernard Horan
+ * @author Joe Provino
  */
 public class AudioRecorderMessage extends Message {
     public enum RecorderAction {
@@ -97,35 +99,41 @@ public class AudioRecorderMessage extends Message {
     }
 
     protected void extractMessageImpl(ByteBuffer data) {
-	action = RecorderAction.values()[DataInt.value(data)];
-
-	if (action.equals(RecorderAction.PLAYBACK_DONE) == false) {
-            isRecording = DataBoolean.value(data);
-            isPlaying = DataBoolean.value(data);
-            userName = DataString.value(data);
-
-	    if (action.equals(RecorderAction.SET_VOLUME)) {
-		volume = DataDouble.value(data);
-	    }
-	} else {
-	    playbackDone = DataBoolean.value(data);
-	}
+        action = RecorderAction.values()[DataInt.value(data)];
+        switch (action) {
+            case SETUP_RECORDER:
+                isRecording = DataBoolean.value(data);
+                isPlaying = DataBoolean.value(data);
+                userName = DataString.value(data);
+                break;
+            case SET_VOLUME:
+                volume = DataDouble.value(data);
+                break;
+            case PLAYBACK_DONE:
+                playbackDone = DataBoolean.value(data);
+                break;
+            default:
+                
+        }
     }
 
     protected void populateDataElements() {
         dataElements.clear();
-
-	dataElements.add(new DataInt(action.ordinal()));
-
-	if (action.equals(RecorderAction.PLAYBACK_DONE) == false) {
-            dataElements.add(new DataBoolean(isRecording));
-            dataElements.add(new DataBoolean(isPlaying));
-            dataElements.add(new DataString(userName));
-	    if (action.equals(RecorderAction.SET_VOLUME)) {
-		dataElements.add(new DataDouble(volume));
-	    }
-	} else {
-            dataElements.add(new DataBoolean(playbackDone));
-	}
+        dataElements.add(new DataInt(action.ordinal()));
+        switch (action) {
+            case SETUP_RECORDER:
+                dataElements.add(new DataBoolean(isRecording));
+                dataElements.add(new DataBoolean(isPlaying));
+                dataElements.add(new DataString(userName));
+                break;
+            case SET_VOLUME:
+                dataElements.add(new DataDouble(volume));
+                break;
+            case PLAYBACK_DONE:
+                 dataElements.add(new DataBoolean(playbackDone));
+                 break;
+            default:
+                 System.err.println("No such action: " + action);
+        }
     }    
 }
