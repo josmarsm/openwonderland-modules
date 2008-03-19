@@ -78,11 +78,11 @@ public class AudioRecorderGLO extends StationaryCellGLO
 
 	callId = this.toString();
         
-        int ix;
+        /*int ix;
 
         if ((ix = callId.indexOf("@")) >= 0) {
             callId = callId.substring(ix + 1);
-        }
+        }*/
     }
         
     
