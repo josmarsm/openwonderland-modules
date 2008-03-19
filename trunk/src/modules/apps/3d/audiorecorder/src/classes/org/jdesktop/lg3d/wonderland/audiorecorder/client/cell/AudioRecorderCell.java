@@ -16,7 +16,6 @@
  * $Revision: 1.1.2.4 $
  * $Date: 2008/02/06 12:05:17 $
  * $State: Exp $
- * $Id: RecordingDeviceCell.java,v 1.1.2.4 2008/02/06 12:05:17 bernard_horan Exp $
  */
 
 package org.jdesktop.lg3d.wonderland.audiorecorder.client.cell;
@@ -40,8 +39,6 @@ import org.jdesktop.lg3d.wg.event.MouseButtonEvent3D;
 import org.jdesktop.lg3d.wg.internal.j3d.j3dnodes.J3dLgBranchGroup;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListener;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.Cell;
-import org.jdesktop.lg3d.wonderland.darkstar.client.cell.CellMenu;
-import org.jdesktop.lg3d.wonderland.darkstar.client.cell.CellMenuListener;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage;
@@ -55,9 +52,10 @@ import org.jdesktop.lg3d.wonderland.scenemanager.CellMenuManager;
 import org.jdesktop.j3d.util.SceneGraphUtil;
 
 /**
- * 
+ * Client-side cell to represent old-fashioned reel-reel tape recorder.
  * @author Marc Davies
  * @author Bernard Horan
+ * @author Joe Provino
  */
 public class AudioRecorderCell extends Cell implements ExtendedClientChannelListener {
 
@@ -85,7 +83,6 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     private static final Appearance PLAY_BUTTON_DEFAULT = new Appearance();
     private static final Appearance PLAY_BUTTON_SELECTED = new Appearance();
     
-    private Cell cell;
  
     static {
         RECORD_BUTTON_DEFAULT.setColoringAttributes(new ColoringAttributes(
@@ -105,7 +102,6 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     public AudioRecorderCell(CellID cellID, String channelName, Matrix4d cellOrigin) {
         super(cellID, channelName, cellOrigin);
 
-	cell = this;
     }
     
     public void setChannel(ClientChannel channel) {
@@ -180,7 +176,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         recorderBG.setCapabilities();
         recorderBG.setMouseEventEnabled(true);
         recorderBG.setMouseEventSource(MouseButtonEvent3D.class, true);
-        recorderBG.addListener(new MouseSelectionListener(aButton));        
+        recorderBG.addListener(new MouseSelectionListener(aButton, this));        
     }
     
        
@@ -324,7 +320,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     
     public void setVolume(String name, double volume) {
 	AudioRecorderCellMessage msg = 
-	    new AudioRecorderCellMessage(cell.getCellID(),
+	    new AudioRecorderCellMessage(getCellID(),
 		isRecording, isPlaying, name, volume);
 
 	ChannelController.getController().sendMessage(msg);
@@ -332,9 +328,11 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
 
     class MouseSelectionListener implements LgEventListener {
         private Button button;
+        private Cell cell;
         
-        public MouseSelectionListener(Button button) {
+        public MouseSelectionListener(Button button, Cell cell) {
             this.button = button;
+            this.cell = cell;
         }
         
         public void processEvent(LgEvent lge) {
