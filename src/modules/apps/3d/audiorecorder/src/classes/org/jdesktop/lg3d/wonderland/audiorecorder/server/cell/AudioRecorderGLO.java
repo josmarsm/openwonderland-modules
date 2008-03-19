@@ -74,9 +74,14 @@ public class AudioRecorderGLO extends StationaryCellGLO
         super(bounds, center); 
 
 	getVoiceHandler().addCallStatusListener(this);
-        instanceNumber = ++INSTANCE_COUNT;
-	callId = toString();
+
+	callId = this.toString();
         
+        int ix;
+
+        if ((ix = callId.indexOf("@")) >= 0) {
+            callId = callId.substring(ix + 1);
+        }
     }
         
     
