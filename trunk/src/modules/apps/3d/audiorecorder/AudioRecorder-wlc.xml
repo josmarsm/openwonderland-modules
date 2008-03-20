@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?> 
+<!--
+Copy this file into the demo floor WLD.
+-->
 <java version="1.6.0-dp" class="java.beans.XMLDecoder"> 
     <object class="org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup"> 
         <void property="cellGLOClassName"> 
             <string>org.jdesktop.lg3d.wonderland.audiorecorder.server.cell.AudioRecorderGLO</string> 
         </void> 
         <void property="cellSetup"> 
-            <object class="org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellSetup"> 
-	        <void property="userName">
-		<string>Recorder 1</string>
-		</void>
-	    </object>
+            <object class="org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellSetup"/> 
         </void>
         <void property="origin"> 
             <void index="0"> 
