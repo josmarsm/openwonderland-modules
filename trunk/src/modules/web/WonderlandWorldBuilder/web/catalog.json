@@ -224,6 +224,22 @@
 			modelURL: "models/worldbuilder/youth/youthroom_pillar.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Table (Youth)",
+			group: false,
+			library: ["Youth","Furniture"],
+			width: 2,
+			height: 2,
+			zIndex: 3,
+			rotatable: true,
+			description: "Table.",
+			tileImageURL: "youthroom_table_tile_n.png",
+			iconImageURL: "youthroom_table_icon.png",
+			modelURL: "models/worldbuilder/youth/youthroom_table.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
