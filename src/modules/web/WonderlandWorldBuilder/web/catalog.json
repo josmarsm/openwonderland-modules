@@ -176,6 +176,22 @@
 			modelURL: "models/worldbuilder/youth/youthroom_wall.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Carpeted Floor (Youth)",
+			group: false,
+			library: ["Youth","Floors"],
+			width: 1,
+			height: 1,
+			zIndex: 3,
+			rotatable: false,
+			description: "Carpeted floor.",
+			tileImageURL: "youthroom_floor_carpet_tile.png",
+			iconImageURL: "youthroom_floor_carpet_icon.png",
+			modelURL: "models/worldbuilder/youth/youthroom_floor_carpet.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
