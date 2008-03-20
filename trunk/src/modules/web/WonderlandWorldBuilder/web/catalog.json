@@ -160,6 +160,22 @@
 			modelURL: "models/worldbuilder/youth/youthroom_cornerwall.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Wall (Youth)",
+			group: false,
+			library: ["Youth","Walls"],
+			width: 1,
+			height: 1,
+			zIndex: 3,
+			rotatable: true,
+			description: "Straight wall section.",
+			tileImageURL: "youthroom_wall_tile_n.png",
+			iconImageURL: "youthroom_wall_icon.png",
+			modelURL: "models/worldbuilder/youth/youthroom_wall.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
