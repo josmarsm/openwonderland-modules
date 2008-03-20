@@ -220,7 +220,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
             float vy = 0.5f * vh + (float) v * vh;
             for (int h = 0; h < horizontalPasses; h++) {
                 float vx = 0.5f * vw + (float) h * vw;
-                logger.info("requesting refresh of location: " + 
+                logger.info("requesting refresh of location: " +
                         xCoordToAngle(vx) + ", " + yCoordToAngle(vy));
 
                 sendCameraRequest(Action.SET_PTZ,
@@ -248,9 +248,10 @@ public class PTZPanoramaApp extends PTZCameraApp {
                 // take a snapshot of the current position of the camera before
                 // commencing the move
                 logger.finest("ptz changing: taking snapshot");
-                snapshot = snapper.getFrame();
-                repaint();
-
+                if (snapper != null) {
+                    snapshot = snapper.getFrame();
+                    repaint();
+                }
                 // new PTZ values
                 float pan = msg.getPan();
                 float tilt = msg.getTilt();
