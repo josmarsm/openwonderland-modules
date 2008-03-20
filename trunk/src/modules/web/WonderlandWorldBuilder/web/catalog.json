@@ -2,7 +2,7 @@
 	catalog: [
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Floor",
+			name: "Floor (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Floors"],
 			level: "Room",
@@ -19,7 +19,7 @@
 		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Wall",
+			name: "Wall (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Walls"],
 			width: 1,
@@ -35,7 +35,7 @@
 		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Corner Wall",
+			name: "Corner Wall (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Walls"],
 			width: 1,
@@ -51,7 +51,7 @@
 		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Doorway",
+			name: "Doorway (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Walls"],
 			width: 1,
@@ -67,7 +67,7 @@
 		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Divider",
+			name: "Divider (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Furniture"],
 			width: 2,
@@ -83,7 +83,7 @@
 		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Pole",
+			name: "Pole (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Furniture"],
 			width: 1,
@@ -99,7 +99,7 @@
 		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Table",
+			name: "Table (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Furniture"],
 			width: 2,
@@ -115,7 +115,7 @@
 		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Chair",
+			name: "Chair (Youth)",
 			group: false,
 			library: ["Youth","Furniture"],
 			width: 1,
@@ -131,7 +131,7 @@
 		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Floor",
+			name: "Floor (Youth)",
 			group: false,
 			library: ["Youth","Floors"],
 			width: 1,
@@ -144,10 +144,10 @@
 			modelURL: "models/worldbuilder/youth/youthroom_woodside_floor.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
-		}/*,
+		},
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
-			name: "Corner Wall",
+			name: "Corner Wall (Youth)",
 			group: false,
 			library: ["Youth","Walls"],
 			width: 1,
@@ -160,7 +160,7 @@
 			modelURL: "models/worldbuilder/youth/youthroom_cornerwall.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
-		},
+		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Office",
