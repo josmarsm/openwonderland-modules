@@ -192,6 +192,22 @@
 			modelURL: "models/worldbuilder/youth/youthroom_floor_carpet.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Floor (Youth)",
+			group: false,
+			library: ["Youth","Floors"],
+			width: 1,
+			height: 1,
+			zIndex: 3,
+			rotatable: true,
+			description: "Floor -- corner edge of carpet meets wood.",
+			tileImageURL: "youthroom_cornerwood_tile_n.png",
+			iconImageURL: "youthroom_cornerwood_icon.png",
+			modelURL: "models/worldbuilder/youth/youthroom_cornerwood.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
