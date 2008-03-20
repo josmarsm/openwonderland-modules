@@ -89,11 +89,11 @@ public class AudioRecorderGLO extends StationaryCellGLO
 
 	callId = this.toString();
         
-        /*int ix;
+        int ix;
 
         if ((ix = callId.indexOf("@")) >= 0) {
             callId = callId.substring(ix + 1);
-        }*/
+        }
     }
         
     
@@ -294,7 +294,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
         getOriginWorld().get(currentPosition);
 
         try {
-            getVoiceHandler().setupRecorder(toString(), currentPosition.getX(), currentPosition.getY(), currentPosition.getZ(), "/tmp");
+            getVoiceHandler().setupRecorder(callId, currentPosition.getX(), currentPosition.getY(), currentPosition.getZ(), "/tmp");
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -321,7 +321,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private void stopPlaying() {
         try {
             logger.info("Stop Playing");
-            getVoiceHandler().stopPlayingRecording(callId);
+            getVoiceHandler().stopPlayingRecording(callId, getRecorderFilename());
         } catch (IOException e) {
             System.err.println(e);
         }
