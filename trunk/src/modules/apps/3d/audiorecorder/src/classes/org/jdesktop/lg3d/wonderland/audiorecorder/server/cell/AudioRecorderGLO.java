@@ -49,6 +49,11 @@ import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 
 import com.sun.voip.client.connector.CallStatus;
 
+/**
+ * Represents the audio recorder on the server and communicates with the voice bridge.
+ * @author Bernard Horan
+ * @author Joe Provino
+ */
 public class AudioRecorderGLO extends StationaryCellGLO 
         implements BeanSetupGLO, CellMessageListener, 
 	ManagedCallStatusListener {
@@ -60,15 +65,21 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private double[] origin;
     private double scale;
     private int instanceNumber;
-
     private String callId;
-
     private BasicCellGLOSetup<AudioRecorderCellSetup> setup;
             
+    /**
+     * Create a new audio recorder GLO with default bounds and origin
+     */
     public AudioRecorderGLO() {
         this(null, null);
     }
     
+    /** 
+     * Creates a new instance of AudioRecorderGLO
+     * @param bounds the bounds of this cell
+     * @param center the origin of this cell
+     */
     public AudioRecorderGLO(Bounds bounds, Matrix4d center) {
         super(bounds, center); 
 

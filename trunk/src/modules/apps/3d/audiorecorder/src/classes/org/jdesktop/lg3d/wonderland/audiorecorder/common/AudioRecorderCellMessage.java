@@ -29,7 +29,9 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataString;
 
 
 /**
- *
+ * Message that's sent from a Cell to the server.
+ * @author Bernard Horan
+ * @author Joe Provino
  */
 public class AudioRecorderCellMessage extends CellMessage {
     
@@ -44,10 +46,21 @@ public class AudioRecorderCellMessage extends CellMessage {
     private String userName;
     private double volume;
 
+    /**
+     * Default constructor
+     */
     public AudioRecorderCellMessage() {
         super();
     }
     
+    /**
+     * Static method used to create an instance of AudioRecorderCellMessage that has an action type
+     * <code>PLAY</code>.
+     * @param cellID The id of the cell for which this message is created
+     * @param playing boolean to indicate the state of the recorder
+     * @param userName the name of the user that initiated this change
+     * @return a message with appropriate state
+     */
     public static AudioRecorderCellMessage playingMessage(CellID cellID, boolean playing, String userName) {
         AudioRecorderCellMessage msg = new AudioRecorderCellMessage();
         msg.setCellID(cellID);
@@ -57,7 +70,14 @@ public class AudioRecorderCellMessage extends CellMessage {
         return msg;
     }
     
-    public static AudioRecorderCellMessage recordingMessage(CellID cellID, boolean recording, String userName) {
+    /**
+     * Static method used to create an instance of AudioRecorderCellMessage that has an action type
+     * <code>RECORD</code>.
+     * @param cellID The id of the cell for which this message is created
+     * @param recording boolean to indicate the state of the recorder
+     * @param userName the name of the user that initiated this change
+     * @return a message with appropriate state
+     */public static AudioRecorderCellMessage recordingMessage(CellID cellID, boolean recording, String userName) {
         AudioRecorderCellMessage msg = new AudioRecorderCellMessage();
         msg.setCellID(cellID);
         msg.userName = userName;
@@ -67,7 +87,14 @@ public class AudioRecorderCellMessage extends CellMessage {
     }
     
    
-    public static AudioRecorderCellMessage volumeMessage(CellID cellID, String userName, double volume) {
+    /**
+     * Static method used to create an instance of AudioRecorderCellMessage that has an action type
+     * <code>SET_VOLUME</code>.
+     * @param cellID The id of the cell for which this message is created
+     * @param userName the name of the user that initiated this change
+     * @param volume the level of the volume
+     * @return a message with appropriate state
+     */public static AudioRecorderCellMessage volumeMessage(CellID cellID, String userName, double volume) {
         AudioRecorderCellMessage msg = new AudioRecorderCellMessage();
         msg.setCellID(cellID);
         msg.userName = userName;
