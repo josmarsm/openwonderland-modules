@@ -204,7 +204,8 @@
 						}
 						$('world').insert(insertHTML);
 						new Draggable(thisObjectID,{
-							snap:[(gridSize-1),(gridSize-1)],
+							//snap:[(gridSize-1),(gridSize-1)],
+							snap:[((gridSize*0.5)-0.5),((gridSize*0.5)-0.5)],
 							revert:function() {
 								var workspaceTop = parseInt($('workspace').getStyle('top'));
 								var workspaceLeft = parseInt($('workspace').getStyle('left'));
@@ -357,7 +358,6 @@
 					while (worldData.cell.children.cell[cellIndex]) {
 						var top = ((worldData.cell.children.cell[cellIndex].location.y.$-(worldData.cell.children.cell[cellIndex].size.height.$*0.5))/unitFactor)*(gridSize-1);
 						var left = ((worldData.cell.children.cell[cellIndex].location.x.$-(worldData.cell.children.cell[cellIndex].size.width.$*0.5))/unitFactor)*(gridSize-1);
-						
 						var direction = "0";
 						if (worldData.cell.children.cell[cellIndex].rotation) {
 							direction = worldData.cell.children.cell[cellIndex].rotation.$;
@@ -384,8 +384,8 @@
 						cellIndex++;
 					}
 				} else {
-					var top = (worldData.cell.children.cell.location.y.$/unitFactor)*(gridSize-1);
-					var left = (worldData.cell.children.cell.location.x.$/unitFactor)*(gridSize-1);
+					var top = ((worldData.cell.children.cell.location.y.$-(worldData.cell.children.cell[cellIndex].size.height.$*0.5))/unitFactor)*(gridSize-1);
+					var left = ((worldData.cell.children.cell.location.x.$-(worldData.cell.children.cell[cellIndex].size.width.$*0.5))/unitFactor)*(gridSize-1);
 					var direction = "0";
 					if (worldData.cell.children.cell.rotation) {
 						direction = worldData.cell.children.cell.rotation.$;
@@ -512,6 +512,7 @@
 				var data = createJSON();
 				$('world').update('');
 				gridSize *= 2;
+				gridSize -= 1;
 				buildGrid();
 				buildWorld(data);
 			}
@@ -520,6 +521,7 @@
 				var data = createJSON();
 				$('world').update('');
 				gridSize *= 0.5;
+				gridSize += 0.5;
 				buildGrid();
 				buildWorld(data);
 			}
@@ -535,7 +537,7 @@
 			
 			var unitFactor = 2;//how much to multiply the grid coordinates by to convert to wonderland units
 			//a note on unitFactor: conveniently it looks like this is equivalent to Blender units
-			var gridSize = 64;
+			var gridSize = 65;
 			var gridTop = 0;
 			var gridLeft = 0;
 			var gridRows = 30;
