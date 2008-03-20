@@ -38,7 +38,6 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.StationaryCellGLO;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage;
-import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage.RecorderGLOAction;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.VoiceHandler;
@@ -49,7 +48,6 @@ import java.util.logging.Logger;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 
 import com.sun.voip.client.connector.CallStatus;
-import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage.RecorderCellAction;
 
 public class AudioRecorderGLO extends StationaryCellGLO 
         implements BeanSetupGLO, CellMessageListener, 
@@ -75,6 +73,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
         super(bounds, center); 
 
 	getVoiceHandler().addCallStatusListener(this);
+        instanceNumber = ++INSTANCE_COUNT;
+        logger.info("Recorder filename: " + getRecorderFilename());
 
 	callId = this.toString();
         
@@ -194,7 +194,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
      * this method, the state of the cell GLO should contain all the information
      * represented in the given cell properties file.
      *
-     * @param setup the Java bean to read setup information from
+     * @param setupData contains the data to set up thie FLO
      */
     public void setupCell(CellGLOSetup setupData) {
         setup = (BasicCellGLOSetup<AudioRecorderCellSetup>) setupData;
@@ -245,9 +245,15 @@ public class AudioRecorderGLO extends StationaryCellGLO
     }
 
     private void setPlaying(boolean isPlaying) {
-        if (!getSetupData().isPlaying()) {
-            //Not already playing
+        if (getSetupData().isPlaying()) {
+            //Already playing
+            if (!isPlaying) {
+                stopPlaying();
+            }
+        } else {
+            //Not playing
             if (isPlaying) {
+                //Start playing
                 startPlaying();
             }
         }
@@ -296,6 +302,15 @@ public class AudioRecorderGLO extends StationaryCellGLO
         logger.info("Start Recording");
         try {
             getVoiceHandler().startRecording(callId, getRecorderFilename());
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+    }
+
+    private void stopPlaying() {
+        try {
+            logger.info("Stop Playing");
+            getVoiceHandler().stopPlayingRecording(callId);
         } catch (IOException e) {
             System.err.println(e);
         }
