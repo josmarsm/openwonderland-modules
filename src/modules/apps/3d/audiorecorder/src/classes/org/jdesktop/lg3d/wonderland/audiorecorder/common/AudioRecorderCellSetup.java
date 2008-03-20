@@ -13,16 +13,18 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  * 
- * $Revision: 1.1.2.4 $
- * $Date: 2008/02/06 12:05:18 $
- * $State: Exp $ 
+ * $Revision$
+ * $Date$
+ * $State$ 
  */
 package org.jdesktop.lg3d.wonderland.audiorecorder.common;
 
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 
 /**
- *
+ * Object that represents the setup data for an AudioRecorderCell.
+ * Essentially acts as a record/Bean object, with appropriate getters and setters
+ * @author Bernard Horan
  */
 public class AudioRecorderCellSetup implements CellSetup {
     private boolean isRecording;

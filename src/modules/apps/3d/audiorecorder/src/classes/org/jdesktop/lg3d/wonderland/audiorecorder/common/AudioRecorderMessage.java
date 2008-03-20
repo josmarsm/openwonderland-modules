@@ -46,11 +46,18 @@ public class AudioRecorderMessage extends Message {
     private String userName;
     private double volume;
 
+    /**
+     * Default constructor
+     */
     public AudioRecorderMessage() {
         super();
     }
     
-    public static AudioRecorderMessage playbackDone() {
+    /**
+     * Static method to create an instance of AudioRecorderMessage that
+     * indicates that playback has finished. 
+     * @return an instance of class AudioRecorderMessage with action <code>PLAYBACK_DONE</code>
+     */public static AudioRecorderMessage playbackDone() {
         AudioRecorderMessage msg = new AudioRecorderMessage();
         msg.action = RecorderGLOAction.PLAYBACK_DONE;
         return msg;
@@ -58,11 +65,32 @@ public class AudioRecorderMessage extends Message {
     
     
 
-    public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName) {
+    /**
+     * Constructor to create an instance of class AudioRecorderMessage that
+     * indicates that there's been a change in the state of the playing or recording
+     * of the CellGLO. I.e. the action of the message is <code>SETUP_RECORDER</code>.
+     * <br>
+     * NOTE: isRecording and isPlaying should not BOTH be true
+     * @param isRecording boolean to indicate if the GLO is recording
+     * @param isPlaying boolean to indicate if the GLO is playing
+     * @param userName the name of the user who initiated the change of state
+     */
+     public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName) {
 	this(isRecording, isPlaying, userName, 1);
     }
 
-    public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName, double volume) {
+    /**
+     * Constructor to create an instance of class AudioRecorderMessage that
+     * indicates that there's been a change in the state of the playing or recording
+     * of the CellGLO. I.e. the action of the message is <code>SETUP_RECORDER</code>.
+     * <br>
+     * NOTE: isRecording and isPlaying should not BOTH be true
+     * @param isRecording boolean to indicate if the GLO is recording
+     * @param isPlaying boolean to indicate if the GLO is playing
+     * @param userName the name of the user who initiated the change of state
+     * @param volume the volume level of the recording/playing
+     */
+     public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName, double volume) {
         this();
         action = RecorderGLOAction.SETUP_RECORDER;
         this.isRecording = isRecording;
