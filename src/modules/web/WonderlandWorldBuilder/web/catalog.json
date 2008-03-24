@@ -272,6 +272,22 @@
 			modelURL: "models/worldbuilder/youth/youthroom_doorway.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Corner Wall (Collegiate)",
+			group: false,
+			library: ["Collegiate","Walls and Windows"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: true,
+			description: "Corner wall section with wood wainscoting.",
+			tileImageURL: "lecturehall_cornerwall_tile_n.png",
+			iconImageURL: "lecturehall_cornerwall_icon.png",
+			modelURL: "models/worldbuilder/collegiate/lecturehall_cornerwall.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
