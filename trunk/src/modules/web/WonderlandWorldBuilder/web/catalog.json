@@ -320,6 +320,22 @@
 			modelURL: "models/worldbuilder/collegiate/lecturehall_floor_carpet_wood.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Wood floor (Collegiate)",
+			group: false,
+			library: ["Collegiate","Floors"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: false,
+			description: "Wood floor.",
+			tileImageURL: "lecturehall_floor_wood_tile.png",
+			iconImageURL: "lecturehall_floor_wood_icon.png",
+			modelURL: "models/worldbuilder/collegiate/lecturehall_floor_wood.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
