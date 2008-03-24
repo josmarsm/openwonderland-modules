@@ -336,6 +336,22 @@
 			modelURL: "models/worldbuilder/collegiate/lecturehall_floor_wood.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Straight wall section (Collegiate)",
+			group: false,
+			library: ["Collegiate","Floors"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: true,
+			description: "Straight wall section.",
+			tileImageURL: "lecturehall_fullwall_tile_n.png",
+			iconImageURL: "lecturehall_fullwall_icon.png",
+			modelURL: "models/worldbuilder/collegiate/lecturehall_fullwall.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
