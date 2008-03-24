@@ -288,6 +288,38 @@
 			modelURL: "models/worldbuilder/collegiate/lecturehall_cornerwall.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Carpeted floor (Collegiate)",
+			group: false,
+			library: ["Collegiate","Floors"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: false,
+			description: "Carpeted floor.",
+			tileImageURL: "lecturehall_floor_carpet_tile.png",
+			iconImageURL: "lecturehall_floor_carpet_icon.png",
+			modelURL: "models/worldbuilder/collegiate/lecturehall_floor_carpet.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Wood floor with carpet (Collegiate)",
+			group: false,
+			library: ["Collegiate","Floors"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: true,
+			description: "Wood floor with round carpeted edge.",
+			tileImageURL: "lecturehall_floor_carpet_wood_tile_n.png",
+			iconImageURL: "lecturehall_floor_carpet_wood_icon.png",
+			modelURL: "models/worldbuilder/collegiate/lecturehall_floor_carpet_wood.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
