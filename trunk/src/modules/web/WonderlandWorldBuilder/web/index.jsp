@@ -50,6 +50,7 @@
 						var catalogData = data.responseText.evalJSON();
 						var libraries = new Array();
 						for (entry=0;entry<catalogData.catalog.length;entry++) {
+							catalogData.catalog[entry].catalogURI = url;
 							for (name=0;name<catalogData.catalog[entry].library.length;name++) {
 								libraries.push(catalogData.catalog[entry].library[name]);
 								}
@@ -339,7 +340,7 @@
 			}
 			
 			function getWorld() {
-				new Ajax.Request('http://localhost:8080/WonderlandWorldBuilder/resources/tree',{
+				new Ajax.Request('resources/tree',{
 					requestHeaders: {Accept:'application/json'},
 					method: 'get',
 					onSuccess: function(data) {
@@ -413,7 +414,8 @@
 			}
 			
 			function createJSON() {
-				var outputJSON = "{\"cell\":{\"@uri\":\"http://localhost:8080/WonderlandWorldBuilder/resources/tree/root\",\"cellID\":{\"$\":\"root\"},\"cellSetupType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
+				//var outputJSON = "{\"cell\":{\"@uri\":\"http://localhost:8080/WonderlandWorldBuilder/resources/tree/root\",\"cellID\":{\"$\":\"root\"},\"cellSetupType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
+				var outputJSON = "{\"cell\":{\"cellID\":{\"$\":\"root\"},\"cellSetupType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
 				var objectArray = $('world').childElements();
 				if (objectArray.length > 1) {
 					outputJSON += "["
@@ -444,7 +446,7 @@
                                         }
                                          
                                         outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
-					outputJSON += "\"@uri\":\"http:\/\/localhost:8080\/WonderlandWorldBuilder\/resources\/tree\/" + cellID + "\",";
+					//outputJSON += "\"@uri\":\"http:\/\/localhost:8080\/WonderlandWorldBuilder\/resources\/tree\/" + cellID + "\",";
 					outputJSON += "\"catalogID\":{\"$\":\"" + thisData[0] + "\"},";
 					outputJSON += "\"catalogURI\":{\"$\":\"" + thisData[1] + "\"},";
 					outputJSON += "\"cellID\":{\"$\":\"" + cellID + "\"},";
@@ -476,7 +478,7 @@
 			}
 			
 			function putWorld() {
-				new Ajax.Request("http://localhost:8080/WonderlandWorldBuilder/resources/tree", {
+				new Ajax.Request("resources/tree", {
 					method:'post',
 					postBody: createJSON(),
                                         contentType:'application/json',
@@ -537,7 +539,7 @@
 			
 			var unitFactor = 2;//how much to multiply the grid coordinates by to convert to wonderland units
 			//a note on unitFactor: conveniently it looks like this is equivalent to Blender units
-			var gridSize = 65;
+			var gridSize = 65;//IMPORTANT: must be an odd number!
 			var gridTop = 0;
 			var gridLeft = 0;
 			var gridRows = 30;
@@ -574,7 +576,7 @@
 			<div class="button" onclick="zoomOut()">Zoom Out</div>
 			<div class="button" onclick="putWorld()">Save World</div>
 			<div id="selector">
-				Load Catalog:<input type="text" value="http://localhost:8080/WonderlandWorldBuilder/catalog.json" id="catalogtextfield" onclick="this.value = 'http://localhost:8080/WonderlandWorldBuilder/catalog.json'" />
+				Load Catalog:<input type="text" value="catalog.json" id="catalogtextfield" onclick="this.value = 'catalog.json'" />
 				Select Library:<select id="libraryswitch" onchange="getLibrary($('libraryswitch').getValue())"><option>(No catalog loaded)</option></select>
 			</div>
 			<script type="text/javascript" language="javascript">
