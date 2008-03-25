@@ -376,6 +376,21 @@
 			modelURL: "models/worldbuilder/collegiate/lecturehall_stage.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			name: "Wall section with window (Collegiate)",
+			group: false,
+			library: ["Collegiate","Furniture"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: true,
+			description: "Wall section with window.",
+			tileImageURL: "lecturehall_window_tile_n.png",
+			iconImageURL: "lecturehall_window_icon.png",
+			modelURL: "models/worldbuilder/collegiate/lecturehall_window.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			name: "Office",
