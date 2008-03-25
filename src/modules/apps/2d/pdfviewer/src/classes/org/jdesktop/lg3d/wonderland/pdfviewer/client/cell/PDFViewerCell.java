@@ -84,7 +84,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
     public void receivedMessage(ClientChannel channel, SessionId session,
             byte[] data) {
         PDFCellMessage msg = Message.extractMessage(data, PDFCellMessage.class);
-        logger.info("receivedMessage: " + msg);
+        logger.info("received message: " + msg);
 
         switch (msg.getAction()) {
             case OPEN_DOCUMENT:

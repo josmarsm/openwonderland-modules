@@ -82,13 +82,13 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     private PDFFile currentFile;
     private PDFPage currentPage;
     private BufferedImage pageImage;
-    private boolean pageDirty = false;
+    private boolean pageDirty = true;
     private int xScroll = 0;
     private int yScroll = 0;
     private Point mousePos = new Point();
     private boolean isDragging = false;
     private boolean paused = true;
-    
+
     public PDFViewerApp(SharedApp2DCell cell) {
         this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
@@ -193,6 +193,15 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             }
             msgButton.setActive(false);
         }
+    }
+
+    /**
+     * Set the size of of the Window (same as awt.Component.setSize)
+     */
+    @Override
+    public void setSize(int width, int height) {
+        super.setSize(width, height);
+        repaint();
     }
 
     /**
@@ -562,14 +571,14 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     public Point getViewPosition() {
         return mousePos;
     }
-    
+
     public void pause(boolean toPause) {
         pause(toPause, false);
     }
-    
+
     /**
-     * Set the view position
-     * @param position the desired position
+     * Pause/resume the slide show
+     * @param toPause if true, pause the slide show else resume
      * @param whether to notify other clients
      */
     public void pause(boolean toPause, boolean notify) {
@@ -586,7 +595,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             ChannelController.getController().sendMessage(msg);
         }
     }
-    
+
     /**
      * Render the current page of the PDF document
      * @param g the surface on which to draw the page
@@ -594,6 +603,10 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     @Override
     protected void paint(Graphics2D g) {
         logger.finest("paint");
+
+        // size of app which page will be scaled to fit
+        double appWidth = (double) this.getWidth();
+        double appHeight = (double) this.getHeight();
 
         if (pageDirty == true) {
             pageImage = getPageImage();
@@ -604,16 +617,33 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         }
 
         if (pageImage != null) {
-            // calculate page to view scale
-            double scale = (double) this.getWidth() / pageImage.getWidth();
-            // handle short pages that won't fit the page height
-            double subHeight = Math.min((double) this.getHeight() / scale, pageImage.getHeight());
+            // might have to scale due to page size changing
+            double scale = (double) this.getWidth() / (double) pageImage.getWidth();
 
-            // get a sub-image of the page that fits the view
-            BufferedImage visibleImage = pageImage.getSubimage(xScroll, yScroll, pageImage.getWidth(), (int) subHeight);
-            g.drawImage(visibleImage, 0, 0, this.getWidth(), this.getHeight(), null);
+            // size of page image scaled to fit app width
+            double scaledPageWidth = scale * pageImage.getWidth();
+            double scaledPageHeight = scale * pageImage.getHeight();
+
+            // calculate the visible portion of the page
+            double visibleHeight = Math.min(scaledPageHeight, appHeight);
+
+            // prevent scrolling off end of scaled page
+            yScroll = (yScroll + appHeight > scaledPageHeight) ? (int) (scaledPageHeight - appHeight) : yScroll;
+
+            // prevent scrolling off top of page
+            yScroll = (yScroll < 0) ? 0 : yScroll;
+
+            System.err.println("app dimensions: " + getWidth() + "x" + getHeight());
+            System.err.println("page dimentions: " + scaledPageWidth + "x" + scaledPageHeight);
+            System.err.println("yScroll: " + yScroll);
+            System.err.println("page width (page units): " + pageImage.getWidth());
+            System.err.println("page height (page units): " + visibleHeight / scale);
+
+            BufferedImage visibleImage = pageImage.getSubimage(xScroll, (int) (int)(yScroll/scale), pageImage.getWidth(), (int) (visibleHeight / scale));
+
+            g.drawImage(visibleImage, 0, 0, (int) appWidth, (int) visibleHeight, null);
         } else {
-            g.clearRect(0, 0, this.getWidth(), this.getHeight());
+            g.clearRect(0, 0, (int) appWidth, (int) appHeight);
         }
     }
 
@@ -644,14 +674,15 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 double xDelta = mousePos.getX() - evt.getX();
                 double yDelta = mousePos.getY() - evt.getY();
 
-                if ((yDelta != 0) &&
-                        ((yScroll + getHeight() + yDelta) < pageImage.getHeight()) &&
-                        ((yScroll + yDelta) > 0)) {
-                    yScroll += yDelta;
+                double scale = this.getWidth() / pageImage.getWidth();
+                double pageHeight = scale * pageImage.getHeight();
 
-                    setViewPosition(new Point(xScroll, yScroll), true);
-                }
-
+//                if ((yDelta != 0) &&
+//                        ((yScroll + getHeight() + yDelta) <= pageHeight) &&
+//                        ((yScroll + yDelta) > 0)) {
+//                    System.err.println("--- y scroll: " + yScroll);
+                setViewPosition(new Point(xScroll, (int) (yScroll + yDelta)), true);
+//                }
             }
             mousePos.setLocation(evt.getX(), evt.getY());
         }
