@@ -653,14 +653,14 @@ public class VideoApp extends AppWindowGraphics2DApp {
             // wait for a retry window
             synchronized (actionLock) {
                 try {
-                    logger.finest("waiting for retry window");
+                    logger.fine("waiting for retry window");
                     actionLock.wait();
                 } catch (Exception e) {
-                    logger.warning("exception waiting for retry: " + e);
+                    logger.fine("exception waiting for retry: " + e);
                 }
             }
             // retry this request
-            logger.finest("retrying");
+            logger.fine("retrying: " + action + ", " + point);
             sendCameraRequest(action, point);
         }
     }
@@ -780,7 +780,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
             case REQUEST_COMPLETE:
                 synchronized (actionLock) {
                     try {
-                        logger.finest("waking retry threads");
+                        logger.fine("waking retry threads");
                         actionLock.notify();
                     } catch (Exception e) {
                         logger.warning("exception notifying retry threads: " + e);

@@ -19,7 +19,6 @@
  */
 package org.jdesktop.lg3d.wonderland.videomodule.client.cell;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -46,7 +45,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
 
     private static final Logger logger =
             Logger.getLogger(PTZPanoramaApp.class.getName());
-    private static final float VIDEO_OVERLAY_Z = 0.01f;
+    private static final float VIDEO_OVERLAY_Z = 0.04f;
     private float horizFOV = 0.0f;
     private float vertFOV = 0.0f;
     private float horizPixelsPerDegree = 0.0f;
@@ -124,7 +123,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_R:
                 logger.info("refreshing panorama");
-                showHUDMessage("refreshing...", 60000);
+                showHUDMessage("refreshing...", 45000);
                 refreshPanorama();
                 break;
             default:
@@ -156,9 +155,12 @@ public class PTZPanoramaApp extends PTZCameraApp {
 
     private float xCoordToAngle(float x) {
         float w = getWidth();       // width of app in pixels
+
         float cx = w / 2f;
         float hf = horizFOV / 2f;   // visible field of view left or right of center
+
         float px = x - cx;          // distance in pixels from center
+
         float angle = (px / cx) * hf;     // angular offset from center
 
         logger.finest("x: " + x + " = angle: " + angle);
@@ -169,9 +171,12 @@ public class PTZPanoramaApp extends PTZCameraApp {
 
     private float yCoordToAngle(float y) {
         float h = getHeight();      // height of app in pixels
+
         float cy = h / 2f;
         float vf = vertFOV / 2f;    // visible field of view above or below center
+
         float py = y - cy;          // distance in pixels from center
+
         float angle = -(py / cy) * vf;  // angular offset from center
 
         logger.finest("y: " + y + " = angle: " + angle);
@@ -236,6 +241,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
         String myUID = ((VideoCell) cell).getUID();
         boolean forMe = (myUID.equals(controlling));
         VideoCellMessage vcm = null;
+        float pan, tilt, zoom;
 
         // a client may send a request while another camera has control.
         // the server denies the conflicting request and the client must
@@ -247,28 +253,23 @@ public class PTZPanoramaApp extends PTZCameraApp {
 
                 // take a snapshot of the current position of the camera before
                 // commencing the move
-                logger.finest("ptz changing: taking snapshot");
+                logger.fine("ptz changing: taking snapshot");
                 if (snapper != null) {
                     snapshot = snapper.getFrame();
                     repaint();
                 }
                 // new PTZ values
-                float pan = msg.getPan();
-                float tilt = msg.getTilt();
-                float zoom = msg.getZoom();
+                pan = msg.getPan();
+                tilt = msg.getTilt();
+                zoom = msg.getZoom();
 
                 // only adjust the camera if this cell has control of the camera
                 if (forMe == true) {
                     // change the camera's pan, tilt or zoom settings
-                    logger.finest("performing action: " + msg.getAction());
+                    logger.fine("performing action: " + msg.getAction());
                     moveCamera(msg.getAction(), pan, tilt, zoom);
-
-                    // notify everyone that the request has completed
-                    vcm = new VideoCellMessage(msg);
-                    vcm.setAction(Action.REQUEST_COMPLETE);
                 }
-
-                logger.finest("moving video window to: " + pan + ", " + tilt);
+                logger.fine("moving video window to: " + pan + ", " + tilt);
                 moveVideo(pan, tilt, VIDEO_OVERLAY_Z);
                 break;
             default:

@@ -19,7 +19,7 @@ import org.jdesktop.lg3d.wonderland.videomodule.common.VideoSource;
  *
  * @author nsimpson
  */
-public class PTZCameraApp extends VideoApp {
+public class PTZCameraApp extends VideoApp implements CameraListener {
 
     private static final Logger logger =
             Logger.getLogger(PTZCameraApp.class.getName());
@@ -133,9 +133,8 @@ public class PTZCameraApp extends VideoApp {
                 // bounds check the angles to honor min/max angle contraints of camera
                 p = (Math.abs(p) > ptz.getMaxPan()) ? Math.signum(p) * ptz.getMaxPan() : p;
                 t = (Math.abs(t) > ptz.getMaxTilt()) ? Math.signum(t) * ptz.getMaxTilt() : t;
-                z = (z > ptz.getMaxZoom()) ? ptz.getMaxZoom() : 
-                    ((z < ptz.getMinZoom()) ? ptz.getMinZoom() : z);
-                
+                z = (z > ptz.getMaxZoom()) ? ptz.getMaxZoom() : ((z < ptz.getMinZoom()) ? ptz.getMinZoom() : z);
+
                 msg = new VideoCellMessage(getCell().getCellID(),
                         ((VideoCell) cell).getUID(), Action.SET_PTZ);
                 msg.setState(PTZCameraApp.this.getState());
@@ -181,25 +180,20 @@ public class PTZCameraApp extends VideoApp {
                     // change the camera's pan, tilt or zoom settings
                     logger.info("setting PTZ to pan: " + pan + ", tilt: " + tilt + ", zoom: " + zoom);
                     moveCamera(msg.getAction(), pan, tilt, zoom);
-
-                    // notify everyone that the request has completed
-                    vcm = new VideoCellMessage(msg);
-                    vcm.setAction(Action.REQUEST_COMPLETE);
                 }
-
                 break;
             case REQUEST_COMPLETE:
                 // save the camera's current pan, tilt, zoom values
                 ptz.setPTZPosition(msg.getPan(), msg.getTilt(), msg.getZoom());
 
                 // when another client's request completes, wakeup any threads
-                // with pending actions, so thye can resubmit their requests
+                // with pending actions, so they can resubmit their requests
                 synchronized (actionLock) {
                     try {
-                        logger.finest("waking retry threads");
+                        logger.fine("waking retry threads");
                         actionLock.notify();
                     } catch (Exception e) {
-                        logger.warning("exception notifying retry threads: " + e);
+                        logger.fine("exception notifying retry threads: " + e);
                     }
                 }
                 break;
@@ -213,6 +207,17 @@ public class PTZCameraApp extends VideoApp {
         }
     }
 
+    public void cameraActionComplete(Action action, float pan, float tilt, float zoom) {
+        String myUID = ((VideoCell) cell).getUID();
+
+        // notify everyone that the request has completed
+        VideoCellMessage vcm = new VideoCellMessage(cell.getCellID(), myUID, action);
+        vcm.setAction(Action.REQUEST_COMPLETE);
+        vcm.setPTZPosition(pan, tilt, zoom);
+        logger.fine("sending message: " + vcm);
+        ChannelController.getController().sendMessage(vcm);
+    }
+
     /**
      * Moves the camera to the specified pan, tilt, zoom position
      * @param pan the pan ange
@@ -220,7 +225,7 @@ public class PTZCameraApp extends VideoApp {
      * @param zoom the zoom quotient
      */
     public void moveCamera(Action action, float pan, float tilt, float zoom) {
-        CameraTask ptzTask = new CameraTask(ptz, action, pan, tilt, zoom);
+        CameraTask ptzTask = new CameraTask(ptz, action, pan, tilt, zoom, this);
         ptzTask.start();
     }
 }
