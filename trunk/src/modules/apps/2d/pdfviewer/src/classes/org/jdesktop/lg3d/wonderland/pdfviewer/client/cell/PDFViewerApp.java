@@ -633,11 +633,11 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             // prevent scrolling off top of page
             yScroll = (yScroll < 0) ? 0 : yScroll;
 
-            System.err.println("app dimensions: " + getWidth() + "x" + getHeight());
-            System.err.println("page dimentions: " + scaledPageWidth + "x" + scaledPageHeight);
-            System.err.println("yScroll: " + yScroll);
-            System.err.println("page width (page units): " + pageImage.getWidth());
-            System.err.println("page height (page units): " + visibleHeight / scale);
+            logger.finest("app dimensions: " + getWidth() + "x" + getHeight());
+            logger.finest("page dimentions: " + scaledPageWidth + "x" + scaledPageHeight);
+            logger.finest("yScroll: " + yScroll);
+            logger.finest("page width (page units): " + pageImage.getWidth());
+            logger.finest("page height (page units): " + visibleHeight / scale);
 
             BufferedImage visibleImage = pageImage.getSubimage(xScroll, (int) (int)(yScroll/scale), pageImage.getWidth(), (int) (visibleHeight / scale));
 
@@ -677,12 +677,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 double scale = this.getWidth() / pageImage.getWidth();
                 double pageHeight = scale * pageImage.getHeight();
 
-//                if ((yDelta != 0) &&
-//                        ((yScroll + getHeight() + yDelta) <= pageHeight) &&
-//                        ((yScroll + yDelta) > 0)) {
-//                    System.err.println("--- y scroll: " + yScroll);
                 setViewPosition(new Point(xScroll, (int) (yScroll + yDelta)), true);
-//                }
             }
             mousePos.setLocation(evt.getX(), evt.getY());
         }
