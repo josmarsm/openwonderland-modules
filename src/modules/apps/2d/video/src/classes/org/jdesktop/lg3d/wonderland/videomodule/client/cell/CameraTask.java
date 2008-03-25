@@ -36,13 +36,20 @@ public class CameraTask extends Thread {
     private float pan;
     private float tilt;
     private float zoom;
-    
+    private CameraListener listener;
+
     public CameraTask(PTZCamera ptz, Action action, float pan, float tilt, float zoom) {
+        this(ptz, action, pan, tilt, zoom, null);
+    }
+
+    public CameraTask(PTZCamera ptz, Action action, float pan, float tilt, float zoom,
+            CameraListener listener) {
         this.ptz = ptz;
         this.action = action;
         this.pan = pan;
         this.tilt = tilt;
         this.zoom = zoom;
+        this.listener = listener;
     }
 
     @Override
@@ -50,9 +57,12 @@ public class CameraTask extends Thread {
         if (ptz != null) {
             switch (action) {
                 case SET_PTZ:
-                    ptz.panTo((int)pan);
-                    ptz.tiltTo((int)tilt);
-                    ptz.zoomTo((int)zoom);
+                    ptz.panTo((int) pan);
+                    ptz.tiltTo((int) tilt);
+                    ptz.zoomTo((int) zoom);
+                    if (listener != null) {
+                        listener.cameraActionComplete(action, pan, tilt, zoom);
+                    }
                     break;
             }
         }
