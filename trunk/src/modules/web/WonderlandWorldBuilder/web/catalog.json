@@ -1,7 +1,7 @@
 {
 	catalog: [
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+
 			name: "Floor (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Floors"],
@@ -18,7 +18,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Wall (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Walls and Windows"],
@@ -34,7 +33,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Corner Wall (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Walls and Windows"],
@@ -50,7 +48,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Doorway (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Walls and Windows"],
@@ -66,7 +63,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Divider (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Furniture"],
@@ -82,7 +78,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Pole (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Furniture"],
@@ -98,7 +93,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Table (Office - Conservative)",
 			group: false,
 			library: ["Office - Conservative","Furniture"],
@@ -382,6 +376,22 @@
 			tileImageURL: "lecturehall_rampwalkway_tile_n.png",
 			iconImageURL: "lecturehall_rampwalkway_icon.png",
 			modelURL: "models/worldbuilder/collegiate/lecturehall_rampwalkway.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
+			name: "Stage (Collegiate)",
+			group: false,
+			library: ["Collegiate","Furniture"],
+			width: 1,
+			height: 1,
+			zIndex: 3,
+			rotatable: false,
+			description: "A section of stage.",
+			tileImageURL: "lecturehall_stage_tile.png",
+			iconImageURL: "lecturehall_stage_icon.png",
+			modelURL: "models/worldbuilder/collegiate/lecturehall_stage.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
