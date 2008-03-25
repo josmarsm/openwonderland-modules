@@ -108,7 +108,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Chair (Youth)",
 			group: false,
 			library: ["Youth","Furniture"],
@@ -124,7 +123,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Floor (Youth)",
 			group: false,
 			library: ["Youth","Floors"],
@@ -140,7 +138,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Corner Wall (Youth)",
 			group: false,
 			library: ["Youth","Walls and Windows"],
@@ -156,7 +153,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Wall (Youth)",
 			group: false,
 			library: ["Youth","Walls and Windows"],
@@ -172,7 +168,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Carpeted Floor (Youth)",
 			group: false,
 			library: ["Youth","Floors"],
@@ -188,7 +183,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Floor (Youth)",
 			group: false,
 			library: ["Youth","Floors"],
@@ -204,7 +198,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Pillar (Youth)",
 			group: false,
 			library: ["Youth","Furniture"],
@@ -220,7 +213,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Table (Youth)",
 			group: false,
 			library: ["Youth","Furniture"],
@@ -236,7 +228,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Window (Youth)",
 			group: false,
 			library: ["Youth","Walls and Windows"],
@@ -252,7 +243,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Doorway (Youth)",
 			group: false,
 			library: ["Youth","Walls and Windows"],
@@ -268,7 +258,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Corner Wall (Collegiate)",
 			group: false,
 			library: ["Collegiate","Walls and Windows"],
@@ -284,13 +273,12 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Carpeted floor (Collegiate)",
 			group: false,
 			library: ["Collegiate","Floors"],
 			width: 1,
 			height: 1,
-			zIndex: 2,
+			zIndex: 1,
 			rotatable: false,
 			description: "Carpeted floor.",
 			tileImageURL: "lecturehall_floor_carpet_tile.png",
@@ -300,13 +288,12 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Wood floor with carpet (Collegiate)",
 			group: false,
 			library: ["Collegiate","Floors"],
 			width: 1,
 			height: 1,
-			zIndex: 2,
+			zIndex: 1,
 			rotatable: true,
 			description: "Wood floor with round carpeted edge.",
 			tileImageURL: "lecturehall_floor_carpet_wood_tile_n.png",
@@ -316,13 +303,12 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Wood floor (Collegiate)",
 			group: false,
 			library: ["Collegiate","Floors"],
 			width: 1,
 			height: 1,
-			zIndex: 2,
+			zIndex: 1,
 			rotatable: false,
 			description: "Wood floor.",
 			tileImageURL: "lecturehall_floor_wood_tile.png",
@@ -332,7 +318,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Straight wall section (Collegiate)",
 			group: false,
 			library: ["Collegiate","Floors"],
@@ -348,7 +333,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Stage section with podium (Collegiate)",
 			group: false,
 			library: ["Collegiate","Furniture"],
@@ -364,7 +348,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Ramp (Collegiate)",
 			group: false,
 			library: ["Collegiate","Furniture"],
@@ -380,7 +363,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Stage (Collegiate)",
 			group: false,
 			library: ["Collegiate","Furniture"],
@@ -396,7 +378,6 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
-			catalogURI: "http://localhost:8080/WonderlandWorldBuilder/catalog.json",
 			name: "Office",
 			group: true,
 			members: ["0 0 0","0 0 2","0 2 0","0 2 2"],
