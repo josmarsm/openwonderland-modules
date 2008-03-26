@@ -451,6 +451,21 @@
 			modelURL: "models/worldbuilder/office-modern/modernroom_doorwall.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			name: "Floor (Office - Modern)",
+			group: false,
+			library: ["Office - Modern","Floors"],
+			width: 1,
+			height: 1,
+			zIndex: 1,
+			rotatable: false,
+			description: "A blue and grey checkered floor tile.",
+			tileImageURL: "modernroom_floortile_tile.png",
+			iconImageURL: "modernroom_floortile_icon.png",
+			modelURL: "models/worldbuilder/office-modern/modernroom_floortile.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			name: "Office",
