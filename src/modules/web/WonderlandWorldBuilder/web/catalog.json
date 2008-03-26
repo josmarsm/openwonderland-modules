@@ -436,6 +436,21 @@
 			modelURL: "models/worldbuilder/office-modern/modernroom_fullwall.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			name: "Doorway (Office - Modern)",
+			group: false,
+			library: ["Office - Modern","Walls and Windows"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: true,
+			description: "A doorway with a window above.",
+			tileImageURL: "modernroom_doorwall_tile_n.png",
+			iconImageURL: "modernroom_doorwall_icon.png",
+			modelURL: "models/worldbuilder/office-modern/modernroom_doorwall.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			name: "Office",
