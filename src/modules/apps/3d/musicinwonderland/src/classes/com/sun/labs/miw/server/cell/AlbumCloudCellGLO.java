@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.vecmath.Vector3d;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
@@ -228,16 +229,7 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
         
         // start the treatment in the bridge
         if (playAudio) {
-            // get the audio file in the music manager
-            MusicManager mm = AppContext.getManager(MusicManager.class);
-            String audioFile = mm.getAudioFile(next);
-            
-            VoiceHandler vh = VoiceHandlerImpl.getInstance();
-            if (callId == null) {
-                callId = setupCall(vh, audioFile);
-            } else {
-                vh.newInputTreatment(callId, audioFile, null);
-            }
+            changeAudioTrack(next);
         }
         
         Message message = new NowPlayingMessage(next);
@@ -262,6 +254,23 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
         Message msg = new PlaylistMessage(PlaylistAction.APPEND_BACK,
                                           tracks);
         getCellChannel().send(msg.getBytes());
+    }
+    
+    /**
+     * Change the track that is currently playing
+     * @param track the new track to play
+     */
+    protected void changeAudioTrack(MIWTrack track) {
+         // get the audio file in the music manager
+         MusicManager mm = AppContext.getManager(MusicManager.class);
+         String audioFile = mm.getAudioFile(track);
+            
+         VoiceHandler vh = VoiceHandlerImpl.getInstance();
+         if (callId == null) {
+            callId = setupCall(vh, audioFile);
+         } else {
+            vh.newInputTreatment(callId, audioFile, null);
+         }
     }
     
     /**
@@ -396,23 +405,40 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
                 tracks = pcm.getTracks(); 
             }
            
+            if (tracks.isEmpty()) {
+                return;
+            }
+           
+            // the track to play after this operation, or null if
+            // the currently playing track hasn't changed
+            MIWTrack changeTrack = null;
+            
             switch (action) {
             case APPEND_FRONT:
-                for (MIWTrack track : tracks) {
-                    playList.addFirst(track);
-                }
+                // add to the beginning of the list
+                playList.addAll(0, tracks);
+                changeTrack = tracks.get(0);
                 break;
             case APPEND_BACK:
-                for (MIWTrack track : tracks) {
-                    playList.addLast(track);
+                // if the list is empty, we need to update the currently
+                // playing track to the first one we are adding
+                if (playList.isEmpty()) {
+                    changeTrack = tracks.get(0);
                 }
+                
+                // add to the end of the list
+                playList.addAll(tracks);
                 break;
             case NEW:
                playList.clear();
-               for (MIWTrack track : tracks) {
-                   playList.add(track);
-               }
+               playList.addAll(tracks);
+               changeTrack = tracks.get(0);
                break;
+            }
+            
+            // change the audio
+            if (changeTrack != null && playAudio) {
+                changeAudioTrack(changeTrack);
             }
             
             // announce changes over channen
@@ -440,8 +466,23 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
      */
     protected String setupCall(VoiceHandler vh, String treatment) {  
         String id = getCellID().toString();
-        vh.setupTreatment(id, treatment, null, this, 0, 0, 0, 
-                                                     100, 100, 45);
+        
+        // get the origin in world coordinates
+        Vector3d trans = new Vector3d();
+        getOriginWorld().get(trans);
+        
+        // start the treatment in the area of the orb
+        double minX = trans.x - 50.0;
+        double minY = 0;
+        double minZ = trans.z - 50.0;
+        double maxX = trans.x + 50;
+        double maxY = 25;
+        double maxZ = trans.z + 20;
+        
+        logger.info("Start treatment " + treatment + " at " + trans);
+        
+        vh.setupTreatment(id, treatment, null, this, minX, minZ, minY,
+                                                     maxX, maxZ, maxY);
         vh.setAttenuationVolume(id, 0.5);
         return id;
     }

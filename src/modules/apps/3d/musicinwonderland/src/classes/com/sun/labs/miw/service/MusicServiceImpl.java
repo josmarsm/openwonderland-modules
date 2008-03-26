@@ -106,7 +106,7 @@ public class MusicServiceImpl implements MusicService {
      * @{inheritDoc}
      */
     public String getAudioFile(MIWTrack track) {
-        return null;
+        return track.getAudioURL().toExternalForm();
     }
 
     /**
