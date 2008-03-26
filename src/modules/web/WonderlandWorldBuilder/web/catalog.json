@@ -108,9 +108,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Chair (Youth)",
+			name: "Chair (Office - Hitech)",
 			group: false,
-			library: ["Youth","Furniture"],
+			library: ["Office - Hitech","Furniture"],
 			width: 1,
 			height: 1,
 			zIndex: 3,
@@ -123,9 +123,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Floor (Youth)",
+			name: "Floor (Office - Hitech)",
 			group: false,
-			library: ["Youth","Floors"],
+			library: ["Office - Hitech","Floors"],
 			width: 1,
 			height: 1,
 			zIndex: 1,
@@ -138,9 +138,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Corner Wall (Youth)",
+			name: "Corner Wall (Office - Hitech)",
 			group: false,
-			library: ["Youth","Walls and Windows"],
+			library: ["Office - Hitech","Walls and Windows"],
 			width: 1,
 			height: 1,
 			zIndex: 2,
@@ -153,9 +153,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Wall (Youth)",
+			name: "Wall (Office - Hitech)",
 			group: false,
-			library: ["Youth","Walls and Windows"],
+			library: ["Office - Hitech","Walls and Windows"],
 			width: 1,
 			height: 1,
 			zIndex: 2,
@@ -168,9 +168,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Carpeted Floor (Youth)",
+			name: "Carpeted Floor (Office - Hitech)",
 			group: false,
-			library: ["Youth","Floors"],
+			library: ["Office - Hitech","Floors"],
 			width: 1,
 			height: 1,
 			zIndex: 1,
@@ -183,9 +183,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Floor (Youth)",
+			name: "Floor (Office - Hitech)",
 			group: false,
-			library: ["Youth","Floors"],
+			library: ["Office - Hitech","Floors"],
 			width: 1,
 			height: 1,
 			zIndex: 1,
@@ -198,9 +198,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Pillar (Youth)",
+			name: "Pillar (Office - Hitech)",
 			group: false,
-			library: ["Youth","Furniture"],
+			library: ["Office - Hitech","Furniture"],
 			width: 1,
 			height: 1,
 			zIndex: 3,
@@ -213,9 +213,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Table (Youth)",
+			name: "Table (Office - Hitech)",
 			group: false,
-			library: ["Youth","Furniture"],
+			library: ["Office - Hitech","Furniture"],
 			width: 2,
 			height: 2,
 			zIndex: 3,
@@ -228,9 +228,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Window (Youth)",
+			name: "Window (Office - Hitech)",
 			group: false,
-			library: ["Youth","Walls and Windows"],
+			library: ["Office - Hitech","Walls and Windows"],
 			width: 2,
 			height: 2,
 			zIndex: 2,
@@ -243,9 +243,9 @@
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		},
 		{
-			name: "Doorway (Youth)",
+			name: "Doorway (Office - Hitech)",
 			group: false,
-			library: ["Youth","Walls and Windows"],
+			library: ["Office - Hitech","Walls and Windows"],
 			width: 1,
 			height: 1,
 			zIndex: 2,
@@ -479,6 +479,21 @@
 			tileImageURL: "modernroom_glassbookcase_tile_n.png",
 			iconImageURL: "modernroom_glassbookcase_icon.png",
 			modelURL: "models/worldbuilder/office-modern/modernroom_glassbookcase.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			name: "Carpet (Youth)",
+			group: false,
+			library: ["Youth","Floors"],
+			width: 1,
+			height: 1,
+			zIndex: 1,
+			rotatable: false,
+			description: "Carpet.",
+			tileImageURL: "modernhall_circle_tiles_tile.png",
+			iconImageURL: "modernhall_circle_tiles_icon.png",
+			modelURL: "models/worldbuilder/youth/modernhall_circle_tiles.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
