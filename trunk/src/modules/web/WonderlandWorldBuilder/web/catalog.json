@@ -466,6 +466,21 @@
 			modelURL: "models/worldbuilder/office-modern/modernroom_floortile.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			name: "Glass Bookcase (Office - Modern)",
+			group: false,
+			library: ["Office - Modern","Furniture"],
+			width: 3,
+			height: 3,
+			zIndex: 3,
+			rotatable: true,
+			description: "A glass bookcase.",
+			tileImageURL: "modernroom_glassbookcase_tile_n.png",
+			iconImageURL: "modernroom_glassbookcase_icon.png",
+			modelURL: "models/worldbuilder/office-modern/modernroom_glassbookcase.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			name: "Office",
