@@ -320,7 +320,7 @@
 		{
 			name: "Straight wall section (Collegiate)",
 			group: false,
-			library: ["Collegiate","Floors"],
+			library: ["Collegiate","Walls and Windows"],
 			width: 1,
 			height: 1,
 			zIndex: 2,
@@ -380,7 +380,7 @@
 		{
 			name: "Wall section with window (Collegiate)",
 			group: false,
-			library: ["Collegiate","Furniture"],
+			library: ["Collegiate","Walls and Windows"],
 			width: 1,
 			height: 1,
 			zIndex: 2,
@@ -389,6 +389,21 @@
 			tileImageURL: "lecturehall_window_tile_n.png",
 			iconImageURL: "lecturehall_window_icon.png",
 			modelURL: "models/worldbuilder/collegiate/lecturehall_window.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			name: "Bookcase (Office - Modern)",
+			group: false,
+			library: ["Office - Modern","Furniture"],
+			width: 1,
+			height: 1,
+			zIndex: 3,
+			rotatable: true,
+			description: "A low bookcase.",
+			tileImageURL: "modernroom_brownbookcase_tile_n.png",
+			iconImageURL: "modernroom_brownbookcase_icon.png",
+			modelURL: "models/worldbuilder/office-modern/modernroom_brownbookcase.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
