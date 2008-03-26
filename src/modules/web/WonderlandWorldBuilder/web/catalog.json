@@ -496,6 +496,21 @@
 			modelURL: "models/worldbuilder/youth/modernhall_circle_tiles.j3s.gz",
 			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
 			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			name: "Wall with stripe (Youth)",
+			group: false,
+			library: ["Youth","Walls and Windows"],
+			width: 1,
+			height: 1,
+			zIndex: 1,
+			rotatable: true,
+			description: "Straight wall section with stripe decal.",
+			tileImageURL: "modernhall_wall_curvestripe_tile_n.png",
+			iconImageURL: "modernhall_wall_curvestripe_icon.png",
+			modelURL: "models/worldbuilder/youth/modernhall_wall_curvestripe.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
 		}/*,
 		{
 			name: "Office",
