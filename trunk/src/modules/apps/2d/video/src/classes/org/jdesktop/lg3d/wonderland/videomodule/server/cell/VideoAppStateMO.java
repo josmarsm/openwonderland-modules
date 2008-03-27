@@ -38,6 +38,7 @@ public class VideoAppStateMO implements Serializable, ManagedObject {
     private VideoCellSetup setup;
     private String id;
     private Calendar lastStateChangeDate = null;
+    private Calendar controlOwnedDate = null;
     
     public VideoAppStateMO(VideoCellSetup setup) {
         this.setup = setup;
@@ -45,6 +46,11 @@ public class VideoAppStateMO implements Serializable, ManagedObject {
 
     public void setControllingCell(String id) {
         this.id = id;
+        if (id != null) {
+            controlOwnedDate = Calendar.getInstance();
+        } else {
+            controlOwnedDate = null;
+        }
     }
     
     public String getControllingCell() {
@@ -155,7 +161,7 @@ public class VideoAppStateMO implements Serializable, ManagedObject {
     public void setZoom(float zoom) {
         setup.setZoom(zoom);
     }
-
+    
     public float getZoom() {
         return setup.getZoom();
     }
@@ -164,10 +170,21 @@ public class VideoAppStateMO implements Serializable, ManagedObject {
         return setup.getVideoInstance();
     }
     
-    public Calendar getLastPlayerStateChange() {
+    public Calendar getLastStateChange() {
         if ((getPlayOnLoad() == true) && (lastStateChangeDate == null)) {
             lastStateChangeDate = Calendar.getInstance();
         }
         return lastStateChangeDate;
+    }
+    
+    public long getControlOwnedDuration() {
+        long ownedDuration = 0;
+        
+        if (controlOwnedDate != null) {
+            Calendar now = Calendar.getInstance();
+            ownedDuration = now.getTimeInMillis() - controlOwnedDate.getTimeInMillis();
+        }
+        
+        return ownedDuration;
     }
 }

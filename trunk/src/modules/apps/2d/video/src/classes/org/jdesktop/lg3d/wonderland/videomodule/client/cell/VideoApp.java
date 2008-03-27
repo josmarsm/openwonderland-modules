@@ -74,16 +74,17 @@ public class VideoApp extends AppWindowGraphics2DApp {
     protected static final double DEFAULT_HEIGHT = 960;
     protected DrawingSurface drawingSurface;
     protected JMFSnapper snapper;
+    protected Object actionLock = new Object();
+    protected long requestThrottle = -1;  // use default
     private Timer frameTimer;
     private FrameUpdateTask frameUpdateTask;
     private float frameRate = 0f;
     private float preferredFrameRate = ACTIVE_FRAME_RATE;
     private double preferredWidth = 0;  // none, use media width
     private double preferredHeight = 0; // none, use media height
-    private boolean synced = false;
+    private boolean synced = true;
     private String video;
     private HUDButton msgButton;
-    protected Object actionLock = new Object();
     private VideoSourceDialog videoDialog;
     private boolean hudEnabled = true;
     private boolean audioEnabled = false;
@@ -333,6 +334,14 @@ public class VideoApp extends AppWindowGraphics2DApp {
         this.preferredHeight = preferredHeight;
     }
 
+    public void setRequestThrottle(long requestThrottle) {
+        this.requestThrottle = requestThrottle;
+    }
+
+    public long getRequestThrottle() {
+        return requestThrottle;
+    }
+
     public void setInControl(boolean inControl) {
         this.inControl = inControl;
         // When the application gains control, increase the frame rate to the
@@ -530,7 +539,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
             mute(true);
             cueTimer = new Timer();
             start();
-            cueTimer.schedule(new CueCompleteTask(), (long) cueLeadIn*2);
+            cueTimer.schedule(new CueCompleteTask(), (long) cueLeadIn * 2);
         }
 
         private class CueCompleteTask extends TimerTask {
@@ -551,14 +560,14 @@ public class VideoApp extends AppWindowGraphics2DApp {
 
     public void mute(boolean muting, boolean quietly) {
         boolean hudOn = isHUDEnabled();
-        
+
         if ((quietly == true) && (hudOn == true)) {
             setHUDEnabled(false);
         }
         mute(muting);
         setHUDEnabled(hudOn);
     }
-    
+
     public void mute(boolean muting) {
         if (snapper != null) {
             logger.info((muting == true) ? "muting" : "unmuting");

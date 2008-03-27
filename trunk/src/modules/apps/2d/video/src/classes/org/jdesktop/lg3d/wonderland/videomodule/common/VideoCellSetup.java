@@ -50,6 +50,8 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     private float tilt = 0.0f;
     private float zoom = 0.0f;
 
+    private long requestThrottle = 2500; // milliseconds
+    
     public VideoCellSetup() {
         this(null, null);
     }
@@ -175,5 +177,13 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
 
     public VideoSource getVideoInstance() {
         return videoInstance;
+    }
+    
+    public void setRequestThrottle(long requestThrottle) {
+        this.requestThrottle = requestThrottle;
+    }
+    
+    public long getRequestThrottle() {
+        return requestThrottle;
     }
 }

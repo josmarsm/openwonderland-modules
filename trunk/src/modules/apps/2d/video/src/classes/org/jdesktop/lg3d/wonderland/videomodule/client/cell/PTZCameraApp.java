@@ -26,7 +26,7 @@ public class PTZCameraApp extends VideoApp implements CameraListener {
     protected PTZCamera ptz;
     protected float horizOverlapPercent = 0.1f;
     protected float vertOverlapPercent = 0.1f;
-
+    
     public PTZCameraApp(SharedApp2DImageCell cell) {
         super(cell);
     }
@@ -208,9 +208,8 @@ public class PTZCameraApp extends VideoApp implements CameraListener {
     }
 
     public void cameraActionComplete(Action action, float pan, float tilt, float zoom) {
+        // notify fellow clients that the request has completed
         String myUID = ((VideoCell) cell).getUID();
-
-        // notify everyone that the request has completed
         VideoCellMessage vcm = new VideoCellMessage(cell.getCellID(), myUID, action);
         vcm.setAction(Action.REQUEST_COMPLETE);
         vcm.setPTZPosition(pan, tilt, zoom);
@@ -226,6 +225,9 @@ public class PTZCameraApp extends VideoApp implements CameraListener {
      */
     public void moveCamera(Action action, float pan, float tilt, float zoom) {
         CameraTask ptzTask = new CameraTask(ptz, action, pan, tilt, zoom, this);
+        if (requestThrottle != -1) {
+            ptzTask.setRequestThrottle(requestThrottle);
+        }
         ptzTask.start();
     }
 }
