@@ -56,6 +56,8 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
 
     private static final Logger logger =
             Logger.getLogger(VideoCellGLO.class.getName());
+    private static final long CONTROL_LIMIT = 20 * 1000;  // 20 seconds
+
     private ManagedReference stateRef = null;
 
     public VideoCellGLO() {
@@ -146,11 +148,15 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
         return getCellChannel();
     }
 
+    /*
+     * Handle message
+     * @param client the client that sent the message
+     * @param message the message
+     */
     public void receivedMessage(ClientSession client, CellMessage message) {
         VideoCellMessage vmcm = (VideoCellMessage) message;
         logger.fine("video GLO received msg: " + vmcm);
-        logger.fine("cell channel: " + getCellChannel());
-        
+
         Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
 
         // clone the message
@@ -163,6 +169,21 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
         String controlling = stateMO.getControllingCell();
         // client making the request
         String requester = vmcm.getUID();
+
+        // time out requests from non-responsive clients
+        if (controlling != null) {
+            // clients may lose connectivity to the server while processing
+            // requests. 
+            // if this happens, release the controlling client lock so that
+            // other clients can process their requests
+            long controlDuration = stateMO.getControlOwnedDuration();
+
+            if (controlDuration >= CONTROL_LIMIT) {
+                logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
+                stateMO.setControllingCell(null);
+                controlling = null;
+            }
+        }
 
         if (controlling == null) {
             // no cell has control, grant control to the requesting cell
@@ -178,9 +199,9 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                     msg.setState(stateMO.getState());
                     if (stateMO.getState() == PlayerState.PLAYING) {
                         Calendar now = Calendar.getInstance();
-                        Calendar then = stateMO.getLastPlayerStateChange();
+                        Calendar then = stateMO.getLastStateChange();
                         long ago = now.getTimeInMillis() - then.getTimeInMillis();
-                        double predicted = stateMO.getPosition() + (ago*1000*1000);
+                        double predicted = stateMO.getPosition() + (ago * 1000 * 1000);
                         msg.setPosition(predicted);
                         logger.fine("predicted play position: " + predicted);
                     } else {

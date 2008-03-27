@@ -100,7 +100,8 @@ public class VideoCell extends SharedApp2DImageCell
             app.setPreferredHeight(setup.getPreferredHeight());
             app.setFrameRate(setup.getFrameRate());
             app.setSynced(setup.getSynced());
-
+            app.setRequestThrottle(setup.getRequestThrottle());
+            
             if (setup.getSynced() == true) {
                 app.getSynced();
             } else {
