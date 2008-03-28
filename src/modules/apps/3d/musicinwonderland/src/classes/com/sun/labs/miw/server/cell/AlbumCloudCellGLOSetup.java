@@ -34,6 +34,7 @@ public class AlbumCloudCellGLOSetup extends BasicCellGLOSetup<AlbumCloudSetup> {
     private URL artPath;
     private int minPlaylistSize = 7;
     private int maxPlaylistSize = 21;
+    private float audioVolume = 0.2f;
     
     public AlbumCloudCellGLOSetup() {
         this (null, null, null);
@@ -75,5 +76,13 @@ public class AlbumCloudCellGLOSetup extends BasicCellGLOSetup<AlbumCloudSetup> {
 
     public void setMaxPlaylistSize(int maxPlaylistSize) {
         this.maxPlaylistSize = maxPlaylistSize;
+    }
+    
+    public float getAudioVolume() {
+        return audioVolume;
+    }
+    
+    public void setAudioVolume(float audioVolume) {
+        this.audioVolume = audioVolume;
     }
 }

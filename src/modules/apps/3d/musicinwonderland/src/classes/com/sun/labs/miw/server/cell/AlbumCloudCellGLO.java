@@ -83,6 +83,9 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
     /** whether to actually play audio */
     private boolean playAudio;
     
+    /** the volume to play audio at */
+    private float audioVolume = 0.5f;
+    
     /** the task used to change tracks */
     private PeriodicTaskHandle changeTrackTask;
     
@@ -140,7 +143,8 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
         AlbumCloudCellGLOSetup setup = (AlbumCloudCellGLOSetup) setupData;
   
         this.playAudio = setup.getPlayAudio();
-  
+        this.audioVolume = setup.getAudioVolume();
+        
         setAlbumListURL(setup.getAlbumListURL());
         setMinPlaylistSize(setup.getMinPlaylistSize());
         setMaxPlaylistSize(setup.getMaxPlaylistSize());
@@ -308,6 +312,22 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
         this.minPlaylistSize = minPlaylistSize;
     }
 
+    /**
+     * Get the audio volume
+     * @return the audio volume
+     */
+    public float getAudioVolume() {
+        return audioVolume;
+    }
+    
+    /**
+     * Set the audio volume
+     * @param audioVolume the volume to set
+     */
+    public void setAudioVolume(float audioVolume) {
+        this.audioVolume = audioVolume;
+    }
+    
     /**
      * Get the path to artwork.
      * @return the path to art
@@ -483,7 +503,7 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
         
         vh.setupTreatment(id, treatment, null, this, minX, minZ, minY,
                                                      maxX, maxZ, maxY);
-        vh.setAttenuationVolume(id, 0.5);
+        vh.setAttenuationVolume(id, getAudioVolume());
         return id;
     }
     
