@@ -45,6 +45,7 @@
         <mkdir dir="dist"/>
         <mkdir dir="dist/client"/>
         <mkdir dir="dist/server"/>
+        <mkdir dir="dist/web"/>
         
         <!-- copy all client jars -->
         <copy todir="dist/client">
@@ -58,6 +59,14 @@
         <copy todir="dist/server">
             <fileset dir="src">
                 <include name="**/dist/server/*.jar"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </copy>
+        
+        <!-- copy web wars -->
+        <copy todir="dist/web">
+            <fileset dir="src/modules/web">
+                <include name="**/dist/*.war"/>
             </fileset>
             <mapper type="flatten"/>
         </copy>
