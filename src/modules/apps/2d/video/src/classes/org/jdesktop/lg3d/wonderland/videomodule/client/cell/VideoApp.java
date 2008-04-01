@@ -456,7 +456,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
             showHUDMessage("Playing", 2000);
         } else {
             stop();
-            showHUDMessage("Paused");
+            showHUDMessage("Paused", 2000);
         }
 
     }
@@ -757,8 +757,11 @@ public class VideoApp extends AppWindowGraphics2DApp {
                         play(true);
                     } else {
                         // pausing
-                        play(false);
-                        cue(msg.getPosition(), 0.1);
+                        if (forMe == false) {
+                            // initiator will already have paused
+                            play(false);
+                            cue(msg.getPosition(), 0.1);
+                        }
                     }
                 }
                 if (forMe == true) {
@@ -862,6 +865,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
 
                 if (frame != null) {
                     g.drawImage(frame, 0, 0, getWidth(), getHeight(), null);
+                    frame = null;
                 }
             }
         }
