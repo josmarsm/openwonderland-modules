@@ -48,6 +48,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.cell.Cell;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellStatus;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.AvatarCellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 
 /**
@@ -101,7 +102,7 @@ public class AlbumCloudCell extends Cell implements ExtendedClientChannelListene
         }
         
         // create the album cloud view
-        UI.albumCloud = new AlbumCloud(baseURL);
+        UI.albumCloud = new AlbumCloud(baseURL, this);
         UI.albumCloud.addAlbums(collection, 372);
         J3dLgBranchGroup node = new J3dLgBranchGroup();
         node.addChild(UI.albumCloud.node);
@@ -227,4 +228,10 @@ public class AlbumCloudCell extends Cell implements ExtendedClientChannelListene
         }
         return ret;
     }
+
+    public void setVolume(String callId, double volume) {
+        AvatarCellMessage msg = new AvatarCellMessage(callId, volume);
+            ChannelController.getController().sendMessage(msg);
+    }
+
 }
