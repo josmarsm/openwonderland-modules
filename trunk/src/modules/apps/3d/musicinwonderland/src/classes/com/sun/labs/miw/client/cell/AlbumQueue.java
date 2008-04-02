@@ -33,11 +33,11 @@ public class AlbumQueue {
     Billboard nowPlaying;
     List<Album> albumQueue;
     
-    public AlbumQueue() {
-        init();
+    public AlbumQueue(AlbumCloudCell albumCloudCell) {
+        init(albumCloudCell);
     }
     
-    void init() {
+    void init(AlbumCloudCell albumCloudCell) {
         node = new BranchGroup();
         node.setName("Album Queue");
         node.setCapability(node.ALLOW_CHILDREN_EXTEND);
@@ -45,7 +45,8 @@ public class AlbumQueue {
         SceneGraphUtil.setCapabilitiesGraph(node, false);
         
         albumQueue = Collections.synchronizedList(new ArrayList<Album>());
-        nowPlaying = new Billboard("Now Playing",Util.makeTransform(0.0,4.2,0.0,1.0));
+        nowPlaying = new Billboard("Now Playing",Util.makeTransform(0.0,4.2,0.0,1.0),
+	    albumCloudCell);
     }
     
     void clear() {

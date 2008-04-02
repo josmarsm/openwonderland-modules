@@ -40,10 +40,10 @@ import javax.vecmath.Vector3d;
 public class AlbumCloud {
     
     /** Creates a new instance of AlbumCloud */
-    public AlbumCloud(String artPath) {
+    public AlbumCloud(String artPath, AlbumCloudCell albumCloudCell) {
         this.artPath = artPath;
         
-        init();
+        init(albumCloudCell);
     }
     
     public void addAlbums(AlbumCollection albums, int count) {
@@ -108,7 +108,7 @@ public class AlbumCloud {
         return image;
     }
     
-    private void init() {
+    private void init(AlbumCloudCell albumCloudCell) {
         UI.init();
         node = new BranchGroup();
         node.setCapability(node.ALLOW_DETACH);
@@ -117,7 +117,7 @@ public class AlbumCloud {
         Transform3D tr = new Transform3D();
         tr.setTranslation(new Vector3d(0,4,0));
         node.addChild(new AlbumCloudAnimator(albumsNode).node);
-        albumQueue = new AlbumQueue();
+        albumQueue = new AlbumQueue(albumCloudCell);
         node.addChild(albumQueue.node);
         addBackground();
 

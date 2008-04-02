@@ -33,11 +33,26 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
 import org.jdesktop.j3d.util.SceneGraphUtil;
 
-public class Billboard {
+import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
+import org.jdesktop.lg3d.wonderland.darkstar.client.cell.CellMenu;
+
+import org.jdesktop.lg3d.wg.event.LgEvent;
+import org.jdesktop.lg3d.wg.event.LgEventListener;
+import org.jdesktop.lg3d.wg.event.MouseButtonEvent3D;
+import org.jdesktop.lg3d.wg.internal.j3d.j3dnodes.J3dLgBranchGroup;
+
+import org.jdesktop.lg3d.wonderland.scenemanager.CellMenuManager;
+
+public class Billboard implements LgEventListener {
     
+    private AlbumCloudCell albumCloudCell;
+
     /** Creates a new instance of Billboard */
-    public Billboard(String Name, Transform3D Transform) {
+    public Billboard(String Name, Transform3D Transform, 
+	    AlbumCloudCell albumCloudCell) {
+
         transform = Transform; name = Name;
+	this.albumCloudCell = albumCloudCell;
         init();
     }
     void init() {
@@ -49,14 +64,39 @@ public class Billboard {
         text.setCapability(text.ALLOW_POSITION_WRITE);
         text.setCapability(text.ALLOW_STRING_WRITE);
         Box box = new Box(4.2f,.8f,.1f,Util.colorApp(1,0,0));
-        box.setPickable(false);
+        box.setPickable(true);
         TransformGroup tr = new TransformGroup(transform);
         tr.addChild(box);
         Shape3D shape = new Shape3D(text);
-        shape.setPickable(false);
+        shape.setPickable(true);
         tr.addChild(shape);
         node.addChild(tr);
+        J3dLgBranchGroup bg = new J3dLgBranchGroup();
+        bg.setCapabilities();
+        bg.setMouseEventEnabled(true);
+        bg.setMouseEventSource(MouseButtonEvent3D.class, true);
+        bg.addListener(this);
         SceneGraphUtil.setCapabilitiesGraph(node, false);
+	bg.addChild(node);
+	node = bg;
+    }
+    @SuppressWarnings("unchecked")
+    public Class<LgEvent>[] getTargetEventClasses() {
+        return new Class[] { MouseButtonEvent3D.class };
+    }
+    public void processEvent(LgEvent evt) {
+	System.out.println("got mouse event " + evt);
+
+	if (evt instanceof  MouseButtonEvent3D) {
+            MouseButtonEvent3D mevt = (MouseButtonEvent3D) evt;
+            if (mevt.isClicked()) {
+		BoxCellMenu menu = BoxCellMenu.getInstance();
+		String name = albumCloudCell.getCellID().toString();
+                menu.setCallId(name);
+                CellMenuManager.getInstance().showMenu(albumCloudCell, menu,
+                    "Volume for " + name);
+	    }
+	}
     }
     void setText(String message) {
         if (message.length() > 15) message = message.substring(0,12)+"...";
