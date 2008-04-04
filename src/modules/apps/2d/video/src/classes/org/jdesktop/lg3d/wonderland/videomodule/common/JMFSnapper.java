@@ -91,8 +91,6 @@ public class JMFSnapper implements ControllerListener {
     private boolean showTimer = false;
     private BufferedImage bi = null;
     private Graphics graphics = null;
-    private int biWidth = 0;
-    private int biHeight = 0;
 
     public JMFSnapper(String fnm) {
         // utilise the native modular player so frame grabbing is available
@@ -373,7 +371,7 @@ public class JMFSnapper implements ControllerListener {
                 }
             } else {
                 // convert the Image to a BufferedImage
-                if ((bi == null) || (im.getWidth(null) != biWidth) || (im.getHeight(null) != biHeight)) {
+                if ((bi == null) || (im.getWidth(null) != bi.getWidth()) || (im.getHeight(null) != bi.getHeight())) {
                     bi = new BufferedImage(im.getWidth(null), im.getHeight(null),
                             BufferedImage.TYPE_INT_ARGB);
                     graphics = bi.createGraphics();
