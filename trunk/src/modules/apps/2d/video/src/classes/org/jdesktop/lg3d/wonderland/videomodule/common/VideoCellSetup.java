@@ -41,6 +41,7 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     private boolean synced = true;
     private double preferredWidth = 0;  // none, use media width
     private double preferredHeight = 0; // none, use media height
+    private float pixelScale = 1.0f;    // scale factor when mapping from pixels to world units
     private boolean panoramic = false;  // for viewing pan/tilt/zoom camera video
     // video run time state
     private PlayerState playerState = PlayerState.STOPPED;
@@ -109,6 +110,14 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
         return preferredHeight;
     }
 
+    public void setPixelScale(float pixelScale) {
+        this.pixelScale = pixelScale;
+    }
+    
+    public float getPixelScale() {
+        return pixelScale;
+    }
+    
     public void setVideoClass(String videoClass) {
         this.videoClass = videoClass;
         try {
