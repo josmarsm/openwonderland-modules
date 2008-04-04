@@ -355,10 +355,14 @@ public class VideoApp extends AppWindowGraphics2DApp {
         //
         // Ultimately, the frame rate should vary depending on avatar proximity
         // to the video application and whether the video is in view.
+        //CellMenu cellMenu = VideoCellMenu.getInstance();
+
         if (inControl == true) {
             setFrameRate(preferredFrameRate);
+            //CellMenuManager.getInstance().showMenu(this.getCell(), cellMenu, "Video");
         } else {
             setFrameRate(INACTIVE_FRAME_RATE);
+            //CellMenuManager.getInstance().hideMenu();
         }
         setAudioEnabled(inControl);
     }

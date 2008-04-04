@@ -80,15 +80,18 @@ public class VideoCell extends SharedApp2DImageCell
 
                 if (setup.getPanoramic() == true) {
                     // create a panorama viewer
-                    app = new PTZPanoramaApp(this);
+                    app = new PTZPanoramaApp(this, 0, 0, 
+                            (int)setup.getPreferredWidth(), (int)setup.getPreferredHeight());
                 } else {
                     // create a simple PTZ viewer
-                    app = new PTZCameraApp(this);
+                    app = new PTZCameraApp(this, 0, 0, 
+                            (int)setup.getPreferredWidth(), (int)setup.getPreferredHeight());
                 }
                 app.setVideoInstance(ptz);
             } else {
                 // standard video player
-                app = new VideoApp(this);
+                app = new VideoApp(this, 0, 0, 
+                        (int)setup.getPreferredWidth(), (int)setup.getPreferredHeight());
                 app.setVideoInstance(setup.getVideoInstance());
             }
 
@@ -96,8 +99,6 @@ public class VideoCell extends SharedApp2DImageCell
             logger.info("play on load: " + setup.getPlayOnLoad());
             logger.info("sync playback: " + setup.getSynced());
 
-            app.setPreferredWidth(setup.getPreferredWidth());
-            app.setPreferredHeight(setup.getPreferredHeight());
             app.setFrameRate(setup.getFrameRate());
             app.setSynced(setup.getSynced());
             app.setRequestThrottle(setup.getRequestThrottle());
