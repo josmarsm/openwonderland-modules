@@ -23,15 +23,19 @@ import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.SessionId;
 
 import java.rmi.server.UID;
+
 import java.util.logging.Logger;
 
 import javax.vecmath.Matrix4d;
+import javax.vecmath.Point2f;
 
 import org.jdesktop.lg3d.displayserver.EventProcessor;
 import org.jdesktop.lg3d.wg.event.LgEvent;
 import org.jdesktop.lg3d.wg.event.LgEventListener;
+
 import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListener;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
+
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellStatus;
@@ -40,6 +44,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 import org.jdesktop.lg3d.wonderland.scenemanager.events.CellEnterEvent;
 import org.jdesktop.lg3d.wonderland.scenemanager.events.CellEnterExitEvent;
 import org.jdesktop.lg3d.wonderland.scenemanager.events.CellExitEvent;
+
 import org.jdesktop.lg3d.wonderland.videomodule.common.PTZCamera;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellSetup;
@@ -80,18 +85,18 @@ public class VideoCell extends SharedApp2DImageCell
 
                 if (setup.getPanoramic() == true) {
                     // create a panorama viewer
-                    app = new PTZPanoramaApp(this, 0, 0, 
-                            (int)setup.getPreferredWidth(), (int)setup.getPreferredHeight());
+                    app = new PTZPanoramaApp(this, 0, 0,
+                            (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight());
                 } else {
                     // create a simple PTZ viewer
-                    app = new PTZCameraApp(this, 0, 0, 
-                            (int)setup.getPreferredWidth(), (int)setup.getPreferredHeight());
+                    app = new PTZCameraApp(this, 0, 0,
+                            (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight());
                 }
                 app.setVideoInstance(ptz);
             } else {
                 // standard video player
-                app = new VideoApp(this, 0, 0, 
-                        (int)setup.getPreferredWidth(), (int)setup.getPreferredHeight());
+                app = new VideoApp(this, 0, 0,
+                        (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight());
                 app.setVideoInstance(setup.getVideoInstance());
             }
 
@@ -99,10 +104,11 @@ public class VideoCell extends SharedApp2DImageCell
             logger.info("play on load: " + setup.getPlayOnLoad());
             logger.info("sync playback: " + setup.getSynced());
 
+            app.setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
             app.setFrameRate(setup.getFrameRate());
             app.setSynced(setup.getSynced());
             app.setRequestThrottle(setup.getRequestThrottle());
-            
+
             if (setup.getSynced() == true) {
                 app.getSynced();
             } else {
