@@ -21,6 +21,7 @@ package org.jdesktop.lg3d.wonderland.pdfviewer.client.cell;
 
 import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.SessionId;
+import java.rmi.server.UID;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4d;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListener;
@@ -43,7 +44,8 @@ public class PDFViewerCell extends SharedApp2DImageCell
             Logger.getLogger(PDFViewerCell.class.getName());
     private PDFViewerApp viewer;
     private PDFViewerCellSetup pdfSetup;
-
+    private String myUID = new UID().toString();
+    
     public PDFViewerCell(final CellID cellID, String channelName, Matrix4d origin) {
         super(cellID, channelName, origin);
     }
@@ -62,17 +64,24 @@ public class PDFViewerCell extends SharedApp2DImageCell
                     (int) pdfSetup.getPreferredHeight());
             viewer.openDocument(pdfSetup.getDocument(),
                     pdfSetup.getPage(),
-                    pdfSetup.getPosition(),
-                    false);
+                    pdfSetup.getPosition());
         }
     }
-
+    
+    public String getUID() {
+        return myUID;
+    }
+    
     /**
      * Set the channel associated with this cell
      * @param channel the channel to associate with this cell
      */
     public void setChannel(ClientChannel channel) {
         this.channel = channel;
+    }
+
+    protected void handleResponse(PDFCellMessage msg) {
+        viewer.handleResponse(msg);
     }
 
     /**
@@ -84,25 +93,9 @@ public class PDFViewerCell extends SharedApp2DImageCell
     public void receivedMessage(ClientChannel channel, SessionId session,
             byte[] data) {
         PDFCellMessage msg = Message.extractMessage(data, PDFCellMessage.class);
-        logger.info("received message: " + msg);
 
-        switch (msg.getAction()) {
-            case OPEN_DOCUMENT:
-                viewer.openDocument(msg.getDocument());
-                break;
-            case CLOSE_DOCUMENT:
-                viewer.closeDocument(msg.getDocument());
-                break;
-            case NEXT_PAGE:
-                viewer.nextPage();
-                break;
-            case SHOW_PAGE:
-                viewer.showPage(msg.getPage());
-                break;
-            case SET_VIEW_POSITION:
-                viewer.setViewPosition(msg.getPosition());
-                break;
-        }
+        logger.fine("cell received message: " + msg);
+        handleResponse(msg);
     }
 
     /**

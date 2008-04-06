@@ -39,13 +39,24 @@ public class PDFCellMessage extends CellMessage {
             Logger.getLogger(PDFCellMessage.class.getName());
 
     public enum Action {
-        OPEN_DOCUMENT, CLOSE_DOCUMENT, DOCUMENT_OPENED, 
-        SHOW_PAGE, NEXT_PAGE, 
-        PLAY, PAUSE, STOP, 
-        SET_VIEW_POSITION
-    };
+
+        UNKNOWN,
+        REQUEST_DENIED, REQUEST_COMPLETE,
+        OPEN_DOCUMENT,
+        SHOW_PAGE,
+        PLAY, PAUSE, STOP,
+        SET_VIEW_POSITION,
+        GET_STATE, SET_STATE
+    }
+
     
-    private Action action;
+    
+      ;
+    private  String uid  ;
+    private  Action action 
+      
+      
+       = Action.UNKNOWN;
     private String doc;
     private int page;
     private Point position;
@@ -68,15 +79,35 @@ public class PDFCellMessage extends CellMessage {
     }
 
     public PDFCellMessage(CellID cellID, Action action) {
-        this(cellID, action, null, 0, null);
+        super(cellID);
+        setAction(action);
     }
 
-    public PDFCellMessage(CellID cellID, Action action, String doc, int page, Point position) {
+    public PDFCellMessage(CellID cellID, String uid, Action action, String doc, int page, Point position) {
         super(cellID);
+        setUID(uid);
         this.action = action;
         this.doc = doc;
         this.page = page;
         this.position = position;
+    }
+
+    public PDFCellMessage(PDFCellMessage pcm) {
+        setUID(pcm.getUID());
+        setCellID(pcm.getCellID());
+        setAction(pcm.getAction());
+        setDocument(pcm.getDocument());
+        setPage(pcm.getPage());
+        setPageCount(pcm.getPageCount());
+        setPosition(pcm.getPosition());
+    }
+
+    public void setUID(String uid) {
+        this.uid = uid;
+    }
+
+    public String getUID() {
+        return uid;
     }
 
     /**
@@ -176,21 +207,22 @@ public class PDFCellMessage extends CellMessage {
     protected void extractMessageImpl(ByteBuffer data) {
         super.extractMessageImpl(data);
 
+        uid = DataString.value(data);
         action = Action.values()[DataInt.value(data)];
         doc = DataString.value(data);
         page = DataInt.value(data);
         pageCount = DataInt.value(data);
         position = new Point((int) DataDouble.value(data), (int) DataDouble.value(data));
-
     }
 
     /**
-     * Create a binry version of the message
+     * Create a binary version of the message
      */
     @Override
     protected void populateDataElements() {
         super.populateDataElements();
 
+        dataElements.add(new DataString(uid));
         dataElements.add(new DataInt(action.ordinal()));
         dataElements.add(new DataString(doc));
         dataElements.add(new DataInt(page));

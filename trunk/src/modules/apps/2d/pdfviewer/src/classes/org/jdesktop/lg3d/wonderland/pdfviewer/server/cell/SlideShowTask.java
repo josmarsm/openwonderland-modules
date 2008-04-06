@@ -82,31 +82,31 @@ public class SlideShowTask implements Serializable, Task, ManagedObject {
      */
     public void run() {
         PDFViewerCellGLO glo = pdfRef.get(PDFViewerCellGLO.class);
-        PDFViewerStateMO pdfState = pdfStateRef.get(PDFViewerStateMO.class);
+        PDFViewerStateMO stateMO = pdfStateRef.get(PDFViewerStateMO.class);
 
-        if ((pdfState.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER) ||
-                (showIteration < pdfState.getShowCount())) {
-            logger.fine("* slide show: showing page " + currentPage +
-                    " in range " + pdfState.getStartPage() + "-" + pdfState.getEndPage());
+        if ((stateMO.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER) ||
+                (showIteration < stateMO.getShowCount())) {
+            logger.info("* slide show: showing page " + currentPage +
+                    " in range " + stateMO.getStartPage() + "-" + stateMO.getEndPage());
 
             // send a message to all clients to show the next page in the 
             // slide show
             PDFCellMessage msg = new PDFCellMessage(PDFCellMessage.Action.SHOW_PAGE,
-                    pdfState.getDocument(), currentPage, new Point());
+                    stateMO.getDocument(), currentPage, new Point());
 
             Set<ClientSession> sessions = new HashSet<ClientSession>(glo.getCellChannel2().getSessions());
             glo.getCellChannel2().send(sessions, msg.getBytes());
 
-            if (currentPage >= pdfState.getEndPage()) {
+            if (currentPage >= stateMO.getEndPage()) {
                 // end of a slide show iteration, there may be more
                 showIteration++;
-                logger.fine("* slide show: end of iteration " + showIteration + " of " +
-                        ((pdfState.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER)
+                logger.info("* slide show: end of iteration " + showIteration + " of " +
+                        ((stateMO.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER)
                         ? "an infinite "
-                        : ("a " + pdfState.getShowCount() + " loop ")) + "slide show");
+                        : ("a " + stateMO.getShowCount() + " loop ")) + "slide show");
             }
             // determine next page to show
-            currentPage = (currentPage >= pdfState.getEndPage()) ? pdfState.getStartPage() : currentPage + 1;
+            currentPage = (currentPage >= stateMO.getEndPage()) ? stateMO.getStartPage() : currentPage + 1;
         }
     }
 }
