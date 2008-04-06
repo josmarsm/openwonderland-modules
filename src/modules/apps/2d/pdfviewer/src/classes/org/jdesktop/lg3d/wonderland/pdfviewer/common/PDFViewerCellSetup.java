@@ -20,6 +20,7 @@
 package org.jdesktop.lg3d.wonderland.pdfviewer.common;
 
 import java.awt.Point;
+import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4f;
 import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DCellSetup;
@@ -29,11 +30,10 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DCellSetup;
  *
  * @author nsimpson
  */
-public class PDFViewerCellSetup extends SharedApp2DCellSetup {
+public class PDFViewerCellSetup extends SharedApp2DCellSetup implements Serializable {
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerCellSetup.class.getName());
-    
     private static final int DEFAULT_WIDTH = 791;   // 8.5"x11" page format
     private static final int DEFAULT_HEIGHT = 1024; //
     public static final int LOOP_FOREVER = -1;
@@ -44,7 +44,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
     private int pageCount = 0;                  // number of pages in document
     private Point position = new Point(0, 0);   // page pan/scroll position
     private boolean slideShow = false;          // whether in slide show mode
-    private int slideShowStartPage = 1;         // page to start slideshow at
+    private int slideShowStartPage = 0;         // page to start slideshow at
     private int slideShowEndPage = 0;           // page to end slideshow at
     private long slideShowDuration = 5000;      // milliseconds
     private long slideShowLoopDelay = 10000;    // milliseconds
@@ -82,7 +82,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
     public void setPageCount(int pageCount) {
         this.pageCount = pageCount;
     }
-    
+
     /**
      * Gets the number of pages in the document
      * @return the number of pages
@@ -90,7 +90,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup {
     public int getPageCount() {
         return pageCount;
     }
-    
+
     /*
      * Set the current page
      * @param page the current page in the PDF document

@@ -22,6 +22,7 @@ package org.jdesktop.lg3d.wonderland.pdfviewer.server.cell;
 import com.sun.sgs.app.ManagedObject;
 import java.awt.Point;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.logging.Logger;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFViewerCellSetup;
 
@@ -33,11 +34,25 @@ public class PDFViewerStateMO implements Serializable, ManagedObject {
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerStateMO.class.getName());
-
     private PDFViewerCellSetup setup;
-    
+    private String id;
+    private Calendar controlOwnedDate = null;
+
     public PDFViewerStateMO(PDFViewerCellSetup setup) {
         this.setup = setup;
+    }
+
+    public void setControllingCell(String id) {
+        this.id = id;
+        if (id != null) {
+            controlOwnedDate = Calendar.getInstance();
+        } else {
+            controlOwnedDate = null;
+        }
+    }
+
+    public String getControllingCell() {
+        return id;
     }
 
     public PDFViewerCellSetup getCellSetup() {
@@ -47,6 +62,7 @@ public class PDFViewerStateMO implements Serializable, ManagedObject {
      * Set the URL of the PDF document associated with this cell
      * @param doc the URL of the PDF document
      */
+
     public void setDocument(String document) {
         setup.setDocument(document);
     }
@@ -66,7 +82,7 @@ public class PDFViewerStateMO implements Serializable, ManagedObject {
     public void setPageCount(int pageCount) {
         setup.setPageCount(pageCount);
     }
-    
+
     /**
      * Gets the number of pages in the document
      * @return the number of pages
@@ -74,7 +90,7 @@ public class PDFViewerStateMO implements Serializable, ManagedObject {
     public int getPageCount() {
         return setup.getPageCount();
     }
-    
+
     /*
      * Set the current page
      * @param page the current page in the PDF document
@@ -236,5 +252,16 @@ public class PDFViewerStateMO implements Serializable, ManagedObject {
      */
     public int getPreferredHeight() {
         return setup.getPreferredHeight();
+    }
+
+    public long getControlOwnedDuration() {
+        long ownedDuration = 0;
+
+        if (controlOwnedDate != null) {
+            Calendar now = Calendar.getInstance();
+            ownedDuration = now.getTimeInMillis() - controlOwnedDate.getTimeInMillis();
+        }
+
+        return ownedDuration;
     }
 }
