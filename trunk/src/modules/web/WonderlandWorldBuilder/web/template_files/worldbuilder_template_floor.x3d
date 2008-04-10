@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<X3D version = '3.1' profile='Immersive'>
+	<head>
+		<meta name='created_with' content='RawKee (version 1.1.0): an open source X3D plug-in for Maya'/>
+	</head>
+	<Scene>
+		<Transform DEF='polySurface4'>
+			<Group DEF='polySurfaceShape4' containerField='children'>
+				<Shape DEF='polySurfaceShape4_rks_0' containerField='children'>
+					<Appearance DEF='blinn2SG' containerField='appearance'>
+						<Material DEF='blinn2' ambientIntensity='0' specularColor='0.5 0.5 0.5' containerField='material'/>
+						<ImageTexture DEF='file2' url='"worldbuilder_template_ceiling.png" "images/worldbuilder_template_ceiling.png"' repeatS='true' repeatT='true' containerField='texture'/>
+						<TextureTransform DEF='place2dTexture2' containerField='textureTransform'/>
+					</Appearance> <!-- end of blinn2SG -->
+					<IndexedFaceSet DEF='polySurfaceShape4_ifs_0' coordIndex='0 1 3 2 -1' colorPerVertex='false' creaseAngle='1.57' normalIndex='0 0 0 0 -1' texCoordIndex='1 2 3 4 -1' containerField='geometry'>
+						<Coordinate DEF='polySurfaceShape4_coord' point='-1 8 -1,
+							1 8 -1,
+							-1 8 1,
+							1 8 1,
+							-1 0 1,
+							1 0 1,
+							-1 0 -1,
+							1 0 -1' containerField='coord'/>
+						<Normal DEF='polySurfaceShape4_normal' vector='0 -1 0,
+							0 1 0' containerField='normal'/>
+						<TextureCoordinate DEF='polySurfaceShape4_map1_0' point='0 0,
+							0 1,
+							1 1,
+							1 -5.9605e-08,
+							0 -5.9605e-08,
+							0 1.1921e-07,
+							1 1.1921e-07,
+							1 1,
+							0 1' containerField='texCoord'/>
+					</IndexedFaceSet> <!-- end of polySurfaceShape4_ifs_0 -->
+				</Shape> <!-- end of polySurfaceShape4_rks_0 -->
+				<Shape DEF='polySurfaceShape4_rks_1' containerField='children'>
+					<Appearance DEF='blinn1SG' containerField='appearance'>
+						<Material DEF='blinn1' ambientIntensity='0' specularColor='0.5 0.5 0.5' containerField='material'/>
+						<ImageTexture DEF='file1' url='"worldbuilder_template_floor.png" "images/worldbuilder_template_floor.png"' repeatS='true' repeatT='true' containerField='texture'/>
+						<TextureTransform DEF='place2dTexture1' containerField='textureTransform'/>
+					</Appearance> <!-- end of blinn1SG -->
+					<IndexedFaceSet DEF='polySurfaceShape4_ifs_1' coordIndex='4 5 7 6 -1' colorPerVertex='false' creaseAngle='1.57' normalIndex='1 1 1 1 -1' texCoordIndex='5 6 7 8 -1' containerField='geometry'>
+						<Coordinate USE='polySurfaceShape4_coord' containerField='coord'/>
+						<Normal USE='polySurfaceShape4_normal' containerField='normal'/>
+						<TextureCoordinate DEF='polySurfaceShape4_map1_1' point='0 0,
+							0 1,
+							1 1,
+							1 -5.9605e-08,
+							0 -5.9605e-08,
+							0 1.1921e-07,
+							1 1.1921e-07,
+							1 1,
+							0 1' containerField='texCoord'/>
+					</IndexedFaceSet> <!-- end of polySurfaceShape4_ifs_1 -->
+				</Shape> <!-- end of polySurfaceShape4_rks_1 -->
+			</Group> <!-- end of polySurfaceShape4 -->
+		</Transform> <!-- end of polySurface4 -->
+	</Scene>
+</X3D>

@@ -1,0 +1,47 @@
+{
+	catalog: [
+		{
+
+			name: "Floor",
+			library: ["Floors","Template"],
+			width: 1,
+			height: 1,
+			zIndex: 1,
+			rotatable: false,
+			description: "A floor tile.",
+			tileImageURL: "worldbuilder_template_floor_tile.png",
+			iconImageURL: "worldbuilder_template_floor_icon.png",
+			modelURL: "models/worldbuilder/template/worldbuilder_template_floor.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			name: "Wall",
+			library: ["Walls and Windows","Template"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: true,
+			description: "A straight wall section.",
+			tileImageURL: "worldbuilder_template_wall_tile_n.png",
+			iconImageURL: "worldbuilder_template_wall_icon.png",
+			modelURL: "models/worldbuilder/template/worldbuilder_template_wall.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		},
+		{
+			name: "Corner Wall",
+			library: ["Walls and Windows","Template"],
+			width: 1,
+			height: 1,
+			zIndex: 2,
+			rotatable: true,
+			description: "A corner wall section.",
+			tileImageURL: "worldbuilder_template_corner_tile_n.png",
+			iconImageURL: "worldbuilder_template_corner_icon.png",
+			modelURL: "models/worldbuilder/template/worldbuilder_template_corner.j3s.gz",
+			cellSetupType: "org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}", 
+			cellType: "org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO"
+		}
+	]
+}
