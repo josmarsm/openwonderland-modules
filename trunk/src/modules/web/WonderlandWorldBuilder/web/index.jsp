@@ -414,7 +414,6 @@
 			}
 			
 			function createJSON() {
-				//var outputJSON = "{\"cell\":{\"@uri\":\"http://localhost:8080/WonderlandWorldBuilder/resources/tree/root\",\"cellID\":{\"$\":\"root\"},\"cellSetupType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
 				var outputJSON = "{\"cell\":{\"cellID\":{\"$\":\"root\"},\"cellSetupType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
 				var objectArray = $('world').childElements();
 				if (objectArray.length > 1) {
@@ -446,7 +445,6 @@
                                         }
                                          
                                         outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
-					//outputJSON += "\"@uri\":\"http:\/\/localhost:8080\/WonderlandWorldBuilder\/resources\/tree\/" + cellID + "\",";
 					outputJSON += "\"catalogID\":{\"$\":\"" + thisData[0] + "\"},";
 					outputJSON += "\"catalogURI\":{\"$\":\"" + thisData[1] + "\"},";
 					outputJSON += "\"cellID\":{\"$\":\"" + cellID + "\"},";
@@ -576,7 +574,7 @@
 			<div class="button" onclick="zoomOut()">Zoom Out</div>
 			<div class="button" onclick="putWorld()">Save World</div>
 			<div id="selector">
-				Load Catalog:<input type="text" value="catalog.json" id="catalogtextfield" onclick="this.value = 'catalog.json'" />
+				Load Catalog:<input type="text" value="catalog.json" id="catalogtextfield" />
 				Select Library:<select id="libraryswitch" onchange="getLibrary($('libraryswitch').getValue())"><option>(No catalog loaded)</option></select>
 			</div>
 			<script type="text/javascript" language="javascript">
@@ -586,6 +584,7 @@
 				getWorld();
 				createTrash();
 				$('catalogtextfield').observe('keypress',submitCatalogURL);
+				getCatalog($('catalogtextfield').getValue());
 			</script>
 		</div>
 	</body>
