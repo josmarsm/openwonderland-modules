@@ -34,6 +34,7 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3f;
+import org.jdesktop.j3d.util.SceneGraphUtil;
 import org.jdesktop.lg3d.wg.event.LgEvent;
 import org.jdesktop.lg3d.wg.event.LgEventListener;
 import org.jdesktop.lg3d.wg.event.MouseButtonEvent3D;
@@ -109,6 +110,7 @@ public class SampleModuleCell extends Cell
 
         trans.addChild(box);
         bg.addChild(trans);
+        SceneGraphUtil.setCapabilitiesGraph(bg, false);
         cellLocal.addChild(bg);
 
         return box;
