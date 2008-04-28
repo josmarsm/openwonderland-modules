@@ -21,19 +21,33 @@
 
 package org.jdesktop.lg3d.wonderland.audiorecorder.client.cell;
 
+import com.sun.j3d.utils.image.TextureLoader;
+import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.media.j3d.Texture;
 import javax.vecmath.Point3d;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 
-import javax.media.j3d.*;
+
 import javax.vecmath.Vector3f;
 import javax.vecmath.Matrix4d;
-import com.sun.j3d.utils.geometry.Box;
-import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.SessionId;
+import java.awt.Container;
+import java.net.URL;
+import javax.media.j3d.Alpha;
+import javax.media.j3d.Appearance;
+import javax.media.j3d.Behavior;
+import javax.media.j3d.BoundingSphere;
+import javax.media.j3d.BranchGroup;
+import javax.media.j3d.ColoringAttributes;
+import javax.media.j3d.RotationInterpolator;
+import javax.media.j3d.Shape3D;
+import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransformGroup;
 import org.jdesktop.lg3d.wg.event.LgEvent;
 import org.jdesktop.lg3d.wg.event.LgEventListener;
 import org.jdesktop.lg3d.wg.event.MouseButtonEvent3D;
@@ -51,6 +65,8 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 import org.jdesktop.lg3d.wonderland.scenemanager.CellMenuManager;
 
 import org.jdesktop.j3d.util.SceneGraphUtil;
+import org.jdesktop.lg3d.wonderland.config.common.WonderlandConfig;
+import org.jdesktop.lg3d.wonderland.scenemanager.AssetManager;
 
 /**
  * Client-side cell to represent old-fashioned reel-reel tape recorder.
@@ -70,35 +86,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     private Set<Behavior> behaviors = new HashSet<Behavior>();
     private String userName = null;
   
-    private static final float WIDTH = 0.2f;
-    private static final float HEIGHT = 0.15f;
-    private static final float DEPTH = 0.025f;
-    private static final float REEL_RADIUS = 0.08f;
-    private static final float BUTTON_WIDTH = WIDTH / 3;
-    private static final float BUTTON_HEIGHT = 0.025f;
-    // Define appearances    
-    private static final Appearance RECORD_BUTTON_DEFAULT = new Appearance();
-    private static final Appearance RECORD_BUTTON_SELECTED = new Appearance();
-    private static final Appearance STOP_BUTTON_DEFAULT = new Appearance();
-    private static final Appearance STOP_BUTTON_SELECTED = new Appearance();
-    private static final Appearance PLAY_BUTTON_DEFAULT = new Appearance();
-    private static final Appearance PLAY_BUTTON_SELECTED = new Appearance();
     
- 
-    static {
-        RECORD_BUTTON_DEFAULT.setColoringAttributes(new ColoringAttributes(
-                0.5f, 0, 0, ColoringAttributes.SHADE_FLAT));
-        RECORD_BUTTON_SELECTED.setColoringAttributes(new ColoringAttributes(
-                1.0f, 0, 0, ColoringAttributes.SHADE_GOURAUD));
-        STOP_BUTTON_DEFAULT.setColoringAttributes(new ColoringAttributes(
-                0.2f, 0.2f, 0.2f, ColoringAttributes.SHADE_FLAT));
-        STOP_BUTTON_SELECTED.setColoringAttributes(new ColoringAttributes(
-                0, 0, 0, ColoringAttributes.SHADE_GOURAUD));
-        PLAY_BUTTON_DEFAULT.setColoringAttributes(new ColoringAttributes(
-                0, 0.5f, 0.2f, ColoringAttributes.SHADE_FLAT));
-        PLAY_BUTTON_SELECTED.setColoringAttributes(new ColoringAttributes(
-                0, 1.0f, 0, ColoringAttributes.SHADE_GOURAUD));
-    }
     
     public AudioRecorderCell(CellID cellID, String channelName, Matrix4d cellOrigin) {
         super(cellID, channelName, cellOrigin);
@@ -112,9 +100,9 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     // Create the buttons
     @Override
     public void setup(CellSetup setup) {
-        addRecordingDevice();        
-        // handle initial selection
         AudioRecorderCellSetup rdcSetup = (AudioRecorderCellSetup) setup;
+        addRecordingDevice(rdcSetup);        
+        // handle initial selection
         setRecording(rdcSetup.isRecording());
         setPlaying(rdcSetup.isPlaying());
         stopButton.setSelected(!(isPlaying || isRecording));
@@ -122,37 +110,39 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         userName = rdcSetup.getUserName();
     }
 
-    private void addRecordingDevice() {
-        addOuterCasing();
-        addReel(new Vector3f(0f, 0.07f, -0.1f));
-        addReel(new Vector3f(0f, 0.07f, 0.1f));
-        float d = -DEPTH;
-        float h = BUTTON_HEIGHT - HEIGHT;
-        float w = BUTTON_WIDTH - WIDTH;
-        addRecordButton(new Vector3f(d, h, w)); //depth, height, width
-        w = w + (BUTTON_WIDTH * 2);
-        addStopButton(new Vector3f(d, h, w));
-        w = w + (BUTTON_WIDTH * 2);
-        addPlayButton(new Vector3f(d, h, w));
+    private void addRecordingDevice(AudioRecorderCellSetup setup) {
+        Transform3D transform = new Transform3D();
+        //Adjust the scale to fit the world from Justin's original model
+        transform.setScale(0.5f);
+        TransformGroup tg = new TransformGroup(transform);
+        BranchGroup bg = new BranchGroup();
+        addOuterCasing(setup, bg);
+        addReel(setup, new Vector3f(-0.2f, 0.2f, 0.17f), "models/audiorecorder/audiorecorder_leftreel.j3s.gz", bg);
+        addReel(setup, new Vector3f(0.2f, 0.2f, 0.17f), "models/audiorecorder/audiorecorder_rightreel.j3s.gz", bg);
+        addRecordButton(setup, bg);
+        addStopButton(setup, bg);
+        addPlayButton(setup, bg);
+        tg.addChild(bg);
+        cellLocal.addChild(tg);
     }
   
    
-    private void addReel(Vector3f position) {
+    private void addReel(AudioRecorderCellSetup setup, Vector3f position, String modelFilename, BranchGroup bg) {
         // Create the root of the branch graph 
         J3dLgBranchGroup reelBG = new J3dLgBranchGroup();
         
         Transform3D reelTransform = new Transform3D();
-        reelTransform.rotZ(Math.toRadians(90));
-        reelTransform.setTranslation(position); 
         TransformGroup objTrans = new TransformGroup(reelTransform);        
         
         TransformGroup spinTg = new TransformGroup();
 	spinTg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         
-        Cylinder reel = new Cylinder(REEL_RADIUS, DEPTH); 
+        BranchGroup reel = AssetManager.getAssetManager().loadGraph(setup.getBaseURL(), modelFilename, "");
         spinTg.addChild(reel);
         
         Transform3D zAxis = new Transform3D();
+        zAxis.rotX(Math.toRadians(90));
+        zAxis.setTranslation(position);
         Alpha rotationAlpha = new Alpha(-1, 600);
 	RotationInterpolator rotator =
 	    new RotationInterpolator(rotationAlpha, spinTg, zAxis,
@@ -170,7 +160,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         // Set capability bits for collision system
 	SceneGraphUtil.setCapabilitiesGraph(reelBG, false);
         
-        cellLocal.addChild(reelBG); 
+        bg.addChild(reelBG); 
     }    
     
     private void addMouseEvents(J3dLgBranchGroup recorderBG, Button aButton) {
@@ -199,62 +189,36 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     public void leftChannel(ClientChannel arg0) {       
     }    
 
-    private void addOuterCasing() {
-        Appearance casingAppearance = new Appearance();
-        casingAppearance.setTransparencyAttributes(new TransparencyAttributes(
-                TransparencyAttributes.BLENDED,
-                0.5f,
-                TransparencyAttributes.BLEND_SRC_ALPHA,
-                TransparencyAttributes.BLEND_ONE)); 
-        Box casing = new Box(DEPTH, HEIGHT, WIDTH, Box.ENABLE_APPEARANCE_MODIFY, casingAppearance);
+    private void addOuterCasing(AudioRecorderCellSetup setup, BranchGroup bg) {
+        BranchGroup casing = AssetManager.getAssetManager().loadGraph(setup.getBaseURL(), "models/audiorecorder/audiorecorder_body.j3s.gz", "");
         // Set capability bits for collision system
 	SceneGraphUtil.setCapabilitiesGraph(casing, false);
-        cellLocal.addChild(casing);        
+        bg.addChild(casing);        
     }
 
-    private void addRecordButton(Vector3f position) {
-        recordButton = addButton(position);
-        recordButton.setAppearance(RECORD_BUTTON_DEFAULT);
-        recordButton.setSelectedAppearance(RECORD_BUTTON_SELECTED);
-        recordButton.setDefaultAppearance(RECORD_BUTTON_DEFAULT);
+    private void addRecordButton(AudioRecorderCellSetup setup, BranchGroup bg) {
+        recordButton = addButton(setup, "models/audiorecorder/audiorecorder_recordbutton.j3s.gz", "textures/audiorecorder/audiorecorder_recordlit.png", bg);
     }
     
-    private void addStopButton(Vector3f position) {
-        stopButton = addButton(position); 
-        stopButton.setAppearance(STOP_BUTTON_DEFAULT);
-        stopButton.setSelectedAppearance(STOP_BUTTON_SELECTED);
-        stopButton.setDefaultAppearance(STOP_BUTTON_DEFAULT);
+    private void addStopButton(AudioRecorderCellSetup setup, BranchGroup bg) {
+        stopButton = addButton(setup, "models/audiorecorder/audiorecorder_stopbutton.j3s.gz", "textures/audiorecorder/audiorecorder_stoplit.png", bg); 
     }
     
-    private void addPlayButton(Vector3f position) {
-        playButton = addButton(position); 
-        playButton.setAppearance(PLAY_BUTTON_DEFAULT);
-        playButton.setSelectedAppearance(PLAY_BUTTON_SELECTED);
-        playButton.setDefaultAppearance(PLAY_BUTTON_DEFAULT);
+    private void addPlayButton(AudioRecorderCellSetup setup, BranchGroup bg) {
+        playButton = addButton(setup, "models/audiorecorder/audiorecorder_playbutton.j3s.gz", "textures/audiorecorder/audiorecorder_playlit.png", bg); 
     }
 
-    private Button addButton(final Vector3f position) {
+    private Button addButton(AudioRecorderCellSetup setup, String modelFilename, String litTextureFilename, BranchGroup bg) {
         
         J3dLgBranchGroup buttonBG = new J3dLgBranchGroup();
-        Button aButton = new Button(0.01f, BUTTON_HEIGHT, BUTTON_WIDTH);                 
-        
+        Button aButton = new Button(setup, modelFilename, litTextureFilename);                 
         
         addMouseEvents(buttonBG, aButton);
         
-        TransformGroup buttonTransformGroup = new TransformGroup();
-        buttonTransformGroup.setCapability(
-                TransformGroup.ALLOW_TRANSFORM_WRITE);
-        
-        Transform3D buttonTransform = new Transform3D();                          // Set the position relative to the centre of the cell
-        //buttonTransform.rotZ(Math.toRadians(90));
-        buttonTransform.setTranslation(position);                                 
-        buttonTransformGroup.setTransform(buttonTransform);
-        
-        buttonTransformGroup.addChild(aButton);
-        buttonBG.addChild(buttonTransformGroup);
+        buttonBG.addChild(aButton);
 	// Set capability bits for collision system
 	SceneGraphUtil.setCapabilitiesGraph(buttonBG, false);
-        cellLocal.addChild(buttonBG);
+        bg.addChild(buttonBG);
         return aButton;
     }
 
@@ -393,25 +357,27 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         
     }
     
-    class Button extends Box {
+    class Button extends J3dLgBranchGroup {
         private boolean isSelected;
-        private Appearance defaultAppearance;
+        private Appearance defaultAppearance = null;
         private Appearance selectedAppearance;
         
-        Button(float sizeX, float sizeY, float sizeZ) {
-            super (sizeX, sizeY, sizeZ, Box.ENABLE_APPEARANCE_MODIFY, null);
+        Button(AudioRecorderCellSetup setup, String modelFilename, String litTextureFilename) {
+            BranchGroup buttonModel = AssetManager.getAssetManager().loadGraph(setup.getBaseURL(), modelFilename, "");
+            addChild(buttonModel);
+            try {
+                URL textureURL = new URL(WonderlandConfig.getBaseURL() + '/' + litTextureFilename);
+                TextureLoader tLoader = new TextureLoader(textureURL, new Container());
+                Texture litTexture = tLoader.getTexture();
+                selectedAppearance = new Appearance();
+                selectedAppearance.setTexture(litTexture);
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(AudioRecorderCell.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         boolean isSelected() {
             return isSelected;
-        }
-        
-        void setSelectedAppearance(Appearance selectedAppearance) {
-            this.selectedAppearance = selectedAppearance;
-        }
-        
-        void setDefaultAppearance(Appearance defaultAppearance) {
-            this.defaultAppearance = defaultAppearance;
         }
         
         void setSelected(boolean selected) {
@@ -419,11 +385,46 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
             updateAppearance();
         }
         
-        public void updateAppearance() {
+        private void updateAppearance() {
+            setDefaultAppearance(); //Should only be called once
             if (isSelected) {
                 setAppearance(selectedAppearance);                         
             } else {
                 setAppearance(defaultAppearance);
+            }
+        }
+        
+        private void setAppearance(Appearance anAppearance) {
+            Shape3D buttonShape = getButtonShape();
+            if (buttonShape != null) {
+                buttonShape.setAppearance(anAppearance);
+            }
+        }
+        
+        private void setDefaultAppearance() {
+            //nasty hack
+            //Ideally we'd be told when the node was added to the scenegraph (like addNotify in AWT)
+            //Or have two textures, one for on and one for off
+            if (defaultAppearance != null) {
+                return;
+            }
+            Shape3D buttonShape = getButtonShape();
+            if (buttonShape != null) {
+                defaultAppearance = buttonShape.getAppearance();
+            }
+            
+        }
+        
+        private Shape3D getButtonShape() {
+            //Nasty hack. Really, really tight coupling with Justin's model.
+            BranchGroup bg = (BranchGroup) getChild(0);
+            if (bg.numChildren() == 1) {
+                //The model has been loaded
+                BranchGroup buttonModel = (BranchGroup) bg.getChild(0);
+                TransformGroup tg = (TransformGroup) buttonModel.getChild(0);
+                return (Shape3D) tg.getChild(0);
+            } else {
+                return null;
             }
         }
     }
