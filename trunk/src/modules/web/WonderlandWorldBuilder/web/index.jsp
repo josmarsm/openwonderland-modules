@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" onmousedown="deselectAll()">
 	<head>
 		<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
 		<META HTTP-EQUIV="EXPIRES" CONTENT="Mon, 22 Jul 2002 11:12:01 GMT"/>
@@ -93,11 +93,12 @@
 			}
 			
 			function createLibraryObject(catalogData,catalogIndex,top) {
-				var thisObjectID = "obj" + objectID;
+				var thisObjectID = "lib" + libraryObjectID;
+				libraryObjectID++;
 				var width = 100;
 				var height = 100;
 				var right = getScrollerWidth() + 10;
-				var insertHTML = "<div style='top:" + top + "px;right:" + right + "px;width:" + width +"px;height:" + height + "px' id='" + thisObjectID + "' onmouseout='hideDisplayPanel(" + catalogIndex + ")' onmouseover='showDisplayPanel(" + catalogIndex + ")'>";
+				var insertHTML = "<div style='top:" + top + "px;right:" + right + "px;width:" + width +"px;height:" + height + "px' id='" + thisObjectID + "' onmouseout='hideDisplayPanel(" + catalogIndex + ")' onmouseover='showDisplayPanel(" + catalogIndex + ")' onmousedown='deselectAll()'>";
 				insertHTML += "<img src='" + catalogData.catalog[catalogIndex].iconImageURL + "' width='" + width + "' height='" + height + "' title='" + catalogData.catalog[catalogIndex].name + ": " + catalogData.catalog[catalogIndex].description + "' />";
 				insertHTML += "</div>";
 				$('library').insert(insertHTML);
@@ -112,7 +113,7 @@
 						var top = (gridSize - 1) * Math.floor((thisLocation.top - worldLocation.top + ($(thisObjectID).getHeight()*0.5))/(gridSize - 1));
 						var left = (gridSize - 1) * Math.floor((thisLocation.left - worldLocation.left + ($(thisObjectID).getWidth()*0.5))/(gridSize - 1));
 						if (thisLocation.left >= workspaceLeft && thisLocation.left <= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) && thisLocation.top >= workspaceTop && thisLocation.top <= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
-							createPlaceable(catalogData.catalog[catalogIndex].catalogURI,catalogIndex,top,left,null,true);
+							createPlaceable(catalogData.catalog[catalogIndex].catalogURI,catalogIndex,top,left,null,null,true);
 						}
 						$('library').setStyle({zIndex:'1'});
 						$(thisObjectID).remove();
@@ -153,7 +154,6 @@
 					var panelLeft = (Event.pointerX(event)+10) + "px";
 					$(thisObjectPanel).setStyle({top:panelTop,left:panelLeft});
 				});
-				objectID++;
 			}
 			
 			function createDisplayPanel(catalogData,catalogIndex) {
@@ -176,17 +176,25 @@
 				$(thisPanel).setStyle({visibility:'hidden'});
 			}
 			
-			function createPlaceable(catalogURI,catalogIndex,top,left,direction,newComponent) {
+			function createPlaceable(catalogURI,catalogIndex,top,left,direction,cellID,newComponent) {
 				new Ajax.Request(catalogURI, {
 					method:'get',
 					onSuccess: function(data) {
 						var catalogData = data.responseText.evalJSON();
-						var thisObjectID = "obj" + objectID;
+						if (cellID) {
+							var thisObjectID = cellID;
+							if (parseInt(cellID.substring(3)) > objectID) {
+								objectID = parseInt(cellID.substring(3));
+							}
+						} else {
+							var thisObjectID = "obj" + objectID;
+						}
+						objectID++;
 						var width = (catalogData.catalog[catalogIndex].width*gridSize)-(catalogData.catalog[catalogIndex].width+1);
 						var height = (catalogData.catalog[catalogIndex].height*gridSize)-(catalogData.catalog[catalogIndex].height+1);
 						if (catalogData.catalog[catalogIndex].group) {
 							//create group object
-							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"width:" + width + "px;height:" + height + "px;top:" + top + "px;left:" + left + "px;z-index:1\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
+							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"width:" + width + "px;height:" + height + "px;top:" + top + "px;left:" + left + "px;z-index:1\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onmousedown=\"selectObject('" + thisObjectID + "')\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
 							for (i=0;i<catalogData.catalog[catalogIndex].members.length;i++) {
 								var thisMember = catalogData.catalog[catalogIndex].members[i];
 								var thisMemberData = thisMember.split(" ");
@@ -198,14 +206,48 @@
 							insertHTML += "</div>";
 						} else {
 							//create non-group object
-							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"top:" + top + "px;left:" + left + "px;z-index:" +catalogData.catalog[catalogIndex].zIndex + "\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
+							var insertHTML = "<div id=\"" + thisObjectID + "\" class=\"draggable\" style=\"top:" + top + "px;left:" + left + "px;z-index:" +catalogData.catalog[catalogIndex].zIndex + "\" onmouseover=\"highlightObject('" + thisObjectID + "',true)\" onmouseout=\"highlightObject('" + thisObjectID + "',false)\" onmousedown=\"selectObject('" + thisObjectID + "')\" onclick=\"showRotationControls('" + thisObjectID + "')\">";
 							insertHTML += "<var>" + catalogIndex + " " + catalogURI + " " + catalogData.catalog[catalogIndex].cellSetupType + " " + catalogData.catalog[catalogIndex].cellType + " " + catalogData.catalog[catalogIndex].modelURL + " " + catalogData.catalog[catalogIndex].height + " " + catalogData.catalog[catalogIndex].width + " " + catalogData.catalog[catalogIndex].rotatable + "</var>";
 							insertHTML += "<img src=\"" + catalogData.catalog[catalogIndex].tileImageURL + "\" width=\"" + width + "\" height=\"" + height + "\" alt=\"" + catalogData.catalog[catalogIndex].name + "\" title=\"" + catalogData.catalog[catalogIndex].name + ": " + catalogData.catalog[catalogIndex].description + "\" />";
 							insertHTML += "</div>";
 						}
 						$('world').insert(insertHTML);
+						//update worldData with new component data
+						if (newComponent) {
+							if (worldData.cell.children.cell) {
+								var newCellIndex = worldData.cell.children.cell.length;
+							} else {
+								var newCellIndex = 0;
+								worldData.cell.children.cell = new Array();
+							}
+							var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
+							var thisLocation = $(thisObjectID).positionedOffset();
+							var thisX = ((thisLocation[0]/(gridSize-1))+(thisData[6]*0.5))*unitFactor;
+							var thisY = ((thisLocation[1]/(gridSize-1))+(thisData[5]*0.5))*unitFactor;
+							worldData.cell.children.cell[newCellIndex] = {
+								catalogURI: {$:""},
+								catalogID: {$:""},
+								location: {x:{$:""},y:{$:""}},
+								rotation: {$:""},
+								size: {height:{$:""},width:{$:""}},
+								cellID: {$:""},
+								cellSetupType: {$:""},
+								cellType: {$:""},
+								properties: {property:{key:{$:""},value:{$:""}}}
+							};
+							worldData.cell.children.cell[newCellIndex].catalogURI.$ = catalogURI;
+							worldData.cell.children.cell[newCellIndex].catalogID.$ = catalogIndex + "";
+							worldData.cell.children.cell[newCellIndex].location.x.$ = thisX + "";
+							worldData.cell.children.cell[newCellIndex].location.y.$ = thisY + "";
+							worldData.cell.children.cell[newCellIndex].size.height.$ = (thisData[5]*unitFactor) + "";
+							worldData.cell.children.cell[newCellIndex].size.width.$ = (thisData[6]*unitFactor) + "";
+							worldData.cell.children.cell[newCellIndex].cellID.$ = thisObjectID;
+							worldData.cell.children.cell[newCellIndex].cellSetupType.$ = thisData[2];
+							worldData.cell.children.cell[newCellIndex].cellType.$ = thisData[3];
+							worldData.cell.children.cell[newCellIndex].properties.property.key.$ = "modelFile";
+							worldData.cell.children.cell[newCellIndex].properties.property.value.$ = thisData[4];
+						}
 						new Draggable(thisObjectID,{
-							//snap:[(gridSize-1),(gridSize-1)],
 							snap:[((gridSize*0.5)-0.5),((gridSize*0.5)-0.5)],
 							revert:function() {
 								var workspaceTop = parseInt($('workspace').getStyle('top'));
@@ -216,9 +258,20 @@
 								var scrollbarWidth = getScrollerWidth();
 								if ((thisLocation.left - 2) <= (workspaceLeft - gridSize) || (thisLocation.left + 2) >= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) || (thisLocation.top - 2) <= (workspaceTop - gridSize) || thisLocation.top >= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
 									return true; //move object back if dropped outside workspace
+								} else {
+									//update worldData with new component location
+									var thisCellIndex = getCellIndex(thisObjectID);
+									var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
+									var thisLocation = $(thisObjectID).positionedOffset();
+									var thisX = ((thisLocation[0]/(gridSize-1))+(thisData[6]*0.5))*unitFactor;
+									var thisY = ((thisLocation[1]/(gridSize-1))+(thisData[5]*0.5))*unitFactor;
+									worldData.cell.children.cell[thisCellIndex].location.x.$ = thisX + "";
+									worldData.cell.children.cell[thisCellIndex].location.y.$ = thisY + "";
 								}
 								if ($(thisObjectID).getStyle('visibility') == 'hidden') {
 									$(thisObjectID).remove();
+									var thisCellIndex = getCellIndex(thisObjectID);
+									worldData.cell.children.cell[thisCellIndex] = null;
 								} else {
 									showRotationControls(thisObjectID);
 								}
@@ -232,7 +285,6 @@
 								highlightObject(thisObjectID,true);
 							}
 						});
-						objectID++;
 						if (direction) {
 							setRotation(thisObjectID,direction);
 						}
@@ -244,6 +296,17 @@
 						alert("Failed to load catalog data for this object from " + url);
 					}
 				});
+			}
+			
+			function getCellIndex(thisObjectID) {
+				var cellIndex = 0;
+				while (worldData.cell.children.cell[cellIndex]) {
+					if (worldData.cell.children.cell[cellIndex].cellID.$ == thisObjectID) {
+						return cellIndex;
+					}
+					cellIndex++;
+				}
+				return false;
 			}
 			
 			function highlightObject(thisObjectID,state) {
@@ -295,10 +358,11 @@
 			}
 			
 			function showRotationControls(thisObjectID) {
+				selectedObjectMousePointer = true; //mouse pointer is over this object
 				var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
 				var rotatable = thisData[7];
 				if (rotatable == "true") {
-					var thisLocation = $(thisObjectID).viewportOffset();
+					var thisLocation = $(thisObjectID).positionedOffset();
 					var thisObjectSize = $(thisObjectID).getDimensions();
 					var arrowLength = $('arrow_north').getHeight();
 					var arrowWidth = $('arrow_north').getWidth();
@@ -308,12 +372,16 @@
 					var controlboxHeight = (thisObjectSize.height + (arrowLength * 2)) + "px";
 					var arrowLeft = Math.floor(arrowLength + (thisObjectSize.width * 0.5) - (arrowWidth * 0.5)) + "px";
 					var arrowTop = Math.floor(arrowLength + (thisObjectSize.height * 0.5) - (arrowWidth * 0.5)) + "px";
+					selectedObject = thisObjectID;
+					selectedObjectZ = $(thisObjectID).getStyle('zIndex');
+					$(thisObjectID).setStyle({zIndex:9999});
 					$('rotation_controls').setStyle({
 						width: controlboxWidth,
 						height: controlboxHeight,
 						top: controlboxTop,
 						left: controlboxLeft,
-						visibility: 'visible'
+						visibility: 'visible',
+						zIndex: 999
 					});
 					$('arrow_north').setStyle({
 						left: arrowLeft
@@ -337,6 +405,24 @@
 				var thisImage = $(thisObjectID).firstDescendant().next();
 				var newImage = thisImage.readAttribute('src').sub(/\_[nsew]\./,'_' + direction + '.');
 				thisImage.writeAttribute('src',newImage);
+				switch (direction) {
+					case "n":
+						var rotation = "180";
+						break;
+					case "e":
+						var rotation = "90";
+						break;
+					case "s":
+						var rotation = "360";
+						break;
+					case "w":
+						var rotation = "270";
+						break;
+					default:
+						var rotation = "0";
+				}
+				var thisCellIndex = getCellIndex(thisObjectID);
+				worldData.cell.children.cell[thisCellIndex].rotation.$ = rotation;
 			}
 			
 			function getWorld() {
@@ -344,7 +430,8 @@
 					requestHeaders: {Accept:'application/json'},
 					method: 'get',
 					onSuccess: function(data) {
-						buildWorld(data.responseText);
+						worldData = data.responseText.evalJSON();
+						buildWorld();
 					},
 					onFailure: function() {
 						alert("Failed to load world from server");
@@ -352,8 +439,7 @@
 				});
 			}
 			
-			function buildWorld(data) {
-				worldData = data.evalJSON();
+			function buildWorld() {
 				var cellIndex = 0;
 				if (worldData.cell.children.cell.length > -1) {
 					while (worldData.cell.children.cell[cellIndex]) {
@@ -381,7 +467,7 @@
 						}
 						var catalogURI = worldData.cell.children.cell[cellIndex].catalogURI.$;
 						var catalogIndex = worldData.cell.children.cell[cellIndex].catalogID.$;
-						createPlaceable(catalogURI,catalogIndex,top,left,direction);
+						createPlaceable(catalogURI,catalogIndex,top,left,direction,worldData.cell.children.cell[cellIndex].cellID.$);
 						cellIndex++;
 					}
 				} else {
@@ -409,76 +495,14 @@
 					}
 					var catalogURI = worldData.cell.children.cell.catalogURI.$;
 					var catalogIndex = worldData.cell.children.cell.catalogID.$;
-					createPlaceable(catalogURI,catalogIndex,top,left,direction);
+					createPlaceable(catalogURI,catalogIndex,top,left,direction,worldData.cell.children.cell.cellID.$);
 				}
-			}
-			
-			function createJSON() {
-				var outputJSON = "{\"cell\":{\"cellID\":{\"$\":\"root\"},\"cellSetupType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}\"},\"cellType\":{\"$\":\"org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO\"},\"children\":{\"cell\":";
-				var objectArray = $('world').childElements();
-				if (objectArray.length > 1) {
-					outputJSON += "["
-				}
-				var objectArrayIndex = 0;
-				var cellID = 1;
-				while (objectArray[objectArrayIndex]) {
-					var thisData = $w(objectArray[objectArrayIndex].firstDescendant().innerHTML);
-					var thisLocation = objectArray[objectArrayIndex].positionedOffset();
-					var thisX = ((thisLocation[0]/(gridSize-1))+(thisData[6]*0.5))*unitFactor;
-					var thisY = ((thisLocation[1]/(gridSize-1))+(thisData[5]*0.5))*unitFactor;
-					var rotation = objectArray[objectArrayIndex].firstDescendant().next().readAttribute('src');
-					switch (rotation.charAt(rotation.search(/_[nsew]\./) + 1)) {
-						case "n":
-							rotation = "180";
-							break;
-						case "e":
-							rotation = "90";
-							break;
-						case "s":
-							rotation = "360";
-							break;
-						case "w":
-							rotation = "270";
-							break;
-						default:
-							rotation = "0";
-                                        }
-                                         
-                                        outputJSON += "{\"@xmlns\":{\"xsi\":\"http:\/\/www.w3.org\/2001\/XMLSchema-instance\"},\"@xsi:type\":\"treeCellWrapper\",";
-					outputJSON += "\"catalogID\":{\"$\":\"" + thisData[0] + "\"},";
-					outputJSON += "\"catalogURI\":{\"$\":\"" + thisData[1] + "\"},";
-					outputJSON += "\"cellID\":{\"$\":\"" + cellID + "\"},";
-					outputJSON += "\"cellSetupType\":{\"$\":\"" + thisData[2] + "\"},";
-                                        outputJSON += "\"cellType\":{\"$\":\"" + thisData[3] + "\"},";
-					outputJSON += "\"children\":{},\"location\":{";
-					outputJSON += "\"x\":{\"$\":\"" + thisX + "\"},";
-					outputJSON += "\"y\":{\"$\":\"" + thisY + "\"}";
-					outputJSON += "},\"rotation\":{\"$\":\"" + rotation + "\"},";
-					outputJSON += "\"properties\":{\"property\":{\"key\":{\"$\":\"modelFile\"},";
-					outputJSON += "\"value\":{\"$\":\"" + thisData[4] + "\"}";
-					outputJSON += "}},\"size\":{";
-					outputJSON += "\"height\":{\"$\":\"" + (thisData[5]*unitFactor) + "\"},";
-					outputJSON += "\"width\":{\"$\":\"" + (thisData[6]*unitFactor) + "\"}";
-					outputJSON += "},\"version\":{\"$\":\"0\"}}";
-
-					if (objectArray.length > 1) {
-						outputJSON += ","
-					}
-					objectArrayIndex++;
-					cellID++;
-				}
-				if (objectArray.length > 1) {
-					outputJSON += "]"
-				}
-				outputJSON += "},\"location\":{\"x\":{\"$\":\"0\"},\"y\":{\"$\":\"0\"}},\"properties\":{},\"size\":{\"height\":{\"$\":\"1024\"},\"width\":{\"$\":\"1024\"}},\"version\":{\"$\":\"0\"}}}";
-				outputJSON = outputJSON.replace(/\//g,"\\/");
-				return outputJSON;
 			}
 			
 			function putWorld() {
 				new Ajax.Request("resources/tree", {
 					method:'post',
-					postBody: createJSON(),
+					postBody: Object.toJSON(worldData),
                                         contentType:'application/json',
 					onSuccess: function() {
 						alert("World saved");
@@ -509,29 +533,47 @@
 			}
 			
 			function zoomIn() {
-				var data = createJSON();
 				$('world').update('');
 				gridSize *= 2;
 				gridSize -= 1;
 				buildGrid();
-				buildWorld(data);
+				buildWorld();
 			}
 			
 			function zoomOut() {
-				var data = createJSON();
 				$('world').update('');
 				gridSize *= 0.5;
 				gridSize += 0.5;
 				buildGrid();
-				buildWorld(data);
+				buildWorld();
+			}
+			
+			function selectObject(thisObjectID) {
+				selectedObject = thisObjectID;
+				selectedObjectZ = $(thisObjectID).getStyle('zIndex');
+			}
+			
+			function deselectAll() {
+				if (selectedObjectMousePointer == false) {
+					$('rotation_controls').setStyle({visibility:'hidden'})
+				}
+				if (selectedObject) {
+					$(selectedObject).setStyle({
+						zIndex: selectedObjectZ
+					});
+				}
 			}
 			
 			//declare globals
 			
 			var currentCatalogData = new Object();
 			var worldData = new Object();
-			var objectID = 0;
+			var objectID = 1;
+			var libraryObjectID = 1;
 			var gridHTML = new String();
+			var selectedObjectMousePointer = false;
+			var selectedObject;
+			var selectedObjectZ;
 			
 			//configuration variables
 			
@@ -549,33 +591,33 @@
 		</script>
 	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	</head>
-	<body>
+	<body onmousedown="deselectAll()">
 		<div id="main">
-			<div id="library"></div>
+			<div id="library" onscroll="deselectAll()"></div>
 			<div id="display"></div>
-			<div id="workspace" title="Click and drag to pan workspace">
+			<div id="workspace" title="Click and drag to pan workspace" onscroll="deselectAll()" onmousedown="deselectAll()">
 				<div id="grid"></div>
 				<div id="world"></div>
 				<div id="highlight_n"></div>
 				<div id="highlight_s"></div>
 				<div id="highlight_e"></div>
 				<div id="highlight_w"></div>
-			</div>
-			<div id="rotation_controls" title="Click arrows to indicate object facing direction" onmouseout="$('rotation_controls').setStyle({visibility:'hidden'})" onmouseover="$('rotation_controls').setStyle({visibility:'visible'})">
-				<var id="rotation_data"></var>
-				<var id="rotation_object"></var>
-				<img id="arrow_north" src="arrow_north.png" title="Click to face object north" onmouseover="setRotation($('rotation_object').innerHTML,'n')" onclick="$('rotation_controls').setStyle({visibility:'hidden'})" />
-				<img id="arrow_south" src="arrow_south.png" title="Click to face object south" onmouseover="setRotation($('rotation_object').innerHTML,'s')" onclick="$('rotation_controls').setStyle({visibility:'hidden'})" />
-				<img id="arrow_east" src="arrow_east.png" title="Click to face object east" onmouseover="setRotation($('rotation_object').innerHTML,'e')" onclick="$('rotation_controls').setStyle({visibility:'hidden'})" />
-				<img id="arrow_west" src="arrow_west.png" title="Click to face object west" onmouseover="setRotation($('rotation_object').innerHTML,'w')" onclick="$('rotation_controls').setStyle({visibility:'hidden'})" />
+				<div id="rotation_controls" title="Click arrows to indicate object facing direction" onmouseout="selectedObjectMousePointer=false" onmouseover="selectedObjectMousePointer=true">
+					<var id="rotation_data"></var>
+					<var id="rotation_object"></var>
+					<img id="arrow_north" src="arrow_north.png" title="Click to face object north" onclick="setRotation($('rotation_object').innerHTML,'n');$('rotation_controls').setStyle({visibility:'hidden'});deselectAll()" />
+					<img id="arrow_south" src="arrow_south.png" title="Click to face object south" onclick="setRotation($('rotation_object').innerHTML,'s');$('rotation_controls').setStyle({visibility:'hidden'});deselectAll()" />
+					<img id="arrow_east" src="arrow_east.png" title="Click to face object east" onclick="setRotation($('rotation_object').innerHTML,'e');$('rotation_controls').setStyle({visibility:'hidden'});deselectAll()" />
+					<img id="arrow_west" src="arrow_west.png" title="Click to face object west" onclick="setRotation($('rotation_object').innerHTML,'w');$('rotation_controls').setStyle({visibility:'hidden'});deselectAll()" />
+				</div>
 			</div>
 			<!--<div id="debug" style="position: absolute; bottom: 0px; right: 0px; width: 200px; height: 200px; overflow: scroll; background-color: white; z-index: 9999"></div>-->
-			<div class="button" onclick="zoomIn()">Zoom In</div>
-			<div class="button" onclick="zoomOut()">Zoom Out</div>
-			<div class="button" onclick="putWorld()">Save World</div>
-			<div id="selector">
-				Load Catalog:<input type="text" value="catalog.json" id="catalogtextfield" />
-				Select Library:<select id="libraryswitch" onchange="getLibrary($('libraryswitch').getValue())"><option>(No catalog loaded)</option></select>
+			<div class="button" onclick="zoomIn()" onmousedown="deselectAll()">Zoom In</div>
+			<div class="button" onclick="zoomOut()" onmousedown="deselectAll()">Zoom Out</div>
+			<div class="button" onclick="putWorld()" onmousedown="deselectAll()">Save World</div>
+			<div id="selector" onmousedown="deselectAll()">
+				Load Catalog:<input type="text" value="catalog.json" id="catalogtextfield" onmousedown="deselectAll()" />
+				Select Library:<select id="libraryswitch" onchange="getLibrary($('libraryswitch').getValue())" onmousedown="deselectAll()"><option>(No catalog loaded)</option></select>
 			</div>
 			<script type="text/javascript" language="javascript">
 				//initialize
