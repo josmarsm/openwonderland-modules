@@ -473,7 +473,11 @@ public class AlbumCloudCellGLO extends StationaryCellGLO
      * @param status the status message
      */
     public void callStatusChanged(CallStatus status) {
-        if (status.getCode() == CallStatus.TREATMENTDONE) {
+        if (status.getCode() == CallStatus.ENDED) {
+	    logger.info("Call ended unexpectedly:  " + status);
+	    callId = null;
+	    next();
+        } else if (status.getCode() == CallStatus.TREATMENTDONE) {
             next();
         }
     }
