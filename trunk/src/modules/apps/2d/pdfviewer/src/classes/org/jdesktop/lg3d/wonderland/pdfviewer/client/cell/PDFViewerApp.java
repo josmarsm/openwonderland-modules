@@ -874,7 +874,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                             cellMenu.disableButton(Button.UNSYNC);
                             cellMenu.enableButton(Button.SYNC);
                             logger.info("synced");
-                            showHUDMessage("synced", 2000);
+                            showHUDMessage("synced", 3000);
                         }
                     }
                     break;
