@@ -602,7 +602,7 @@
 				<div id="highlight_s"></div>
 				<div id="highlight_e"></div>
 				<div id="highlight_w"></div>
-				<div id="rotation_controls" title="Click arrows to indicate object facing direction" onmouseout="selectedObjectMousePointer=false" onmouseover="selectedObjectMousePointer=true">
+				<div id="rotation_controls" title="Click arrows to indicate object facing direction" onclick="$('rotation_controls').setStyle({visibility:'hidden'});deselectAll()" onmouseout="selectedObjectMousePointer=false" onmouseover="selectedObjectMousePointer=true">
 					<var id="rotation_data"></var>
 					<var id="rotation_object"></var>
 					<img id="arrow_north" src="arrow_north.png" title="Click to face object north" onclick="setRotation($('rotation_object').innerHTML,'n');$('rotation_controls').setStyle({visibility:'hidden'});deselectAll()" />
