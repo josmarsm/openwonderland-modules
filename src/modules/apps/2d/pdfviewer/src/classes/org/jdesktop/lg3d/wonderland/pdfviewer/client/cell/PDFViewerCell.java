@@ -62,9 +62,8 @@ public class PDFViewerCell extends SharedApp2DImageCell
             viewer = new PDFViewerApp(this, 0, 0,
                     (int) pdfSetup.getPreferredWidth(),
                     (int) pdfSetup.getPreferredHeight());
-            viewer.openDocument(pdfSetup.getDocument(),
-                    pdfSetup.getPage(),
-                    pdfSetup.getPosition());
+            viewer.setInSlideShowMode(pdfSetup.getSlideShow());
+            viewer.sync(true);
         }
     }
     

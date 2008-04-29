@@ -256,7 +256,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup implements Serializ
 
     /*
      * Get the checksum for the PDF document
-     * @return the checksm of the PDF document
+     * @return the checksum of the PDF document
      */
     public String getChecksum() {
         return checksum;

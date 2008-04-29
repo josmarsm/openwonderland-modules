@@ -47,16 +47,10 @@ public class PDFCellMessage extends CellMessage {
         PLAY, PAUSE, STOP,
         SET_VIEW_POSITION,
         GET_STATE, SET_STATE
-    }
-
+    };
     
-    
-      ;
-    private  String uid  ;
-    private  Action action 
-      
-      
-       = Action.UNKNOWN;
+    private String uid;
+    private Action action = Action.UNKNOWN;
     private String doc;
     private int page;
     private Point position;
