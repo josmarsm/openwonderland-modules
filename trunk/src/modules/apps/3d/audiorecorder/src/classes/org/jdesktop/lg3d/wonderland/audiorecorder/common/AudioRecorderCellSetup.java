@@ -30,6 +30,8 @@ public class AudioRecorderCellSetup implements CellSetup {
     private boolean isRecording;
     private boolean isPlaying;
     private String userName;
+
+    private String baseURL;
     
     public boolean isRecording() {
         return isRecording;
@@ -53,6 +55,14 @@ public class AudioRecorderCellSetup implements CellSetup {
     
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public void setBaseURL(String baseURL) {
+	this.baseURL = baseURL;
+    }
+
+    public String getBaseURL() {
+	return baseURL;
     }
 
 }
