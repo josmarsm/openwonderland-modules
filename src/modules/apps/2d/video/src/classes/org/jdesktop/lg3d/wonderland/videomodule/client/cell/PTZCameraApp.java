@@ -26,7 +26,7 @@ public class PTZCameraApp extends VideoApp implements CameraListener {
     protected PTZCamera ptz;
     protected float horizOverlapPercent = 0.1f;
     protected float vertOverlapPercent = 0.1f;
-    
+
     public PTZCameraApp(SharedApp2DImageCell cell) {
         super(cell);
     }
@@ -171,15 +171,12 @@ public class PTZCameraApp extends VideoApp implements CameraListener {
             case SET_PTZ:
                 // a request to adjust the camera's pan, tilt, zoom is starting
                 // new PTZ values
-                float pan = msg.getPan();
-                float tilt = msg.getTilt();
-                float zoom = msg.getZoom();
-
-                // only adjust the camera if this cell has control of the camera
                 if (forMe == true) {
+                    // only adjust the camera if this cell has control of the camera
                     // change the camera's pan, tilt or zoom settings
-                    logger.info("setting PTZ to pan: " + pan + ", tilt: " + tilt + ", zoom: " + zoom);
-                    moveCamera(msg.getAction(), pan, tilt, zoom);
+                    logger.info("setting PTZ to pan: " + 
+                            msg.getPan() + ", tilt: " + msg.getTilt() + ", zoom: " + msg.getZoom());
+                    moveCamera(msg.getAction(), msg.getPan(), msg.getTilt(), msg.getZoom());
                 }
                 break;
             case REQUEST_COMPLETE:

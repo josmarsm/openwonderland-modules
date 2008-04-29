@@ -37,21 +37,21 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     private String videoClass;
     private VideoSource videoInstance;
     private float frameRate = 2.0f;     // frames per second
-    private boolean playOnLoad = false;
-    private boolean synced = true;
+    private boolean playOnLoad = false; // don't auto play
+    private boolean synced = true;      // sync with other clients by default
     private double preferredWidth = 0;  // none, use media width
     private double preferredHeight = 0; // none, use media height
     private float pixelScale = 1.0f;    // scale factor when mapping from pixels to world units
     private boolean panoramic = false;  // for viewing pan/tilt/zoom camera video
     // video run time state
     private PlayerState playerState = PlayerState.STOPPED;
-    private double position = 0;
+    private double position = 0.5;      // start position (seconds)
     // panorama run time state
     private float pan = 0.0f;
     private float tilt = 0.0f;
     private float zoom = 0.0f;
 
-    private long requestThrottle = 2500; // milliseconds
+    private long requestThrottle = 2500; // limit requests to at most this often (milliseconds)
     
     public VideoCellSetup() {
         this(null, null);

@@ -106,16 +106,15 @@ public class VideoCell extends SharedApp2DImageCell
 
             app.setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
             app.setFrameRate(setup.getFrameRate());
-            app.setSynced(setup.getSynced());
             app.setRequestThrottle(setup.getRequestThrottle());
 
             if (setup.getSynced() == true) {
-                app.getSynced();
+                app.sync();
             } else {
                 if (setup.getPlayOnLoad() == true) {
                     app.play(true);
                 } else {
-                    app.cue(0.5, 0.1);
+                    app.cue(setup.getPosition(), 0.1);
                 }
             }
         }

@@ -258,6 +258,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
                     snapshot = snapper.getFrame();
                     repaint();
                 }
+                
                 // new PTZ values
                 pan = msg.getPan();
                 tilt = msg.getTilt();
