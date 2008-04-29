@@ -26,7 +26,6 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.PeriodicTaskHandle;
-import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -174,7 +173,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
         // clone the message
         PDFCellMessage msg = new PDFCellMessage(pdfcm);
 
-        // the current state of the video application
+        // the current state of the application
         PDFViewerStateMO stateMO = getStateMO();
 
         // client currently in control
@@ -283,14 +282,13 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
         if (slideShowTask == null) {
             logger.fine("starting slide show");
 
-            // the current state of the video application
+            // the current state of the application
             PDFViewerStateMO stateMO = getStateMO();
 
             // create a task to run the slide show
             SlideShowTask slideTask = new SlideShowTask(this);
 
-            stateMO.setStartPage(1);
-            stateMO.setEndPage(stateMO.getPageCount());
+            stateMO.setSlideShow(true);
 
             if (stateMO.getStartPage() != 0) {
                 // a slide show range has been specified, start the slide 
@@ -299,6 +297,8 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
             } else {
                 // no slide show range has been specified, so use the entire
                 // document, but start/resume at the current page
+                stateMO.setStartPage(1);
+                stateMO.setEndPage(stateMO.getPageCount());
                 slideTask.setCurrentPage(stateMO.getPage());
             }
             logger.fine("slide show from page: " + stateMO.getStartPage() +
@@ -307,7 +307,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
             // start a task to change pages
             slideShowTask = AppContext.getTaskManager().schedulePeriodicTask(
                     slideTask,
-                    stateMO.getShowDuration(),
+                    0,
                     stateMO.getShowDuration());
         }
     }
@@ -315,6 +315,9 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
     public void stopSlideShow() {
         if (slideShowTask != null) {
             logger.fine("stopping slide show");
+
+            PDFViewerStateMO stateMO = getStateMO();
+            stateMO.setSlideShow(false);
             slideShowTask.cancel();
             slideShowTask = null;
         }

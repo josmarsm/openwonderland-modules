@@ -57,9 +57,9 @@ import org.jdesktop.lg3d.wonderland.appshare.AppWindowGraphics2DApp;
 import org.jdesktop.lg3d.wonderland.appshare.SimpleControlArb;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DCell;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
+import org.jdesktop.lg3d.wonderland.pdfviewer.client.cell.PDFCellMenu.Button;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage.Action;
-import org.jdesktop.lg3d.wonderland.scenemanager.EventController;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
@@ -70,7 +70,8 @@ import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
  * @author nsimpson
  */
 public class PDFViewerApp extends AppWindowGraphics2DApp
-        implements KeyListener, MouseMotionListener, MouseWheelListener {
+        implements KeyListener, MouseMotionListener, MouseWheelListener,
+        PDFCellMenuListener {
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerApp.class.getName());
@@ -85,10 +86,13 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     private boolean pageDirty = true;
     private int xScroll = 0;
     private int yScroll = 0;
+    private float zoom = 1.0f;
     private Point mousePos = new Point();
     private boolean isDragging = false;
-    private boolean paused = true;
-    private boolean synced = true;
+    private boolean playing = false;
+    private boolean synced = false;
+    private boolean inControl = false;
+    private PDFCellMenu cellMenu;
 
     public PDFViewerApp(SharedApp2DCell cell) {
         this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -98,6 +102,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         super(new AppGroup(new SimpleControlArb()), true, x, y, width, height, cell);
 
         initPDFDialog();
+        initHUDMenu();
         addEventListeners();
 
         setShowing(true);
@@ -110,6 +115,12 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         addKeyListener(this);
         addMouseMotionListener(this);
         addMouseWheelListener(this);
+
+        cellMenu.addCellMenuListener(this);
+    }
+
+    private void initHUDMenu() {
+        cellMenu = PDFCellMenu.getInstance();
     }
 
     /**
@@ -184,7 +195,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      */
     private void showHUDMessage(String message, int timeout) {
         URL[] imgURLs = {HUD.SIMPLE_BOX_IMAGE_URL,
-            EventController.class.getResource("resources/preferences-system-windows.png")
+            PDFViewerApp.class.getResource("resources/pdf-document.png")
         };
 
         Point[] imagePoints = {new Point(), new Point(10, 10)};
@@ -234,6 +245,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             synced = false;
             logger.info("pdf viewer unsynced");
             showHUDMessage("unsynced", 3000);
+            cellMenu.enableButton(Button.UNSYNC);
+            cellMenu.disableButton(Button.SYNC);
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
             logger.info("pdf viewer requesting sync with shared state");
@@ -346,6 +359,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
         if ((docURL != null) && (docURL.toString().equals(doc))) {
             // document is already open
+            showPage(page);
+            setViewPosition(position);
             return;
         }
 
@@ -513,7 +528,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      */
     public void showPage(int p) {
         if (isValidPage(p)) {
-            logger.info("showing page: " + p);
+            System.err.println("showing page: " + p);
             mousePos.setLocation(0, 0);
             currentPage = currentFile.getPage(p);
             pageDirty = true;
@@ -526,6 +541,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 logger.fine("pre-caching page: " + (p + 1));
                 currentFile.getPage(p + 1);
             }
+        } else {
+            System.err.println("page invalid: " + p);
         }
     }
 
@@ -542,35 +559,36 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     }
 
     /**
+     * Display the specified page
+     * @param page the page to display
+     */
+    public void gotoPage(int page) {
+        if (isValidPage(page)) {
+            if (isSynced()) {
+                // notify other clients that the page changed
+                sendDocumentRequest(PDFCellMessage.Action.SHOW_PAGE,
+                        docURL,
+                        page,
+                        mousePos);
+            } else {
+                // show page independently of other clients
+                showPage(page);
+            }
+        }
+    }
+
+    /**
      * Display the next page after the currently selected page
      */
     public void nextPage() {
-        if (isSynced()) {
-            // notify other clients that the page changed
-            sendDocumentRequest(PDFCellMessage.Action.SHOW_PAGE,
-                    docURL,
-                    getNextPage(),
-                    mousePos);
-        } else {
-            // show next page independently of other clients
-            showPage(getNextPage());
-        }
+        gotoPage(getNextPage());
     }
 
     /**
      * Display the previous page to the currently selected page
      */
     public void previousPage() {
-        if (isSynced()) {
-            // notify other clients that the page changed
-            sendDocumentRequest(PDFCellMessage.Action.SHOW_PAGE,
-                    docURL,
-                    getPreviousPage(),
-                    mousePos);
-        } else {
-            // show previous page independently of other clients
-            showPage(getPreviousPage());
-        }
+        gotoPage(getPreviousPage());
     }
 
     /**
@@ -590,18 +608,83 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
     /**
      * Pause/resume the slide show
-     * @param toPause if true, pause the slide show else resume
+     * @param toPause if true, play the slide show else resume
      */
-    public void pause(boolean toPause) {
-        paused = toPause;
-        showHUDMessage((paused == true) ? "Pause" : "Play", 3000);
+    public void play(boolean toPlay) {
+        playing = toPlay;
+        showHUDMessage((playing == true) ? "Play" : "Pause", 3000);
         if (isSynced()) {
             // notify other clients that slide show state hase changed
             sendDocumentRequest(
-                    (paused == true) ? PDFCellMessage.Action.PAUSE : PDFCellMessage.Action.PLAY,
+                    (playing == true) ? PDFCellMessage.Action.PLAY : PDFCellMessage.Action.PAUSE,
                     docURL,
                     getPageNumber(),
                     getViewPosition());
+        }
+    }
+
+    /**
+     * PDFCellMenuListener methods
+     */
+    public void open() {
+        showPDFDialog();
+    }
+
+    public void first() {
+        gotoPage(1);
+    }
+
+    public void previous() {
+        previousPage();
+    }
+
+    public void gotoPage() {
+        logger.info("goto page not implemented");
+    }
+
+    public void next() {
+        nextPage();
+    }
+
+    public void last() {
+        if (currentFile != null) {
+            gotoPage(currentFile.getNumPages());
+        }
+    }
+
+    public void startSlideShow() {
+        play(true);
+    }
+
+    public void pauseSlideShow() {
+        play(false);
+    }
+
+    public void zoomIn() {
+        zoom += 0.3f;
+        repaint();
+    }
+
+    public void zoomOut() {
+        zoom -= 0.3f;
+        repaint();
+    }
+
+    public void sync() {
+        sync(!isSynced());
+    }
+
+    public void unsync() {
+        sync(!isSynced());
+    }
+
+    public void setInSlideShowMode(boolean inSlideShow) {
+        if (inSlideShow) {
+            cellMenu.enableButton(Button.PAUSE_SLIDESHOW);
+            cellMenu.disableButton(Button.START_SLIDESHOW);
+        } else {
+            cellMenu.enableButton(Button.START_SLIDESHOW);
+            cellMenu.disableButton(Button.PAUSE_SLIDESHOW);
         }
     }
 
@@ -650,6 +733,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
             BufferedImage visibleImage = pageImage.getSubimage(xScroll, (int) (int) (yScroll / scale), pageImage.getWidth(), (int) (visibleHeight / scale));
 
+            g.clearRect(0, 0, (int) appWidth, (int) appHeight);
+            g.scale(zoom, zoom);
             g.drawImage(visibleImage, 0, 0, (int) appWidth, (int) visibleHeight, null);
         } else {
             g.clearRect(0, 0, (int) appWidth, (int) appHeight);
@@ -743,8 +828,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 nextPage();
                 break;
             case KeyEvent.VK_P:
-                // pause/resume slide show
-                pause(!paused);
+                // play/resume slide show
+                play(!playing);
                 break;
             case KeyEvent.VK_S:
                 // unsync/resync with shared state
@@ -782,18 +867,24 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                     setViewPosition(msg.getPosition());
                     break;
                 case SET_STATE:
+                    System.err.println("SET_STATE, page = " + msg.getPage());
                     if (forMe == true) {
-                        openDocument(msg.getDocument());
-                        showPage(msg.getPage());
-                        setViewPosition(msg.getPosition());
-                        showHUDMessage("synced", 3000);
+                        if (isSynced()) {
+                            openDocument(msg.getDocument(), msg.getPage(), msg.getPosition());
+                            cellMenu.disableButton(Button.UNSYNC);
+                            cellMenu.enableButton(Button.SYNC);
+                            logger.info("synced");
+                            showHUDMessage("synced", 2000);
+                        }
                     }
                     break;
                 case PLAY:
                     showHUDMessage("slide show starting", 3000);
+                    setInSlideShowMode(true);
                     break;
                 case PAUSE:
                     showHUDMessage("slide show stopped", 3000);
+                    setInSlideShowMode(false);
                     break;
                 case REQUEST_COMPLETE:
                     // could retry queued requests here
@@ -811,6 +902,30 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             logger.fine("sending message: " + pdfcm);
             ChannelController.getController().sendMessage(pdfcm);
         }
+    }
+
+    public void setInControl(boolean inControl) {
+        this.inControl = inControl;
+
+        if (inControl == true) {
+            CellMenuManager.getInstance().showMenu(this.getCell(), cellMenu, null);
+        } else {
+            CellMenuManager.getInstance().hideMenu();
+        }
+    }
+
+    @Override
+    public void takeControl(MouseEvent me) {
+        logger.info("pdf application has control");
+        super.takeControl(me);
+        setInControl(true);
+    }
+
+    @Override
+    public void releaseControl(MouseEvent me) {
+        logger.info("pdf application lost control");
+        super.releaseControl(me);
+        setInControl(false);
     }
 }
 
