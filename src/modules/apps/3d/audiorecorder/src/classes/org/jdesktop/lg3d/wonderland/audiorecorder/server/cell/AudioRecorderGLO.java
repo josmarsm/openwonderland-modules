@@ -31,6 +31,7 @@ import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellSetup;
+import org.jdesktop.lg3d.wonderland.config.common.WonderlandConfig;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
@@ -45,6 +46,7 @@ import com.sun.mpk20.voicelib.impl.app.VoiceHandlerImpl;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import org.jdesktop.lg3d.wonderland.config.common.WonderlandConfig;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 
 import com.sun.voip.client.connector.CallStatus;
@@ -213,6 +215,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
 	rotation = setup.getRotation();
 	origin = setup.getOrigin();
 	scale = setup.getScale();
+
+	getSetupData().setBaseURL(WonderlandConfig.getBaseURL());
     }
 
     @Override

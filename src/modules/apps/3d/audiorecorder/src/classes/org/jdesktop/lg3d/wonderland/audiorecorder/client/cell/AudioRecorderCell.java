@@ -86,7 +86,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     private Set<Behavior> behaviors = new HashSet<Behavior>();
     private String userName = null;
   
-    
+    private String baseURL;
     
     public AudioRecorderCell(CellID cellID, String channelName, Matrix4d cellOrigin) {
         super(cellID, channelName, cellOrigin);
@@ -101,6 +101,9 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     @Override
     public void setup(CellSetup setup) {
         AudioRecorderCellSetup rdcSetup = (AudioRecorderCellSetup) setup;
+
+	baseURL = rdcSetup.getBaseURL();
+
         addRecordingDevice();        
         // handle initial selection
         setRecording(rdcSetup.isRecording());
@@ -137,7 +140,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         TransformGroup spinTg = new TransformGroup();
 	spinTg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         
-        BranchGroup reel = AssetManager.getAssetManager().loadGraph(WonderlandConfig.getBaseURL(), modelFilename, "");
+        BranchGroup reel = AssetManager.getAssetManager().loadGraph(baseURL, modelFilename, "");
         spinTg.addChild(reel);
         
         Transform3D zAxis = new Transform3D();
@@ -190,7 +193,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     }    
 
     private void addOuterCasing(BranchGroup bg) {
-        BranchGroup casing = AssetManager.getAssetManager().loadGraph(WonderlandConfig.getBaseURL(), "models/audiorecorder/audiorecorder_body.j3s.gz", "");
+        BranchGroup casing = AssetManager.getAssetManager().loadGraph(baseURL, "models/audiorecorder/audiorecorder_body.j3s.gz", "");
         // Set capability bits for collision system
 	SceneGraphUtil.setCapabilitiesGraph(casing, false);
         bg.addChild(casing);        
@@ -363,10 +366,10 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         private Appearance selectedAppearance;
         
         Button(String modelFilename, String litTextureFilename) {
-            BranchGroup buttonModel = AssetManager.getAssetManager().loadGraph(WonderlandConfig.getBaseURL(), modelFilename, "");
+            BranchGroup buttonModel = AssetManager.getAssetManager().loadGraph(baseURL, modelFilename, "");
             addChild(buttonModel);
             try {
-                URL textureURL = new URL(WonderlandConfig.getBaseURL() + '/' + litTextureFilename);
+                URL textureURL = new URL(baseURL + '/' + litTextureFilename);
                 TextureLoader tLoader = new TextureLoader(textureURL, new Container());
                 Texture litTexture = tLoader.getTexture();
                 selectedAppearance = new Appearance();
