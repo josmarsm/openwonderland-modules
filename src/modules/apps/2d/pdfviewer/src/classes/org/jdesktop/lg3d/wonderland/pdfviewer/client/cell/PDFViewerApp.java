@@ -528,7 +528,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      */
     public void showPage(int p) {
         if (isValidPage(p)) {
-            System.err.println("showing page: " + p);
+            logger.info("showing page: " + p);
             mousePos.setLocation(0, 0);
             currentPage = currentFile.getPage(p);
             pageDirty = true;
@@ -542,7 +542,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 currentFile.getPage(p + 1);
             }
         } else {
-            System.err.println("page invalid: " + p);
+            logger.warning("page " + p + " is not a valid page");
         }
     }
 
@@ -867,7 +867,6 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                     setViewPosition(msg.getPosition());
                     break;
                 case SET_STATE:
-                    System.err.println("SET_STATE, page = " + msg.getPage());
                     if (forMe == true) {
                         if (isSynced()) {
                             openDocument(msg.getDocument(), msg.getPage(), msg.getPosition());
