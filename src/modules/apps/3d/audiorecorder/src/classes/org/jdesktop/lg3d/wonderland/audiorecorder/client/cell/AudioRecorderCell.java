@@ -101,7 +101,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     @Override
     public void setup(CellSetup setup) {
         AudioRecorderCellSetup rdcSetup = (AudioRecorderCellSetup) setup;
-        addRecordingDevice(rdcSetup);        
+        addRecordingDevice();        
         // handle initial selection
         setRecording(rdcSetup.isRecording());
         setPlaying(rdcSetup.isPlaying());
@@ -110,24 +110,24 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         userName = rdcSetup.getUserName();
     }
 
-    private void addRecordingDevice(AudioRecorderCellSetup setup) {
+    private void addRecordingDevice() {
         Transform3D transform = new Transform3D();
         //Adjust the scale to fit the world from Justin's original model
         transform.setScale(0.5f);
         TransformGroup tg = new TransformGroup(transform);
         BranchGroup bg = new BranchGroup();
-        addOuterCasing(setup, bg);
-        addReel(setup, new Vector3f(-0.2f, 0.2f, 0.17f), "models/audiorecorder/audiorecorder_leftreel.j3s.gz", bg);
-        addReel(setup, new Vector3f(0.2f, 0.2f, 0.17f), "models/audiorecorder/audiorecorder_rightreel.j3s.gz", bg);
-        addRecordButton(setup, bg);
-        addStopButton(setup, bg);
-        addPlayButton(setup, bg);
+        addOuterCasing(bg);
+        addReel(new Vector3f(-0.2f, 0.2f, 0.17f), "models/audiorecorder/audiorecorder_leftreel.j3s.gz", bg);
+        addReel(new Vector3f(0.2f, 0.2f, 0.17f), "models/audiorecorder/audiorecorder_rightreel.j3s.gz", bg);
+        addRecordButton(bg);
+        addStopButton(bg);
+        addPlayButton(bg);
         tg.addChild(bg);
         cellLocal.addChild(tg);
     }
   
    
-    private void addReel(AudioRecorderCellSetup setup, Vector3f position, String modelFilename, BranchGroup bg) {
+    private void addReel(Vector3f position, String modelFilename, BranchGroup bg) {
         // Create the root of the branch graph 
         J3dLgBranchGroup reelBG = new J3dLgBranchGroup();
         
@@ -137,7 +137,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         TransformGroup spinTg = new TransformGroup();
 	spinTg.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         
-        BranchGroup reel = AssetManager.getAssetManager().loadGraph(setup.getBaseURL(), modelFilename, "");
+        BranchGroup reel = AssetManager.getAssetManager().loadGraph(WonderlandConfig.getBaseURL(), modelFilename, "");
         spinTg.addChild(reel);
         
         Transform3D zAxis = new Transform3D();
@@ -189,29 +189,29 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     public void leftChannel(ClientChannel arg0) {       
     }    
 
-    private void addOuterCasing(AudioRecorderCellSetup setup, BranchGroup bg) {
-        BranchGroup casing = AssetManager.getAssetManager().loadGraph(setup.getBaseURL(), "models/audiorecorder/audiorecorder_body.j3s.gz", "");
+    private void addOuterCasing(BranchGroup bg) {
+        BranchGroup casing = AssetManager.getAssetManager().loadGraph(WonderlandConfig.getBaseURL(), "models/audiorecorder/audiorecorder_body.j3s.gz", "");
         // Set capability bits for collision system
 	SceneGraphUtil.setCapabilitiesGraph(casing, false);
         bg.addChild(casing);        
     }
 
-    private void addRecordButton(AudioRecorderCellSetup setup, BranchGroup bg) {
-        recordButton = addButton(setup, "models/audiorecorder/audiorecorder_recordbutton.j3s.gz", "textures/audiorecorder/audiorecorder_recordlit.png", bg);
+    private void addRecordButton(BranchGroup bg) {
+        recordButton = addButton("models/audiorecorder/audiorecorder_recordbutton.j3s.gz", "textures/audiorecorder/audiorecorder_recordlit.png", bg);
     }
     
-    private void addStopButton(AudioRecorderCellSetup setup, BranchGroup bg) {
-        stopButton = addButton(setup, "models/audiorecorder/audiorecorder_stopbutton.j3s.gz", "textures/audiorecorder/audiorecorder_stoplit.png", bg); 
+    private void addStopButton(BranchGroup bg) {
+        stopButton = addButton("models/audiorecorder/audiorecorder_stopbutton.j3s.gz", "textures/audiorecorder/audiorecorder_stoplit.png", bg); 
     }
     
-    private void addPlayButton(AudioRecorderCellSetup setup, BranchGroup bg) {
-        playButton = addButton(setup, "models/audiorecorder/audiorecorder_playbutton.j3s.gz", "textures/audiorecorder/audiorecorder_playlit.png", bg); 
+    private void addPlayButton(BranchGroup bg) {
+        playButton = addButton("models/audiorecorder/audiorecorder_playbutton.j3s.gz", "textures/audiorecorder/audiorecorder_playlit.png", bg); 
     }
 
-    private Button addButton(AudioRecorderCellSetup setup, String modelFilename, String litTextureFilename, BranchGroup bg) {
+    private Button addButton(String modelFilename, String litTextureFilename, BranchGroup bg) {
         
         J3dLgBranchGroup buttonBG = new J3dLgBranchGroup();
-        Button aButton = new Button(setup, modelFilename, litTextureFilename);                 
+        Button aButton = new Button(modelFilename, litTextureFilename);                 
         
         addMouseEvents(buttonBG, aButton);
         
@@ -362,8 +362,8 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         private Appearance defaultAppearance = null;
         private Appearance selectedAppearance;
         
-        Button(AudioRecorderCellSetup setup, String modelFilename, String litTextureFilename) {
-            BranchGroup buttonModel = AssetManager.getAssetManager().loadGraph(setup.getBaseURL(), modelFilename, "");
+        Button(String modelFilename, String litTextureFilename) {
+            BranchGroup buttonModel = AssetManager.getAssetManager().loadGraph(WonderlandConfig.getBaseURL(), modelFilename, "");
             addChild(buttonModel);
             try {
                 URL textureURL = new URL(WonderlandConfig.getBaseURL() + '/' + litTextureFilename);
