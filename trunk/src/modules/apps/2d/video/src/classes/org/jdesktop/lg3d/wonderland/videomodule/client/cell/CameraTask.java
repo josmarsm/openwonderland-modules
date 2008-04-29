@@ -71,7 +71,7 @@ public class CameraTask extends Thread {
      * request should take
      */
     public void setRequestThrottle(long requestThrottle) {
-        logger.info("camera request throttle set to: " + requestThrottle + "ms");
+        logger.fine("camera request throttle set to: " + requestThrottle + "ms");
         this.requestThrottle = requestThrottle;
     }
 

@@ -18,6 +18,7 @@
     <!-- all files that should be built as part of the client jar file -->
     <patternset id="module.client.classes">
         <include name="org/jdesktop/lg3d/wonderland/videomodule/client/**"/>
+        <include name="org/jdesktop/lg3d/wonderland/videomodule/client/cell/resources/**"/>
         <include name="org/jdesktop/lg3d/wonderland/videomodule/common/**"/>
     </patternset>
    
@@ -60,6 +61,14 @@
          -post-clean: after clean
     -->
     
+    <target name="-pre-jar-client">
+        <copy todir="${module.build.dir}/classes/org/jdesktop/lg3d/wonderland/videomodule/client/cell/resources">
+            <fileset dir="src/classes/org/jdesktop/lg3d/wonderland/videomodule/client/cell/resources/">
+                <include name="*.png"/>
+            </fileset>
+        </copy>
+    </target>
+
     <target name="-post-jar-server">
         <copy todir="${module.client.dir}">
             <fileset dir="lib">

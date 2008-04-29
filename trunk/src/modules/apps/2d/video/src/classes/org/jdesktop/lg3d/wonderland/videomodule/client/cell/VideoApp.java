@@ -26,7 +26,6 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 
 import java.net.URL;
@@ -51,6 +50,7 @@ import org.jdesktop.lg3d.wonderland.scenemanager.EventController;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
+import org.jdesktop.lg3d.wonderland.videomodule.client.cell.VideoCellMenu.Button;
 import org.jdesktop.lg3d.wonderland.videomodule.common.JMFSnapper;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.Action;
@@ -63,7 +63,7 @@ import org.jdesktop.lg3d.wonderland.videomodule.common.VideoSource;
  *
  * @author nsimpson
  */
-public class VideoApp extends AppWindowGraphics2DApp {
+public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuListener {
 
     private static final Logger logger =
             Logger.getLogger(VideoApp.class.getName());
@@ -82,7 +82,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
     private float preferredFrameRate = ACTIVE_FRAME_RATE;
     private double preferredWidth = 0;  // none, use media width
     private double preferredHeight = 0; // none, use media height
-    private boolean synced = true;
+    private boolean synced = false;
     private String video;
     private HUDButton msgButton;
     private VideoSourceDialog videoDialog;
@@ -90,6 +90,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
     private boolean audioEnabled = false;
     private boolean audioUserMuted = false;
     private boolean inControl = false;
+    private VideoCellMenu cellMenu;
 
     public VideoApp(SharedApp2DImageCell cell) {
         this(cell, 0, 0, (int) DEFAULT_WIDTH, (int) DEFAULT_HEIGHT);
@@ -108,6 +109,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
         });
 
         initVideoDialog();
+        initHUDMenu();
         addEventListeners();
 
         setShowing(true);
@@ -140,19 +142,6 @@ public class VideoApp extends AppWindowGraphics2DApp {
             }
         });
 
-        addMouseMotionListener(new MouseMotionListener() {
-
-            public void mouseDragged(MouseEvent e) {
-                logger.finest("mouse dragged on app");
-                dispatchMouseEvent(e);
-            }
-
-            public void mouseMoved(MouseEvent e) {
-                logger.finest("mouse moved on app");
-                dispatchMouseEvent(e);
-            }
-        });
-
         addMouseListener(new MouseListener() {
 
             public void mouseClicked(MouseEvent e) {
@@ -182,10 +171,12 @@ public class VideoApp extends AppWindowGraphics2DApp {
                 repaint();
             }
         });
+
+        cellMenu.addCellMenuListener(this);
     }
 
     /**
-     * Initialize the dialog for opening PDF documents
+     * Initialize the dialog for opening videos
      */
     private void initVideoDialog() {
         videoDialog = new VideoSourceDialog(null, false);
@@ -228,18 +219,22 @@ public class VideoApp extends AppWindowGraphics2DApp {
         });
     }
 
+    private void initHUDMenu() {
+        cellMenu = VideoCellMenu.getInstance();
+    }
+
     public void loadVideo(String video) {
         if (video != null) {
-            // stop the current video
-            stop();
+            // finish the current video
+            finish();
 
             // load the new video
             this.video = video;
             videoDialog.setVideoURL(video);
             snapper = new JMFSnapper(video);
 
-            // stop the new video
-            stop();
+            // finish the new video
+            finish();
 
             BufferedImage frame = snapper.getFrame();
             if (frame != null) {
@@ -269,7 +264,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
 
     public void setFrameRate(float rate) {
         logger.info("setting frame rate to: " + rate + "fps");
-        showHUDMessage("fps: " + (int) rate, 2000);
+        showHUDMessage("fps: " + (int) rate, 3000);
     }
 
     public float getFrameRate() {
@@ -355,14 +350,13 @@ public class VideoApp extends AppWindowGraphics2DApp {
         //
         // Ultimately, the frame rate should vary depending on avatar proximity
         // to the video application and whether the video is in view.
-        //CellMenu cellMenu = VideoCellMenu.getInstance();
 
         if (inControl == true) {
             setFrameRate(preferredFrameRate);
-            //CellMenuManager.getInstance().showMenu(this.getCell(), cellMenu, "Video");
+            CellMenuManager.getInstance().showMenu(this.getCell(), cellMenu, null);
         } else {
             setFrameRate(INACTIVE_FRAME_RATE);
-            //CellMenuManager.getInstance().hideMenu();
+            CellMenuManager.getInstance().hideMenu();
         }
         setAudioEnabled(inControl);
     }
@@ -451,18 +445,45 @@ public class VideoApp extends AppWindowGraphics2DApp {
         return hudEnabled;
     }
 
-    public void play(boolean play) {
-        logger.info("play: " + play);
+    /*
+     * VideoCellMenuListener methods
+     */
+    public void open() {
+        showVideoDialog();
+    }
 
+    public void play() {
+        if (isPlaying()) {
+            // pause immediately for better responsiveness
+            // other clients will catch up to this state
+            play(false);
+            if (isSynced()) {
+                sendCameraRequest(Action.PAUSE, null);
+            }
+        } else {
+            // play when server acknowledges request for better sync
+            // with other clients
+            if (isSynced()) {
+                sendCameraRequest(Action.PLAY, null);
+            } else {
+                play(true);
+            }
+        }
+    }
+
+    public void play(boolean play) {
         // perform local play action
         if (play == true) {
             start();
-            showHUDMessage("Playing", 2000);
+            showHUDMessage("play", 3000);
+            cellMenu.disableButton(Button.PLAY);
+            cellMenu.enableButton(Button.PAUSE);
         } else {
-            stop();
-            showHUDMessage("Paused", 2000);
+            finish();
+            showHUDMessage("pause", 3000);
+            cellMenu.disableButton(Button.PAUSE);
+            cellMenu.enableButton(Button.PLAY);
         }
-
     }
 
     public boolean isPlaying() {
@@ -477,29 +498,24 @@ public class VideoApp extends AppWindowGraphics2DApp {
         return playing;
     }
 
-    private void start() {
-        if ((snapper == null) || (snapper.hasPlayer() == false)) {
-            return;
-        }
+    public void pause() {
+        play();
+    }
 
-        if (isPlaying() && (frameRate != preferredFrameRate)) {
-            // frame rate has changed, need to restart play
-            stop();
-        }
+    public void stop() {
+        logger.info("stop");
 
-        if (!isPlaying()) {
-            if (preferredFrameRate > 0) {
-                logger.info("starting playback");
-                snapper.startMovie();
-                frameRate = preferredFrameRate;
-                frameTimer = new Timer();
-                frameUpdateTask = new FrameUpdateTask();
-                frameTimer.scheduleAtFixedRate(frameUpdateTask, 0, (long) (1000 * 1f / frameRate));
-            }
+        // stop immediately, then tell everyone else
+        cue(0.0, 0.1);
+        showHUDMessage("stop", 3000);
+        cellMenu.disableButton(Button.PAUSE);
+        cellMenu.enableButton(Button.PLAY);
+        if (isSynced()) {
+            sendCameraRequest(Action.STOP, null);
         }
     }
 
-    private void stop() {
+    public void finish() {
         if ((snapper == null) || (snapper.hasPlayer() == false)) {
             return;
         }
@@ -512,6 +528,52 @@ public class VideoApp extends AppWindowGraphics2DApp {
         }
 
         frameTimer = null;
+    }
+
+    public void rewind() {
+        logger.info("rewind is not implemented");
+    }
+
+    public void fastForward() {
+        logger.info("fast forward is not implemented");
+    }
+
+    public void sync() {
+        if (isSynced()) {
+            cellMenu.disableButton(Button.SYNC);
+            cellMenu.enableButton(Button.UNSYNC);
+            setSynced(false);
+            showHUDMessage("unsynced", 3000);
+        } else {
+            showHUDMessage("syncing...");
+            sendCameraRequest(Action.GET_STATE, null);
+        }
+    }
+
+    public void unsync() {
+        sync();
+    }
+
+    private void start() {
+        if ((snapper == null) || (snapper.hasPlayer() == false)) {
+            return;
+        }
+
+        if (isPlaying() && (frameRate != preferredFrameRate)) {
+            // frame rate has changed, need to restart play
+            finish();
+        }
+
+        if (!isPlaying()) {
+            if (preferredFrameRate > 0) {
+                logger.info("starting playback");
+                snapper.startMovie();
+                frameRate = preferredFrameRate;
+                frameTimer = new Timer();
+                frameUpdateTask = new FrameUpdateTask();
+                frameTimer.scheduleAtFixedRate(frameUpdateTask, 0, (long) (1000 * 1f / frameRate));
+            }
+        }
     }
 
     public void cue(double start, double cueLeadIn) {
@@ -537,7 +599,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
             muteState = isMuted();
             hudState = isHUDEnabled();
             setHUDEnabled(false);
-            stop();
+            finish();
             setPosition(start - cueLeadIn);
             snapper.setStopTime(start);
             mute(true);
@@ -552,12 +614,14 @@ public class VideoApp extends AppWindowGraphics2DApp {
                 if (snapper.getPlayerState() == 600) {
                     logger.warning("premature stop !!");
                 }
-                stop();
+                finish();
                 snapper.setStopTime(JMFSnapper.RESET_STOP_TIME);
                 mute(muteState);
                 setHUDEnabled(hudState);
                 cueTimer.cancel();
                 logger.info("cue complete");
+                cellMenu.disableButton(Button.PAUSE);
+                cellMenu.enableButton(Button.PLAY);
             }
         }
     }
@@ -576,7 +640,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
         if (snapper != null) {
             logger.info((muting == true) ? "muting" : "unmuting");
             snapper.mute(muting);
-            showHUDMessage(isMuted() ? "Muted" : "Unmuted", 2000);
+            showHUDMessage(isMuted() ? "muted" : "unmuted", 3000);
         }
     }
 
@@ -619,27 +683,11 @@ public class VideoApp extends AppWindowGraphics2DApp {
                 break;
             case KeyEvent.VK_P:
                 // play/pause
-                if (isPlaying()) {
-                    // pause immediately for better responsiveness
-                    // other clients will catch up to this state
-                    play(false);
-                    if (isSynced()) {
-                        sendCameraRequest(Action.PAUSE, null);
-                    }
-                } else {
-                    // play when server acknowledges request for better sync
-                    // with other clients
-                    if (isSynced()) {
-                        sendCameraRequest(Action.PLAY, null);
-                    }
-                }
+                play();
                 break;
             case KeyEvent.VK_S:
                 // re-sync with shared state
-                setSynced(!isSynced());
-                if (isSynced()) {
-                    sendCameraRequest(Action.GET_STATE, null);
-                }
+                sync();
                 break;
         }
     }
@@ -692,12 +740,18 @@ public class VideoApp extends AppWindowGraphics2DApp {
                 break;
             case PLAY:
             case PAUSE:
-            case STOP:
                 msg = new VideoCellMessage(this.getCell().getCellID(),
                         ((VideoCell) cell).getUID(),
                         getVideo(),
                         action,
                         getPosition());
+                break;
+            case STOP:
+                msg = new VideoCellMessage(this.getCell().getCellID(),
+                        ((VideoCell) cell).getUID(),
+                        getVideo(),
+                        action,
+                        0.0);
                 break;
             case GET_STATE:
                 msg = new VideoCellMessage(this.getCell().getCellID(),
@@ -751,7 +805,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
             case PLAY:
             case PAUSE:
             case STOP:
-                // only change playback if this cell has control
+                // only change playback if this cell is synced with server
                 if (isSynced()) {
                     // change the play state of the video
                     logger.info("performing action: " + msg.getAction());
@@ -760,7 +814,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
                         setPosition(msg.getPosition());
                         play(true);
                     } else {
-                        // pausing
+                        // pausing or stopping
                         if (forMe == false) {
                             // initiator will already have paused
                             play(false);
@@ -776,18 +830,20 @@ public class VideoApp extends AppWindowGraphics2DApp {
                 break;
             case SET_STATE:
                 if (forMe == true) {
-                    if (isSynced()) {
-                        logger.fine("syncing with state: " + msg);
-                        loadVideo(msg.getSource());
-                        //setPosition(msg.getPosition());
-                        if (msg.getState() == PlayerState.PLAYING) {
-                            play(true);
-                        } else {
-                            cue(msg.getPosition(), 0.1);
-                        }
-                        logger.info("video synced");
-                        showHUDMessage("sync complete", 2000);
+                    logger.fine("syncing with state: " + msg);
+                    loadVideo(msg.getSource());
+                    setPosition(msg.getPosition());
+                    if (msg.getState() == PlayerState.PLAYING) {
+                        play(true);
+                    } else {
+                        cue(msg.getPosition(), 0.1);
                     }
+                    setSynced(true);
+                    logger.info("video synced");
+                    showHUDMessage("synced", 3000);
+                    cellMenu.disableButton(Button.UNSYNC);
+                    cellMenu.enableButton(Button.SYNC);
+
                     // notify everyone that the request has completed
                     vcm = new VideoCellMessage(msg);
                     vcm.setAction(Action.REQUEST_COMPLETE);
@@ -808,11 +864,6 @@ public class VideoApp extends AppWindowGraphics2DApp {
             logger.fine("sending message: " + vcm);
             ChannelController.getController().sendMessage(vcm);
         }
-    }
-
-    public void getSynced() {
-        logger.info("video requesting sync with shared state");
-        sendCameraRequest(Action.GET_STATE, null);
     }
 
     /**
@@ -853,7 +904,7 @@ public class VideoApp extends AppWindowGraphics2DApp {
                 VideoApp.this.repaint();
             } else {
                 logger.info("stopping frame update task because movie isn't playing: " + snapper.getPlayerState());
-                stop();
+                finish();
             }
         }
     }
