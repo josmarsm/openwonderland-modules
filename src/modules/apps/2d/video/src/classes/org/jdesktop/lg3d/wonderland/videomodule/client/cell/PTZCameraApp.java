@@ -19,7 +19,7 @@ import org.jdesktop.lg3d.wonderland.videomodule.common.VideoSource;
  *
  * @author nsimpson
  */
-public class PTZCameraApp extends VideoApp implements CameraListener {
+public class PTZCameraApp extends VideoApp implements PTZCellMenuListener, CameraListener {
 
     private static final Logger logger =
             Logger.getLogger(PTZCameraApp.class.getName());
@@ -36,6 +36,12 @@ public class PTZCameraApp extends VideoApp implements CameraListener {
     }
 
     @Override
+    protected void initHUDMenu() {
+        cellMenu = PTZCellMenu.getInstance();
+        cellMenu.addCellMenuListener(this);
+    }
+
+    @Override
     public void setVideoInstance(VideoSource videoInstance) {
         this.videoInstance = videoInstance;
         if (videoInstance instanceof PTZCamera) {
@@ -46,68 +52,100 @@ public class PTZCameraApp extends VideoApp implements CameraListener {
         }
     }
 
+    public void panLeft() {
+        logger.info("panning left");
+        showHUDMessage("pan left", 1000);
+        sendCameraRequest(Action.SET_PTZ,
+                new Point3f(ptz.getPan() - (1.0f - horizOverlapPercent) * ptz.getMinHorizontalFOV(), ptz.getTilt(), ptz.getZoom()));
+    }
+
+    public void panRight() {
+        logger.info("panning right");
+        showHUDMessage("pan right", 1000);
+        sendCameraRequest(Action.SET_PTZ,
+                new Point3f(ptz.getPan() + (1.0f - horizOverlapPercent) * ptz.getMinHorizontalFOV(), ptz.getTilt(), ptz.getZoom()));
+    }
+
+    public void tiltUp() {
+        logger.info("tilting up");
+        showHUDMessage("tilt up", 1000);
+        sendCameraRequest(Action.SET_PTZ,
+                new Point3f(ptz.getPan(), ptz.getTilt() + (1.0f - vertOverlapPercent) * ptz.getMinVerticalFOV(), ptz.getZoom()));
+    }
+
+    public void tiltDown() {
+        logger.info("tilting down");
+        showHUDMessage("tilt down", 1000);
+        sendCameraRequest(Action.SET_PTZ,
+                new Point3f(ptz.getPan(), ptz.getTilt() - (1.0f - vertOverlapPercent) * ptz.getMinVerticalFOV(), ptz.getZoom()));
+    }
+
+    public void center() {
+        logger.info("centering");
+        showHUDMessage("centering", 1000);
+        sendCameraRequest(Action.SET_PTZ,
+                new Point3f(0, 0, ptz.getZoom()));
+    }
+
+    public void zoomIn() {
+        logger.info("zooming in");
+        showHUDMessage("zoom in", 1000);
+        sendCameraRequest(Action.SET_PTZ,
+                new Point3f(ptz.getPan(), ptz.getTilt(), ptz.getZoom() + 1000));
+    }
+
+    public void zoomOut() {
+        logger.info("zooming out");
+        showHUDMessage("zoom out", 1000);
+        sendCameraRequest(Action.SET_PTZ,
+                new Point3f(ptz.getPan(), ptz.getTilt(), ptz.getZoom() - 1000));
+    }
+
+    public void zoomInFully() {
+        logger.info("zooming in fully");
+        showHUDMessage("max zoom", 1000);
+        sendCameraRequest(Action.SET_PTZ,
+                new Point3f(ptz.getPan(), ptz.getTilt(), ptz.getMaxZoom()));
+    }
+
+    public void zoomOutFully() {
+        logger.info("zooming out fully");
+        showHUDMessage("min zoom", 1000);
+        sendCameraRequest(Action.SET_PTZ,
+                new Point3f(ptz.getPan(), ptz.getTilt(), ptz.getMinZoom()));
+    }
+
     @Override
     protected void dispatchKeyEvent(KeyEvent e) {
-        float pan = ptz.getPan();
-        float tilt = ptz.getTilt();
-        float zoom = ptz.getZoom();
-
         switch (e.getKeyCode()) {
             case KeyEvent.VK_PLUS:
             case KeyEvent.VK_EQUALS:
-                logger.info("zooming in");
-                showHUDMessage("zoom in", 1000);
-                sendCameraRequest(Action.SET_PTZ,
-                        new Point3f(pan, tilt, zoom + 1000));
+                zoomIn();
                 break;
             case KeyEvent.VK_MINUS:
             case KeyEvent.VK_UNDERSCORE:
-                logger.info("zooming out");
-                showHUDMessage("zoom out", 1000);
-                sendCameraRequest(Action.SET_PTZ,
-                        new Point3f(pan, tilt, zoom - 1000));
+                zoomOut();
                 break;
             case KeyEvent.VK_LEFT:
-                logger.info("panning left");
-                showHUDMessage("pan left", 1000);
-                sendCameraRequest(Action.SET_PTZ,
-                        new Point3f(pan - (1.0f - horizOverlapPercent) * ptz.getMinHorizontalFOV(), tilt, zoom));
+                panLeft();
                 break;
             case KeyEvent.VK_RIGHT:
-                logger.info("panning right");
-                showHUDMessage("pan right", 1000);
-                sendCameraRequest(Action.SET_PTZ,
-                        new Point3f(pan + (1.0f - horizOverlapPercent) * ptz.getMinHorizontalFOV(), tilt, zoom));
+                panRight();
                 break;
             case KeyEvent.VK_UP:
-                logger.info("tilting up");
-                showHUDMessage("tilt up", 1000);
-                sendCameraRequest(Action.SET_PTZ,
-                        new Point3f(pan, tilt + (1.0f - vertOverlapPercent) * ptz.getMinVerticalFOV(), zoom));
+                tiltUp();
                 break;
             case KeyEvent.VK_DOWN:
-                logger.info("tilting down");
-                showHUDMessage("tilt down", 1000);
-                sendCameraRequest(Action.SET_PTZ,
-                        new Point3f(pan, tilt - (1.0f - vertOverlapPercent) * ptz.getMinVerticalFOV(), zoom));
+                tiltDown();
                 break;
             case KeyEvent.VK_C:
-                logger.info("centering");
-                showHUDMessage("centering", 1000);
-                sendCameraRequest(Action.SET_PTZ,
-                        new Point3f(0, 0, ptz.getZoom()));
+                center();
                 break;
             case KeyEvent.VK_Z:
                 if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
-                    logger.info("zooming in fully");
-                    showHUDMessage("max zoom", 1000);
-                    sendCameraRequest(Action.SET_PTZ,
-                            new Point3f(pan, tilt, ptz.getMaxZoom()));
+                    zoomInFully();
                 } else {
-                    logger.info("zooming out fully");
-                    showHUDMessage("min zoom", 1000);
-                    sendCameraRequest(Action.SET_PTZ,
-                            new Point3f(pan, tilt, ptz.getMinZoom()));
+                    zoomOutFully();
                 }
                 break;
             case KeyEvent.VK_TAB:
@@ -174,7 +212,7 @@ public class PTZCameraApp extends VideoApp implements CameraListener {
                 if (forMe == true) {
                     // only adjust the camera if this cell has control of the camera
                     // change the camera's pan, tilt or zoom settings
-                    logger.info("setting PTZ to pan: " + 
+                    logger.info("setting PTZ to pan: " +
                             msg.getPan() + ", tilt: " + msg.getTilt() + ", zoom: " + msg.getZoom());
                     moveCamera(msg.getAction(), msg.getPan(), msg.getTilt(), msg.getZoom());
                 }

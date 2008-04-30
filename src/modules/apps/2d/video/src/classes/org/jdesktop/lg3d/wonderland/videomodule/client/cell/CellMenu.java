@@ -45,14 +45,13 @@ public abstract class CellMenu {
 
     private static final Logger logger =
             Logger.getLogger(CellMenu.class.getName());
-    
     private Cell currentCell;
     private HUDObject menuBackground;
     private HUDButton closeMenuButton;
     private HUDObject menuText;
-    private static final String imagePath = "resources/";
-    private static final String MENU_BG_IMG = "background.png";
-    private static final String CANCEL_ICON_IMG = "cancel.png";
+    protected static String imagePath = "resources/";
+    protected static String MENU_BG_IMG = "background.png";
+    protected static String CANCEL_ICON_IMG = "cancel.png";
     protected HUD hud;
     protected Point origin = new Point(-304, -142);
     protected boolean menuInitialized = false;
@@ -98,6 +97,14 @@ public abstract class CellMenu {
         }
     }
 
+    protected void handleActionEvent(ActionEvent evt) {
+
+    }
+
+    protected void updateMenu() {
+        
+    }
+    
     public void setActive(Cell cell, String title, boolean active) {
         currentCell = cell;
         if (!menuInitialized) {
