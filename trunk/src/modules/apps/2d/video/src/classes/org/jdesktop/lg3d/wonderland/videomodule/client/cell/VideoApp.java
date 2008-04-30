@@ -90,7 +90,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     private boolean audioEnabled = false;
     private boolean audioUserMuted = false;
     private boolean inControl = false;
-    private VideoCellMenu cellMenu;
+    protected CellMenu cellMenu;
 
     public VideoApp(SharedApp2DImageCell cell) {
         this(cell, 0, 0, (int) DEFAULT_WIDTH, (int) DEFAULT_HEIGHT);
@@ -171,8 +171,6 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                 repaint();
             }
         });
-
-        cellMenu.addCellMenuListener(this);
     }
 
     /**
@@ -219,8 +217,9 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         });
     }
 
-    private void initHUDMenu() {
+    protected void initHUDMenu() {
         cellMenu = VideoCellMenu.getInstance();
+        cellMenu.addCellMenuListener(this);
     }
 
     public void loadVideo(String video) {
@@ -475,14 +474,13 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         // perform local play action
         if (play == true) {
             start();
+            updateMenu();
             showHUDMessage("play", 3000);
-            cellMenu.disableButton(Button.PLAY);
-            cellMenu.enableButton(Button.PAUSE);
+
         } else {
             finish();
+            updateMenu();
             showHUDMessage("pause", 3000);
-            cellMenu.disableButton(Button.PAUSE);
-            cellMenu.enableButton(Button.PLAY);
         }
     }
 
@@ -507,9 +505,8 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
 
         // stop immediately, then tell everyone else
         cue(0.0, 0.1);
+        updateMenu();
         showHUDMessage("stop", 3000);
-        cellMenu.disableButton(Button.PAUSE);
-        cellMenu.enableButton(Button.PLAY);
         if (isSynced()) {
             sendCameraRequest(Action.STOP, null);
         }
@@ -540,9 +537,8 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
 
     public void sync() {
         if (isSynced()) {
-            cellMenu.disableButton(Button.SYNC);
-            cellMenu.enableButton(Button.UNSYNC);
             setSynced(false);
+            updateMenu();
             showHUDMessage("unsynced", 3000);
         } else {
             showHUDMessage("syncing...");
@@ -620,8 +616,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                 setHUDEnabled(hudState);
                 cueTimer.cancel();
                 logger.info("cue complete");
-                cellMenu.disableButton(Button.PAUSE);
-                cellMenu.enableButton(Button.PLAY);
+                updateMenu();
             }
         }
     }
@@ -841,8 +836,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                     setSynced(true);
                     logger.info("video synced");
                     showHUDMessage("synced", 3000);
-                    cellMenu.disableButton(Button.UNSYNC);
-                    cellMenu.enableButton(Button.SYNC);
+                    updateMenu();
 
                     // notify everyone that the request has completed
                     vcm = new VideoCellMessage(msg);
@@ -863,6 +857,24 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         if (vcm != null) {
             logger.fine("sending message: " + vcm);
             ChannelController.getController().sendMessage(vcm);
+        }
+    }
+
+    protected void updateMenu() {
+        if (isSynced()) {
+            ((VideoCellMenu)cellMenu).enableButton(Button.SYNC);
+            ((VideoCellMenu)cellMenu).disableButton(Button.UNSYNC);
+        } else {
+            ((VideoCellMenu)cellMenu).enableButton(Button.UNSYNC);
+            ((VideoCellMenu)cellMenu).disableButton(Button.SYNC);
+        }
+
+        if (this.isPlaying()) {
+            ((VideoCellMenu)cellMenu).enableButton(Button.PAUSE);
+            ((VideoCellMenu)cellMenu).disableButton(Button.PLAY);
+        } else {
+            ((VideoCellMenu)cellMenu).enableButton(Button.PLAY);
+            ((VideoCellMenu)cellMenu).disableButton(Button.PAUSE);
         }
     }
 

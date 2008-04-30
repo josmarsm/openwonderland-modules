@@ -258,7 +258,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
                     snapshot = snapper.getFrame();
                     repaint();
                 }
-                
+
                 // new PTZ values
                 pan = msg.getPan();
                 tilt = msg.getTilt();
@@ -281,6 +281,11 @@ public class PTZPanoramaApp extends PTZCameraApp {
             logger.fine("sending message: " + vcm);
             ChannelController.getController().sendMessage(vcm);
         }
+    }
+
+    @Override
+    protected void updateMenu() {
+
     }
 
     /**

@@ -47,7 +47,6 @@ public class VideoCellMenu extends CellMenu {
     private static final Logger logger =
             Logger.getLogger(VideoCellMenu.class.getName());
     private static VideoCellMenu videoCellMenu;
-    private static final String imagePath = "resources/";
     private static final int LEFT_INSET = 8;
     private static final int TOP_INSET = 13;
     private static final int ICON_GAP = 2;
@@ -131,22 +130,7 @@ public class VideoCellMenu extends CellMenu {
         }
     }
 
-    public void enableButton(Button b) {
-        b.setVisible(true);
-        if (menuInitialized) {
-            HUDButton button = (HUDButton) actionMapping.get(b);
-            button.changeActive(true, 250);
-        }
-    }
-
-    public void disableButton(Button b) {
-        b.setVisible(false);
-        if (menuInitialized) {
-            HUDButton button = (HUDButton) actionMapping.get(b);
-            button.changeActive(false, 250);
-        }
-    }
-
+    @Override
     protected void handleActionEvent(ActionEvent evt) {
         ButtonListenerDelegate del = (ButtonListenerDelegate) evt.getSource();
         Object source = del.getSource();
@@ -197,6 +181,22 @@ public class VideoCellMenu extends CellMenu {
                     b.setActive(active);
                 }
             }
+        }
+    }
+
+    protected void enableButton(Button b) {
+        b.setVisible(true);
+        if (menuInitialized) {
+            HUDButton button = (HUDButton) actionMapping.get(b);
+            button.changeActive(true, 250);
+        }
+    }
+
+    protected void disableButton(Button b) {
+        b.setVisible(false);
+        if (menuInitialized) {
+            HUDButton button = (HUDButton) actionMapping.get(b);
+            button.changeActive(false, 250);
         }
     }
 
