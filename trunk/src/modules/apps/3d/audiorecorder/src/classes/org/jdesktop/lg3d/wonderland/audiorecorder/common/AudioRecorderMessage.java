@@ -87,11 +87,11 @@ public class AudioRecorderMessage extends Message {
      * @param userName the name of the user that initiated this change
      * @return a message with appropriate state
      */
-    public static AudioRecorderMessage recordingMessage(boolean playing, String userName) {
+    public static AudioRecorderMessage recordingMessage(boolean recording, String userName) {
         AudioRecorderMessage msg = new AudioRecorderMessage();
         msg.userName = userName;
         msg.action = RecorderGLOAction.RECORD;
-        msg.isPlaying = playing;
+        msg.isRecording = recording;
         return msg;
     }
     
