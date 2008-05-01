@@ -133,8 +133,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
 
         // send a message to all clients except the sender to notify of 
         // the updated selection
-        AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(),
-                getSetupData().isPlaying(), getSetupData().getUserName());
+        AudioRecorderMessage msg = AudioRecorderMessage.playingMessage(getSetupData().isPlaying(), getSetupData().getUserName());
 
         Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
         sessions.remove(client);
@@ -147,8 +146,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
 
         // send a message to all clients except the sender to notify of 
         // the updated selection
-        AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(),
-                getSetupData().isPlaying(), getSetupData().getUserName());
+        AudioRecorderMessage msg = AudioRecorderMessage.recordingMessage(getSetupData().isRecording(), getSetupData().getUserName());
 
         Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
         sessions.remove(client);
@@ -164,12 +162,14 @@ public class AudioRecorderGLO extends StationaryCellGLO
             /*
              * The volume is global so send a message to all the clients.
              */
-            AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(),
+            //Not sure why we would do this, as this as we don't need to let other clients know (do we?)
+            
+            /*AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(),
                     getSetupData().isPlaying(), getSetupData().getUserName(), ntcm.getVolume());
 
             Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
             sessions.remove(client);
-            getCellChannel().send(sessions, msg.getBytes());
+            getCellChannel().send(sessions, msg.getBytes());*/
         } else {
             /*
              * Set the private volume for this client for playback

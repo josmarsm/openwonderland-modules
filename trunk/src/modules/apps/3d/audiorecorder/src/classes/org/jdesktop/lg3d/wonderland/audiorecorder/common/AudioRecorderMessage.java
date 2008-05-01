@@ -34,10 +34,12 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
  */
 public class AudioRecorderMessage extends Message {
 
+
     public enum RecorderGLOAction {
-	SETUP_RECORDER,
 	SET_VOLUME,
-	PLAYBACK_DONE
+	PLAYBACK_DONE,
+        RECORD,
+	PLAY
     };
 
     private RecorderGLOAction action;
@@ -62,42 +64,37 @@ public class AudioRecorderMessage extends Message {
         msg.action = RecorderGLOAction.PLAYBACK_DONE;
         return msg;
     }
-    
-    
-
-    /**
-     * Constructor to create an instance of class AudioRecorderMessage that
-     * indicates that there's been a change in the state of the playing or recording
-     * of the CellGLO. I.e. the action of the message is <code>SETUP_RECORDER</code>.
-     * <br>
-     * NOTE: isRecording and isPlaying should not BOTH be true
-     * @param isRecording boolean to indicate if the GLO is recording
-     * @param isPlaying boolean to indicate if the GLO is playing
-     * @param userName the name of the user who initiated the change of state
+     
+     /**
+     * Static method used to create an instance of AudioRecorderMessage that has an action type
+     * <code>PLAY</code>.
+     * @param playing boolean to indicate the state of the recorder
+     * @param userName the name of the user that initiated this change
+     * @return a message with appropriate state
      */
-     public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName) {
-	this(isRecording, isPlaying, userName, 1);
+    public static AudioRecorderMessage playingMessage(boolean playing, String userName) {
+        AudioRecorderMessage msg = new AudioRecorderMessage();
+        msg.userName = userName;
+        msg.action = RecorderGLOAction.PLAY;
+        msg.isPlaying = playing;
+        return msg;
     }
-
+    
     /**
-     * Constructor to create an instance of class AudioRecorderMessage that
-     * indicates that there's been a change in the state of the playing or recording
-     * of the CellGLO. I.e. the action of the message is <code>SETUP_RECORDER</code>.
-     * <br>
-     * NOTE: isRecording and isPlaying should not BOTH be true
-     * @param isRecording boolean to indicate if the GLO is recording
-     * @param isPlaying boolean to indicate if the GLO is playing
-     * @param userName the name of the user who initiated the change of state
-     * @param volume the volume level of the recording/playing
+     * Static method used to create an instance of AudioRecorderMessage that has an action type
+     * <code>RECORD</code>.
+     * @param playing boolean to indicate the state of the recorder
+     * @param userName the name of the user that initiated this change
+     * @return a message with appropriate state
      */
-     public AudioRecorderMessage(boolean isRecording, boolean isPlaying, String userName, double volume) {
-        this();
-        action = RecorderGLOAction.SETUP_RECORDER;
-        this.isRecording = isRecording;
-        this.isPlaying = isPlaying;
-        this.userName = userName;
-	this.volume = volume;
+    public static AudioRecorderMessage recordingMessage(boolean playing, String userName) {
+        AudioRecorderMessage msg = new AudioRecorderMessage();
+        msg.userName = userName;
+        msg.action = RecorderGLOAction.RECORD;
+        msg.isPlaying = playing;
+        return msg;
     }
+    
 
     public RecorderGLOAction getAction() {
 	return action;
@@ -127,12 +124,10 @@ public class AudioRecorderMessage extends Message {
 
     protected void extractMessageImpl(ByteBuffer data) {
         action = RecorderGLOAction.values()[DataInt.value(data)];
+        isRecording = DataBoolean.value(data);
+        isPlaying = DataBoolean.value(data);
+        userName = DataString.value(data);
         switch (action) {
-            case SETUP_RECORDER:
-                isRecording = DataBoolean.value(data);
-                isPlaying = DataBoolean.value(data);
-                userName = DataString.value(data);
-                break;
             case SET_VOLUME:
                 volume = DataDouble.value(data);
                 break;
@@ -146,12 +141,10 @@ public class AudioRecorderMessage extends Message {
     protected void populateDataElements() {
         dataElements.clear();
         dataElements.add(new DataInt(action.ordinal()));
+        dataElements.add(new DataBoolean(isRecording));
+        dataElements.add(new DataBoolean(isPlaying));
+        dataElements.add(new DataString(userName));
         switch (action) {
-            case SETUP_RECORDER:
-                dataElements.add(new DataBoolean(isRecording));
-                dataElements.add(new DataBoolean(isPlaying));
-                dataElements.add(new DataString(userName));
-                break;
             case SET_VOLUME:
                 dataElements.add(new DataDouble(volume));
                 break;

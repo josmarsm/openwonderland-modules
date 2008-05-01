@@ -176,8 +176,28 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
        
     public void receivedMessage(ClientChannel client, SessionId session, byte[] input) {
         AudioRecorderMessage message = Message.extractMessage(input, AudioRecorderMessage.class);
+        switch (message.getAction()) {
+            case SET_VOLUME:
+                AudioRecorderCellMenu menu = AudioRecorderCellMenu.getInstance();
+                menu.volumeChanged(getCellID().toString(), message.getVolume());
+                break;
+            case PLAYBACK_DONE:
+                setPlaying(false);
+                break;
+            case PLAY:
+                setPlaying(message.isPlaying());
+                userName = message.getUserName();
+                break;
+            case RECORD:
+                setRecording(message.isRecording());
+                userName = message.getUserName();
+                break;
+            default:
+                logger.severe("Unknown action type: " + message.getAction());
+        
+        }
 
-	if (message.getAction().equals(RecorderGLOAction.SET_VOLUME)) {
+	/*if (message.getAction().equals(RecorderGLOAction.SET_VOLUME)) {
 	    AudioRecorderCellMenu menu = AudioRecorderCellMenu.getInstance();
 	    menu.volumeChanged(getCellID().toString(), message.getVolume());
 	} else if (message.getAction().equals(RecorderGLOAction.PLAYBACK_DONE)) {
@@ -186,7 +206,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
             setRecording(message.isRecording());
             setPlaying(message.isPlaying());
             userName = message.getUserName();
-	}
+	}*/
     }    
     
     public void leftChannel(ClientChannel arg0) {       
