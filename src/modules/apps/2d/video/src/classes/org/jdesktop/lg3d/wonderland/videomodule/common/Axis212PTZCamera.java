@@ -115,8 +115,11 @@ public class Axis212PTZCamera implements PTZCamera {
     public synchronized void zoomTo(float newzoom) {
         if ((newzoom < MIN_ZOOM) || (newzoom > MAX_ZOOM)) {
             logger.warning("attempt to set invalid zoom: " + newzoom + " valid range (" + MIN_ZOOM + "-" + MAX_ZOOM + ")");
+            zoom = MAX_ZOOM;
+        } else {
+            zoom = newzoom;
         }
-        zoom = (newzoom < MIN_ZOOM) ? MIN_ZOOM : ((newzoom > MAX_ZOOM) ? MAX_ZOOM : newzoom);
+        //zoom = (newzoom < MIN_ZOOM) ? MIN_ZOOM : ((newzoom > MAX_ZOOM) ? MAX_ZOOM : newzoom);
         logger.fine("zoom to: " + zoom);
 
         sendCameraCommand(cameraAddress + "/" + commandCGI + "&" + zoomCommand + "=" + (int)zoom);
