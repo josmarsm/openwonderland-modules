@@ -56,7 +56,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
 
     private static final Logger logger =
             Logger.getLogger(VideoCellGLO.class.getName());
-    private static final long CONTROL_LIMIT = 90 * 1000;  // 90 seconds
+    private static long controlTimeout = 90 * 1000; // how long a client can retain control (ms)
 
     private ManagedReference stateRef = null;
 
@@ -107,6 +107,9 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
     public void setupCell(CellGLOSetup data) {
         BasicCellGLOSetup<VideoCellSetup> setupData = (BasicCellGLOSetup<VideoCellSetup>) data;
 
+        VideoCellSetup vcs = setupData.getCellSetup();
+        controlTimeout = vcs.getControlTimeout();
+        
         if (getStateMO() == null) {
             // create a new managed object containing the setup data
             VideoAppStateMO stateMO = new VideoAppStateMO(setupData.getCellSetup());
@@ -178,7 +181,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
             // other clients can process their requests
             long controlDuration = stateMO.getControlOwnedDuration();
 
-            if (controlDuration >= CONTROL_LIMIT) {
+            if (controlDuration >= controlTimeout) {
                 logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
                 stateMO.setControllingCell(null);
                 controlling = null;
