@@ -303,7 +303,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
                 try {
                     logger.info("opening: " + url);
-                    showHUDMessage("Opening " + fileName);
+                    showHUDMessage("Opening " + fileName, 5000);
                     pdfDialog.setDocumentURL(url.toString());
 
                     // attempt to load the document
