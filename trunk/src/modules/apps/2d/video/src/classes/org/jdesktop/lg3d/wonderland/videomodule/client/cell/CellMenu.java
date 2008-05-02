@@ -50,8 +50,8 @@ public abstract class CellMenu {
     private HUDButton closeMenuButton;
     private HUDObject menuText;
     protected static String imagePath = "resources/";
-    protected static String MENU_BG_IMG = "background.png";
-    protected static String CANCEL_ICON_IMG = "cancel.png";
+    protected String MENU_BG_IMG = "background.png";
+    protected String CANCEL_ICON_IMG = "cancel.png";
     protected HUD hud;
     protected Point origin = new Point(-304, -142);
     protected boolean menuInitialized = false;
