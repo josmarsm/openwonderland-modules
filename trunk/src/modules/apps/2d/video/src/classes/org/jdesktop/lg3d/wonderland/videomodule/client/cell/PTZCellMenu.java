@@ -58,7 +58,7 @@ public class PTZCellMenu extends CellMenu {
             URL buttonURL = PTZCellMenu.class.getResource(b.getIconImageName());
             Point position = b.getPosition();
 
-            HUDButton button = hud.addHUDImageButton(buttonURL, b.getIconText(), 
+            HUDButton button = hud.addHUDImageButton(buttonURL, b.getIconText(),
                     origin.x + position.x, origin.y + position.y, 0, b.getVisible());
             button.setDraggable(false);
 
@@ -84,23 +84,25 @@ public class PTZCellMenu extends CellMenu {
             Button pressed = (Button) buttonMapping.get(source);
             for (VideoCellMenuListener listener : cellMenuListeners) {
                 if (pressed == Button.PAN_LEFT) {
-                    ((PTZCellMenuListener)listener).panLeft();
+                    ((PTZCellMenuListener) listener).panLeft();
                 } else if (pressed == Button.PAN_RIGHT) {
-                    ((PTZCellMenuListener)listener).panRight();
+                    ((PTZCellMenuListener) listener).panRight();
                 } else if (pressed == Button.TILT_UP) {
-                    ((PTZCellMenuListener)listener).tiltUp();
+                    ((PTZCellMenuListener) listener).tiltUp();
                 } else if (pressed == Button.TILT_DOWN) {
-                    ((PTZCellMenuListener)listener).tiltDown();
+                    ((PTZCellMenuListener) listener).tiltDown();
                 } else if (pressed == Button.CENTER) {
-                    ((PTZCellMenuListener)listener).center();
+                    ((PTZCellMenuListener) listener).center();
+                } else if (pressed == Button.OPEN) {
+                    ((PTZCellMenuListener) listener).open();
                 } else if (pressed == Button.ZOOM_IN) {
-                    ((PTZCellMenuListener)listener).zoomIn();
+                    ((PTZCellMenuListener) listener).zoomIn();
                 } else if (pressed == Button.ZOOM_OUT) {
-                    ((PTZCellMenuListener)listener).zoomOut();
+                    ((PTZCellMenuListener) listener).zoomOut();
                 } else if (pressed == Button.ZOOM_IN_FULLY) {
-                    ((PTZCellMenuListener)listener).zoomInFully();
+                    ((PTZCellMenuListener) listener).zoomInFully();
                 } else if (pressed == Button.ZOOM_OUT_FULLY) {
-                    ((PTZCellMenuListener)listener).zoomOutFully();
+                    ((PTZCellMenuListener) listener).zoomOutFully();
                 }
             }
         }
@@ -138,6 +140,7 @@ public class PTZCellMenu extends CellMenu {
         TILT_UP("tilt_up.png", "Tilt Up", 52, 12, true),
         TILT_DOWN("tilt_down.png", "Tilt Down", 52, 92, true),
         CENTER("center.png", "Center", 52, 52, true),
+        OPEN("open.png", "Open Video", 152, 12, true),
         ZOOM_IN("zoom_in.png", "Zoom In", 152, 52, true),
         ZOOM_OUT("zoom_out.png", "Zoom Out", 192, 52, true),
         ZOOM_IN_FULLY("zoom_in_max.png", "Zoom In Fully", 152, 92, true),
