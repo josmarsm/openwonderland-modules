@@ -36,6 +36,7 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     private String source;
     private String videoClass;
     private VideoSource videoInstance;
+    private long controlTimeout = 90*1000; // how long a client can retain control (ms)
     private float frameRate = 2.0f;     // frames per second
     private boolean playOnLoad = false; // don't auto play
     private boolean synced = true;      // sync with other clients by default
@@ -136,6 +137,26 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
         return videoClass;
     }
 
+    /**
+     * Set the timeout for client requests
+     * Clients that take longer than this time to process a request
+     * will lose control
+     * @param controlTimeout maximum time in milliseconds that a client can
+     * retain control
+     */
+    public void setControlTimeout(long controlTimeout) {
+        this.controlTimeout = controlTimeout;
+    }
+    
+    /**
+     * Get the control timeout (the length of time a client can have 
+     * control before the server takes control away from the client)
+     * @return the control timeout in milliseconds
+     */
+    public long getControlTimeout() {
+        return controlTimeout;
+    }
+    
     public void setState(PlayerState playerState) {
         this.playerState = playerState;
     }

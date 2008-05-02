@@ -36,6 +36,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup implements Serializ
             Logger.getLogger(PDFViewerCellSetup.class.getName());
     private static final int DEFAULT_WIDTH = 791;   // 8.5"x11" page format
     private static final int DEFAULT_HEIGHT = 1024; //
+    private long controlTimeout = 90 * 1000;    // how long a client can retain control (ms)
     public static final int LOOP_FOREVER = -1;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
@@ -252,6 +253,26 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup implements Serializ
      */
     public int getPreferredHeight() {
         return preferredHeight;
+    }
+
+    /**
+     * Set the timeout for client requests
+     * Clients that take longer than this time to process a request
+     * will lose control
+     * @param controlTimeout maximum time in milliseconds that a client can
+     * retain control
+     */
+    public void setControlTimeout(long controlTimeout) {
+        this.controlTimeout = controlTimeout;
+    }
+    
+    /**
+     * Get the control timeout (the length of time a client can have 
+     * control before the server takes control away from the client)
+     * @return the control timeout in milliseconds
+     */
+    public long getControlTimeout() {
+        return controlTimeout;
     }
 
     /*

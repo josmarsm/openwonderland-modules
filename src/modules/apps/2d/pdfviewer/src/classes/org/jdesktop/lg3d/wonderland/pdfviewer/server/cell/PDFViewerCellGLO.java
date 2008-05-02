@@ -52,7 +52,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerCellGLO.class.getName());
-    private static final long CONTROL_LIMIT = 90 * 1000;  // 90 seconds
+    private static long controlTimeout = 90 * 1000; // how long a client can retain control (ms)
 
     // The setup object contains the current state of the PDF Viewer,
     // including document URL, current page and current scroll position
@@ -118,6 +118,9 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
     public void setupCell(CellGLOSetup data) {
         BasicCellGLOSetup<PDFViewerCellSetup> setupData = (BasicCellGLOSetup<PDFViewerCellSetup>) data;
 
+        PDFViewerCellSetup pcs = setupData.getCellSetup();
+        controlTimeout = pcs.getControlTimeout();
+        
         if (getStateMO() == null) {
             // create a new managed object containing the setup data
             PDFViewerStateMO stateMO = new PDFViewerStateMO(setupData.getCellSetup());
@@ -189,7 +192,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
             // other clients can process their requests
             long controlDuration = stateMO.getControlOwnedDuration();
 
-            if (controlDuration >= CONTROL_LIMIT) {
+            if (controlDuration >= controlTimeout) {
                 logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
                 stateMO.setControllingCell(null);
                 controlling = null;
