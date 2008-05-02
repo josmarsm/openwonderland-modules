@@ -256,23 +256,24 @@
 								var workspaceLocation = $('workspace').viewportOffset();
 								var workspaceDimensions = $('workspace').getDimensions();
 								var scrollbarWidth = getScrollerWidth();
-								if ((thisLocation.left - 2) <= (workspaceLeft - gridSize) || (thisLocation.left + 2) >= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) || (thisLocation.top - 2) <= (workspaceTop - gridSize) || thisLocation.top >= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
-									return true; //move object back if dropped outside workspace
-								} else {
-									//update worldData with new component location
-									var thisCellIndex = getCellIndex(thisObjectID);
-									var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
-									var thisLocation = $(thisObjectID).positionedOffset();
-									var thisX = ((thisLocation[0]/(gridSize-1))+(thisData[6]*0.5))*unitFactor;
-									var thisY = ((thisLocation[1]/(gridSize-1))+(thisData[5]*0.5))*unitFactor;
-									worldData.cell.children.cell[thisCellIndex].location.x.$ = thisX + "";
-									worldData.cell.children.cell[thisCellIndex].location.y.$ = thisY + "";
-								}
+								var thisCellIndex = getCellIndex(thisObjectID);
 								if ($(thisObjectID).getStyle('visibility') == 'hidden') {
-									$(thisObjectID).remove();
-									var thisCellIndex = getCellIndex(thisObjectID);
 									worldData.cell.children.cell[thisCellIndex] = null;
+									worldData.cell.children.cell = worldData.cell.children.cell.compact();
+									selectedObject = null;
+									$(thisObjectID).remove();
 								} else {
+									if ((thisLocation.left - 2) <= (workspaceLeft - gridSize) || (thisLocation.left + 2) >= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) || (thisLocation.top - 2) <= (workspaceTop - gridSize) || thisLocation.top >= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
+										return true; //move object back if dropped outside workspace
+									} else {
+										//update worldData with new component location
+										var thisData = $w($(thisObjectID).firstDescendant().innerHTML);
+										var thisLocation = $(thisObjectID).positionedOffset();
+										var thisX = ((thisLocation[0]/(gridSize-1))+(thisData[6]*0.5))*unitFactor;
+										var thisY = ((thisLocation[1]/(gridSize-1))+(thisData[5]*0.5))*unitFactor;
+										worldData.cell.children.cell[thisCellIndex].location.x.$ = thisX + "";
+										worldData.cell.children.cell[thisCellIndex].location.y.$ = thisY + "";
+									}
 									showRotationControls(thisObjectID);
 								}
 								$('workspace').setStyle({zIndex:'2'});
@@ -421,8 +422,7 @@
 					default:
 						var rotation = "0";
 				}
-				var thisCellIndex = getCellIndex(thisObjectID);
-				worldData.cell.children.cell[thisCellIndex].rotation.$ = rotation;
+				worldData.cell.children.cell[getCellIndex(thisObjectID)].rotation.$ = rotation;
 			}
 			
 			function getWorld() {
@@ -611,7 +611,7 @@
 					<img id="arrow_west" src="arrow_west.png" title="Click to face object west" onclick="setRotation($('rotation_object').innerHTML,'w');$('rotation_controls').setStyle({visibility:'hidden'});deselectAll()" />
 				</div>
 			</div>
-			<!--<div id="debug" style="position: absolute; bottom: 0px; right: 0px; width: 200px; height: 200px; overflow: scroll; background-color: white; z-index: 9999"></div>-->
+			<!--<div id="debug" style="position: absolute; bottom: 0px; right: 0px; width: 200px; height: 200px; overflow: scroll; background-color: yellow; z-index: 9999"></div>-->
 			<div class="button" onclick="zoomIn()" onmousedown="deselectAll()">Zoom In</div>
 			<div class="button" onclick="zoomOut()" onmousedown="deselectAll()">Zoom Out</div>
 			<div class="button" onclick="putWorld()" onmousedown="deselectAll()">Save World</div>
