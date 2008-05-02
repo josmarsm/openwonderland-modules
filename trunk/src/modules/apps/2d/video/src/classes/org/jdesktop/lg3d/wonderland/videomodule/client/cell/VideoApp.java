@@ -541,7 +541,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
             updateMenu();
             showHUDMessage("unsynced", 3000);
         } else {
-            showHUDMessage("syncing...");
+            showHUDMessage("syncing...", 5000);
             sendCameraRequest(Action.GET_STATE, null);
         }
     }
