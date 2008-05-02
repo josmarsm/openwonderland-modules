@@ -56,7 +56,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
 
     private static final Logger logger =
             Logger.getLogger(VideoCellGLO.class.getName());
-    private static final long CONTROL_LIMIT = 20 * 1000;  // 20 seconds
+    private static final long CONTROL_LIMIT = 90 * 1000;  // 90 seconds
 
     private ManagedReference stateRef = null;
 

@@ -52,7 +52,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerCellGLO.class.getName());
-    private static final long CONTROL_LIMIT = 20 * 1000;  // 20 seconds
+    private static final long CONTROL_LIMIT = 90 * 1000;  // 90 seconds
 
     // The setup object contains the current state of the PDF Viewer,
     // including document URL, current page and current scroll position
