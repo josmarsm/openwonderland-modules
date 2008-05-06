@@ -61,7 +61,6 @@
 					},
 					onFailure: function() {
 						alert("Failed to load catalog from " + url);
-						$('libraryswitch').update("<option>(No catalog loaded)</option>");
 					}
 				});
 			}
