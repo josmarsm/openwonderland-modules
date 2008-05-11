@@ -111,8 +111,13 @@
 						var scrollbarWidth = getScrollerWidth();
 						var top = (gridSize - 1) * Math.floor((thisLocation.top - worldLocation.top + ($(thisObjectID).getHeight()*0.5))/(gridSize - 1));
 						var left = (gridSize - 1) * Math.floor((thisLocation.left - worldLocation.left + ($(thisObjectID).getWidth()*0.5))/(gridSize - 1));
+						if (catalogData.catalog[catalogIndex].rotatable) {
+							var direction = "n";
+						} else {
+							var direction = null;
+						}
 						if (thisLocation.left >= workspaceLeft && thisLocation.left <= (workspaceLeft + (workspaceDimensions.width - scrollbarWidth)) && thisLocation.top >= workspaceTop && thisLocation.top <= (workspaceTop + (workspaceDimensions.height - scrollbarWidth))) {
-							createPlaceable(catalogData.catalog[catalogIndex].catalogURI,catalogIndex,top,left,null,null,true);
+							createPlaceable(catalogData.catalog[catalogIndex].catalogURI,catalogIndex,top,left,direction,null,true);
 						}
 						$('library').setStyle({zIndex:'1'});
 						$(thisObjectID).remove();
