@@ -111,6 +111,10 @@
 						var scrollbarWidth = getScrollerWidth();
 						var top = (gridSize - 1) * Math.floor((thisLocation.top - worldLocation.top + ($(thisObjectID).getHeight()*0.5))/(gridSize - 1));
 						var left = (gridSize - 1) * Math.floor((thisLocation.left - worldLocation.left + ($(thisObjectID).getWidth()*0.5))/(gridSize - 1));
+						top -= ((catalogData.catalog[catalogIndex].height-1)*gridSize);
+						top += (catalogData.catalog[catalogIndex].height-1);
+						left -= ((catalogData.catalog[catalogIndex].width-1)*gridSize);
+						left += (catalogData.catalog[catalogIndex].width-1);
 						if (catalogData.catalog[catalogIndex].rotatable) {
 							var direction = "n";
 						} else {
