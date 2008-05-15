@@ -10,6 +10,7 @@ import javax.vecmath.Point3f;
 import org.jdesktop.j3d.util.SceneGraphUtil;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
+import org.jdesktop.lg3d.wonderland.videomodule.client.cell.PTZCellMenu.Button;
 import org.jdesktop.lg3d.wonderland.videomodule.common.PTZCamera;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.Action;
@@ -264,5 +265,9 @@ public class PTZCameraApp extends VideoApp implements PTZCellMenuListener, Camer
             ptzTask.setRequestThrottle(requestThrottle);
         }
         ptzTask.start();
+    }
+
+    @Override
+    protected void updateMenu() {
     }
 }

@@ -285,7 +285,6 @@ public class PTZPanoramaApp extends PTZCameraApp {
 
     @Override
     protected void updateMenu() {
-
     }
 
     /**
