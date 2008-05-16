@@ -7,7 +7,7 @@
         <void property="cellSetup"> 
             <object class="org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellSetup">  
                 <void property="source"> 
-                    <string>file://lab/mc/pub/doc/OH2008/RealTimeJava.mp4</string>
+                    <string>file://lab/mc/pub/doc/OH2008/PhoneDemo-LAN.mov</string>
                 </void>
                 <void property="videoClass"> 
                     <string>org.jdesktop.lg3d.wonderland.videomodule.common.SimpleMovie</string>
@@ -25,10 +25,10 @@
                     <float>10.0</float>
                 </void>
                 <void property="preferredWidth">
-                    <double>512</double>
+                    <double>640</double>
                 </void>
                 <void property="preferredHeight">
-                    <double>384</double>
+                    <double>480</double>
                 </void>
                 <void property="pixelScale">
                    <float>3.0</float>
@@ -37,12 +37,15 @@
         </void>
         <void property="origin"> 
             <void index="0"> 
-                <double>19.0</double> 
+                <double>2.0</double> 
+            </void> 
+            <void index="1"> 
+                <double>3.0</double> 
             </void> 
             <void index="2"> 
-                <double>11.0</double> 
+                <double>64.0</double> 
             </void> 
-        </void> 
+        </void>
         <void property="rotation">
             <void index="1">
                 <double>1.0</double>
