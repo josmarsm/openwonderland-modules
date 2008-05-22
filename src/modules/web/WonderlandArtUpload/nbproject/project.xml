@@ -19,6 +19,9 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library files="1">
+                    <file>${file.reference.servlet-api.jar}</file>
+                </library>
+                <library files="1">
                     <file>${file.reference.j3dcore.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
