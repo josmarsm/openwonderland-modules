@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.5.0_13" class="java.beans.XMLDecoder"> 
+<object class="com.sun.labs.miw.server.cell.AlbumCloudCellGLOSetup"> 
+  
+    <void property="cellGLOClassName"> 
+        <string>com.sun.labs.miw.server.cell.AlbumCloudCellGLO</string> 
+    </void> 
+     
+    <void property="boundsRadius"> 
+        <double>100.0</double> 
+    </void> 
+    <void property="boundsType"> 
+        <string>BOX</string> 
+    </void> 
+  
+    <void property="origin"> 
+        <void index="0"> 
+            <double>50.0</double> 
+        </void> 
+        <void index="2"> 
+            <double>40.0</double> 
+        </void> 
+    </void> 
+  
+    <void property="albumListURL">
+        <object class="java.net.URL">
+            <string>http://localhost/miw/album_info.xml</string>
+        </object>
+    </void>
+ </object> 
+</java> 
