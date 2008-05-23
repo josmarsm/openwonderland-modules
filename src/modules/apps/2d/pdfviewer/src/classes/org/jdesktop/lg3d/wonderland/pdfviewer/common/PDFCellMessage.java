@@ -49,23 +49,28 @@ public class PDFCellMessage extends CellMessage {
         GET_STATE, SET_STATE
     };
     
-    private String uid;
+    private String uid = null;
     private Action action = Action.UNKNOWN;
-    private String doc;
-    private int page;
-    private Point position;
+    private String doc = null;
+    private int page = 0;
+    private Point position = null;
     private int pageCount = 0;
 
     public PDFCellMessage() {
         super();
     }
+    
+    public PDFCellMessage(CellID cellID) {
+        super(cellID);
+    }
+    
 
     public PDFCellMessage(Action action) {
         this(action, null, 0, null);
     }
 
     public PDFCellMessage(Action action, String doc, int page, Point position) {
-        super();
+        this();
         this.action = action;
         this.doc = doc;
         this.page = page;
@@ -73,12 +78,12 @@ public class PDFCellMessage extends CellMessage {
     }
 
     public PDFCellMessage(CellID cellID, Action action) {
-        super(cellID);
+        this(cellID);
         setAction(action);
     }
 
     public PDFCellMessage(CellID cellID, String uid, Action action, String doc, int page, Point position) {
-        super(cellID);
+        this(cellID);
         setUID(uid);
         this.action = action;
         this.doc = doc;
