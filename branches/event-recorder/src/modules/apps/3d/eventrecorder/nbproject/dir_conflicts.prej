@@ -1,0 +1,6 @@
+Trying to add new property 'svn:ignore' with value 'release
+dist
+',
+but property already exists with value 'nb.properties
+private
+'.
