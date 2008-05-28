@@ -36,7 +36,6 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SharedApp2DImageCellGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
-import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
@@ -117,10 +116,11 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
      */
     public void setupCell(CellGLOSetup data) {
         BasicCellGLOSetup<PDFViewerCellSetup> setupData = (BasicCellGLOSetup<PDFViewerCellSetup>) data;
+        super.setupCell(setupData);
 
         PDFViewerCellSetup pcs = setupData.getCellSetup();
         controlTimeout = pcs.getControlTimeout();
-        
+
         if (getStateMO() == null) {
             // create a new managed object containing the setup data
             PDFViewerStateMO stateMO = new PDFViewerStateMO(setupData.getCellSetup());
@@ -129,10 +129,6 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
             DataManager dataMgr = AppContext.getDataManager();
             stateRef = dataMgr.createReference(stateMO);
         }
-
-        // set the cell rotation and origin
-        setOrigin(BasicCellGLOHelper.getCellOrigin(setupData), true);
-        setBounds(BasicCellGLOHelper.getCellBounds(setupData));
     }
 
     /**
