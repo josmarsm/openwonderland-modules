@@ -32,17 +32,22 @@ public class TightVNCModuleCellSetup extends SharedApp2DCellSetup {
     private static final Logger logger =
             Logger.getLogger(TightVNCModuleCellSetup.class.getName());
     private static final int DEFAULT_WIDTH = 1024; // XGA resolution
+
     private static final int DEFAULT_HEIGHT = 768; //
+
     private static final int DEFAULT_PORT = 5900;
+    private long controlTimeout = 90 * 1000;    // how long a client can retain control (ms)
+
     private String vncServer;
     private int vncPort = DEFAULT_PORT;
-    private String username;
-    private String password;
+    private String vncUsername;
+    private String vncPassword;
     private boolean readOnly = false;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
     private float pixelScale = 1.0f;    // scale factor when mapping from pixels to world units
-    
+
+
     public TightVNCModuleCellSetup() {
         this(null, null);
     }
@@ -51,36 +56,68 @@ public class TightVNCModuleCellSetup extends SharedApp2DCellSetup {
         super(appName, viewRectMat);
     }
 
+    /**
+     * Set the hostname of the VNC server
+     * @param vncServer the hostname of the VNC server
+     */
     public void setServer(String vncServer) {
         this.vncServer = vncServer;
     }
 
+    /**
+     * Get the hostname of the VNC server
+     * @return the hostname of the VNC server
+     */
     public String getServer() {
         return vncServer;
     }
 
+    /**
+     * Set the VNC server's port number 
+     * @param vncPort the VNC server's port number
+     */
     public void setPort(int vncPort) {
         this.vncPort = vncPort;
     }
 
+    /**
+     * Get the VNC server's port numer
+     * @return the port number of the VNC server
+     */
     public int getPort() {
         return vncPort;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    /**
+     * Set the VNC username 
+     * @param vncUsername the name of the user establishing the VNC session
+     */
+    public void setUsername(String vncUsername) {
+        this.vncUsername = vncUsername;
     }
 
+    /**
+     * Get the VNC username
+     * @return the name of the user for establishing the VNC session
+     */
     public String getUsername() {
-        return username;
+        return vncUsername;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    /**
+     * Set the VNC password 
+     * @param vncPassword the password of the user establishing the VNC session
+     */
+    public void setPassword(String vncPassword) {
+        this.vncPassword = vncPassword;
     }
 
+    /**
+     * Get the VNC password
+     * @return the password of the user establishing the VNC session
+     */
     public String getPassword() {
-        return password;
+        return vncPassword;
     }
 
     public void setReadOnly(boolean readOnly) {
@@ -122,12 +159,32 @@ public class TightVNCModuleCellSetup extends SharedApp2DCellSetup {
     public int getPreferredHeight() {
         return preferredHeight;
     }
-    
+
     public void setPixelScale(float pixelScale) {
         this.pixelScale = pixelScale;
     }
-    
+
     public float getPixelScale() {
         return pixelScale;
+    }
+
+    /**
+     * Set the timeout for client requests
+     * Clients that take longer than this time to process a request
+     * will lose control
+     * @param controlTimeout maximum time in milliseconds that a client can
+     * retain control
+     */
+    public void setControlTimeout(long controlTimeout) {
+        this.controlTimeout = controlTimeout;
+    }
+
+    /**
+     * Get the control timeout (the length of time a client can have 
+     * control before the server takes control away from the client)
+     * @return the control timeout in milliseconds
+     */
+    public long getControlTimeout() {
+        return controlTimeout;
     }
 }

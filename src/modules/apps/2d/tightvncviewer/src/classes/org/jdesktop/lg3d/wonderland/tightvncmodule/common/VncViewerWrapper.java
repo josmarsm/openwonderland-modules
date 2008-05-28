@@ -56,15 +56,15 @@ import tightvnc.RfbProto;
 import tightvnc.OptionsFrame;
 
 public class VncViewerWrapper extends VncViewer {
+
     private final Logger logger =
             Logger.getLogger(VncViewerWrapper.class.getName());
-    
     private TightVNCModuleApp app;
-    
+
     public VncViewerWrapper(TightVNCModuleApp app) {
         this.app = app;
     }
-    
+
     /*
      * init
      */
@@ -76,7 +76,7 @@ public class VncViewerWrapper extends VncViewer {
         rfbThread = new Thread(this);
         rfbThread.start();
     }
-    
+
     /*
      * run
      */
@@ -95,7 +95,7 @@ public class VncViewerWrapper extends VncViewer {
             logger.warning("failed to initialize VNC connection: " + e);
         }
     }
-    
+
     /*
      * Create a VncCanvas instance
      */
@@ -110,7 +110,7 @@ public class VncViewerWrapper extends VncViewer {
             e.printStackTrace();
         }
     }
-    
+
     /*
      * Process RFB socket messages.
      * If the rfbThread is being stopped, ignore any exceptions,
@@ -125,8 +125,8 @@ public class VncViewerWrapper extends VncViewer {
             logger.warning("exception while processing VNC protocol: " + e);
             e.printStackTrace();
         }
-    } 
-    
+    }
+
     /*
      * Connect to the RFB server and authenticate the user.
      */
@@ -134,20 +134,20 @@ public class VncViewerWrapper extends VncViewer {
     protected void connectAndAuthenticate() throws Exception {
         logger.fine("connectAndAuthenticate");
         showConnectionStatus("initializing...");
-        
+
         showConnectionStatus("connecting to " + host + ", port " + port + "...");
-        
+
         rfb = new RfbProto(host, port, this);
         showConnectionStatus("connected to server");
-        
+
         rfb.readVersionMsg();
         showConnectionStatus("RFB server supports protocol version " +
                 rfb.serverMajor + "." + rfb.serverMinor);
-        
+
         rfb.writeVersionMsg();
         showConnectionStatus("using RFB protocol version " +
                 rfb.clientMajor + "." + rfb.clientMinor);
-        
+
         int secType = rfb.negotiateSecurity();
         int authType;
         if (secType == RfbProto.SecTypeTight) {
@@ -158,7 +158,7 @@ public class VncViewerWrapper extends VncViewer {
         } else {
             authType = secType;
         }
-        
+
         switch (authType) {
             case RfbProto.AuthNone:
                 showConnectionStatus("no authentication needed");
@@ -177,7 +177,7 @@ public class VncViewerWrapper extends VncViewer {
                 throw new Exception("unknown authentication scheme " + authType);
         }
     }
-    
+
     /*
      * Show a message describing the connection status.
      * To hide the connection status label, use (msg == null).
@@ -186,7 +186,7 @@ public class VncViewerWrapper extends VncViewer {
     protected void showConnectionStatus(String msg) {
         logger.info(msg);
     }
-    
+
     /*
      * Show an authentication panel.
      */
@@ -195,8 +195,7 @@ public class VncViewerWrapper extends VncViewer {
         logger.fine("*** askPassword not implemented");
         return null;
     }
-    
-    
+
     /*
      * Do the rest of the protocol initialisation.
      */
@@ -205,7 +204,7 @@ public class VncViewerWrapper extends VncViewer {
         logger.fine("doProtocolInitialisation: " + rfb);
         super.doProtocolInitialisation();
     }
-  
+
     /*
      * setCutText() - send the given cut text to the RFB server.
      */
@@ -213,8 +212,7 @@ public class VncViewerWrapper extends VncViewer {
     protected void setCutText(String text) {
         logger.fine("*** setCutText not implemented");
     }
-    
-    
+
     /*
      * Order change in session recording status. To stop recording, pass
      * null in place of the fname argument.
@@ -222,27 +220,27 @@ public class VncViewerWrapper extends VncViewer {
     @Override
     protected void setRecordingStatus(String fname) {
         logger.fine("*** setRecordingStatus not implemented");
-        //super.setRecordingStatus(fname);
+    //super.setRecordingStatus(fname);
     }
-    
+
     public TightVNCModuleApp getApp() {
         return app;
     }
-    
+
     @Override
     public String readParameter(String name, boolean required) {
         String value = super.readParameter(name, required);
         logger.fine("readParameter: name: " + name + ", required: " + required + " = " + value);
         return value;
     }
-    
+
     @Override
     protected int readIntParameter(String name, int defaultValue) {
         int value = super.readIntParameter(name, defaultValue);
         logger.fine("readIntParameter: name: " + name + ", default: " + defaultValue + " = " + value);
         return value;
     }
-    
+
     /*
      * moveFocusToDesktop() - move keyboard focus either to VncCanvas.
      */
@@ -250,15 +248,17 @@ public class VncViewerWrapper extends VncViewer {
     protected void moveFocusToDesktop() {
         logger.fine("*** moveFocusToDesktop not implemented");
     }
-    
+
     /*
      * disconnect() - close connection to server.
      */
     @Override
     synchronized public void disconnect() {
-        logger.fine("*** disconnect not implemented");
+        if (rfb != null && !rfb.closed()) {
+            rfb.close();
+        }
     }
-    
+
     /*
      * fatalError() - print out a fatal error message.
      * FIXME: Do we really need two versions of the fatalError() method?
@@ -267,12 +267,12 @@ public class VncViewerWrapper extends VncViewer {
     synchronized public void fatalError(String str) {
         logger.severe("fatal error: " + str);
     }
-    
+
     @Override
     synchronized public void fatalError(String str, Exception e) {
         logger.severe("fatal error: " + str + ": " + e);
     }
-    
+
     /*
      * Show message text and optionally "Relogin" and "Close" buttons.
      */
@@ -280,7 +280,7 @@ public class VncViewerWrapper extends VncViewer {
     protected void showMessage(String msg) {
         logger.fine(msg);
     }
-    
+
     /*
      * Stop the applet.
      * Main applet thread will terminate on first exception
@@ -288,9 +288,9 @@ public class VncViewerWrapper extends VncViewer {
      */
     @Override
     public void stop() {
-        logger.fine("*** stop not implemented");
+        super.stop();
     }
-    
+
     /*
      * This method is called before the applet is destroyed.
      */
@@ -298,7 +298,7 @@ public class VncViewerWrapper extends VncViewer {
     public void destroy() {
         logger.fine("*** destroy not implemented");
     }
-    
+
     /*
      * Start/stop receiving mouse events.
      */
@@ -306,7 +306,7 @@ public class VncViewerWrapper extends VncViewer {
     public void enableInput(boolean enable) {
         logger.fine("*** enableInput not implemented");
     }
-    
+
     /*
      * Close application properly on window close event.
      */
@@ -314,14 +314,14 @@ public class VncViewerWrapper extends VncViewer {
     public void windowClosing(WindowEvent evt) {
         logger.fine("*** windowClosing not implemented");
     }
-    
+
     @Override
     public void repaint(long tm, int x, int y, int width, int height) {
         if (vc != null) {
             vc.repaint(tm, x, y, width, height);
         }
     }
-    
+
     @Override
     public void scheduleRepaint(long tm, int x, int y, int width, int height) {
         app.scheduleRepaint(tm, x, y, width, height);

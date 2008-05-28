@@ -21,6 +21,7 @@ package org.jdesktop.lg3d.wonderland.tightvncmodule.client.cell;
 
 import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.SessionId;
+import java.rmi.server.UID;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point2f;
@@ -28,8 +29,8 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListene
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
-import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
+import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellSetup;
 
 /**
@@ -43,6 +44,7 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
             Logger.getLogger(TightVNCModuleCell.class.getName());
     private TightVNCModuleApp vncApp;
     private TightVNCModuleCellSetup setup;
+    private String myUID = new UID().toString();
 
     public TightVNCModuleCell(CellID cellID, String channelName, Matrix4d cellOrigin) {
         super(cellID, channelName, cellOrigin);
@@ -58,23 +60,41 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
                     (int) setup.getPreferredHeight());
             vncApp.setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
             vncApp.setReadOnly(setup.getReadOnly());
-            logger.fine("connecting to VNC server: " + setup.getServer());
-            vncApp.initializeVNC(setup.getServer(), setup.getPort(),
-                    setup.getUsername(), setup.getPassword());
+            vncApp.sync(true);
         }
+    }
+
+    public String getUID() {
+        return myUID;
     }
 
     public void setChannel(ClientChannel channel) {
         this.channel = channel;
     }
 
-    public void receivedMessage(ClientChannel client, SessionId session,
-            byte[] data) {
-        TightVNCModuleMessage message =
-                Message.extractMessage(data, TightVNCModuleMessage.class);
+    protected void handleResponse(TightVNCModuleCellMessage msg) {
+        vncApp.handleResponse(msg);
     }
 
-    public void leftChannel(ClientChannel arg0) {
-    // ignore
+    /**
+     * Process a cell message
+     * @param channel the channel
+     * @param session the session id
+     * @param data the message data
+     */
+    public void receivedMessage(ClientChannel channel, SessionId session,
+            byte[] data) {
+        TightVNCModuleCellMessage msg = Message.extractMessage(data, TightVNCModuleCellMessage.class);
+
+        logger.fine("cell received message: " + msg);
+        handleResponse(msg);
+    }
+
+    /**
+     * Process a channel leave event
+     * @param channel the left channel
+     */
+    public void leftChannel(ClientChannel channel) {
+        logger.fine("leftChannel: " + channel);
     }
 }

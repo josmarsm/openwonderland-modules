@@ -19,7 +19,10 @@
  */
 package org.jdesktop.lg3d.wonderland.tightvncmodule.client.cell;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -27,14 +30,23 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.net.URL;
 import java.util.logging.Logger;
 import javax.media.j3d.ImageComponent2D;
+import javax.swing.SwingUtilities;
 import org.jdesktop.lg3d.wonderland.appshare.AppGroup;
 import org.jdesktop.lg3d.wonderland.appshare.AppWindowGraphics2DApp;
 import org.jdesktop.lg3d.wonderland.appshare.SimpleControlArb;
 import org.jdesktop.lg3d.wonderland.appshare.DrawingSurface;
 import org.jdesktop.lg3d.wonderland.appshare.SimpleDrawingSurface;
+import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
+import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
+import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
+import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
+import org.jdesktop.lg3d.wonderland.tightvncmodule.client.cell.TightVNCCellMenu.Button;
+import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage;
+import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage.Action;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.VncViewerWrapper;
 import tightvnc.VncViewer;
 import tightvnc.VncCanvas;
@@ -45,12 +57,15 @@ import tightvnc.VncCanvas;
  *
  * @author nsimpson
  */
-public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnable {
+public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnable,
+        TightVNCCellMenuListener {
 
     private static final Logger logger =
             Logger.getLogger(TightVNCModuleApp.class.getName());
     private static final int DEFAULT_WIDTH = 1024;
     private static final int DEFAULT_HEIGHT = 768;
+    private VNCSessionDialog vncDialog;
+    private HUDButton msgButton;
     private DrawingSurface drawingSurface;
     private ImageComponent2D img2D;
     private boolean readOnly = false;
@@ -64,6 +79,9 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     private VncCanvas canvas;
     private Rectangle2D.Double clipRect;
     private ImageComponent2D.Updater updater;
+    private TightVNCCellMenu cellMenu;
+    private boolean synced = false;
+    private boolean inControl = false;
 
     public TightVNCModuleApp(SharedApp2DImageCell cell) {
         this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
@@ -75,13 +93,15 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         clipRect = new Rectangle2D.Double(0, 0, width, height);
         drawingSurface = new SimpleDrawingSurface();
         drawingSurface.setSize(width, height);
-
         drawingSurface.addSurfaceListener(new DrawingSurface.SurfaceListener() {
 
             public void redrawSurface() {
                 repaint();
             }
         });
+
+        initVNCDialog();
+        initHUDMenu();
         addListeners();
         setShowing(true);
     }
@@ -164,6 +184,8 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
                 }
             }
         });
+
+        cellMenu.addCellMenuListener(this);
     }
 
     public void removeListeners() {
@@ -181,17 +203,182 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         for (Object listener : mouseMotionListeners) {
             removeMouseMotionListener((MouseMotionListener) listener);
         }
+        cellMenu.removeCellMenuListener(this);
     }
 
-    public void initializeVNC(String vncServer, int vncPort,
-            String username, String password) {
-        logger.info("initiating VNC connection to: " + vncServer + ":" + vncPort);
+    private void initHUDMenu() {
+        cellMenu = TightVNCCellMenu.getInstance();
+    }
+
+    protected void sendDocumentRequest(Action action, String vncServer, int vncPort, String vncUsername, String vncPassword) {
+        TightVNCModuleCellMessage msg = null;
+
+        msg = new TightVNCModuleCellMessage(this.getCell().getCellID(),
+                ((TightVNCModuleCell) cell).getUID(),
+                action,
+                vncServer,
+                vncPort,
+                vncUsername,
+                vncPassword);
+
+        if (msg != null) {
+            // send request to server
+            logger.fine("VNC app sending document request: " + msg);
+            ChannelController.getController().sendMessage(msg);
+        }
+    }
+
+    /**
+     * Initialize the dialog for opening VNC sessions
+     */
+    private void initVNCDialog() {
+        vncDialog = new VNCSessionDialog(null, false);
+        vncDialog.addActionListener(new java.awt.event.ActionListener() {
+
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hideVNCDialog();
+                if (evt.getActionCommand().equals("OK")) {
+                    if (isSynced()) {
+                        sendDocumentRequest(TightVNCModuleCellMessage.Action.OPEN_SESSION,
+                                vncDialog.getServer(),
+                                vncDialog.getPort(),
+                                vncDialog.getUser(),
+                                vncDialog.getPassword());
+                    } else {
+                        openVNCSession(vncDialog.getServer(),
+                                vncDialog.getPort(),
+                                vncDialog.getUser(),
+                                vncDialog.getPassword());
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Display the VNC session dialog
+     */
+    private void showVNCDialog() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                vncDialog.setVisible(true);
+            }
+        });
+    }
+
+    /**
+     * Hide the VNC sessiob dialog
+     */
+    public void hideVNCDialog() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                if (vncDialog != null) {
+                    vncDialog.setVisible(false);
+                }
+            }
+        });
+    }
+
+    /**
+     * Show a status message in the HUD
+     * @param message the string to display in the message
+     */
+    private void showHUDMessage(String message) {
+        showHUDMessage(message, HUD.NO_TIMEOUT);
+    }
+
+    /**
+     * Show a status message in the HUD and remove it after a timeout
+     * @param message the string to display in the message
+     * @param timeout the period in milliseconds to display the message for
+     */
+    private void showHUDMessage(String message, int timeout) {
+        URL[] imgURLs = {HUD.SIMPLE_BOX_IMAGE_URL,
+            TightVNCModuleApp.class.getResource("resources/vnc.png")
+        };
+
+        Point[] imagePoints = {new Point(), new Point(10, 10)};
+
+        // dismiss currently active HUD message
+        if ((msgButton != null) && msgButton.isActive()) {
+            hideHUDMessage(true);
+        }
+
+        // display a new HUD message
+        msgButton = HUDFactory.getHUD().addHUDMultiImageButton(imgURLs,
+                imagePoints, message, new Point(50, 25),
+                Font.decode("dialog" + "-BOLD-14"),
+                -300, 50, 300, 50,
+                timeout, true);
+    }
+
+    /**
+     * Hide the HUD message
+     * @param immediately if true, remove the message now, otherwise slide it
+     * off the screen first
+     */
+    private void hideHUDMessage(boolean immediately) {
+        if (msgButton != null) {
+            if (!immediately) {
+                msgButton.changeLocation(new Point(-45, 50));
+            }
+            msgButton.setActive(false);
+        }
+    }
+
+    public void openVNCSession(String vncServer, int vncPort, String username, String password) {
+        // terminate any existing VNC session
+        closeVNCSession();
+
+        // start a new session
+        logger.info("opening VNC session to: " + vncServer + ":" + vncPort);
+        showHUDMessage("Connecting to: " + vncServer, 5000);
         this.vncServer = vncServer;
         this.vncPort = vncPort;
         this.username = username;
         this.password = password;
+
+        // update dialog
+        vncDialog.setServer(vncServer);
+        vncDialog.setPort(vncPort);
+        vncDialog.setUser(username);
+        vncDialog.setPassword(password);
+
+        // open connection to VNC server
         vncThread = new Thread(this);
         vncThread.start();
+    }
+
+    public void closeVNCSession() {
+        if (vncThread != null) {
+            if (viewer != null) {
+                viewer.disconnect();
+                viewer.stop();
+                viewer = null;
+                canvas = null;
+                img2D = null;
+            }
+            vncThread = null;
+            showHUDMessage("Connection closed", 3000);
+        }
+    }
+
+    public void connect() {
+        showVNCDialog();
+    }
+
+    public void disconnect() {
+        if (isSynced()) {
+            sendDocumentRequest(TightVNCModuleCellMessage.Action.CLOSE_SESSION,
+                    vncDialog.getServer(),
+                    vncDialog.getPort(),
+                    vncDialog.getUser(),
+                    vncDialog.getPassword());
+        } else {
+            closeVNCSession();
+        }
     }
 
     public void run() {
@@ -199,15 +386,96 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         viewer = new VncViewerWrapper(this);
 
         viewer.mainArgs = new String[]{
-            "HOST", vncServer,
-            "PORT", String.valueOf(vncPort),
-            "PASSWORD", password
-        };
+                    "HOST", vncServer,
+                    "PORT", String.valueOf(vncPort),
+                    "PASSWORD", password,
+                    "Show Offline Desktop", "No",
+                    "Encoding", "Tight",
+                    "Compression level", "9",
+                    "JPEG image quality", "5",
+                    "Use CopyRect", "Yes"
+                };
         viewer.inAnApplet = false;
         viewer.inSeparateFrame = true;
-        viewer.setEncodings(false);
         viewer.init();
         viewer.start();
+    }
+
+    public boolean isSynced() {
+        return synced;
+    }
+
+    public void sync(boolean syncing) {
+        if ((syncing == false) && (synced == true)) {
+            synced = false;
+            logger.info("VNC app unsynced");
+            showHUDMessage("unsynced", 3000);
+            cellMenu.enableButton(Button.UNSYNC);
+            cellMenu.disableButton(Button.SYNC);
+        } else if ((syncing == true) && (synced == false)) {
+            synced = true;
+            logger.info("VNC app requesting sync with shared state");
+            showHUDMessage("syncing...", 3000);
+            sendDocumentRequest(Action.GET_STATE,
+                    null,
+                    0,
+                    null,
+                    null);
+        }
+    }
+
+    public void sync() {
+        sync(!isSynced());
+    }
+
+    public void unsync() {
+        sync(!isSynced());
+    }
+
+    public void handleResponse(TightVNCModuleCellMessage msg) {
+        String controlling = msg.getUID();
+        String myUID = ((TightVNCModuleCell) cell).getUID();
+        boolean forMe = (myUID.equals(controlling));
+        TightVNCModuleCellMessage vnccm = null;
+
+        if (isSynced()) {
+            switch (msg.getAction()) {
+                case REQUEST_DENIED:
+                    // could queue denied request here
+                    break;
+                case OPEN_SESSION:
+                    openVNCSession(msg.getServer(), msg.getPort(), msg.getUsername(), msg.getPassword());
+                    break;
+                case CLOSE_SESSION:
+                    closeVNCSession();
+                    break;
+                case SET_STATE:
+                    if (forMe == true) {
+                        if (isSynced()) {
+                            openVNCSession(msg.getServer(), msg.getPort(), msg.getUsername(), msg.getPassword());
+                            cellMenu.disableButton(Button.UNSYNC);
+                            cellMenu.enableButton(Button.SYNC);
+                            logger.info("synced");
+                            showHUDMessage("synced", 3000);
+                        }
+                    }
+                    break;
+                case REQUEST_COMPLETE:
+                    // could retry queued requests here
+                    break;
+            }
+            if ((forMe == true) &&
+                    (msg.getAction() != Action.REQUEST_COMPLETE) &&
+                    (msg.getAction() != Action.REQUEST_DENIED)) {
+                // notify everyone that the request has completed
+                vnccm = new TightVNCModuleCellMessage(msg);
+                vnccm.setAction(Action.REQUEST_COMPLETE);
+            }
+        }
+        if (vnccm != null) {
+            logger.fine("sending message: " + vnccm);
+            ChannelController.getController().sendMessage(vnccm);
+        }
     }
 
     /**
@@ -230,6 +498,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         if (img2D == null) {
             img2D = getImage();
         }
+
         if (updater == null) {
             updater = new ImageComponent2D.Updater() {
 
@@ -260,5 +529,29 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
                 canvas.paint(g);
             }
         }
+    }
+
+    public void setInControl(boolean inControl) {
+        this.inControl = inControl;
+
+        if (inControl == true) {
+            CellMenuManager.getInstance().showMenu(this.getCell(), cellMenu, null);
+        } else {
+            CellMenuManager.getInstance().hideMenu();
+        }
+    }
+
+    @Override
+    public void takeControl(MouseEvent me) {
+        logger.info("vnc application has control");
+        super.takeControl(me);
+        setInControl(true);
+    }
+
+    @Override
+    public void releaseControl(MouseEvent me) {
+        logger.info("vnc application lost control");
+        super.releaseControl(me);
+        setInControl(false);
     }
 }
