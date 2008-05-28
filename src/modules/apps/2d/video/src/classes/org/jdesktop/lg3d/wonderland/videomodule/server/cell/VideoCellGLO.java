@@ -41,7 +41,6 @@ import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SharedApp2DImageCellGLO;
-import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
@@ -57,7 +56,6 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
     private static final Logger logger =
             Logger.getLogger(VideoCellGLO.class.getName());
     private static long controlTimeout = 90 * 1000; // how long a client can retain control (ms)
-
     private ManagedReference stateRef = null;
 
     public VideoCellGLO() {
@@ -106,10 +104,11 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
      */
     public void setupCell(CellGLOSetup data) {
         BasicCellGLOSetup<VideoCellSetup> setupData = (BasicCellGLOSetup<VideoCellSetup>) data;
+        super.setupCell(setupData);
 
         VideoCellSetup vcs = setupData.getCellSetup();
         controlTimeout = vcs.getControlTimeout();
-        
+
         if (getStateMO() == null) {
             // create a new managed object containing the setup data
             VideoAppStateMO stateMO = new VideoAppStateMO(setupData.getCellSetup());
@@ -118,10 +117,6 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
             DataManager dataMgr = AppContext.getDataManager();
             stateRef = dataMgr.createReference(stateMO);
         }
-
-        // set the cell rotation and origin
-        setOrigin(BasicCellGLOHelper.getCellOrigin(setupData), true);
-        setBounds(BasicCellGLOHelper.getCellBounds(setupData));
     }
 
     /**
