@@ -46,7 +46,6 @@ public class PDFCellMenu extends CellMenu {
 
     private static final Logger logger =
             Logger.getLogger(PDFCellMenu.class.getName());
-    private static PDFCellMenu pdfCellMenu;
     private static final String imagePath = "resources/";
     private static final int LEFT_INSET = 8;
     private static final int TOP_INSET = 13;
@@ -54,7 +53,7 @@ public class PDFCellMenu extends CellMenu {
     private HashMap buttonMapping;
     private HashMap actionMapping;
 
-    private PDFCellMenu() {
+    public PDFCellMenu() {
         super();
     }
 
@@ -184,11 +183,7 @@ public class PDFCellMenu extends CellMenu {
     }
 
     public static PDFCellMenu getInstance() {
-        if (pdfCellMenu == null) {
-            pdfCellMenu = new PDFCellMenu();
-        }
-
-        return pdfCellMenu;
+        return new PDFCellMenu();
     }
 
     @Override
