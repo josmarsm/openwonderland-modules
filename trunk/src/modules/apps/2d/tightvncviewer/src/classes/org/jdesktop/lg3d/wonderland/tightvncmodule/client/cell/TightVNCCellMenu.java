@@ -45,7 +45,6 @@ public class TightVNCCellMenu extends CellMenu {
 
     private static final Logger logger =
             Logger.getLogger(TightVNCCellMenu.class.getName());
-    private static TightVNCCellMenu vncCellMenu;
     private static final String imagePath = "resources/";
     private static final int LEFT_INSET = 8;
     private static final int TOP_INSET = 13;
@@ -53,7 +52,7 @@ public class TightVNCCellMenu extends CellMenu {
     private HashMap buttonMapping;
     private HashMap actionMapping;
 
-    private TightVNCCellMenu() {
+    public TightVNCCellMenu() {
         super();
     }
 
@@ -169,11 +168,7 @@ public class TightVNCCellMenu extends CellMenu {
     }
 
     public static TightVNCCellMenu getInstance() {
-        if (vncCellMenu == null) {
-            vncCellMenu = new TightVNCCellMenu();
-        }
-
-        return vncCellMenu;
+        return new TightVNCCellMenu();
     }
 
     @Override
