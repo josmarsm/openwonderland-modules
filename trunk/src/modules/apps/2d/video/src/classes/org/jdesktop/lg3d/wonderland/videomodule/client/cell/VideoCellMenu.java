@@ -46,14 +46,13 @@ public class VideoCellMenu extends CellMenu {
 
     private static final Logger logger =
             Logger.getLogger(VideoCellMenu.class.getName());
-    private static VideoCellMenu videoCellMenu;
     private static final int LEFT_INSET = 8;
     private static final int TOP_INSET = 13;
     private static final int ICON_GAP = 2;
     private HashMap buttonMapping;
     private HashMap actionMapping;
 
-    private VideoCellMenu() {
+    public VideoCellMenu() {
         super();
     }
 
@@ -160,11 +159,7 @@ public class VideoCellMenu extends CellMenu {
     }
 
     public static VideoCellMenu getInstance() {
-        if (videoCellMenu == null) {
-            videoCellMenu = new VideoCellMenu();
-        }
-
-        return videoCellMenu;
+        return new VideoCellMenu();
     }
 
     @Override
