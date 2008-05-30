@@ -207,7 +207,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     }
 
     private void initHUDMenu() {
-        cellMenu = TightVNCCellMenu.getInstance();
+        cellMenu = new TightVNCCellMenu();
     }
 
     protected void sendDocumentRequest(Action action, String vncServer, int vncPort, String vncUsername, String vncPassword) {
