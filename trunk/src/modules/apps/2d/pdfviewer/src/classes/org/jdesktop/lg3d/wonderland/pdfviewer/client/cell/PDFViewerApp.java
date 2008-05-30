@@ -120,7 +120,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     }
 
     private void initHUDMenu() {
-        cellMenu = PDFCellMenu.getInstance();
+        cellMenu = new PDFCellMenu();
     }
 
     /**
