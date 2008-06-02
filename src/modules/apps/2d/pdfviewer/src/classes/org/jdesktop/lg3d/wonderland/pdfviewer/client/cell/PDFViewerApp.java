@@ -95,19 +95,19 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     private PDFCellMenu cellMenu;
 
     public PDFViewerApp(SharedApp2DCell cell) {
-        this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
     }
 
-    public PDFViewerApp(SharedApp2DCell cell, int x, int y, int width, int height) {
+    public PDFViewerApp(SharedApp2DCell cell, int x, int y, int width, int height, boolean decorated) {
         super(new AppGroup(new SimpleControlArb()), true, x, y, width, height, cell);
 
         initPDFDialog();
         initHUDMenu();
         addEventListeners();
-
+        setDecorated(decorated);
         setShowing(true);
     }
-
+        
     /**
      * Set up event listeners for keyboard and mouse events
      */
