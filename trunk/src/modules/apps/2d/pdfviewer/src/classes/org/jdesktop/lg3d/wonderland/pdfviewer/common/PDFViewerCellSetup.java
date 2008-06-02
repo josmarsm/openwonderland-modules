@@ -40,6 +40,7 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup implements Serializ
     public static final int LOOP_FOREVER = -1;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
+    private boolean decorated = true;           // show window decorations
     private String document;
     private int page = 1;                       // current page
     private int pageCount = 0;                  // number of pages in document
@@ -255,6 +256,22 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup implements Serializ
         return preferredHeight;
     }
 
+    /** 
+     * Set the window decoration status
+     * @param decorated whether to show or hide the window decorations
+     */
+    public void setDecorated(boolean decorated) {
+        this.decorated = decorated;
+    }
+    
+    /**
+     * Get the window decoration status
+     * @return true if the window decorations are enabled, false otherwise
+     */
+    public boolean getDecorated() {
+        return decorated;
+    }
+    
     /**
      * Set the timeout for client requests
      * Clients that take longer than this time to process a request
