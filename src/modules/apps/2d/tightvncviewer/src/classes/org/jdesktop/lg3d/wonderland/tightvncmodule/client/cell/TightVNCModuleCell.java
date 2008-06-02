@@ -57,7 +57,8 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
         if (setup != null) {
             vncApp = new TightVNCModuleApp(this, 0, 0,
                     (int) setup.getPreferredWidth(),
-                    (int) setup.getPreferredHeight());
+                    (int) setup.getPreferredHeight(),
+                    setup.getDecorated());
             vncApp.setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
             vncApp.setReadOnly(setup.getReadOnly());
             vncApp.sync(true);
@@ -82,6 +83,7 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
      * @param session the session id
      * @param data the message data
      */
+    @Override
     public void receivedMessage(ClientChannel channel, SessionId session,
             byte[] data) {
         TightVNCModuleCellMessage msg = Message.extractMessage(data, TightVNCModuleCellMessage.class);

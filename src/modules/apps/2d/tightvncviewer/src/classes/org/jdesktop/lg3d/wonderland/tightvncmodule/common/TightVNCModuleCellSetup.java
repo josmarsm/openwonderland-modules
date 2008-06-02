@@ -32,12 +32,9 @@ public class TightVNCModuleCellSetup extends SharedApp2DCellSetup {
     private static final Logger logger =
             Logger.getLogger(TightVNCModuleCellSetup.class.getName());
     private static final int DEFAULT_WIDTH = 1024; // XGA resolution
-
     private static final int DEFAULT_HEIGHT = 768; //
-
     private static final int DEFAULT_PORT = 5900;
     private long controlTimeout = 90 * 1000;    // how long a client can retain control (ms)
-
     private String vncServer;
     private int vncPort = DEFAULT_PORT;
     private String vncUsername;
@@ -45,8 +42,8 @@ public class TightVNCModuleCellSetup extends SharedApp2DCellSetup {
     private boolean readOnly = false;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
+    private boolean decorated = true;   // show window decorations
     private float pixelScale = 1.0f;    // scale factor when mapping from pixels to world units
-
 
     public TightVNCModuleCellSetup() {
         this(null, null);
@@ -158,6 +155,22 @@ public class TightVNCModuleCellSetup extends SharedApp2DCellSetup {
      */
     public int getPreferredHeight() {
         return preferredHeight;
+    }
+
+    /** 
+     * Set the window decoration status
+     * @param decorated whether to show or hide the window decorations
+     */
+    public void setDecorated(boolean decorated) {
+        this.decorated = decorated;
+    }
+
+    /**
+     * Get the window decoration status
+     * @return true if the window decorations are enabled, false otherwise
+     */
+    public boolean getDecorated() {
+        return decorated;
     }
 
     public void setPixelScale(float pixelScale) {
