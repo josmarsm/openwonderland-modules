@@ -84,10 +84,11 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     private boolean inControl = false;
 
     public TightVNCModuleApp(SharedApp2DImageCell cell) {
-        this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
     }
 
-    public TightVNCModuleApp(SharedApp2DImageCell cell, int x, int y, int width, int height) {
+    public TightVNCModuleApp(SharedApp2DImageCell cell, int x, int y, int width, int height,
+            boolean decorated) {
         super(new AppGroup(new SimpleControlArb()), true, x, y, width, height, cell);
 
         clipRect = new Rectangle2D.Double(0, 0, width, height);
@@ -103,6 +104,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         initVNCDialog();
         initHUDMenu();
         addListeners();
+        setDecorated(decorated);
         setShowing(true);
     }
 
