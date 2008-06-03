@@ -58,7 +58,7 @@ public class VideoCell extends SharedApp2DImageCell
 
     private static final Logger logger =
             Logger.getLogger(VideoCell.class.getName());
-    private VideoApp app;
+    private VideoApp videoApp;
     private VideoCellSetup setup;
     private String myUID = new UID().toString();
 
@@ -85,36 +85,39 @@ public class VideoCell extends SharedApp2DImageCell
 
                 if (setup.getPanoramic() == true) {
                     // create a panorama viewer
-                    app = new PTZPanoramaApp(this, 0, 0,
-                            (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight());
+                    videoApp = new PTZPanoramaApp(this, 0, 0,
+                            (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight(),
+                            setup.getDecorated());
                 } else {
                     // create a simple PTZ viewer
-                    app = new PTZCameraApp(this, 0, 0,
-                            (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight());
+                    videoApp = new PTZCameraApp(this, 0, 0,
+                            (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight(),
+                            setup.getDecorated());
                 }
-                app.setVideoInstance(ptz);
+                videoApp.setVideoInstance(ptz);
             } else {
                 // standard video player
-                app = new VideoApp(this, 0, 0,
-                        (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight());
-                app.setVideoInstance(setup.getVideoInstance());
+                videoApp = new VideoApp(this, 0, 0,
+                        (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight(),
+                        setup.getDecorated());
+                videoApp.setVideoInstance(setup.getVideoInstance());
             }
 
             logger.info("loading video: " + setup.getSource());
             logger.info("play on load: " + setup.getPlayOnLoad());
             logger.info("sync playback: " + setup.getSynced());
 
-            app.setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
-            app.setFrameRate(setup.getFrameRate());
-            app.setRequestThrottle(setup.getRequestThrottle());
+            videoApp.setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
+            videoApp.setFrameRate(setup.getFrameRate());
+            videoApp.setRequestThrottle(setup.getRequestThrottle());
 
             if (setup.getSynced() == true) {
-                app.sync();
+                videoApp.sync();
             } else {
                 if (setup.getPlayOnLoad() == true) {
-                    app.play(true);
+                    videoApp.play(true);
                 } else {
-                    app.cue(setup.getPosition(), 0.1);
+                    videoApp.cue(setup.getPosition(), 0.1);
                 }
             }
         }
@@ -125,9 +128,10 @@ public class VideoCell extends SharedApp2DImageCell
     }
 
     protected void handleResponse(VideoCellMessage msg) {
-        app.handleResponse(msg);
+        videoApp.handleResponse(msg);
     }
 
+    @Override
     public void receivedMessage(ClientChannel client, SessionId session,
             byte[] data) {
         VideoCellMessage msg =
@@ -137,7 +141,7 @@ public class VideoCell extends SharedApp2DImageCell
     }
 
     public void leftChannel(ClientChannel arg0) {
-    // ignore
+        // ignore
     }
 
     @Override

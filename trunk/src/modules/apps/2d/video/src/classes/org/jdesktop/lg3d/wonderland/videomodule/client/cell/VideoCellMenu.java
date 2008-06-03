@@ -179,7 +179,7 @@ public class VideoCellMenu extends CellMenu {
         }
     }
 
-    protected void enableButton(Button b) {
+    protected synchronized void enableButton(Button b) {
         b.setVisible(true);
         if (menuInitialized) {
             HUDButton button = (HUDButton) actionMapping.get(b);
@@ -187,7 +187,7 @@ public class VideoCellMenu extends CellMenu {
         }
     }
 
-    protected void disableButton(Button b) {
+    protected synchronized void disableButton(Button b) {
         b.setVisible(false);
         if (menuInitialized) {
             HUDButton button = (HUDButton) actionMapping.get(b);
