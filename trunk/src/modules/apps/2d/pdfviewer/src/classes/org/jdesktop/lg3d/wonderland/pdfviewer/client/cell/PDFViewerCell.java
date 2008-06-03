@@ -90,6 +90,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
      * @param session the session id
      * @param data the message data
      */
+    @Override
     public void receivedMessage(ClientChannel channel, SessionId session,
             byte[] data) {
         PDFCellMessage msg = Message.extractMessage(data, PDFCellMessage.class);
