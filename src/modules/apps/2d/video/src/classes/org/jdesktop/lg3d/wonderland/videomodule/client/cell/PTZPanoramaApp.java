@@ -61,8 +61,9 @@ public class PTZPanoramaApp extends PTZCameraApp {
         super(cell);
     }
 
-    public PTZPanoramaApp(SharedApp2DImageCell cell, int x, int y, int width, int height) {
-        super(cell, x, y, width, height);
+    public PTZPanoramaApp(SharedApp2DImageCell cell, int x, int y, int width, int height,
+            boolean decorated) {
+        super(cell, x, y, width, height, decorated);
     }
 
     @Override

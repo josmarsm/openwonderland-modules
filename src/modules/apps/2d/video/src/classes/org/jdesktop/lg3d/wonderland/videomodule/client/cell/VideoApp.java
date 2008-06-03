@@ -93,10 +93,11 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     protected CellMenu cellMenu;
 
     public VideoApp(SharedApp2DImageCell cell) {
-        this(cell, 0, 0, (int) DEFAULT_WIDTH, (int) DEFAULT_HEIGHT);
+        this(cell, 0, 0, (int) DEFAULT_WIDTH, (int) DEFAULT_HEIGHT, true);
     }
 
-    public VideoApp(SharedApp2DImageCell cell, int x, int y, int width, int height) {
+    public VideoApp(SharedApp2DImageCell cell, int x, int y, int width, int height, 
+            boolean decorated) {
         super(new AppGroup(new SimpleControlArb()), true, x, y, width, height, cell);
 
         drawingSurface = new SimpleDrawingSurface();
@@ -111,7 +112,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         initVideoDialog();
         initHUDMenu();
         addEventListeners();
-
+        setDecorated(decorated);
         setShowing(true);
     }
 
@@ -218,7 +219,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     }
 
     protected void initHUDMenu() {
-        cellMenu = VideoCellMenu.getInstance();
+        cellMenu = new VideoCellMenu();
         cellMenu.addCellMenuListener(this);
     }
 
@@ -474,13 +475,8 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         // perform local play action
         if (play == true) {
             start();
-            updateMenu();
-            showHUDMessage("play", 3000);
-
         } else {
             finish();
-            updateMenu();
-            showHUDMessage("pause", 3000);
         }
     }
 
@@ -501,12 +497,10 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     }
 
     public void stop() {
-        logger.info("stop");
-
         // stop immediately, then tell everyone else
-        cue(0.0, 0.1);
-        updateMenu();
+        logger.info("stop");
         showHUDMessage("stop", 3000);
+        cue(0.0, 0.1);
         if (isSynced()) {
             sendCameraRequest(Action.STOP, null);
         }
@@ -516,15 +510,21 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         if ((snapper == null) || (snapper.hasPlayer() == false)) {
             return;
         }
+        new Thread(new Runnable() {
 
-        logger.info("stopping playback");
-        snapper.stopMovie();
-        frameRate = 0;
-        if (frameTimer != null) {
-            frameTimer.cancel();
-        }
+            public void run() {
+                logger.info("stopping playback");
+                showHUDMessage("pause", 3000);
+                snapper.stopMovie();
+                frameRate = 0;
+                if (frameTimer != null) {
+                    frameTimer.cancel();
+                }
 
-        frameTimer = null;
+                frameTimer = null;
+                updateMenu();
+            }
+        }).start();
     }
 
     public void rewind() {
@@ -562,12 +562,19 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
 
         if (!isPlaying()) {
             if (preferredFrameRate > 0) {
-                logger.info("starting playback");
-                snapper.startMovie();
-                frameRate = preferredFrameRate;
-                frameTimer = new Timer();
-                frameUpdateTask = new FrameUpdateTask();
-                frameTimer.scheduleAtFixedRate(frameUpdateTask, 0, (long) (1000 * 1f / frameRate));
+                new Thread(new Runnable() {
+
+                    public void run() {
+                        logger.info("starting playback");
+                        showHUDMessage("play", 3000);
+                        snapper.startMovie();
+                        frameRate = preferredFrameRate;
+                        frameTimer = new Timer();
+                        frameUpdateTask = new FrameUpdateTask();
+                        frameTimer.scheduleAtFixedRate(frameUpdateTask, 0, (long) (1000 * 1f / frameRate));
+                        updateMenu();
+                    }
+                }).start();
             }
         }
     }
@@ -595,7 +602,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
             muteState = isMuted();
             hudState = isHUDEnabled();
             setHUDEnabled(false);
-            finish();
+            //finish();
             setPosition(start - cueLeadIn);
             snapper.setStopTime(start);
             mute(true);
@@ -860,21 +867,21 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         }
     }
 
-    protected void updateMenu() {
+    protected synchronized void updateMenu() {
         if (isSynced()) {
-            ((VideoCellMenu)cellMenu).enableButton(Button.SYNC);
-            ((VideoCellMenu)cellMenu).disableButton(Button.UNSYNC);
+            ((VideoCellMenu) cellMenu).enableButton(Button.SYNC);
+            ((VideoCellMenu) cellMenu).disableButton(Button.UNSYNC);
         } else {
-            ((VideoCellMenu)cellMenu).enableButton(Button.UNSYNC);
-            ((VideoCellMenu)cellMenu).disableButton(Button.SYNC);
+            ((VideoCellMenu) cellMenu).enableButton(Button.UNSYNC);
+            ((VideoCellMenu) cellMenu).disableButton(Button.SYNC);
         }
 
         if (this.isPlaying()) {
-            ((VideoCellMenu)cellMenu).enableButton(Button.PAUSE);
-            ((VideoCellMenu)cellMenu).disableButton(Button.PLAY);
+            ((VideoCellMenu) cellMenu).enableButton(Button.PAUSE);
+            ((VideoCellMenu) cellMenu).disableButton(Button.PLAY);
         } else {
-            ((VideoCellMenu)cellMenu).enableButton(Button.PLAY);
-            ((VideoCellMenu)cellMenu).disableButton(Button.PAUSE);
+            ((VideoCellMenu) cellMenu).enableButton(Button.PLAY);
+            ((VideoCellMenu) cellMenu).disableButton(Button.PAUSE);
         }
     }
 
@@ -915,8 +922,10 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
             if (snapper.getPlayerState() == Player.Started) {
                 VideoApp.this.repaint();
             } else {
-                logger.info("stopping frame update task because movie isn't playing: " + snapper.getPlayerState());
-                finish();
+                if (frameTimer != null) {
+                    logger.info("stopping frame update task because movie isn't playing: " + snapper.getPlayerState());
+                    finish();
+                }
             }
         }
     }

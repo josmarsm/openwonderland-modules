@@ -33,7 +33,9 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataString;
  * @author nsimpson
  */
 public class VideoCellMessage extends CellMessage {
+
     public enum Action {
+
         UNKNOWN,
         REQUEST_DENIED, REQUEST_COMPLETE,
         SET_SOURCE,
@@ -41,22 +43,23 @@ public class VideoCellMessage extends CellMessage {
         PLAY, PAUSE, STOP,
         GET_STATE, SET_STATE,
     };
-   
+
     public enum PlayerState {
+
         PLAYING,
         PAUSED,
         STOPPED
     };
-    
     private String uid;
     private Action action = Action.UNKNOWN;
     private String source;
     private double position;    // nanoseconds (really!)
+
     private PlayerState state = PlayerState.STOPPED;
     private float pan;
     private float tilt;
     private float zoom;
-    
+
     public VideoCellMessage() {
         super();
     }
@@ -70,7 +73,7 @@ public class VideoCellMessage extends CellMessage {
         setUID(uid);
         setAction(action);
     }
-        
+
     public VideoCellMessage(CellID cellID, String uid, String video, Action action, double position) {
         super(cellID);
         setUID(uid);
@@ -88,7 +91,7 @@ public class VideoCellMessage extends CellMessage {
         setState(vcm.getState());
         setPTZPosition(vcm.getPan(), vcm.getTilt(), vcm.getZoom());
     }
-    
+
     public VideoCellMessage(Action action) {
         super();
         setAction(action);
@@ -101,11 +104,11 @@ public class VideoCellMessage extends CellMessage {
     public void setUID(String uid) {
         this.uid = uid;
     }
-    
+
     public String getUID() {
         return uid;
     }
-    
+
     public void setSource(String source) {
         this.source = source;
     }
@@ -147,15 +150,15 @@ public class VideoCellMessage extends CellMessage {
     public float getPan() {
         return pan;
     }
-    
+
     public float getTilt() {
         return tilt;
     }
-    
+
     public float getZoom() {
         return zoom;
     }
-    
+
     @Override
     public String toString() {
         return "uid: " + uid + ", " +
@@ -171,7 +174,7 @@ public class VideoCellMessage extends CellMessage {
     @Override
     protected void extractMessageImpl(ByteBuffer data) {
         super.extractMessageImpl(data);
-        
+
         uid = DataString.value(data);
         source = DataString.value(data);
         action = Action.values()[DataInt.value(data)];
@@ -185,7 +188,7 @@ public class VideoCellMessage extends CellMessage {
     @Override
     protected void populateDataElements() {
         super.populateDataElements();
-        
+
         dataElements.add(new DataString(uid));
         dataElements.add(new DataString(source));
         dataElements.add(new DataInt(action.ordinal()));

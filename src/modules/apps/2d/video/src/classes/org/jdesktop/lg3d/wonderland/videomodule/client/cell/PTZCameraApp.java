@@ -10,7 +10,6 @@ import javax.vecmath.Point3f;
 import org.jdesktop.j3d.util.SceneGraphUtil;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
-import org.jdesktop.lg3d.wonderland.videomodule.client.cell.PTZCellMenu.Button;
 import org.jdesktop.lg3d.wonderland.videomodule.common.PTZCamera;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.Action;
@@ -32,8 +31,9 @@ public class PTZCameraApp extends VideoApp implements PTZCellMenuListener, Camer
         super(cell);
     }
 
-    public PTZCameraApp(SharedApp2DImageCell cell, int x, int y, int width, int height) {
-        super(cell, x, y, width, height);
+    public PTZCameraApp(SharedApp2DImageCell cell, int x, int y, int width, int height,
+            boolean decorated) {
+        super(cell, x, y, width, height, decorated);
     }
 
     @Override

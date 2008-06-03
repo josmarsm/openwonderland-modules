@@ -36,12 +36,13 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     private String source;
     private String videoClass;
     private VideoSource videoInstance;
-    private long controlTimeout = 90*1000; // how long a client can retain control (ms)
+    private long controlTimeout = 90 * 1000; // how long a client can retain control (ms)
     private float frameRate = 2.0f;     // frames per second
     private boolean playOnLoad = false; // don't auto play
     private boolean synced = true;      // sync with other clients by default
     private double preferredWidth = 0;  // none, use media width
     private double preferredHeight = 0; // none, use media height
+    private boolean decorated = true;           // show window decorations
     private float pixelScale = 1.0f;    // scale factor when mapping from pixels to world units
     private boolean panoramic = false;  // for viewing pan/tilt/zoom camera video
     // video run time state
@@ -51,9 +52,8 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     private float pan = 0.0f;
     private float tilt = 0.0f;
     private float zoom = 0.0f;
-
     private long requestThrottle = 2500; // limit requests to at most this often (milliseconds)
-    
+
     public VideoCellSetup() {
         this(null, null);
     }
@@ -111,14 +111,30 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
         return preferredHeight;
     }
 
+    /** 
+     * Set the window decoration status
+     * @param decorated whether to show or hide the window decorations
+     */
+    public void setDecorated(boolean decorated) {
+        this.decorated = decorated;
+    }
+
+    /**
+     * Get the window decoration status
+     * @return true if the window decorations are enabled, false otherwise
+     */
+    public boolean getDecorated() {
+        return decorated;
+    }
+
     public void setPixelScale(float pixelScale) {
         this.pixelScale = pixelScale;
     }
-    
+
     public float getPixelScale() {
         return pixelScale;
     }
-    
+
     public void setVideoClass(String videoClass) {
         this.videoClass = videoClass;
         try {
@@ -147,7 +163,7 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     public void setControlTimeout(long controlTimeout) {
         this.controlTimeout = controlTimeout;
     }
-    
+
     /**
      * Get the control timeout (the length of time a client can have 
      * control before the server takes control away from the client)
@@ -156,7 +172,7 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     public long getControlTimeout() {
         return controlTimeout;
     }
-    
+
     public void setState(PlayerState playerState) {
         this.playerState = playerState;
     }
@@ -208,11 +224,11 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     public VideoSource getVideoInstance() {
         return videoInstance;
     }
-    
+
     public void setRequestThrottle(long requestThrottle) {
         this.requestThrottle = requestThrottle;
     }
-    
+
     public long getRequestThrottle() {
         return requestThrottle;
     }
