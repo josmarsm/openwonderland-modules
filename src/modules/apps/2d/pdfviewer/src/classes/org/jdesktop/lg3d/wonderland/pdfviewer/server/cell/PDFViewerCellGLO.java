@@ -163,6 +163,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
      * @param client the client that sent the message
      * @param message the message
      */
+    @Override
     public void receivedMessage(ClientSession client, CellMessage message) {
         PDFCellMessage pdfcm = (PDFCellMessage) message;
         logger.fine("PDF GLO received msg: " + pdfcm);
