@@ -874,7 +874,11 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                             cellMenu.enableButton(Button.SYNC);
                             logger.info("synced");
                             showHUDMessage("synced", 3000);
+                        } else {
+                            logger.warning("--- SET_STATE ignored, I am not synced");
                         }
+                    } else {
+                        logger.warning("--- SET_STATE is not for me, my uid: " + myUID + ", controlling: " + controlling);
                     }
                     break;
                 case PLAY:

@@ -44,10 +44,11 @@ public class PDFViewerCell extends SharedApp2DImageCell
             Logger.getLogger(PDFViewerCell.class.getName());
     private PDFViewerApp viewer;
     private PDFViewerCellSetup pdfSetup;
-    private String myUID = new UID().toString();
+    private String myUID;
     
     public PDFViewerCell(final CellID cellID, String channelName, Matrix4d origin) {
         super(cellID, channelName, origin);
+        myUID = new UID().toString();
     }
 
     /**
@@ -69,6 +70,9 @@ public class PDFViewerCell extends SharedApp2DImageCell
     }
     
     public String getUID() {
+        if (myUID == null) {
+            logger.warning("--- my UID is null");
+        }
         return myUID;
     }
     
