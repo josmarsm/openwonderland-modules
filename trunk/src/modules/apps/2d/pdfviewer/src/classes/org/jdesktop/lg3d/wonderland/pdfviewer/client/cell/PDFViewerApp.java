@@ -55,8 +55,8 @@ import java.util.logging.Logger;
 import org.jdesktop.lg3d.wonderland.appshare.AppGroup;
 import org.jdesktop.lg3d.wonderland.appshare.AppWindowGraphics2DApp;
 import org.jdesktop.lg3d.wonderland.appshare.SimpleControlArb;
-import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DCell;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
+import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 import org.jdesktop.lg3d.wonderland.pdfviewer.client.cell.PDFCellMenu.Button;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage.Action;
@@ -77,6 +77,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             Logger.getLogger(PDFViewerApp.class.getName());
     private static final int DEFAULT_WIDTH = 791;
     private static final int DEFAULT_HEIGHT = 1024;
+    private int preferredWidth = DEFAULT_WIDTH;
+    private int preferredHeight = DEFAULT_HEIGHT;
     private PDFDocumentDialog pdfDialog;
     private HUDButton msgButton;
     private URL docURL;
@@ -94,20 +96,18 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     private boolean inControl = false;
     private PDFCellMenu cellMenu;
 
-    public PDFViewerApp(SharedApp2DCell cell) {
+    public PDFViewerApp(SharedApp2DImageCell cell) {
         this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
     }
 
-    public PDFViewerApp(SharedApp2DCell cell, int x, int y, int width, int height, boolean decorated) {
+    public PDFViewerApp(SharedApp2DImageCell cell, int x, int y, int width, int height, boolean decorated) {
         super(new AppGroup(new SimpleControlArb()), true, x, y, width, height, cell);
 
         initPDFDialog();
         initHUDMenu();
         addEventListeners();
-        setDecorated(decorated);
-        setShowing(true);
     }
-        
+
     /**
      * Set up event listeners for keyboard and mouse events
      */
@@ -225,6 +225,14 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             }
             msgButton.setActive(false);
         }
+    }
+
+    public void setPreferredWidth(int preferredWidth) {
+        this.preferredWidth = preferredWidth;
+    }
+
+    public void setPreferredHeight(int preferredHeight) {
+        this.preferredHeight = preferredHeight;
     }
 
     /**

@@ -28,6 +28,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListene
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.*;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFViewerCellSetup;
@@ -42,10 +43,9 @@ public class PDFViewerCell extends SharedApp2DImageCell
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerCell.class.getName());
-    private PDFViewerApp viewer;
     private PDFViewerCellSetup pdfSetup;
     private String myUID;
-    
+
     public PDFViewerCell(final CellID cellID, String channelName, Matrix4d origin) {
         super(cellID, channelName, origin);
         myUID = new UID().toString();
@@ -57,25 +57,29 @@ public class PDFViewerCell extends SharedApp2DImageCell
      */
     @Override
     public void setup(CellSetup setupData) {
+        super.setup(setupData);
+
         pdfSetup = (PDFViewerCellSetup) setupData;
 
-        if (pdfSetup != null) {
-            viewer = new PDFViewerApp(this, 0, 0,
-                    (int) pdfSetup.getPreferredWidth(),
-                    (int) pdfSetup.getPreferredHeight(),
-                    pdfSetup.getDecorated());
-            viewer.setInSlideShowMode(pdfSetup.getSlideShow());
-            viewer.sync(true);
-        }
+        ((PDFViewerApp) app).setPreferredWidth((int) pdfSetup.getPreferredWidth());
+        ((PDFViewerApp) app).setPreferredHeight((int) pdfSetup.getPreferredHeight());
+        ((PDFViewerApp) app).setSize((int) pdfSetup.getPreferredWidth(), (int) pdfSetup.getPreferredHeight());
+        ((PDFViewerApp) app).setDecorated(pdfSetup.getDecorated());
+        ((PDFViewerApp) app).setInSlideShowMode(pdfSetup.getSlideShow());
+        ((PDFViewerApp) app).setShowing(true);
+
+        // request sync with shared whiteboard state
+        logger.info("pdf viewer requesting initial sync");
+        ((PDFViewerApp) app).sync(true);
     }
-    
+
     public String getUID() {
         if (myUID == null) {
             logger.warning("--- my UID is null");
         }
         return myUID;
     }
-    
+
     /**
      * Set the channel associated with this cell
      * @param channel the channel to associate with this cell
@@ -85,7 +89,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
     }
 
     protected void handleResponse(PDFCellMessage msg) {
-        viewer.handleResponse(msg);
+        ((PDFViewerApp) app).handleResponse(msg);
     }
 
     /**
@@ -97,10 +101,15 @@ public class PDFViewerCell extends SharedApp2DImageCell
     @Override
     public void receivedMessage(ClientChannel channel, SessionId session,
             byte[] data) {
-        PDFCellMessage msg = Message.extractMessage(data, PDFCellMessage.class);
+        CellMessage msg = Message.extractMessage(data, CellMessage.class);
 
-        logger.fine("cell received message: " + msg);
-        handleResponse(msg);
+        if (msg instanceof PDFCellMessage) {
+            PDFCellMessage pdfmsg = Message.extractMessage(data, PDFCellMessage.class);
+            logger.fine("pdf received message: " + pdfmsg);
+            handleResponse(pdfmsg);
+        } else {
+            super.receivedMessage(channel, session, data);
+        }
     }
 
     /**

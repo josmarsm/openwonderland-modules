@@ -23,14 +23,14 @@ import java.awt.Point;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4f;
-import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DCellSetup;
+import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DImageCellSetup;
 
 /**
  * Container for PDF Viewer cell data
  *
  * @author nsimpson
  */
-public class PDFViewerCellSetup extends SharedApp2DCellSetup implements Serializable {
+public class PDFViewerCellSetup extends SharedApp2DImageCellSetup implements Serializable {
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerCellSetup.class.getName());
@@ -54,11 +54,11 @@ public class PDFViewerCellSetup extends SharedApp2DCellSetup implements Serializ
     private String checksum;
 
     public PDFViewerCellSetup() {
-        this(null, null);
+        this(null, null, null);
     }
 
-    public PDFViewerCellSetup(String appName, Matrix4f viewRectMat) {
-        super(appName, viewRectMat);
+    public PDFViewerCellSetup(String appName, Matrix4f viewRectMat, String clientClassName) {
+        super(appName, viewRectMat, clientClassName);
     }
 
     /*

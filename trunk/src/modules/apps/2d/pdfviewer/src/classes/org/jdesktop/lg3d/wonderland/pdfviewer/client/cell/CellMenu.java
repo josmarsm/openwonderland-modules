@@ -54,7 +54,7 @@ public abstract class CellMenu {
     private static final String MENU_BG_IMG = "background.png";
     private static final String CANCEL_ICON_IMG = "cancel.png";
     protected HUD hud;
-    protected Point origin = new Point(-452, -142);
+    protected Point origin = new Point(-452, -86); // -452, -142
     protected boolean menuInitialized = false;
     protected boolean isActive;
     protected ArrayList<PDFCellMenuListener> cellMenuListeners = new ArrayList();
