@@ -248,6 +248,23 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         return synced;
     }
 
+    /** 
+     * Resynchronize the state of the cell.
+     * 
+     * A resync is necessary when the cell transitions from INACTIVE to 
+     * ACTIVE cell state, where the cell may have missed state synchronization 
+     * messages while in the INACTIVE state.
+     * 
+     * Resynchronization is only performed if the cell is currently synced.
+     * To sync an unsynced cell, call sync(true) instead.
+     */
+    public void resync() {
+        if (isSynced()) {
+            synced = false;
+            sync(true);
+        }
+    }
+
     public void sync(boolean syncing) {
         if ((syncing == false) && (synced == true)) {
             synced = false;
@@ -877,6 +894,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 case SET_STATE:
                     if (forMe == true) {
                         if (isSynced()) {
+                            logger.warning("--- handling SET_STATE");
                             openDocument(msg.getDocument(), msg.getPage(), msg.getPosition());
                             cellMenu.disableButton(Button.UNSYNC);
                             cellMenu.enableButton(Button.SYNC);

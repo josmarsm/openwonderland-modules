@@ -23,6 +23,7 @@ import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.SessionId;
 import java.rmi.server.UID;
 import java.util.logging.Logger;
+import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListener;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.*;
@@ -73,6 +74,16 @@ public class PDFViewerCell extends SharedApp2DImageCell
         ((PDFViewerApp) app).sync(true);
     }
 
+    /**
+     * Reconfigure the cell, when the origin, bounds, or other setup information
+     * has changed.
+     */
+    @Override
+    public void reconfigure(Matrix4d origin, Bounds bounds, CellSetup setupData) {
+        super.reconfigure(origin, bounds, setupData);
+        ((PDFViewerApp) app).resync();
+    }
+    
     public String getUID() {
         if (myUID == null) {
             logger.warning("--- my UID is null");
