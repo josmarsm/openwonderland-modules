@@ -148,7 +148,7 @@ public class VideoCellMenu extends CellMenu {
                 } else if (pressed == Button.FORWARD) {
                     listener.fastForward();
                 } else if (pressed == Button.STOP) {
-                    listener.stop();
+                    //listener.stop();
                 } else if (pressed == Button.SYNC) {
                     listener.sync();
                 } else if (pressed == Button.UNSYNC) {
