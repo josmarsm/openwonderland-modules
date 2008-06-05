@@ -165,116 +165,120 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
      */
     @Override
     public void receivedMessage(ClientSession client, CellMessage message) {
-        PDFCellMessage pdfcm = (PDFCellMessage) message;
-        logger.fine("PDF GLO received msg: " + pdfcm);
+        if (message instanceof PDFCellMessage) {
+            PDFCellMessage pdfcm = (PDFCellMessage) message;
+            logger.fine("PDF GLO received msg: " + pdfcm);
 
-        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+            Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
 
-        // clone the message
-        PDFCellMessage msg = new PDFCellMessage(pdfcm);
+            // clone the message
+            PDFCellMessage msg = new PDFCellMessage(pdfcm);
 
-        // the current state of the application
-        PDFViewerStateMO stateMO = getStateMO();
+            // the current state of the application
+            PDFViewerStateMO stateMO = getStateMO();
 
-        // client currently in control
-        String controlling = stateMO.getControllingCell();
-        // client making the request
-        String requester = pdfcm.getUID();
+            // client currently in control
+            String controlling = stateMO.getControllingCell();
+            // client making the request
+            String requester = pdfcm.getUID();
 
-        // time out requests from non-responsive clients
-        if (controlling != null) {
-            // clients may lose connectivity to the server while processing
-            // requests. 
-            // if this happens, release the controlling client lock so that
-            // other clients can process their requests
-            long controlDuration = stateMO.getControlOwnedDuration();
+            // time out requests from non-responsive clients
+            if (controlling != null) {
+                // clients may lose connectivity to the server while processing
+                // requests. 
+                // if this happens, release the controlling client lock so that
+                // other clients can process their requests
+                long controlDuration = stateMO.getControlOwnedDuration();
 
-            if (controlDuration >= controlTimeout) {
-                logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
-                stateMO.setControllingCell(null);
-                controlling = null;
-            }
-        }
-
-        if (controlling == null) {
-            // no cell has control, grant control to the requesting cell
-            stateMO.setControllingCell(requester);
-
-            // reflect the command to all clients
-            // respond to a client that is (now) in control
-            switch (pdfcm.getAction()) {
-                case GET_STATE:
-                    // return current state of PDF app
-                    msg.setAction(Action.SET_STATE);
-                    msg.setDocument(stateMO.getDocument());
-                    msg.setPage(stateMO.getPage());
-                    msg.setPosition(stateMO.getPosition());
-                    msg.setPageCount(stateMO.getPageCount());
-                    break;
-                case OPEN_DOCUMENT:
-                    if (isSlideShowActive()) {
-                        stopSlideShow();
-                    }
-                    stateMO.setDocument(msg.getDocument());
-                    stateMO.setPage(msg.getPage());
-                    stateMO.setPageCount(msg.getPageCount());
-                    stateMO.setPosition(msg.getPosition());
-                    break;
-                case SHOW_PAGE:
-                    if (!isSlideShowActive()) {
-                        stateMO.setPage(msg.getPage());
-                    }
-                    break;
-                case PLAY:
-                    if (!isSlideShowActive()) {
-                        startSlideShow();
-                    }
-                    break;
-                case PAUSE:
-                case STOP:
-                    if (isSlideShowActive()) {
-                        stopSlideShow();
-                    }
-                    break;
-                case SET_VIEW_POSITION:
-                    stateMO.setPosition(msg.getPosition());
-                    break;
-                case REQUEST_COMPLETE:
-                    // release control of PDF document by this client
+                if (controlDuration >= controlTimeout) {
+                    logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
                     stateMO.setControllingCell(null);
-                    stateMO.setPageCount(pdfcm.getPageCount());
+                    controlling = null;
+                }
+            }
 
-                    // if this is the first client to join, start the slide show if 
-                    // in slide show mode
-                    if (haveClients == false) {
-                        haveClients = true;
-                        if (stateMO.getSlideShow() == true) {
+            if (controlling == null) {
+                // no cell has control, grant control to the requesting cell
+                stateMO.setControllingCell(requester);
+
+                // reflect the command to all clients
+                // respond to a client that is (now) in control
+                switch (pdfcm.getAction()) {
+                    case GET_STATE:
+                        // return current state of PDF app
+                        msg.setAction(Action.SET_STATE);
+                        msg.setDocument(stateMO.getDocument());
+                        msg.setPage(stateMO.getPage());
+                        msg.setPosition(stateMO.getPosition());
+                        msg.setPageCount(stateMO.getPageCount());
+                        break;
+                    case OPEN_DOCUMENT:
+                        if (isSlideShowActive()) {
+                            stopSlideShow();
+                        }
+                        stateMO.setDocument(msg.getDocument());
+                        stateMO.setPage(msg.getPage());
+                        stateMO.setPageCount(msg.getPageCount());
+                        stateMO.setPosition(msg.getPosition());
+                        break;
+                    case SHOW_PAGE:
+                        if (!isSlideShowActive()) {
+                            stateMO.setPage(msg.getPage());
+                        }
+                        break;
+                    case PLAY:
+                        if (!isSlideShowActive()) {
                             startSlideShow();
                         }
-                    }
-                    break;
+                        break;
+                    case PAUSE:
+                    case STOP:
+                        if (isSlideShowActive()) {
+                            stopSlideShow();
+                        }
+                        break;
+                    case SET_VIEW_POSITION:
+                        stateMO.setPosition(msg.getPosition());
+                        break;
+                    case REQUEST_COMPLETE:
+                        // release control of PDF document by this client
+                        stateMO.setControllingCell(null);
+                        stateMO.setPageCount(pdfcm.getPageCount());
+
+                        // if this is the first client to join, start the slide show if 
+                        // in slide show mode
+                        if (haveClients == false) {
+                            haveClients = true;
+                            if (stateMO.getSlideShow() == true) {
+                                startSlideShow();
+                            }
+                        }
+                        break;
+                }
+                logger.fine("PDF GLO broadcasting msg: " + msg);
+                getCellChannel().send(sessions, msg.getBytes());
+            } else {
+                // one cell has control
+                switch (pdfcm.getAction()) {
+                    case REQUEST_COMPLETE:
+                        // release control of camera by this client
+                        stateMO.setControllingCell(null);
+                        stateMO.setPageCount(pdfcm.getPageCount());
+                        // broadcast request complete to all clients
+                        // broadcast the message to all clients, including the requester
+                        logger.fine("PDF GLO broadcasting msg: " + msg);
+                        getCellChannel().send(sessions, msg.getBytes());
+                        break;
+                    default:
+                        // send a denial to the requesting client
+                        msg.setAction(Action.REQUEST_DENIED);
+                        logger.fine("PDF GLO broadcasting msg: " + msg);
+                        getCellChannel().send(client, msg.getBytes());
+                        break;
+                }
             }
-            logger.fine("PDF GLO broadcasting msg: " + msg);
-            getCellChannel().send(sessions, msg.getBytes());
         } else {
-            // one cell has control
-            switch (pdfcm.getAction()) {
-                case REQUEST_COMPLETE:
-                    // release control of camera by this client
-                    stateMO.setControllingCell(null);
-                    stateMO.setPageCount(pdfcm.getPageCount());
-                    // broadcast request complete to all clients
-                    // broadcast the message to all clients, including the requester
-                    logger.fine("PDF GLO broadcasting msg: " + msg);
-                    getCellChannel().send(sessions, msg.getBytes());
-                    break;
-                default:
-                    // send a denial to the requesting client
-                    msg.setAction(Action.REQUEST_DENIED);
-                    logger.fine("PDF GLO broadcasting msg: " + msg);
-                    getCellChannel().send(client, msg.getBytes());
-                    break;
-            }
+            super.receivedMessage(client, message);
         }
     }
 
