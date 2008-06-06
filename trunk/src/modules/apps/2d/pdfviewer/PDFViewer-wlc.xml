@@ -18,10 +18,10 @@
                 <void property="preferredHeight">
                     <int>768</int>
                 </void>
-                <void property="synced">
+                <void property="decorated">
                     <boolean>true</boolean>
                 </void>
-                <void property="decorated">
+                <void property="synced">
                     <boolean>true</boolean>
                 </void>
                 <void property="slideShow">
