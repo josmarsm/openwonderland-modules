@@ -96,7 +96,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         this(cell, 0, 0, (int) DEFAULT_WIDTH, (int) DEFAULT_HEIGHT, true);
     }
 
-    public VideoApp(SharedApp2DImageCell cell, int x, int y, int width, int height, 
+    public VideoApp(SharedApp2DImageCell cell, int x, int y, int width, int height,
             boolean decorated) {
         super(new AppGroup(new SimpleControlArb()), true, x, y, width, height, cell);
 
@@ -112,8 +112,6 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         initVideoDialog();
         initHUDMenu();
         addEventListeners();
-        setDecorated(decorated);
-        setShowing(true);
     }
 
     public void setVideoInstance(VideoSource videoInstance) {
@@ -535,19 +533,44 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         logger.info("fast forward is not implemented");
     }
 
-    public void sync() {
+    /** 
+     * Resynchronize the state of the cell.
+     * 
+     * A resync is necessary when the cell transitions from INACTIVE to 
+     * ACTIVE cell state, where the cell may have missed state synchronization 
+     * messages while in the INACTIVE state.
+     * 
+     * Resynchronization is only performed if the cell is currently synced.
+     * To sync an unsynced cell, call sync(true) instead.
+     */
+    public void resync() {
         if (isSynced()) {
-            setSynced(false);
-            updateMenu();
+            synced = false;
+            sync(true);
+        }
+    }
+
+    public void sync(boolean syncing) {
+        if ((syncing == false) && (synced == true)) {
+            synced = false;
+            logger.info("video app unsynced");
             showHUDMessage("unsynced", 3000);
-        } else {
+//            cellMenu.enableButton(Button.UNSYNC);
+//            cellMenu.disableButton(Button.SYNC);
+        } else if ((syncing == true) && (synced == false)) {
+            synced = true;
+            logger.info("video app requesting sync with shared state");
             showHUDMessage("syncing...", 5000);
             sendCameraRequest(Action.GET_STATE, null);
         }
     }
 
+    public void sync() {
+        sync(!isSynced());
+    }
+
     public void unsync() {
-        sync();
+        sync(!isSynced());
     }
 
     private void start() {

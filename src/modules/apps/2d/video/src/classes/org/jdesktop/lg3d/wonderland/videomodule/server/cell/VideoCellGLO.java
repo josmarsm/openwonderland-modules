@@ -103,6 +103,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
      * @param setup the Java bean to read setup information from
      */
     public void setupCell(CellGLOSetup data) {
+        System.err.println("--- VideoCellGLO.setupCell");
         BasicCellGLOSetup<VideoCellSetup> setupData = (BasicCellGLOSetup<VideoCellSetup>) data;
         super.setupCell(setupData);
 
@@ -125,6 +126,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
      * @param setup a Java bean with updated properties
      */
     public void reconfigureCell(CellGLOSetup setupData) {
+        System.err.println("--- VideoCellGLO.reconfigure");
         setupCell(setupData);
     }
 
@@ -151,112 +153,117 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
      * @param client the client that sent the message
      * @param message the message
      */
+    @Override
     public void receivedMessage(ClientSession client, CellMessage message) {
-        VideoCellMessage vmcm = (VideoCellMessage) message;
-        logger.fine("video GLO received msg: " + vmcm);
+        if (message instanceof VideoCellMessage) {
+            VideoCellMessage vmcm = (VideoCellMessage) message;
+            logger.fine("video GLO received msg: " + vmcm);
 
-        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+            Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
 
-        // clone the message
-        VideoCellMessage msg = new VideoCellMessage(vmcm);
+            // clone the message
+            VideoCellMessage msg = new VideoCellMessage(vmcm);
 
-        // the current state of the video application
-        VideoAppStateMO stateMO = getStateMO();
+            // the current state of the video application
+            VideoAppStateMO stateMO = getStateMO();
 
-        // client currently in control
-        String controlling = stateMO.getControllingCell();
-        // client making the request
-        String requester = vmcm.getUID();
+            // client currently in control
+            String controlling = stateMO.getControllingCell();
+            // client making the request
+            String requester = vmcm.getUID();
 
-        // time out requests from non-responsive clients
-        if (controlling != null) {
-            // clients may lose connectivity to the server while processing
-            // requests. 
-            // if this happens, release the controlling client lock so that
-            // other clients can process their requests
-            long controlDuration = stateMO.getControlOwnedDuration();
+            // time out requests from non-responsive clients
+            if (controlling != null) {
+                // clients may lose connectivity to the server while processing
+                // requests. 
+                // if this happens, release the controlling client lock so that
+                // other clients can process their requests
+                long controlDuration = stateMO.getControlOwnedDuration();
 
-            if (controlDuration >= controlTimeout) {
-                logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
-                stateMO.setControllingCell(null);
-                controlling = null;
-            }
-        }
-
-        if (controlling == null) {
-            // no cell has control, grant control to the requesting cell
-            stateMO.setControllingCell(requester);
-
-            // reflect the command to all clients
-            // respond to a client that is (now) in control
-            switch (vmcm.getAction()) {
-                case GET_STATE:
-                    // return current state of video app
-                    msg.setAction(Action.SET_STATE);
-                    msg.setSource(stateMO.getSource());
-                    msg.setState(stateMO.getState());
-                    if (stateMO.getState() == PlayerState.PLAYING) {
-                        Calendar now = Calendar.getInstance();
-                        Calendar then = stateMO.getLastStateChange();
-                        long ago = now.getTimeInMillis() - then.getTimeInMillis();
-                        double predicted = stateMO.getPosition() + (ago * 1000 * 1000);
-                        msg.setPosition(predicted);
-                        logger.fine("predicted play position: " + predicted);
-                    } else {
-                        msg.setPosition(stateMO.getPosition());
-                    }
-                    msg.setPTZPosition(stateMO.getPan(), stateMO.getTilt(), stateMO.getZoom());
-                    break;
-                case PLAY:
-                    stateMO.setPosition(vmcm.getPosition());
-                    stateMO.setState(PlayerState.PLAYING);
-                    msg.setState(PlayerState.PLAYING);
-                    break;
-                case PAUSE:
-                    stateMO.setPosition(vmcm.getPosition());
-                    stateMO.setState(PlayerState.PAUSED);
-                    msg.setState(PlayerState.PAUSED);
-                    break;
-                case STOP:
-                    stateMO.setPosition(vmcm.getPosition());
-                    stateMO.setState(PlayerState.STOPPED);
-                    msg.setState(PlayerState.STOPPED);
-                    break;
-                case SET_SOURCE:
-                    stateMO.setPosition(vmcm.getPosition());
-                    stateMO.setSource(vmcm.getSource());
-                    break;
-                case SET_PTZ:
-                    stateMO.setPan(msg.getPan());
-                    stateMO.setTilt(msg.getTilt());
-                    stateMO.setZoom(msg.getZoom());
-                    break;
-                case REQUEST_COMPLETE:
-                    // release control of camera by this client
+                if (controlDuration >= controlTimeout) {
+                    logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
                     stateMO.setControllingCell(null);
-                    break;
+                    controlling = null;
+                }
             }
-            // broadcast the message to all clients, including the requester
-            logger.fine("video GLO broadcasting msg: " + msg);
-            getCellChannel().send(sessions, msg.getBytes());
+
+            if (controlling == null) {
+                // no cell has control, grant control to the requesting cell
+                stateMO.setControllingCell(requester);
+
+                // reflect the command to all clients
+                // respond to a client that is (now) in control
+                switch (vmcm.getAction()) {
+                    case GET_STATE:
+                        // return current state of video app
+                        msg.setAction(Action.SET_STATE);
+                        msg.setSource(stateMO.getSource());
+                        msg.setState(stateMO.getState());
+                        if (stateMO.getState() == PlayerState.PLAYING) {
+                            Calendar now = Calendar.getInstance();
+                            Calendar then = stateMO.getLastStateChange();
+                            long ago = now.getTimeInMillis() - then.getTimeInMillis();
+                            double predicted = stateMO.getPosition() + (ago * 1000 * 1000);
+                            msg.setPosition(predicted);
+                            logger.fine("predicted play position: " + predicted);
+                        } else {
+                            msg.setPosition(stateMO.getPosition());
+                        }
+                        msg.setPTZPosition(stateMO.getPan(), stateMO.getTilt(), stateMO.getZoom());
+                        break;
+                    case PLAY:
+                        stateMO.setPosition(vmcm.getPosition());
+                        stateMO.setState(PlayerState.PLAYING);
+                        msg.setState(PlayerState.PLAYING);
+                        break;
+                    case PAUSE:
+                        stateMO.setPosition(vmcm.getPosition());
+                        stateMO.setState(PlayerState.PAUSED);
+                        msg.setState(PlayerState.PAUSED);
+                        break;
+                    case STOP:
+                        stateMO.setPosition(vmcm.getPosition());
+                        stateMO.setState(PlayerState.STOPPED);
+                        msg.setState(PlayerState.STOPPED);
+                        break;
+                    case SET_SOURCE:
+                        stateMO.setPosition(vmcm.getPosition());
+                        stateMO.setSource(vmcm.getSource());
+                        break;
+                    case SET_PTZ:
+                        stateMO.setPan(msg.getPan());
+                        stateMO.setTilt(msg.getTilt());
+                        stateMO.setZoom(msg.getZoom());
+                        break;
+                    case REQUEST_COMPLETE:
+                        // release control of camera by this client
+                        stateMO.setControllingCell(null);
+                        break;
+                }
+                // broadcast the message to all clients, including the requester
+                logger.fine("video GLO broadcasting msg: " + msg);
+                getCellChannel().send(sessions, msg.getBytes());
+            } else {
+                // one cell has control
+                switch (vmcm.getAction()) {
+                    case REQUEST_COMPLETE:
+                        // release control of camera by this client
+                        stateMO.setControllingCell(null);
+                        // broadcast request complete to all clients
+                        // broadcast the message to all clients, including the requester
+                        logger.fine("video GLO broadcasting msg: " + msg);
+                        getCellChannel().send(sessions, msg.getBytes());
+                        break;
+                    default:
+                        // send a denial to the requesting client
+                        msg.setAction(Action.REQUEST_DENIED);
+                        logger.fine("video GLO broadcasting msg: " + msg);
+                        getCellChannel().send(client, msg.getBytes());
+                        break;
+                }
+            }
         } else {
-            // one cell has control
-            switch (vmcm.getAction()) {
-                case REQUEST_COMPLETE:
-                    // release control of camera by this client
-                    stateMO.setControllingCell(null);
-                    // broadcast request complete to all clients
-                    // broadcast the message to all clients, including the requester
-                    logger.fine("video GLO broadcasting msg: " + msg);
-                    getCellChannel().send(sessions, msg.getBytes());
-                    break;
-                default:
-                    // send a denial to the requesting client
-                    msg.setAction(Action.REQUEST_DENIED);
-                    logger.fine("video GLO broadcasting msg: " + msg);
-                    getCellChannel().send(client, msg.getBytes());
-                    break;
-            }
+            super.receivedMessage(client, message);
         }
     }
 }

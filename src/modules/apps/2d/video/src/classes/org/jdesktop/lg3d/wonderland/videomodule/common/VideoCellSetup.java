@@ -22,14 +22,14 @@ package org.jdesktop.lg3d.wonderland.videomodule.common;
 import java.lang.reflect.Constructor;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4f;
-import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DCellSetup;
+import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DImageCellSetup;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.PlayerState;
 
 /**
  *
  * @author nsimpson
  */
-public class VideoCellSetup extends SharedApp2DCellSetup {
+public class VideoCellSetup extends SharedApp2DImageCellSetup {
 
     private static final Logger logger =
             Logger.getLogger(VideoCellSetup.class.getName());
@@ -42,7 +42,7 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     private boolean synced = true;      // sync with other clients by default
     private double preferredWidth = 0;  // none, use media width
     private double preferredHeight = 0; // none, use media height
-    private boolean decorated = true;           // show window decorations
+    private boolean decorated = true;   // show window decorations
     private float pixelScale = 1.0f;    // scale factor when mapping from pixels to world units
     private boolean panoramic = false;  // for viewing pan/tilt/zoom camera video
     // video run time state
@@ -55,11 +55,11 @@ public class VideoCellSetup extends SharedApp2DCellSetup {
     private long requestThrottle = 2500; // limit requests to at most this often (milliseconds)
 
     public VideoCellSetup() {
-        this(null, null);
+        this(null, null, null);
     }
 
-    public VideoCellSetup(String appName, Matrix4f viewRectMat) {
-        super(appName, viewRectMat);
+    public VideoCellSetup(String appName, Matrix4f viewRectMat, String clientClassName) {
+        super(appName, viewRectMat, clientClassName);
     }
 
     public void setSource(String source) {

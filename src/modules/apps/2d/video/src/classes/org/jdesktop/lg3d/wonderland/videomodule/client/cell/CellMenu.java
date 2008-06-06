@@ -53,7 +53,7 @@ public abstract class CellMenu {
     protected String MENU_BG_IMG = "background.png";
     protected String CANCEL_ICON_IMG = "cancel.png";
     protected HUD hud;
-    protected Point origin = new Point(-304, -142);
+    protected Point origin = new Point(-282, -228); // -304, -142
     protected boolean menuInitialized = false;
     protected boolean isActive;
     protected ArrayList<VideoCellMenuListener> cellMenuListeners = new ArrayList();
