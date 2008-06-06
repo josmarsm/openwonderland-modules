@@ -54,7 +54,6 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
     // clients join, they receive the current state.
     private ManagedReference stateRef = null;
     private BasicCellGLOSetup<TightVNCModuleCellSetup> setup;
-    private boolean haveClients = false;
 
     public TightVNCModuleCellGLO() {
         this(null, null, null, null);
@@ -136,94 +135,99 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                 getSetupData());
     }
 
+    @Override
     public void receivedMessage(ClientSession client, CellMessage message) {
-        TightVNCModuleCellMessage vnccm = (TightVNCModuleCellMessage) message;
-        logger.fine("VNC GLO received msg: " + vnccm);
+        if (message instanceof TightVNCModuleCellMessage) {
+            TightVNCModuleCellMessage vnccm = (TightVNCModuleCellMessage) message;
+            logger.fine("VNC GLO received msg: " + vnccm);
 
-        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+            Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
 
-        // clone the message
-        TightVNCModuleCellMessage msg = new TightVNCModuleCellMessage(vnccm);
+            // clone the message
+            TightVNCModuleCellMessage msg = new TightVNCModuleCellMessage(vnccm);
 
-        // the current state of the application
-        TightVNCModuleStateMO stateMO = getStateMO();
+            // the current state of the application
+            TightVNCModuleStateMO stateMO = getStateMO();
 
-        // client currently in control
-        String controlling = stateMO.getControllingCell();
-        // client making the request
-        String requester = vnccm.getUID();
+            // client currently in control
+            String controlling = stateMO.getControllingCell();
+            // client making the request
+            String requester = vnccm.getUID();
 
-        // time out requests from non-responsive clients
-        if (controlling != null) {
-            // clients may lose connectivity to the server while processing
-            // requests. 
-            // If this happens, release the controlling client lock so that
-            // other clients can process their requests
-            long controlDuration = stateMO.getControlOwnedDuration();
+            // time out requests from non-responsive clients
+            if (controlling != null) {
+                // clients may lose connectivity to the server while processing
+                // requests. 
+                // If this happens, release the controlling client lock so that
+                // other clients can process their requests
+                long controlDuration = stateMO.getControlOwnedDuration();
 
-            if (controlDuration >= controlTimeout) {
-                logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
-                stateMO.setControllingCell(null);
-                controlling = null;
-            }
-        }
-
-        if (controlling == null) {
-            // no cell has control, grant control to the requesting cell
-            stateMO.setControllingCell(requester);
-
-            // reflect the command to all clients
-            // respond to a client that is (now) in control
-            switch (vnccm.getAction()) {
-                case GET_STATE:
-                    // return current state of VNC app
-                    msg.setAction(Action.SET_STATE);
-                    msg.setServer(stateMO.getServer());
-                    msg.setPort(stateMO.getPort());
-                    msg.setUsername(stateMO.getUsername());
-                    msg.setPassword(stateMO.getPassword());
-                    break;
-                case SET_STATE:
-                    break;
-                case OPEN_SESSION:
-                    stateMO.setServer(vnccm.getServer());
-                    stateMO.setPort(vnccm.getPort());
-                    stateMO.setUsername(vnccm.getUsername());
-                    stateMO.setPassword(vnccm.getPassword());
-                    break;
-                case CLOSE_SESSION:
+                if (controlDuration >= controlTimeout) {
+                    logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
                     stateMO.setControllingCell(null);
-                    stateMO.setPort(5900);
-                    stateMO.setUsername(null);
-                    stateMO.setPassword(null);
-                    break;
-                case REQUEST_COMPLETE:
-                    // release control of VNC session state by this client
-                    stateMO.setControllingCell(null);
-                    break;
-                default:
-                    break;
+                    controlling = null;
+                }
             }
-            logger.fine("VNC GLO broadcasting msg: " + msg);
-            getCellChannel().send(sessions, msg.getBytes());
+
+            if (controlling == null) {
+                // no cell has control, grant control to the requesting cell
+                stateMO.setControllingCell(requester);
+
+                // reflect the command to all clients
+                // respond to a client that is (now) in control
+                switch (vnccm.getAction()) {
+                    case GET_STATE:
+                        // return current state of VNC app
+                        msg.setAction(Action.SET_STATE);
+                        msg.setServer(stateMO.getServer());
+                        msg.setPort(stateMO.getPort());
+                        msg.setUsername(stateMO.getUsername());
+                        msg.setPassword(stateMO.getPassword());
+                        break;
+                    case SET_STATE:
+                        break;
+                    case OPEN_SESSION:
+                        stateMO.setServer(vnccm.getServer());
+                        stateMO.setPort(vnccm.getPort());
+                        stateMO.setUsername(vnccm.getUsername());
+                        stateMO.setPassword(vnccm.getPassword());
+                        break;
+                    case CLOSE_SESSION:
+                        stateMO.setControllingCell(null);
+                        stateMO.setPort(5900);
+                        stateMO.setUsername(null);
+                        stateMO.setPassword(null);
+                        break;
+                    case REQUEST_COMPLETE:
+                        // release control of VNC session state by this client
+                        stateMO.setControllingCell(null);
+                        break;
+                    default:
+                        break;
+                }
+                logger.fine("VNC GLO broadcasting msg: " + msg);
+                getCellChannel().send(sessions, msg.getBytes());
+            } else {
+                // one cell has control
+                switch (vnccm.getAction()) {
+                    case REQUEST_COMPLETE:
+                        // release control of VNC session state by this client
+                        stateMO.setControllingCell(null);
+                        // broadcast request complete to all clients
+                        // broadcast the message to all clients, including the requester
+                        logger.fine("VNC GLO broadcasting msg: " + msg);
+                        getCellChannel().send(sessions, msg.getBytes());
+                        break;
+                    default:
+                        // send a denial to the requesting client
+                        msg.setAction(Action.REQUEST_DENIED);
+                        logger.fine("VNC GLO sending denial to client: " + msg);
+                        getCellChannel().send(client, msg.getBytes());
+                        break;
+                }
+            }
         } else {
-            // one cell has control
-            switch (vnccm.getAction()) {
-                case REQUEST_COMPLETE:
-                    // release control of VNC session state by this client
-                    stateMO.setControllingCell(null);
-                    // broadcast request complete to all clients
-                    // broadcast the message to all clients, including the requester
-                    logger.fine("VNC GLO broadcasting msg: " + msg);
-                    getCellChannel().send(sessions, msg.getBytes());
-                    break;
-                default:
-                    // send a denial to the requesting client
-                    msg.setAction(Action.REQUEST_DENIED);
-                    logger.fine("VNC GLO sending denial to client: " + msg);
-                    getCellChannel().send(client, msg.getBytes());
-                    break;
-            }
+            super.receivedMessage(client, message);
         }
     }
 }

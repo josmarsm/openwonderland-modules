@@ -21,13 +21,13 @@ package org.jdesktop.lg3d.wonderland.tightvncmodule.common;
 
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4f;
-import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DCellSetup;
+import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DImageCellSetup;
 
 /**
  *
  * @author nsimpson
  */
-public class TightVNCModuleCellSetup extends SharedApp2DCellSetup {
+public class TightVNCModuleCellSetup extends SharedApp2DImageCellSetup {
 
     private static final Logger logger =
             Logger.getLogger(TightVNCModuleCellSetup.class.getName());
@@ -46,11 +46,11 @@ public class TightVNCModuleCellSetup extends SharedApp2DCellSetup {
     private float pixelScale = 1.0f;    // scale factor when mapping from pixels to world units
 
     public TightVNCModuleCellSetup() {
-        this(null, null);
+        this(null, null, null);
     }
 
-    public TightVNCModuleCellSetup(String appName, Matrix4f viewRectMat) {
-        super(appName, viewRectMat);
+    public TightVNCModuleCellSetup(String appName, Matrix4f viewRectMat, String clientClassName) {
+        super(appName, viewRectMat, clientClassName);
     }
 
     /**
