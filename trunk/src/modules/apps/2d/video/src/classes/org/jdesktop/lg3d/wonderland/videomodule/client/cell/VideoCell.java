@@ -26,6 +26,7 @@ import java.rmi.server.UID;
 
 import java.util.logging.Logger;
 
+import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point2f;
 
@@ -39,6 +40,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellStatus;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 
 import org.jdesktop.lg3d.wonderland.scenemanager.events.CellEnterEvent;
@@ -58,7 +60,6 @@ public class VideoCell extends SharedApp2DImageCell
 
     private static final Logger logger =
             Logger.getLogger(VideoCell.class.getName());
-    private VideoApp videoApp;
     private VideoCellSetup setup;
     private String myUID = new UID().toString();
 
@@ -74,53 +75,52 @@ public class VideoCell extends SharedApp2DImageCell
 
     @Override
     public void setup(CellSetup setupData) {
+        super.setup(setupData);
+
         setup = (VideoCellSetup) setupData;
 
-        if (setup != null) {
-            if (setup.getVideoInstance() instanceof PTZCamera) {
-                PTZCamera ptz = (PTZCamera) setup.getVideoInstance();
-                // initialize pan, tilt and zoom state
-                logger.fine("initial ptz: " + setup.getPan() + ", " + setup.getTilt() + ", " + setup.getZoom());
-                ptz.setPTZPosition(setup.getPan(), setup.getTilt(), setup.getZoom());
+        if (app instanceof PTZCamera) {
+            PTZCamera ptz = (PTZCamera) setup.getVideoInstance();
+            // initialize pan, tilt and zoom state
+            logger.fine("initial ptz: " + setup.getPan() + ", " + setup.getTilt() + ", " + setup.getZoom());
+            ptz.setPTZPosition(setup.getPan(), setup.getTilt(), setup.getZoom());
+            ((VideoApp) app).setVideoInstance(ptz);
+        } else {
+            // standard video player
+            ((VideoApp) app).setVideoInstance(setup.getVideoInstance());
+        }
 
-                if (setup.getPanoramic() == true) {
-                    // create a panorama viewer
-                    videoApp = new PTZPanoramaApp(this, 0, 0,
-                            (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight(),
-                            setup.getDecorated());
-                } else {
-                    // create a simple PTZ viewer
-                    videoApp = new PTZCameraApp(this, 0, 0,
-                            (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight(),
-                            setup.getDecorated());
-                }
-                videoApp.setVideoInstance(ptz);
+        logger.info("loading video: " + setup.getSource());
+        logger.info("play on load: " + setup.getPlayOnLoad());
+        logger.info("sync playback: " + setup.getSynced());
+
+        ((VideoApp) app).setPreferredWidth(setup.getPreferredWidth());
+        ((VideoApp) app).setPreferredHeight(setup.getPreferredHeight());
+        ((VideoApp) app).setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
+        ((VideoApp) app).setFrameRate(setup.getFrameRate());
+        ((VideoApp) app).setRequestThrottle(setup.getRequestThrottle());
+        ((VideoApp) app).setDecorated(setup.getDecorated());
+        ((VideoApp) app).setShowing(true);
+
+        if (setup.getSynced() == true) {
+            ((VideoApp) app).sync();
+        } else {
+            if (setup.getPlayOnLoad() == true) {
+                ((VideoApp) app).play(true);
             } else {
-                // standard video player
-                videoApp = new VideoApp(this, 0, 0,
-                        (int) setup.getPreferredWidth(), (int) setup.getPreferredHeight(),
-                        setup.getDecorated());
-                videoApp.setVideoInstance(setup.getVideoInstance());
-            }
-
-            logger.info("loading video: " + setup.getSource());
-            logger.info("play on load: " + setup.getPlayOnLoad());
-            logger.info("sync playback: " + setup.getSynced());
-
-            videoApp.setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
-            videoApp.setFrameRate(setup.getFrameRate());
-            videoApp.setRequestThrottle(setup.getRequestThrottle());
-
-            if (setup.getSynced() == true) {
-                videoApp.sync();
-            } else {
-                if (setup.getPlayOnLoad() == true) {
-                    videoApp.play(true);
-                } else {
-                    videoApp.cue(setup.getPosition(), 0.1);
-                }
+                ((VideoApp) app).cue(setup.getPosition(), 0.1);
             }
         }
+    }
+
+    /**
+     * Reconfigure the cell, when the origin, bounds, or other setup information
+     * has changed.
+     */
+    @Override
+    public void reconfigure(Matrix4d origin, Bounds bounds, CellSetup setupData) {
+        super.reconfigure(origin, bounds, setupData);
+        ((VideoApp) app).resync();
     }
 
     public String getUID() {
@@ -128,16 +128,21 @@ public class VideoCell extends SharedApp2DImageCell
     }
 
     protected void handleResponse(VideoCellMessage msg) {
-        videoApp.handleResponse(msg);
+        ((VideoApp) app).handleResponse(msg);
     }
 
     @Override
     public void receivedMessage(ClientChannel client, SessionId session,
             byte[] data) {
-        VideoCellMessage msg =
-                Message.extractMessage(data, VideoCellMessage.class);
-        logger.fine("cell received message: " + msg);
-        handleResponse(msg);
+        CellMessage msg = Message.extractMessage(data, CellMessage.class);
+
+        if (msg instanceof VideoCellMessage) {
+            VideoCellMessage vcmsg = Message.extractMessage(data, VideoCellMessage.class);
+            logger.fine("video cell received message: " + vcmsg);
+            handleResponse(vcmsg);
+        } else {
+            super.receivedMessage(channel, session, data);
+        }
     }
 
     public void leftChannel(ClientChannel arg0) {
@@ -147,7 +152,7 @@ public class VideoCell extends SharedApp2DImageCell
     @Override
     public synchronized boolean setStatus(CellStatus status) {
         if (status != getStatus()) {
-            logger.fine("cell status changed: " + getStatus() + "-> " + status);
+            logger.fine("video cell status changed: " + getStatus() + "-> " + status);
         }
 
         return super.setStatus(status);
@@ -168,10 +173,10 @@ public class VideoCell extends SharedApp2DImageCell
     }
 
     public void enterCell(String source) {
-        logger.fine("enter cell from: " + source);
+        logger.fine("video enter cell from: " + source);
     }
 
     public void exitCell(String source) {
-        logger.fine("exit cell from: " + source);
+        logger.fine("video exit cell from: " + source);
     }
 }
