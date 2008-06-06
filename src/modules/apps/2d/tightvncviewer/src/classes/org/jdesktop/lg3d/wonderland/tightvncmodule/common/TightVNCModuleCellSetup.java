@@ -22,6 +22,7 @@ package org.jdesktop.lg3d.wonderland.tightvncmodule.common;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4f;
 import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DImageCellSetup;
+import org.jdesktop.lg3d.wonderland.tightvncmodule.client.cell.TightVNCModuleApp;
 
 /**
  *
@@ -51,6 +52,14 @@ public class TightVNCModuleCellSetup extends SharedApp2DImageCellSetup {
 
     public TightVNCModuleCellSetup(String appName, Matrix4f viewRectMat, String clientClassName) {
         super(appName, viewRectMat, clientClassName);
+    }
+
+    /**
+     * Return the classname of the AppWindowGraphics2DApp subclass
+     */
+    @Override
+    public String getClientClassname() {
+        return TightVNCModuleApp.class.getName();
     }
 
     /**
