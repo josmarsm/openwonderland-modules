@@ -53,16 +53,30 @@ public abstract class CellMenu {
     protected String MENU_BG_IMG = "background.png";
     protected String CANCEL_ICON_IMG = "cancel.png";
     protected HUD hud;
-    protected Point origin = new Point(-282, -228); // -304, -142
+    protected Point origin;
     protected boolean menuInitialized = false;
     protected boolean isActive;
     protected ArrayList<VideoCellMenuListener> cellMenuListeners = new ArrayList();
+    // menu positioning variables
+    protected int menuWidth;
+    protected int rightMargin;
+    protected int xOffset;
+    protected int yOffset;
+    protected int closeOffsetX = -21;
+    protected int closeOffsetY = 5;
 
+        
     public CellMenu() {
         hud = HUDFactory.getHUD();
+        menuWidth = 274;
+        rightMargin = 20;
+        xOffset = menuWidth + rightMargin;
+        yOffset = 150;
     }
 
     protected void initializeMenu() {
+        origin = new Point(-xOffset, -yOffset);
+        
         // create the background for the menu
         URL backgroundURL = CellMenu.class.getResource(imagePath + MENU_BG_IMG);
         menuBackground = hud.addHUDImage(backgroundURL, origin.x, origin.y, 0, false);
@@ -70,7 +84,7 @@ public abstract class CellMenu {
 
         // add a close button
         URL cancelURL = CellMenu.class.getResource(imagePath + CANCEL_ICON_IMG);
-        closeMenuButton = hud.addHUDImageButton(cancelURL, "Close Menu", origin.x + 274 - 21, origin.y + 5, 0, false);
+        closeMenuButton = hud.addHUDImageButton(cancelURL, "Close Menu", origin.x + menuWidth + closeOffsetX, origin.y + closeOffsetY, 0, false);
         closeMenuButton.setDraggable(false);
         closeMenuButton.addActionListener(new ActionListener() {
 

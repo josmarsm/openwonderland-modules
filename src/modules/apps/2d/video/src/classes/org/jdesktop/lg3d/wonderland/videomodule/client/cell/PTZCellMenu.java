@@ -44,6 +44,10 @@ public class PTZCellMenu extends CellMenu {
     private PTZCellMenu() {
         super();
         MENU_BG_IMG = "ptz_background.png";
+        menuWidth = 242;
+        rightMargin = 20;
+        xOffset = menuWidth + rightMargin;
+        yOffset = 228;
     }
 
     @Override
