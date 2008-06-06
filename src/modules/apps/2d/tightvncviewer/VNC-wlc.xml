@@ -13,10 +13,13 @@
                     <int>5900</int>
                 </void>
                 <void property="username">
-                    <string>nsimpson</string>
+                    <string>username</string>
                 </void>
                 <void property="password">
-                    <string>parallels</string>
+                    <string>password</string>
+                </void>
+                <void property="clientClassname">
+                    <string>org.jdesktop.lg3d.wonderland.tightvncmodule.client.cell.TightVNCModuleApp</string>
                 </void>
                 <void property="preferredWidth">
                     <int>1024</int>
