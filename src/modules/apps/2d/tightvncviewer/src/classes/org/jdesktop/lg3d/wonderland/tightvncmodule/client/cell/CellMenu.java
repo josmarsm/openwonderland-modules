@@ -52,7 +52,7 @@ public abstract class CellMenu {
     private static final String MENU_BG_IMG = "background.png";
     private static final String CANCEL_ICON_IMG = "cancel.png";
     protected HUD hud;
-    protected Point origin = new Point(-180, -142);
+    protected Point origin = new Point(-180, -294);
     protected boolean menuInitialized = false;
     protected boolean isActive;
     protected ArrayList<TightVNCCellMenuListener> cellMenuListeners = new ArrayList();
