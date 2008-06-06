@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.vecmath.Matrix4f;
 import org.jdesktop.lg3d.wonderland.darkstar.common.setup.SharedApp2DImageCellSetup;
+import org.jdesktop.lg3d.wonderland.pdfviewer.client.cell.PDFViewerApp;
 
 /**
  * Container for PDF Viewer cell data
@@ -59,6 +60,14 @@ public class PDFViewerCellSetup extends SharedApp2DImageCellSetup implements Ser
 
     public PDFViewerCellSetup(String appName, Matrix4f viewRectMat, String clientClassName) {
         super(appName, viewRectMat, clientClassName);
+    }
+
+    /**
+     * Return the classname of the AppWindowGraphics2DApp subclass
+     */
+    @Override
+    public String getClientClassname() {
+        return PDFViewerApp.class.getName();
     }
 
     /*
@@ -263,7 +272,7 @@ public class PDFViewerCellSetup extends SharedApp2DImageCellSetup implements Ser
     public void setDecorated(boolean decorated) {
         this.decorated = decorated;
     }
-    
+
     /**
      * Get the window decoration status
      * @return true if the window decorations are enabled, false otherwise
@@ -271,7 +280,7 @@ public class PDFViewerCellSetup extends SharedApp2DImageCellSetup implements Ser
     public boolean getDecorated() {
         return decorated;
     }
-    
+
     /**
      * Set the timeout for client requests
      * Clients that take longer than this time to process a request
@@ -282,7 +291,7 @@ public class PDFViewerCellSetup extends SharedApp2DImageCellSetup implements Ser
     public void setControlTimeout(long controlTimeout) {
         this.controlTimeout = controlTimeout;
     }
-    
+
     /**
      * Get the control timeout (the length of time a client can have 
      * control before the server takes control away from the client)
