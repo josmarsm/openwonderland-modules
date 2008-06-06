@@ -272,7 +272,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
                     default:
                         // send a denial to the requesting client
                         msg.setAction(Action.REQUEST_DENIED);
-                        logger.fine("PDF GLO broadcasting msg: " + msg);
+                        logger.fine("PDF GLO sending denial to client: " + msg);
                         getCellChannel().send(client, msg.getBytes());
                         break;
                 }
