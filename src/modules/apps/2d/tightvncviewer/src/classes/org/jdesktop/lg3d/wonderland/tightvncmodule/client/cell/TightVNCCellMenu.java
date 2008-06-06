@@ -74,6 +74,7 @@ public class TightVNCCellMenu extends CellMenu {
         // calculate the maximum width of each button position in the
         // HUD menu
         for (Button b : Button.values()) {
+            System.err.println("--- vnc loading HUD button: " + b.getIconImageName());
             position = b.getPosition();
 
             URL buttonURL = TightVNCCellMenu.class.getResource(b.getIconImageName());
