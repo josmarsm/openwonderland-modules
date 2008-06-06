@@ -23,12 +23,14 @@ import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.SessionId;
 import java.rmi.server.UID;
 import java.util.logging.Logger;
+import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point2f;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListener;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellSetup;
@@ -42,7 +44,6 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
 
     private final Logger logger =
             Logger.getLogger(TightVNCModuleCell.class.getName());
-    private TightVNCModuleApp vncApp;
     private TightVNCModuleCellSetup setup;
     private String myUID = new UID().toString();
 
@@ -52,17 +53,30 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
 
     @Override
     public void setup(CellSetup setupData) {
+        super.setup(setupData);
+
         setup = (TightVNCModuleCellSetup) setupData;
 
-        if (setup != null) {
-            vncApp = new TightVNCModuleApp(this, 0, 0,
-                    (int) setup.getPreferredWidth(),
-                    (int) setup.getPreferredHeight(),
-                    setup.getDecorated());
-            vncApp.setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
-            vncApp.setReadOnly(setup.getReadOnly());
-            vncApp.sync(true);
-        }
+        ((TightVNCModuleApp) app).setPreferredWidth((int) setup.getPreferredWidth());
+        ((TightVNCModuleApp) app).setPreferredHeight((int) setup.getPreferredHeight());
+        ((TightVNCModuleApp) app).setDecorated(setup.getDecorated());
+        ((TightVNCModuleApp) app).setPixelScale(new Point2f(setup.getPixelScale(), setup.getPixelScale()));
+        ((TightVNCModuleApp) app).setReadOnly(setup.getReadOnly());
+        ((TightVNCModuleApp) app).setShowing(true);
+
+        // request sync with shared vnc state
+        logger.info("vnc app requesting initial sync");
+        ((TightVNCModuleApp) app).sync(true);
+    }
+
+    /**
+     * Reconfigure the cell, when the origin, bounds, or other setup information
+     * has changed.
+     */
+    @Override
+    public void reconfigure(Matrix4d origin, Bounds bounds, CellSetup setupData) {
+        super.reconfigure(origin, bounds, setupData);
+        ((TightVNCModuleApp) app).resync();
     }
 
     public String getUID() {
@@ -74,7 +88,7 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
     }
 
     protected void handleResponse(TightVNCModuleCellMessage msg) {
-        vncApp.handleResponse(msg);
+        ((TightVNCModuleApp) app).handleResponse(msg);
     }
 
     /**
@@ -86,10 +100,15 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
     @Override
     public void receivedMessage(ClientChannel channel, SessionId session,
             byte[] data) {
-        TightVNCModuleCellMessage msg = Message.extractMessage(data, TightVNCModuleCellMessage.class);
+        CellMessage msg = Message.extractMessage(data, CellMessage.class);
 
-        logger.fine("cell received message: " + msg);
-        handleResponse(msg);
+        if (msg instanceof TightVNCModuleCellMessage) {
+            TightVNCModuleCellMessage vncmsg = Message.extractMessage(data, TightVNCModuleCellMessage.class);
+            logger.fine("vnc app received message: " + vncmsg);
+            handleResponse(vncmsg);
+        } else {
+            super.receivedMessage(channel, session, data);
+        }
     }
 
     /**

@@ -19,7 +19,6 @@
  */
 package org.jdesktop.lg3d.wonderland.tightvncmodule.client.cell;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -64,6 +63,8 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
             Logger.getLogger(TightVNCModuleApp.class.getName());
     private static final int DEFAULT_WIDTH = 1024;
     private static final int DEFAULT_HEIGHT = 768;
+    private int preferredWidth = DEFAULT_WIDTH;
+    private int preferredHeight = DEFAULT_HEIGHT;
     private VNCSessionDialog vncDialog;
     private HUDButton msgButton;
     private DrawingSurface drawingSurface;
@@ -104,8 +105,6 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         initVNCDialog();
         initHUDMenu();
         addListeners();
-        setDecorated(decorated);
-        setShowing(true);
     }
 
     public void setReadOnly(boolean readOnly) {
@@ -407,6 +406,23 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         return synced;
     }
 
+    /** 
+     * Resynchronize the state of the cell.
+     * 
+     * A resync is necessary when the cell transitions from INACTIVE to 
+     * ACTIVE cell state, where the cell may have missed state synchronization 
+     * messages while in the INACTIVE state.
+     * 
+     * Resynchronization is only performed if the cell is currently synced.
+     * To sync an unsynced cell, call sync(true) instead.
+     */
+    public void resync() {
+        if (isSynced()) {
+            synced = false;
+            sync(true);
+        }
+    }
+
     public void sync(boolean syncing) {
         if ((syncing == false) && (synced == true)) {
             synced = false;
@@ -478,6 +494,14 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
             logger.fine("sending message: " + vnccm);
             ChannelController.getController().sendMessage(vnccm);
         }
+    }
+
+    public void setPreferredWidth(int preferredWidth) {
+        this.preferredWidth = preferredWidth;
+    }
+
+    public void setPreferredHeight(int preferredHeight) {
+        this.preferredHeight = preferredHeight;
     }
 
     /**
