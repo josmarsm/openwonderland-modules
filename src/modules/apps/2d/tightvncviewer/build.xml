@@ -59,7 +59,15 @@
          -pre-clean: before clean
          -post-clean: after clean
     -->
-    
+  
+    <target name="-pre-jar-client">
+        <copy todir="${module.build.dir}/classes/org/jdesktop/lg3d/wonderland/tightvncmodule/client/cell/resources">
+            <fileset dir="src/classes/org/jdesktop/lg3d/wonderland/tightvncmodule/client/cell/resources/">
+                <include name="*.png"/>
+            </fileset>
+        </copy>
+    </target>
+  
     <target name="-post-jar-server">
         <copy todir="${module.client.dir}">
             <fileset dir="lib">
