@@ -36,8 +36,10 @@ import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.media.j3d.Bounds;
 import javax.media.j3d.Node;
 import javax.vecmath.Matrix4d;
+import org.jdesktop.j3d.util.SceneGraphUtil;
 import org.jdesktop.lg3d.wg.event.LgEvent;
 import org.jdesktop.lg3d.wg.event.LgEventListener;
 import org.jdesktop.lg3d.wg.event.MouseButtonEvent3D;
@@ -107,10 +109,16 @@ public class AlbumCloudCell extends Cell implements ExtendedClientChannelListene
         J3dLgBranchGroup node = new J3dLgBranchGroup();
         node.addChild(UI.albumCloud.node);
         addMouseInput(node);
+        SceneGraphUtil.setCapabilities(node);
         cellLocal.addChild(node);
         
         // set the initial playlist
         handlePlayList(PlaylistAction.NEW, acs.getPlayList());
+    }
+    
+    public void reconfigure(Matrix4d origin, Bounds bounds, CellSetup setupData) {
+        super.reconfigure(origin, cellBounds, setupData);
+        setup(setupData);
     }
     
     void requestAlbumInfo(String albumName) {
@@ -217,6 +225,9 @@ public class AlbumCloudCell extends Cell implements ExtendedClientChannelListene
         // tell the super class the status which handles load/unload
         boolean ret = super.setStatus(status);
 
+        if (!ret)
+            return ret;
+        
         // Start/stop the animation based upon the status
         switch (status) {
             case VISIBLE:
@@ -224,6 +235,9 @@ public class AlbumCloudCell extends Cell implements ExtendedClientChannelListene
                 break;
             case ACTIVE:
             case INACTIVE:
+                break;
+            case BOUNDS :
+                cellLocal.removeAllChildren();
                 break;
         }
         return ret;
