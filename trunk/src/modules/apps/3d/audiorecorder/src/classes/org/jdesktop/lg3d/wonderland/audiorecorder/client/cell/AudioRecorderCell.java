@@ -38,16 +38,24 @@ import com.sun.sgs.client.ClientChannel;
 import com.sun.sgs.client.SessionId;
 import java.awt.Container;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 import javax.media.j3d.Alpha;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Behavior;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
-import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
+import javax.swing.DefaultListModel;
+import javax.swing.DefaultListSelectionModel;
+import javax.swing.ListModel;
+import javax.swing.ListSelectionModel;
 import org.jdesktop.lg3d.wg.event.LgEvent;
 import org.jdesktop.lg3d.wg.event.LgEventListener;
 import org.jdesktop.lg3d.wg.event.MouseButtonEvent3D;
@@ -58,14 +66,13 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellMessage;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage;
-import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderMessage.RecorderGLOAction;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.AudioRecorderCellSetup;
+import org.jdesktop.lg3d.wonderland.audiorecorder.common.Tape;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 
 import org.jdesktop.lg3d.wonderland.scenemanager.CellMenuManager;
 
 import org.jdesktop.j3d.util.SceneGraphUtil;
-import org.jdesktop.lg3d.wonderland.config.common.WonderlandConfig;
 import org.jdesktop.lg3d.wonderland.scenemanager.AssetManager;
 
 /**
@@ -85,12 +92,15 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     private boolean isPlaying = false;
     private Set<Behavior> behaviors = new HashSet<Behavior>();
     private String userName = null;
+    private DefaultListModel tapeListModel;
+    private ListSelectionModel tapeSelectionModel;
+    private ReelForm reelForm;
   
     private String baseURL;
     
     public AudioRecorderCell(CellID cellID, String channelName, Matrix4d cellOrigin) {
         super(cellID, channelName, cellOrigin);
-
+        
     }
     
     public void setChannel(ClientChannel channel) {
@@ -103,6 +113,9 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         AudioRecorderCellSetup rdcSetup = (AudioRecorderCellSetup) setup;
 
 	baseURL = rdcSetup.getBaseURL();
+        Set tapes = rdcSetup.getTapes();
+        Tape selectedTape = rdcSetup.getSelectedTape();
+        createTapeModels(tapes, selectedTape);
 
         addRecordingDevice();        
         // handle initial selection
@@ -111,8 +124,34 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         stopButton.setSelected(!(isPlaying || isRecording));
         enableBehaviors(isPlaying || isRecording);
         userName = rdcSetup.getUserName();
+        reelForm = new ReelForm(this);
     }
 
+    
+    
+    private void createTapeModels(Set<Tape> tapes, Tape selectedTape) {
+        List sortedTapes = new ArrayList(tapes);
+        Collections.sort(sortedTapes);
+        tapeListModel = new DefaultListModel();
+        for (Iterator it = sortedTapes.iterator(); it.hasNext();) {
+            tapeListModel.addElement(it.next());
+        }
+        
+        tapeSelectionModel = new DefaultListSelectionModel();
+        tapeSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        int selectionIndex = sortedTapes.indexOf(selectedTape);
+        tapeSelectionModel.setSelectionInterval(0, selectionIndex);
+    }
+    
+    void selectedTapeChanged() {
+            int index = tapeSelectionModel.getMaxSelectionIndex();
+            if (index >= 0) {
+                Tape selectedTape = (Tape) tapeListModel.elementAt(index);
+                AudioRecorderCellMessage msg = AudioRecorderCellMessage.tapeSelected(getCellID(), selectedTape.getTapeName());
+                ChannelController.getController().sendMessage(msg);
+            }
+    }
+    
     private void addRecordingDevice() {
         Transform3D transform = new Transform3D();
         //Adjust the scale to fit the world from Justin's original model
@@ -164,13 +203,22 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
 	SceneGraphUtil.setCapabilitiesGraph(reelBG, false);
         
         bg.addChild(reelBG); 
+        
+        addReelEvents(reelBG, reel);
     }    
     
-    private void addMouseEvents(J3dLgBranchGroup recorderBG, Button aButton) {
+    private void addReelEvents(J3dLgBranchGroup recorderBG, BranchGroup reel) {
         recorderBG.setCapabilities();
         recorderBG.setMouseEventEnabled(true);
         recorderBG.setMouseEventSource(MouseButtonEvent3D.class, true);
-        recorderBG.addListener(new MouseSelectionListener(aButton, this));        
+        recorderBG.addListener(new ReelListener(reel, this));        
+    }
+    
+    private void addButtonEvents(J3dLgBranchGroup recorderBG, Button aButton) {
+        recorderBG.setCapabilities();
+        recorderBG.setMouseEventEnabled(true);
+        recorderBG.setMouseEventSource(MouseButtonEvent3D.class, true);
+        recorderBG.addListener(new ButtonListener(aButton, this));        
     }
     
        
@@ -192,21 +240,21 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
                 setRecording(message.isRecording());
                 userName = message.getUserName();
                 break;
+            case TAPE_USED:
+                setTapeUsed(message.getTapeName());
+                break;
+            case NEW_TAPE:
+                Tape newTape = new Tape(message.getTapeName());
+                tapeListModel.addElement(newTape);
+                break;
+            case TAPE_SELECTED:
+                selectTape(message.getTapeName());
+                break;
             default:
                 logger.severe("Unknown action type: " + message.getAction());
         
         }
 
-	/*if (message.getAction().equals(RecorderGLOAction.SET_VOLUME)) {
-	    AudioRecorderCellMenu menu = AudioRecorderCellMenu.getInstance();
-	    menu.volumeChanged(getCellID().toString(), message.getVolume());
-	} else if (message.getAction().equals(RecorderGLOAction.PLAYBACK_DONE)) {
-	    setPlaying(false);
-	} else {
-            setRecording(message.isRecording());
-            setPlaying(message.isPlaying());
-            userName = message.getUserName();
-	}*/
     }    
     
     public void leftChannel(ClientChannel arg0) {       
@@ -236,7 +284,7 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         J3dLgBranchGroup buttonBG = new J3dLgBranchGroup();
         Button aButton = new Button(modelFilename, litTextureFilename);                 
         
-        addMouseEvents(buttonBG, aButton);
+        addButtonEvents(buttonBG, aButton);
         
         buttonBG.addChild(aButton);
 	// Set capability bits for collision system
@@ -245,10 +293,39 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         return aButton;
     }
 
+    private void selectTape(String tapeName) {
+        Enumeration tapes = tapeListModel.elements();
+        while (tapes.hasMoreElements()) {
+            Tape aTape = (Tape) tapes.nextElement();
+            if (aTape.getTapeName().equals(tapeName)) {
+                reelForm.selectTape(aTape);
+            }
+        }
+    }
+
+    private void setTapeUsed(String tapeName) {
+        Enumeration tapes = tapeListModel.elements();
+        while (tapes.hasMoreElements()) {
+            Tape aTape = (Tape) tapes.nextElement();
+            if (aTape.getTapeName().equals(tapeName)) {
+                aTape.setUsed();
+            }
+        }
+    }
+
     
     
     private void startRecording() {
         if (!isPlaying) {
+            Tape selectedTape = getSelectedTape();
+            if (selectedTape == null) {
+                logger.warning("Can't record when there's no selected tape");
+                return;
+            }
+            if (!selectedTape.isFresh()) {
+                logger.warning("Overwriting existing recording");
+            }
+            setUsed(selectedTape);
             userName = getCurrentUserName();
             setRecording(true);
             AudioRecorderCellMessage msg = AudioRecorderCellMessage.recordingMessage(getCellID(), isRecording, userName);
@@ -258,8 +335,19 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         }
     }
     
+    private void setUsed(Tape aTape) {
+        aTape.setUsed();
+        AudioRecorderCellMessage msg = AudioRecorderCellMessage.setTapeUsed(getCellID(), aTape.getTapeName());
+        ChannelController.getController().sendMessage(msg);
+    }
+    
     private void startPlaying() {
         if (!isRecording) {
+            Tape selectedTape = getSelectedTape();
+            if (selectedTape == null) {
+                logger.warning("Can't playback when there's no selected tape");
+                return;
+            }
 	    userName = getCurrentUserName();
 	    setPlaying(true);
             AudioRecorderCellMessage msg = AudioRecorderCellMessage.playingMessage(getCellID(), isPlaying, userName);
@@ -319,12 +407,48 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
 	AudioRecorderCellMessage msg = AudioRecorderCellMessage.volumeMessage(getCellID(), name, volume);
         ChannelController.getController().sendMessage(msg);
     }
+    
+    ListModel getTapeListModel() {
+        return tapeListModel;
+    }
+    
+   ListSelectionModel getTapeSelectionModel() {
+       return tapeSelectionModel;
+   }
+   
+   private Tape getSelectedTape() {
+       int selectionIndex = tapeSelectionModel.getMaxSelectionIndex();
+       if (selectionIndex == -1) {
+           return null;
+       } else {
+           return (Tape) tapeListModel.elementAt(selectionIndex);
+       }
+   }
+   
+   Set<String> getTapeNames() {
+       Enumeration tapes = tapeListModel.elements();
+       Set<String> tapeNames = new HashSet<String>();
+        while (tapes.hasMoreElements()) {
+            Tape aTape = (Tape) tapes.nextElement();
+            tapeNames.add(aTape.getTapeName());
+        }
+       return tapeNames;
+   }
+   
+   Tape addTape(String tapeName) {
+        Tape newTape = new Tape(tapeName);
+        tapeListModel.addElement(newTape);
+        AudioRecorderCellMessage msg = AudioRecorderCellMessage.newTape(getCellID(), tapeName);
+        ChannelController.getController().sendMessage(msg);
+        return newTape;
+    }
+    
 
-    class MouseSelectionListener implements LgEventListener {
+    class ButtonListener implements LgEventListener {
         private Button button;
         private Cell cell;
         
-        public MouseSelectionListener(Button button, Cell cell) {
+        public ButtonListener(Button button, Cell cell) {
             this.button = button;
             this.cell = cell;
         }
@@ -450,5 +574,32 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
                 return null;
             }
         }
+    }
+    
+    class ReelListener implements LgEventListener {
+        private BranchGroup reel;
+        private Cell cell;
+        
+        public ReelListener(BranchGroup reel, Cell cell) {
+            this.reel = reel;
+            this.cell = cell;
+        }
+        
+        public void processEvent(LgEvent lge) {
+            if (lge instanceof MouseButtonEvent3D) {                  // Handle Mouse Clicks
+                MouseButtonEvent3D mbe3D = (MouseButtonEvent3D) lge;
+                
+                if (mbe3D.isClicked()) {
+                        reelForm.setVisible(true);
+		    }
+                }
+            }
+
+        public Class[] getTargetEventClasses() {
+            return new Class[] {MouseButtonEvent3D.class};
+        }
+               
+
+        
     }
 }
