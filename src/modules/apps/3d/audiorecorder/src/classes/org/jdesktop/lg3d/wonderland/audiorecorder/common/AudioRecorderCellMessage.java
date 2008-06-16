@@ -38,13 +38,17 @@ public class AudioRecorderCellMessage extends CellMessage {
     public enum RecorderCellAction {
 	RECORD,
 	PLAY,
-        SET_VOLUME
+        SET_VOLUME,
+        TAPE_USED,
+        TAPE_SELECTED,
+        NEW_TAPE
     };
     private RecorderCellAction action;
     private boolean isRecording = false;
     private boolean isPlaying = false;
     private String userName;
     private double volume;
+    private String tapeName;
 
     /**
      * Default constructor
@@ -102,6 +106,32 @@ public class AudioRecorderCellMessage extends CellMessage {
         msg.volume = volume;
         return msg;
     }
+     
+    public static AudioRecorderCellMessage setTapeUsed(CellID cellID, String tapeName) {
+        AudioRecorderCellMessage msg = new AudioRecorderCellMessage();
+        msg.setCellID(cellID);
+        msg.action = RecorderCellAction.TAPE_USED;
+        msg.tapeName = tapeName;
+        return msg;
+    }
+    
+    public static AudioRecorderCellMessage tapeSelected(CellID cellID, String tapeName) {
+        AudioRecorderCellMessage msg = new AudioRecorderCellMessage();
+        msg.setCellID(cellID);
+        msg.action = RecorderCellAction.TAPE_SELECTED;
+        msg.tapeName = tapeName;
+        return msg;
+    }
+    
+    public static AudioRecorderCellMessage newTape(CellID cellID, String tapeName) {
+        AudioRecorderCellMessage msg = new AudioRecorderCellMessage();
+        msg.setCellID(cellID);
+        msg.action = RecorderCellAction.NEW_TAPE;
+        msg.tapeName = tapeName;
+        return msg;
+    }
+    
+    
 
     public RecorderCellAction getAction() {
 	return action;
@@ -122,21 +152,36 @@ public class AudioRecorderCellMessage extends CellMessage {
     public String getUserName() {
         return userName;
     }
+    
+    public String getTapeName() {
+        return tapeName;
+    }
 
     @Override
     protected void extractMessageImpl(ByteBuffer data) {
 	super.extractMessageImpl(data);
         action = RecorderCellAction.values()[DataInt.value(data)];
-        userName = DataString.value(data);
         switch (action) {
             case RECORD:
+                userName = DataString.value(data);
                 isRecording = DataBoolean.value(data);
                 break;
             case PLAY:
+                userName = DataString.value(data);
                 isPlaying = DataBoolean.value(data);
                 break;
             case SET_VOLUME:
+                userName = DataString.value(data);
                 volume = DataDouble.value(data);
+                break;
+            case TAPE_USED:
+                tapeName= DataString.value(data);
+                break;
+            case TAPE_SELECTED:
+                tapeName= DataString.value(data);
+                break;
+            case NEW_TAPE:
+                tapeName= DataString.value(data);
                 break;
             default:
                 System.err.println("Unknown action");     
@@ -147,16 +192,27 @@ public class AudioRecorderCellMessage extends CellMessage {
     protected void populateDataElements() {
 	super.populateDataElements();
 	dataElements.add(new DataInt(action.ordinal()));
-        dataElements.add(new DataString(userName));
         switch(action) {
             case RECORD:
+                dataElements.add(new DataString(userName));
                 dataElements.add(new DataBoolean(isRecording));
                 break;
             case PLAY:
+                dataElements.add(new DataString(userName));
                 dataElements.add(new DataBoolean(isPlaying));
                 break;
             case SET_VOLUME:
+                dataElements.add(new DataString(userName));
                 dataElements.add(new DataDouble(volume));
+                break;
+            case TAPE_USED:
+                dataElements.add(new DataString(tapeName));
+                break;
+            case TAPE_SELECTED:
+                dataElements.add(new DataString(tapeName));
+                break;
+            case NEW_TAPE:
+                dataElements.add(new DataString(tapeName));
                 break;
             default:
                 System.err.println("Unknown action");

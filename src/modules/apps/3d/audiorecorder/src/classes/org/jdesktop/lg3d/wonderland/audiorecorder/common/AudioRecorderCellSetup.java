@@ -19,6 +19,7 @@
  */
 package org.jdesktop.lg3d.wonderland.audiorecorder.common;
 
+import java.util.Set;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 
 /**
@@ -32,6 +33,16 @@ public class AudioRecorderCellSetup implements CellSetup {
     private String userName;
 
     private String baseURL;
+    private Set<Tape> tapes;
+    private Tape selectedTape;
+
+    public Tape getSelectedTape() {
+        return selectedTape;
+    }
+
+    public Set<Tape> getTapes() {
+        return tapes;
+    }
     
     public boolean isRecording() {
         return isRecording;
@@ -39,6 +50,10 @@ public class AudioRecorderCellSetup implements CellSetup {
     
     public boolean isPlaying() {
         return isPlaying;
+    }
+
+    public void setSelectedTape(Tape selectedTape) {
+        this.selectedTape = selectedTape;
     }
 
     public void setRecording(boolean isRecording) {
@@ -51,6 +66,10 @@ public class AudioRecorderCellSetup implements CellSetup {
     
     public String getUserName() {
         return userName;
+    }
+
+    public void setTapes(Set<Tape> tapes) {
+        this.tapes = tapes;
     }
     
     public void setUserName(String userName) {

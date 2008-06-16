@@ -34,12 +34,19 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
  */
 public class AudioRecorderMessage extends Message {
 
+    
+
+    
+
 
     public enum RecorderGLOAction {
 	SET_VOLUME,
 	PLAYBACK_DONE,
         RECORD,
-	PLAY
+	PLAY,
+        TAPE_USED,
+        TAPE_SELECTED,
+        NEW_TAPE
     };
 
     private RecorderGLOAction action;
@@ -47,6 +54,7 @@ public class AudioRecorderMessage extends Message {
     private boolean isPlaying;
     private String userName;
     private double volume;
+    private String tapeName;
 
     /**
      * Default constructor
@@ -83,7 +91,7 @@ public class AudioRecorderMessage extends Message {
     /**
      * Static method used to create an instance of AudioRecorderMessage that has an action type
      * <code>RECORD</code>.
-     * @param playing boolean to indicate the state of the recorder
+     * @param recording boolean to indicate the state of the recorder
      * @param userName the name of the user that initiated this change
      * @return a message with appropriate state
      */
@@ -95,6 +103,26 @@ public class AudioRecorderMessage extends Message {
         return msg;
     }
     
+    public static AudioRecorderMessage tapeUsedMessage(String tapeName) {
+        AudioRecorderMessage msg = new AudioRecorderMessage();
+        msg.action = RecorderGLOAction.TAPE_USED;
+        msg.tapeName = tapeName;
+        return msg;
+    }
+    
+    public static AudioRecorderMessage tapeSelectedMessage(String tapeName) {
+        AudioRecorderMessage msg = new AudioRecorderMessage();
+        msg.action = RecorderGLOAction.TAPE_SELECTED;
+        msg.tapeName = tapeName;
+        return msg;
+    }
+    
+    public static AudioRecorderMessage newTapeMessage(String tapeName) {
+        AudioRecorderMessage msg = new AudioRecorderMessage();
+        msg.action = RecorderGLOAction.NEW_TAPE;
+        msg.tapeName = tapeName;
+        return msg;
+    }
 
     public RecorderGLOAction getAction() {
 	return action;
@@ -121,6 +149,10 @@ public class AudioRecorderMessage extends Message {
     public double getVolume() {
 	return volume;
     }
+    
+    public String getTapeName() {
+        return tapeName;
+    }
 
     protected void extractMessageImpl(ByteBuffer data) {
         action = RecorderGLOAction.values()[DataInt.value(data)];
@@ -133,8 +165,17 @@ public class AudioRecorderMessage extends Message {
                 break;
             case PLAYBACK_DONE:
                 break;
+            case TAPE_USED:
+                tapeName = DataString.value(data);
+                break;
+            case TAPE_SELECTED:
+                tapeName = DataString.value(data);
+                break;
+            case NEW_TAPE:
+                tapeName = DataString.value(data);
+                break;
             default:
-                
+                System.err.println("No such action: " + action);
         }
     }
 
@@ -150,6 +191,15 @@ public class AudioRecorderMessage extends Message {
                 break;
             case PLAYBACK_DONE:
                  break;
+            case TAPE_USED:
+                dataElements.add(new DataString(tapeName));
+                break;
+            case TAPE_SELECTED:
+                dataElements.add(new DataString(tapeName));
+                break;
+            case NEW_TAPE:
+                dataElements.add(new DataString(tapeName));
+                break;
             default:
                  System.err.println("No such action: " + action);
         }

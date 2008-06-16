@@ -50,6 +50,7 @@ import org.jdesktop.lg3d.wonderland.config.common.WonderlandConfig;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 
 import com.sun.voip.client.connector.CallStatus;
+import org.jdesktop.lg3d.wonderland.audiorecorder.common.Tape;
 
 /**
  * Represents the audio recorder on the server and communicates with the voice bridge.
@@ -68,6 +69,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
     private double scale;
     private int instanceNumber;
     private String callId;
+    private Set<Tape> tapes = new HashSet<Tape>();
+    private Tape selectedTape;
     private BasicCellGLOSetup<AudioRecorderCellSetup> setup;
             
     /**
@@ -75,6 +78,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
      */
     public AudioRecorderGLO() {
         this(null, null);
+        
     }
     
     /** 
@@ -86,6 +90,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
         super(bounds, center); 
 
 	getVoiceHandler().addCallStatusListener(this);
+        selectedTape = new Tape("Untitled Tape");
+        tapes.add(selectedTape);
         instanceNumber = ++INSTANCE_COUNT;
         logger.info("Recorder filename: " + getRecorderFilename());
 
@@ -113,18 +119,75 @@ public class AudioRecorderGLO extends StationaryCellGLO
     }
 
     public void receivedMessage(ClientSession client, CellMessage message) {
-        AudioRecorderCellMessage ntcm = (AudioRecorderCellMessage) message;
-        switch (ntcm.getAction()) {
+        AudioRecorderCellMessage arcm = (AudioRecorderCellMessage) message;
+        switch (arcm.getAction()) {
             case PLAY:
-                processPlayMessage(client, ntcm);
+                processPlayMessage(client, arcm);
                 break;
             case RECORD:
-                processRecordMessage(client, ntcm);
+                processRecordMessage(client, arcm);
                 break;
             case SET_VOLUME:
-                processVolumeMessage(client, ntcm);
+                processVolumeMessage(client, arcm);
+                break;
+            case TAPE_USED:
+                processTapeUsedMessage(client, arcm);
+                break;
+            case TAPE_SELECTED:
+                processTapeSelectedMessage(client, arcm);
+                break;
+            case NEW_TAPE:
+                processNewTapeMessage(client, arcm);
                 break;
         }
+    }
+
+    private void processNewTapeMessage(ClientSession client, AudioRecorderCellMessage arcm) {
+        String tapeName = arcm.getTapeName();
+        Tape newTape = new Tape(tapeName);
+        tapes.add(newTape);
+        // send a message to all clients except the sender to notify of 
+        // the updated tape
+        AudioRecorderMessage msg = AudioRecorderMessage.newTapeMessage(tapeName);
+
+        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+        sessions.remove(client);
+        getCellChannel().send(sessions, msg.getBytes());               
+    }
+    
+    
+    
+    private void processTapeSelectedMessage(ClientSession client, AudioRecorderCellMessage arcm) {
+        String tapeName = arcm.getTapeName();
+        for (Tape aTape : tapes) {
+            if(aTape.getTapeName().equals(tapeName)) {
+                selectedTape = aTape;
+                getSetupData().setSelectedTape(selectedTape);  
+                // send a message to all clients except the sender to notify of 
+                // the updated tape
+                AudioRecorderMessage msg = AudioRecorderMessage.tapeSelectedMessage(tapeName);
+
+                Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+                sessions.remove(client);
+                getCellChannel().send(sessions, msg.getBytes());
+            }
+        }      
+    }
+    
+    private void processTapeUsedMessage(ClientSession client, AudioRecorderCellMessage arcm) {
+        String tapeName = arcm.getTapeName();
+        for (Tape aTape : tapes) {
+            if(aTape.getTapeName().equals(tapeName)) {
+                aTape.setUsed();
+                // send a message to all clients except the sender to notify of 
+                // the updated tape
+                AudioRecorderMessage msg = AudioRecorderMessage.tapeUsedMessage(tapeName);
+
+                Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+                sessions.remove(client);
+                getCellChannel().send(sessions, msg.getBytes());
+            }
+        }       
     }
     
     private void processPlayMessage(ClientSession client, AudioRecorderCellMessage ntcm) {
@@ -140,9 +203,9 @@ public class AudioRecorderGLO extends StationaryCellGLO
         getCellChannel().send(sessions, msg.getBytes());
     }
     
-    private void processRecordMessage(ClientSession client, AudioRecorderCellMessage ntcm) {
-        setRecording(ntcm.isRecording());
-        getSetupData().setUserName(ntcm.getUserName());
+    private void processRecordMessage(ClientSession client, AudioRecorderCellMessage arcm) {
+        setRecording(arcm.isRecording());
+        getSetupData().setUserName(arcm.getUserName());
 
         // send a message to all clients except the sender to notify of 
         // the updated selection
@@ -165,7 +228,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
             //Not sure why we would do this, as this as we don't need to let other clients know (do we?)
             
             /*AudioRecorderMessage msg = new AudioRecorderMessage(getSetupData().isRecording(),
-                    getSetupData().isPlaying(), getSetupData().getUserName(), ntcm.getVolume());
+                    getSetupData().isPlaying(), getSetupData().getUserName(), arcm.getVolume());
 
             Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
             sessions.remove(client);
@@ -217,6 +280,9 @@ public class AudioRecorderGLO extends StationaryCellGLO
 	scale = setup.getScale();
 
 	getSetupData().setBaseURL(WonderlandConfig.getBaseURL());
+        getSetupData().setTapes(tapes);
+        getSetupData().setSelectedTape(selectedTape);
+  
     }
 
     @Override
@@ -346,7 +412,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
     
     private String getRecorderFilename() {
         //MUST end in '.au'
-        return getClass().getSimpleName() + instanceNumber + ".au";
+        //return getClass().getSimpleName() + instanceNumber + ".au";
+        return selectedTape.getTapeName() + ".au";
     }
     
 }
