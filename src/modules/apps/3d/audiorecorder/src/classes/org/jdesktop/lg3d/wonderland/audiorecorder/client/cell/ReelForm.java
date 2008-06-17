@@ -81,7 +81,6 @@ public class ReelForm extends javax.swing.JFrame {
         setTitle("Tapes");
         setAlwaysOnTop(true);
         setResizable(false);
-        setUndecorated(true);
 
         tapesList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -150,7 +149,10 @@ public class ReelForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        String tapeName=JOptionPane.showInputDialog("Add New Tape. Name:", "Untitled");
+        String tapeName=JOptionPane.showInputDialog(this, "Add New Tape", "Untitled");
+        if (tapeName == null) {
+            return;
+        }
         if (audioRecorderCell.getTapeNames().contains(tapeName)) {
             JOptionPane.showMessageDialog(this,
                                     "A Tape with that Name already exists",
