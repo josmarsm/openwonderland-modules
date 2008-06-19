@@ -175,7 +175,6 @@ public class AudioRecorderMessage extends Message {
                 tapeName = DataString.value(data);
                 break;
             default:
-                System.err.println("No such action: " + action);
         }
     }
 
@@ -201,7 +200,7 @@ public class AudioRecorderMessage extends Message {
                 dataElements.add(new DataString(tapeName));
                 break;
             default:
-                 System.err.println("No such action: " + action);
+                 
         }
     }    
 }
