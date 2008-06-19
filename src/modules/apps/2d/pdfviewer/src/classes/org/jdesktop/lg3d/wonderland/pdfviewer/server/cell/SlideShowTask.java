@@ -86,7 +86,7 @@ public class SlideShowTask implements Serializable, Task, ManagedObject {
 
         if ((stateMO.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER) ||
                 (showIteration < stateMO.getShowCount())) {
-            logger.info("slide show: showing page " + currentPage +
+            logger.info("PDF slide show: showing page " + currentPage +
                     " in range " + stateMO.getStartPage() + "-" + stateMO.getEndPage());
 
             // send a message to all clients to show the next page in the 
@@ -101,7 +101,7 @@ public class SlideShowTask implements Serializable, Task, ManagedObject {
             if (currentPage >= stateMO.getEndPage()) {
                 // end of a slide show iteration, there may be more
                 showIteration++;
-                logger.info("slide show: end of iteration " + showIteration + " of " +
+                logger.info("PDF slide show: end of iteration " + showIteration + " of " +
                         ((stateMO.getShowCount() == PDFViewerCellSetup.LOOP_FOREVER)
                         ? "an infinite "
                         : ("a " + stateMO.getShowCount() + " loop ")) + "slide show");

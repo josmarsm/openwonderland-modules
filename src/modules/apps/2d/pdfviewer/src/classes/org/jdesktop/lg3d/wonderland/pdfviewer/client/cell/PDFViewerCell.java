@@ -70,7 +70,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
         ((PDFViewerApp) app).setShowing(true);
 
         // request sync with shared whiteboard state
-        logger.info("pdf viewer requesting initial sync");
+        logger.info("PDF viewer requesting initial sync");
         ((PDFViewerApp) app).sync(true);
     }
 
@@ -86,7 +86,6 @@ public class PDFViewerCell extends SharedApp2DImageCell
     
     public String getUID() {
         if (myUID == null) {
-            logger.warning("--- my UID is null");
         }
         return myUID;
     }
@@ -116,7 +115,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
 
         if (msg instanceof PDFCellMessage) {
             PDFCellMessage pdfmsg = Message.extractMessage(data, PDFCellMessage.class);
-            logger.fine("pdf received message: " + pdfmsg);
+            logger.fine("PDF viewer received message: " + pdfmsg);
             handleResponse(pdfmsg);
         } else {
             super.receivedMessage(channel, session, data);
@@ -128,6 +127,6 @@ public class PDFViewerCell extends SharedApp2DImageCell
      * @param channel the left channel
      */
     public void leftChannel(ClientChannel channel) {
-        logger.fine("leftChannel: " + channel);
+        logger.fine("PDF viewer left channel: " + channel);
     }
 }

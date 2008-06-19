@@ -60,6 +60,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 import org.jdesktop.lg3d.wonderland.pdfviewer.client.cell.PDFCellMenu.Button;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage.Action;
+import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage.RequestStatus;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
@@ -95,6 +96,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     private boolean synced = false;
     private boolean inControl = false;
     private PDFCellMenu cellMenu;
+    protected Object actionLock = new Object();
 
     public PDFViewerApp(SharedApp2DImageCell cell) {
         this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
@@ -143,7 +145,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                                     1,
                                     new Point());
                         } catch (Exception e) {
-                            showHUDMessage("invalid PDF URL", 5000);
+                            showHUDMessage("Invalid PDF URL", 5000);
                             logger.warning("invalid PDF URL: " + pdfDialog.getDocumentURL());
                         }
                     } else {
@@ -268,14 +270,14 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     public void sync(boolean syncing) {
         if ((syncing == false) && (synced == true)) {
             synced = false;
-            logger.info("pdf viewer unsynced");
-            showHUDMessage("unsynced", 3000);
+            logger.info("PDF viewer unsynced");
+            showHUDMessage("Unsynced", 3000);
             cellMenu.enableButton(Button.UNSYNC);
             cellMenu.disableButton(Button.SYNC);
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
-            logger.info("pdf viewer requesting sync with shared state");
-            showHUDMessage("syncing...", 3000);
+            logger.info("PDF viewer requesting sync with shared state");
+            showHUDMessage("Syncing...", 3000);
             sendDocumentRequest(Action.GET_STATE,
                     null,
                     0,
@@ -299,8 +301,53 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
         if (msg != null) {
             // send request to server
-            logger.fine("pdf viewer sending document request: " + msg);
+            logger.fine("PDF viewer sending document request: " + msg);
             ChannelController.getController().sendMessage(msg);
+        }
+    }
+
+    /**
+     * Retries a PDF action request
+     * @param action the action to retry
+     * @param url the URL of the document that the action applies to
+     * @param page the page in the document
+     * @param position the page scroll position
+     * @param position
+     */
+    protected void retryDocumentRequest(Action action, URL url, int page, Point position) {
+        logger.fine("PDF Viewer creating retry thread for: " + action + ", " 
+                + url + ", " + page + ", " + position);
+        new ActionScheduler(action, url, page, position).start();
+    }
+
+    protected class ActionScheduler extends Thread {
+
+        private Action action;
+        private URL url;
+        private int page;
+        private Point position;
+
+        public ActionScheduler(Action action, URL url, int page, Point position) {
+            this.action = action;
+            this.url = url;
+            this.page = page;
+            this.position = position;
+        }
+
+        @Override
+        public void run() {
+            // wait for a retry window
+            synchronized (actionLock) {
+                try {
+                    logger.fine("PDF viewer waiting for retry window");
+                    actionLock.wait();
+                } catch (Exception e) {
+                    logger.fine("PDF viewer exception waiting for retry: " + e);
+                }
+            }
+            // retry this request
+            logger.info("PDF viewer now retrying: " + action + ", " + url + ", " + page + ", " + position);
+            sendDocumentRequest(action, url, page, position);
         }
     }
 
@@ -327,7 +374,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 String fileName = new File(url.toString()).getName();
 
                 try {
-                    logger.info("opening: " + url);
+                    logger.info("PDF viewer opening: " + url);
                     showHUDMessage("Opening " + fileName, 5000);
                     pdfDialog.setDocumentURL(url.toString());
 
@@ -338,7 +385,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
                     logger.info("PDF loaded in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
                 } catch (Exception e) {
-                    logger.warning("failed to open: " + url + ": " + e);
+                    logger.warning("PDF viewer failed to open: " + url + ": " + e);
                     showHUDMessage("Failed to open " + fileName, 5000);
                 }
                 if (loadingFile != null) {
@@ -377,6 +424,15 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param position the initial scroll position of the page
      */
     public void openDocument(String doc, int page, Point position) {
+        // To enable a simulation of PDF GLO request denial uncomment the 
+        // following. Other clients will receive REQUEST_DENIED messages when 
+        // attempting to control the document and will retry their requests 
+        // when this client request completes. See bug #369.
+//        try {
+//            long sleep = (long) (Math.random() * 1000 * 30);
+//            Thread.sleep(sleep);
+//        } catch (InterruptedException e) {
+//        }
         if ((doc == null) || (doc.length() == 0)) {
             // no document to open
             return;
@@ -400,7 +456,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             docURL = new URL(doc);
             new DocumentLoader(docURL, page, position).start();
         } catch (Exception e) {
-            logger.warning("failed to open: " + doc + ": " + e);
+            logger.warning("PDF viewer failed to open: " + doc + ": " + e);
             showHUDMessage("Failed to open " + doc, 5000);
         }
     }
@@ -515,12 +571,12 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                     Graphics2D g2 = image.createGraphics();
                     g2.drawImage(img, 0, 0, rw, rh, null);
                 } else {
-                    logger.warning("failed to get image for page: " + p);
+                    logger.warning("PDF viewer failed to get image for page: " + p);
                 }
 
             }
         } catch (Exception e) {
-            logger.severe("failed to get page image: " + e);
+            logger.severe("PDF viewer failed to get page image: " + e);
         }
 
         return image;
@@ -553,7 +609,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      */
     public void showPage(int p) {
         if (isValidPage(p)) {
-            logger.info("showing page: " + p);
+            logger.info("PDF viewer showing page: " + p);
             mousePos.setLocation(0, 0);
             currentPage = currentFile.getPage(p);
             pageDirty = true;
@@ -563,11 +619,11 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
             // pre-cache the next page
             if (isValidPage(p + 1)) {
-                logger.fine("pre-caching page: " + (p + 1));
+                logger.fine("PDF viewer pre-caching page: " + (p + 1));
                 currentFile.getPage(p + 1);
             }
         } else {
-            logger.warning("page " + p + " is not a valid page");
+            logger.warning("PDF page " + p + " is not a valid page");
         }
     }
 
@@ -664,7 +720,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     }
 
     public void gotoPage() {
-        logger.info("goto page not implemented");
+        logger.info("PDF viewer goto page not implemented");
     }
 
     public void next() {
@@ -719,8 +775,6 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      */
     @Override
     protected void paint(Graphics2D g) {
-        logger.finest("paint");
-
         // size of app which page will be scaled to fit
         double appWidth = (double) this.getWidth();
         double appHeight = (double) this.getHeight();
@@ -750,11 +804,11 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             // prevent scrolling off top of page
             yScroll = (yScroll < 0) ? 0 : yScroll;
 
-            logger.finest("app dimensions: " + getWidth() + "x" + getHeight());
-            logger.finest("page dimentions: " + scaledPageWidth + "x" + scaledPageHeight);
-            logger.finest("yScroll: " + yScroll);
-            logger.finest("page width (page units): " + pageImage.getWidth());
-            logger.finest("page height (page units): " + visibleHeight / scale);
+            logger.finest("PDF viewer dimensions: " + getWidth() + "x" + getHeight());
+            logger.finest("PDF viewer page dimentions: " + scaledPageWidth + "x" + scaledPageHeight);
+            logger.finest("PDF viewer yScroll: " + yScroll);
+            logger.finest("PDF viewer page width (page units): " + pageImage.getWidth());
+            logger.finest("PDF viewer page height (page units): " + visibleHeight / scale);
 
             BufferedImage visibleImage = pageImage.getSubimage(xScroll, (int) (int) (yScroll / scale), pageImage.getWidth(), (int) (visibleHeight / scale));
 
@@ -771,7 +825,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the mouse motion event
      */
     public void mouseMoved(MouseEvent evt) {
-        logger.finest("mouseMoved: " + evt);
+        logger.finest("PDF viewer mouseMoved: " + evt);
         isDragging = false;
         mousePos.setLocation(evt.getX(), evt.getY());
     }
@@ -781,7 +835,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the mouse drag event
      */
     public void mouseDragged(MouseEvent evt) {
-        logger.finest("mouseDragged: " + evt);
+        logger.finest("PDF viewer mouseDragged: " + evt);
 
         if (pageImage != null) {
             if (isDragging == false) {
@@ -813,7 +867,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the mouse wheel event
      */
     public void mouseWheelMoved(MouseWheelEvent evt) {
-        logger.finest("mouseWheelMoved: " + evt);
+        logger.finest("PDF viewer mouseWheelMoved: " + evt);
 
         if (evt.getWheelRotation() < 0) {
             previousPage();
@@ -827,7 +881,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the key press event
      */
     public void keyPressed(KeyEvent evt) {
-        logger.finest("keyPressed: " + evt);
+        logger.finest("PDF viewer keyPressed: " + evt);
     }
 
     /**
@@ -835,7 +889,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the key release event
      */
     public void keyReleased(KeyEvent evt) {
-        logger.finest("keyReleased: " + evt);
+        logger.finest("PDF viewer keyReleased: " + evt);
 
         switch (evt.getKeyCode()) {
             case KeyEvent.VK_O:
@@ -868,7 +922,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the key release event
      */
     public void keyTyped(KeyEvent evt) {
-        logger.finest("keyTyped: " + evt);
+        logger.finest("PDF viewer keyTyped: " + evt);
     }
 
     public void handleResponse(PDFCellMessage msg) {
@@ -878,57 +932,67 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         PDFCellMessage pdfcm = null;
 
         if (isSynced()) {
-            switch (msg.getAction()) {
-                case REQUEST_DENIED:
-                    // could queue denied request here
-                    break;
-                case OPEN_DOCUMENT:
-                    openDocument(msg.getDocument());
-                    break;
-                case SHOW_PAGE:
-                    showPage(msg.getPage());
-                    break;
-                case SET_VIEW_POSITION:
-                    setViewPosition(msg.getPosition());
-                    break;
-                case SET_STATE:
-                    if (forMe == true) {
-                        if (isSynced()) {
-                            logger.warning("--- handling SET_STATE");
-                            openDocument(msg.getDocument(), msg.getPage(), msg.getPosition());
-                            cellMenu.disableButton(Button.UNSYNC);
-                            cellMenu.enableButton(Button.SYNC);
-                            logger.info("synced");
-                            showHUDMessage("synced", 3000);
-                        } else {
-                            logger.warning("--- SET_STATE ignored, I am not synced");
+            logger.fine("PDF viewer " + myUID + " received message: " + msg);
+            if (msg.getRequestStatus() == RequestStatus.REQUEST_DENIED) {
+                // this request was denied, create a retry thread
+                try {
+                    logger.info("PDF viewer scheduling retry of request: " + msg);
+                    retryDocumentRequest(msg.getAction(), (msg.getDocument() == null) ? null : new URL(msg.getDocument()),
+                            msg.getPage(), msg.getPosition());
+                } catch (Exception e) {
+                    logger.warning("PDF viewer failed to create retry request for: " + msg);
+                }
+            } else {
+                switch (msg.getAction()) {
+                    case OPEN_DOCUMENT:
+                        openDocument(msg.getDocument());
+                        break;
+                    case SHOW_PAGE:
+                        showPage(msg.getPage());
+                        break;
+                    case SET_VIEW_POSITION:
+                        setViewPosition(msg.getPosition());
+                        break;
+                    case SET_STATE:
+                        if (forMe == true) {
+                            if (isSynced()) {
+                                openDocument(msg.getDocument(), msg.getPage(), msg.getPosition());
+                                cellMenu.disableButton(Button.UNSYNC);
+                                cellMenu.enableButton(Button.SYNC);
+                                logger.info("PDF viewer synced");
+                                showHUDMessage("Synced", 3000);
+                            }
                         }
-                    } else {
-                        logger.warning("--- SET_STATE is not for me, my uid: " + myUID + ", controlling: " + controlling);
-                    }
-                    break;
-                case PLAY:
-                    showHUDMessage("slide show starting", 3000);
-                    setInSlideShowMode(true);
-                    break;
-                case PAUSE:
-                    showHUDMessage("slide show stopped", 3000);
-                    setInSlideShowMode(false);
-                    break;
-                case REQUEST_COMPLETE:
-                    // could retry queued requests here
-                    break;
-            }
-            if ((forMe == true) &&
-                    (msg.getAction() != Action.REQUEST_COMPLETE) &&
-                    (msg.getAction() != Action.REQUEST_DENIED)) {
-                // notify everyone that the request has completed
-                pdfcm = new PDFCellMessage(msg);
-                pdfcm.setAction(Action.REQUEST_COMPLETE);
+                        break;
+                    case PLAY:
+                        showHUDMessage("Slide show starting", 3000);
+                        setInSlideShowMode(true);
+                        break;
+                    case PAUSE:
+                        showHUDMessage("Slide show stopped", 3000);
+                        setInSlideShowMode(false);
+                        break;
+                    case REQUEST_COMPLETE:
+                        // retry queued requests
+                        synchronized (actionLock) {
+                            try {
+                                logger.fine("PDF viewer waking retry threads");
+                                actionLock.notify();
+                            } catch (Exception e) {
+                                logger.warning("PDF viewer exception notifying retry threads: " + e);
+                            }
+                        }
+                        break;
+                }
+                if ((forMe == true) && (msg.getAction() != Action.REQUEST_COMPLETE)) {
+                    // notify everyone that the request has completed
+                    pdfcm = new PDFCellMessage(msg);
+                    pdfcm.setAction(Action.REQUEST_COMPLETE);
+                }
             }
         }
         if (pdfcm != null) {
-            logger.fine("sending message: " + pdfcm);
+            logger.fine("PDF viewer sending message: " + pdfcm);
             ChannelController.getController().sendMessage(pdfcm);
         }
     }
@@ -945,14 +1009,14 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
     @Override
     public void takeControl(MouseEvent me) {
-        logger.info("pdf application has control");
+        logger.fine("PDF viewer has control");
         super.takeControl(me);
         setInControl(true);
     }
 
     @Override
     public void releaseControl(MouseEvent me) {
-        logger.info("pdf application lost control");
+        logger.fine("PDF viewer lost control");
         super.releaseControl(me);
         setInControl(false);
     }

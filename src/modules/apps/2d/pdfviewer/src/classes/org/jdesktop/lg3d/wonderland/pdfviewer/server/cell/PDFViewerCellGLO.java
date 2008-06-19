@@ -40,6 +40,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage.Action;
+import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage.RequestStatus;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFViewerCellSetup;
 
 /**
@@ -271,8 +272,8 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
                         break;
                     default:
                         // send a denial to the requesting client
-                        msg.setAction(Action.REQUEST_DENIED);
-                        logger.fine("PDF GLO sending denial to client: " + msg);
+                        msg.setRequestStatus(RequestStatus.REQUEST_DENIED);
+                        logger.info("PDF GLO sending denial to client: " + msg);
                         getCellChannel().send(client, msg.getBytes());
                         break;
                 }
@@ -284,7 +285,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
 
     public void startSlideShow() {
         if (slideShowTask == null) {
-            logger.fine("starting slide show");
+            logger.info("PDF starting slide show");
 
             // the current state of the application
             PDFViewerStateMO stateMO = getStateMO();
@@ -305,7 +306,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
                 stateMO.setEndPage(stateMO.getPageCount());
                 slideTask.setCurrentPage(stateMO.getPage());
             }
-            logger.fine("slide show from page: " + stateMO.getStartPage() +
+            logger.info("PDF slide show from page: " + stateMO.getStartPage() +
                     " to " + stateMO.getEndPage() +
                     ", starting from : " + slideTask.getCurrentPage());
             // start a task to change pages
@@ -318,7 +319,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
 
     public void stopSlideShow() {
         if (slideShowTask != null) {
-            logger.fine("stopping slide show");
+            logger.info("PDF stopping slide show");
 
             PDFViewerStateMO stateMO = getStateMO();
             stateMO.setSlideShow(false);

@@ -41,16 +41,23 @@ public class PDFCellMessage extends CellMessage {
     public enum Action {
 
         UNKNOWN,
-        REQUEST_DENIED, REQUEST_COMPLETE,
         OPEN_DOCUMENT,
         SHOW_PAGE,
         PLAY, PAUSE, STOP,
         SET_VIEW_POSITION,
-        GET_STATE, SET_STATE
+        GET_STATE, SET_STATE,
+        REQUEST_COMPLETE
+    };
+
+    public enum RequestStatus {
+
+        REQUEST_OK,
+        REQUEST_DENIED
     };
     
     private String uid;
     private Action action = Action.UNKNOWN;
+    private RequestStatus status = RequestStatus.REQUEST_OK;
     private String doc;
     private int page;
     private Point position;
@@ -94,6 +101,7 @@ public class PDFCellMessage extends CellMessage {
         setPage(pcm.getPage());
         setPageCount(pcm.getPageCount());
         setPosition(pcm.getPosition());
+        setRequestStatus(pcm.getRequestStatus());
     }
 
     public void setUID(String uid) {
@@ -184,14 +192,30 @@ public class PDFCellMessage extends CellMessage {
         return position;
     }
 
+    /**
+     * Set the status of this request
+     * @param status the status of the request
+     */
+    public void setRequestStatus(RequestStatus status) {
+        this.status = status;
+    }
+
+    /**
+     * Get the status of this request
+     * @return the request status
+     */
+    public RequestStatus getRequestStatus() {
+        return status;
+    }
+
     /** 
      * Get a string representation of the PDF cell message
      * @return a the cell message as as String
      */
     @Override
     public String toString() {
-        return getAction() + ", " + getDocument() + ", " + getPage() + ", " +
-                getPageCount() + ", " + getPosition();
+        return getAction() + ", " + getRequestStatus() + ", " + getDocument() +
+                ", " + getPage() + ", " + getPageCount() + ", " + getPosition();
     }
 
     /**
@@ -207,6 +231,7 @@ public class PDFCellMessage extends CellMessage {
         page = DataInt.value(data);
         pageCount = DataInt.value(data);
         position = new Point((int) DataDouble.value(data), (int) DataDouble.value(data));
+        status = RequestStatus.values()[DataInt.value(data)];
     }
 
     /**
@@ -223,5 +248,6 @@ public class PDFCellMessage extends CellMessage {
         dataElements.add(new DataInt(pageCount));
         dataElements.add(new DataDouble(position.getX()));
         dataElements.add(new DataDouble(position.getY()));
+        dataElements.add(new DataInt(status.ordinal()));
     }
 }
