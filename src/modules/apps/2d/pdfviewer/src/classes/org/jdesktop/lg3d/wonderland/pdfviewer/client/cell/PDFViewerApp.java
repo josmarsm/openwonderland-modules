@@ -145,7 +145,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                                     1,
                                     new Point());
                         } catch (Exception e) {
-                            showHUDMessage("Invalid PDF URL", 5000);
+                            showHUDMessage("invalid PDF URL", 5000);
                             logger.warning("invalid PDF URL: " + pdfDialog.getDocumentURL());
                         }
                     } else {
@@ -271,13 +271,12 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         if ((syncing == false) && (synced == true)) {
             synced = false;
             logger.info("PDF viewer unsynced");
-            showHUDMessage("Unsynced", 3000);
-            cellMenu.enableButton(Button.UNSYNC);
-            cellMenu.disableButton(Button.SYNC);
+            showHUDMessage("unsynced", 3000);
+            updateMenu();
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
             logger.info("PDF viewer requesting sync with shared state");
-            showHUDMessage("Syncing...", 3000);
+            showHUDMessage("syncing...", 3000);
             sendDocumentRequest(Action.GET_STATE,
                     null,
                     0,
@@ -315,8 +314,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param position
      */
     protected void retryDocumentRequest(Action action, URL url, int page, Point position) {
-        logger.fine("PDF Viewer creating retry thread for: " + action + ", " 
-                + url + ", " + page + ", " + position);
+        logger.fine("PDF Viewer creating retry thread for: " + action + ", " + url + ", " + page + ", " + position);
         new ActionScheduler(action, url, page, position).start();
     }
 
@@ -375,7 +373,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
 
                 try {
                     logger.info("PDF viewer opening: " + url);
-                    showHUDMessage("Opening " + fileName, 5000);
+                    showHUDMessage("opening " + fileName, 5000);
                     pdfDialog.setDocumentURL(url.toString());
 
                     // attempt to load the document
@@ -386,7 +384,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                     logger.info("PDF loaded in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
                 } catch (Exception e) {
                     logger.warning("PDF viewer failed to open: " + url + ": " + e);
-                    showHUDMessage("Failed to open " + fileName, 5000);
+                    showHUDMessage("failed to open " + fileName, 5000);
                 }
                 if (loadingFile != null) {
                     // document was loaded successfully
@@ -457,7 +455,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             new DocumentLoader(docURL, page, position).start();
         } catch (Exception e) {
             logger.warning("PDF viewer failed to open: " + doc + ": " + e);
-            showHUDMessage("Failed to open " + doc, 5000);
+            showHUDMessage("failed to open " + doc, 5000);
         }
     }
 
@@ -615,7 +613,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
             pageDirty = true;
             repaint();
 
-            showHUDMessage("Page " + p, 3000);
+            showHUDMessage("page " + p, 3000);
 
             // pre-cache the next page
             if (isValidPage(p + 1)) {
@@ -693,7 +691,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      */
     public void play(boolean toPlay) {
         playing = toPlay;
-        showHUDMessage((playing == true) ? "Play" : "Pause", 3000);
+        showHUDMessage((playing == true) ? "play" : "pause", 3000);
         if (isSynced()) {
             // notify other clients that slide show state hase changed
             sendDocumentRequest(
@@ -760,13 +758,9 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     }
 
     public void setInSlideShowMode(boolean inSlideShow) {
-        if (inSlideShow) {
-            cellMenu.enableButton(Button.PAUSE_SLIDESHOW);
-            cellMenu.disableButton(Button.START_SLIDESHOW);
-        } else {
-            cellMenu.enableButton(Button.START_SLIDESHOW);
-            cellMenu.disableButton(Button.PAUSE_SLIDESHOW);
-        }
+        playing = inSlideShow;
+        
+        updateMenu();
     }
 
     /**
@@ -960,16 +954,16 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                                 cellMenu.disableButton(Button.UNSYNC);
                                 cellMenu.enableButton(Button.SYNC);
                                 logger.info("PDF viewer synced");
-                                showHUDMessage("Synced", 3000);
+                                showHUDMessage("synced", 3000);
                             }
                         }
                         break;
                     case PLAY:
-                        showHUDMessage("Slide show starting", 3000);
+                        showHUDMessage("slide show starting", 3000);
                         setInSlideShowMode(true);
                         break;
                     case PAUSE:
-                        showHUDMessage("Slide show stopped", 3000);
+                        showHUDMessage("slide show stopped", 3000);
                         setInSlideShowMode(false);
                         break;
                     case REQUEST_COMPLETE:
@@ -997,11 +991,32 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         }
     }
 
+    protected void updateMenu() {
+        if (((PDFCellMenu) cellMenu).isActive()) {
+            if (isSynced()) {
+                ((PDFCellMenu) cellMenu).enableButton(Button.SYNC);
+                ((PDFCellMenu) cellMenu).disableButton(Button.UNSYNC);
+            } else {
+                ((PDFCellMenu) cellMenu).enableButton(Button.UNSYNC);
+                ((PDFCellMenu) cellMenu).disableButton(Button.SYNC);
+            }
+
+            if (playing == true) {
+                ((PDFCellMenu) cellMenu).enableButton(Button.PAUSE_SLIDESHOW);
+                ((PDFCellMenu) cellMenu).disableButton(Button.START_SLIDESHOW);
+            } else {
+                ((PDFCellMenu) cellMenu).enableButton(Button.START_SLIDESHOW);
+                ((PDFCellMenu) cellMenu).disableButton(Button.PAUSE_SLIDESHOW);
+            }
+        }
+    }
+
     public void setInControl(boolean inControl) {
         this.inControl = inControl;
 
         if (inControl == true) {
             CellMenuManager.getInstance().showMenu(this.getCell(), cellMenu, null);
+            updateMenu();
         } else {
             CellMenuManager.getInstance().hideMenu();
         }
