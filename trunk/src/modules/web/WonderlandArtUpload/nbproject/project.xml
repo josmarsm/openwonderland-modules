@@ -32,10 +32,6 @@
                 <library files="1">
                     <file>${file.reference.servlet-api.jar}</file>
                 </library>
-                <library files="18">
-                    <file>${libs.restlib.classpath}</file>
-                    <path-in-war>WEB-INF/lib</path-in-war>
-                </library>
                 <library files="1">
                     <file>${file.reference.wonderland-servlet.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
