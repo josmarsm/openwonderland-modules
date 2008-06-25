@@ -1,6 +1,21 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Looking Glass
+ *
+ * $RCSfile:$
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision:$
+ * $Date:$
+ * $State:$
  */
 
 package org.jdesktop.wonderland.artupload;
@@ -33,6 +48,8 @@ import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.wfs.InvalidWFSCellException;
 import org.jdesktop.lg3d.wonderland.wfs.WFS;
 import org.jdesktop.lg3d.wonderland.wfs.WFSCell;
+import org.jdesktop.lg3d.wonderland.wfs.WFSCellDirectory;
+import org.jdesktop.lg3d.wonderland.wfs.WFSCellNotLoadedException;
 
 /**
  *
@@ -58,9 +75,8 @@ public class UploadServlet extends HttpServlet {
             
             logger.info("Art directory is " + artDir.getCanonicalPath());
         
-            WFS wfs = Util.getWFS(config.getServletContext());
-            
-            logger.info("WFS directory at " + wfs.getRootDirectory().getPathName());
+            WFSCellDirectory dir = Util.getWFS(config.getServletContext());
+            logger.info("WFS directory at " + dir.getPathName());
         } catch (IOException ioe) {
             throw new ServletException(ioe);
         }
@@ -283,14 +299,16 @@ public class UploadServlet extends HttpServlet {
         
         // create the wfs cell
         try {
-            WFS wfs = Util.getWFS(getServletContext());
-            WFSCell cell = wfs.getRootDirectory().addCell(name);
+            WFSCellDirectory dir = Util.getWFS(getServletContext());
+            WFSCell cell = dir.addCell(name);
             cell.setCellSetup(setup);
         
             // write out the wfs file
-            wfs.write();
+            dir.write();
         } catch (InvalidWFSCellException iwe) {
             logger.log(Level.WARNING, "Error writing " + setup, iwe);
+        } catch (WFSCellNotLoadedException wcnle) {
+            logger.log(Level.WARNING, "Error writing " + setup, wcnle);
         }
     }
     

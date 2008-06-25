@@ -27,11 +27,11 @@ import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
-import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.ProduceMime;
-import javax.ws.rs.UriParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import org.jdesktop.wonderland.worldbuilder.Cell;
 
@@ -46,7 +46,7 @@ public class CellsResource {
     private static final Logger logger =
             Logger.getLogger(CellsResource.class.getName());
     
-    @HttpContext
+    @Context
     private UriInfo context;
     
     /** Creates a new instance of CellsResource */
@@ -85,7 +85,7 @@ public class CellsResource {
      * Sub-resource locator method for  {id}
      */
     @Path("{cellId}")
-    public CellResource getCellResource(@UriParam("cellId") String cellId) {
+    public CellResource getCellResource(@PathParam("cellId") String cellId) {
         return new CellResource(cellId, context);
     }
 }

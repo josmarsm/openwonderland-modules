@@ -31,7 +31,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.UriParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import org.jdesktop.wonderland.worldbuilder.Cell;
 
@@ -118,7 +118,7 @@ public class CellResource {
      * Sub-resource locator method for specific child.
      */
     @Path("child/{childIndex}")
-    public CellResource getCellResource(@UriParam("childIndex") int childIndex) 
+    public CellResource getCellResource(@PathParam("childIndex") int childIndex) 
     {
         return createCellResource(getCell().getChildren().get(childIndex));
     }

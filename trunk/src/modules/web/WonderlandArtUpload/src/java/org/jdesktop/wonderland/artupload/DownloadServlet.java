@@ -1,6 +1,21 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Looking Glass
+ *
+ * $RCSfile:$
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision:$
+ * $Date:$
+ * $State:$
  */
 
 package org.jdesktop.wonderland.artupload;
@@ -10,7 +25,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -29,7 +46,10 @@ public class DownloadServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         
-        if (Util.getArtURL(config.getServletContext()) == null) {
+        ServletContext context = config.getServletContext();
+        
+        // check that the art url is set correctly
+        if (!Util.isLocalRedirect(context) && Util.getArtURL(context) == null) {
             throw new ServletException("Art URL not specified.  Use " + 
                                        Util.ART_URL_PROP + " to set it.");
         }
@@ -64,6 +84,11 @@ public class DownloadServlet extends HttpServlet {
             }
             
             out.close();
+        } else if (Util.isLocalRedirect(getServletContext())) {
+            String url = Util.getArtRedirectURL(getServletContext()) + 
+                         request.getPathInfo();
+            RequestDispatcher rd = getServletContext().getRequestDispatcher(url);
+            rd.forward(request, response);
         } else {
             // no copy locally, redirect to the remote site
             String url = Util.getArtURL(getServletContext()) + 

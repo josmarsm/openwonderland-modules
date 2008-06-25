@@ -19,9 +19,15 @@
  */
 package org.jdesktop.wonderland.worldbuilder.wrapper;
 
+import com.sun.ws.rest.impl.json.JSONJAXBContext;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Provider;
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -164,6 +170,12 @@ public class CellWrapper {
     
     @XmlElement(name="properties")
     public PropertiesWrapper getProperties() {
+        // don't send an empty array -- this breaks parsing when the data
+        // is sent back
+        if (cell.getProperties().isEmpty()) {
+            return null;
+        }
+        
         return new PropertiesWrapper(cell.getProperties());
     }
     
@@ -183,11 +195,35 @@ public class CellWrapper {
     
     protected CellsWrapper getChildWrapper() {
         Collection<CellRefWrapper> childList = new ArrayList(cell.getChildren().size());
+      
+        // don't send an empty array -- this breaks parsing when the data
+        // is sent back
+        if (childList.isEmpty()) {
+            return null;
+        }
+        
         for (Cell child : cell.getChildren()) {
             URI childURI = getURI().resolve(child.getCellID());
             childList.add(new CellRefWrapper(child, childURI)); 
         }
         
         return new CellsWrapper(childList);
+    }
+    
+    @Provider
+    public static class JAXBContextResolver implements ContextResolver<JAXBContext> {
+        private JAXBContext context;
+        private Class[] types = { CellWrapper.class };
+
+        public JAXBContextResolver() throws Exception {
+            Map<String, Object> props = new HashMap<String, Object>();
+            props.put(JSONJAXBContext.JSON_NOTATION, "BADGERFISH");
+            props.put(JSONJAXBContext.JSON_ROOT_UNWRAPPING, Boolean.FALSE);
+            this.context = new JSONJAXBContext(types, props);
+        }
+
+        public JAXBContext getContext(Class<?> objectType) {
+            return (types[0].equals(objectType)) ? context : null;
+        }
     }
 }

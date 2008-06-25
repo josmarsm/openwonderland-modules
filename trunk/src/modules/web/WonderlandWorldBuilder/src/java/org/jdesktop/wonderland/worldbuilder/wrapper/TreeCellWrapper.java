@@ -19,10 +19,16 @@
  */
 package org.jdesktop.wonderland.worldbuilder.wrapper;
 
+import com.sun.ws.rest.impl.json.JSONJAXBContext;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
+import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.ext.Provider;
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.worldbuilder.Cell;
@@ -80,5 +86,20 @@ public class TreeCellWrapper extends CellWrapper {
         return new CellsWrapper(childList, true);
     }
     
-    
+    @Provider
+    public static class JAXBContextResolver implements ContextResolver<JAXBContext> {
+        private JAXBContext context;
+        private Class[] types = { TreeCellWrapper.class };
+
+        public JAXBContextResolver() throws Exception {
+            Map<String, Object> props = new HashMap<String, Object>();
+            props.put(JSONJAXBContext.JSON_NOTATION, "BADGERFISH");
+            props.put(JSONJAXBContext.JSON_ROOT_UNWRAPPING, Boolean.FALSE);
+            this.context = new JSONJAXBContext(types, props);
+        }
+
+        public JAXBContext getContext(Class<?> objectType) {
+            return (types[0].equals(objectType)) ? context : null;
+        }
+    }
 }
