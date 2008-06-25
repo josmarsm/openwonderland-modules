@@ -1,6 +1,21 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Looking Glass
+ *
+ * $RCSfile:$
+ *
+ * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision:$
+ * $Date:$
+ * $State:$
  */
 
 package org.jdesktop.wonderland.artupload;
@@ -11,20 +26,19 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import javax.servlet.ServletContext;
-import org.jdesktop.lg3d.wonderland.wfs.InvalidWFSException;
-import org.jdesktop.lg3d.wonderland.wfs.WFS;
+import org.jdesktop.lg3d.wonderland.servlet.WonderlandServletUtil;
 import org.jdesktop.lg3d.wonderland.wfs.WFSCellDirectory;
-import org.jdesktop.lg3d.wonderland.wfs.WFSCellNotLoadedException;
-import org.jdesktop.lg3d.wonderland.wfs.WFSFactory;
 
 /**
  *
  * @author jkaplan
  */
 public class Util {
-    public static final String ART_DIR_PROP = "wonderland.art.url.local";
-    public static final String ART_URL_PROP = "wonderland.art.url.base";
-    public static final String WFS_DIR_PROP = "wonderland.wfs.root";
+    public static final String ART_DIR_PROP   = "wonderland.art.url.local";
+    public static final String ART_URL_PROP   = "wonderland.art.url.base";
+    public static final String ART_REDIR_PROP = "wonderland.art.url.redirect";
+    public static final String WFS_ROOT_PROP  = "wonderland.wfs.root";
+    public static final String WFS_DIR_PROP   = "wonderland.wfs.upload.dir";
     
     private static final String BASE_DIR = File.separator + ".wonderland" + 
                                            File.separator + "artUpload";
@@ -35,18 +49,11 @@ public class Util {
      * Get the art directory
      */
     public static File getArtDir(ServletContext context) throws IOException {
-        // first try a system property
-        String artDir = System.getProperty(ART_DIR_PROP);
+        String defaultArtDir = "file:" + System.getProperty("user.home") +
+                               ART_DIR;
         
-        // next try a servlet config parameter
-        if (artDir == null) {
-            artDir = (String) context.getInitParameter(ART_DIR_PROP);
-        }
-        
-        // try the default
-        if (artDir == null) {
-            artDir = "file:" + System.getProperty("user.home") + ART_DIR;
-        }
+        String artDir = WonderlandServletUtil.getProperty(ART_DIR_PROP, context, 
+                                                          defaultArtDir);
         
         try {
             return new File(new URI(artDir));
@@ -58,68 +65,44 @@ public class Util {
     }
     
     /**
+     * Determine whether art URL is local or remote
+     */
+    public static boolean isLocalRedirect(ServletContext context) {
+        return (getArtRedirectURL(context) != null);
+    }
+    
+    /**
      * Get the remote art URL
      */
     public static String getArtURL(ServletContext context) {
-        // first try a system property
-        String artURL = System.getProperty(ART_URL_PROP);
-        
-        // next try a servlet config parameter
-        if (artURL == null) {
-            artURL = context.getInitParameter(ART_URL_PROP);
-        }
-        
-        return artURL;
+        return WonderlandServletUtil.getProperty(ART_URL_PROP, context);
+    }
+    
+    /**
+     * Get the local art URL
+     */
+    public static String getArtRedirectURL(ServletContext context) {
+        return WonderlandServletUtil.getProperty(ART_REDIR_PROP, context);
     }
     
     /**
      * Get the WFS directory
      */
-    public static WFS getWFS(ServletContext context) 
+    public static WFSCellDirectory getWFS(ServletContext context) 
             throws IOException 
     {
-         // first try a system property
-        String wfsDir = System.getProperty(WFS_DIR_PROP);
+        // get the wfs root
+        String wfsRootDefault = "file:" + System.getProperty("user.home") + 
+                                WFS_DIR;
+        String wfsRoot = WonderlandServletUtil.getProperty(WFS_ROOT_PROP, 
+                                context, wfsRootDefault);
+        URL wfsRootURL = new URL(wfsRoot);
         
-        // next try a servlet config parameter
-        if (wfsDir == null) {
-            wfsDir = context.getInitParameter(ART_DIR_PROP);
-        }
+        // get the subdirectory, if any
+        String wfsDir = WonderlandServletUtil.getProperty(WFS_DIR_PROP, 
+                                context);
         
-        // try the default
-        if (wfsDir == null) {
-            wfsDir = "file:" + System.getProperty("user.home") + WFS_DIR;
-        } 
-        
-        // decide whether to create or open the WFS
-        boolean create = false;
-        WFS wfs;
-        
-        URL wfsRootURL = new URL(wfsDir);
-        if (wfsRootURL.getProtocol().equals(WFS.FILE_PROTOCOL)) {
-            // see if we need to create the WFS directory.  We need to
-            // create a new directory if the directory doesn't exist or
-            // is empty
-            File wfsRootFile = new File(wfsRootURL.getPath());
-            create = !wfsRootFile.exists();
-                // || wfsRootFile.list().length == 0;
-        }
-           
-        try {
-            if (create) {
-                // create a new WFS
-                wfs = WFSFactory.create(wfsRootURL);
-                wfs.write();
-            } else {
-                // open existing WFS
-                wfs = WFSFactory.open(wfsRootURL);
-            }
-        } catch (InvalidWFSException iwe) {
-            IOException ioe =new IOException(iwe.getMessage());
-            ioe.initCause(iwe);
-            throw ioe;
-        }
-        
-        return wfs;
+        // open or create the directory
+        return WonderlandServletUtil.openWFS(wfsRootURL, wfsDir, true);
     }
 }

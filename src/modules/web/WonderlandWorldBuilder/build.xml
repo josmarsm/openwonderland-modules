@@ -69,5 +69,14 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <!-- before compiling, make sure Wonderland has built the common servlet
+         utlities -->
+    <target name="-pre-compile">
+        <ant antfile="${wonderland.dir}/build.xml" target="compile-servlet"
+             inheritall="false" inheritrefs="false">
+            <property name="antcontrib.taskdef.resource" value="noop.xml"/>
+        </ant>
+    </target>
+    
     <target name="jar" depends="dist"/>
 </project>

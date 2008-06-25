@@ -27,17 +27,20 @@ import javax.servlet.ServletContextListener;
  * Web application lifecycle listener.
  * @author jkaplan
  */
-
 public class PersistenceContextListener implements ServletContextListener {
     private static final Logger logger =
             Logger.getLogger(PersistenceContextListener.class.getName());
     
     public void contextInitialized(ServletContextEvent event) {
         logger.info("Context initialized");
+        CellPersistence.setServletContext(event.getServletContext());
     }
 
     public void contextDestroyed(ServletContextEvent event) {
         logger.info("Context destroyed -- shutting down persistence");
-        CellPersistence.get().shutdown();
+        CellPersistence cp = CellPersistence.get(false);
+        if (cp != null) {
+            cp.shutdown();
+        }
     }
 }

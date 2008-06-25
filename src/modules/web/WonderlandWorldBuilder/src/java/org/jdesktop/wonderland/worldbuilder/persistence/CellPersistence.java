@@ -42,7 +42,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.servlet.ServletContext;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
+import org.jdesktop.lg3d.wonderland.servlet.WonderlandServletUtil;
 import org.jdesktop.lg3d.wonderland.wfs.InvalidWFSCellException;
 import org.jdesktop.lg3d.wonderland.wfs.InvalidWFSException;
 import org.jdesktop.lg3d.wonderland.wfs.WFS;
@@ -60,11 +62,27 @@ public class CellPersistence {
     private static final Logger logger =
             Logger.getLogger(CellPersistence.class.getName());
     
+    /** property specifying the root of the WFS */
+    public static final String WFS_ROOT_PROP = "wonderland.wfs.root";
+    
+    /** property specifying a WFS subdirectory to open */
+    public static final String WFS_DIR_PROP = "wonderland.wfs.worldbuilder.dir";
+    
+    /** the default WFS root */
+    private static final String WFS_ROOT_DEFAULT = File.separator + ".wonderland" + 
+                                                   File.separator + "worldbuilder-wfs";
+    
+    /** the default WFS directory */
+    private static final String WFS_DIR_DEFAULT = "root";
+    
     /** singleton */
     private static CellPersistence persistence;
    
-    /** the root cell id */
-    private static final String ROOT_CELL_ID = "root";
+    /** set by the context PersistenceContextListener */
+    private static ServletContext servletContext;
+    
+    /** the ID of the root cell */
+    private String rootCellId;
     
     /** cells we known about, mapped by id */
     private Map<String, Cell> cells;
@@ -87,18 +105,36 @@ public class CellPersistence {
     /** convert to and from WFS */
     private WFSConverter converter;
     
+    /**
+     * Get the singelton instance of CellPersistence.  Create the persistence
+     * if it doesn't exist.  <code>setServletContext()</code> must be called
+     * before your can get the CellPersistence object.
+     */
     public synchronized static CellPersistence get() {
-        if (persistence == null) {
+        return get(true);
+    }
+    
+    public synchronized static CellPersistence get(boolean create) {
+        if (persistence == null && create) {
             persistence = new CellPersistence();
         }
         
         return persistence;
     }
     
+    public static void setServletContext(ServletContext servletContext) {
+        CellPersistence.servletContext = servletContext;
+    }
+    
     /**
      * Singelton: Use getInstance() instead of constructor.
      */
     private CellPersistence() {
+        // make sure someone set the servlet context
+        if (servletContext == null) {
+            throw new IllegalStateException("ServletContext not set");
+        }
+        
         cells = Collections.synchronizedMap(new HashMap());
     
         // these maps are only ever access from inside the executor, so
@@ -108,63 +144,13 @@ public class CellPersistence {
         
         // create the WFS converter
         converter = new WFSConverter();
-        
-        // get the directory to synchronized with
-        String wfsRoot = System.getProperty("wonderland.wfs.root");
-        if (wfsRoot == null) {
-            wfsRoot = "file:" + System.getProperty("user.home") + 
-                         File.separator + ".wonderland/worldbuilder-wfs";
-        }
-        
-        logger.info("Loading WFS from " + wfsRoot);
-        
-        WFS wfs; 
-        
+       
         // create the root cell
-        Cell root = new Cell(ROOT_CELL_ID);
-        root.setSize(new CellDimension(1024, 1024));
-        root.setCellType("org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO");
-        root.setCellSetupType("org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup{org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup}");
-        
+        WFSCell rootWFS;
         try {
-            // decide whether to create or open the WFS
-            boolean create = false;
-            WFSCell rootWFS;
-            
-            URL wfsRootURL = new URL(wfsRoot);
-            if (wfsRootURL.getProtocol().equals(WFS.FILE_PROTOCOL)) {
-                create = !(new File(wfsRootURL.getPath()).exists());
-            }
-           
-            if (create) {
-                // create a new WFS
-                wfs = WFSFactory.create(wfsRootURL);
-                rootWFS = wfs.getRootDirectory().addCell(ROOT_CELL_ID);
-                rootWFS.setCellSetup(toWFS(root));
-                wfs.write();
-                
-                logger.info("Created new WFS at " + wfsRootURL);
-            } else {
-                // open existing WFS
-                wfs = WFSFactory.open(wfsRootURL);
-                rootWFS = find(wfs.getRootDirectory(), ROOT_CELL_ID);
-            }
-            
-            if (rootWFS == null) {
-                throw new InvalidWFSException("Unable to find root cell in " +
-                                              wfsRootURL);
-            }
-            
-            CellInfo info = add(null, root, rootWFS);
-            
-            // make sure root gets re-read during the first scan
-            info.setUpdateTime(0);   
+            rootWFS = initWFS();
         } catch (IOException ioe) {
-            throw new RuntimeException("Error reading root file: " + ioe, ioe);
-        } catch (InvalidWFSException iwe) {
-            throw new RuntimeException("Error creating wfs: " + wfsRoot, iwe);
-        } catch (InvalidWFSCellException iwce) {
-            throw new RuntimeException("Error creating root cell: " + wfsRoot, iwce);
+            throw new RuntimeException(ioe);
         }
         
         // initialize the lock
@@ -174,7 +160,7 @@ public class CellPersistence {
         processor = Executors.newSingleThreadScheduledExecutor();
         
         // create the directory update task
-        Runnable dirTask = new ReadWFSTask(wfs);
+        Runnable dirTask = new ReadWFSTask(rootWFS);
         
         // run the directory update the first time and wait for it to
         // complete
@@ -182,7 +168,8 @@ public class CellPersistence {
             Future future = processor.submit(dirTask);
             future.get();
         } catch (Exception ex) {
-            throw new RuntimeException("Error starting persitence for " + wfsRoot, 
+            throw new RuntimeException("Error starting persitence for " +
+                                 rootWFS.getParentCellDirectory().getPathName(), 
                                        ex);
         }
         
@@ -196,7 +183,7 @@ public class CellPersistence {
      * @return the root cell
      */
     public Cell getRoot() {
-        return get(ROOT_CELL_ID);
+        return get(rootCellId);
     }
     
     /**
@@ -283,6 +270,70 @@ public class CellPersistence {
      */
     protected Cell fromWFS(WFSCell wfsCell) {
         return converter.fromWFS(wfsCell);
+    }
+    
+    /**
+     * Intialize WFS
+     */
+    private WFSCell initWFS() throws IOException {
+        String wfsRootDefault = "file:" + System.getProperty("user.home") +
+                WFS_ROOT_DEFAULT;
+        String wfsRoot = WonderlandServletUtil.getProperty(WFS_ROOT_PROP,
+                servletContext, wfsRootDefault);
+        URL wfsRootURL = new URL(wfsRoot);
+
+        // get the subdirectory, if any
+        rootCellId = WonderlandServletUtil.getProperty(WFS_DIR_PROP,
+                servletContext, WFS_DIR_DEFAULT);
+
+        // create the root cell
+        Cell root = new Cell(rootCellId);
+
+        // open or create the directory
+        WFSCellDirectory wfsRootDir =
+            WonderlandServletUtil.openWFS(wfsRootURL, rootCellId,
+                new WonderlandServletUtil.DefaultWFSCellCreator() {
+
+                    @Override
+                    public BasicCellGLOSetup getSetup(WFSCell cell)
+                            throws IOException
+                    {
+                        // don't change the setup if it already exists
+                        try {
+                            if (cell.getCellSetup() != null) {
+                                return cell.getCellSetup();
+                            }
+                        } catch (InvalidWFSCellException iwce) {
+                            // ignore -- in this case, we should just go 
+                            // ahead and create the cell
+                        } catch (IOException ioe) {
+                            // ignore -- in this case, we should just go 
+                            // ahead and create the cell
+                        }
+
+                        BasicCellGLOSetup setup = super.getSetup(cell);
+                        setup.setBoundsRadius(1024.0);
+                        setup.setBoundsType("BOX");
+                        setup.setOrigin(new double[] { 35.0, 0.0, 35.0 });
+                        return setup;
+                    }
+                });
+
+        // get the root cell
+        WFSCell rootWFS = wfsRootDir.getAssociatedCell();
+        if (rootWFS == null) {
+            throw new IOException("Unable to find root cell " + rootCellId + 
+                    " in " + wfsRootURL + ". Ensure the the " +
+                    "wonderland.wfs.worldbuilder.dir property is set.");
+        }
+
+        // add a record of the root cell
+        CellInfo info = add(null, root, rootWFS);
+
+        // make sure root gets re-read during the first scan
+        info.setUpdateTime(0);
+        
+        return rootWFS;
     }
     
     /**
@@ -418,10 +469,10 @@ public class CellPersistence {
      * Read cells from disk
      */
     class ReadWFSTask extends TreeChangeTask implements Runnable {
-        private WFS wfs;
+        private WFSCell wfsRoot;
          
-        public ReadWFSTask(WFS wfs) {
-            this.wfs = wfs;
+        public ReadWFSTask(WFSCell wfsRoot) {
+            this.wfsRoot = wfsRoot;
         }
         
         public void run() {
@@ -443,18 +494,7 @@ public class CellPersistence {
                                List<CellUpdateRecord> removeList)
             throws Exception
         {
-            // get the directory
-            WFSCellDirectory dir = wfs.getRootDirectory();
-            
-            // find the root cell, which will be named root-wlc.xml in the
-            // base directory
-            WFSCell root = find(dir, ROOT_CELL_ID);
-            if (root == null) {
-                throw new IllegalStateException("Root cell " + ROOT_CELL_ID +
-                                   " not found in " + dir.getPathName());
-            }
-            
-            processCell(null, root, addList, updateList, removeList);
+            processCell(null, wfsRoot, addList, updateList, removeList);
         }
 
         private void processDirectory(WFSCellDirectory dir, Cell parent,
