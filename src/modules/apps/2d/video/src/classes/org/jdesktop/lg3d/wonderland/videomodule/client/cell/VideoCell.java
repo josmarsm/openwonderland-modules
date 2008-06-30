@@ -90,7 +90,7 @@ public class VideoCell extends SharedApp2DImageCell
             ((VideoApp) app).setVideoInstance(setup.getVideoInstance());
         }
 
-        logger.info("loading video: " + setup.getSource());
+        logger.info("video: " + setup.getSource());
         logger.info("play on load: " + setup.getPlayOnLoad());
         logger.info("sync playback: " + setup.getSynced());
 

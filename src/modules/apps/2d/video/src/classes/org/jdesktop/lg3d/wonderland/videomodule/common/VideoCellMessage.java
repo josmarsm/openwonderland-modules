@@ -40,7 +40,7 @@ public class VideoCellMessage extends CellMessage {
         REQUEST_DENIED, REQUEST_COMPLETE,
         SET_SOURCE,
         SET_PTZ,
-        PLAY, PAUSE, STOP,
+        PLAY, PAUSE, STOP, REWIND, FAST_FORWARD,
         GET_STATE, SET_STATE,
     };
 

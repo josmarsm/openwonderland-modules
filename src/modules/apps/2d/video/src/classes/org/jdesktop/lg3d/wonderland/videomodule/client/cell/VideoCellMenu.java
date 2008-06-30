@@ -148,7 +148,7 @@ public class VideoCellMenu extends CellMenu {
                 } else if (pressed == Button.FORWARD) {
                     listener.fastForward();
                 } else if (pressed == Button.STOP) {
-                    //listener.stop();
+                    listener.stop();
                 } else if (pressed == Button.SYNC) {
                     listener.sync();
                 } else if (pressed == Button.UNSYNC) {
@@ -173,25 +173,29 @@ public class VideoCellMenu extends CellMenu {
                 HUDButton b = (HUDButton) iter.next();
                 Button button = (Button) buttonMapping.get(b);
                 if (button.getVisible() == true) {
-                    b.setActive(active);
+                    b.changeActive(active, 100);
                 }
             }
         }
     }
 
-    protected synchronized void enableButton(Button b) {
+    protected void enableButton(Button b) {
         b.setVisible(true);
         if (menuInitialized) {
             HUDButton button = (HUDButton) actionMapping.get(b);
-            button.changeActive(true, 250);
+            if (!button.isActive()) {
+                button.changeActive(true, 0);
+            }
         }
     }
 
-    protected synchronized void disableButton(Button b) {
+    protected void disableButton(Button b) {
         b.setVisible(false);
         if (menuInitialized) {
             HUDButton button = (HUDButton) actionMapping.get(b);
-            button.changeActive(false, 250);
+            if (button.isActive()) {
+                button.changeActive(false, 0);
+            }
         }
     }
 

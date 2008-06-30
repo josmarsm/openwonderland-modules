@@ -253,28 +253,89 @@ public class JMFSnapper implements ControllerListener {
         }
     }
 
+    /**
+     * Set the play position
+     * @param time the position in seconds
+     */
     public synchronized void setPosition(double time) {
+        setPositionSeconds(time);
+    }
+
+    /**
+     * Set the play position
+     * @param time the position in nanoseconds
+     */
+    public synchronized void setPositionNanoseconds(long time) {
         if (p != null) {
             // can only set time on a stopped player
             if (p.getState() == Player.Started) {
                 p.stop();
             // REMIND: restart now?
             }
-            p.setMediaTime(new Time((long) time));
+            p.setMediaTime(new Time(time));
         }
     }
 
+    /**
+     * Set the play position
+     * @param time the position in seconds
+     */
+    public synchronized void setPositionSeconds(double time) {
+        if (p != null) {
+            boolean resume = false;
+            // can only set time on a stopped player
+            if (p.getState() == Player.Started) {
+                resume = true;
+                p.stop();
+            }
+            p.setMediaTime(new Time(time));
+            if (resume) {
+                p.start();
+            }
+        }
+    }
+
+    /**
+     * Get the play position
+     * @return the play position in seconds
+     */
     public synchronized double getPosition() {
+        return getPositionSeconds();
+    }
+
+    /**
+     * Get the play position
+     * @return the play position in seconds
+     */
+    public synchronized double getPositionSeconds() {
         double position = 0;
 
         if (p != null) {
-            logger.fine("media time: " + p.getMediaTime());
+            position = p.getMediaTime().getSeconds();
+        }
+
+        return position;
+    }
+
+    /**
+     * Get the play position
+     * @return the play position in nanoseconds
+     */
+    public synchronized long getPositionNanoseconds() {
+        long position = 0;
+
+        if (p != null) {
             position = p.getMediaTime().getNanoseconds();
         }
 
         return position;
     }
 
+    /**
+     * Set a stop time which is when the playback will stop
+     * @param time the time in seconds or RESET_STOP_TIME to clear the
+     * stop time
+     */
     public synchronized void setStopTime(double time) {
         if (p != null) {
             if (time == RESET_STOP_TIME) {
@@ -313,6 +374,10 @@ public class JMFSnapper implements ControllerListener {
         return muted;
     }
 
+    /** 
+     * Get the duraiton of the media
+     * @return the medai duration in nanoseconds
+     */
     public long getDuration() {
         long duration = 0;
         if (p != null) {
@@ -328,6 +393,17 @@ public class JMFSnapper implements ControllerListener {
         showTimer = show;
     }
 
+    /**
+     * Get the internal state of the player
+     * States are:
+     *   Unrealized   (100)
+     *   Realizing    (200)
+     *   Realized     (300)
+     *   Prefetching  (400)
+     *   Prefetched   (500) "stopped"
+     *   Started      (600) "playing"
+     * @return the player state as an integer
+     */
     public int getPlayerState() {
         int state = 0;
         if (p != null) {

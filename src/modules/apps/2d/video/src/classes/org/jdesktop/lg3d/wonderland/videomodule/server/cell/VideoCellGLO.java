@@ -103,7 +103,6 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
      * @param setup the Java bean to read setup information from
      */
     public void setupCell(CellGLOSetup data) {
-        System.err.println("--- VideoCellGLO.setupCell");
         BasicCellGLOSetup<VideoCellSetup> setupData = (BasicCellGLOSetup<VideoCellSetup>) data;
         super.setupCell(setupData);
 
@@ -126,7 +125,6 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
      * @param setup a Java bean with updated properties
      */
     public void reconfigureCell(CellGLOSetup setupData) {
-        System.err.println("--- VideoCellGLO.reconfigure");
         setupCell(setupData);
     }
 
@@ -220,6 +218,12 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                         stateMO.setPosition(vmcm.getPosition());
                         stateMO.setState(PlayerState.PAUSED);
                         msg.setState(PlayerState.PAUSED);
+                        break;
+                    case REWIND:
+                    case FAST_FORWARD:
+                        stateMO.setPosition(vmcm.getPosition());
+                        stateMO.setState(vmcm.getState());
+                        msg.setState(vmcm.getState());
                         break;
                     case STOP:
                         stateMO.setPosition(vmcm.getPosition());
