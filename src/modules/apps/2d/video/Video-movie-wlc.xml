@@ -7,7 +7,7 @@
         <void property="cellSetup">
             <object class="org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellSetup">
                 <void property="source">
-                    <string>file://lab/mc/pub/doc/OH2008/PhoneDemo-LAN.mov</string>
+                    <string>http://research.sun.com/projects/mc/video/MPK20-oct2007.mov</string>
                 </void>
                 <void property="clientClassname">
                     <string>org.jdesktop.lg3d.wonderland.videomodule.client.cell.VideoApp</string>
@@ -22,7 +22,7 @@
                     <double>480</double>
                 </void>
                 <void property="decorated">
-                    <boolean>false</boolean>
+                    <boolean>true</boolean>
                 </void>
                 <void property="playOnLoad">
                     <boolean>false</boolean>
@@ -46,10 +46,10 @@
                 <double>-0.2</double>
             </void>
             <void index="1">
-                <double>1.9</double>
+                <double>3.2</double>
             </void>
             <void index="2">
-                <double>-1.2</double>
+                <double>64.0</double>
             </void>
         </void>
         <void property="rotation">
