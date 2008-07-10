@@ -480,6 +480,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      */
     public void setPreferredWidth(double preferredWidth) {
         this.preferredWidth = preferredWidth;
+        setSize((int)preferredWidth, getHeight());
     }
 
     /**
@@ -493,6 +494,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      */
     public void setPreferredHeight(double preferredHeight) {
         this.preferredHeight = preferredHeight;
+        setSize(getWidth(), (int)preferredHeight);
     }
 
     /**
