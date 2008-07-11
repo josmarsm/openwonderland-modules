@@ -9,9 +9,9 @@
                 <void property="document">
                     <string>http://research.sun.com/projects/mc/OH07MPK20-revised.pdf</string>
                 </void>
-                <void property="clientClassname">
+                <!--void property="clientClassname">
                     <string>org.jdesktop.lg3d.wonderland.pdfviewer.client.cell.PDFViewerApp</string>
-                </void>
+                </void-->
                 <void property="preferredWidth">
                     <int>1024</int>
                 </void>
@@ -19,9 +19,6 @@
                     <int>768</int>
                 </void>
                 <void property="decorated">
-                    <boolean>true</boolean>
-                </void>
-                <void property="synced">
                     <boolean>true</boolean>
                 </void>
                 <void property="slideShow">
