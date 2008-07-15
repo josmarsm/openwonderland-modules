@@ -46,7 +46,6 @@ import org.jdesktop.lg3d.wonderland.appshare.SimpleDrawingSurface;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 
-import org.jdesktop.lg3d.wonderland.scenemanager.EventController;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
@@ -480,7 +479,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      */
     public void setPreferredWidth(double preferredWidth) {
         this.preferredWidth = preferredWidth;
-        setSize((int)preferredWidth, getHeight());
+        setSize((int) preferredWidth, getHeight());
     }
 
     /**
@@ -494,7 +493,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      */
     public void setPreferredHeight(double preferredHeight) {
         this.preferredHeight = preferredHeight;
-        setSize(getWidth(), (int)preferredHeight);
+        setSize(getWidth(), (int) preferredHeight);
     }
 
     /**
@@ -595,7 +594,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     protected void showHUDMessage(String message, int timeout) {
         if (hudEnabled == true) {
             URL[] imgURLs = {HUD.SIMPLE_BOX_IMAGE_URL,
-                EventController.class.getResource("resources/preferences-system-windows.png")
+                VideoApp.class.getResource("resources/video-file.png")
             };
 
             Point[] imagePoints = {new Point(), new Point(10, 10)};
