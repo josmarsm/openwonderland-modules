@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.jdesktop.lg3d.wonderland.servlet.WonderlandServletUtil;
 import org.jdesktop.lg3d.wonderland.wfs.WFSCellDirectory;
@@ -45,6 +46,8 @@ public class Util {
     private static final String ART_DIR = BASE_DIR + File.separator + "art";
     private static final String WFS_DIR = BASE_DIR + File.separator + "upload-wfs";
 
+    private static final Logger logger = Logger.getLogger(Util.class.getName());
+    
     /**
      * Get the art directory
      */
@@ -55,13 +58,7 @@ public class Util {
         String artDir = WonderlandServletUtil.getProperty(ART_DIR_PROP, context, 
                                                           defaultArtDir);
         
-        try {
-            return new File(new URI(artDir));
-        } catch (URISyntaxException use) {
-            IOException ioe = new IOException(use.getMessage());
-            ioe.initCause(use);
-            throw ioe;
-        }
+        return new File(new URL(artDir).getPath());
     }
     
     /**
@@ -93,7 +90,7 @@ public class Util {
     {
         // get the wfs root
         String wfsRootDefault = "file:" + System.getProperty("user.home") + 
-                                WFS_DIR;
+                                WFS_DIR; 
         String wfsRoot = WonderlandServletUtil.getProperty(WFS_ROOT_PROP, 
                                 context, wfsRootDefault);
         URL wfsRootURL = new URL(wfsRoot);
