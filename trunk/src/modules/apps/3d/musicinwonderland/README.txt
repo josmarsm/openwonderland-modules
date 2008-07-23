@@ -45,19 +45,6 @@ You will need to set the location of the musicDatabase to point to an
 actual album database file.  This can be a local URL (as shown here) or a 
 regular http URL.
 
-Now you need to copy the MP3AudioSource voice bridge module to lg3d-wonderland:
-
-mkdir <lg3d-wonderland directory>/voicebridge/bridgeModules
-cp <musicinwonderland directory>/lib/MP3AudioSource.jar <lg3d-wonderland directory>/voicebridge/bridgeModules
-
-There is one more voice bridge module which you must get from
-
-http://www.javazoom.net/javalayer/sources.html
-
-Download Jlayer1.0 and copy it to lg3d-wonderland:
-
-cp Jlayer1.0 <lg3d-wonderland directory>/voicebridge/bridgeModules
-
 Finally, install the MIW cell by copying miw-wlc.xml from this directory
 into your current Wonderland world.  By default, the current Wonderland
 world is in the lg3d-wonderland/src/world/default-wfs directory if you are
