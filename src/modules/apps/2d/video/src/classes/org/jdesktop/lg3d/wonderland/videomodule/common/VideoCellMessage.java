@@ -37,11 +37,17 @@ public class VideoCellMessage extends CellMessage {
     public enum Action {
 
         UNKNOWN,
-        REQUEST_DENIED, REQUEST_COMPLETE,
+        REQUEST_COMPLETE,
         SET_SOURCE,
         SET_PTZ,
         PLAY, PAUSE, STOP, REWIND, FAST_FORWARD,
         GET_STATE, SET_STATE,
+    };
+
+    public enum RequestStatus {
+
+        REQUEST_OK,
+        REQUEST_DENIED
     };
 
     public enum PlayerState {
@@ -54,8 +60,8 @@ public class VideoCellMessage extends CellMessage {
     private Action action = Action.UNKNOWN;
     private String source;
     private double position;    // nanoseconds (really!)
-
     private PlayerState state = PlayerState.STOPPED;
+    private RequestStatus status = RequestStatus.REQUEST_OK;
     private float pan;
     private float tilt;
     private float zoom;
@@ -159,16 +165,33 @@ public class VideoCellMessage extends CellMessage {
         return zoom;
     }
 
+    /**
+     * Set the status of this request
+     * @param status the status of the request
+     */
+    public void setRequestStatus(RequestStatus status) {
+        this.status = status;
+    }
+
+    /**
+     * Get the status of this request
+     * @return the request status
+     */
+    public RequestStatus getRequestStatus() {
+        return status;
+    }
+
     @Override
     public String toString() {
-        return "uid: " + uid + ", " +
-                "source: " + source + ", " +
-                "action: " + action + ", " +
-                "state: " + state + ", " +
-                "position: " + position + ", " +
-                "pan: " + pan + ", " +
-                "tilt: " + tilt + ", " +
-                "zoom: " + zoom;
+        return "uid: " + getUID() + ", " +
+                "action: " + getAction() + ", " +
+                "status: " + getRequestStatus() + ", " +
+                "source: " + getSource() + ", " +
+                "state: " + getState() + ", " +
+                "position: " + getPosition() + ", " +
+                "pan: " + getPan() + ", " +
+                "tilt: " + getTilt() + ", " +
+                "zoom: " + getZoom();
     }
 
     @Override
@@ -183,6 +206,7 @@ public class VideoCellMessage extends CellMessage {
         pan = DataFloat.value(data);
         tilt = DataFloat.value(data);
         zoom = DataFloat.value(data);
+        status = RequestStatus.values()[DataInt.value(data)];
     }
 
     @Override
@@ -197,5 +221,6 @@ public class VideoCellMessage extends CellMessage {
         dataElements.add(new DataFloat(pan));
         dataElements.add(new DataFloat(tilt));
         dataElements.add(new DataFloat(zoom));
+        dataElements.add(new DataInt(status.ordinal()));
     }
 }
