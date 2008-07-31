@@ -26,7 +26,9 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.PeriodicTaskHandle;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.media.j3d.Bounds;
@@ -39,6 +41,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
+import org.jdesktop.lg3d.wonderland.eventrecorder.RecordableCellGLO;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage.Action;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFViewerCellSetup;
@@ -48,7 +51,7 @@ import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFViewerCellSetup;
  * @author nsimpson
  */
 public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
-        implements ManagedObject, BeanSetupGLO, CellMessageListener {
+        implements ManagedObject, BeanSetupGLO, CellMessageListener, RecordableCellGLO {
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerCellGLO.class.getName());
@@ -328,5 +331,24 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
 
     public boolean isSlideShowActive() {
         return (slideShowTask != null);
+    }
+
+    public List<CellMessage> getSynchronizeMessages() {
+        PDFCellMessage msg = new PDFCellMessage(getCellID());
+        // the current state of the application
+        PDFViewerStateMO stateMO = getStateMO();
+        
+        msg.setAction(Action.SET_STATE);
+        msg.setDocument(stateMO.getDocument());
+        msg.setPage(stateMO.getPage());
+        msg.setPosition(stateMO.getPosition());
+        msg.setPageCount(stateMO.getPageCount());
+        List<CellMessage> messageList = new ArrayList<CellMessage>();
+        messageList.add(msg);
+        return messageList;
+    }
+
+    public String getChannelName() {
+        return cellChannelName;
     }
 }
