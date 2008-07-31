@@ -56,6 +56,7 @@ import org.jdesktop.lg3d.wonderland.videomodule.common.MovieSource;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.Action;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.PlayerState;
+import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.RequestStatus;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoSource;
 
 /**
@@ -130,17 +131,17 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         addKeyListener(new KeyListener() {
 
             public void keyPressed(KeyEvent e) {
-                logger.finest("key pressed on app");
+                logger.finest("video player: key pressed");
                 dispatchKeyEvent(e);
             }
 
             public void keyReleased(KeyEvent e) {
-                logger.finest("key released on app");
+                logger.finest("video player: key released");
 //                dispatchKeyEvent(e);
             }
 
             public void keyTyped(KeyEvent e) {
-                logger.finest("key typed on app");
+                logger.finest("video player: key typed");
 //                dispatchKeyEvent(e);
             }
         });
@@ -148,28 +149,28 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         addMouseListener(new MouseListener() {
 
             public void mouseClicked(MouseEvent e) {
-                logger.finest("mouseClicked on app");
+                logger.finest("video player: mouse clicked");
                 dispatchMouseEvent(e);
             }
 
             public void mousePressed(MouseEvent e) {
-                logger.finest("mousePressed on app");
+                logger.finest("video player: mouse pressed");
                 dispatchMouseEvent(e);
             }
 
             public void mouseReleased(MouseEvent e) {
-                logger.finest("mouseReleased on app");
+                logger.finest("video player: mouse released");
                 dispatchMouseEvent(e);
             }
 
             public void mouseEntered(MouseEvent e) {
-                logger.finest("mouseEntered on app");
+                logger.finest("video player: mouse entered");
                 dispatchMouseEvent(e);
                 repaint();
             }
 
             public void mouseExited(MouseEvent e) {
-                logger.finest("mouseExited on app");
+                logger.finest("video player: mouse exited");
                 dispatchMouseEvent(e);
                 repaint();
             }
@@ -263,7 +264,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                                     } catch (InterruptedException e) {
                                     }
                                 }
-                                logger.info("downloaded: " + downloader.getDownloaded() +
+                                logger.info("video player: downloaded: " + downloader.getDownloaded() +
                                         " of " + downloader.getDownloadSize() + " Bytes" +
                                         ", bandwidth: " + downloader.getBandwidth() + " KB/s");
                             }
@@ -274,7 +275,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                                 // then completely download a copy of the video. This is
                                 // necessary when connected over a slow network where video
                                 // playback might overrun the buffer of downloaded video
-                                logger.info("fully downloading video, time remaining: " + downloader.getRemainingTime());
+                                logger.info("video player: fully downloading video, time remaining: " + downloader.getRemainingTime());
 
                                 synchronized (downloader) {
                                     // wait for the file to be completely downloaded
@@ -285,7 +286,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                                         }
                                     }
 
-                                    logger.info("completed downloading video: " + video);
+                                    logger.info("video player: completed downloading video: " + video);
                                 }
                             } else {
                                 mediaReady = true;
@@ -303,7 +304,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                     if (VideoApp.this.video != null) {
                         if (mediaReady == true) {
                             // load the new video
-                            logger.info("video player loading: " + VideoApp.this.video);
+                            logger.info("video player: loading: " + VideoApp.this.video);
                             videoDialog.setVideoURL(video);
 
                             // stop any existing player threads
@@ -329,7 +330,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                                     }
                                 }
                                 if ((w > 0) && (h > 0)) {
-                                    logger.fine("resizing app window to fit video: " + w + "x" + h);
+                                    logger.fine("video player: resizing app window to fit video: " + w + "x" + h);
                                     setSize((int) w, (int) h);
                                 }
                             }
@@ -342,7 +343,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                             }
                         } else {
                             // media not ready
-                            logger.info("media not ready, initiating resync");
+                            logger.info("video player: media not ready, initiating resync");
                             VideoApp.this.resync();
                         }
                     }
@@ -368,7 +369,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      * @param rate the frame rate in frames per second
      */
     public void setFrameRate(float rate) {
-        logger.info("setting frame rate to: " + rate + "fps");
+        logger.info("video player: setting frame rate to: " + rate + "fps");
         showHUDMessage("fps: " + (int) rate, 3000);
     }
 
@@ -401,7 +402,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      * @param state the player state (PLAYING, PAUSED, or STOPPED)
      */
     public void setState(PlayerState state) {
-        logger.fine("setting state to: " + state);
+        logger.fine("video player: setting state to: " + state);
         switch (state) {
             case PLAYING:
                 play(true);
@@ -435,7 +436,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     public void setPosition(double time) {
         if (playerReady()) {
             time = ((time > snapper.getDuration()) || (time < 0)) ? 0 : time;
-            logger.info("setting media position to: " + time);
+            logger.info("video player: setting media position to: " + time);
             snapper.setPosition(time);
         }
     }
@@ -718,7 +719,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         if (playerReady()) {
             // ask the player for the play state, this has the most
             // accurate status of what the user is seeing
-            logger.finest("video is playing == " + playing + " (" + snapper.getPlayerState() + ")");
+            logger.finest("video player: is playing == " + playing + " (" + snapper.getPlayerState() + ")");
             playing = snapper.getPlayerState() == Player.Started;
         }
 
@@ -740,7 +741,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     public void stop() {
         if (playerReady()) {
             // stop immediately, then tell everyone else
-            logger.info("stop");
+            logger.info("video player: stop");
             showHUDMessage("stop", 3000);
             snapper.stopMovie();
             cue(0.0, 0.01);
@@ -755,7 +756,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      */
     public void rewind() {
         if (playerReady()) {
-            logger.info("rewind");
+            logger.info("video player: rewind");
             if (isSynced()) {
                 // sync other clients
                 sendCameraRequest(Action.REWIND, null);
@@ -770,7 +771,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      */
     public void fastForward() {
         if (playerReady()) {
-            logger.info("fast forward");
+            logger.info("video player: fast forward");
             if (isSynced()) {
                 // sync other clients
                 sendCameraRequest(Action.FAST_FORWARD, null);
@@ -804,12 +805,12 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     public void sync(boolean syncing) {
         if ((syncing == false) && (synced == true)) {
             synced = false;
-            logger.info("video unsynced");
+            logger.info("video player: unsynced");
             showHUDMessage("unsynced", 3000);
             updateMenu();
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
-            logger.info("video requesting sync with shared state");
+            logger.info("video player: requesting sync with shared state");
             showHUDMessage("syncing...", 5000);
             sendCameraRequest(Action.GET_STATE, null);
         }
@@ -847,7 +848,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                 new Thread(new Runnable() {
 
                     public void run() {
-                        logger.info("starting playback");
+                        logger.info("video player: starting playback");
                         snapper.startMovie();
 
                         frameRate = preferredFrameRate;
@@ -857,7 +858,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                         while (!isPlaying()) {
                             try {
                                 Thread.sleep(200);
-                                logger.info("waiting for player to start: " + snapper.getPlayerState());
+                                logger.info("video player: waiting for player to start: " + snapper.getPlayerState());
                             } catch (InterruptedException e) {
                             }
                         }
@@ -879,7 +880,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         new Thread(new Runnable() {
 
             public void run() {
-                logger.info("stopping playback");
+                logger.info("video player: stopping playback");
                 snapper.stopMovie();
                 frameRate = 0;
                 if (frameTimer != null) {
@@ -889,7 +890,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                 while (isPlaying()) {
                     try {
                         Thread.sleep(200);
-                        logger.info("waiting for player to stop: " + snapper.getPlayerState());
+                        logger.info("video player: waiting for player to stop: " + snapper.getPlayerState());
                     } catch (InterruptedException e) {
                     }
                 }
@@ -915,13 +916,13 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
 
         start = ((start - cueLeadIn) < 0) ? cueLeadIn : start;
 
-        logger.info("cue from: " + (start - cueLeadIn) + " to " + start);
+        logger.info("video player: cue from: " + (start - cueLeadIn) + " to " + start);
         if (isPlaying()) {
             setPosition(start);
         } else {
             snapper.setStopTime(start);
             setPosition(start - cueLeadIn);
-            logger.info("cue starting");
+            logger.info("video player: cue starting");
             startPlaying();
         }
     }
@@ -954,7 +955,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
             return;
         }
 
-        logger.info((muting == true) ? "muting" : "unmuting");
+        logger.info("video player: " + ((muting == true) ? "muting" : "unmuting"));
         snapper.mute(muting);
         showHUDMessage(isMuted() ? "muted" : "unmuted", 3000);
     }
@@ -976,7 +977,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
             case KeyEvent.VK_F:
                 // change the frame rate
                 if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
-                    logger.fine("increasing frame rate");
+                    logger.fine("video player: increasing frame rate");
                     preferredFrameRate++;
                     setFrameRate(preferredFrameRate);
                     if (isPlaying() == true) {
@@ -984,7 +985,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                         startPlaying();
                     }
                 } else {
-                    logger.fine("decreasing frame rate");
+                    logger.fine("video player: decreasing frame rate");
                     preferredFrameRate = (preferredFrameRate > 0) ? preferredFrameRate - 1 : 0;
                     setFrameRate(preferredFrameRate);
                     if (isPlaying() == true) {
@@ -1045,14 +1046,14 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
             // wait for a retry window
             synchronized (actionLock) {
                 try {
-                    logger.fine("waiting for retry window");
+                    logger.fine("video player: waiting for retry window");
                     actionLock.wait();
                 } catch (Exception e) {
-                    logger.fine("exception waiting for retry: " + e);
+                    logger.fine("video player: exception waiting for retry: " + e);
                 }
             }
             // retry this request
-            logger.fine("retrying: " + action + ", " + point);
+            logger.fine("video player: retrying: " + action + ", " + point);
             sendCameraRequest(action, point);
         }
     }
@@ -1102,7 +1103,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
 
         if (msg != null) {
             // send request to server
-            logger.fine("sending camera request: " + msg);
+            logger.fine("video player: sending camera request: " + msg);
             ChannelController.getController().sendMessage(msg);
         }
     }
@@ -1124,107 +1125,87 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     protected void handleResponse(VideoCellMessage msg) {
         String controlling = msg.getUID();
         String myUID = ((VideoCell) cell).getUID();
-        boolean fromMe = (myUID.equals(controlling));
+        boolean forMe = (myUID.equals(controlling));
         VideoCellMessage vcm = null;
 
-        // a client may send a request while another camera has control.
-        // the server denies the conflicting request and the client must
-        // the re-issue the request when the client currently in control
-        // relinquishes control
-        logger.info("video processing action request: " + msg.getAction());
-
-        switch (msg.getAction()) {
-            case REQUEST_DENIED:
-                // could retry request here
-                logger.info("REQUEST_DENIED: " + msg);
-                break;
-            case SET_SOURCE:
-                if (isSynced() == true) {
-                    loadVideo(msg.getSource(), 0.0, PlayerState.PAUSED);
+        if (isSynced()) {
+            logger.fine("video player: " + myUID + " received message: " + msg);
+            if (msg.getRequestStatus() == RequestStatus.REQUEST_DENIED) {
+                // a client may send a request while another app has control.
+                // the server denies the conflicting request and the app must
+                // the re-issue the request when the app currently in control
+                // relinquishes control                
+                try {
+                    logger.info("video player: scheduling retry of request: " + msg);
+                    retryCameraRequest(msg.getAction(), new Point3f());
+                } catch (Exception e) {
+                    logger.warning("video player: failed to create retry request for: " + msg);
                 }
-                if (fromMe) {
-                    // notify everyone that the request has completed
-                    vcm = new VideoCellMessage(msg);
-                    vcm.setAction(Action.REQUEST_COMPLETE);
-                }
-                break;
-            case REWIND:
-                if (isSynced()) {
-                    setPositionRelative(msg.getPosition(), -5);
-                }
-                if (fromMe) {
-                    // notify everyone that the request has completed
-                    vcm = new VideoCellMessage(msg);
-                    vcm.setAction(Action.REQUEST_COMPLETE);
-                }
-                break;
-            case FAST_FORWARD:
-                if (isSynced()) {
-                    setPositionRelative(msg.getPosition(), 5);
-                }
-                if (fromMe) {
-                    // notify everyone that the request has completed
-                    vcm = new VideoCellMessage(msg);
-                    vcm.setAction(Action.REQUEST_COMPLETE);
-                }
-                break;
-            case PLAY:
-            case PAUSE:
-            case STOP:
-                // only change playback if this cell is synced with server
-                if (isSynced()) {
-                    // change the play state of the video
-                    if (msg.getAction() == Action.PLAY) {
-                        // starting to play
-                        setPosition(msg.getPosition());
-                        play(true);
-                    } else {
-                        // pausing or stopping
-                        if (!fromMe) {
-                            // initiating cell will already have paused/stopped
-                            if (this.playerReady()) {
-                                snapper.stopMovie();
+            } else {
+                switch (msg.getAction()) {
+                    case SET_SOURCE:
+                        loadVideo(msg.getSource(), 0.0, PlayerState.PAUSED);
+                        break;
+                    case REWIND:
+                        setPositionRelative(msg.getPosition(), -5);
+                        break;
+                    case FAST_FORWARD:
+                        setPositionRelative(msg.getPosition(), 5);
+                        break;
+                    case PLAY:
+                    case PAUSE:
+                    case STOP:
+                        // change the play state of the video
+                        if (msg.getAction() == Action.PLAY) {
+                            // starting to play
+                            setPosition(msg.getPosition());
+                            play(true);
+                        } else {
+                            // pausing or stopping
+                            if (!forMe) {
+                                // initiating cell will already have paused/stopped
+                                if (this.playerReady()) {
+                                    snapper.stopMovie();
+                                }
+                                cue(msg.getPosition(), 0.05);
                             }
-                            cue(msg.getPosition(), 0.05);
                         }
-                    }
-                }
-                if (fromMe) {
-                    // notify everyone that the request has completed
-                    vcm = new VideoCellMessage(msg);
-                    vcm.setAction(Action.REQUEST_COMPLETE);
-                }
-                break;
-            case SET_STATE:
-                if (fromMe) {
-                    logger.fine("syncing with state: " + msg);
-                    loadVideo(msg.getSource(), msg.getPosition(), msg.getState());
+                        break;
+                    case SET_STATE:
+                        if (forMe) {
+                            logger.fine("video player: syncing with state: " + msg);
+                            loadVideo(msg.getSource(), msg.getPosition(), msg.getState());
 
-                    setSynced(true);
-                    logger.info("video synced");
-                    showHUDMessage("synced", 3000);
-
-                    // notify everyone that the request has completed
-                    vcm = new VideoCellMessage(msg);
-                    vcm.setAction(Action.REQUEST_COMPLETE);
+                            setSynced(true);
+                            logger.info("video player: video synced");
+                            showHUDMessage("synced", 3000);
+                        }
+                        break;
+                    case REQUEST_COMPLETE:
+                        synchronized (actionLock) {
+                            try {
+                                logger.fine("video player: waking retry threads");
+                                actionLock.notify();
+                            } catch (Exception e) {
+                                logger.warning("video player: exception notifying retry threads: " + e);
+                            }
+                        }
+                        break;
+                    default:
+                        logger.warning("video player: unhandled message type: " + msg.getAction());
+                        break;
                 }
-                break;
-            case REQUEST_COMPLETE:
-                synchronized (actionLock) {
-                    try {
-                        logger.fine("waking retry threads");
-                        actionLock.notify();
-                    } catch (Exception e) {
-                        logger.warning("exception notifying retry threads: " + e);
-                    }
-                }
-                break;
+            }
+            if ((forMe == true) && (msg.getAction() != Action.REQUEST_COMPLETE)) {
+                // notify everyone that the request has completed
+                vcm = new VideoCellMessage(msg);
+                vcm.setAction(Action.REQUEST_COMPLETE);
+            }
         }
         if (vcm != null) {
-            logger.fine("sending message: " + vcm);
+            logger.fine("video player: sending message: " + vcm);
             ChannelController.getController().sendMessage(vcm);
         }
-
     }
 
     /**
@@ -1268,7 +1249,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      */
     @Override
     public void takeControl(MouseEvent me) {
-        logger.info("video has control");
+        logger.info("video player: has control");
         super.takeControl(me);
         setInControl(true);
     }
@@ -1279,7 +1260,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      */
     @Override
     public void releaseControl(MouseEvent me) {
-        logger.info("video lost control");
+        logger.info("video player: lost control");
         super.releaseControl(me);
         setInControl(false);
     }
@@ -1304,7 +1285,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                 VideoApp.this.repaint();
             } else {
                 if (frameTimer != null) {
-                    logger.info("stopping frame update task because movie isn't playing: " + snapper.getPlayerState());
+                    logger.info("video player: stopping frame update task because movie isn't playing: " + snapper.getPlayerState());
                     stopPlaying();
                 }
             }

@@ -33,6 +33,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 import org.jdesktop.lg3d.wonderland.videomodule.common.PTZCamera;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.Action;
+import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.RequestStatus;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoSource;
 
 /**
@@ -68,8 +69,8 @@ public class PTZPanoramaApp extends PTZCameraApp {
 
     @Override
     public void setVideoInstance(VideoSource videoInstance) {
-        logger.finest("cell origin: " + cell.getCellOrigin());
-        logger.finest("cell bounds: " + cell.getBounds());
+        logger.finest("ptz panorama: cell origin: " + cell.getCellOrigin());
+        logger.finest("ptz panorama: cell bounds: " + cell.getBounds());
 
         this.videoInstance = videoInstance;
         if (videoInstance instanceof PTZCamera) {
@@ -92,19 +93,19 @@ public class PTZPanoramaApp extends PTZCameraApp {
             setPreferredWidth(panoramaWidth);
             setPreferredHeight(panoramaHeight);
 
-            logger.finest("horizontal FOV: " + horizFOV);
-            logger.finest("vertical FOV: " + vertFOV);
-            logger.finest("horiz pixels per degree: " + horizPixelsPerDegree);
-            logger.finest("vert pixels per degree: " + vertPixelsPerDegree);
-            logger.finest("panorama w: " + panoramaWidth);
-            logger.finest("panorama h: " + panoramaHeight);
-            logger.finest("video w: " + videoWidth);
-            logger.finest("video h: " + videoHeight);
-            logger.finest("my preferred dimensions: " + panoramaWidth + "x" + panoramaHeight);
-            logger.finest("panorama native to physical width: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaWidth));
-            logger.finest("panorama native to physical height: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaHeight));
-            logger.finest("video native to physical width: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) videoWidth));
-            logger.finest("video native to physical height: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) videoHeight));
+            logger.finest("ptz panorama: horizontal FOV: " + horizFOV);
+            logger.finest("ptz panorama: vertical FOV: " + vertFOV);
+            logger.finest("ptz panorama: horiz pixels per degree: " + horizPixelsPerDegree);
+            logger.finest("ptz panorama: vert pixels per degree: " + vertPixelsPerDegree);
+            logger.finest("ptz panorama: panorama w: " + panoramaWidth);
+            logger.finest("ptz panorama: panorama h: " + panoramaHeight);
+            logger.finest("ptz panorama: video w: " + videoWidth);
+            logger.finest("ptz panorama: video h: " + videoHeight);
+            logger.finest("ptz panorama: my preferred dimensions: " + panoramaWidth + "x" + panoramaHeight);
+            logger.finest("ptz panorama: panorama native to physical width: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaWidth));
+            logger.finest("ptz panorama: panorama native to physical height: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) panoramaHeight));
+            logger.finest("ptz panorama: video native to physical width: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) videoWidth));
+            logger.finest("ptz panorama: video native to physical height: " + Toolkit3D.getToolkit3D().widthNativeToPhysical((int) videoHeight));
 
             // force maximum zoom
             ptz.zoomTo(ptz.getMaxZoom());
@@ -123,7 +124,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
     protected void dispatchKeyEvent(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_R:
-                logger.info("refreshing panorama");
+                logger.info("ptz panorama: refreshing panorama");
                 showHUDMessage("refreshing...", 45000);
                 refreshPanorama();
                 break;
@@ -164,23 +165,23 @@ public class PTZPanoramaApp extends PTZCameraApp {
 
         float angle = (px / cx) * hf;     // angular offset from center
 
-        logger.finest("x: " + x + " = angle: " + angle);
+        logger.finest("ptz panorama: x: " + x + " = angle: " + angle);
         angle = (Math.abs(angle) > ptz.getMaxPan()) ? Math.signum(angle) * ptz.getMaxPan() : angle;
 
         return angle;
     }
 
     private float yCoordToAngle(float y) {
-        float h = getHeight();      // height of app in pixels
+        float h = getHeight();          // height of app in pixels
 
         float cy = h / 2f;
-        float vf = vertFOV / 2f;    // visible field of view above or below center
+        float vf = vertFOV / 2f;        // visible field of view above or below center
 
-        float py = y - cy;          // distance in pixels from center
+        float py = y - cy;              // distance in pixels from center
 
         float angle = -(py / cy) * vf;  // angular offset from center
 
-        logger.finest("y: " + y + " = angle: " + angle);
+        logger.finest("ptz panorama: y: " + y + " = angle: " + angle);
         angle = (Math.abs(angle) > ptz.getMaxTilt()) ? Math.signum(angle) * ptz.getMaxTilt() : angle;
 
         return angle;
@@ -226,7 +227,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
             float vy = 0.5f * vh + (float) v * vh;
             for (int h = 0; h < horizontalPasses; h++) {
                 float vx = 0.5f * vw + (float) h * vw;
-                logger.info("requesting refresh of location: " +
+                logger.info("ptz panorama: requesting refresh of location: " +
                         xCoordToAngle(vx) + ", " + yCoordToAngle(vy));
 
                 sendCameraRequest(Action.SET_PTZ,
@@ -244,42 +245,54 @@ public class PTZPanoramaApp extends PTZCameraApp {
         VideoCellMessage vcm = null;
         float pan, tilt, zoom;
 
-        // a client may send a request while another camera has control.
-        // the server denies the conflicting request and the client must
-        // the re-issue the request when the client currently in control
-        // relinquishes control
-        switch (msg.getAction()) {
-            case SET_PTZ:
-                // a request to adjust the camera's pan, tilt, zoom is starting
-
-                // take a snapshot of the current position of the camera before
-                // commencing the move
-                logger.fine("ptz changing: taking snapshot");
-                if (snapper != null) {
-                    snapshot = snapper.getFrame();
-                    repaint();
+        if (isSynced()) {
+            logger.fine("ptz panorama: " + myUID + " received message: " + msg);
+            if (msg.getRequestStatus() == RequestStatus.REQUEST_DENIED) {
+                // a client may send a request while another app has control.
+                // the server denies the conflicting request and the app must
+                // the re-issue the request when the app currently in control
+                // relinquishes control                
+                try {
+                    logger.info("ptz panorama: scheduling retry of request: " + msg);
+                    retryCameraRequest(msg.getAction(), new Point3f(msg.getPan(), msg.getTilt(), msg.getZoom()));
+                } catch (Exception e) {
+                    logger.warning("ptz panorama: failed to create retry request for: " + msg);
                 }
+            } else {
+                switch (msg.getAction()) {
+                    case SET_PTZ:
+                        // a request to adjust the camera's pan, tilt, zoom is starting
 
-                // new PTZ values
-                pan = msg.getPan();
-                tilt = msg.getTilt();
-                zoom = msg.getZoom();
+                        // take a snapshot of the current position of the camera before
+                        // commencing the move
+                        logger.fine("ptz panorama: taking snapshot");
+                        if (snapper != null) {
+                            snapshot = snapper.getFrame();
+                            repaint();
+                        }
 
-                // only adjust the camera if this cell has control of the camera
-                if (forMe == true) {
-                    // change the camera's pan, tilt or zoom settings
-                    logger.fine("performing action: " + msg.getAction());
-                    moveCamera(msg.getAction(), pan, tilt, zoom);
+                        // new PTZ values
+                        pan = msg.getPan();
+                        tilt = msg.getTilt();
+                        zoom = msg.getZoom();
+
+                        // only adjust the camera if this cell has control of the camera
+                        if (forMe == true) {
+                            // change the camera's pan, tilt or zoom settings
+                            logger.fine("ptz panorama: performing action: " + msg.getAction());
+                            moveCamera(msg.getAction(), pan, tilt, zoom);
+                        }
+                        logger.fine("ptz panorama: moving video window to: " + pan + ", " + tilt);
+                        moveVideo(pan, tilt, VIDEO_OVERLAY_Z);
+                        break;
+                    default:
+                        super.handleResponse(msg);
+                        break;
                 }
-                logger.fine("moving video window to: " + pan + ", " + tilt);
-                moveVideo(pan, tilt, VIDEO_OVERLAY_Z);
-                break;
-            default:
-                super.handleResponse(msg);
-                break;
+            }
         }
         if (vcm != null) {
-            logger.fine("sending message: " + vcm);
+            logger.fine("ptz panorama: sending message: " + vcm);
             ChannelController.getController().sendMessage(vcm);
         }
     }
@@ -317,7 +330,7 @@ public class PTZPanoramaApp extends PTZCameraApp {
             int px = panAngleToPixels(ptz.getPan());
             int py = tiltAngleToPixels(ptz.getTilt());
 
-            logger.info("painting snapshot at: " + ptz.getPan() + ", " + ptz.getTilt());
+            logger.info("ptz panorama: painting snapshot at: " + ptz.getPan() + ", " + ptz.getTilt());
 
             g.drawImage(snapshot, px, py, (int) videoWidth, (int) videoHeight, null);
             snapshot = null;

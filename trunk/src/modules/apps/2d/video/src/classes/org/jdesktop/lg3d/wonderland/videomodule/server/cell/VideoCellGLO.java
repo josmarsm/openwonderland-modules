@@ -46,6 +46,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.Action;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.PlayerState;
+import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.RequestStatus;
 
 /**
  * @author nsimpson
@@ -155,7 +156,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
     public void receivedMessage(ClientSession client, CellMessage message) {
         if (message instanceof VideoCellMessage) {
             VideoCellMessage vmcm = (VideoCellMessage) message;
-            logger.fine("video GLO received msg: " + vmcm);
+            logger.fine("video GLO: received msg: " + vmcm);
 
             Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
 
@@ -179,7 +180,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                 long controlDuration = stateMO.getControlOwnedDuration();
 
                 if (controlDuration >= controlTimeout) {
-                    logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
+                    logger.warning("video GLO: forcing control release of controlling cell: " + stateMO.getControllingCell());
                     stateMO.setControllingCell(null);
                     controlling = null;
                 }
@@ -203,7 +204,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                             long ago = now.getTimeInMillis() - then.getTimeInMillis();
                             double predicted = stateMO.getPosition() + (ago * 1000 * 1000);
                             msg.setPosition(predicted);
-                            logger.fine("predicted play position: " + predicted);
+                            logger.fine("video GLO: predicted play position: " + predicted);
                         } else {
                             msg.setPosition(stateMO.getPosition());
                         }
@@ -245,7 +246,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                         break;
                 }
                 // broadcast the message to all clients, including the requester
-                logger.fine("video GLO broadcasting msg: " + msg);
+                logger.fine("video GLO: broadcasting msg: " + msg);
                 getCellChannel().send(sessions, msg.getBytes());
             } else {
                 // one cell has control
@@ -255,13 +256,13 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                         stateMO.setControllingCell(null);
                         // broadcast request complete to all clients
                         // broadcast the message to all clients, including the requester
-                        logger.fine("video GLO broadcasting msg: " + msg);
+                        logger.fine("video GLO: broadcasting msg: " + msg);
                         getCellChannel().send(sessions, msg.getBytes());
                         break;
                     default:
                         // send a denial to the requesting client
-                        msg.setAction(Action.REQUEST_DENIED);
-                        logger.fine("video GLO broadcasting msg: " + msg);
+                        msg.setRequestStatus(RequestStatus.REQUEST_DENIED);
+                        logger.info("video GLO: sending denial to client: " + msg);
                         getCellChannel().send(client, msg.getBytes());
                         break;
                 }

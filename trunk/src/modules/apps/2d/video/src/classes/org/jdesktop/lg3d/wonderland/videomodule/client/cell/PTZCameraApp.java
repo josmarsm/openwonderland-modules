@@ -13,6 +13,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 import org.jdesktop.lg3d.wonderland.videomodule.common.PTZCamera;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.Action;
+import org.jdesktop.lg3d.wonderland.videomodule.common.VideoCellMessage.RequestStatus;
 import org.jdesktop.lg3d.wonderland.videomodule.common.VideoSource;
 
 /**
@@ -54,63 +55,63 @@ public class PTZCameraApp extends VideoApp implements PTZCellMenuListener, Camer
     }
 
     public void panLeft() {
-        logger.info("panning left");
+        logger.info("ptz camera: panning left");
         showHUDMessage("pan left", 1000);
         sendCameraRequest(Action.SET_PTZ,
                 new Point3f(ptz.getPan() - (1.0f - horizOverlapPercent) * ptz.getMinHorizontalFOV(), ptz.getTilt(), ptz.getZoom()));
     }
 
     public void panRight() {
-        logger.info("panning right");
+        logger.info("ptz camera: panning right");
         showHUDMessage("pan right", 1000);
         sendCameraRequest(Action.SET_PTZ,
                 new Point3f(ptz.getPan() + (1.0f - horizOverlapPercent) * ptz.getMinHorizontalFOV(), ptz.getTilt(), ptz.getZoom()));
     }
 
     public void tiltUp() {
-        logger.info("tilting up");
+        logger.info("ptz camera: tilting up");
         showHUDMessage("tilt up", 1000);
         sendCameraRequest(Action.SET_PTZ,
                 new Point3f(ptz.getPan(), ptz.getTilt() + (1.0f - vertOverlapPercent) * ptz.getMinVerticalFOV(), ptz.getZoom()));
     }
 
     public void tiltDown() {
-        logger.info("tilting down");
+        logger.info("ptz camera: tilting down");
         showHUDMessage("tilt down", 1000);
         sendCameraRequest(Action.SET_PTZ,
                 new Point3f(ptz.getPan(), ptz.getTilt() - (1.0f - vertOverlapPercent) * ptz.getMinVerticalFOV(), ptz.getZoom()));
     }
 
     public void center() {
-        logger.info("centering");
+        logger.info("ptz camera: centering");
         showHUDMessage("centering", 1000);
         sendCameraRequest(Action.SET_PTZ,
                 new Point3f(0, 0, ptz.getZoom()));
     }
 
     public void zoomIn() {
-        logger.info("zooming in");
+        logger.info("ptz camera: zooming in");
         showHUDMessage("zoom in", 1000);
         sendCameraRequest(Action.SET_PTZ,
                 new Point3f(ptz.getPan(), ptz.getTilt(), ptz.getZoom() + 1000));
     }
 
     public void zoomOut() {
-        logger.info("zooming out");
+        logger.info("ptz camera: zooming out");
         showHUDMessage("zoom out", 1000);
         sendCameraRequest(Action.SET_PTZ,
                 new Point3f(ptz.getPan(), ptz.getTilt(), ptz.getZoom() - 1000));
     }
 
     public void zoomInFully() {
-        logger.info("zooming in fully");
+        logger.info("ptz camera: zooming in fully");
         showHUDMessage("max zoom", 1000);
         sendCameraRequest(Action.SET_PTZ,
                 new Point3f(ptz.getPan(), ptz.getTilt(), ptz.getMaxZoom()));
     }
 
     public void zoomOutFully() {
-        logger.info("zooming out fully");
+        logger.info("ptz camera: zooming out fully");
         showHUDMessage("min zoom", 1000);
         sendCameraRequest(Action.SET_PTZ,
                 new Point3f(ptz.getPan(), ptz.getTilt(), ptz.getMinZoom()));
@@ -150,7 +151,7 @@ public class PTZCameraApp extends VideoApp implements PTZCellMenuListener, Camer
                 }
                 break;
             case KeyEvent.VK_TAB:
-                logger.fine("manual repaint!");
+                logger.fine("ptz camera: manual repaint!");
                 repaint();
                 break;
             default:
@@ -186,7 +187,7 @@ public class PTZCameraApp extends VideoApp implements PTZCellMenuListener, Camer
 
         if (msg != null) {
             // send request to server
-            logger.fine("sending camera request: " + msg);
+            logger.fine("ptz camera: sending camera request: " + msg);
             ChannelController.getController().sendMessage(msg);
         }
     }
@@ -198,48 +199,56 @@ public class PTZCameraApp extends VideoApp implements PTZCellMenuListener, Camer
         boolean forMe = (myUID.equals(controlling));
         VideoCellMessage vcm = null;
 
-        // a client may send a request while another camera has control.
-        // the server denies the conflicting request and the client must
-        // the re-issue the request when the client currently in control
-        // relinquishes control
-        switch (msg.getAction()) {
-            case REQUEST_DENIED:
-                // this request was denied, create a retry thread
-                retryCameraRequest(Action.SET_PTZ, new Point3f(msg.getPan(), msg.getTilt(), msg.getZoom()));
-                break;
-            case SET_PTZ:
-                // a request to adjust the camera's pan, tilt, zoom is starting
-                // new PTZ values
-                if (forMe == true) {
-                    // only adjust the camera if this cell has control of the camera
-                    // change the camera's pan, tilt or zoom settings
-                    logger.info("setting PTZ to pan: " +
-                            msg.getPan() + ", tilt: " + msg.getTilt() + ", zoom: " + msg.getZoom());
-                    moveCamera(msg.getAction(), msg.getPan(), msg.getTilt(), msg.getZoom());
+        if (isSynced()) {
+            logger.fine("ptz camera: " + myUID + " received message: " + msg);
+            if (msg.getRequestStatus() == RequestStatus.REQUEST_DENIED) {
+                // a client may send a request while another app has control.
+                // the server denies the conflicting request and the app must
+                // the re-issue the request when the app currently in control
+                // relinquishes control
+                try {
+                    logger.info("ptz camera: scheduling retry of request: " + msg);
+                    retryCameraRequest(Action.SET_PTZ, new Point3f(msg.getPan(), msg.getTilt(), msg.getZoom()));
+                } catch (Exception e) {
+                    logger.warning("ptz camera: failed to create retry request for: " + msg);
                 }
-                break;
-            case REQUEST_COMPLETE:
-                // save the camera's current pan, tilt, zoom values
-                ptz.setPTZPosition(msg.getPan(), msg.getTilt(), msg.getZoom());
+            } else {
+                switch (msg.getAction()) {
+                    case SET_PTZ:
+                        // a request to adjust the camera's pan, tilt, zoom is starting
+                        // new PTZ values
+                        if (forMe == true) {
+                            // only adjust the camera if this cell has control of the camera
+                            // change the camera's pan, tilt or zoom settings
+                            logger.info("ptz camera: setting PTZ to pan: " +
+                                    msg.getPan() + ", tilt: " + msg.getTilt() + ", zoom: " + msg.getZoom());
+                            moveCamera(msg.getAction(), msg.getPan(), msg.getTilt(), msg.getZoom());
+                        }
+                        break;
+                    case REQUEST_COMPLETE:
+                        // save the camera's current pan, tilt, zoom values
+                        ptz.setPTZPosition(msg.getPan(), msg.getTilt(), msg.getZoom());
 
-                // when another client's request completes, wakeup any threads
-                // with pending actions, so they can resubmit their requests
-                synchronized (actionLock) {
-                    try {
-                        logger.fine("waking retry threads");
-                        actionLock.notify();
-                    } catch (Exception e) {
-                        logger.fine("exception notifying retry threads: " + e);
-                    }
+                        // when another client's request completes, wakeup any threads
+                        // with pending actions, so they can resubmit their requests
+                        synchronized (actionLock) {
+                            try {
+                                logger.fine("ptz camera: waking retry threads");
+                                actionLock.notify();
+                            } catch (Exception e) {
+                                logger.fine("ptz camera: exception notifying retry threads: " + e);
+                            }
+                        }
+                        break;
+                    default:
+                        super.handleResponse(msg);
+                        break;
                 }
-                break;
-            default:
-                super.handleResponse(msg);
-                break;
-        }
-        if (vcm != null) {
-            logger.fine("sending message: " + vcm);
-            ChannelController.getController().sendMessage(vcm);
+            }
+            if (vcm != null) {
+                logger.fine("ptz camera: sending message: " + vcm);
+                ChannelController.getController().sendMessage(vcm);
+            }
         }
     }
 
@@ -249,7 +258,7 @@ public class PTZCameraApp extends VideoApp implements PTZCellMenuListener, Camer
         VideoCellMessage vcm = new VideoCellMessage(cell.getCellID(), myUID, action);
         vcm.setAction(Action.REQUEST_COMPLETE);
         vcm.setPTZPosition(pan, tilt, zoom);
-        logger.fine("sending message: " + vcm);
+        logger.fine("ptz camera: sending message: " + vcm);
         ChannelController.getController().sendMessage(vcm);
     }
 
