@@ -847,7 +847,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     }
 
     public void handleResponse(PDFCellMessage msg) {
-        String controlling = msg.getUID();
+        String controlling = msg.getUID(); //this is null when replaying
         String myUID = ((PDFViewerCell) cell).getUID();
         boolean forMe = (myUID.equals(controlling));
         PDFCellMessage pdfcm = null;
@@ -867,7 +867,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                     setViewPosition(msg.getPosition());
                     break;
                 case SET_STATE:
-                    if (forMe == true) {
+                    //if controlling is null, then message is for me--I'm replaying
+                    if (forMe || (controlling == null)) {
                         if (isSynced()) {
                             openDocument(msg.getDocument(), msg.getPage(), msg.getPosition());
                             cellMenu.disableButton(Button.UNSYNC);
