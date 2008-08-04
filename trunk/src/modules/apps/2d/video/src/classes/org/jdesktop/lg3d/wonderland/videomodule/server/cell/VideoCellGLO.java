@@ -202,7 +202,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                             Calendar now = Calendar.getInstance();
                             Calendar then = stateMO.getLastStateChange();
                             long ago = now.getTimeInMillis() - then.getTimeInMillis();
-                            double predicted = stateMO.getPosition() + (ago * 1000 * 1000);
+                            double predicted = stateMO.getPosition() + (ago / 1000);
                             msg.setPosition(predicted);
                             logger.fine("video GLO: predicted play position: " + predicted);
                         } else {
