@@ -57,7 +57,8 @@ public class HTTPDownloader extends Thread {
     private long remoteSize = 0;
     private long localSize = 0;
     private long remaining = 0;
-
+    private boolean stopDownloading = false;
+    
     public enum DOWNLOAD_STATUS {
 
         NOT_STARTED, STARTED, COMPLETE, FAILED
@@ -183,7 +184,7 @@ public class HTTPDownloader extends Thread {
     /**
      * Reset the state of the downloader
      */
-    private void reset() {
+    public void reset() {
         httpIS = null;
         fileOS = null;
         downloadAlert = 0;
@@ -244,7 +245,8 @@ public class HTTPDownloader extends Thread {
         this.fromURL = from;
         this.toFile = to;
         this.downloadAlert = alert;
-
+        stopDownloading = false;
+        
         try {
             if (downloadRequired(fromURL, toFile)) {
                 logger.fine("download starting");
@@ -256,7 +258,7 @@ public class HTTPDownloader extends Thread {
                 started = Calendar.getInstance();
                 downloadStarted = true;
 
-                while ((read = httpIS.read(buffer)) != -1) {
+                while (((read = httpIS.read(buffer)) != -1) && (!stopDownloading)) {
                     fileOS.write(buffer, 0, read);
                     downloaded += read;
                     if ((downloadAlert > 0) && (downloaded >= downloadAlert)) {
@@ -281,10 +283,16 @@ public class HTTPDownloader extends Thread {
         }
         synchronized (this) {
             downloadComplete = true;
+            stopDownloading = false;
             this.notifyAll();
         }
     }
 
+    public void abortDownload() {
+        logger.info("downloader: aborting download");
+        stopDownloading = true;
+    }
+    
     /** 
      * Download a file in a separate thread
      */
