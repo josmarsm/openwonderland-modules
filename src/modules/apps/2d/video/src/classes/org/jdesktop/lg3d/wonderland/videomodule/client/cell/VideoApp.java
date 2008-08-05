@@ -29,6 +29,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 
 import java.net.URL;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
@@ -36,7 +37,9 @@ import java.util.logging.Logger;
 import javax.media.Player;
 
 import javax.swing.SwingUtilities;
+
 import javax.vecmath.Point3f;
+
 import org.jdesktop.lg3d.wonderland.appshare.AppGroup;
 import org.jdesktop.lg3d.wonderland.appshare.AppWindowGraphics2DApp;
 import org.jdesktop.lg3d.wonderland.appshare.SimpleControlArb;
@@ -49,6 +52,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
+
 import org.jdesktop.lg3d.wonderland.videomodule.client.cell.VideoCellMenu.Button;
 import org.jdesktop.lg3d.wonderland.videomodule.common.HTTPDownloader;
 import org.jdesktop.lg3d.wonderland.videomodule.common.JMFSnapper;
@@ -93,6 +97,9 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     private boolean inControl = false;
     protected CellMenu cellMenu;
     protected Object actionLock = new Object();
+    private HTTPDownloader downloader;
+    private Thread downloadThread;
+    private boolean shuttingDown = false;
 
     public VideoApp(SharedApp2DImageCell cell) {
         this(cell, 0, 0, (int) DEFAULT_WIDTH, (int) DEFAULT_HEIGHT, true);
@@ -243,6 +250,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
 
                 public void run() {
                     VideoApp.this.video = null;
+                    shuttingDown = false;
 
                     if ((videoInstance instanceof MovieSource) && (video.startsWith("http"))) {
                         // video on web servers must be downloaded to the local file
@@ -250,12 +258,13 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
 
                         // download the video in a separate thread so we can
                         // monitor the download
-                        HTTPDownloader downloader = new HTTPDownloader(video,
+                        downloader = new HTTPDownloader(video,
                                 HTTPDownloader.getTempFilename(video), 100 * 1024);
 
                         if (downloader.downloadRequired()) {
                             // download the first 100 KB of the file
-                            new Thread(downloader).start();
+                            downloadThread = new Thread(downloader);
+                            downloadThread.start();
 
                             synchronized (downloader) {
                                 while (!downloader.downloadComplete() && !downloader.alertTriggered()) {
@@ -275,7 +284,10 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                                 // then completely download a copy of the video. This is
                                 // necessary when connected over a slow network where video
                                 // playback might overrun the buffer of downloaded video
-                                logger.info("video player: fully downloading video, time remaining: " + downloader.getRemainingTime());
+                                //
+                                // This strategy courtesy of Jo Voordeckers which he described 
+                                // at JavaOne 2008 in technical session TS-7372.
+                                logger.info("video player: fully downloading video, time remaining: " + downloader.getRemainingTime() + " s");
 
                                 synchronized (downloader) {
                                     // wait for the file to be completely downloaded
@@ -301,7 +313,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                         VideoApp.this.video = video;
                         mediaReady = true;
                     }
-                    if (VideoApp.this.video != null) {
+                    if ((VideoApp.this.video != null) && (!shuttingDown)) {
                         if (mediaReady == true) {
                             // load the new video
                             logger.info("video player: loading: " + VideoApp.this.video);
@@ -334,7 +346,9 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                                     setSize((int) w, (int) h);
                                 }
                             }
+
                             setInControl(inControl);
+
                             if (state == PlayerState.PLAYING) {
                                 setPosition(position);
                                 play(true);
@@ -349,6 +363,19 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                     }
                 }
             }).start();
+        }
+    }
+
+    public void unloadVideo() {
+        logger.info("video player: unloading video");
+        shuttingDown = true;
+        if ((downloader != null) && (!downloader.downloadComplete())) {
+            logger.info("video player: unload video: aborting download due to unload");
+            downloader.abortDownload();
+        }
+        if (isPlaying()) {
+            logger.info("video player: unload video: stopping playing due to unload");
+            stopPlaying();
         }
     }
 
@@ -369,7 +396,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      * @param rate the frame rate in frames per second
      */
     public void setFrameRate(float rate) {
-        logger.info("video player: setting frame rate to: " + rate + "fps");
+        logger.info("video player: setting frame rate to: " + rate + " fps");
         showHUDMessage("fps: " + (int) rate, 3000);
     }
 
@@ -744,7 +771,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
             logger.info("video player: stop");
             showHUDMessage("stop", 3000);
             snapper.stopMovie();
-            cue(0.0, 0.01);
+            cue(0.01, 0.01);
             if (isSynced()) {
                 sendCameraRequest(Action.STOP, null);
             }
@@ -832,39 +859,74 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
 
     /**
      * Starts playing the video
+     * 
+     * Note: this method must be called from a separate thread otherwise
+     * it will impact Wonderland client performance
      */
-    private void startPlaying() {
+    private void startPlayingImpl() {
         if (!playerReady()) {
             return;
         }
 
-        if (isPlaying() && (frameRate != preferredFrameRate)) {
-            // frame rate has changed, need to restart play
-            stopPlaying();
+        // stop the current player
+        stopPlayingImpl();
+
+        logger.info("video player: starting playback");
+        snapper.startMovie();
+
+        frameRate = preferredFrameRate;
+        frameTimer = new Timer();
+        frameUpdateTask = new FrameUpdateTask();
+        frameTimer.scheduleAtFixedRate(frameUpdateTask, 0, (long) (1000 * 1f / frameRate));
+        while (!isPlaying()) {
+            try {
+                Thread.sleep(200);
+                logger.info("video player: waiting for player to start: " + snapper.getPlayerState());
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+
+    /**
+     * Starts playing the video
+     */
+    public void startPlaying() {
+        if (preferredFrameRate > 0) {
+            new Thread(new Runnable() {
+
+                public void run() {
+                    startPlayingImpl();
+                    updateMenu();
+                }
+            }).start();
+        }
+    }
+
+    /**
+     * Stops playing the video
+     * 
+     * Note: this method must be called from a separate thread otherwise
+     * it will impact Wonderland client performance
+     */
+    private void stopPlayingImpl() {
+        if (!playerReady()) {
+            return;
         }
 
-        if (!isPlaying()) {
-            if (preferredFrameRate > 0) {
-                new Thread(new Runnable() {
-
-                    public void run() {
-                        logger.info("video player: starting playback");
-                        snapper.startMovie();
-
-                        frameRate = preferredFrameRate;
-                        frameTimer = new Timer();
-                        frameUpdateTask = new FrameUpdateTask();
-                        frameTimer.scheduleAtFixedRate(frameUpdateTask, 0, (long) (1000 * 1f / frameRate));
-                        while (!isPlaying()) {
-                            try {
-                                Thread.sleep(200);
-                                logger.info("video player: waiting for player to start: " + snapper.getPlayerState());
-                            } catch (InterruptedException e) {
-                            }
-                        }
-                        updateMenu();
-                    }
-                }).start();
+        logger.info("video player: stopping playback");
+        if (snapper != null) {
+            snapper.stopMovie();
+        }
+        frameRate = 0;
+        if (frameTimer != null) {
+            frameTimer.cancel();
+            frameTimer = null;
+        }
+        while (isPlaying()) {
+            try {
+                Thread.sleep(200);
+                logger.info("video player: waiting for player to stop: " + snapper.getPlayerState());
+            } catch (InterruptedException e) {
             }
         }
     }
@@ -873,27 +935,10 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      * Stops playing the video
      */
     public void stopPlaying() {
-        if (!playerReady()) {
-            return;
-        }
-
         new Thread(new Runnable() {
 
             public void run() {
-                logger.info("video player: stopping playback");
-                snapper.stopMovie();
-                frameRate = 0;
-                if (frameTimer != null) {
-                    frameTimer.cancel();
-                    frameTimer = null;
-                }
-                while (isPlaying()) {
-                    try {
-                        Thread.sleep(200);
-                        logger.info("video player: waiting for player to stop: " + snapper.getPlayerState());
-                    } catch (InterruptedException e) {
-                    }
-                }
+                stopPlayingImpl();
                 updateMenu();
             }
         }).start();
@@ -909,22 +954,30 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      * @param start the cue position of the video in seconds
      * @param cueLeadIn how far back from the cue position to start playing
      */
-    public void cue(double start, double cueLeadIn) {
+    public void cue(final double start, final double cueLeadIn) {
         if (!playerReady()) {
             return;
         }
 
-        start = ((start - cueLeadIn) < 0) ? cueLeadIn : start;
+        new Thread(new Runnable() {
 
-        logger.info("video player: cue from: " + (start - cueLeadIn) + " to " + start);
-        if (isPlaying()) {
-            setPosition(start);
-        } else {
-            snapper.setStopTime(start);
-            setPosition(start - cueLeadIn);
-            logger.info("video player: cue starting");
-            startPlaying();
-        }
+            public void run() {
+                double position = ((start - cueLeadIn) < 0) ? cueLeadIn : start;
+
+                if (isPlaying()) {
+                    logger.info("video player: cue setting position directly to: " + position);
+                    stopPlayingImpl();
+                    setPosition(position);
+                    startPlayingImpl();
+                } else {
+                    setPosition(position - cueLeadIn);
+                    snapper.setStopTime(position);
+                    logger.info("video player: cue starting from " + (position - cueLeadIn) + " to " + position);
+                    // player will stop on its own at the start time
+                    startPlayingImpl();
+                }
+            }
+        }).start();
     }
 
     /** 
@@ -1092,7 +1145,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                         ((VideoCell) cell).getUID(),
                         getVideo(),
                         action,
-                        0.0);
+                        0.01);
                 break;
             case GET_STATE:
                 msg = new VideoCellMessage(this.getCell().getCellID(),
@@ -1167,7 +1220,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                                 if (this.playerReady()) {
                                     snapper.stopMovie();
                                 }
-                                cue(msg.getPosition(), 0.05);
+                                cue(msg.getPosition(), 0.01);
                             }
                         }
                         break;
@@ -1285,7 +1338,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                 VideoApp.this.repaint();
             } else {
                 if (frameTimer != null) {
-                    logger.info("video player: stopping frame update task because movie isn't playing: " + snapper.getPlayerState());
+                    logger.info("video player: stopping frame update task because video isn't playing: " + snapper.getPlayerState());
                     stopPlaying();
                 }
             }

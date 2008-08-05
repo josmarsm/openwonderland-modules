@@ -138,7 +138,6 @@ public class VideoCell extends SharedApp2DImageCell
 
         if (msg instanceof VideoCellMessage) {
             VideoCellMessage vcmsg = Message.extractMessage(data, VideoCellMessage.class);
-            logger.fine("video cell received message: " + vcmsg);
             handleResponse(vcmsg);
         } else {
             super.receivedMessage(channel, session, data);
@@ -152,7 +151,10 @@ public class VideoCell extends SharedApp2DImageCell
     @Override
     public synchronized boolean setStatus(CellStatus status) {
         if (status != getStatus()) {
-            logger.fine("video cell status changed: " + getStatus() + "-> " + status);
+            logger.finest("video cell: status changed: " + getStatus() + "-> " + status);
+            if (status.equals(CellStatus.BOUNDS)) {
+                ((VideoApp)app).unloadVideo();
+            }
         }
 
         return super.setStatus(status);
@@ -173,10 +175,10 @@ public class VideoCell extends SharedApp2DImageCell
     }
 
     public void enterCell(String source) {
-        logger.fine("video enter cell from: " + source);
+        logger.fine("video cell: entered from: " + source);
     }
 
     public void exitCell(String source) {
-        logger.fine("video exit cell from: " + source);
+        logger.fine("video cell: exited from: " + source);
     }
 }
