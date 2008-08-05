@@ -29,6 +29,9 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.cell.*;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
+import org.jdesktop.lg3d.wonderland.eventrecorder.EventRecorder;
+import org.jdesktop.lg3d.wonderland.eventrecorder.RecordableCell;
+import org.jdesktop.lg3d.wonderland.eventrecorder.RecorderManager;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFViewerCellSetup;
 
@@ -38,7 +41,7 @@ import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFViewerCellSetup;
  * @author nsimpson
  */
 public class PDFViewerCell extends SharedApp2DImageCell
-        implements ExtendedClientChannelListener {
+        implements ExtendedClientChannelListener, RecordableCell {
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerCell.class.getName());
@@ -92,7 +95,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
     public void receivedMessage(ClientChannel channel, SessionId session,
             byte[] data) {
         PDFCellMessage msg = Message.extractMessage(data, PDFCellMessage.class);
-
+        recordMessage(channel, msg);
         logger.fine("cell received message: " + msg);
         handleResponse(msg);
     }
@@ -103,5 +106,13 @@ public class PDFViewerCell extends SharedApp2DImageCell
      */
     public void leftChannel(ClientChannel channel) {
         logger.fine("leftChannel: " + channel);
+    }
+
+    public void recordMessage(ClientChannel clientChannel, Message message) {
+        RecorderManager.getDefaultManager().record(this, clientChannel, message);
+    }
+    
+    public void recordMessage(EventRecorder eventRecorder, ClientChannel clientChannel, Message message) {
+        eventRecorder.writeChange(this, clientChannel, message);
     }
 }
