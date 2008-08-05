@@ -45,17 +45,20 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListene
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.Cell;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
+import org.jdesktop.lg3d.wonderland.eventrecorder.EventRecorder;
 import org.jdesktop.lg3d.wonderland.samplemodule.common.SampleModuleCellMessage;
 import org.jdesktop.lg3d.wonderland.samplemodule.common.SampleModuleCellSetup;
 import org.jdesktop.lg3d.wonderland.samplemodule.common.SampleModuleMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
+import org.jdesktop.lg3d.wonderland.eventrecorder.RecordableCell;
+import org.jdesktop.lg3d.wonderland.eventrecorder.RecorderManager;
 
 /**
  *
  * @author jkaplan
  */
 public class SampleModuleCell extends Cell
-        implements ExtendedClientChannelListener {
+        implements ExtendedClientChannelListener, RecordableCell {
 
     private static final Logger logger =
             Logger.getLogger(SampleModuleCell.class.getName());
@@ -147,7 +150,7 @@ public class SampleModuleCell extends Cell
             byte[] data) {
         SampleModuleMessage message =
                 Message.extractMessage(data, SampleModuleMessage.class);
-
+        recordMessage(client, message);
         switch (message.getAction()) {
             case SELECT:
                 handleSelection(message.getSelectionID());
@@ -276,5 +279,13 @@ public class SampleModuleCell extends Cell
                 setAppearance(DEFAULT_APPEARANCE);
             }
         }
+    }
+
+    public void recordMessage(ClientChannel clientChannel, Message message) {
+        RecorderManager.getDefaultManager().record(this, clientChannel, message);
+    }
+    
+    public void recordMessage(EventRecorder eventRecorder, ClientChannel clientChannel, Message message) {
+        eventRecorder.writeChange(this, clientChannel, message);
     }
 }
