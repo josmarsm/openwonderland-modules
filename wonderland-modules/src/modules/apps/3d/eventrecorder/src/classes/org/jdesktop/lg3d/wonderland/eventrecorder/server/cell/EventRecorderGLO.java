@@ -35,7 +35,8 @@ import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Matrix3d;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Vector3d;
-import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.AvatarCellMessage;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.AvatarP2PMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellHierarchyMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
@@ -43,8 +44,8 @@ import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
 import org.jdesktop.lg3d.wonderland.eventrecorder.common.EventRecorderCellMessage;
 import org.jdesktop.lg3d.wonderland.eventrecorder.common.EventRecorderCellSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
-import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.AvatarCellGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.CellGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.StationaryCellGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.UserCellCacheGLO;
@@ -200,6 +201,17 @@ public class EventRecorderGLO extends StationaryCellGLO
             
                     getCellChannel().send(client, erMsg.getBytes());
                 }        
+            }
+            if (cellGLO instanceof AvatarCellGLO) {
+                AvatarCellMessage acMessage = ((AvatarCellGLO)cellGLO).getAvatarSetupMessage();
+                erMsg = EventRecorderMessage.synchronizeAvatarMessage(acMessage, cellGLO.getCellChannelName(), cellGLO.getCellID());
+                logger.info("Sending cell message: " + acMessage + acMessage.getCellID());
+                getCellChannel().send(client, erMsg.getBytes());
+                
+                AvatarP2PMessage p2pMessage = ((AvatarCellGLO)cellGLO).getAvatarSetupP2PMessage(client);
+                erMsg = EventRecorderMessage.synchronizeAvatarMessage(p2pMessage, ((AvatarCellGLO)cellGLO).getAvatarP2PChannelName(), cellGLO.getCellID());
+                logger.info("Sending cell message: " + p2pMessage + p2pMessage.getAvatarCellID());
+                getCellChannel().send(client, erMsg.getBytes());
             }
         }
         //End sync
