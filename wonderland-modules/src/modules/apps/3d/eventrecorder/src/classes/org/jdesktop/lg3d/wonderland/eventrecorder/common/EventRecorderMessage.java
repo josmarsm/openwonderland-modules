@@ -20,14 +20,14 @@
 package org.jdesktop.lg3d.wonderland.eventrecorder.common;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.DataCellID;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.AvatarCellMessage;
+import org.jdesktop.lg3d.wonderland.darkstar.common.messages.AvatarP2PMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellHierarchyMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataBoolean;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataByteArray;
-import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataElement;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataInt;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.DataString;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
@@ -109,6 +109,15 @@ public class EventRecorderMessage extends Message {
         message.wrappedMessage = syncMessage;
         message.channelName = cellGLO.getChannelName();
         message.cellId = cellGLO.getCellID();
+        return message;
+    }
+    
+    public static EventRecorderMessage synchronizeAvatarMessage(Message avatarMessage, String channelName, CellID cellID) {
+        EventRecorderMessage message = new EventRecorderMessage();
+        message.actionType = ActionType.SYNC_STATE;
+        message.wrappedMessage = avatarMessage;
+        message.channelName = channelName;
+        message.cellId = cellID;
         return message;
     }
     
