@@ -46,6 +46,7 @@ import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.client.cell.TightVNCCellMenu.Button;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage.Action;
+import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage.RequestStatus;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.VncViewerWrapper;
 import tightvnc.VncViewer;
 import tightvnc.VncCanvas;
@@ -83,6 +84,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     private TightVNCCellMenu cellMenu;
     private boolean synced = false;
     private boolean inControl = false;
+    protected Object actionLock = new Object();
 
     public TightVNCModuleApp(SharedApp2DImageCell cell) {
         this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
@@ -211,24 +213,6 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         cellMenu = new TightVNCCellMenu();
     }
 
-    protected void sendDocumentRequest(Action action, String vncServer, int vncPort, String vncUsername, String vncPassword) {
-        TightVNCModuleCellMessage msg = null;
-
-        msg = new TightVNCModuleCellMessage(this.getCell().getCellID(),
-                ((TightVNCModuleCell) cell).getUID(),
-                action,
-                vncServer,
-                vncPort,
-                vncUsername,
-                vncPassword);
-
-        if (msg != null) {
-            // send request to server
-            logger.fine("VNC app sending document request: " + msg);
-            ChannelController.getController().sendMessage(msg);
-        }
-    }
-
     /**
      * Initialize the dialog for opening VNC sessions
      */
@@ -240,7 +224,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
                 hideVNCDialog();
                 if (evt.getActionCommand().equals("OK")) {
                     if (isSynced()) {
-                        sendDocumentRequest(TightVNCModuleCellMessage.Action.OPEN_SESSION,
+                        sendRequest(TightVNCModuleCellMessage.Action.OPEN_SESSION,
                                 vncDialog.getServer(),
                                 vncDialog.getPort(),
                                 vncDialog.getUser(),
@@ -334,7 +318,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         closeVNCSession();
 
         // start a new session
-        logger.info("opening VNC session to: " + vncServer + ":" + vncPort);
+        logger.info("vnc viewer: opening VNC session to: " + vncServer + ":" + vncPort);
         showHUDMessage("Connecting to: " + vncServer, 5000);
         this.vncServer = vncServer;
         this.vncPort = vncPort;
@@ -372,7 +356,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
 
     public void disconnect() {
         if (isSynced()) {
-            sendDocumentRequest(TightVNCModuleCellMessage.Action.CLOSE_SESSION,
+            sendRequest(TightVNCModuleCellMessage.Action.CLOSE_SESSION,
                     vncDialog.getServer(),
                     vncDialog.getPort(),
                     vncDialog.getUser(),
@@ -383,7 +367,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     }
 
     public void run() {
-        logger.fine("starting VNC viewer thread");
+        logger.fine("vnc viewer: starting VNC viewer thread");
         viewer = new VncViewerWrapper(this);
 
         viewer.mainArgs = new String[]{
@@ -423,76 +407,166 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         }
     }
 
+    /** 
+     * Sets the sync state of the player
+     * @param syncing true to sync, false to unsync
+     */
     public void sync(boolean syncing) {
         if ((syncing == false) && (synced == true)) {
             synced = false;
-            logger.info("VNC app unsynced");
+            logger.info("vnc viewer: unsynced");
             showHUDMessage("unsynced", 3000);
-            cellMenu.enableButton(Button.UNSYNC);
-            cellMenu.disableButton(Button.SYNC);
+            updateMenu();
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
-            logger.info("VNC app requesting sync with shared state");
-            showHUDMessage("syncing...", 3000);
-            sendDocumentRequest(Action.GET_STATE,
-                    null,
-                    0,
-                    null,
-                    null);
+            logger.info("vnc viewer: requesting sync with shared state");
+            showHUDMessage("syncing...", 5000);
+            sendRequest(Action.GET_STATE, null, vncPort, null, null);
         }
     }
 
+    /**
+     * Toggle the sync state of the player
+     */
     public void sync() {
         sync(!isSynced());
     }
 
+    /**
+     * Toggle the sync state of the player
+     */
     public void unsync() {
         sync(!isSynced());
     }
 
+    /**
+     * ActionScheduler manages the retrying of application requests which
+     * were previously denied due to request contention in the server GLO.
+     */
+    protected class ActionScheduler extends Thread {
+
+        private Action action;
+        private String vncServer;
+        private int vncPort;
+        private String vncUsername;
+        private String vncPassword;
+
+        public ActionScheduler(Action action, String vncServer, int vncPort, String vncUsername, String vncPassword) {
+            this.action = action;
+            this.vncServer = vncServer;
+            this.vncPort = vncPort;
+            this.vncUsername = vncUsername;
+            this.vncPassword = vncPassword;
+        }
+
+        @Override
+        public void run() {
+            // wait for a retry window
+            synchronized (actionLock) {
+                try {
+                    logger.fine("vnc viewer: waiting for retry window");
+                    actionLock.wait();
+                } catch (Exception e) {
+                    logger.fine("vnc viewer: exception waiting for retry: " + e);
+                }
+            }
+            // retry this request
+            logger.fine("vnc viewer: retrying: " + action + ", " + vncServer + ", " + vncPort);
+            sendRequest(action, vncServer, vncPort, vncUsername, vncPassword);
+        }
+    }
+
+    protected void sendRequest(Action action, String vncServer, int vncPort, String vncUsername, String vncPassword) {
+        TightVNCModuleCellMessage msg = null;
+
+        msg = new TightVNCModuleCellMessage(this.getCell().getCellID(),
+                ((TightVNCModuleCell) cell).getUID(),
+                action,
+                vncServer,
+                vncPort,
+                vncUsername,
+                vncPassword);
+
+        if (msg != null) {
+            // send request to server
+            logger.fine("vnc viewer: sending request: " + msg);
+            ChannelController.getController().sendMessage(msg);
+        }
+    }
+
+    /**
+     * Retries a denied request
+     * @param action the action to retry
+     * @param position the "position" of the video - this is not used by the
+     * VideoApp base class
+     */
+    protected void retryRequest(Action action, String vncServer, int vncPort, String vncUsername, String vncPassword) {
+        new ActionScheduler(action, vncServer, vncPort, vncUsername, vncPassword).start();
+    }
+
+    /**
+     * Handle a request from the server GLO
+     * @param msg the request
+     */
     public void handleResponse(TightVNCModuleCellMessage msg) {
         String controlling = msg.getUID();
         String myUID = ((TightVNCModuleCell) cell).getUID();
         boolean forMe = (myUID.equals(controlling));
-        TightVNCModuleCellMessage vnccm = null;
+        TightVNCModuleCellMessage vnccn = null;
 
         if (isSynced()) {
-            switch (msg.getAction()) {
-                case REQUEST_DENIED:
-                    // could queue denied request here
-                    break;
-                case OPEN_SESSION:
-                    openVNCSession(msg.getServer(), msg.getPort(), msg.getUsername(), msg.getPassword());
-                    break;
-                case CLOSE_SESSION:
-                    closeVNCSession();
-                    break;
-                case SET_STATE:
-                    if (forMe == true) {
-                        if (isSynced()) {
-                            openVNCSession(msg.getServer(), msg.getPort(), msg.getUsername(), msg.getPassword());
-                            cellMenu.disableButton(Button.UNSYNC);
-                            cellMenu.enableButton(Button.SYNC);
-                            logger.info("synced");
-                            showHUDMessage("synced", 3000);
+            logger.fine("vnc viewer: " + myUID + " received message: " + msg);
+            if (msg.getRequestStatus() == RequestStatus.REQUEST_DENIED) {
+                // this request was denied, create a retry thread
+                try {
+                    logger.info("vnc viewer: scheduling retry of request: " + msg);
+                    retryRequest(msg.getAction(), msg.getServer(), msg.getPort(), msg.getUsername(), msg.getPassword());
+                } catch (Exception e) {
+                    logger.warning("vnc viewer: failed to create retry request for: " + msg);
+                }
+            } else {
+                switch (msg.getAction()) {
+                    case OPEN_SESSION:
+                        openVNCSession(msg.getServer(), msg.getPort(), msg.getUsername(), msg.getPassword());
+                        break;
+                    case CLOSE_SESSION:
+                        closeVNCSession();
+                        break;
+                    case SET_STATE:
+                        if (forMe == true) {
+                            if (isSynced()) {
+                                openVNCSession(msg.getServer(), msg.getPort(), msg.getUsername(), msg.getPassword());
+                                cellMenu.disableButton(Button.UNSYNC);
+                                cellMenu.enableButton(Button.SYNC);
+                                logger.info("vnc viewer: synced");
+                                showHUDMessage("synced", 3000);
+                            }
                         }
-                    }
-                    break;
-                case REQUEST_COMPLETE:
-                    // could retry queued requests here
-                    break;
-            }
-            if ((forMe == true) &&
-                    (msg.getAction() != Action.REQUEST_COMPLETE) &&
-                    (msg.getAction() != Action.REQUEST_DENIED)) {
-                // notify everyone that the request has completed
-                vnccm = new TightVNCModuleCellMessage(msg);
-                vnccm.setAction(Action.REQUEST_COMPLETE);
+                        break;
+                    case REQUEST_COMPLETE:
+                        synchronized (actionLock) {
+                            try {
+                                logger.fine("vnc viewer: waking retry threads");
+                                actionLock.notify();
+                            } catch (Exception e) {
+                                logger.warning("vnc viewer: exception notifying retry threads: " + e);
+                            }
+                        }
+                        break;
+                    default:
+                        logger.warning("vnc viewer: unhandled message type: " + msg.getAction());
+                        break;
+                }
+                if ((forMe == true) && (msg.getAction() != Action.REQUEST_COMPLETE)) {
+                    // notify everyone that the request has completed
+                    vnccn = new TightVNCModuleCellMessage(msg);
+                    vnccn.setAction(Action.REQUEST_COMPLETE);
+                }
             }
         }
-        if (vnccm != null) {
-            logger.fine("sending message: " + vnccm);
-            ChannelController.getController().sendMessage(vnccm);
+        if (vnccn != null) {
+            logger.fine("vnc viewer: sending message: " + vnccn);
+            ChannelController.getController().sendMessage(vnccn);
         }
     }
 
@@ -513,6 +587,22 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     public void setSize(int width, int height) {
         super.setSize(width, height);
         drawingSurface.setSize(width, height);
+    }
+
+    /**
+     * Updates the button state of the HUD control panel to match the
+     * current state of the vnc viewer
+     */
+    protected void updateMenu() {
+        if (((TightVNCCellMenu) cellMenu).isActive()) {
+            if (isSynced()) {
+                ((TightVNCCellMenu) cellMenu).enableButton(Button.SYNC);
+                ((TightVNCCellMenu) cellMenu).disableButton(Button.UNSYNC);
+            } else {
+                ((TightVNCCellMenu) cellMenu).enableButton(Button.UNSYNC);
+                ((TightVNCCellMenu) cellMenu).disableButton(Button.SYNC);
+            }
+        }
     }
 
     public void scheduleRepaint(long tm, int x, int y, int width, int height) {
@@ -569,14 +659,14 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
 
     @Override
     public void takeControl(MouseEvent me) {
-        logger.info("vnc application has control");
+        logger.info("vnc viewer: has control");
         super.takeControl(me);
         setInControl(true);
     }
 
     @Override
     public void releaseControl(MouseEvent me) {
-        logger.info("vnc application lost control");
+        logger.info("vnc viewer: lost control");
         super.releaseControl(me);
         setInControl(false);
     }

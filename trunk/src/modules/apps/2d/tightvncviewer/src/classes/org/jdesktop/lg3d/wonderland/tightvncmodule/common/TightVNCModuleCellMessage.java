@@ -36,10 +36,16 @@ public class TightVNCModuleCellMessage extends CellMessage {
     public enum Action {
 
         UNKNOWN,
-        REQUEST_DENIED, REQUEST_COMPLETE,
+        REQUEST_COMPLETE,
         OPEN_SESSION,
         CLOSE_SESSION,
         GET_STATE, SET_STATE
+    };
+
+    public enum RequestStatus {
+
+        REQUEST_OK,
+        REQUEST_DENIED
     };
     private String uid;
     private Action action = Action.UNKNOWN;
@@ -47,6 +53,7 @@ public class TightVNCModuleCellMessage extends CellMessage {
     private int vncPort = DEFAULT_VNC_PORT;
     private String vncUsername;
     private String vncPassword;
+    private RequestStatus status = RequestStatus.REQUEST_OK;
 
     public TightVNCModuleCellMessage() {
         super();
@@ -178,13 +185,34 @@ public class TightVNCModuleCellMessage extends CellMessage {
         return vncPassword;
     }
 
+    /**
+     * Set the status of this request
+     * @param status the status of the request
+     */
+    public void setRequestStatus(RequestStatus status) {
+        this.status = status;
+    }
+
+    /**
+     * Get the status of this request
+     * @return the request status
+     */
+    public RequestStatus getRequestStatus() {
+        return status;
+    }
+
     /** 
      * Get a string representation of the VNC cell message
      * @return a the cell message as as String
      */
     @Override
     public String toString() {
-        return getAction() + ", " + getServer() + ", " + getPort() + ", " + getUsername();
+        return "uid: " + getUID() + ", " +
+                "action: " + getAction() + ", " +
+                "status: " + getRequestStatus() + ", " +
+                "server:" + getServer() + ", " +
+                "port: " + getPort() + ", " +
+                "user: " + getUsername();
     }
 
     /**
@@ -200,6 +228,8 @@ public class TightVNCModuleCellMessage extends CellMessage {
         vncPort = DataInt.value(data);
         vncUsername = DataString.value(data);
         vncPassword = DataString.value(data);
+        status = RequestStatus.values()[DataInt.value(data)];
+
     }
 
     /**
@@ -215,5 +245,6 @@ public class TightVNCModuleCellMessage extends CellMessage {
         dataElements.add(new DataInt(vncPort));
         dataElements.add(new DataString(vncUsername));
         dataElements.add(new DataString(vncPassword));
+        dataElements.add(new DataInt(status.ordinal()));
     }
 }
