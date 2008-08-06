@@ -30,6 +30,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.client.ExtendedClientChannelListene
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.darkstar.common.CellSetup;
+import org.jdesktop.lg3d.wonderland.darkstar.common.CellStatus;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage;
@@ -65,7 +66,7 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
         ((TightVNCModuleApp) app).setShowing(true);
 
         // request sync with shared vnc state
-        logger.info("vnc app requesting initial sync");
+        logger.info("vnc cell: requesting initial sync");
         ((TightVNCModuleApp) app).sync(true);
     }
 
@@ -104,7 +105,7 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
 
         if (msg instanceof TightVNCModuleCellMessage) {
             TightVNCModuleCellMessage vncmsg = Message.extractMessage(data, TightVNCModuleCellMessage.class);
-            logger.fine("vnc app received message: " + vncmsg);
+            logger.fine("vnc cell: received message: " + vncmsg);
             handleResponse(vncmsg);
         } else {
             super.receivedMessage(channel, session, data);
@@ -116,6 +117,19 @@ public class TightVNCModuleCell extends SharedApp2DImageCell
      * @param channel the left channel
      */
     public void leftChannel(ClientChannel channel) {
-        logger.fine("leftChannel: " + channel);
+        logger.fine("vnc cell: leftChannel: " + channel);
+    }
+
+    @Override
+    public synchronized boolean setStatus(CellStatus status) {
+        if (status != getStatus()) {
+            logger.finest("vnc cell: status changed: " + getStatus() + "-> " + status);
+            if (status.equals(CellStatus.BOUNDS)) {
+                // could quiesce vnc app here
+                logger.fine("vnc cell: received BOUNDS status");
+            }
+        }
+
+        return super.setStatus(status);
     }
 }

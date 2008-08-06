@@ -38,6 +38,7 @@ import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage.Action;
+import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage.RequestStatus;
 
 /**
  * @author nsimpson
@@ -139,7 +140,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
     public void receivedMessage(ClientSession client, CellMessage message) {
         if (message instanceof TightVNCModuleCellMessage) {
             TightVNCModuleCellMessage vnccm = (TightVNCModuleCellMessage) message;
-            logger.fine("VNC GLO received msg: " + vnccm);
+            logger.fine("vnc GLO: received msg: " + vnccm);
 
             Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
 
@@ -163,7 +164,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                 long controlDuration = stateMO.getControlOwnedDuration();
 
                 if (controlDuration >= controlTimeout) {
-                    logger.warning("forcing control release of controlling cell: " + stateMO.getControllingCell());
+                    logger.warning("vnc GLO: forcing control release of controlling cell: " + stateMO.getControllingCell());
                     stateMO.setControllingCell(null);
                     controlling = null;
                 }
@@ -205,23 +206,23 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                     default:
                         break;
                 }
-                logger.fine("VNC GLO broadcasting msg: " + msg);
+                logger.fine("vnc GLO: broadcasting msg: " + msg);
                 getCellChannel().send(sessions, msg.getBytes());
             } else {
                 // one cell has control
                 switch (vnccm.getAction()) {
                     case REQUEST_COMPLETE:
-                        // release control of VNC session state by this client
+                        // release control of camera by this client
                         stateMO.setControllingCell(null);
                         // broadcast request complete to all clients
                         // broadcast the message to all clients, including the requester
-                        logger.fine("VNC GLO broadcasting msg: " + msg);
+                        logger.fine("video GLO: broadcasting msg: " + msg);
                         getCellChannel().send(sessions, msg.getBytes());
                         break;
                     default:
                         // send a denial to the requesting client
-                        msg.setAction(Action.REQUEST_DENIED);
-                        logger.fine("VNC GLO sending denial to client: " + msg);
+                        msg.setRequestStatus(RequestStatus.REQUEST_DENIED);
+                        logger.info("video GLO: sending denial to client: " + msg);
                         getCellChannel().send(client, msg.getBytes());
                         break;
                 }
