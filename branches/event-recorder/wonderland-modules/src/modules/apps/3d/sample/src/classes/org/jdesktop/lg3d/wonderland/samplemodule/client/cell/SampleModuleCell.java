@@ -192,6 +192,7 @@ public class SampleModuleCell extends Cell
 
                 try {
                     channel.send(msg.getBytes());
+                    recordMessage(channel, msg);
                 } catch (IOException ioe) {
                     logger.log(Level.WARNING, "Error sending message", ioe);
                 }
