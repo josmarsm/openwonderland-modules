@@ -169,12 +169,14 @@ if( browser.isIE ) {
     xmlDoc.load(path);
   } else if( browser.isMac ) {
     var tmp = new XMLHttpRequest();
-    tmp.open("GET",path,false);
+    tmp.open('GET',path,false);
     tmp.send(null);
     tmp.onreadystatechange = function () {
                                   if (tmp.readyState == 4) {
+                                    if( tmp.status == 200 ) {
                                       xmlDoc = tmp.responseXML;
-                                      loadConfig();
+                                      loadConfig();    
+                                    }
                                   }
                                 };                                
   } else {
