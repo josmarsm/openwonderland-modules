@@ -1,0 +1,101 @@
+body{
+  font-family:Verdana, Arial, Helvetica, sans-serif;
+  font-size:11px;
+  margin:20px;
+  margin-top:50px;
+}
+
+h3 {
+  font-size:12px;
+  font-weight:bold;
+}
+
+th{
+  font-weight:normal;
+  font-family:Verdana, Arial, Helvetica, sans-serif;
+  font-size:11px;
+  border-bottom:1px solid #ccc;
+}
+
+td{
+  font-weight:normal;
+  font-family:Verdana, Arial, Helvetica, sans-serif;
+  font-size:11px; 
+  border-bottom:1px solid #ccc;
+}
+
+input{
+  font-weight:normal;
+  font-family:Verdana, Arial, Helvetica, sans-serif;
+  font-size:11px;
+  border:1px solid #222;
+}
+
+#logindiv { 
+  width:360px; 
+  height:300px; 
+  padding:24px; 
+  border: 3px solid RGB(64,82,101);
+  margin: auto;
+}
+
+#loginform {
+  width:300px;
+  height:200px;
+  margin:auto;
+}
+
+#promptDiv { 
+  width:278px; 
+  height:48px; 
+  padding:10px;
+  margin-bottom:16px;
+  text-align:left;
+  font-size:11px;
+  background: RGB(64,82,101); 
+  border:1px solid #222;
+}
+
+#promptDiv #image {
+  float: left;
+}
+
+#promptDiv #text {
+  float: right;
+  color: white;
+}
+
+#buttonDiv { 
+  text-align:center;
+  margin-top: 20px;
+  margin-bottom: 0px;
+}
+
+#left {
+  width: 150px;  
+}
+
+#right {
+  width: 140px;
+  margin-top: -175px;
+  margin-left: 160px;
+}
+
+#selectlist {
+  border:1px solid #222;
+  height: 150px;
+  overflow: auto;
+}
+
+#server:hover {
+  background-color: lightgray;
+}
+
+.title {
+  margin-bottom:3px;
+  font-weight:bold;
+  color:#666666;
+}
+.entry {
+  margin-bottom:8px;
+}

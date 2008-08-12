@@ -1,0 +1,111 @@
+body {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 10px;
+}
+
+#outerDiv {
+  height: 75%;
+  width: 100%;
+  border: 1px solid black;
+  position: relative;
+  overflow: hidden;
+}
+
+#innerDiv {
+  position: relative;
+  left: 0px;
+  top: 0px;
+}
+
+#dialogs {
+  padding: 2%;  
+}
+
+#chatbox #chat_messages {
+  border: 1px solid black;
+  height: 15%;
+  overflow: auto;
+  margin-top: 2px;
+  padding-bottom: 3px;
+  margin-bottom: 3px;
+  position: relative;
+}
+
+#chatbox #new_message { 
+  height: 5%;  
+  width: 80%;
+  float: left;
+}
+
+#chatbox #new_message input {
+  border: 1px solid black;
+}
+
+#chatbox #actions {
+  height: 5%;
+  width: 10%;
+  float: right;
+}
+
+#chatbox #actions input {
+  display: block;
+  width: 90%;
+  margin-bottom: 2px;
+}
+
+.popup {
+  font-family: Verdana,Arial,Helvetica,sans-serif;  
+  font-size: 8px;
+  color:#000033; 
+  background-color:#cccccc; 
+  position:absolute; 
+  top: 7%;
+  left: 4%;
+  bottom: 7%;
+  right: 4%;
+  width: 94%; 
+  height: 86%;
+  z-index: 98;  
+  visibility: hidden;
+}
+
+#avatars ul {
+  margin: 0;
+  padding: 0;
+  cursor: default;
+  list-style-type: none;
+  display: inline;
+  z-index: 1;
+}
+
+.close {
+  font-size: 12px; 
+  padding-top: 1%; 
+  padding-right: 1%; 
+  text-align: right; 
+}
+
+/* This is the floating window that displays above a users 
+ * avatar 
+ */
+.info {
+  font-family: Verdana,Arial,Helvetica,sans-serif;  
+  font-size: 10px;
+  color:#000033; 
+  background-color:#cccccc; 
+  position:absolute; 
+  z-index:2;  
+  text-align: center;
+}
+
+#softphone {
+  padding-left: 5px;
+}
+
+#softphone input {
+  margin-bottom: 5px;
+}
+
+.arrow {
+  background-color: lightgrey;
+}
