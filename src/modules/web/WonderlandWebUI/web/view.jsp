@@ -160,32 +160,32 @@
       <div id="outerDiv" >
         <div id="mobilemenu">
           <ul class="menu">
-            <li><strong>Zoom</strong>
-              <ul>
+              <li onclick="javascript:toggleMenu('zoomMenu')"><strong>Zoom</strong> 
+              <ul id="zoomMenu">
                 <li><a onclick="javascript:zoomIn()">Zoom In</a></li>
                 <li><a onclick="javascript:zoomOut()">Zoom Out</a></li>
               </ul>
             </li>
-            <li><strong>Placemarks</strong>
-              <ul>
+            <li onclick="javascript:toggleMenu('placemarkMenu')"><strong>Placemarks</strong>
+              <ul id="placemarkMenu">
                 <li><a onclick="javascript:goToLocation(50, 0, 50)">Starting Location</a></li>
                 <li><a onclick="javascript:goToLocation(53.827713, 0, 88.33005)">MPK20 Conference Room</a></li>
                 <li><a onclick="javascript:goToLocation(51.64006, 0, 13.052788)">MPK20 Team Room</a></li>
                 <li><a onclick="javascript:toggleBox('divGoTo',1)">Go To Location</a></li>
               </ul>
             </li>
-            <li><strong>Call World</strong>
-            <ul>
+            <li onclick="javascript:toggleMenu('callworldMenu')"><strong>Call World</strong>
+            <ul id="callworldMenu">
               <li><a onclick="javascript:toggleBox('divSoftphone',1)">Softphone</a></li>
             </ul>
             </li>
-            <li><strong>Users Online</strong>
-              <ul>
+            <li onclick="javascript:toggleMenu('usersonlineMenu')"><strong>Users Online</strong>
+              <ul id="usersonlineMenu">
                 <li><a onclick="javascript:toggleBox('divUsersOnline',1)">Display</a></li>
               </ul>
             </li>
-            <li><strong>Chat Messages</strong>
-              <ul>
+            <li onclick="javascript:toggleMenu('chatMenu')"><strong>Chat Messages</strong>
+              <ul id="chatMenu">
                 <li><a onclick="javascript:toggleBox('divChat',1)">Chatbox</a></li>
               </ul>
             </li>
