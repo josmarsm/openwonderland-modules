@@ -167,18 +167,18 @@ if( browser.isIE ) {
                                   if (xmlDoc.readyState == 4) loadConfig()
                                 };                            
     xmlDoc.load(path);
-  } else if( browser.isMac ) {
-    var tmp = new XMLHttpRequest();
-    tmp.open('GET',path,false);
-    tmp.send(null);
-    tmp.onreadystatechange = function () {
-                                  if (tmp.readyState == 4) {
-                                    if( tmp.status == 200 ) {
-                                      xmlDoc = tmp.responseXML;
-                                      loadConfig();    
-                                    }
-                                  }
-                                };                                
+//  } else if( browser.isMac ) {
+//    var tmp = new XMLHttpRequest();
+//    tmp.open('GET',path,false);
+//    tmp.send(null);
+//    tmp.onreadystatechange = function () {
+//                                  if (tmp.readyState == 4) {
+//                                    if( tmp.status == 200 ) {
+//                                      xmlDoc = tmp.responseXML;
+//                                      loadConfig();    
+//                                    }
+//                                  }
+//                                };                                
   } else {
     xmlDoc=document.implementation.createDocument("","",null);
     xmlDoc.async="false";
