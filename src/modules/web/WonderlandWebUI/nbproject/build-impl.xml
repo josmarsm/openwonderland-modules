@@ -529,6 +529,12 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy-ear-war file="${file.reference.wonderland-server.jar}" propname="included.lib.file.reference.wonderland-server.jar.X"/>
         <basename file="${file.reference.wonderland-utils.jar}" property="included.lib.file.reference.wonderland-utils.jar"/>
         <copy-ear-war file="${file.reference.wonderland-utils.jar}" propname="included.lib.file.reference.wonderland-utils.jar.X"/>
+        <basename file="${file.reference.vecmath.jar}" property="included.lib.file.reference.vecmath.jar"/>
+        <copy-ear-war file="${file.reference.vecmath.jar}" propname="included.lib.file.reference.vecmath.jar.X"/>
+        <basename file="${file.reference.j3dcore.jar}" property="included.lib.file.reference.j3dcore.jar"/>
+        <copy-ear-war file="${file.reference.j3dcore.jar}" propname="included.lib.file.reference.j3dcore.jar.X"/>
+        <basename file="${file.reference.j3dutils.jar}" property="included.lib.file.reference.j3dutils.jar"/>
+        <copy-ear-war file="${file.reference.j3dutils.jar}" propname="included.lib.file.reference.j3dutils.jar.X"/>
         <basename file="${file.reference.j3d-contrib-utils.jar}" property="included.lib.file.reference.j3d-contrib-utils.jar"/>
         <copy-ear-war file="${file.reference.j3d-contrib-utils.jar}" propname="included.lib.file.reference.j3d-contrib-utils.jar.X"/>
         <basename file="${file.reference.whiteboard-client.jar}" property="included.lib.file.reference.whiteboard-client.jar"/>
@@ -537,13 +543,15 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy-ear-war file="${file.reference.extracells-client.jar}" propname="included.lib.file.reference.extracells-client.jar.X"/>
         <basename file="${file.reference.phone-client.jar}" property="included.lib.file.reference.phone-client.jar"/>
         <copy-ear-war file="${file.reference.phone-client.jar}" propname="included.lib.file.reference.phone-client.jar.X"/>
+        <basename file="${file.reference.jmf.jar}" property="included.lib.file.reference.jmf.jar"/>
+        <copy-ear-war file="${file.reference.jmf.jar}" propname="included.lib.file.reference.jmf.jar.X"/>
         <basename file="${file.reference.lg3d-core.jar}" property="included.lib.file.reference.lg3d-core.jar"/>
         <copy-ear-war file="${file.reference.lg3d-core.jar}" propname="included.lib.file.reference.lg3d-core.jar.X"/>
         <basename file="${file.reference.TimingFramework.jar}" property="included.lib.file.reference.TimingFramework.jar"/>
         <copy-ear-war file="${file.reference.TimingFramework.jar}" propname="included.lib.file.reference.TimingFramework.jar.X"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value="${included.lib.file.reference.dwr.jar} ${included.lib.file.reference.mina-core-1.1.jar} ${included.lib.file.reference.commons-logging-1.1.jar} ${included.lib.file.reference.sgs-client.jar} ${included.lib.file.reference.slf4j-api-1.4.0.jar} ${included.lib.file.reference.slf4j-jdk14-1.4.0.jar} ${included.lib.file.reference.wonderland-client.jar} ${included.lib.file.reference.wonderland-loaders.jar} ${included.lib.file.reference.wonderland-server.jar} ${included.lib.file.reference.wonderland-utils.jar} ${included.lib.file.reference.j3d-contrib-utils.jar} ${included.lib.file.reference.whiteboard-client.jar} ${included.lib.file.reference.extracells-client.jar} ${included.lib.file.reference.phone-client.jar} ${included.lib.file.reference.lg3d-core.jar} ${included.lib.file.reference.TimingFramework.jar} "/>
+            <attribute name="Class-Path" value="${included.lib.file.reference.dwr.jar} ${included.lib.file.reference.mina-core-1.1.jar} ${included.lib.file.reference.commons-logging-1.1.jar} ${included.lib.file.reference.sgs-client.jar} ${included.lib.file.reference.slf4j-api-1.4.0.jar} ${included.lib.file.reference.slf4j-jdk14-1.4.0.jar} ${included.lib.file.reference.wonderland-client.jar} ${included.lib.file.reference.wonderland-loaders.jar} ${included.lib.file.reference.wonderland-server.jar} ${included.lib.file.reference.wonderland-utils.jar} ${included.lib.file.reference.vecmath.jar} ${included.lib.file.reference.j3dcore.jar} ${included.lib.file.reference.j3dutils.jar} ${included.lib.file.reference.j3d-contrib-utils.jar} ${included.lib.file.reference.whiteboard-client.jar} ${included.lib.file.reference.extracells-client.jar} ${included.lib.file.reference.phone-client.jar} ${included.lib.file.reference.jmf.jar} ${included.lib.file.reference.lg3d-core.jar} ${included.lib.file.reference.TimingFramework.jar} "/>
         </manifest>
         <delete dir="${dist.ear.dir}/temp"/>
     </target>
@@ -558,10 +566,14 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy file="${file.reference.wonderland-loaders.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-server.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-utils.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.vecmath.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.j3dcore.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.j3dutils.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.j3d-contrib-utils.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.whiteboard-client.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.extracells-client.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.phone-client.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
+        <copy file="${file.reference.jmf.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.lg3d-core.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.TimingFramework.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>
