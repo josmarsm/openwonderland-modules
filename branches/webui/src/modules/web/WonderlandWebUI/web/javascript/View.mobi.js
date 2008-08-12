@@ -355,4 +355,31 @@ function sendCallMe() {
     }
   }
 }
-                    
+
+//web code
+function toggleMenu(divId) { // 1 visible, 0 hidden
+  if(document.layers) { //NN4+
+    var check = document.layers[divId].style.display;
+    if( check == "none") {
+      document.layers[divId].style.display = "block";
+    } else {
+      document.layers[divId].style.display = "none";    
+    }
+  } else if(document.getElementById) { //gecko(NN6) + IE 5+
+    var obj = document.getElementById(divId);
+    var check = obj.style.display;
+    if( check == "none"){
+        obj.style.display = "block";
+    } else {
+        obj.style.display = "none";
+    }
+  }
+  else if(document.all)	{ // IE 4
+    var check = document.all[divId].display;
+    if( check == "none") {
+      document.all[divId].style.display = "block";
+    } else {
+      document.all[divId].style.display = "none";    
+    }  
+  }
+}
