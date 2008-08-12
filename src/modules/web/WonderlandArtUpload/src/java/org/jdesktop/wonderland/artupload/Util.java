@@ -40,11 +40,16 @@ public class Util {
     public static final String ART_REDIR_PROP = "wonderland.art.url.redirect";
     public static final String WFS_ROOT_PROP  = "wonderland.wfs.root";
     public static final String WFS_DIR_PROP   = "wonderland.wfs.upload.dir";
+    public static final String SHARE_DIR_PROP   = "wonderland.share.url.local";
     
-    private static final String BASE_DIR = File.separator + ".wonderland" + 
-                                           File.separator + "artUpload";
-    private static final String ART_DIR = BASE_DIR + File.separator + "art";
-    private static final String WFS_DIR = BASE_DIR + File.separator + "upload-wfs";
+    /**
+     * Static variables for constructing default locations
+     */
+    private static final String BASE_DIR = File.separator + ".wonderland"; 
+    private static final String ART_UPLOAD_DIR = BASE_DIR + File.separator + "artUpload";
+    private static final String ART_DIR = ART_UPLOAD_DIR + File.separator + "art";
+    private static final String WFS_DIR = ART_UPLOAD_DIR + File.separator + "upload-wfs";
+    private static final String SHARE_DIR = BASE_DIR + File.separator + "sharingUpload";
 
     private static final Logger logger = Logger.getLogger(Util.class.getName());
     
@@ -57,8 +62,24 @@ public class Util {
         
         String artDir = WonderlandServletUtil.getProperty(ART_DIR_PROP, context, 
                                                           defaultArtDir);
+        System.out.println(artDir);
         
         return new File(new URL(artDir).getPath());
+    }
+    
+    /**
+     * Get the share directory
+     */    
+    public static File getShareDir(ServletContext context) throws IOException {
+        String defaultShareDir = "file:" + System.getProperty("user.home") +
+                                SHARE_DIR;
+        
+        String shareDir = WonderlandServletUtil.getProperty(SHARE_DIR_PROP, context, 
+                                                          defaultShareDir);
+        
+        System.out.println(shareDir);
+        
+        return new File(new URL(shareDir).getPath());
     }
     
     /**

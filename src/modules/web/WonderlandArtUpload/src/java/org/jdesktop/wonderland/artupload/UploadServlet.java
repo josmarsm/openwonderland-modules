@@ -53,10 +53,9 @@ import org.jdesktop.lg3d.wonderland.wfs.WFSCellNotLoadedException;
 
 /**
  *
- * @author jkaplan
+ * @author jkaplan (jbarratt)
  */
-public class UploadServlet extends HttpServlet {
-    
+public abstract class UploadServlet extends HttpServlet {
     
     private static final Logger logger =
             Logger.getLogger(UploadServlet.class.getName());
@@ -64,22 +63,6 @@ public class UploadServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        
-        try {
-            File artDir = Util.getArtDir(config.getServletContext());
-            if (!artDir.exists()) {
-                artDir.mkdirs();
-                new File(artDir, "models").mkdir();
-                new File(artDir, "textures").mkdir();
-            }
-            
-            logger.info("Art directory is " + artDir.getCanonicalPath());
-        
-            WFSCellDirectory dir = Util.getWFS(config.getServletContext());
-            logger.info("WFS directory at " + dir.getPathName());
-        } catch (IOException ioe) {
-            throw new ServletException(ioe);
-        }
     }
     
     /** 
@@ -87,7 +70,7 @@ public class UploadServlet extends HttpServlet {
      */
     @Override
     public String getServletInfo() {
-        return "Wonderland Art Upload Servlet";
+        return "Wonderland Generic Upload Servlet";
     }
     
     /** 
@@ -108,215 +91,27 @@ public class UploadServlet extends HttpServlet {
      * @param response servlet response
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException 
-    {
-        // Create a factory for disk-based file items
-        FileItemFactory factory = new DiskFileItemFactory();
-
-        // Create a new file upload handler
-        ServletFileUpload upload = new ServletFileUpload(factory);
-
-        // Parse the request
-        try {
-            List<FileItem> items = (List<FileItem>) upload.parseRequest(request);
-            
-            // check for errors
-            List<String> errors = checkRequired(items);
-            if (!errors.isEmpty()) {
-                throw new ServletException("Unable to load " +
-                                           errors.toString());
-            }
-            
-            // write models and textures
-            writeFiles(items);
-            
-            // create WFS file
-            writeWFS(items);
-        } catch (FileUploadException fue) {
-            throw new ServletException(fue);
-        }
-    }
-
+    protected abstract void doPost(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException;
+    
     /**
      * Check that all required items are present
      */
-    private List<String> checkRequired(List<FileItem> items) {
-        Map<String, ItemValidator> validators = new HashMap<String, ItemValidator>();
-        validators.put("name", new FieldValidator("name"));
-        validators.put("xbounds", new NumberFieldValidator("xbounds"));
-        validators.put("ybounds", new NumberFieldValidator("ybounds"));
-        validators.put("zbounds", new NumberFieldValidator("zbounds")); 
-        validators.put("xloc", new NumberFieldValidator("xloc"));
-        validators.put("yloc", new NumberFieldValidator("yloc"));
-        validators.put("zloc", new NumberFieldValidator("zloc"));
-        validators.put("xrot", new NumberFieldValidator("xrot"));
-        validators.put("yrot", new NumberFieldValidator("yrot"));
-        validators.put("zrot", new NumberFieldValidator("zrot"));
-        validators.put("arot", new NumberFieldValidator("arot"));
-        validators.put("model", new FileValidator("model"));
-        validators.put("textures", new FileValidator("textures"));
-    
-        List<String> out = new ArrayList<String>();
-        for (FileItem item : items) {
-            ItemValidator v = validators.remove(item.getFieldName());
-            if (v == null) {
-                out.add("Unknown field " + item.getFieldName());
-            } else {
-                String res = v.validate(item);
-                if (res != null) {
-                    out.add(res);
-                }
-            }
-        }
-        
-        // any validators left are missing
-        for (ItemValidator v : validators.values()) {
-            out.add("Missing value for field " + v.getName());
-        }
-        
-        return out;
-    }
+    protected abstract List<String> checkRequired(List<FileItem> items);
      
     /**
      * Write files to the art directory
      * @param items the list of items containing the files to write
      * @throws ServletException if there is an error writing the files
      */
-    private void writeFiles(List<FileItem> items) 
-        throws IOException, ServletException
-    {
-        // get the value of the "name" field
-        FileItem nameItem = findItem(items, "name");
-        String name = nameItem.getString();
-        
-        // write the model file
-        FileItem modelItem = findItem(items, "model");
-        File modelsDir = new File(Util.getArtDir(getServletContext()), "models");
-        File modelFile = new File(modelsDir, name + ".j3s.gz");
-        
-        try {
-            modelItem.write(modelFile);
-        } catch (Exception ex) {
-            throw new ServletException(ex);
-        }
-        
-        // unzip the textures
-        FileItem texturesItem = findItem(items, "textures");
-        ZipInputStream zin = new ZipInputStream(texturesItem.getInputStream());
-        
-        ZipEntry entry;
-        File curDir = new File(Util.getArtDir(getServletContext()), "textures");
-        while ((entry = zin.getNextEntry()) != null) {
-            if (entry.isDirectory()) {
-                File dir = new File(curDir, entry.getName());
-                dir.mkdirs();
-            } else {
-                // write the unzipped texture data
-                File texture = new File(curDir, entry.getName());                
-                FileOutputStream out = new FileOutputStream(texture);
-
-                byte[] buffer;
-                if (entry.getSize() > -1) {
-                    buffer = new byte[(int) entry.getSize()];
-                } else {
-                    buffer = new byte[64 * 1024];
-                }
-                
-                int read = 0;
-                while ((read = zin.read(buffer, 0, buffer.length)) > -1) {
-                    out.write(buffer, 0, read);
-                }
-                out.close();
-            }
-        }
-    }
-    
-    /**
-     * Write WFS file to the WFS directory
-     * @param items the list of items containing the data to write
-     * @throws ServletException if there is an error writing the files
-     */
-    private void writeWFS(List<FileItem> items) 
-        throws IOException, ServletException
-    {
-        // get the value of the "name" field
-        FileItem nameItem = findItem(items, "name");
-        String name = nameItem.getString();
-        
-        // parse submitted values in a cell setup object
-        BasicCellGLOSetup<ModelCellSetup> setup =
-                new BasicCellGLOSetup<ModelCellSetup>();        
- 
-        // set the class of cellGLO to create
-        setup.setCellGLOClassName("org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO");
-        
-        // parse the origin from xloc, yloc, zloc
-        FileItem xLocItem = findItem(items, "xloc");
-        FileItem yLocItem = findItem(items, "yloc");
-        FileItem zLocItem = findItem(items, "zloc");
-        
-        double[] origin = new double[3];
-        origin[0] = Double.parseDouble(xLocItem.getString());
-        origin[1] = Double.parseDouble(yLocItem.getString());
-        origin[2] = Double.parseDouble(zLocItem.getString());
-        setup.setOrigin(origin);
-        
-        // parse the rotation from xrot, yrot and zrot
-        FileItem xRotItem = findItem(items, "xrot");
-        FileItem yRotItem = findItem(items, "yrot");
-        FileItem zRotItem = findItem(items, "zrot");
-        FileItem aRotItem = findItem(items, "arot");
-        
-        double[] rot = new double[4];
-        rot[0] = Double.parseDouble(xRotItem.getString());
-        rot[1] = Double.parseDouble(yRotItem.getString());
-        rot[2] = Double.parseDouble(zRotItem.getString());
-        rot[3] = Double.parseDouble(aRotItem.getString());
-        setup.setRotation(rot);
-        
-        // read the bounds information
-        FileItem xBoundsItem = findItem(items, "xbounds");
-        FileItem yBoundsItem = findItem(items, "ybounds");
-        FileItem zBoundsItem = findItem(items, "zbounds");
-        
-        // read the bounds
-        double[] bounds = new double[3];
-        bounds[0] = Double.parseDouble(xBoundsItem.getString());
-        bounds[1] = Double.parseDouble(yBoundsItem.getString());
-        bounds[2] = Double.parseDouble(zBoundsItem.getString());
-        
-        // the bounds radius for now is just the maximum of the three
-        // values specified.
-        setup.setBoundsType("BOX");
-        Arrays.sort(bounds);
-        setup.setBoundsRadius(bounds[2]);
-        
-        // add the model information
-        ModelCellSetup mcs = new ModelCellSetup();
-        mcs.setModelFile("models/" + name + ".j3s.gz");
-        setup.setCellSetup(mcs);
-        
-        // create the wfs cell
-        try {
-            WFSCellDirectory dir = Util.getWFS(getServletContext());
-            WFSCell cell = dir.addCell(name);
-            cell.setCellSetup(setup);
-        
-            // write out the wfs file
-            dir.write();
-        } catch (InvalidWFSCellException iwe) {
-            logger.log(Level.WARNING, "Error writing " + setup, iwe);
-        } catch (WFSCellNotLoadedException wcnle) {
-            logger.log(Level.WARNING, "Error writing " + setup, wcnle);
-        }
-    }
+    protected abstract void writeFiles(List<FileItem> items) 
+        throws IOException, ServletException;
     
     /**
      * Find an item in a list by field name
      * @return the item, or null if it is not found
      */
-    private FileItem findItem(List<FileItem> items, String name) {
+    protected FileItem findItem(List<FileItem> items, String name) {
         FileItem out = null;
         
         for (FileItem item : items) {
