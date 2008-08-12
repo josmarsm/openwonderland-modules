@@ -209,8 +209,8 @@ public class ClientConnect {
       newMsgRx.setChatMessage(msg);
       msgRxQueue.add(newMsgRx);
 
-    sysPMC = PlacemarkConfig.getSystemPlacemarks();
-    userPMC = PlacemarkConfig.getUserPlacemarks(null);
+//    sysPMC = PlacemarkConfig.getSystemPlacemarks();
+//    userPMC = PlacemarkConfig.getUserPlacemarks(null);
 //    System.out.println("system pm: " + sysPMC.getPlacemarks());
 //    System.out.println("user pm: " + userPMC.getPlacemarks());
     
@@ -425,9 +425,9 @@ public class ClientConnect {
                 scriptSession = wc.getScriptSession();
                 scriptSession.addScript(script);
             } else if( msgData.getType().equals(MessageData.MsgType.ChatMessage) ) {
-              //logger.log(Level.INFO,"DWR: ReverseAjax -> ChatMessage");
-              //logger.log(Level.INFO,"User: " + msgData.getUserName());
-              //logger.log(Level.INFO,"Message: " + msgData.getChatMessage());
+              logger.log(Level.INFO,"DWR: ReverseAjax -> ChatMessage");
+              logger.log(Level.INFO,"User: " + msgData.getUserName());
+              logger.log(Level.INFO,"Message: " + msgData.getChatMessage());
 
               script.appendScript("cbChatUpdate(")
                     .appendData(msgData.getUserName())
