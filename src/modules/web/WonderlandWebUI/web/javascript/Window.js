@@ -222,8 +222,12 @@ function initTileMap() {
     var tmp = new XMLHttpRequest();
     tmp.open("GET",path,false);
     tmp.send(null);
-    xmlDoc = tmp.responseXML;
-    
+    tmp.onreadystatechange = function () {
+                                  if (tmp.readyState == 4) {
+                                      xmlDoc = tmp.responseXML;
+                                      loadConfig();
+                                  }
+                                };                            
   } else {
     xmlDoc=document.implementation.createDocument("","",null);
     xmlDoc.async="false";
@@ -231,7 +235,6 @@ function initTileMap() {
     xmlDoc.load(path);
   }
   
-  alert("xmlDoc: " + xmlDoc.firstChild);
   checkTiles();
 }
 
