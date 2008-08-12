@@ -15,11 +15,11 @@ function indexLogin() {
   dwr.util.setValue("msg3","Please wait ...");
   
   //check to see if i need to add the login information to my cookie
-  if( !fillInUsed ) {
-    var cookie = get_cookie("wonderland.serverlist");
-    window.document.write(cookie);
-    set_cookie(username + ":" + servername + ":" + portnum + ",");
-  }
+//  if( !fillInUsed ) {
+//    var cookie = get_cookie("wonderland.serverlist");
+//    window.document.write(cookie);
+//    set_cookie(username + ":" + servername + ":" + portnum + ",");
+//  }
  
   dsClient.login(username, password, servername, portnum);        
   dsClient.connect();        
