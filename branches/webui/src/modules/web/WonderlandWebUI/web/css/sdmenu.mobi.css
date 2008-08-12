@@ -1,0 +1,55 @@
+/*
+ * This file will handle the menu across the top for the mobile users
+ * 
+ * credit: http://www.alistapart.com/
+*/
+#mobilemenu {
+  z-index: 99;
+}
+
+ul.menu, .menu ul{
+  margin: 0;
+  padding: 0;
+  cursor: default;
+  list-style-type: none;
+  display: inline;
+  z-index: 99;
+}
+
+ul.menu{
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  z-index: 99;
+}
+
+ul.menu li {
+  border: 1px solid blue;
+  background-color: white;
+  z-index: 99;
+}
+
+ul.menu>li{
+  display: table-cell;
+  position: relative;
+  padding: 2px 6px;
+}
+
+ul.menu li>ul{
+  display: none;
+  position: absolute;
+  max-width: 40ex;
+  margin-left: -6px;
+  margin-top: 2px;
+}
+
+ul.menu li:hover>ul{
+  display: block;
+}
+
+ul.menu ul li a{
+  display: block;
+  padding: 2px 10px;
+  background-color: white;
+  z-index: 99;
+}
