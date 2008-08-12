@@ -208,7 +208,7 @@
                     String[] data = servers[j].split(":");
                     if( data.length != 3 ) {
                       //flush cookie
-                      Cookie cookie = new Cookie ("wonderland.serverlist","");
+                      Cookie cookie = new Cookie("wonderland.serverlist","");
                       cookie.setMaxAge(0); //cookie expires immediately
                       response.addCookie(cookie);
                     } else {
@@ -219,7 +219,7 @@
                 }
               }
             } else { //create cookie
-              Cookie cookie = new Cookie ("wonderland.serverlist","");
+              Cookie cookie = new Cookie("wonderland.serverlist","");
               cookie.setMaxAge(365 * 24 * 60 * 60); //cookie expires in a year
               response.addCookie(cookie);
             }
