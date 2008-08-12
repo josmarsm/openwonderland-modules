@@ -3,6 +3,12 @@
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
 <project name="WonderlandWebUI" default="default" basedir=".">
+<property name="modules.dir"    location="../../../.."/>
+    <property name="current.dir"    location="."/>
+    <property name="top.dir"        location="${modules.dir}/.."/>
+
+    <import file="${modules.dir}/build-tools/import/build-setup.xml"/>
+
     <description>Builds, tests, and runs the project WonderlandWebUI.</description>
     <import file="nbproject/build-impl.xml"/>
     <!--
@@ -63,4 +69,6 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+   <target name="jar" depends="dist"/>
 </project>

@@ -529,12 +529,6 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy-ear-war file="${file.reference.wonderland-server.jar}" propname="included.lib.file.reference.wonderland-server.jar.X"/>
         <basename file="${file.reference.wonderland-utils.jar}" property="included.lib.file.reference.wonderland-utils.jar"/>
         <copy-ear-war file="${file.reference.wonderland-utils.jar}" propname="included.lib.file.reference.wonderland-utils.jar.X"/>
-        <basename file="${file.reference.vecmath.jar}" property="included.lib.file.reference.vecmath.jar"/>
-        <copy-ear-war file="${file.reference.vecmath.jar}" propname="included.lib.file.reference.vecmath.jar.X"/>
-        <basename file="${file.reference.j3dcore.jar}" property="included.lib.file.reference.j3dcore.jar"/>
-        <copy-ear-war file="${file.reference.j3dcore.jar}" propname="included.lib.file.reference.j3dcore.jar.X"/>
-        <basename file="${file.reference.j3dutils.jar}" property="included.lib.file.reference.j3dutils.jar"/>
-        <copy-ear-war file="${file.reference.j3dutils.jar}" propname="included.lib.file.reference.j3dutils.jar.X"/>
         <basename file="${file.reference.j3d-contrib-utils.jar}" property="included.lib.file.reference.j3d-contrib-utils.jar"/>
         <copy-ear-war file="${file.reference.j3d-contrib-utils.jar}" propname="included.lib.file.reference.j3d-contrib-utils.jar.X"/>
         <basename file="${file.reference.whiteboard-client.jar}" property="included.lib.file.reference.whiteboard-client.jar"/>
@@ -543,47 +537,13 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy-ear-war file="${file.reference.extracells-client.jar}" propname="included.lib.file.reference.extracells-client.jar.X"/>
         <basename file="${file.reference.phone-client.jar}" property="included.lib.file.reference.phone-client.jar"/>
         <copy-ear-war file="${file.reference.phone-client.jar}" propname="included.lib.file.reference.phone-client.jar.X"/>
-        <basename file="${file.reference.jmf.jar}" property="included.lib.file.reference.jmf.jar"/>
-        <copy-ear-war file="${file.reference.jmf.jar}" propname="included.lib.file.reference.jmf.jar.X"/>
         <basename file="${file.reference.lg3d-core.jar}" property="included.lib.file.reference.lg3d-core.jar"/>
         <copy-ear-war file="${file.reference.lg3d-core.jar}" propname="included.lib.file.reference.lg3d-core.jar.X"/>
         <basename file="${file.reference.TimingFramework.jar}" property="included.lib.file.reference.TimingFramework.jar"/>
         <copy-ear-war file="${file.reference.TimingFramework.jar}" propname="included.lib.file.reference.TimingFramework.jar.X"/>
-        <basename file="${libs.restapi.classpath}" property="included.lib.libs.restapi.classpath"/>
-        <copy-ear-war file="${libs.restapi.classpath}" propname="included.lib.libs.restapi.classpath.X"/>
-        <basename file="${libs.restlib.classpath.libfile.15}" property="included.lib.libs.restlib.classpath.15"/>
-        <basename file="${libs.restlib.classpath.libfile.14}" property="included.lib.libs.restlib.classpath.14"/>
-        <basename file="${libs.restlib.classpath.libfile.13}" property="included.lib.libs.restlib.classpath.13"/>
-        <basename file="${libs.restlib.classpath.libfile.12}" property="included.lib.libs.restlib.classpath.12"/>
-        <basename file="${libs.restlib.classpath.libfile.11}" property="included.lib.libs.restlib.classpath.11"/>
-        <basename file="${libs.restlib.classpath.libfile.10}" property="included.lib.libs.restlib.classpath.10"/>
-        <basename file="${libs.restlib.classpath.libfile.9}" property="included.lib.libs.restlib.classpath.9"/>
-        <basename file="${libs.restlib.classpath.libfile.8}" property="included.lib.libs.restlib.classpath.8"/>
-        <basename file="${libs.restlib.classpath.libfile.7}" property="included.lib.libs.restlib.classpath.7"/>
-        <basename file="${libs.restlib.classpath.libfile.6}" property="included.lib.libs.restlib.classpath.6"/>
-        <basename file="${libs.restlib.classpath.libfile.5}" property="included.lib.libs.restlib.classpath.5"/>
-        <basename file="${libs.restlib.classpath.libfile.4}" property="included.lib.libs.restlib.classpath.4"/>
-        <basename file="${libs.restlib.classpath.libfile.3}" property="included.lib.libs.restlib.classpath.3"/>
-        <basename file="${libs.restlib.classpath.libfile.2}" property="included.lib.libs.restlib.classpath.2"/>
-        <basename file="${libs.restlib.classpath.libfile.1}" property="included.lib.libs.restlib.classpath.1"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.15}" propname="included.lib.libs.restlib.classpath.15.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.14}" propname="included.lib.libs.restlib.classpath.14.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.13}" propname="included.lib.libs.restlib.classpath.13.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.12}" propname="included.lib.libs.restlib.classpath.12.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.11}" propname="included.lib.libs.restlib.classpath.11.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.10}" propname="included.lib.libs.restlib.classpath.10.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.9}" propname="included.lib.libs.restlib.classpath.9.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.8}" propname="included.lib.libs.restlib.classpath.8.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.7}" propname="included.lib.libs.restlib.classpath.7.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.6}" propname="included.lib.libs.restlib.classpath.6.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.5}" propname="included.lib.libs.restlib.classpath.5.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.4}" propname="included.lib.libs.restlib.classpath.4.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.3}" propname="included.lib.libs.restlib.classpath.3.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.2}" propname="included.lib.libs.restlib.classpath.2.X"/>
-        <copy-ear-war file="${libs.restlib.classpath.libfile.1}" propname="included.lib.libs.restlib.classpath.1.X"/>
         <mkdir dir="${build.web.dir}/META-INF"/>
         <manifest file="${build.web.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value="${included.lib.file.reference.dwr.jar} ${included.lib.file.reference.mina-core-1.1.jar} ${included.lib.file.reference.commons-logging-1.1.jar} ${included.lib.file.reference.sgs-client.jar} ${included.lib.file.reference.slf4j-api-1.4.0.jar} ${included.lib.file.reference.slf4j-jdk14-1.4.0.jar} ${included.lib.file.reference.wonderland-client.jar} ${included.lib.file.reference.wonderland-loaders.jar} ${included.lib.file.reference.wonderland-server.jar} ${included.lib.file.reference.wonderland-utils.jar} ${included.lib.file.reference.vecmath.jar} ${included.lib.file.reference.j3dcore.jar} ${included.lib.file.reference.j3dutils.jar} ${included.lib.file.reference.j3d-contrib-utils.jar} ${included.lib.file.reference.whiteboard-client.jar} ${included.lib.file.reference.extracells-client.jar} ${included.lib.file.reference.phone-client.jar} ${included.lib.file.reference.jmf.jar} ${included.lib.file.reference.lg3d-core.jar} ${included.lib.file.reference.TimingFramework.jar} ${included.lib.libs.restapi.classpath} ${included.lib.libs.restlib.classpath.1.X} ${included.lib.libs.restlib.classpath.2.X} ${included.lib.libs.restlib.classpath.3.X} ${included.lib.libs.restlib.classpath.4.X} ${included.lib.libs.restlib.classpath.5.X} ${included.lib.libs.restlib.classpath.6.X} ${included.lib.libs.restlib.classpath.7.X} ${included.lib.libs.restlib.classpath.8.X} ${included.lib.libs.restlib.classpath.9.X} ${included.lib.libs.restlib.classpath.10.X} ${included.lib.libs.restlib.classpath.11.X} ${included.lib.libs.restlib.classpath.12.X} ${included.lib.libs.restlib.classpath.13.X} ${included.lib.libs.restlib.classpath.14.X} ${included.lib.libs.restlib.classpath.15.X} "/>
+            <attribute name="Class-Path" value="${included.lib.file.reference.dwr.jar} ${included.lib.file.reference.mina-core-1.1.jar} ${included.lib.file.reference.commons-logging-1.1.jar} ${included.lib.file.reference.sgs-client.jar} ${included.lib.file.reference.slf4j-api-1.4.0.jar} ${included.lib.file.reference.slf4j-jdk14-1.4.0.jar} ${included.lib.file.reference.wonderland-client.jar} ${included.lib.file.reference.wonderland-loaders.jar} ${included.lib.file.reference.wonderland-server.jar} ${included.lib.file.reference.wonderland-utils.jar} ${included.lib.file.reference.j3d-contrib-utils.jar} ${included.lib.file.reference.whiteboard-client.jar} ${included.lib.file.reference.extracells-client.jar} ${included.lib.file.reference.phone-client.jar} ${included.lib.file.reference.lg3d-core.jar} ${included.lib.file.reference.TimingFramework.jar} "/>
         </manifest>
         <delete dir="${dist.ear.dir}/temp"/>
     </target>
@@ -598,32 +558,12 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
         <copy file="${file.reference.wonderland-loaders.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-server.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.wonderland-utils.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${file.reference.vecmath.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${file.reference.j3dcore.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${file.reference.j3dutils.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.j3d-contrib-utils.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.whiteboard-client.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.extracells-client.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.phone-client.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${file.reference.jmf.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.lg3d-core.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
         <copy file="${file.reference.TimingFramework.jar}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restapi.classpath}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.15}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.14}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.13}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.12}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.11}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.10}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.9}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.8}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.7}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.6}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.5}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.4}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.3}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.2}" todir="${build.web.dir}/WEB-INF/lib"/>
-        <copy file="${libs.restlib.classpath.libfile.1}" todir="${build.web.dir}/WEB-INF/lib"/>
     </target>
     <target depends="init,compile,compile-jsps,-pre-dist,library-inclusion-in-manifest" name="do-ear-dist">
         <dirname file="${dist.ear.war}" property="dist.jar.dir"/>
