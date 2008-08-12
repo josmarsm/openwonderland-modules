@@ -206,18 +206,32 @@ function zoomOut() {
 function initTileMap() {
   var path = "resources/tiles/tiles.xml";
 
-  if( browser.isIECompatible) {
+  if( browser.isIE ) {
     xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+    
+    if( xmlDoc == null ) {
+      xmlDoc=new ActiveXObject("Msxml2.XMLDOM");    
+    }
+    
     xmlDoc.async="false";
     xmlDoc.onreadystatechange = function () {
                                   if (xmlDoc.readyState == 4) loadConfig()
-                                };
+                                };                            
+    xmlDoc.load(path);
+  } else if( browser.isMac ) {
+    var tmp = new XMLHttpRequest();
+    tmp.open("GET",path,false);
+    tmp.send(null);
+    xmlDoc = tmp.responseXML;
+    
   } else {
     xmlDoc=document.implementation.createDocument("","",null);
     xmlDoc.async="false";
     xmlDoc.onload = loadConfig;
+    xmlDoc.load(path);
   }
-  xmlDoc.load(path);
+  
+  alert("xmlDoc: " + xmlDoc.firstChild);
   checkTiles();
 }
 
