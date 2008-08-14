@@ -16,6 +16,6 @@
     <body>
         <h2>Upload page</h2>
         <a href="artupload.jsp">Upload artwork</a><br/>
-        <a href="fileupload.html">Upload docs for sharing apps</a>
+        <a href="docupload.html">Upload docs for sharing apps</a>
     </body>
 </html>
