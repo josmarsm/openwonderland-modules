@@ -1,15 +1,28 @@
 var checkImg = new Image();
 var avatarIcon = "resources/images/person.png";
 var positionX = 0;
-var positionY = 0;
+var positionZ = 0;
+var userName;
+var initPos = true;
 
 function viewInit() {
   dsClient.init();
   Servlet.setWebContext();
   
+  extractUserName();
+  
   initTileMap();
-  checkTiles();
-  //initialPosition();
+  
+  //this is used to allow for updating of information, and positioning of the
+  //avatars
+  if( browser.isIE ) {
+      setTimeout('checkTiles()',1000);
+      setTimeout('initLocation()',2000);      
+  }
+  else {
+      window.setTimeout('checkTiles()',1000);
+      window.setTimeout('initLocation()',2000);      
+  }
 }
 /* This will differ from the desktop version, since the handhelds, mobiles,
  * are assumed to not have click, and drag. The window will move as the 
@@ -18,20 +31,22 @@ function viewInit() {
  */
 //pass in the position of the map i should be at, and then re-center the map and avatar to this position
 function cbCreateUserLocation(nametag, posX, posY) {
+  if( userName == nametag && initPos) {
+      return;
+  }
+  
   var innerDiv = document.getElementById("innerDiv");
   var avatars;
   var viewOffsetX; //value to adjust left value of view window
-  var viewOffsetY; //value to adjust top value of view window
+  var viewoffsetZ; //value to adjust top value of view window
   var viewWidth; //value in px
   var viewHeight; //value in px
-
-  //centers the avatar based on the size of the window
-  if( browser.isIE ) {
-    viewWidth = (document.body.clientWidth / 2);
-    viewHeight = (document.body.clientHeight / 2);
-  } else {
-    viewWidth = (window.innerWidth / 2);
-    viewHeight = (window.innerHeight / 2);
+  
+  // This is done only for the users avatar, no need to make everyone's centered
+  if( userName == nametag ) {
+    //centers the avatar based on the size of the window
+    viewWidth = parseInt(outerDiv.getWidth()) / 2; //value in px
+    viewHeight = parseInt(outerDiv.getHeight()) / 2; //value in px
   }
 
   if( document.getElementById("avatars") == null ) {
@@ -47,19 +62,25 @@ function cbCreateUserLocation(nametag, posX, posY) {
   var user_avatar = document.createElement("img");
   user_avatar.style.position = "absolute";
   
-  user_avatar.style.left = viewWidth + "px";
-  user_avatar.style.top = viewHeight + "px";
-  
-  //adjust the position based on the mapping conversion
-  //this will apply to the position of the upper left hand corner
-  //so i will need to subtract 1/2 width, and 1/2 height to get 
-  //the correct positioning
-  viewOffsetX = -1*(parseInt(getVworldToWebX(posX)) - (parseInt(viewWidth) - parseInt(30)));
-  viewOffsetY = -1*(parseInt(getVworldToWebY(posY)) - (parseInt(viewHeight) - parseInt(30)));
-  
-  //adjust the view window
-  innerDiv.style.left = viewOffsetX + "px";
-  innerDiv.style.top = viewOffsetY + "px";  
+  if( userName == nametag ) {
+    user_avatar.style.left = viewWidth + "px";
+    user_avatar.style.top = viewHeight + "px";
+
+    //adjust the position based on the mapping conversion
+    //this will apply to the position of the upper left hand corner
+    //so i will need to subtract 1/2 width, and 1/2 height to get 
+    //the correct positioning
+    viewOffsetX = -1*(parseInt(getVworldToWebX(posX)) - (parseInt(viewWidth) - parseInt(30)));
+    viewoffsetZ = -1*(parseInt(getVworldToWebY(posY)) - (parseInt(viewHeight) - parseInt(30)));
+
+    //adjust the view window
+    innerDiv.style.left = viewOffsetX + "px";
+    innerDiv.style.top = viewoffsetZ + "px";  
+  } else {
+    //adjust the position based on the mapping conversion
+    user_avatar.style.left = getVworldToWebX(posX) + "px";
+    user_avatar.style.top = getVworldToWebY(posY) + "px";  
+  }
   
   user_avatar.style.zIndex = 1;
   user_avatar.setAttribute("id", nametag+"_avatar");
@@ -110,7 +131,7 @@ function cbCreateUserLocation(nametag, posX, posY) {
   avatar_position_x.appendChild(avatar_position_x_data);
   avatar_position.appendChild(avatar_position_x);
 
-  var avatar_position_y = document.createElement("y");
+  var avatar_position_y = document.createElement("z");
   var avatar_position_y_data = document.createTextNode(posY);
 
   avatar_position_y.appendChild(avatar_position_y_data);
@@ -121,6 +142,10 @@ function cbCreateUserLocation(nametag, posX, posY) {
   //here is where i add the user information
   avatars.appendChild(user);
   innerDiv.appendChild(avatars);
+  
+  if( userName == nametag ) {
+      Servlet.goToLocation(posX,0,posY);
+  }
 }
 
 /* This will differ from the desktop version, since the handhelds, mobiles,
@@ -131,7 +156,7 @@ function cbCreateUserLocation(nametag, posX, posY) {
  */
 function cbTrackUser(nametag, posX, posY) {
   var viewOffsetX; //value to adjust left value of view window
-  var viewOffsetY; //value to adjust top value of view window
+  var viewoffsetZ; //value to adjust top value of view window
   var viewWidth; //value in px
   var viewHeight; //value in px
   
@@ -140,15 +165,12 @@ function cbTrackUser(nametag, posX, posY) {
   var avatars = document.getElementById("avatars");
   var olduser = document.getElementById(nametag);
 
-//centers the avatar based on the size of the window
-  if( browser.isIE ) {
-    viewWidth = (document.body.clientWidth / 2);
-    viewHeight = (document.body.clientHeight / 2);
-  } else {
-    viewWidth = (window.innerWidth / 2);
-    viewHeight = (window.innerHeight / 2);
+  if( userName == nametag ) {
+    //centers the avatar based on the size of the window
+    viewWidth = parseInt(outerDiv.getWidth()) / 2; //value in px
+    viewHeight = parseInt(outerDiv.getHeight()) / 2; //value in px
   }
-
+  
   avatars.removeChild(olduser);
   
   var user = document.createElement("div");
@@ -158,19 +180,25 @@ function cbTrackUser(nametag, posX, posY) {
   var user_avatar = document.createElement("img");
   user_avatar.style.position = "absolute";
 
-  user_avatar.style.left = viewWidth + "px";
-  user_avatar.style.top = viewHeight + "px";
-  
-  //adjust the position based on the mapping conversion
-  //this will apply to the position of the upper left hand corner
-  //so i will need to subtract 1/2 width, and 1/2 height to get 
-  //the correct positioning
-  viewOffsetX = -1*(parseInt(getVworldToWebX(posX)) - (parseInt(viewWidth) - parseInt(30)));
-  viewOffsetY = -1*(parseInt(getVworldToWebY(posY)) - (parseInt(viewHeight) - parseInt(30)));
-  
-  //adjust the view window
-  innerDiv.style.left = viewOffsetX + "px";
-  innerDiv.style.top = viewOffsetY + "px";  
+  if( userName == nametag ) {
+    user_avatar.style.left = viewWidth + "px";
+    user_avatar.style.top = viewHeight + "px";
+
+    //adjust the position based on the mapping conversion
+    //this will apply to the position of the upper left hand corner
+    //so i will need to subtract 1/2 width, and 1/2 height to get 
+    //the correct positioning
+    viewOffsetX = -1*(parseInt(getVworldToWebX(posX)) - (parseInt(viewWidth) - parseInt(30)));
+    viewoffsetZ = -1*(parseInt(getVworldToWebY(posY)) - (parseInt(viewHeight) - parseInt(30)));
+
+    //adjust the view window
+    innerDiv.style.left = viewOffsetX + "px";
+    innerDiv.style.top = viewoffsetZ + "px";  
+  } else {
+    //adjust the position based on the mapping conversion
+    user_avatar.style.left = getVworldToWebX(posX) + "px";
+    user_avatar.style.top = getVworldToWebY(posY) + "px";  
+  }
   
   user_avatar.style.zIndex = 1;
   user_avatar.setAttribute("id", nametag+"_avatar");
@@ -197,7 +225,7 @@ function cbTrackUser(nametag, posX, posY) {
   avatar_info.style.top = winY +"px";
   avatar_info.style.zIndex = 1;
   
-  //add a table of various stats about user
+    //in the future more information will be added to the user tag
   var avatar_info_popup = document.createElement("ul");
   avatar_info_popup.setAttribute("id", nametag + "_avatar_info_popup");
   
@@ -217,6 +245,8 @@ function cbTrackUser(nametag, posX, posY) {
 
   user.appendChild(avatar_info);
   
+  //this stores the current position of the avatar in the map so that
+  //it can be reloaded on zoom in, and zoom out
   var avatar_position = document.createElement("div");
   avatar_position.setAttribute("id", nametag + "_position");
   
@@ -226,7 +256,7 @@ function cbTrackUser(nametag, posX, posY) {
   avatar_position_x.appendChild(avatar_position_x_data);
   avatar_position.appendChild(avatar_position_x);
 
-  var avatar_position_y = document.createElement("y");
+  var avatar_position_y = document.createElement("z");
   var avatar_position_y_data = document.createTextNode(posY);
 
   avatar_position_y.appendChild(avatar_position_y_data);
@@ -244,37 +274,32 @@ function cbTrackUser(nametag, posX, posY) {
  * in pixels.
  */
 function getVworldToWebX(posX) {
-  //var outerDiv = document.getElementById("outerDiv");
-  
-  //var tmp = ((posX - offsetX) * stepX) - (outerDiv.width/2);
-  
   var tmp = (posX * offsetX) + (checkImg.width*3);
   
   return tmp;
 }
 
+/**
+ * This function will convert the Vworld Z position to the equivalent web Y position
+ * in pixels.
+ */
 function getVworldToWebY(posY) {
-  //var outerDiv = document.getElementById("outerDiv");
-  
-  //var tmp = ((posY - offsetY) * stepY) - (outerDiv.height/2);
-  
-  var tmp = (posY * offsetY) + (checkImg.height*1.5);
+  var tmp = (posY * offsetZ) + (checkImg.height*1.5);
   
   return tmp;
 }
 
 function goToLocation() {  
-  Servlet.goToLocation(dwr.util.getValue("posX"),dwr.util.getValue("posY"));
+  Servlet.goToLocation(dwr.util.getValue("posX"),dwr.util.getValue("posY"),dwr.util.getValue("posZ"));
 }
 
-function track(event) {
-  var chat = document.getElementById('chat_messages');
-  var temp;
-  temp = '[MOVE]: X=' + event.clientX + ' Y=' + event.clientY +'<br />';
-  temp += chat.innerHTML;
-  chat.innerHTML = temp;
+function goToLocation(posX, posY, posZ) {  
+  Servlet.goToLocation(posX, posY, posZ);
 }
-     
+
+/*
+ *Callback function that displays data message from user 'name'.
+ */
 function cbChatUpdate(name, data) {
   var chat = document.getElementById('chat_messages');
   var temp;
@@ -287,20 +312,18 @@ function cbConnectionFailure() {
   alert("Connection to server was Lost!!!")
 }  
   
-/* 
- * This function will be used to send data to the web server, and 
- * then have DWR send back the response, by updating everyones 
- * chat window, using chatUpdate() function.
+/*
+ * This sends the chat message to the servlet.
  */
 function sendMessage() {
-  var message = dwr.util.getValue('new_message');
+  var message = dwr.util.getValue('new_message_txt');
   if( message.length > 0) {
     Servlet.sendChat(message); 
   }
-  dwr.util.setValue("new_message","");
+  dwr.util.setValue("new_message_txt","");
 }
 
-//web code
+//web code to display and hide menus
 function toggleBox(divId, iState) { // 1 visible, 0 hidden
   if(document.layers) { //NN4+
      document.layers[divId].visibility = iState ? "show" : "hide";
@@ -340,6 +363,10 @@ function cbServerStats(data) {
   server_stats.innerHTML += "<tr><td> Uptime </td><td>" + data[2] + "</td></tr>"; 
 }
 
+/*
+ * Function to request a call to be placed to the web user, from wonderland, and the extension/number
+ * entered.
+ */
 function sendCallMe() {
   var message = dwr.util.getValue('phoneExt');
     
@@ -383,3 +410,4 @@ function toggleMenu(divId) { // 1 visible, 0 hidden
     }  
   }
 }
+

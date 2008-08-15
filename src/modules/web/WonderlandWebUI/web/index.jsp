@@ -137,7 +137,7 @@
     <!--  External scripts included after this page script, to prevent the first js from executing functions that are defined here -->
     <!-- and any others that I create should also be declared before the dwr scripts -->
     <!-- ************************************************************************************************************************ -->
-    
+    <script type="text/javascript" src="javascript/FuncTils.js"></script>
     <script type="text/javascript" src="javascript/DSClient.js"></script>
     <script type="text/javascript" src="javascript/Index.js"></script>
 

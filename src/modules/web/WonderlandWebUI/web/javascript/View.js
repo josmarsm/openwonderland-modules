@@ -2,11 +2,18 @@ var checkImg = new Image();
 var avatarIcon = "resources/images/person.png";
 var positionX = 0;
 var positionZ = 0;
+var userName;
+var initPos = true;
 
+/*
+ * Function called on loading of view.jsp
+ */
 function viewInit() {
   dsClient.init();
   Servlet.setWebContext();
-  
+
+  extractUserName();
+
   // wire up the mouse listeners to do dragging
   var outerDiv = document.getElementById("outerDiv");
   outerDiv.onmousedown = startMove;
@@ -17,11 +24,24 @@ function viewInit() {
   outerDiv.ondragstart = function() { return false; }
   
   initTileMap();
-  checkTiles();
+  
+  if( browser.isIE ){
+      setTimeout('checkTiles()',1000);
+      setTimeout('initLocation()',2000);
+  } else {
+      window.setTimeout('checkTiles()',1000);
+      window.setTimeout('initLocation()',2000);
+  }
 }
 
-//pass in the position of the map i should be at, and then re-center the map and avatar to this position
+/*
+ *Location for the avatar is created, and set to their position in world.
+ */
 function cbCreateUserLocation(nametag, posX, posY) {
+  if( userName == nametag && initPos ) {
+      return;
+  }
+  
   var innerDiv = document.getElementById("innerDiv");
   var avatars;
   if( document.getElementById("avatars") == null ) {
@@ -37,7 +57,7 @@ function cbCreateUserLocation(nametag, posX, posY) {
   var user_avatar = document.createElement("img");
   user_avatar.style.position = "absolute";
   
-  //adjust the position based on the mapping conversion
+  //adjust the position based on the mapping conversion 
   user_avatar.style.left = getVworldToWebX(posX) + "px";
   user_avatar.style.top = getVworldToWebY(posY) + "px";  
   
@@ -47,11 +67,10 @@ function cbCreateUserLocation(nametag, posX, posY) {
   
   user.appendChild(user_avatar);
  
+ //a box that floats above the avatars
   var avatar_info = document.createElement("div");
   avatar_info.setAttribute("id", nametag + "_avatar_info");
   avatar_info.setAttribute("class", "info");
-  
-  //these should be the origin position that comes from the wfs xml file
   var box_width = 50;
   var box_height = 30;
   avatar_info.style.width = box_width + "px"; 
@@ -62,7 +81,7 @@ function cbCreateUserLocation(nametag, posX, posY) {
   avatar_info.style.top = winY +"px";
   avatar_info.style.zIndex = 1;
   
-  //add a table of various stats about user
+  //in the future more information will be added to the user tag
   var avatar_info_popup = document.createElement("ul");
   avatar_info_popup.setAttribute("id", nametag + "_avatar_info_popup");
   
@@ -82,6 +101,8 @@ function cbCreateUserLocation(nametag, posX, posY) {
 
   user.appendChild(avatar_info);
 
+  //this stores the current position of the avatar in the map so that
+  //it can be reloaded on zoom in, and zoom out
   var avatar_position = document.createElement("div");
   avatar_position.setAttribute("id", nametag + "_position");
   
@@ -104,14 +125,19 @@ function cbCreateUserLocation(nametag, posX, posY) {
   innerDiv.appendChild(avatars);
 }
 
-/* this will be called on a per-user basis */
+/* 
+ * This function is used to track the user's movements, as seen by the wonderland server,
+ * and forwarded to the web client
+ */
 function cbTrackUser(nametag, posX, posY) {
-  
+  if( userName == nametag ) { initPos = false; }
+    
   //first thing is to remove the user pin from the map
   var innerDiv = document.getElementById("innerDiv");
   var avatars = document.getElementById("avatars");
   var olduser = document.getElementById(nametag);
 
+  //delete myself from the avatar list
   avatars.removeChild(olduser);
 
   var user = document.createElement("div");
@@ -133,6 +159,7 @@ function cbTrackUser(nametag, posX, posY) {
   
   user.appendChild(user_avatar);
  
+ //a box that floats above the avatars
   var avatar_info = document.createElement("div");
   avatar_info.setAttribute("id", nametag + "_avatar_info");
   avatar_info.setAttribute("class", "info");
@@ -146,7 +173,7 @@ function cbTrackUser(nametag, posX, posY) {
   avatar_info.style.top = winY + "px";
   avatar_info.style.zIndex = 1;
   
-    //add a table of various stats about user
+  //in the future more information will be added to the user tag
   var avatar_info_popup = document.createElement("ul");
   avatar_info_popup.setAttribute("id", nametag + "_avatar_info_popup");
   
@@ -166,6 +193,8 @@ function cbTrackUser(nametag, posX, posY) {
   
   user.appendChild(avatar_info);
 
+  //this stores the current position of the avatar in the map so that
+  //it can be reloaded on zoom in, and zoom out
   var avatar_position = document.createElement("div");
   avatar_position.setAttribute("id", nametag + "_position");
   
@@ -193,20 +222,16 @@ function cbTrackUser(nametag, posX, posY) {
  * in pixels.
  */
 function getVworldToWebX(posX) {
-  //var outerDiv = document.getElementById("outerDiv");
-  
-  //var tmp = ((posX - offsetX) * stepX) - (outerDiv.width/2);
-  
   var tmp = (posX * offsetX) + (checkImg.width*3);
   
   return tmp;
 }
 
+/**
+ * This function will convert the Vworld Z position to the equivalent web Y position
+ * in pixels.
+ */
 function getVworldToWebY(posY) {
-  //var outerDiv = document.getElementById("outerDiv");
-  
-  //var tmp = ((posY - offsetZ) * stepY) - (outerDiv.height/2);
-  
   var tmp = (posY * offsetZ) + (checkImg.height*1.5);
   
   return tmp;
@@ -220,14 +245,9 @@ function goToLocation(posX, posY, posZ) {
   Servlet.goToLocation(posX, posY, posZ);
 }
 
-function track(event) {
-  var chat = document.getElementById('chat_messages');
-  var temp;
-  temp = '[MOVE]: X=' + event.clientX + ' Y=' + event.clientY +'<br />';
-  temp += chat.innerHTML;
-  chat.innerHTML = temp;
-}
-      
+/*
+ *Callback function that displays data message from user 'name'.
+ */
 function cbChatUpdate(name, data) {
   var chat = document.getElementById('chat_messages');
   var temp;
@@ -240,10 +260,8 @@ function cbConnectionFailure() {
   alert("Connection to server was Lost!!!")
 }  
   
-/* 
- * This function will be used to send data to the web server, and 
- * then have DWR send back the response, by updating everyones 
- * chat window, using chatUpdate() function.
+/*
+ * This sends the chat message to the servlet.
  */
 function sendMessage() {
   var message = dwr.util.getValue('new_chat_message');
@@ -292,7 +310,10 @@ function cbServerStats(data) {
   server_stats.innerHTML += "<tr><td> Proto Ver. </td><td>" + data[1] + "</td></tr>"; 
   server_stats.innerHTML += "<tr><td> Uptime </td><td>" + data[2] + "</td></tr>"; 
 }
-                  
+
+/* 
+ * Code to work on the right-click goTo this location option
+ */
 function mapClick() {
   if(browser.isIE) {
     document.onmousedown=IEClick;
@@ -317,6 +338,10 @@ function IEClick(e){
   return false;
 } 
 
+/*
+ * Function to request a call to be placed to the web user, from wonderland, and the extension/number
+ * entered.
+ */
 function sendCallMe() {
 
   var message = dwr.util.getValue('phoneExt');

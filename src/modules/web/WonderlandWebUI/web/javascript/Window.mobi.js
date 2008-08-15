@@ -6,9 +6,9 @@ var zoomLevelIndex = 0;
 var zoomLevelSize = 0;
 
 var stepX;
-var stepY;
+var stepZ;
 var offsetX;
-var offsetY;
+var offsetZ;
 var maxTileX;
 var maxTileY;
 var tileWSize;
@@ -16,7 +16,9 @@ var tileHSize;
 var mapConfig = new Array();
 var xmlDoc=null;
 
-// START:checktiles
+/*
+ * Checks to see which tiles are visible, and which need to be added or removed
+ */
 function checkTiles() {
   // check which tiles should be visible in the inner div
   var visibleTiles = getVisibleTiles();
@@ -29,9 +31,7 @@ function checkTiles() {
     var tileArray = visibleTiles[i];
     
     if(!(tileArray[0] < 0 || tileArray[1] < 0)) {
-      // START:imgZoomLevel
       var tileName = "x" + tileArray[0] + "y" + tileArray[1];
-      // END:imgZoomLevel
       visibleTilesMap[tileName] = true;
       var img = document.getElementById(tileName);
       if (!img) {
@@ -47,8 +47,10 @@ function checkTiles() {
     }
   }
 }
-// END:checktiles
 
+/*
+ * Generates a list of visible tiles
+ */
 function getVisibleTiles() {
   var tilesX;
   var tilesY;
@@ -57,8 +59,6 @@ function getVisibleTiles() {
 
   var mapX = stripPx(innerDiv.style.left);
   var mapY = stripPx(innerDiv.style.top);
-//  window.document.write("mapX: " + mapX + "<br></br>");
-//  window.document.write("mapY: " + mapY + "<br></br>");
 
   if( tileWSize == 0 || tileHSize == 0 ) {
     //check the image size
@@ -71,9 +71,6 @@ function getVisibleTiles() {
 
   var startX = Math.abs(Math.floor(mapX / tileWSize)) - 1;
   var startY = Math.abs(Math.floor(mapY / tileHSize)) - 1;
-//  window.document.write("startX: " + startX + "<br></br>");
-//  window.document.write("startY: " + startY + "<br></br>");
-
   
   if( browser.isIE ) {
    tilesX = Math.ceil(document.body.clientHeight / tileWSize) + 1;
@@ -83,15 +80,11 @@ function getVisibleTiles() {
     tilesY = Math.ceil(window.innerHeight / tileHSize) + 1;
   }
   
-//  window.document.write("tilesX: " + tilesX + "<br></br>");
-//  window.document.write("tilesY: " + tilesY + "<br></br>");
-
   var visibleTileArray = [];
   var counter = 0;
   for (x = startX; x <= maxTileX && x <= (tilesX + startX); x++) {
     for (y = startY; y <= maxTileY && y <= (tilesY + startY); y++) {
       if( x >= 0 && y >= 0 ) {
-//      window.document.write("visibleTileArray["+ counter +"] = " + "[" + x + "," + y + "] <br></br>");
       visibleTileArray[counter++] = [x, y];
       }
     }
@@ -104,7 +97,9 @@ function stripPx(value) {
   return parseFloat(value.substring(0, value.length - 2));
 }
 
-
+/*
+ *This method is used to go to the more detail of the current map.
+ */
 function zoomIn() {
   //check the current zoom, and move to a smaller ( zoom in )
   var tmp = zoomLevelIndex;
@@ -129,6 +124,9 @@ function zoomIn() {
   }
 }
 
+/*
+ *This method is used to go to the less detail of the current map.
+ */
 function zoomOut() {
   //check the current zoom, and move to a larger ( zoom out )
   var tmp = zoomLevelIndex;
@@ -152,6 +150,9 @@ function zoomOut() {
   }
 }
 
+/*
+ *Funtion is used to open and read in the information from the xml file.
+ */
 function initTileMap() {
   var path = "resources/tiles/tiles.xml";
 
@@ -167,18 +168,9 @@ if( browser.isIE ) {
                                   if (xmlDoc.readyState == 4) loadConfig()
                                 };                            
     xmlDoc.load(path);
-//  } else if( browser.isMac ) {
-//    var tmp = new XMLHttpRequest();
-//    tmp.open('GET',path,false);
-//    tmp.send(null);
-//    tmp.onreadystatechange = function () {
-//                                  if (tmp.readyState == 4) {
-//                                    if( tmp.status == 200 ) {
-//                                      xmlDoc = tmp.responseXML;
-//                                      loadConfig();    
-//                                    }
-//                                  }
-//                                };                                
+  } else if( browser.isMac ) {
+    xmlDoc = window.frames['xmlTiles'].document.documentElement;
+    loadConfig();
   } else {
     xmlDoc=document.implementation.createDocument("","",null);
     xmlDoc.async="false";
@@ -188,51 +180,9 @@ if( browser.isIE ) {
   checkTiles();
 }
 
-function initialPosition() {
-  var innerDiv = document.getElementById("innerDiv");
-  var viewOffsetX; //value to adjust left value of view window
-  var viewOffsetY; //value to adjust top value of view window
-  var viewWidth; //value in px
-  var viewHeight; //value in px
-  var tmp = mapConfig[0];
-  var posX = tmp["originX"];
-  var posY = tmp["originY"];
-
-  //tile sizes set
-  maxTileX = tmp["maxTileX"];
-  maxTileY = tmp["maxTileY"];
- 
-  //generate the offset for the map
-  offsetX = (tileWSize * maxTileX) / tmp["boundsX"];
-  offsetY = (tileHSize * maxTileY) / tmp["boundsY"];
-
-  //now calculate the step values
-  stepX = tileWSize/tmp["unitDiffX"];
-  stepY = tileHSize/tmp["unitDiffY"];
-  
-  //centers the avatar based on the size of the window
-  if( browser.isIE ) {
-    viewWidth = (document.body.clientWidth / 2);
-    viewHeight = (document.body.clientHeight / 2);
-  } else {
-    viewWidth = (window.innerWidth / 2);
-    viewHeight = (window.innerHeight / 2);
-  }
-  
-  //adjust the position based on the mapping conversion
-  //this will apply to the position of the upper left hand corner
-  //so i will need to subtract 1/2 width, and 1/2 height to get 
-  //the correct positioning
-  viewOffsetX = -1*(parseInt(getVworldToWebX(posX)) - (parseInt(viewWidth) - parseInt(30)));
-  viewOffsetY = -1*(parseInt(getVworldToWebY(posY)) - (parseInt(viewHeight) - parseInt(30)));
-  
-  //adjust the view window
-  innerDiv.style.left = viewOffsetX + "px";
-  innerDiv.style.top = viewOffsetY + "px";  
-
-  checkTiles();
-}
-
+/*
+ * Changes the map values based on the zoom level, and the number of tiles
+ */
 function updateMapSpecs() {
   var tmp = mapConfig[zoomLevelIndex];
   //tile sizes set
@@ -241,13 +191,16 @@ function updateMapSpecs() {
  
   //generate the offset for the map
   offsetX = (tileWSize * maxTileX) / tmp["boundsX"];
-  offsetY = (tileHSize * maxTileY) / tmp["boundsY"];
+  offsetZ = (tileHSize * maxTileY) / tmp["boundsY"];
 
   //now calculate the step values
   stepX = tileWSize/tmp["unitDiffX"];
-  stepY = tileHSize/tmp["unitDiffY"];
+  stepZ = tileHSize/tmp["unitDiffY"];
 }
 
+/*
+ * Load the information from the xml file that was created when the tiles where made
+ */
 function loadConfig() {
   var levels = xmlDoc.getElementsByTagName("tile");
   
@@ -342,20 +295,24 @@ function loadConfig() {
 
       //generate the offset for the map
       offsetX = (tileWSize * maxTileX) / bounds_x;
-      offsetY = (tileHSize * maxTileY) / bounds_y;
+      offsetZ = (tileHSize * maxTileY) / bounds_y;
 
       //now calculate the step values
       stepX = tileWSize/unit_diff_x;
-      stepY = tileHSize/unit_diff_y;
+      stepZ = tileHSize/unit_diff_y;
 
       //set to the origin, from the xml file
       positionX = origin_x;
-      positionY = origin_y;
+      positionZ = origin_y;
     }
   }
 }
 
+/*
+ * Stores the avatars, and their current position
+ */
 function saveAvatars() {
+  initPos = false;
   var outerDiv = document.getElementById("outerDiv");
   
   var avatar = document.createElement("div");
@@ -382,6 +339,9 @@ function saveAvatars() {
   outerDiv.appendChild(avatar); 
 }
 
+/*
+ * Used to place the avatars back into the map. Typically done after a zoom in, or a zoom out.
+ */
 function loadAvatars() {
   var outerDiv = document.getElementById("outerDiv");
   var avatarsDiv = document.getElementById("saved_avatar_positions");
@@ -398,41 +358,45 @@ function loadAvatars() {
 }
 
 function moveUp() {
-//  if( stepX == 0 || stepY == 0) {
-//    updateMapSpecs();
-//  }
+  if( stepX == 0 || stepZ == 0) {
+    updateMapSpecs();
+  }
   positionX = parseInt(positionX);
-  positionY = parseInt(positionY) - parseInt(stepY/2);
+  positionZ = parseInt(positionZ) - parseInt(stepZ/2);
   
-  Servlet.goToLocation(positionX,0,positionY);
+  Servlet.goToLocation(positionX,0,positionZ);
+  checkTiles();
 }
 
 function moveDown() {
-//  if( stepX == 0 || stepY == 0) {
-//    updateMapSpecs();
-//  }
+  if( stepX == 0 || stepZ == 0) {
+    updateMapSpecs();
+  }
   positionX = parseInt(positionX);
-  positionY = parseInt(positionY) + parseInt(stepY/2);
+  positionZ = parseInt(positionZ) + parseInt(stepZ/2);
   
-  Servlet.goToLocation(positionX,0, positionY);
+  Servlet.goToLocation(positionX,0, positionZ);
+  checkTiles();
 }
 
 function moveLeft() {
-//  if( stepX == 0 || stepY == 0) {
-//    updateMapSpecs();
-//  }
+  if( stepX == 0 || stepZ == 0) {
+    updateMapSpecs();
+  }
   positionX = parseInt(positionX) - parseInt(stepX/2);
-  positionY = parseInt(positionY);
+  positionZ = parseInt(positionZ);
   
-  Servlet.goToLocation(positionX,0,positionY);
+  Servlet.goToLocation(positionX,0,positionZ);
+  checkTiles();
 }
 
 function moveRight() {
-//  if( stepX == 0 || stepY == 0) {
-//    updateMapSpecs();
-//  }
+  if( stepX == 0 || stepZ == 0) {
+    updateMapSpecs();
+  }
   positionX = parseInt(positionX) + parseInt(stepX/2);
-  positionY = parseInt(positionY);
+  positionZ = parseInt(positionZ);
   
-  Servlet.goToLocation(positionX,0,positionY);
+  Servlet.goToLocation(positionX,0,positionZ);
+  checkTiles();
 }

@@ -5,7 +5,10 @@ function indexInit() {
   document.getElementById('username').focus();
   dsClient.init();
 }
-
+/*
+ * This function is used to call the login process of the servlet.
+ * TODO: Handle failure of login, or non-unique login names
+ */
 function indexLogin() {
   var username = $("username").value;
   var password = $("password").value;
@@ -15,20 +18,19 @@ function indexLogin() {
   dwr.util.setValue("msg3","Please wait ...");
   
   //check to see if i need to add the login information to my cookie
-//  if( !fillInUsed ) {
-//    var cookie = get_cookie("wonderland.serverlist");
-//    window.document.write(cookie);
-//    set_cookie(username + ":" + servername + ":" + portnum + ",");
-//  }
+  if( !fillInUsed ) {
+    set_cookie("wonderland.serverlist", get_cookie("wonderland.serverlist") + username + ":" + servername + ":" + portnum + ",");
+  }
  
+  set_cookie("wonderland.username", username);
+  
   dsClient.login(username, password, servername, portnum);        
-  dsClient.connect();        
+  dsClient.connect();
 }
 
-function cleanup() {
-  dsClient.disconnect();
-}
-
+/*
+ * This function is when the user clicks on a list item of the history window.
+ */
 function fillInLogin(username, host, port) {
   fillInUsed = true;
   //do not worry about adding the information, since I have
@@ -36,32 +38,4 @@ function fillInLogin(username, host, port) {
   dwr.util.setValue("username",username);
   dwr.util.setValue("servername",host);
   dwr.util.setValue("portnum",port);
-}
-
-/**
- * credit: http://www.elated.com/articles/javascript-and-cookies/
- */
-function get_cookie( cookie_name )
-{
-  var results = document.cookie.match ( '(^|;) ?' + cookie_name + '=([^;]*)(;|$)' );
-
-  if ( results ) {
-    return ( unescape (results[2]) );
-  }
-  else
-    return null;
-}
-
-/**
- * credit: http://www.elated.com/articles/javascript-and-cookies/
- */
-function set_cookie(value)
-{
-  var cookie_string = "wonderland.serverlist=" + escape ( value );
-  
-  var tmp = new Date( );
-  var expires = new Date( parseInt(tmp.getFullYear()) + parseInt("1") , tmp.getMonth(), tmp.getDay());
-  cookie_string += "; expires=" + expires.toGMTString();
-
-  document.cookie = cookie_string;
 }
