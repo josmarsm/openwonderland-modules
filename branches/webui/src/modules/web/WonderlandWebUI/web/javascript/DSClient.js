@@ -1,13 +1,8 @@
-//only have the one instance of DSClient
-var dsClient = new DSClient();
+/*
+ * A singleton instance of the dsclient for connection purposes.
+ */
 
-function DSClient () {
-  var username;
-  var servername;
-  var portnum;
-  
-  var sessionId = null;
-  
+var dsClient = new function(){  
   /*
    * Initialize the app on load.
    */
@@ -18,9 +13,6 @@ function DSClient () {
   } // End init().
 
   this.login = function(username, password, servername, portnum) {
-    this.username = username;
-    this.password = password;
-    this.portnum = portnum;
     Servlet.startDSClient( username, password, servername, portnum);
   }// end login 
    

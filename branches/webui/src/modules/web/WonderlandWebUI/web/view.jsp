@@ -18,6 +18,7 @@
       External scripts included after this page script, to prevent the first js from executing functions that are defined here 
       and any others that I create should also be declared before the dwr scripts
     -->
+    <script type="text/javascript" src="javascript/FuncTils.js"></script>
     
     <% if( ((String)session.getAttribute("browserType")).equals("desktop") ) { %>
       <script type="text/javascript" src="javascript/View.js"></script>
@@ -44,6 +45,7 @@
 
   </head>
   <body onload="javascript:viewInit()">
+    <iframe src="resources/tiles/tiles.xml" id="xmlTiles" style="height: 0; width: 0; visibility: hidden;"></iframe>
     <% if( ((String)session.getAttribute("browserType")).equals("desktop") ) { %>
       <div id="menu">
         <ul class="menu">
@@ -93,11 +95,11 @@
         <form id="chatbox" action="javascript:sendMessage()">
           <div id="chat_messages"></div>
           <div id="new_message">
-            <input id="new_chat_message" type="text" name="new_message" size="80"/>
+              <input id="new_chat_message" type="text" name="new_message" size="80"></input>
           </div>
           <div id="actions">
-            <input type="reset" value="Clear" name="Clear" />
-            <input type="button" value="Send" onClick="javascript:sendMessage()" />
+            <input type="reset" value="Clear" name="Clear"></input>
+            <input type="button" value="Send" onClick="javascript:sendMessage()"></input>
           </div>
         </form>
       </div>
@@ -252,11 +254,11 @@
           <form id="chatbox" action="javascript:sendMessage()">
             <div id="chat_messages"></div>
             <div id="new_message">
-              <input type="text" name="new_message" size="50"/>
+                <input type="text" name="new_message_txt" size="50"></input>
             </div>
             <div id="actions">
-              <input type="reset" value="Clear" name="Clear" />
-              <input type="button" value="Send" onClick="javascript:sendMessage()" />
+                <input type="reset" value="Clear" name="Clear"></input>
+                <input type="button" value="Send" onClick="javascript:sendMessage()"></input>
             </div>
           </form>
         </div>
