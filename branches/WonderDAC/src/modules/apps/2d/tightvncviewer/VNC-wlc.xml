@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.6.0-dp" class="java.beans.XMLDecoder">
+    <object class="org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup">
+        <void property="cellGLOClassName">
+            <string>org.jdesktop.lg3d.wonderland.tightvncmodule.server.cell.TightVNCModuleCellGLO</string>
+        </void>
+        <void property="cellSetup">
+            <object class="org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellSetup">
+                <void property="server">
+                    <string>192.168.0.1</string>
+                </void>
+                <void property="port">
+                    <int>5900</int>
+                </void>
+                <void property="username">
+                    <string>username</string>
+                </void>
+                <void property="password">
+                    <string>password</string>
+                </void>
+                <void property="clientClassname">
+                    <string>org.jdesktop.lg3d.wonderland.tightvncmodule.client.cell.TightVNCModuleApp</string>
+                </void>
+                <void property="preferredWidth">
+                    <int>1024</int>
+                </void>
+                <void property="preferredHeight">
+                    <int>768</int>
+                </void>
+                <void property="decorated">
+                    <boolean>true</boolean>
+                </void>
+                <void property="pixelScale">
+                    <float>1.0</float>
+                </void>
+                <void property="readOnly">
+                    <boolean>false</boolean>
+                </void>
+            </object>
+        </void>
+        <void property="origin">
+            <void index="0">
+                <double>10.0</double>
+            </void>
+            <void index="1">
+                <double>3.0</double>
+            </void>
+            <void index="2">
+                <double>64.0</double>
+            </void>
+        </void>
+        <void property="rotation">
+            <void index="0">
+                <!-- set to 1.0 to rotate around x-axis -->
+                <double>0.0</double>
+            </void>
+            <void index="1"> 
+                <!-- set to 1.0 to rotate around y-axis -->
+                <double>1.0</double>
+            </void>
+            <void index="2"> 
+                <!-- set to 1.0 to rotate around z-axis -->
+                <double>0.0</double>
+            </void>
+            <void index="3">
+                <!-- angle of rotation around selected axis in radians
+                     pi radians (3.14) = 180 degrees -->
+                <double>3.14</double>
+            </void>
+        </void>
+    </object>
+</java> 

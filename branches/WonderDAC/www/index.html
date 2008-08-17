@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <style type="text/css"> 
+            /* <![CDATA[ */
+            @import "http://lg3d-wonderland.dev.java.net/branding/css/tigris.css";
+            @import "http://lg3d-wonderland.dev.java.net/branding/css/inst.css";
+            /* ]]> */</style>
+        <link rel="stylesheet" type="text/css" href="http://lg3d-wonderland.dev.java.net/branding/css/print.css" media="print" />
+        
+        <title>
+            Project Wonderland Modules
+        </title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="Content-Style-Type" content="text/css" />
+        <meta name="version" content="4.5.2.148.4" />   
+    </head>
+    
+    <body style="color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);">
+        
+        <h1>Project Wonderland Modules<br>
+        </h1>
+        
+        <p>
+            Project Wonderland Modules are components which can be loaded dynamically to extend
+            Project Wonderland capabilities. Example modules include 2D and 3D applications and 
+            non-visual components such as authentication plug-ins.
+        </p>
+        
+        <iframe align="center" src="http://www.flickr.com/slideShow/index.gne?set_id=72157603866070724&" frameBorder="0" width="500" scrolling="no" height="500"></iframe>
+        
+        <!--table border="0" cellspacing="10" cellpadding="3">
+            <tr>
+                <td bgcolor="#CCCCFF"><font size="+1"><a href="">Download Binary</a></font</td>
+                <td bgcolor="#CCCCFF"><font size="+1"><a href="">Download Source</a></font></td>
+            </tr>
+        </table-->
+        
+        <a name="announcements">
+        <h2>Announcements</h2></a>
+        
+        <p>
+            A number of application modules are in development and will be released shortly. These
+            modules include the following applications:
+            <ul>
+                <li>Video player (movies and webcam)</li>
+                <li>VNC client (TightVNC)</li>
+                <li>Meeting recorder</li>
+                <li>SVG browser (Batik based)</li>
+                <li>2D and 3D demo apps</li>
+            </ul>  
+        </p>
+        
+        <a name="toc">
+        <h2>On this Site</h2></a>
+        
+        <table border="0" width="100%">
+            
+            <tr  bgcolor="#CCCCFF">
+                <th align="left">About Project Wonderland Modules</th>
+                <th align="left">For End Users</th>
+                <th align="left">For Developers</th>
+            </tr>
+            <tr>
+                <td><a href="#goals">Vision and goals</a></td>
+                <td><br/></td>
+                <td><a href="#involved-dev">Getting involved</a></td>
+            </tr>
+            <tr>
+                <td><br/></td>
+                <td><br/></td>
+                <td><a href="#building">Getting and building from source code</a></td>
+            </tr>
+            <tr>
+                <td><br/></td>
+                <td><br/></td>
+                <td><a href="#loading">Loading a module</a></td>
+            </tr>
+            <tr>
+                <td><br></td>
+                <td><br></td>
+                <td><a href="http://wonderland-modules.dev.java.net/servlets/ForumMessageList?forumID=2985">Discussion forum</a></td>
+            </tr>
+        </table>
+        
+        
+        <a name="intro">
+        <h3>About Project Wonderland Modules</h3></a>
+        
+        <a name="goals">
+        <h4>Vision and Goals</h4></a>
+        
+        <p>
+            Project Wonderland Modules provide a way to extend the Project Wonderland
+            core with new run-time functionality. We're adopting a modular approach 
+            so that the community can create extensions to Wonderland that plug in
+            using a documented module API. This API is currently being designed.
+        </p>
+        
+        <p>
+            We'll release several Wonderland applications in this project using a
+            preliminary version of the module system.
+        </p>
+        
+        <h3>For Developers</h3>
+        <a name="involved-dev">    
+        <h4>Getting Involved</h4></a>
+        
+        <p>
+            If you're insterested in Wonderland Modules, please join the interest forum:
+        </p>
+        
+        <ul>
+            <a href="http://wonderland-modules.dev.java.net/servlets/ForumMessageList?forumID=2985">Wonderland Modules Interest Forum</a>
+        </ul>
+        
+        <a name="building">
+        <h4>Getting and Building from source code</h4></a>
+        
+        <p>
+            To use Wonderland Modules with Wonderland, you need to check out the 
+            <code>wonderland-modules</code> project and re-build <code>lg3d-wonderland</code>.
+        </p>
+        <p>
+            Follow these steps to checkout and build the <code>wonderland-modules</code> project:
+        </p>
+        <ul>
+            <li>
+                Change directory to the parent directory of <code>lg3d-wonderland</code>
+            </li>
+            <li>
+                Check out source code with a Subversion client using the following command:
+                Note: replace the last <code>username</code> with your own username.
+                <p>
+                    <code>svn checkout https://wonderland-modules.dev.java.net/svn/wonderland-modules/trunk wonderland-modules --username username</code>
+                </p>
+                <p>
+                    If you are new to Subversion, you may want to visit the <a href="http://subversion.tigris.org/">Subversion Project website</a>
+                    and read <a href="http://svnbook.red-bean.com/">Version Control with Subversion</a>.
+                </p>
+            </li>
+            <li>
+                Change directory to <code>lg3d-wonderland</code>:
+                <p>
+                    <code>cd lg3d-wonderland</code>
+                </p>
+            </li>
+            <li>
+                Build the <code>lg3d-wonderland</code> project:
+                <p>
+                    <code>ant</code>
+                </p>
+                <p>
+                    You can also build the project in netbeans.
+                </p>
+                <p>
+                <b>Note:</b> Wonderland modules can only be built from the <code>lg3d-wonderland</code>
+                project.
+            </li>
+        </ul>
+        
+        <a name="loading">
+        <h4>Loading a module into Wonderland</h4></a>
+        
+        <p>
+            Modules are loaded using WFS. Each module contains a WFS property file, 
+            which provides Wonderland with the information it need to load the module
+            and initialize it.
+        </p>
+        <p>
+            For example, the PDF Viewer's WFS property file is located here:
+        </p>
+        <p>
+            <code>wonderland-modules/src/modules/apps/2d/pdfviewer/PDFViewer-wlc.xml</code>
+        </p>
+        <p>
+            To load the PDF Viewer module into the default Wonderland world, follow these steps:
+        </p>
+        <ul>
+            <li>Change directory to the building in the default world:
+                <p>
+                    <code>cd lg3d-wonderland/src/worlds/default-wfs/building-wld</code>
+                </p>
+            </li>
+            <li>Now change directory to the Demo Floor region:
+            <p>
+                <code>cd DemoFloor-wld</code>
+            </p>
+            <li>Now copy the PDF Viewer's WFS property file into this directory:
+                <p>
+                    <code>cp ../../../../../../wonderland-modules/src/modules/apps/2d/pdfviewer/PDFViewer-wlc.xml .</code>
+                </p>
+                <p>
+                    The property file specifies the following properties:
+                    <ul>
+                        <li>The URL of the PDF document to open<br/>
+                            Note that this URL must be accessible by all Wonderland clients
+                        </li>
+                        <li>The preferred width and height of the PDF Viewer application window<br>
+                            (defaults to 791x1024 (matches the aspect ratio of an 8.5"x11" page))
+                        </li>
+                        <li>The page to open<br/>
+                            (defaults to the first page)
+                        </li>
+                    </ul>
+                </p>
+            </li>
+            <li>Restart the Wonderland server on the system where you installed the WFS property file:
+                <p>
+                    <code>ant run-sgs</code>
+                </p>
+            </li>
+            <li>Now start the Wonderland client:
+                <p>
+                    <code>ant run</code>
+                </p>
+                <p>
+                    You should see a message indicating that the PDF Viewer is loading a document.
+                    When the client has finished initializing, you should see the document in front
+                    of you at the default entry point into the world.
+                </p>
+            </li>
+            <li>
+                
+                <p>
+                    To interact with the application, first take control with a <code>shift+left mouse click</code>
+                    on the application.
+                </p>
+                <p>
+                    To change pages, use <code>PageUp</code> and <code>PageDown</code>. You can also use the
+                    mouse wheel.
+                </p>
+                <p>
+                    If the page is taller then the window, you can drag it up and down with the left mouse
+                    button.
+                </p>
+                <p>
+                To open a new document, press <code>ctrl+o</code> and enter the URL of the document 
+                in the dialog.
+                <p>
+            </li>
+        </ul>
+    </body>
+</html>
