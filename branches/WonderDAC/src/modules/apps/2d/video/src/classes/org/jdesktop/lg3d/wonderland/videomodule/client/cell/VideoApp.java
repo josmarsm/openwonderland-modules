@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 
 import javax.media.Player;
 
+import javax.swing.JFrame;  // TW
 import javax.swing.SwingUtilities;
 
 import javax.vecmath.Point3f;
@@ -49,6 +50,8 @@ import org.jdesktop.lg3d.wonderland.appshare.SimpleDrawingSurface;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
 
+import org.jdesktop.lg3d.wonderland.darkstar.client.cell.WonderDACDialog; // TW
+import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
@@ -78,6 +81,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     protected static final float INACTIVE_FRAME_RATE = 2.0f;
     protected static final double DEFAULT_WIDTH = 1280;
     protected static final double DEFAULT_HEIGHT = 960;
+    private final float PIX_PER_VRU = 256; // TW    
     protected DrawingSurface drawingSurface;
     protected JMFSnapper snapper;
     protected long requestThrottle = -1;  // use default
@@ -97,6 +101,8 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     private boolean inControl = false;
     protected CellMenu cellMenu;
     protected Object actionLock = new Object();
+    private SharedApp2DImageCell videoCell;  // TW
+    protected boolean listenersOn = true;  // TW
     private HTTPDownloader downloader;
     private Thread downloadThread;
     private boolean shuttingDown = false;
@@ -109,6 +115,8 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
             boolean decorated) {
         super(new AppGroup(new SimpleControlArb()), true, x, y, width, height, cell);
 
+        videoCell = cell;  // TW
+        
         drawingSurface = new SimpleDrawingSurface();
         drawingSurface.setSize(width, height);
         drawingSurface.addSurfaceListener(new DrawingSurface.SurfaceListener() {
@@ -562,7 +570,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
         // Ultimately, the frame rate should vary depending on avatar proximity
         // to the video application and whether the video is in view.
 
-        if (inControl == true) {
+        if (inControl == true && listenersOn) {  // Added check for 'listenersOn'.  TW
             setFrameRate(preferredFrameRate);
             CellMenuManager.getInstance().showMenu(this.getCell(), cellMenu, null);
             updateMenu();
@@ -699,14 +707,14 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      * Toggles between playing and paused
      */
     public void play() {
-        if (isPlaying()) {
+        if (isPlaying()) {  
             // pause immediately for better responsiveness
             // other clients will catch up to this state
             play(false);
             if (isSynced()) {
                 sendCameraRequest(Action.PAUSE, null);
             }
-        } else {
+        } else { 
             // play when server acknowledges request for better sync
             // with other clients
             if (isSynced()) {
@@ -743,7 +751,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     public boolean isPlaying() {
         boolean playing = false;
 
-        if (playerReady()) {
+        if (playerReady()) { 
             // ask the player for the play state, this has the most
             // accurate status of what the user is seeing
             logger.finest("video player: is playing == " + playing + " (" + snapper.getPlayerState() + ")");
@@ -847,14 +855,14 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      * Toggle the sync state of the player
      */
     public void sync() {
-        sync(!isSynced());
+            sync(!isSynced());
     }
 
     /**
      * Toggle the sync state of the player
      */
     public void unsync() {
-        sync(!isSynced());
+            sync(!isSynced());
     }
 
     /**
@@ -1026,46 +1034,48 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
      * @param e the key event
      */
     protected void dispatchKeyEvent(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_F:
-                // change the frame rate
-                if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
-                    logger.fine("video player: increasing frame rate");
-                    preferredFrameRate++;
-                    setFrameRate(preferredFrameRate);
-                    if (isPlaying() == true) {
-                        // already playing, re-start
-                        startPlaying();
+        if (listenersOn) {  // TW
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_F:
+                    // change the frame rate
+                    if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
+                        logger.fine("video player: increasing frame rate");
+                        preferredFrameRate++;
+                        setFrameRate(preferredFrameRate);
+                        if (isPlaying() == true) {
+                            // already playing, re-start
+                            startPlaying();
+                        }
+                    } else {
+                        logger.fine("video player: decreasing frame rate");
+                        preferredFrameRate = (preferredFrameRate > 0) ? preferredFrameRate - 1 : 0;
+                        setFrameRate(preferredFrameRate);
+                        if (isPlaying() == true) {
+                            // already playing, re-start
+                            startPlaying();
+                        }
                     }
-                } else {
-                    logger.fine("video player: decreasing frame rate");
-                    preferredFrameRate = (preferredFrameRate > 0) ? preferredFrameRate - 1 : 0;
-                    setFrameRate(preferredFrameRate);
-                    if (isPlaying() == true) {
-                        // already playing, re-start
-                        startPlaying();
+                    break;
+                case KeyEvent.VK_M:
+                    // mute/unmute
+                    audioUserMuted = (isMuted() == false) ? true : false;
+                    mute(!isMuted());
+                    break;
+                case KeyEvent.VK_O:
+                    // open a new video
+                    if (e.isControlDown() == true) {
+                        showVideoDialog();
                     }
-                }
-                break;
-            case KeyEvent.VK_M:
-                // mute/unmute
-                audioUserMuted = (isMuted() == false) ? true : false;
-                mute(!isMuted());
-                break;
-            case KeyEvent.VK_O:
-                // open a new video
-                if (e.isControlDown() == true) {
-                    showVideoDialog();
-                }
-                break;
-            case KeyEvent.VK_P:
-                // play/pause
-                play();
-                break;
-            case KeyEvent.VK_S:
-                // re-sync with shared state
-                sync();
-                break;
+                    break;
+                case KeyEvent.VK_P:
+                    // play/pause
+                    play();
+                    break;
+                case KeyEvent.VK_S:
+                    // re-sync with shared state
+                    sync();
+                    break;
+            }
         }
     }
 
@@ -1076,6 +1086,21 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     protected void dispatchMouseEvent(MouseEvent e) {
         switch (e.getID()) {
             case MouseEvent.MOUSE_CLICKED:
+                if (e.getButton() == MouseEvent.BUTTON3) {  // TW
+                    JFrame f = WonderDACDialog.getWonderDACDialog(); // TW
+                      
+                    WonderDACDialog.getWonderDACDialog().setObjectID(videoCell.getCellName(), videoCell.getCellID().toString());  // TW
+                    WonderDACDialog.getWonderDACDialog().setDefaultListName(videoCell.getCellAccessOwner()); // TW
+                    WonderDACDialog.getWonderDACDialog().setDefaultGroupName(videoCell.getCellAccessGroup());  // TW
+                    WonderDACDialog.getWonderDACDialog().setGrpIntCheckBox(videoCell.getCellAccessGroupPermissions());  // TW
+                    WonderDACDialog.getWonderDACDialog().setGrpAltCheckBox(videoCell.getCellAccessGroupPermissions());  // TW
+                    WonderDACDialog.getWonderDACDialog().setOthIntCheckBox(videoCell.getCellAccessOtherPermissions());  // TW
+                    WonderDACDialog.getWonderDACDialog().setOthAltCheckBox(videoCell.getCellAccessOtherPermissions());  // TW
+                   
+                    f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  // TW
+                    f.setVisible(true);  // TW        
+                }
+                
                 break;
         }
     }
@@ -1172,6 +1197,19 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     }
 
     /**
+     * A simple method to send a ping message to the
+     * server.  Particularly useful when we first
+     * initialize this cell and need to find out what
+     * sort of access we have.
+     * 
+     * @author twright
+     */
+    public void pingServer () {
+        VideoCellMessage vmcm = new VideoCellMessage(this.getCell().getCellID(), Action.PING);
+        ChannelController.getController().sendMessage(vmcm);        
+    }      
+    
+    /**
      * Handle a request from the server GLO
      * @param msg the request
      */
@@ -1244,6 +1282,20 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                             }
                         }
                         break;
+                    case NO_ALTER_PERM:  // TW -- If we receive this message (in
+                                         // response to a message) it means we
+                                         // do not have permission to alter the
+                                         // video cell.
+                
+                        listenersOn = false;  // TW  
+                        this.setInControl(false);  // TW
+                        break;  // TW     
+                    case ALTER_PERM:
+                        listenersOn = true; // TW
+                        break;  // TW
+                    case PING:  // Respond to a ping from the server.
+                        pingServer();
+                        break; 
                     default:
                         logger.warning("video player: unhandled message type: " + msg.getAction());
                         break;
@@ -1253,7 +1305,7 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
                 // notify everyone that the request has completed
                 vcm = new VideoCellMessage(msg);
                 vcm.setAction(Action.REQUEST_COMPLETE);
-            }
+            }                
         }
         if (vcm != null) {
             logger.fine("video player: sending message: " + vcm);
@@ -1293,6 +1345,19 @@ public class VideoApp extends AppWindowGraphics2DApp implements VideoCellMenuLis
     @Override
     public void setSize(int width, int height) {
         super.setSize(width, height);
+
+        // If the user resizes the application window,
+        // we need to update the window's size in
+        // VR units (where one 2-D unit is a square of
+        // 256 pixels on each side).  This will enable
+        // our impromptu "button" (that allows the
+        // user to right-click for the WonderDAC dialog)
+        // to relocate itself to the new upper-left
+        // corner of the application window.
+        // TW
+        videoCell.setCellWidth((float)width/PIX_PER_VRU);  // TW
+        videoCell.setCellHeight((float)height/PIX_PER_VRU);  // TW
+               
         drawingSurface.setSize(width, height);
     }
 

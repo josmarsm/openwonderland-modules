@@ -46,7 +46,17 @@ public class PDFCellMessage extends CellMessage {
         PLAY, PAUSE, STOP,
         SET_VIEW_POSITION,
         GET_STATE, SET_STATE,
-        REQUEST_COMPLETE
+        REQUEST_COMPLETE,
+        NO_ALTER_PERM,   // TW -- Not much of an action, per se.
+                         // more of an alert that the client does
+                         // not possess alter permissions for the
+                         // cell in question.   
+        ALTER_PERM,      // Same as above, just the opposite boolean
+                         // value.  TW
+        PING             // A simple *ping* to elicit a sync message
+                         // from a client.  Used when privileges have
+                         // changed and the client needs to re-establish
+                         // whether or not they can alter the cell.  TW               
     };
 
     public enum RequestStatus {
@@ -227,11 +237,16 @@ public class PDFCellMessage extends CellMessage {
 
         uid = DataString.value(data);
         action = Action.values()[DataInt.value(data)];
-        doc = DataString.value(data);
-        page = DataInt.value(data);
-        pageCount = DataInt.value(data);
-        position = new Point((int) DataDouble.value(data), (int) DataDouble.value(data));
-        status = RequestStatus.values()[DataInt.value(data)];
+        
+        if ((action != Action.NO_ALTER_PERM) &&
+            (action != Action.ALTER_PERM) &&
+            (action != Action.PING)) {  // TW
+            doc = DataString.value(data);
+            page = DataInt.value(data);
+            pageCount = DataInt.value(data);
+            position = new Point((int) DataDouble.value(data), (int) DataDouble.value(data));
+            status = RequestStatus.values()[DataInt.value(data)];
+        }
     }
 
     /**
@@ -243,11 +258,16 @@ public class PDFCellMessage extends CellMessage {
 
         dataElements.add(new DataString(uid));
         dataElements.add(new DataInt(action.ordinal()));
-        dataElements.add(new DataString(doc));
-        dataElements.add(new DataInt(page));
-        dataElements.add(new DataInt(pageCount));
-        dataElements.add(new DataDouble(position.getX()));
-        dataElements.add(new DataDouble(position.getY()));
-        dataElements.add(new DataInt(status.ordinal()));
+        
+        if ((action != Action.NO_ALTER_PERM) &&
+            (action != Action.ALTER_PERM) &&
+            (action != Action.PING)) {  // TW
+            dataElements.add(new DataString(doc));
+            dataElements.add(new DataInt(page));
+            dataElements.add(new DataInt(pageCount));
+            dataElements.add(new DataDouble(position.getX()));
+            dataElements.add(new DataDouble(position.getY()));
+            dataElements.add(new DataInt(status.ordinal()));
+        }
     }
 }

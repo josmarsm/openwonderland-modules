@@ -30,6 +30,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;  // TW
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
@@ -52,11 +53,14 @@ import javax.swing.SwingUtilities;
 import java.util.Date;
 import java.util.logging.Logger;
 
+import javax.swing.JFrame;  // TW
 import org.jdesktop.lg3d.wonderland.appshare.AppGroup;
 import org.jdesktop.lg3d.wonderland.appshare.AppWindowGraphics2DApp;
 import org.jdesktop.lg3d.wonderland.appshare.SimpleControlArb;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
+import org.jdesktop.lg3d.wonderland.darkstar.client.cell.WonderDACDialog;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.common.CellID;
 import org.jdesktop.lg3d.wonderland.pdfviewer.client.cell.PDFCellMenu.Button;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage;
 import org.jdesktop.lg3d.wonderland.pdfviewer.common.PDFCellMessage.Action;
@@ -72,12 +76,13 @@ import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
  */
 public class PDFViewerApp extends AppWindowGraphics2DApp
         implements KeyListener, MouseMotionListener, MouseWheelListener,
-        PDFCellMenuListener {
+                   PDFCellMenuListener {
 
     private static final Logger logger =
             Logger.getLogger(PDFViewerApp.class.getName());
     private static final int DEFAULT_WIDTH = 791;
     private static final int DEFAULT_HEIGHT = 1024;
+    private final float PIX_PER_VRU = 256; // TW
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
     private PDFDocumentDialog pdfDialog;
@@ -97,6 +102,8 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     private boolean inControl = false;
     private PDFCellMenu cellMenu;
     protected Object actionLock = new Object();
+    private SharedApp2DImageCell pdfCell;  // TW
+    private boolean listenersOn = true;  // TW
 
     public PDFViewerApp(SharedApp2DImageCell cell) {
         this(cell, 0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT, true);
@@ -105,11 +112,13 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     public PDFViewerApp(SharedApp2DImageCell cell, int x, int y, int width, int height, boolean decorated) {
         super(new AppGroup(new SimpleControlArb()), true, x, y, width, height, cell);
 
+        pdfCell = cell; // TW
+        
         initPDFDialog();
         initHUDMenu();
         addEventListeners();
     }
-
+    
     /**
      * Set up event listeners for keyboard and mouse events
      */
@@ -117,12 +126,46 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
         addKeyListener(this);
         addMouseMotionListener(this);
         addMouseWheelListener(this);
+        
+        // Add a mouse listener to pick up the WonderDAC right-click
+        // TW
+        addMouseListener(new MouseListener() {  // TW
 
-        cellMenu.addCellMenuListener(this);
+            public void mouseClicked(MouseEvent e) {  // TW
+
+                if (e.getButton() == MouseEvent.BUTTON3) {  // TW
+                    JFrame f = WonderDACDialog.getWonderDACDialog(); // TW
+                      
+                    WonderDACDialog.getWonderDACDialog().setObjectID(pdfCell.getCellName(), pdfCell.getCellID().toString());  // TW
+                    WonderDACDialog.getWonderDACDialog().setDefaultListName(pdfCell.getCellAccessOwner()); // TW
+                    WonderDACDialog.getWonderDACDialog().setDefaultGroupName(pdfCell.getCellAccessGroup());  // TW
+                    WonderDACDialog.getWonderDACDialog().setGrpIntCheckBox(pdfCell.getCellAccessGroupPermissions());  // TW
+                    WonderDACDialog.getWonderDACDialog().setGrpAltCheckBox(pdfCell.getCellAccessGroupPermissions());  // TW
+                    WonderDACDialog.getWonderDACDialog().setOthIntCheckBox(pdfCell.getCellAccessOtherPermissions());  // TW
+                    WonderDACDialog.getWonderDACDialog().setOthAltCheckBox(pdfCell.getCellAccessOtherPermissions());  // TW
+                   
+                    f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  // TW
+                    f.setVisible(true);  // TW        
+                }
+            }
+
+            public void mousePressed(MouseEvent e) {  // TW
+            }
+
+            public void mouseReleased(MouseEvent e) {  // TW
+            }
+
+            public void mouseEntered(MouseEvent e) {  // TW
+            }
+
+            public void mouseExited(MouseEvent e) {  // TW
+            }
+        });
     }
 
     private void initHUDMenu() {
         cellMenu = new PDFCellMenu();
+        cellMenu.addCellMenuListener(this);     // TW (somehow line got deleted earlier...?)   
     }
 
     /**
@@ -243,6 +286,19 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     @Override
     public void setSize(int width, int height) {
         super.setSize(width, height);
+
+        // If the user resizes the application window,
+        // we need to update the window's size in
+        // VR units (where one 2-D unit is a square of
+        // 256 pixels on each side).  This will enable
+        // our impromptu "button" (that allows the
+        // user to right-click for the WonderDAC dialog)
+        // to relocate itself to the new upper-left
+        // corner of the application window.
+        // TW
+        pdfCell.setCellWidth((float)width/PIX_PER_VRU);  // TW
+        pdfCell.setCellHeight((float)height/PIX_PER_VRU);  // TW
+        
         repaint();
     }
 
@@ -706,23 +762,23 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * PDFCellMenuListener methods
      */
     public void open() {
-        showPDFDialog();
+            showPDFDialog();
     }
 
     public void first() {
-        gotoPage(1);
+            gotoPage(1);
     }
 
     public void previous() {
-        previousPage();
+            previousPage();
     }
 
     public void gotoPage() {
-        logger.info("PDF viewer goto page not implemented");
+            logger.info("PDF viewer goto page not implemented");
     }
 
     public void next() {
-        nextPage();
+            nextPage();
     }
 
     public void last() {
@@ -732,36 +788,36 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     }
 
     public void startSlideShow() {
-        play(true);
+            play(true);
     }
 
     public void pauseSlideShow() {
-        play(false);
+            play(false);
     }
 
     public void zoomIn() {
-        zoom += 0.3f;
-        repaint();
-    }
+            zoom += 0.3f;
+            repaint();
+        }
 
     public void zoomOut() {
-        zoom -= 0.3f;
-        repaint();
-    }
+            zoom -= 0.3f;
+            repaint();
+        }
 
     public void sync() {
-        sync(!isSynced());
+            sync(!isSynced());
     }
 
     public void unsync() {
-        sync(!isSynced());
+            sync(!isSynced());
     }
 
     public void setInSlideShowMode(boolean inSlideShow) {
-        playing = inSlideShow;
+            playing = inSlideShow;
         
-        updateMenu();
-    }
+            updateMenu();
+        }
 
     /**
      * Render the current page of the PDF document
@@ -819,9 +875,11 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the mouse motion event
      */
     public void mouseMoved(MouseEvent evt) {
-        logger.finest("PDF viewer mouseMoved: " + evt);
-        isDragging = false;
-        mousePos.setLocation(evt.getX(), evt.getY());
+        if (listenersOn) {  // TW
+            logger.finest("PDF viewer mouseMoved: " + evt);
+            isDragging = false;
+            mousePos.setLocation(evt.getX(), evt.getY());
+        }
     }
 
     /**
@@ -829,30 +887,32 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the mouse drag event
      */
     public void mouseDragged(MouseEvent evt) {
-        logger.finest("PDF viewer mouseDragged: " + evt);
+        if (listenersOn) {  // TW
+            logger.finest("PDF viewer mouseDragged: " + evt);
 
-        if (pageImage != null) {
-            if (isDragging == false) {
-                // drag started
-                isDragging = true;
-            } else {
-                // drag in progress
-                // calculate distance moved in x and y
-                double xDelta = mousePos.getX() - evt.getX();
-                double yDelta = mousePos.getY() - evt.getY();
-                Point position = new Point(xScroll, (int) (yScroll + yDelta));
+            if (pageImage != null) {
+                if (isDragging == false) {
+                    // drag started
+                    isDragging = true;
+                } else {
+                    // drag in progress
+                    // calculate distance moved in x and y
+                    double xDelta = mousePos.getX() - evt.getX();
+                    double yDelta = mousePos.getY() - evt.getY();
+                    Point position = new Point(xScroll, (int) (yScroll + yDelta));
 
-                setViewPosition(position);
+                    setViewPosition(position);
 
-                if (isSynced()) {
-                    // notify other clients that the page moved
-                    sendDocumentRequest(PDFCellMessage.Action.SET_VIEW_POSITION,
-                            docURL,
-                            getPageNumber(),
-                            position);
+                    if (isSynced()) {
+                        // notify other clients that the page moved
+                        sendDocumentRequest(PDFCellMessage.Action.SET_VIEW_POSITION,
+                                docURL,
+                                getPageNumber(),
+                                position);
+                    }
                 }
+                mousePos.setLocation(evt.getX(), evt.getY());
             }
-            mousePos.setLocation(evt.getX(), evt.getY());
         }
     }
 
@@ -861,12 +921,14 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the mouse wheel event
      */
     public void mouseWheelMoved(MouseWheelEvent evt) {
-        logger.finest("PDF viewer mouseWheelMoved: " + evt);
+        if (listenersOn) {  // TW
+            logger.finest("PDF viewer mouseWheelMoved: " + evt);
 
-        if (evt.getWheelRotation() < 0) {
-            previousPage();
-        } else {
-            nextPage();
+            if (evt.getWheelRotation() < 0) {
+                previousPage();
+            } else {
+                nextPage();
+            }
         }
     }
 
@@ -875,7 +937,9 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the key press event
      */
     public void keyPressed(KeyEvent evt) {
-        logger.finest("PDF viewer keyPressed: " + evt);
+        if (listenersOn) {  // TW
+            logger.finest("PDF viewer keyPressed: " + evt);
+        }
     }
 
     /**
@@ -883,31 +947,33 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the key release event
      */
     public void keyReleased(KeyEvent evt) {
-        logger.finest("PDF viewer keyReleased: " + evt);
+        if (listenersOn) {  // TW
+            logger.finest("PDF viewer keyReleased: " + evt);
 
-        switch (evt.getKeyCode()) {
-            case KeyEvent.VK_O:
-                // open a new document
-                if (evt.isControlDown() == true) {
-                    showPDFDialog();
-                }
-                break;
-            case KeyEvent.VK_PAGE_UP:
-                // show previous page
-                previousPage();
-                break;
-            case KeyEvent.VK_PAGE_DOWN:
-                // show next page
-                nextPage();
-                break;
-            case KeyEvent.VK_P:
-                // play/resume slide show
-                play(!playing);
-                break;
-            case KeyEvent.VK_S:
-                // unsync/resync with shared state
-                sync(!isSynced());
-                break;
+            switch (evt.getKeyCode()) {
+                case KeyEvent.VK_O:
+                    // open a new document
+                    if (evt.isControlDown() == true) {
+                        showPDFDialog();
+                    }
+                    break;
+                case KeyEvent.VK_PAGE_UP:
+                    // show previous page
+                    previousPage();
+                    break;
+                case KeyEvent.VK_PAGE_DOWN:
+                    // show next page
+                    nextPage();
+                    break;
+                case KeyEvent.VK_P:
+                    // play/resume slide show
+                    play(!playing);
+                    break;
+                case KeyEvent.VK_S:
+                    // unsync/resync with shared state
+                    sync(!isSynced());
+                    break;
+            }
         }
     }
 
@@ -916,15 +982,30 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
      * @param evt the key release event
      */
     public void keyTyped(KeyEvent evt) {
-        logger.finest("PDF viewer keyTyped: " + evt);
+        if (listenersOn) {  // TW
+            logger.finest("PDF viewer keyTyped: " + evt);
+        }
     }
 
+    /**
+     * A simple method to send a ping message to the
+     * server.  Particularly useful when we first
+     * initialize this cell and need to find out what
+     * sort of access we have.
+     * 
+     * @author twright
+     */
+    public void pingServer () {
+        PDFCellMessage pdfcm = new PDFCellMessage(this.getCell().getCellID(), Action.PING);
+        ChannelController.getController().sendMessage(pdfcm);        
+    }
+        
     public void handleResponse(PDFCellMessage msg) {
         String controlling = msg.getUID();
         String myUID = ((PDFViewerCell) cell).getUID();
         boolean forMe = (myUID.equals(controlling));
         PDFCellMessage pdfcm = null;
-
+      
         if (isSynced()) {
             logger.fine("PDF viewer " + myUID + " received message: " + msg);
             if (msg.getRequestStatus() == RequestStatus.REQUEST_DENIED) {
@@ -936,7 +1017,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                 } catch (Exception e) {
                     logger.warning("PDF viewer failed to create retry request for: " + msg);
                 }
-            } else {
+            } else {                
                 switch (msg.getAction()) {
                     case OPEN_DOCUMENT:
                         openDocument(msg.getDocument());
@@ -951,8 +1032,10 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                         if (forMe == true) {
                             if (isSynced()) {
                                 openDocument(msg.getDocument(), msg.getPage(), msg.getPosition());
-                                cellMenu.disableButton(Button.UNSYNC);
-                                cellMenu.enableButton(Button.SYNC);
+                                if (cellMenu.isActive()){
+                                    cellMenu.disableButton(Button.UNSYNC);
+                                    cellMenu.enableButton(Button.SYNC);
+                                }
                                 logger.info("PDF viewer synced");
                                 showHUDMessage("synced", 3000);
                             }
@@ -977,8 +1060,23 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
                             }
                         }
                         break;
+                    case NO_ALTER_PERM:  // TW -- If we receive this message (in
+                                         // response to a message) it means we
+                                         // do not have permission to alter the
+                                         // PDFViewer cell.
+                
+                        listenersOn = false;  // TW
+                        setInControl(false);  // TW
+                        break;  // TW
+                    case ALTER_PERM:
+                        listenersOn = true; // TW
+                        break;  // TW
+                    case PING:  // Respond to a ping from the server.
+                        pingServer();
+                        break; 
                 }
-                if ((forMe == true) && (msg.getAction() != Action.REQUEST_COMPLETE)) {
+                if ((forMe == true) && 
+                    (msg.getAction() != Action.REQUEST_COMPLETE)) {
                     // notify everyone that the request has completed
                     pdfcm = new PDFCellMessage(msg);
                     pdfcm.setAction(Action.REQUEST_COMPLETE);
@@ -1014,7 +1112,7 @@ public class PDFViewerApp extends AppWindowGraphics2DApp
     public void setInControl(boolean inControl) {
         this.inControl = inControl;
 
-        if (inControl == true) {
+        if ((inControl == true) && listenersOn) {  // Added check for 'listenersOn'.  TW
             CellMenuManager.getInstance().showMenu(this.getCell(), cellMenu, null);
             updateMenu();
         } else {

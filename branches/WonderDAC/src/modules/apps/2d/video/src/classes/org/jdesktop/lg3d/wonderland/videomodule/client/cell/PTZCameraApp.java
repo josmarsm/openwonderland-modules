@@ -119,45 +119,47 @@ public class PTZCameraApp extends VideoApp implements PTZCellMenuListener, Camer
 
     @Override
     protected void dispatchKeyEvent(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_PLUS:
-            case KeyEvent.VK_EQUALS:
-                zoomIn();
-                break;
-            case KeyEvent.VK_MINUS:
-            case KeyEvent.VK_UNDERSCORE:
-                zoomOut();
-                break;
-            case KeyEvent.VK_LEFT:
-                panLeft();
-                break;
-            case KeyEvent.VK_RIGHT:
-                panRight();
-                break;
-            case KeyEvent.VK_UP:
-                tiltUp();
-                break;
-            case KeyEvent.VK_DOWN:
-                tiltDown();
-                break;
-            case KeyEvent.VK_C:
-                center();
-                break;
-            case KeyEvent.VK_Z:
-                if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
-                    zoomInFully();
-                } else {
-                    zoomOutFully();
-                }
-                break;
-            case KeyEvent.VK_TAB:
-                logger.fine("ptz camera: manual repaint!");
-                repaint();
-                break;
-            default:
-                // not a PTZ action, perhaps a generic video action
-                super.dispatchKeyEvent(e);
-                break;
+        if (listenersOn) {
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_PLUS:
+                case KeyEvent.VK_EQUALS:
+                    zoomIn();
+                    break;
+                case KeyEvent.VK_MINUS:
+                case KeyEvent.VK_UNDERSCORE:
+                    zoomOut();
+                    break;
+                case KeyEvent.VK_LEFT:
+                    panLeft();
+                    break;
+                case KeyEvent.VK_RIGHT:
+                    panRight();
+                    break;
+                case KeyEvent.VK_UP:
+                    tiltUp();
+                    break;
+                case KeyEvent.VK_DOWN:
+                    tiltDown();
+                    break;
+                case KeyEvent.VK_C:
+                    center();
+                    break;
+                case KeyEvent.VK_Z:
+                    if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) == KeyEvent.SHIFT_DOWN_MASK) {
+                        zoomInFully();
+                    } else {
+                        zoomOutFully();
+                    }
+                    break;
+                case KeyEvent.VK_TAB:
+                    logger.fine("ptz camera: manual repaint!");
+                    repaint();
+                    break;
+                default:
+                    // not a PTZ action, perhaps a generic video action
+                    super.dispatchKeyEvent(e);
+                    break;
+            }
         }
     }
 

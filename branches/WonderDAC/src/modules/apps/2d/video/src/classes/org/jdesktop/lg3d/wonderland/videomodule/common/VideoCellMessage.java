@@ -42,6 +42,16 @@ public class VideoCellMessage extends CellMessage {
         SET_PTZ,
         PLAY, PAUSE, STOP, REWIND, FAST_FORWARD,
         GET_STATE, SET_STATE,
+        NO_ALTER_PERM,   // TW -- Not much of an action, per se.
+                         // more of an alert that the client does
+                         // not possess alter permissions for the
+                         // cell in question.                
+        ALTER_PERM,      // Same as above, just the opposite boolean
+                         // value.  TW
+        PING             // A simple *ping* to elicit a sync message
+                         // from a client.  Used when privileges have
+                         // changed and the client needs to re-establish
+                         // whether or not they can alter the cell.  TW
     };
 
     public enum RequestStatus {
@@ -51,11 +61,11 @@ public class VideoCellMessage extends CellMessage {
     };
 
     public enum PlayerState {
-
         PLAYING,
         PAUSED,
         STOPPED
     };
+    
     private String uid;
     private Action action = Action.UNKNOWN;
     private String source;
@@ -74,6 +84,11 @@ public class VideoCellMessage extends CellMessage {
         super(cellID);
     }
 
+    public VideoCellMessage(CellID cellID, Action action) {
+        super(cellID);
+        setAction(action);
+    }
+    
     public VideoCellMessage(CellID cellID, String uid, Action action) {
         super(cellID);
         setUID(uid);
@@ -198,14 +213,21 @@ public class VideoCellMessage extends CellMessage {
     protected void extractMessageImpl(ByteBuffer data) {
         super.extractMessageImpl(data);
 
-        uid = DataString.value(data);
-        source = DataString.value(data);
-        action = Action.values()[DataInt.value(data)];
-        state = PlayerState.values()[DataInt.value(data)];
-        position = DataDouble.value(data);
-        pan = DataFloat.value(data);
-        tilt = DataFloat.value(data);
-        zoom = DataFloat.value(data);
+        action = Action.values()[DataInt.value(data)];  // Move action up to front of list
+                                                        // so we can check for it below.
+                                                        // TW
+        
+        if ((action != Action.NO_ALTER_PERM) &&
+            (action != Action.ALTER_PERM) &&
+            (action != Action.PING)) {  // TW
+            uid = DataString.value(data);
+            source = DataString.value(data);
+            state = PlayerState.values()[DataInt.value(data)];
+            position = DataDouble.value(data);
+            pan = DataFloat.value(data);
+            tilt = DataFloat.value(data);
+            zoom = DataFloat.value(data);
+        }
         status = RequestStatus.values()[DataInt.value(data)];
     }
 
@@ -213,14 +235,21 @@ public class VideoCellMessage extends CellMessage {
     protected void populateDataElements() {
         super.populateDataElements();
 
-        dataElements.add(new DataString(uid));
-        dataElements.add(new DataString(source));
-        dataElements.add(new DataInt(action.ordinal()));
-        dataElements.add(new DataInt(state.ordinal()));
-        dataElements.add(new DataDouble(position));
-        dataElements.add(new DataFloat(pan));
-        dataElements.add(new DataFloat(tilt));
-        dataElements.add(new DataFloat(zoom));
+        dataElements.add(new DataInt(action.ordinal()));  // Move action up to front of list
+                                                          // so we can check for it below.
+                                                          // TW
+        
+        if ((action != Action.NO_ALTER_PERM) &&
+            (action != Action.ALTER_PERM) &&
+            (action != Action.PING)) {  // TW
+            dataElements.add(new DataString(uid));
+            dataElements.add(new DataString(source));
+            dataElements.add(new DataInt(state.ordinal()));
+            dataElements.add(new DataDouble(position));
+            dataElements.add(new DataFloat(pan));
+            dataElements.add(new DataFloat(tilt));
+            dataElements.add(new DataFloat(zoom));
+        }
         dataElements.add(new DataInt(status.ordinal()));
     }
 }

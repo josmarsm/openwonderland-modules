@@ -33,8 +33,12 @@ import javax.media.j3d.Bounds;
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Matrix4f;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
+import org.jdesktop.lg3d.wonderland.darkstar.server.CellAccessControl;  // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
+import org.jdesktop.lg3d.wonderland.darkstar.server.ClientIdentityManager;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.auth.WonderlandIdentity; // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SharedApp2DImageCellGLO;
+import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;  // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
@@ -62,7 +66,8 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
     private ManagedReference stateRef = null;
     private PeriodicTaskHandle slideShowTask;
     private boolean haveClients = false;
-
+    private boolean clientAccess = true;  // TW
+            
     public PDFViewerCellGLO() {
         this(null, null, null, null);
     }
@@ -130,6 +135,23 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
             DataManager dataMgr = AppContext.getDataManager();
             stateRef = dataMgr.createReference(stateMO);
         }
+
+        // Handle configuring this cell's discretionary access controls
+        //
+        // TW
+        setCellAccessOwner(BasicCellGLOHelper.getCellAccessOwner(setupData));  // TW
+        setCellAccessGroup(BasicCellGLOHelper.getCellAccessGroup(setupData));  // TW
+        setCellAccessGroupPermissions(BasicCellGLOHelper.getCellAccessGroupPermissions(setupData)); // TW
+        setCellAccessOtherPermissions(BasicCellGLOHelper.getCellAccessOtherPermissions(setupData)); // TW
+        
+        // Also, setup the name of the cell (this is passed to the
+        // client for display in the WonderDAC GUI).
+        // TW
+        setCellName(BasicCellGLOHelper.getCellName(setupData));  // TW   
+        
+        // And, setup the cell's width and height.  TW
+        setCellWidth(BasicCellGLOHelper.getCellWidth(setupData)); // TW
+        setCellHeight(BasicCellGLOHelper.getCellHeight(setupData)); // TW
     }
 
     /**
@@ -158,7 +180,19 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
     public void openChannel() {
         this.openDefaultChannel();
     }
+    
+    @Override
+    public void pingClients(){  // TW
+        // Construct a (very) simple message first...  TW
+        PDFCellMessage tempMsg = new PDFCellMessage (Action.PING);  // TW
+            
+        logger.fine("Privileges have changed; pinging all clients....");  // TW
 
+        // Ping all of our clients.
+        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());  // TW
+        getCellChannel().send(sessions, tempMsg.getBytes());  // TW        
+    }
+    
     /*
      * Handle message
      * @param client the client that sent the message
@@ -170,19 +204,96 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
             PDFCellMessage pdfcm = (PDFCellMessage) message;
             logger.fine("PDF GLO received msg: " + pdfcm);
 
-            Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
-
-            // clone the message
-            PDFCellMessage msg = new PDFCellMessage(pdfcm);
-
             // the current state of the application
-            PDFViewerStateMO stateMO = getStateMO();
+            PDFViewerStateMO stateMO = getStateMO();  // Relocated line.  TW
 
             // client currently in control
-            String controlling = stateMO.getControllingCell();
+            String controlling = stateMO.getControllingCell(); // Relocated line.  TW
             // client making the request
-            String requester = pdfcm.getUID();
+            String requester = pdfcm.getUID();  // Relocated line.  TW
+            
+            // Does the user have interact permission?  If not, then they
+            // can't even see the PDF cell.  If they have control, take
+            // it away, then drop them like yesterday's cheese!
+            // TW
+            if (!CellAccessControl.canInteract((WonderlandIdentity)
+                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)){  // TW
+                
+                // If the client does not have 'alter' or 'interact'
+                // access, make sure they didn't just have control.
+                // TW
+                if (!clientAccess && requester.equals(controlling)) {  // TW
+                    logger.fine("Forcing user to relinquish control due to lost privileges.");  // TW
+                   stateMO.setControllingCell(null);  // TW
+                   stateMO.setPageCount(pdfcm.getPageCount()); // TW              
+                }        
 
+                // In case the user has a control panel open,
+                // let them know they're about to be cut off.
+                // TW
+                PDFCellMessage msg = new PDFCellMessage (Action.NO_ALTER_PERM);  // TW
+            
+                // Send this off to the client.  TW
+                logger.fine("PDF GLO sending NO_ALTER_PERM msg: " + msg);  // TW
+                getCellChannel().send(client, msg.getBytes());  // TW                
+                
+                // Drop the client--they can't see this cell anymore!
+                // TW
+                getCellChannel().leave(client); // TW
+                                
+                return;  // TW
+            }
+            
+            Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+
+            // Does the user have permissions to alter the PDF viewer?  If not,
+            // ignore most messages coming from them by setting 'clientAccess'
+            // to false.
+            //
+            // TW            
+            if (!CellAccessControl.canAlter((WonderlandIdentity)
+                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)) {  // TW
+                
+                clientAccess = false; // TW
+                
+                // Since this client does not have alter permissions, send
+                // them a message to that effect.  The client can then
+                // work to prevent the end user from making any changes
+                // to their local PDFviewer cell.
+                //
+                // TW
+                // Construct a (very) simple PDFCellMessage first...  TW
+                PDFCellMessage msg = new PDFCellMessage (Action.NO_ALTER_PERM);  // TW
+            
+                // Send this off to the client.  TW
+                logger.fine("PDF GLO sending NO_ALTER_PERM msg: " + msg);  // TW
+                getCellChannel().send(client, msg.getBytes());  // TW                
+            }
+            else {          
+                clientAccess = true;  // TW
+                
+                // Since this client has alter permissions, send
+                // them a message to that effect.  The client can then
+                // work to re-enable the end user's ability to make any changes
+                // to their local PDFviewer cell.
+                //
+                // TW
+                // Construct a (very) simple PDFCellMessage first...  TW
+                PDFCellMessage msg = new PDFCellMessage (Action.ALTER_PERM);  // TW
+            
+                // Send this off to the client.  TW
+                logger.fine("PDF GLO sending NO_ALTER_PERM msg: " + msg);  // TW
+                getCellChannel().send(client, msg.getBytes());  // TW
+            }
+                                    
+            // No need to take further action on a PING from the client,
+            if (pdfcm.getAction() == Action.PING) { // TW
+                return;  // TW
+            }
+                        
+            // clone the message
+            PDFCellMessage msg = new PDFCellMessage(pdfcm);
+          
             // time out requests from non-responsive clients
             if (controlling != null) {
                 // clients may lose connectivity to the server while processing
@@ -197,10 +308,11 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
                     controlling = null;
                 }
             }
-
+            
             if (controlling == null) {
                 // no cell has control, grant control to the requesting cell
                 stateMO.setControllingCell(requester);
+                controlling = stateMO.getControllingCell();  // Re-assign the controller.  TW
 
                 // reflect the command to all clients
                 // respond to a client that is (now) in control
@@ -214,32 +326,35 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
                         msg.setPageCount(stateMO.getPageCount());
                         break;
                     case OPEN_DOCUMENT:
-                        if (isSlideShowActive()) {
-                            stopSlideShow();
+                        if (clientAccess){  // TW
+                            if (isSlideShowActive()) {
+                                stopSlideShow();
+                            }
+                            stateMO.setDocument(msg.getDocument());
+                            stateMO.setPage(msg.getPage());
+                            stateMO.setPageCount(msg.getPageCount());
+                            stateMO.setPosition(msg.getPosition());
                         }
-                        stateMO.setDocument(msg.getDocument());
-                        stateMO.setPage(msg.getPage());
-                        stateMO.setPageCount(msg.getPageCount());
-                        stateMO.setPosition(msg.getPosition());
                         break;
                     case SHOW_PAGE:
-                        if (!isSlideShowActive()) {
+                        if (!isSlideShowActive() && clientAccess) {  // TW
                             stateMO.setPage(msg.getPage());
                         }
                         break;
                     case PLAY:
-                        if (!isSlideShowActive()) {
+                        if (!isSlideShowActive() && clientAccess) {  // TW
                             startSlideShow();
                         }
                         break;
                     case PAUSE:
                     case STOP:
-                        if (isSlideShowActive()) {
+                        if (isSlideShowActive() && clientAccess) { // TW
                             stopSlideShow();
                         }
                         break;
                     case SET_VIEW_POSITION:
-                        stateMO.setPosition(msg.getPosition());
+                        if (clientAccess)  // TW
+                            stateMO.setPosition(msg.getPosition());
                         break;
                     case REQUEST_COMPLETE:
                         // release control of PDF document by this client
@@ -256,8 +371,26 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
                         }
                         break;
                 }
-                logger.fine("PDF GLO broadcasting msg: " + msg);
-                getCellChannel().send(sessions, msg.getBytes());
+
+                // If the user has access, let them sail on through to sending
+                // their message.  If they do not, however, the only sailing they
+                // are allowed to do is with SET_STATE and REQUEST_COMPLETE!
+                // TW
+                if (clientAccess || 
+                    (msg.getAction() == Action.SET_STATE) ||
+                    (msg.getAction() == Action.REQUEST_COMPLETE))
+                    getCellChannel().send(sessions, msg.getBytes());
+                
+                // If the user has no 'alter' permission and has attempted to
+                // do something other get the state of the PDF viewer or send
+                // a REQUEST_COMPLETE message, then remove their control and
+                // dump them.
+                // TW
+                else if ((requester != null) && requester.equals(controlling)) {  // TW
+                    logger.warning ("Forcing the release of user's control due to lack of privilege.");
+                    stateMO.setControllingCell(null);  // TW                  
+                    stateMO.setPageCount(pdfcm.getPageCount()); // TW                                      
+                }                  
             } else {
                 // one cell has control
                 switch (pdfcm.getAction()) {
@@ -273,11 +406,11 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
                     default:
                         // send a denial to the requesting client
                         msg.setRequestStatus(RequestStatus.REQUEST_DENIED);
-                        logger.info("PDF GLO sending denial to client: " + msg);
+                        logger.fine("PDF GLO sending denial to client: " + msg);
                         getCellChannel().send(client, msg.getBytes());
                         break;
                 }
-            }
+            }        
         } else {
             super.receivedMessage(client, message);
         }

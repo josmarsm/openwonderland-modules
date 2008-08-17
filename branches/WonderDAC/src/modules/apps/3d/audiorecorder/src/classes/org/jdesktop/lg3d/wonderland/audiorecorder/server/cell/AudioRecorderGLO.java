@@ -49,8 +49,13 @@ import java.util.logging.Logger;
 import org.jdesktop.lg3d.wonderland.config.common.WonderlandConfig;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 
+import com.sun.sgs.app.AppContext;  // TW
 import com.sun.voip.client.connector.CallStatus;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.Tape;
+import org.jdesktop.lg3d.wonderland.darkstar.server.CellAccessControl;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.ClientIdentityManager;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.auth.WonderlandIdentity;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;  // TW
 
 /**
  * Represents the audio recorder on the server and communicates with the voice bridge.
@@ -118,8 +123,93 @@ public class AudioRecorderGLO extends StationaryCellGLO
         return setup.getCellSetup();
     }
 
+    @Override
+    public void pingClients(){  // TW
+        // As this cell's privileges are changed, we need
+        // to ensure that everyone stays in sync.  Stop
+        // any recording/playing that's taking place to
+        // keep everyone in the same state.
+        // TW
+        AudioRecorderMessage msg = null;
+            
+        if (getSetupData().isRecording()) {  // TW
+            setRecording(false);  // TW
+            msg = AudioRecorderMessage.recordingMessage(false, getSetupData().getUserName());  // TW
+        }
+        else if (getSetupData().isPlaying()) {  // TW
+            setPlaying(false);  // TW
+            msg = AudioRecorderMessage.playingMessage(false, getSetupData().getUserName());  // TW
+        }
+
+        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());  // TW
+        
+        // Was something happening with the recorder?  If so, send
+        // our message.
+        // TW
+        if (msg != null)  // TW
+            getCellChannel().send(sessions, msg.getBytes());  // TW
+            
+        // Construct a (very) simple message...  TW
+        msg = AudioRecorderMessage.pingMessage();  // TW
+            
+        logger.info("Privileges have changed; pinging all clients....");  // TW
+
+        // Ping all of our clients.
+        getCellChannel().send(sessions, msg.getBytes());  // TW        
+    }
+    
     public void receivedMessage(ClientSession client, CellMessage message) {
         AudioRecorderCellMessage arcm = (AudioRecorderCellMessage) message;
+        
+        // Does the user have interact permission?  If not, then they
+        // can't even see the PDF cell.  If they have control, take
+        // it away, then drop them like yesterday's cheese!
+        // TW
+        if (!CellAccessControl.canInteract((WonderlandIdentity)
+            AppContext.getManager(ClientIdentityManager.class).getClientID(),this)){  // TW
+                          
+            // Drop the client--they can't see this cell anymore!
+            // TW
+            getCellChannel().leave(client); // TW
+                                
+            return;  // TW
+        }
+        
+        // Does the user have permissions to alter the Audio Recorder?  If not,
+        // exit from this method.
+        //
+        // TW            
+        if (!CellAccessControl.canAlter((WonderlandIdentity)
+            AppContext.getManager(ClientIdentityManager.class).getClientID(),this)) {  // TW
+            
+            // Since this client does not have alter permissions, send
+            // them a message to that effect.  The client can then
+            // work to prevent the end user from making any changes
+            // to its local Audio Recorder cell.
+            //
+            // TW
+            // Construct a (very) simple AudioRecorderMessage first...  TW
+            AudioRecorderMessage msg = AudioRecorderMessage.noAlterMessage();  // TW
+            
+            // Send this off to the client.  TW
+            logger.fine("AudioRecorder GLO broadcasting NO_ALTER_PERM msg: " + msg);  // TW
+            getCellChannel().send(client, msg.getBytes());  // TW
+            
+            return;  // TW
+        }
+        else {
+            // Since this client has alter permissions, send
+            // them a message to that effect.
+            //
+            // TW
+            // Construct a (very) simple AudioRecorderMessage first...  TW
+            AudioRecorderMessage msg = AudioRecorderMessage.alterMessage();  // TW
+            
+            // Send this off to the client.  TW
+            logger.fine("AudioRecorder GLO broadcasting ALTER_PERM msg: " + msg);  // TW
+            getCellChannel().send(client, msg.getBytes());  // TW            
+        }
+        
         switch (arcm.getAction()) {
             case PLAY:
                 processPlayMessage(client, arcm);
@@ -138,6 +228,8 @@ public class AudioRecorderGLO extends StationaryCellGLO
                 break;
             case NEW_TAPE:
                 processNewTapeMessage(client, arcm);
+                break;
+            case PING:
                 break;
         }
     }
@@ -283,6 +375,22 @@ public class AudioRecorderGLO extends StationaryCellGLO
         getSetupData().setTapes(tapes);
         getSetupData().setSelectedTape(selectedTape);
   
+        // Handle configuring this cell's discretionary access controls
+        //
+        // TW
+        setCellAccessOwner(BasicCellGLOHelper.getCellAccessOwner(setup));  // TW
+        setCellAccessGroup(BasicCellGLOHelper.getCellAccessGroup(setup));  // TW
+        setCellAccessGroupPermissions(BasicCellGLOHelper.getCellAccessGroupPermissions(setup)); // TW
+        setCellAccessOtherPermissions(BasicCellGLOHelper.getCellAccessOtherPermissions(setup)); // TW
+        
+        // Also, setup the name of the cell (this is passed to the
+        // client for display in the WonderDAC GUI).
+        // TW
+        setCellName(BasicCellGLOHelper.getCellName(setup));  // TW   
+        
+        // And, setup the cell's width and height.  TW
+        setCellWidth(BasicCellGLOHelper.getCellWidth(setup)); // TW
+        setCellHeight(BasicCellGLOHelper.getCellHeight(setup)); // TW
     }
 
     @Override
