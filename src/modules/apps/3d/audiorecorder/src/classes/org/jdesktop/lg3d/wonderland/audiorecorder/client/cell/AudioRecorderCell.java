@@ -47,6 +47,7 @@ import javax.media.j3d.Alpha;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Behavior;
 import javax.media.j3d.BoundingSphere;
+import javax.media.j3d.Bounds;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.Shape3D;
@@ -54,6 +55,7 @@ import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JFrame;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import org.jdesktop.lg3d.wg.event.LgEvent;
@@ -73,6 +75,8 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.Message;
 import org.jdesktop.lg3d.wonderland.scenemanager.CellMenuManager;
 
 import org.jdesktop.j3d.util.SceneGraphUtil;
+import org.jdesktop.lg3d.wg.event.MouseEvent3D.ButtonId;
+import org.jdesktop.lg3d.wonderland.darkstar.client.cell.WonderDACDialog;
 import org.jdesktop.lg3d.wonderland.scenemanager.AssetManager;
 
 /**
@@ -94,13 +98,29 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
     private String userName = null;
     private DefaultListModel tapeListModel;
     private ListSelectionModel tapeSelectionModel;
-    private ReelForm reelForm;
-  
+    private ReelForm reelForm;  
     private String baseURL;
+    private boolean listenersOn = true;  // TW
     
     public AudioRecorderCell(CellID cellID, String channelName, Matrix4d cellOrigin) {
         super(cellID, channelName, cellOrigin);
-        
+        pingAudioRecorder();  // Ping the recorder so we can figure out our privs.  TW
+    }
+
+    /**
+     * This method is simply for convenience:  it sends a
+     * dummy message to the server so that we can determine
+     * whether or not the user has privileges to use (i.e.,
+     * 'alter') the recorder.  The server already handles
+     * security independently of the end-user, however.  So,
+     * this method is to help us configure the user's interface
+     * appropriately.
+     * 
+     * TW
+     */    
+    private void pingAudioRecorder () {
+        AudioRecorderCellMessage msg = AudioRecorderCellMessage.pingMessage(getCellID());
+        ChannelController.getController().sendMessage(msg);        
     }
     
     public void setChannel(ClientChannel channel) {
@@ -165,10 +185,30 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         addStopButton(bg);
         addPlayButton(bg);
         tg.addChild(bg);
-        cellLocal.addChild(tg);
+       
+        // Setup a mouse listener for a right-click--this will open the
+        // WonderDAC dialog.
+        // TW
+        J3dLgBranchGroup mouseBG = new J3dLgBranchGroup ();;  // TW
+        mouseBG.setCapabilities(); // TW
+            
+        mouseBG.setMouseEventEnabled(true);  // TW
+        mouseBG.setMouseEventSource(MouseButtonEvent3D.class, true);  // TW
+        mouseBG.setMouseEventPropagatable(true);  // TW
+
+        mouseBG.addListener(new MouseButtonListener()); // TW
+        
+        mouseBG.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);  // TW
+        mouseBG.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);  // TW
+        mouseBG.setCapability(BranchGroup.ALLOW_DETACH); // TW
+        
+        SceneGraphUtil.setCapabilitiesGraph(mouseBG, false); // TW
+
+        mouseBG.addChild(tg);  // TW
+        cellLocal.addChild(mouseBG);  // TW
     }
   
-   
+    
     private void addReel(Vector3f position, String modelFilename, BranchGroup bg) {
         // Create the root of the branch graph 
         J3dLgBranchGroup reelBG = new J3dLgBranchGroup();
@@ -250,9 +290,20 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
             case TAPE_SELECTED:
                 selectTape(message.getTapeName());
                 break;
+            case NO_ALTER_PERM:  // TW -- If we receive this message (in
+                                 // response to any message) it means we
+                                 // do not have permission to alter the
+                                 // Phone cell.
+                listenersOn = false;  // TW 
+                break;  // TW                 
+            case ALTER_PERM:  // TW
+                listenersOn = true;  // TW
+                break;
+            case PING: // TW
+                pingAudioRecorder ();  // TW
+                break;
             default:
                 logger.severe("Unknown action type: " + message.getAction());
-        
         }
 
     }    
@@ -443,6 +494,20 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         return newTape;
     }
     
+    private void showWonderDAC () {
+        JFrame f = WonderDACDialog.getWonderDACDialog(); // TW
+                      
+        WonderDACDialog.getWonderDACDialog().setObjectID(getCellName(), getCellID().toString());  // TW
+        WonderDACDialog.getWonderDACDialog().setDefaultListName(getCellAccessOwner()); // TW
+        WonderDACDialog.getWonderDACDialog().setDefaultGroupName(getCellAccessGroup());  // TW
+        WonderDACDialog.getWonderDACDialog().setGrpIntCheckBox(getCellAccessGroupPermissions());  // TW
+        WonderDACDialog.getWonderDACDialog().setGrpAltCheckBox(getCellAccessGroupPermissions());  // TW
+        WonderDACDialog.getWonderDACDialog().setOthIntCheckBox(getCellAccessOtherPermissions());  // TW
+        WonderDACDialog.getWonderDACDialog().setOthAltCheckBox(getCellAccessOtherPermissions());  // TW
+                   
+        f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  // TW
+        f.setVisible(true);  // TW
+    }
 
     class ButtonListener implements LgEventListener {
         private Button button;
@@ -457,18 +522,23 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
             if (lge instanceof MouseButtonEvent3D) {                  // Handle Mouse Clicks
                 MouseButtonEvent3D mbe3D = (MouseButtonEvent3D) lge;
                 
-                if (mbe3D.isClicked()) {
-                    if (button == stopButton) {
-			/*
-			 * We always handle the stop button.
-			 */
+                if (mbe3D.isClicked()) { 
+                    if (mbe3D.getButton() == ButtonId.BUTTON3) {  // TW
+                       showWonderDAC ();
+                       return;
+                    }
+                 
+                    if ((button == stopButton) && listenersOn) {  // TW
+		        /*
+	  	         * We always handle the stop button.
+		         */
                         stop();
-			return;
+		        return;
                     } 
 
                     //
                     //Only care about the case when the button isn't already selected'
-                    if (!button.isSelected()) {
+                    if (!button.isSelected() && listenersOn) {  // TW
                         if (button == recordButton) {
                             startRecording();
                         } else if (button == playButton) {
@@ -482,11 +552,11 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
 
 			menu.setCallId(callId);
 
-                        if (button == playButton) {
+                        if ((button == playButton) && listenersOn) {  // TW
 			    CellMenuManager.getInstance().showMenu(cell, menu,
 				"Playback volume " + callId);
 			    return;
-			} else if (button == recordButton) {
+			} else if ((button == recordButton) && listenersOn) {  // TW
 			    CellMenuManager.getInstance().showMenu(cell, menu,
 				"Record volume " + callId);
 			    return;
@@ -588,8 +658,12 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         public void processEvent(LgEvent lge) {
             if (lge instanceof MouseButtonEvent3D) {                  // Handle Mouse Clicks
                 MouseButtonEvent3D mbe3D = (MouseButtonEvent3D) lge;
+
+                if (mbe3D.isClicked() && (mbe3D.getButton() == ButtonId.BUTTON3)) {  // TW
+                   showWonderDAC();                   
+                }
                 
-                if (mbe3D.isClicked()) {
+                else if (mbe3D.isClicked() && listenersOn) {  // TW
                         reelForm.setVisible(true);
 		    }
                 }
@@ -598,8 +672,25 @@ public class AudioRecorderCell extends Cell implements ExtendedClientChannelList
         public Class[] getTargetEventClasses() {
             return new Class[] {MouseButtonEvent3D.class};
         }
-               
-
-        
+                       
     }
+    
+    class MouseButtonListener implements LgEventListener {  // TW
+        public MouseButtonListener() {}  // TW
+
+        public void processEvent(LgEvent evt) {  // TW
+            if (evt instanceof MouseButtonEvent3D) {  // TW
+                MouseButtonEvent3D mbEvent = (MouseButtonEvent3D)evt;  // TW
+                if (mbEvent.isClicked() && (mbEvent.getButton() == ButtonId.BUTTON3)) {  // TW
+                   
+                    showWonderDAC();                    
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")  // TW
+        public Class<LgEvent>[] getTargetEventClasses() {  // TW
+            return new Class[] { MouseButtonEvent3D.class };  // TW
+        }
+    }         
 }

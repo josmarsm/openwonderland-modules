@@ -46,7 +46,18 @@ public class AudioRecorderMessage extends Message {
 	PLAY,
         TAPE_USED,
         TAPE_SELECTED,
-        NEW_TAPE
+        NEW_TAPE,
+        NO_ALTER_PERM,   // TW -- Not much of an action, per se.
+                         // more of an alert that the client does
+                         // not possess alter permissions for the
+                         // cell in question.        
+        ALTER_PERM,      // Same as above, just the opposite boolean
+                         // value.  TW
+        PING             // A simple *ping* to elicit a sync message
+                         // from a client.  Used when privileges have
+                         // changed and the client needs to re-establish
+                         // whether or not they can alter the cell.  TW
+                
     };
 
     private RecorderGLOAction action;
@@ -123,7 +134,25 @@ public class AudioRecorderMessage extends Message {
         msg.tapeName = tapeName;
         return msg;
     }
+    
+     public static AudioRecorderMessage noAlterMessage() {  // TW
+        AudioRecorderMessage msg = new AudioRecorderMessage();  // TW
+        msg.action = RecorderGLOAction.NO_ALTER_PERM;  // TW
+        return msg;  // TW
+    }   
 
+    public static AudioRecorderMessage alterMessage() {  // TW
+        AudioRecorderMessage msg = new AudioRecorderMessage();  // TW
+        msg.action = RecorderGLOAction.ALTER_PERM;  // TW
+        return msg;  // TW
+    }   
+
+    public static AudioRecorderMessage pingMessage() {  // TW
+        AudioRecorderMessage msg = new AudioRecorderMessage();  // TW
+        msg.action = RecorderGLOAction.PING;  // TW
+        return msg;  // TW
+    }   
+    
     public RecorderGLOAction getAction() {
 	return action;
     }
@@ -156,51 +185,60 @@ public class AudioRecorderMessage extends Message {
 
     protected void extractMessageImpl(ByteBuffer data) {
         action = RecorderGLOAction.values()[DataInt.value(data)];
-        isRecording = DataBoolean.value(data);
-        isPlaying = DataBoolean.value(data);
-        userName = DataString.value(data);
-        switch (action) {
-            case SET_VOLUME:
-                volume = DataDouble.value(data);
-                break;
-            case PLAYBACK_DONE:
-                break;
-            case TAPE_USED:
-                tapeName = DataString.value(data);
-                break;
-            case TAPE_SELECTED:
-                tapeName = DataString.value(data);
-                break;
-            case NEW_TAPE:
-                tapeName = DataString.value(data);
-                break;
-            default:
+        
+        if ((action != RecorderGLOAction.NO_ALTER_PERM) &&
+            (action != RecorderGLOAction.ALTER_PERM) &&
+            (action != RecorderGLOAction.PING)){
+            isRecording = DataBoolean.value(data);
+            isPlaying = DataBoolean.value(data);
+            userName = DataString.value(data);
+            switch (action) {
+                case SET_VOLUME:
+                    volume = DataDouble.value(data);
+                    break;
+                case PLAYBACK_DONE:
+                    break;
+                case TAPE_USED:
+                    tapeName = DataString.value(data);
+                    break;
+                case TAPE_SELECTED:
+                    tapeName = DataString.value(data);
+                    break;
+                case NEW_TAPE:
+                    tapeName = DataString.value(data);
+                    break;
+                default:
+            }
         }
     }
 
     protected void populateDataElements() {
         dataElements.clear();
         dataElements.add(new DataInt(action.ordinal()));
-        dataElements.add(new DataBoolean(isRecording));
-        dataElements.add(new DataBoolean(isPlaying));
-        dataElements.add(new DataString(userName));
-        switch (action) {
-            case SET_VOLUME:
-                dataElements.add(new DataDouble(volume));
-                break;
-            case PLAYBACK_DONE:
-                 break;
-            case TAPE_USED:
-                dataElements.add(new DataString(tapeName));
-                break;
-            case TAPE_SELECTED:
-                dataElements.add(new DataString(tapeName));
-                break;
-            case NEW_TAPE:
-                dataElements.add(new DataString(tapeName));
-                break;
-            default:
-                 
+        
+        if ((action != RecorderGLOAction.NO_ALTER_PERM)&&
+            (action != RecorderGLOAction.ALTER_PERM) &&
+            (action != RecorderGLOAction.PING)) {
+            dataElements.add(new DataBoolean(isRecording));
+            dataElements.add(new DataBoolean(isPlaying));
+            dataElements.add(new DataString(userName));
+            switch (action) {
+                case SET_VOLUME:
+                    dataElements.add(new DataDouble(volume));
+                    break;
+                case PLAYBACK_DONE:
+                     break;
+                case TAPE_USED:
+                    dataElements.add(new DataString(tapeName));
+                    break;
+                case TAPE_SELECTED:
+                    dataElements.add(new DataString(tapeName));
+                    break;
+                case NEW_TAPE:
+                    dataElements.add(new DataString(tapeName));
+                    break;
+                default:
+            }    
         }
     }    
 }

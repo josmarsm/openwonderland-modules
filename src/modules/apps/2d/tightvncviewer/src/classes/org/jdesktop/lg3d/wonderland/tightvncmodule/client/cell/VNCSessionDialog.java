@@ -110,7 +110,7 @@ public class VNCSessionDialog extends javax.swing.JDialog {
             }
         });
 
-        passwordTextField.setFont(new java.awt.Font("DialogInput", 0, 12)); // NOI18N
+        passwordTextField.setFont(new java.awt.Font("DialogInput", 0, 12));
         passwordTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 passwordTextFieldActionPerformed(evt);
@@ -238,9 +238,9 @@ public class VNCSessionDialog extends javax.swing.JDialog {
                                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                             .add(portLabel)
                                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                            .add(portTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 42, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                        .add(connectionOptionsButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE))))
-                            .addContainerGap(90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                            .add(portTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 66, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                        .add(connectionOptionsButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE))))
+                            .addContainerGap(69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(okButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

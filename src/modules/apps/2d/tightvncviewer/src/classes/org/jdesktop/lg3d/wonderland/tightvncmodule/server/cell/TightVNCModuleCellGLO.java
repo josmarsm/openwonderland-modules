@@ -32,8 +32,12 @@ import javax.vecmath.Matrix4f;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellMessage;
 import org.jdesktop.lg3d.wonderland.tightvncmodule.common.TightVNCModuleCellSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
+import org.jdesktop.lg3d.wonderland.darkstar.server.CellAccessControl;  // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
+import org.jdesktop.lg3d.wonderland.darkstar.server.ClientIdentityManager;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.auth.WonderlandIdentity; // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SharedApp2DImageCellGLO;
+import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;  // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.CellGLOSetup;
@@ -55,7 +59,8 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
     // clients join, they receive the current state.
     private ManagedReference stateRef = null;
     private BasicCellGLOSetup<TightVNCModuleCellSetup> setup;
-
+    private boolean clientAccess = true;  // TW
+                       
     public TightVNCModuleCellGLO() {
         this(null, null, null, null);
     }
@@ -97,6 +102,23 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
             DataManager dataMgr = AppContext.getDataManager();
             stateRef = dataMgr.createReference(stateMO);
         }
+
+        // Handle configuring this cell's discretionary access controls
+        //
+        // TW
+        setCellAccessOwner(BasicCellGLOHelper.getCellAccessOwner(setupData));  // TW
+        setCellAccessGroup(BasicCellGLOHelper.getCellAccessGroup(setupData));  // TW
+        setCellAccessGroupPermissions(BasicCellGLOHelper.getCellAccessGroupPermissions(setupData)); // TW
+        setCellAccessOtherPermissions(BasicCellGLOHelper.getCellAccessOtherPermissions(setupData)); // TW
+        
+        // Also, setup the name of the cell (this is passed to the
+        // client for display in the WonderDAC GUI).
+        // TW
+        setCellName(BasicCellGLOHelper.getCellName(setupData));  // TW   
+        
+        // And, setup the cell's width and height.  TW
+        setCellWidth(BasicCellGLOHelper.getCellWidth(setupData)); // TW
+        setCellHeight(BasicCellGLOHelper.getCellHeight(setupData)); // TW        
     }
 
     /**
@@ -137,23 +159,113 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
     }
 
     @Override
+    public void pingClients(){  // TW
+        // Construct a (very) simple message first...  TW
+        TightVNCModuleCellMessage tempMsg = new TightVNCModuleCellMessage (cellID, Action.PING);  // TW
+   
+        logger.fine("Privileges have changed; pinging all clients....");  // TW
+        
+        // Ping all of our clients.
+        Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());  // TW
+                
+        getCellChannel().send(sessions, tempMsg.getBytes());  // TW              
+    }
+        
+    @Override
     public void receivedMessage(ClientSession client, CellMessage message) {
         if (message instanceof TightVNCModuleCellMessage) {
             TightVNCModuleCellMessage vnccm = (TightVNCModuleCellMessage) message;
             logger.fine("vnc GLO: received msg: " + vnccm);
 
-            Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
-
-            // clone the message
-            TightVNCModuleCellMessage msg = new TightVNCModuleCellMessage(vnccm);
-
             // the current state of the application
-            TightVNCModuleStateMO stateMO = getStateMO();
+            TightVNCModuleStateMO stateMO = getStateMO();  // Relocated.  TW
 
             // client currently in control
-            String controlling = stateMO.getControllingCell();
+            String controlling = stateMO.getControllingCell(); // Relocated.  TW
+            
             // client making the request
-            String requester = vnccm.getUID();
+            String requester = vnccm.getUID();  // Relocated.  TW
+
+            // Does the user have interact permission?  If not, then they
+            // can't even see the video cell.  If they have control, take
+            // it away, then drop them like yesterday's cheese!
+            // TW
+            if (!CellAccessControl.canInteract((WonderlandIdentity)
+                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)){  // TW
+                
+                // If the client does not have 'alter' or 'interact'
+                // access, make sure they didn't just have control.
+                // TW
+                if (!clientAccess && requester.equals(controlling)) {  // TW
+                    logger.fine("Forcing user to relinquish control due to lost privileges.");  // TW
+                   stateMO.setControllingCell(null);  // TW
+                }     
+                
+                // In case the client has a control panel open,
+                // let them know that they're about to be cut off.
+                // TW
+                TightVNCModuleCellMessage msg = new TightVNCModuleCellMessage (Action.NO_ALTER_PERM);  // TW
+            
+                // Send this off to the client.  TW
+                logger.fine("TightVNC GLO sending NO_ALTER_PERM msg: " + msg);  // TW
+                getCellChannel().send(client, msg.getBytes());  // TW
+                
+                // Drop the client--they can't see this cell anymore!
+                // TW
+                getCellChannel().leave(client); // TW
+                                
+                return;  // TW
+            }
+            
+            Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
+
+            // Does the user have permissions to alter the VNC cell?  If not,
+            // ignore most messages coming from them by setting 'clientAccess'
+            // to false.
+            //
+            // TW            
+            if (!CellAccessControl.canAlter((WonderlandIdentity)
+                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)) {  // TW
+                
+                clientAccess = false;  // TW
+                
+                // Since this client does not have alter permissions, send
+                // them a message to that effect.  The client can then
+                // work to prevent the end user from making any changes
+                // to its local TightVNCModule cell.
+                //
+                // TW
+                // Construct a (very) simple TightVNCModuleCellMessage first...  TW
+                TightVNCModuleCellMessage msg = new TightVNCModuleCellMessage (Action.NO_ALTER_PERM);  // TW
+            
+                // Send this off to the client.  TW
+                logger.fine("TightVNC GLO sending NO_ALTER_PERM msg: " + msg);  // TW
+                getCellChannel().send(client, msg.getBytes());  // TW
+            }
+            else {
+                clientAccess = true;
+                  
+                // Since this client has alter permissions, send
+                // them a message to that effect.  The client can then
+                // work to re-enable the end user's ability to make any changes
+                // to their local PDFviewer cell.
+                //
+                // TW
+                // Construct a (very) simple VideoCellMessage first...  TW
+                TightVNCModuleCellMessage msg = new TightVNCModuleCellMessage (Action.ALTER_PERM);  // TW
+            
+                // Send this off to the client.  TW
+                logger.fine("TightVNC GLO sending ALTER_PERM msg: " + msg);  // TW
+                getCellChannel().send(client, msg.getBytes());  // TW
+            }
+
+            // No need to take further action on a PING from the client,
+            if (vnccm.getAction() == Action.PING) { // TW
+                return;  // TW
+            }
+            
+            // clone the message
+            TightVNCModuleCellMessage msg = new TightVNCModuleCellMessage(vnccm);
 
             // time out requests from non-responsive clients
             if (controlling != null) {
@@ -173,6 +285,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
             if (controlling == null) {
                 // no cell has control, grant control to the requesting cell
                 stateMO.setControllingCell(requester);
+                controlling = stateMO.getControllingCell();  // Re-assign the controller.  TW
 
                 // reflect the command to all clients
                 // respond to a client that is (now) in control
@@ -188,16 +301,20 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                     case SET_STATE:
                         break;
                     case OPEN_SESSION:
-                        stateMO.setServer(vnccm.getServer());
-                        stateMO.setPort(vnccm.getPort());
-                        stateMO.setUsername(vnccm.getUsername());
-                        stateMO.setPassword(vnccm.getPassword());
+                        if (clientAccess) {  // TW
+                            stateMO.setServer(vnccm.getServer());
+                            stateMO.setPort(vnccm.getPort());
+                            stateMO.setUsername(vnccm.getUsername());
+                            stateMO.setPassword(vnccm.getPassword());
+                        }
                         break;
                     case CLOSE_SESSION:
-                        stateMO.setControllingCell(null);
-                        stateMO.setPort(5900);
-                        stateMO.setUsername(null);
-                        stateMO.setPassword(null);
+                        if (clientAccess) {  // TW
+                            stateMO.setControllingCell(null);
+                            stateMO.setPort(5900);
+                            stateMO.setUsername(null);
+                            stateMO.setPassword(null);
+                        }
                         break;
                     case REQUEST_COMPLETE:
                         // release control of VNC session state by this client
@@ -206,8 +323,26 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                     default:
                         break;
                 }
-                logger.fine("vnc GLO: broadcasting msg: " + msg);
-                getCellChannel().send(sessions, msg.getBytes());
+                logger.fine("VNC GLO broadcasting msg: " + msg);               
+                
+                // If the user has access, let them sail on through to sending
+                // their message.  If they do not, however, the only sailing they
+                // are allowed to do is with SET_STATE and REQUEST_COMPLETE!
+                // TW
+                if (clientAccess || 
+                    (msg.getAction() == Action.SET_STATE) ||
+                    (msg.getAction() == Action.REQUEST_COMPLETE))
+                    getCellChannel().send(sessions, msg.getBytes());
+                
+                // If the user has no 'alter' permission and has attempted to
+                // do something other get the state of the PDF viewer or send
+                // a REQUEST_COMPLETE message, then remove their control and
+                // dump them.
+                // TW
+                else if ((requester != null) && requester.equals(controlling)) {  // TW
+                    logger.warning ("Forcing the release of user's control due to lack of privilege.");
+                    stateMO.setControllingCell(null);  // TW                  
+                }                
             } else {
                 // one cell has control
                 switch (vnccm.getAction()) {

@@ -39,7 +39,17 @@ public class TightVNCModuleCellMessage extends CellMessage {
         REQUEST_COMPLETE,
         OPEN_SESSION,
         CLOSE_SESSION,
-        GET_STATE, SET_STATE
+        GET_STATE, SET_STATE,
+        NO_ALTER_PERM,   // TW -- Not much of an action, per se.
+                         // more of an alert that the client does
+                         // not possess alter permissions for the
+                         // cell in question.                
+        ALTER_PERM,      // Same as above, just the opposite boolean
+                         // value.  TW
+        PING             // A simple *ping* to elicit a sync message
+                         // from a client.  Used when privileges have
+                         // changed and the client needs to re-establish
+                         // whether or not they can alter the cell.  TW
     };
 
     public enum RequestStatus {
@@ -222,12 +232,17 @@ public class TightVNCModuleCellMessage extends CellMessage {
     protected void extractMessageImpl(ByteBuffer data) {
         super.extractMessageImpl(data);
 
-        uid = DataString.value(data);
         action = Action.values()[DataInt.value(data)];
-        vncServer = DataString.value(data);
-        vncPort = DataInt.value(data);
-        vncUsername = DataString.value(data);
-        vncPassword = DataString.value(data);
+        
+        if ((action != Action.NO_ALTER_PERM) &&
+            (action != Action.ALTER_PERM) &&
+            (action != Action.PING))  {  // TW
+            uid = DataString.value(data);  // Flipped ordering with 'action'.  TW
+            vncServer = DataString.value(data);
+            vncPort = DataInt.value(data);
+            vncUsername = DataString.value(data);
+            vncPassword = DataString.value(data);
+        }
         status = RequestStatus.values()[DataInt.value(data)];
 
     }
@@ -239,12 +254,17 @@ public class TightVNCModuleCellMessage extends CellMessage {
     protected void populateDataElements() {
         super.populateDataElements();
 
-        dataElements.add(new DataString(uid));
         dataElements.add(new DataInt(action.ordinal()));
-        dataElements.add(new DataString(vncServer));
-        dataElements.add(new DataInt(vncPort));
-        dataElements.add(new DataString(vncUsername));
-        dataElements.add(new DataString(vncPassword));
+        
+        if ((action != Action.NO_ALTER_PERM) &&
+            (action != Action.ALTER_PERM) &&
+            (action != Action.PING))  {  // TW
+            dataElements.add(new DataString(uid));  // Flipped ordering with 'action'.  TW
+            dataElements.add(new DataString(vncServer));
+            dataElements.add(new DataInt(vncPort));
+            dataElements.add(new DataString(vncUsername));
+            dataElements.add(new DataString(vncPassword));
+        }
         dataElements.add(new DataInt(status.ordinal()));
     }
 }

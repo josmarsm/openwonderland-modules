@@ -32,6 +32,7 @@ import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.logging.Logger;
 import javax.media.j3d.ImageComponent2D;
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.jdesktop.lg3d.wonderland.appshare.AppGroup;
 import org.jdesktop.lg3d.wonderland.appshare.AppWindowGraphics2DApp;
@@ -40,6 +41,7 @@ import org.jdesktop.lg3d.wonderland.appshare.DrawingSurface;
 import org.jdesktop.lg3d.wonderland.appshare.SimpleDrawingSurface;
 import org.jdesktop.lg3d.wonderland.darkstar.client.ChannelController;
 import org.jdesktop.lg3d.wonderland.darkstar.client.cell.SharedApp2DImageCell;
+import org.jdesktop.lg3d.wonderland.darkstar.client.cell.WonderDACDialog;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUD.HUDButton;
 import org.jdesktop.lg3d.wonderland.scenemanager.hud.HUDFactory;
@@ -64,6 +66,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
             Logger.getLogger(TightVNCModuleApp.class.getName());
     private static final int DEFAULT_WIDTH = 1024;
     private static final int DEFAULT_HEIGHT = 768;
+    private final float PIX_PER_VRU = 256; // TW    
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
     private VNCSessionDialog vncDialog;
@@ -84,6 +87,8 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     private TightVNCCellMenu cellMenu;
     private boolean synced = false;
     private boolean inControl = false;
+    private SharedApp2DImageCell vncCell;  // TW
+    private boolean listenersOn = true;  // TW
     protected Object actionLock = new Object();
 
     public TightVNCModuleApp(SharedApp2DImageCell cell) {
@@ -94,6 +99,8 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
             boolean decorated) {
         super(new AppGroup(new SimpleControlArb()), true, x, y, width, height, cell);
 
+        vncCell = cell;  // TW
+        
         clipRect = new Rectangle2D.Double(0, 0, width, height);
         drawingSurface = new SimpleDrawingSurface();
         drawingSurface.setSize(width, height);
@@ -158,7 +165,26 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         addMouseListener(new MouseListener() {
 
             public void mouseClicked(MouseEvent e) {
-                if (canvas != null) {
+                // Invoke the WonderDAC dialog box if there was a right
+                // mouse button click.  If we're in a VNC sessions,
+                // however, let the click go through!
+                // TW
+                if ((e.getButton() == MouseEvent.BUTTON3) && (canvas == null)) {  // TW
+                   
+                   JFrame f = WonderDACDialog.getWonderDACDialog(); // TW
+                      
+                   WonderDACDialog.getWonderDACDialog().setObjectID(vncCell.getCellName(), vncCell.getCellID().toString());  // TW
+                   WonderDACDialog.getWonderDACDialog().setDefaultListName(vncCell.getCellAccessOwner()); // TW
+                   WonderDACDialog.getWonderDACDialog().setDefaultGroupName(vncCell.getCellAccessGroup());  // TW
+                   WonderDACDialog.getWonderDACDialog().setGrpIntCheckBox(vncCell.getCellAccessGroupPermissions());  // TW
+                   WonderDACDialog.getWonderDACDialog().setGrpAltCheckBox(vncCell.getCellAccessGroupPermissions());  // TW
+                   WonderDACDialog.getWonderDACDialog().setOthIntCheckBox(vncCell.getCellAccessOtherPermissions());  // TW
+                   WonderDACDialog.getWonderDACDialog().setOthAltCheckBox(vncCell.getCellAccessOtherPermissions());  // TW
+                   
+                   f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  // TW
+                   f.setVisible(true);  // TW
+                }
+                else if (canvas != null) {                    
                     canvas.mouseClicked(e);
                 }
             }
@@ -440,6 +466,19 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     }
 
     /**
+     * A simple method to send a ping message to the
+     * server.  Particularly useful when we first
+     * initialize this cell and need to find out what
+     * sort of access we have.
+     * 
+     * @author twright
+     */
+    public void pingServer () {
+        TightVNCModuleCellMessage vmcm = new TightVNCModuleCellMessage(this.getCell().getCellID(), Action.PING);
+        ChannelController.getController().sendMessage(vmcm);        
+    }
+    
+    /**
      * ActionScheduler manages the retrying of application requests which
      * were previously denied due to request contention in the server GLO.
      */
@@ -536,8 +575,10 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
                         if (forMe == true) {
                             if (isSynced()) {
                                 openVNCSession(msg.getServer(), msg.getPort(), msg.getUsername(), msg.getPassword());
-                                cellMenu.disableButton(Button.UNSYNC);
-                                cellMenu.enableButton(Button.SYNC);
+                                if (cellMenu.isActive()){
+                                    cellMenu.disableButton(Button.UNSYNC);
+                                    cellMenu.enableButton(Button.SYNC);
+                                }
                                 logger.info("vnc viewer: synced");
                                 showHUDMessage("synced", 3000);
                             }
@@ -552,6 +593,22 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
                                 logger.warning("vnc viewer: exception notifying retry threads: " + e);
                             }
                         }
+                        break;
+                    case NO_ALTER_PERM:  // TW -- If we receive this message (in
+                                         // response to a message) it means we
+                                         // do not have permission to alter the
+                                         // TightVNC cell.
+                
+                        listenersOn = false;  // TW
+                        setInControl(false);  // TW
+                        setReadOnly (true);  // TW                     
+                        break;  // TW
+                    case ALTER_PERM:
+                        listenersOn = true; // TW
+                        setReadOnly (false);  // TW
+                        break;  // TW
+                    case PING:  // Respond to a ping from the server.
+                        pingServer();
                         break;
                     default:
                         logger.warning("vnc viewer: unhandled message type: " + msg.getAction());
@@ -586,6 +643,19 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     @Override
     public void setSize(int width, int height) {
         super.setSize(width, height);
+
+        // If the user resizes the application window,
+        // we need to update the window's size in
+        // VR units (where one 2-D unit is a square of
+        // 256 pixels on each side).  This will enable
+        // our impromptu "button" (that allows the
+        // user to right-click for the WonderDAC dialog)
+        // to relocate itself to the new upper-left
+        // corner of the application window.
+        // TW
+        vncCell.setCellWidth((float)width/PIX_PER_VRU);  // TW
+        vncCell.setCellHeight((float)height/PIX_PER_VRU);  // TW
+        
         drawingSurface.setSize(width, height);
     }
 
@@ -650,7 +720,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
     public void setInControl(boolean inControl) {
         this.inControl = inControl;
 
-        if (inControl == true) {
+        if ((inControl == true) && listenersOn) {  // TW
             CellMenuManager.getInstance().showMenu(this.getCell(), cellMenu, null);
         } else {
             CellMenuManager.getInstance().hideMenu();
@@ -662,7 +732,7 @@ public class TightVNCModuleApp extends AppWindowGraphics2DApp implements Runnabl
         logger.info("vnc viewer: has control");
         super.takeControl(me);
         setInControl(true);
-    }
+        }
 
     @Override
     public void releaseControl(MouseEvent me) {

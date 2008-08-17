@@ -101,7 +101,7 @@ public class VideoCell extends SharedApp2DImageCell
         ((VideoApp) app).setRequestThrottle(setup.getRequestThrottle());
         ((VideoApp) app).setDecorated(setup.getDecorated());
         ((VideoApp) app).setShowing(true);
-
+        
         if (setup.getSynced() == true) {
             ((VideoApp) app).sync();
         } else {

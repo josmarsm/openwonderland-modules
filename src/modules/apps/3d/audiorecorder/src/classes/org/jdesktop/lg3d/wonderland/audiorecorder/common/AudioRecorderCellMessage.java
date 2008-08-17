@@ -41,7 +41,9 @@ public class AudioRecorderCellMessage extends CellMessage {
         SET_VOLUME,
         TAPE_USED,
         TAPE_SELECTED,
-        NEW_TAPE
+        NEW_TAPE,
+        PING        // TW - used by the client when it first creates
+                    // an AudioRecorder cell; determines the users' privs.
     };
     private RecorderCellAction action;
     private boolean isRecording = false;
@@ -131,6 +133,12 @@ public class AudioRecorderCellMessage extends CellMessage {
         return msg;
     }
     
+     public static AudioRecorderCellMessage pingMessage(CellID cellID) {  // TW
+        AudioRecorderCellMessage msg = new AudioRecorderCellMessage();  // TW
+        msg.setCellID(cellID);
+        msg.action = RecorderCellAction.PING;  // TW
+        return msg;  // TW
+    }   
     
 
     public RecorderCellAction getAction() {
@@ -161,30 +169,33 @@ public class AudioRecorderCellMessage extends CellMessage {
     protected void extractMessageImpl(ByteBuffer data) {
 	super.extractMessageImpl(data);
         action = RecorderCellAction.values()[DataInt.value(data)];
-        switch (action) {
-            case RECORD:
-                userName = DataString.value(data);
-                isRecording = DataBoolean.value(data);
-                break;
-            case PLAY:
-                userName = DataString.value(data);
-                isPlaying = DataBoolean.value(data);
-                break;
-            case SET_VOLUME:
-                userName = DataString.value(data);
-                volume = DataDouble.value(data);
-                break;
-            case TAPE_USED:
-                tapeName= DataString.value(data);
-                break;
-            case TAPE_SELECTED:
-                tapeName= DataString.value(data);
-                break;
-            case NEW_TAPE:
-                tapeName= DataString.value(data);
-                break;
-            default:
-                System.err.println("Unknown action");     
+        
+        if (action != RecorderCellAction.PING) {
+            switch (action) {
+                case RECORD:
+                    userName = DataString.value(data);
+                    isRecording = DataBoolean.value(data);
+                    break;
+                case PLAY:
+                    userName = DataString.value(data);
+                    isPlaying = DataBoolean.value(data);
+                    break;
+                case SET_VOLUME:
+                    userName = DataString.value(data);
+                    volume = DataDouble.value(data);
+                    break;
+                case TAPE_USED:
+                    tapeName= DataString.value(data);
+                    break;
+                case TAPE_SELECTED:
+                    tapeName= DataString.value(data);
+                    break;
+                case NEW_TAPE:
+                    tapeName= DataString.value(data);
+                    break;
+                default:
+                    System.err.println("Unknown action");
+            }
         }
     }
 
@@ -192,30 +203,33 @@ public class AudioRecorderCellMessage extends CellMessage {
     protected void populateDataElements() {
 	super.populateDataElements();
 	dataElements.add(new DataInt(action.ordinal()));
-        switch(action) {
-            case RECORD:
-                dataElements.add(new DataString(userName));
-                dataElements.add(new DataBoolean(isRecording));
-                break;
-            case PLAY:
-                dataElements.add(new DataString(userName));
-                dataElements.add(new DataBoolean(isPlaying));
-                break;
-            case SET_VOLUME:
-                dataElements.add(new DataString(userName));
-                dataElements.add(new DataDouble(volume));
-                break;
-            case TAPE_USED:
-                dataElements.add(new DataString(tapeName));
-                break;
-            case TAPE_SELECTED:
-                dataElements.add(new DataString(tapeName));
-                break;
-            case NEW_TAPE:
-                dataElements.add(new DataString(tapeName));
-                break;
-            default:
-                System.err.println("Unknown action");
+        
+        if (action != RecorderCellAction.PING) {
+            switch(action) {
+                case RECORD:
+                    dataElements.add(new DataString(userName));
+                    dataElements.add(new DataBoolean(isRecording));
+                    break;
+                case PLAY:
+                    dataElements.add(new DataString(userName));
+                    dataElements.add(new DataBoolean(isPlaying));
+                    break;
+                case SET_VOLUME:
+                    dataElements.add(new DataString(userName));
+                    dataElements.add(new DataDouble(volume));
+                    break;
+                case TAPE_USED:
+                    dataElements.add(new DataString(tapeName));
+                    break;
+                case TAPE_SELECTED:
+                    dataElements.add(new DataString(tapeName));
+                    break;
+                case NEW_TAPE:
+                    dataElements.add(new DataString(tapeName));
+                    break;
+                default:
+                    System.err.println("Unknown action");
+            }
         }
     }
 

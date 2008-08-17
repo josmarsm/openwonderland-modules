@@ -55,13 +55,13 @@
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="portLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="portTextField" min="-2" pref="42" max="-2" attributes="0"/>
+                                          <Component id="portTextField" min="-2" pref="66" max="-2" attributes="0"/>
                                       </Group>
-                                      <Component id="connectionOptionsButton" alignment="0" pref="204" max="32767" attributes="0"/>
+                                      <Component id="connectionOptionsButton" alignment="0" pref="228" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
-                          <EmptySpace pref="90" max="-2" attributes="0"/>
+                          <EmptySpace pref="69" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">

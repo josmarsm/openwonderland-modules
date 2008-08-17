@@ -71,7 +71,7 @@ public class PDFViewerCell extends SharedApp2DImageCell
 
         // request sync with shared whiteboard state
         logger.info("PDF viewer requesting initial sync");
-        ((PDFViewerApp) app).sync(true);
+        ((PDFViewerApp) app).sync(true);        
     }
 
     /**
