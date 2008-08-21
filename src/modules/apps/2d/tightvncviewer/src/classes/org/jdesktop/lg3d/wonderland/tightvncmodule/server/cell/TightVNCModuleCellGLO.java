@@ -35,8 +35,11 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellAccessControl;  // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
 import org.jdesktop.lg3d.wonderland.darkstar.server.ClientIdentityManager;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.UserGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.auth.WonderlandIdentity; // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.AvatarCellGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SharedApp2DImageCellGLO;
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.UserCellCacheGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;  // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
@@ -187,7 +190,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
             String requester = vnccm.getUID();  // Relocated.  TW
 
             // Does the user have interact permission?  If not, then they
-            // can't even see the video cell.  If they have control, take
+            // can't even see the VNC cell.  If they have control, take
             // it away, then drop them like yesterday's cheese!
             // TW
             if (!CellAccessControl.canInteract((WonderlandIdentity)
@@ -196,7 +199,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                 // If the client does not have 'alter' or 'interact'
                 // access, make sure they didn't just have control.
                 // TW
-                if (!clientAccess && requester.equals(controlling)) {  // TW
+                if ((controlling != null) && (requester != null) && requester.equals(controlling)) {  // TW
                     logger.fine("Forcing user to relinquish control due to lost privileges.");  // TW
                    stateMO.setControllingCell(null);  // TW
                 }     
@@ -209,7 +212,13 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                 // Send this off to the client.  TW
                 logger.fine("TightVNC GLO sending NO_ALTER_PERM msg: " + msg);  // TW
                 getCellChannel().send(client, msg.getBytes());  // TW
-                
+
+                // Get the client to re-evaluate their surroundings.
+                // TW
+                UserGLO user = UserGLO.getUserGLO(client.getName());
+                user.getAvatarCellRef().get(AvatarCellGLO.class).getUserCellCacheRef().
+                                        get(UserCellCacheGLO.class).refactor();
+                            
                 // Drop the client--they can't see this cell anymore!
                 // TW
                 getCellChannel().leave(client); // TW
@@ -251,7 +260,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                 // to their local PDFviewer cell.
                 //
                 // TW
-                // Construct a (very) simple VideoCellMessage first...  TW
+                // Construct a (very) simple TightVNCModuleCellMessage first...  TW
                 TightVNCModuleCellMessage msg = new TightVNCModuleCellMessage (Action.ALTER_PERM);  // TW
             
                 // Send this off to the client.  TW
@@ -276,7 +285,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                 long controlDuration = stateMO.getControlOwnedDuration();
 
                 if (controlDuration >= controlTimeout) {
-                    logger.warning("vnc GLO: forcing control release of controlling cell: " + stateMO.getControllingCell());
+                    logger.warning("VNC GLO: forcing control release of controlling cell: " + stateMO.getControllingCell());
                     stateMO.setControllingCell(null);
                     controlling = null;
                 }
@@ -351,13 +360,13 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                         stateMO.setControllingCell(null);
                         // broadcast request complete to all clients
                         // broadcast the message to all clients, including the requester
-                        logger.fine("video GLO: broadcasting msg: " + msg);
+                        logger.fine("VNC GLO: broadcasting msg: " + msg);
                         getCellChannel().send(sessions, msg.getBytes());
                         break;
                     default:
                         // send a denial to the requesting client
                         msg.setRequestStatus(RequestStatus.REQUEST_DENIED);
-                        logger.info("video GLO: sending denial to client: " + msg);
+                        logger.info("VNC GLO: sending denial to client: " + msg);
                         getCellChannel().send(client, msg.getBytes());
                         break;
                 }
