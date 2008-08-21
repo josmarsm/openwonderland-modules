@@ -54,7 +54,10 @@ import com.sun.voip.client.connector.CallStatus;
 import org.jdesktop.lg3d.wonderland.audiorecorder.common.Tape;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellAccessControl;  // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.ClientIdentityManager;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.UserGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.auth.WonderlandIdentity;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.AvatarCellGLO;
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.UserCellCacheGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;  // TW
 
 /**
@@ -167,7 +170,13 @@ public class AudioRecorderGLO extends StationaryCellGLO
         // TW
         if (!CellAccessControl.canInteract((WonderlandIdentity)
             AppContext.getManager(ClientIdentityManager.class).getClientID(),this)){  // TW
-                          
+                         
+            // Get the client to re-evaluate their surroundings.
+            // TW
+            UserGLO user = UserGLO.getUserGLO(client.getName());
+            user.getAvatarCellRef().get(AvatarCellGLO.class).getUserCellCacheRef().
+                                    get(UserCellCacheGLO.class).refactor();
+            
             // Drop the client--they can't see this cell anymore!
             // TW
             getCellChannel().leave(client); // TW

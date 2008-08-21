@@ -42,8 +42,11 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellAccessControl;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
 import org.jdesktop.lg3d.wonderland.darkstar.server.ClientIdentityManager;
+import org.jdesktop.lg3d.wonderland.darkstar.server.UserGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.auth.WonderlandIdentity;
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.AvatarCellGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SharedApp2DImageCellGLO;
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.UserCellCacheGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
@@ -261,7 +264,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                 // If the client does not have 'alter' or 'interact'
                 // access, make sure they didn't just have control.
                 // TW
-                if (!clientAccess && requester.equals(controlling)) {  // TW
+                if ((controlling != null) && (requester != null) && requester.equals(controlling)) {  // TW
                     logger.fine("Forcing user to relinquish control due to lost privileges.");  // TW
                    stateMO.setControllingCell(null);  // TW
                 }        
@@ -276,7 +279,13 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                 // Send this off to the client.  TW
                 logger.fine("Video GLO sending NO_ALTER_PERM msg: " + msg);  // TW
                 getCellChannel().send(client, msg.getBytes());  // TW
-                
+
+                // Get the client to re-evaluate their surroundings.
+                // TW
+                UserGLO user = UserGLO.getUserGLO(client.getName());
+                user.getAvatarCellRef().get(AvatarCellGLO.class).getUserCellCacheRef().
+                                        get(UserCellCacheGLO.class).refactor();
+
                 // Drop the client--they can't see this cell anymore!
                 // TW
                 getCellChannel().leave(client); // TW

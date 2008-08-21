@@ -36,8 +36,11 @@ import org.jdesktop.lg3d.wonderland.darkstar.common.messages.CellMessage;
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellAccessControl;  // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.CellMessageListener;
 import org.jdesktop.lg3d.wonderland.darkstar.server.ClientIdentityManager;  // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.UserGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.auth.WonderlandIdentity; // TW
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.AvatarCellGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SharedApp2DImageCellGLO;
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.UserCellCacheGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOHelper;  // TW
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BeanSetupGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
@@ -222,10 +225,10 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
                 // If the client does not have 'alter' or 'interact'
                 // access, make sure they didn't just have control.
                 // TW
-                if (!clientAccess && requester.equals(controlling)) {  // TW
+                if ((controlling != null) && (requester != null) && requester.equals(controlling)) {  // TW
                     logger.fine("Forcing user to relinquish control due to lost privileges.");  // TW
                    stateMO.setControllingCell(null);  // TW
-                   stateMO.setPageCount(pdfcm.getPageCount()); // TW              
+                   controlling = null;  // TW
                 }        
 
                 // In case the user has a control panel open,
@@ -236,6 +239,12 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
                 // Send this off to the client.  TW
                 logger.fine("PDF GLO sending NO_ALTER_PERM msg: " + msg);  // TW
                 getCellChannel().send(client, msg.getBytes());  // TW                
+
+                // Get the client to re-evaluate their surroundings.
+                // TW
+                UserGLO user = UserGLO.getUserGLO(client.getName());
+                user.getAvatarCellRef().get(AvatarCellGLO.class).getUserCellCacheRef().
+                                        get(UserCellCacheGLO.class).refactor();
                 
                 // Drop the client--they can't see this cell anymore!
                 // TW
