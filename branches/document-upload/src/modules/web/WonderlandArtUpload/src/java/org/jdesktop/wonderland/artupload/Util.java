@@ -22,8 +22,6 @@ package org.jdesktop.wonderland.artupload;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
@@ -33,6 +31,7 @@ import org.jdesktop.lg3d.wonderland.wfs.WFSCellDirectory;
 /**
  *
  * @author jkaplan
+ * @author jbarratt
  */
 public class Util {
     public static final String ART_DIR_PROP   = "wonderland.art.url.local";
