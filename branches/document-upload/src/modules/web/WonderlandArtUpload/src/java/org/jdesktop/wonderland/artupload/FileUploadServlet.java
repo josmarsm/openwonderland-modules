@@ -21,20 +21,19 @@
 package org.jdesktop.wonderland.artupload;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.Set;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
@@ -42,21 +41,14 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup;
-import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO;
-import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
-import org.jdesktop.lg3d.wonderland.wfs.InvalidWFSCellException;
-import org.jdesktop.lg3d.wonderland.wfs.WFS;
-import org.jdesktop.lg3d.wonderland.wfs.WFSCell;
-import org.jdesktop.lg3d.wonderland.wfs.WFSCellDirectory;
-import org.jdesktop.lg3d.wonderland.wfs.WFSCellNotLoadedException;
 
 /**
  *
- * @author jkaplan (jbarratt)
+ * @author jkaplan
+ * @author jbarratt
  */
 public class FileUploadServlet extends UploadServlet {
-    
+    private Set<File> writtenFiles;
     
     private static final Logger logger =
             Logger.getLogger(FileUploadServlet.class.getName());
@@ -79,6 +71,7 @@ public class FileUploadServlet extends UploadServlet {
     
     /** 
      * Returns a short description of the servlet.
+     * @return a string describing this servlet
      */
     @Override
     public String getServletInfo() {
@@ -89,6 +82,8 @@ public class FileUploadServlet extends UploadServlet {
      * Handles the HTTP <code>POST</code> method.
      * @param request servlet request
      * @param response servlet response
+     * @throws ServletException if there's an exception in the servlet
+     * @throws IOException if there's an exception writing files, or out to the response
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -111,8 +106,9 @@ public class FileUploadServlet extends UploadServlet {
                                            errors.toString());
             }
             
-            // write file
+            // write files
             writeFiles(items);
+            writeStatus(response);
         } catch (FileUploadException fue) {
             throw new ServletException(fue);
         }
@@ -120,6 +116,8 @@ public class FileUploadServlet extends UploadServlet {
 
     /**
      * Check that all required items are present
+     * @param items
+     * @return 
      */
     protected List<String> checkRequired(List<FileItem> items) {
         Map<String, ItemValidator> validators = new HashMap<String, ItemValidator>();
@@ -150,11 +148,13 @@ public class FileUploadServlet extends UploadServlet {
     /**
      * Write files to the art directory
      * @param items the list of items containing the files to write
+     * @throws IOException if there is an error writing the files
      * @throws ServletException if there is an error writing the files
      */
     protected void writeFiles(List<FileItem> items) 
         throws IOException, ServletException
     {
+        writtenFiles = new HashSet<File>();
         // get the value of the "name" field
         FileItem nameItem = findItem(items, "user");
         String name = nameItem.getString();
@@ -169,8 +169,37 @@ public class FileUploadServlet extends UploadServlet {
         
         try {
             fileItem.write(theFile);
+            writtenFiles.add(theFile);
         } catch (Exception ex) {
             throw new ServletException(ex);
         }
+    }
+
+    private void writeStatus(HttpServletResponse response) throws IOException {
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+        out.println("<!DOCTYPE html ");
+        out.println("PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"");
+        out.println("\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
+        out.println("<html>");
+        out.println("<head>");
+        out.println("</head>");
+        out.println("<h1>Success</h1>");
+        out.println("<p>The following files have been written</p>");
+        out.println("<ul>");
+        for (Iterator<File> it = writtenFiles.iterator(); it.hasNext();) {
+            File f = it.next();
+            out.println("<li>");
+            out.println(f.toString());
+            out.println("</li>");
+        }
+        out.println("</ul>");
+        out.println("<hr style=\"width: 100%; height: 2px;\">");
+        out.println("<p>");
+        out.println(new Date().toString());
+        out.println("</p>");
+        out.println("</body>");
+        out.println("</html>");
+        out.flush();
     }
 }
