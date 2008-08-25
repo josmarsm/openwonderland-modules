@@ -195,6 +195,20 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
         Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());  // TW
         getCellChannel().send(sessions, tempMsg.getBytes());  // TW        
     }
+
+    @Override
+    public void pingClient(ClientSession client){  // TW
+        // Construct a (very) simple message first...  TW
+        PDFCellMessage tempMsg = new PDFCellMessage (Action.PING);  // TW
+            
+        logger.fine("Privileges have changed; pinging a client....");  // TW
+
+        if (getCellChannel().getSessions().contains(client))  // TW
+            // Ping our client.
+            getCellChannel().send(client, tempMsg.getBytes());  // TW
+        else
+            logger.severe("Attempting to ping a client outside of this GLO's channel:  " + client.getName());        
+    }
     
     /*
      * Handle message
@@ -204,6 +218,10 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
     @Override
     public void receivedMessage(ClientSession client, CellMessage message) {
         if (message instanceof PDFCellMessage) {
+            // Obtain a UserGLO object for use later.
+            // TW
+            UserGLO user = UserGLO.getUserGLO(client.getName());
+            
             PDFCellMessage pdfcm = (PDFCellMessage) message;
             logger.fine("PDF GLO received msg: " + pdfcm);
 
@@ -219,8 +237,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
             // can't even see the PDF cell.  If they have control, take
             // it away, then drop them like yesterday's cheese!
             // TW
-            if (!CellAccessControl.canInteract((WonderlandIdentity)
-                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)){  // TW
+            if (!CellAccessControl.canInteract(user.getUserIdentity(),this)){  // TW
                 
                 // If the client does not have 'alter' or 'interact'
                 // access, make sure they didn't just have control.
@@ -242,14 +259,11 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
 
                 // Get the client to re-evaluate their surroundings.
                 // TW
-                UserGLO user = UserGLO.getUserGLO(client.getName());
                 user.getAvatarCellRef().get(AvatarCellGLO.class).getUserCellCacheRef().
                                         get(UserCellCacheGLO.class).refactor();
+                                      
+                logger.info("User " + client.getName() + " has been dropped from cell " + this.getCellname());
                 
-                // Drop the client--they can't see this cell anymore!
-                // TW
-                getCellChannel().leave(client); // TW
-                                
                 return;  // TW
             }
             
@@ -260,8 +274,7 @@ public class PDFViewerCellGLO extends SharedApp2DImageCellGLO
             // to false.
             //
             // TW            
-            if (!CellAccessControl.canAlter((WonderlandIdentity)
-                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)) {  // TW
+            if (!CellAccessControl.canAlter(user.getUserIdentity(),this)) {  // TW
                 
                 clientAccess = false; // TW
                 
