@@ -160,27 +160,41 @@ public class AudioRecorderGLO extends StationaryCellGLO
         // Ping all of our clients.
         getCellChannel().send(sessions, msg.getBytes());  // TW        
     }
+
+    @Override
+    public void pingClient(ClientSession client){  // TW
+        AudioRecorderMessage msg = null;
+            
+        // Construct a (very) simple message...  TW
+        msg = AudioRecorderMessage.pingMessage();  // TW
+            
+        logger.info("Privileges have changed; pinging a client...");  // TW
+
+        if (getCellChannel().getSessions().contains(client))  // TW
+            // Ping our client.
+            getCellChannel().send(client, msg.getBytes());  // TW
+        else
+            logger.severe("Attempting to ping a client outside of this GLO's channel:  " + client.getName());        
+    }
     
     public void receivedMessage(ClientSession client, CellMessage message) {
         AudioRecorderCellMessage arcm = (AudioRecorderCellMessage) message;
+
+        // Obtain a UserGLO object for use later.
+        // TW
+        UserGLO user = UserGLO.getUserGLO(client.getName());
         
         // Does the user have interact permission?  If not, then they
         // can't even see the PDF cell.  If they have control, take
         // it away, then drop them like yesterday's cheese!
         // TW
-        if (!CellAccessControl.canInteract((WonderlandIdentity)
-            AppContext.getManager(ClientIdentityManager.class).getClientID(),this)){  // TW
+        if (!CellAccessControl.canInteract(user.getUserIdentity(),this)){  // TW
                          
             // Get the client to re-evaluate their surroundings.
             // TW
-            UserGLO user = UserGLO.getUserGLO(client.getName());
             user.getAvatarCellRef().get(AvatarCellGLO.class).getUserCellCacheRef().
                                     get(UserCellCacheGLO.class).refactor();
             
-            // Drop the client--they can't see this cell anymore!
-            // TW
-            getCellChannel().leave(client); // TW
-                                
             return;  // TW
         }
         
@@ -188,8 +202,7 @@ public class AudioRecorderGLO extends StationaryCellGLO
         // exit from this method.
         //
         // TW            
-        if (!CellAccessControl.canAlter((WonderlandIdentity)
-            AppContext.getManager(ClientIdentityManager.class).getClientID(),this)) {  // TW
+        if (!CellAccessControl.canAlter(user.getUserIdentity(),this)) {  // TW
             
             // Since this client does not have alter permissions, send
             // them a message to that effect.  The client can then

@@ -193,6 +193,20 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
         getCellChannel().send(sessions, tempMsg.getBytes());  // TW              
     }
 
+    @Override
+    public void pingClient(ClientSession client){  // TW
+        // Construct a (very) simple message first...  TW
+        VideoCellMessage tempMsg = new VideoCellMessage (Action.PING);  // TW
+   
+        logger.fine("Privileges have changed; pinging a client....");  // TW
+
+        if (getCellChannel().getSessions().contains(client))  // TW
+            // Ping our client.
+            getCellChannel().send(client, tempMsg.getBytes());  // TW
+        else
+            logger.severe("Attempting to ping a client outside of this GLO's channel:  " + client.getName());        
+    }
+     
     public void pauseClients(){  // TW
         // Construct a (very) simple message first...  TW
         VideoAppStateMO stateMO = getStateMO();
@@ -243,6 +257,11 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
     public void receivedMessage(ClientSession client, CellMessage message) {
         if (message instanceof VideoCellMessage) {
             VideoCellMessage vmcm = (VideoCellMessage) message;
+            
+            // Obtain a UserGLO object for use later.
+            // TW
+            UserGLO user = UserGLO.getUserGLO(client.getName());
+            
             logger.fine("video GLO: received msg: " + vmcm);
 
             // the current state of the video application
@@ -258,8 +277,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
             // can't even see the video cell.  If they have control, take
             // it away, then drop them like yesterday's cheese!
             // TW
-            if (!CellAccessControl.canInteract((WonderlandIdentity)
-                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)){  // TW
+            if (!CellAccessControl.canInteract(user.getUserIdentity(),this)){  // TW
                 
                 // If the client does not have 'alter' or 'interact'
                 // access, make sure they didn't just have control.
@@ -267,6 +285,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                 if ((controlling != null) && (requester != null) && requester.equals(controlling)) {  // TW
                     logger.fine("Forcing user to relinquish control due to lost privileges.");  // TW
                    stateMO.setControllingCell(null);  // TW
+                   controlling = null; // TW
                 }        
 
                 // Get the user's video player to stop
@@ -282,26 +301,20 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
 
                 // Get the client to re-evaluate their surroundings.
                 // TW
-                UserGLO user = UserGLO.getUserGLO(client.getName());
                 user.getAvatarCellRef().get(AvatarCellGLO.class).getUserCellCacheRef().
                                         get(UserCellCacheGLO.class).refactor();
 
-                // Drop the client--they can't see this cell anymore!
-                // TW
-                getCellChannel().leave(client); // TW
-                                
                 return;  // TW
             }
             
             Set<ClientSession> sessions = new HashSet<ClientSession>(getCellChannel().getSessions());
-
-            // Does the user have permissions to alter the whiteboard?  If not,
+ 
+            // Does the user have permissions to alter the Video cell?  If not,
             // ignore most messages coming from them by setting 'clientAccess'
             // to false.
             //
             // TW            
-            if (!CellAccessControl.canAlter((WonderlandIdentity)
-                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)) {  // TW
+            if (!CellAccessControl.canAlter(user.getUserIdentity(),this)) {  // TW
                 
                 clientAccess = false; // TW
 
@@ -324,7 +337,7 @@ public class VideoCellGLO extends SharedApp2DImageCellGLO
                 // Since this client has alter permissions, send
                 // them a message to that effect.  The client can then
                 // work to re-enable the end user's ability to make any changes
-                // to their local PDFviewer cell.
+                // to their local Video cell.
                 //
                 // TW
                 // Construct a (very) simple VideoCellMessage first...  TW

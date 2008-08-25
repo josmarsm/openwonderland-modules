@@ -173,11 +173,30 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                 
         getCellChannel().send(sessions, tempMsg.getBytes());  // TW              
     }
+
+    @Override
+    public void pingClient(ClientSession client){  // TW
+        // Construct a (very) simple message first...  TW
+        TightVNCModuleCellMessage tempMsg = new TightVNCModuleCellMessage (cellID, Action.PING);  // TW
+   
+        logger.fine("Privileges have changed; pinging a client....");  // TW
         
+        if (getCellChannel().getSessions().contains(client))  // TW
+            // Ping our client.
+            getCellChannel().send(client, tempMsg.getBytes());  // TW
+        else
+            logger.severe("Attempting to ping a client outside of this GLO's channel:  " + client.getName());           
+    }
+    
     @Override
     public void receivedMessage(ClientSession client, CellMessage message) {
         if (message instanceof TightVNCModuleCellMessage) {
             TightVNCModuleCellMessage vnccm = (TightVNCModuleCellMessage) message;
+
+            // Obtain a UserGLO object for use later.
+            // TW
+            UserGLO user = UserGLO.getUserGLO(client.getName());
+            
             logger.fine("vnc GLO: received msg: " + vnccm);
 
             // the current state of the application
@@ -193,8 +212,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
             // can't even see the VNC cell.  If they have control, take
             // it away, then drop them like yesterday's cheese!
             // TW
-            if (!CellAccessControl.canInteract((WonderlandIdentity)
-                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)){  // TW
+            if (!CellAccessControl.canInteract(user.getUserIdentity(),this)){  // TW
                 
                 // If the client does not have 'alter' or 'interact'
                 // access, make sure they didn't just have control.
@@ -202,6 +220,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                 if ((controlling != null) && (requester != null) && requester.equals(controlling)) {  // TW
                     logger.fine("Forcing user to relinquish control due to lost privileges.");  // TW
                    stateMO.setControllingCell(null);  // TW
+                   controlling = null; // TW
                 }     
                 
                 // In case the client has a control panel open,
@@ -215,14 +234,9 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
 
                 // Get the client to re-evaluate their surroundings.
                 // TW
-                UserGLO user = UserGLO.getUserGLO(client.getName());
                 user.getAvatarCellRef().get(AvatarCellGLO.class).getUserCellCacheRef().
                                         get(UserCellCacheGLO.class).refactor();
                             
-                // Drop the client--they can't see this cell anymore!
-                // TW
-                getCellChannel().leave(client); // TW
-                                
                 return;  // TW
             }
             
@@ -233,8 +247,7 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
             // to false.
             //
             // TW            
-            if (!CellAccessControl.canAlter((WonderlandIdentity)
-                AppContext.getManager(ClientIdentityManager.class).getClientID(),this)) {  // TW
+            if (!CellAccessControl.canAlter(user.getUserIdentity(),this)) {  // TW
                 
                 clientAccess = false;  // TW
                 
