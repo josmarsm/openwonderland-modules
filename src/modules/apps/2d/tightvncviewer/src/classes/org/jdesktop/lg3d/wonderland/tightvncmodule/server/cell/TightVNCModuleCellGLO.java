@@ -232,6 +232,15 @@ public class TightVNCModuleCellGLO extends SharedApp2DImageCellGLO
                 logger.fine("TightVNC GLO sending NO_ALTER_PERM msg: " + msg);  // TW
                 getCellChannel().send(client, msg.getBytes());  // TW
 
+                // Close the client's session.
+
+                msg = new TightVNCModuleCellMessage (Action.CLOSE_SESSION);  // TW
+                
+                // Send the close-session message off to the client.
+                
+                logger.fine("TightVNC GLO sending CLOSE_SESSION msg: " + msg);  // TW
+                getCellChannel().send(client, msg.getBytes());  // TW
+                
                 // Get the client to re-evaluate their surroundings.
                 // TW
                 user.getAvatarCellRef().get(AvatarCellGLO.class).getUserCellCacheRef().
