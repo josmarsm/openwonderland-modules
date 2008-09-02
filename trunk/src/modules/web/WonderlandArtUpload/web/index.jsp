@@ -1,7 +1,7 @@
 <%-- 
     Document   : index
-    Created on : Apr 28, 2008, 4:39:30 PM
-    Author     : jkaplan
+    Created on : 08-Aug-2008, 10:55:43
+    Author     : James Barratt
 --%>
 
 <%@page contentType="text/html" pageEncoding="MacRoman"%>
@@ -11,50 +11,17 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=MacRoman">
-        <title>Wonderland Art Upload</title>
+        <title>Upload Page</title>
     </head>
     <body>
-        <h2>Art upload</h2>
-        <form name="art" action="upload" method="POST" enctype="multipart/form-data">
-            <table border="0">
-                <tbody>
-                    <tr>
-                        <td>Name:</td>
-                        <td><input type="text" name="name" size="24"></td>
-                    </tr>
-                    <tr>
-                        <td>Location:</td>
-                        <td>X: <input type="text" name="xloc" size="4">
-                            Y: <input type="text" name="yloc" size="4">
-                            Z: <input type="text" name="zloc" size="4"></td>
-                    </tr>
-                    <tr>
-                        <td>Rotation:</td>
-                        <td>X: <input type="text" name="xrot" size="4">
-                            Y: <input type="text" name="yrot" size="4">
-                            Z: <input type="text" name="zrot" size="4">
-                            A: <input type="text" name="arot" size="4"></td>
-                    </tr>
-                    <tr>
-                        <td>Bounds:</td>
-                        <td>X: <input type="text" name="xbounds" size="4">
-                            Y: <input type="text" name="ybounds" size="4">
-                            Z: <input type="text" name="zbounds" size="4"></td>
-                    </tr>
-                    <tr>
-                        <td>Model file (.j3s.gz):</td>
-                        <td><input type="file" name="model" size="24"></td>
-                    </tr>
-                    <tr>
-                        <td>Texture files (.zip):</td>
-                        <td><input type="file" name="textures" size="24"></td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td><input type="submit"></td>
-                    </tr>
-                </tbody>
-            </table>     
-        </form>
+        <h2>Choose upload category:</h2>
+        <ol>
+            <li>
+                <a href="artupload.jsp">Upload artwork</a>
+            </li>
+            <li>
+                <a href="docupload.html">Upload docs for sharing apps</a>
+            </li>
+        </ol>
     </body>
 </html>

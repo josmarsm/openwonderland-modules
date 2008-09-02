@@ -43,21 +43,23 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup;
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.wfs.InvalidWFSCellException;
+import org.jdesktop.lg3d.wonderland.wfs.WFS;
 import org.jdesktop.lg3d.wonderland.wfs.WFSCell;
 import org.jdesktop.lg3d.wonderland.wfs.WFSCellDirectory;
 import org.jdesktop.lg3d.wonderland.wfs.WFSCellNotLoadedException;
 
 /**
  *
- * @author jkaplan
+ * @author jkaplan (jbarratt)
  */
-public class UploadServlet extends HttpServlet {
+public class ArtUploadServlet extends UploadServlet {
     
     
     private static final Logger logger =
-            Logger.getLogger(UploadServlet.class.getName());
+            Logger.getLogger(ArtUploadServlet.class.getName());
     
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -82,35 +84,16 @@ public class UploadServlet extends HttpServlet {
     
     /** 
      * Returns a short description of the servlet.
-     * @return the description for this servlet
      */
     @Override
     public String getServletInfo() {
         return "Wonderland Art Upload Servlet";
     }
-    
-    /** 
-     * Handles the HTTP <code>GET</code> method.<br>
-     * This is not used in this implementation.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException when called
-     * @throws IOException is ignored
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException 
-    {
-        throw new ServletException("Upload servlet only handles post");
-    } 
 
     /** 
-     * Handles the HTTP <code>POST</code> method.<br>
-     * Overrides default implementation.
+     * Handles the HTTP <code>POST</code> method.
      * @param request servlet request
      * @param response servlet response
-     * @throws ServletException
-     * @throws IOException 
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -145,10 +128,8 @@ public class UploadServlet extends HttpServlet {
 
     /**
      * Check that all required items are present
-     * @param items the items to check
-     * @return the items that are present
      */
-    private List<String> checkRequired(List<FileItem> items) {
+    protected List<String> checkRequired(List<FileItem> items) {
         Map<String, ItemValidator> validators = new HashMap<String, ItemValidator>();
         validators.put("name", new FieldValidator("name"));
         validators.put("xbounds", new NumberFieldValidator("xbounds"));
@@ -186,12 +167,11 @@ public class UploadServlet extends HttpServlet {
     }
      
     /**
-     * Write files to the specified directory
+     * Write files to the art directory
      * @param items the list of items containing the files to write
-     * @throws IOException if there is an error writing the files
      * @throws ServletException if there is an error writing the files
      */
-    private void writeFiles(List<FileItem> items) 
+    protected void writeFiles(List<FileItem> items) 
         throws IOException, ServletException
     {
         // get the value of the "name" field
@@ -317,105 +297,6 @@ public class UploadServlet extends HttpServlet {
             logger.log(Level.WARNING, "Error writing " + setup, iwe);
         } catch (WFSCellNotLoadedException wcnle) {
             logger.log(Level.WARNING, "Error writing " + setup, wcnle);
-        }
-    }
-    
-    /**
-     * Find an item in a list by field name
-     * @param items the list of items
-     * @param name the name of the item we are trying to find
-     * @return the item, or null if it is not found
-     */
-    protected FileItem findItem(List<FileItem> items, String name) {
-        FileItem out = null;
-        
-        for (FileItem item : items) {
-            if (item.getFieldName().equals(name)) {
-                out = item;
-                break;
-            }
-        }
-        
-        return out;
-    }
-    
-    interface ItemValidator {
-        public String getName();
-        
-        /**
-         * Validate the given item.  Return null if the item is ok, or
-         * an error string if not
-         */
-        public String validate(FileItem item);
-    }
-    
-    class FieldValidator implements ItemValidator {
-        private String name;
-        
-        public FieldValidator(String name) {
-            this.name = name;
-        }
-        
-        public String getName() {
-            return name;
-        }
-
-        public String validate(FileItem item) {
-            if (!item.isFormField()) {
-                return getName() + " not form field.";
-            }
-            
-            if (item.getString() == null || item.getString().length() == 0) {
-                return getName() + " cannot be empty.";
-            }
-            
-            return null;
-        }
-    }
-    
-    class NumberFieldValidator extends FieldValidator {
-        public NumberFieldValidator(String name) {
-            super (name);
-        }
-        
-        @Override
-        public String validate(FileItem item) {
-            String out = super.validate(item);
-            if (out != null) {
-                return out;
-            }
-            
-            try {
-                Double.parseDouble(item.getString());
-            } catch (NumberFormatException nfe) {
-                return getName() + " must be a number";
-            }
-            
-            return null;
-        }
-    }
-    
-    class FileValidator implements ItemValidator {
-        private String name;
-        
-        public FileValidator(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String validate(FileItem item) {
-            if (item.isFormField()) {
-                return getName() + " must be a file.";
-            }
-            
-            if (item.getSize() == 0) {
-                return getName() + " must not be empty";
-            }
-            
-            return null;
         }
     }
 }
