@@ -39,6 +39,7 @@ import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -163,7 +164,12 @@ public class FileUploadServlet extends UploadServlet {
         if(!fileDir.exists()){
             fileDir.mkdirs();
         }
-        File theFile = new File(fileDir, fileItem.getName());
+        String fileName = fileItem.getName();
+        //Fix for users of IE that include the whole path
+        if (fileName != null) {
+            fileName = FilenameUtils.getName(fileName);
+        }
+        File theFile = new File(fileDir, fileName);
         
         try {
             fileItem.write(theFile);
