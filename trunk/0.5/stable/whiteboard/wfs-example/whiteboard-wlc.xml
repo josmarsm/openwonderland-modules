@@ -2,8 +2,8 @@
   <position-component>
     <origin>
         <x>5.0</x>
-        <y>5.0</y>
-        <z>15.0</z>
+        <y>7.0</y>
+        <z>30.0</z>
     </origin>
     <rotation>
         <x>0.0</x>
