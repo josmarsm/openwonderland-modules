@@ -98,7 +98,7 @@ public class WhiteboardComponentMO extends CellComponentMO {
 
         public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             //TODO: consider making this a subclass of AbstractMessageReceiver
-            throw new UnsupportedOperationException("Not supported yet.");
+            //throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }
