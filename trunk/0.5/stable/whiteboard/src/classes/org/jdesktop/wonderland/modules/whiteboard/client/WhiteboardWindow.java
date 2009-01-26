@@ -34,7 +34,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.swing.JSVGCanvas;
@@ -649,7 +648,6 @@ public class WhiteboardWindow extends WindowGraphics2D {
      * @param notify whether to notify other clients
      */
     public void addNewElement(final Element e, boolean notify) {
-
         svgCanvas.getUpdateManager().getUpdateRunnableQueue().
                 invokeLater(new Runnable() {
 
