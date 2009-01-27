@@ -35,8 +35,6 @@ import org.jdesktop.wonderland.modules.appbase.server.App2DCellMO;
 import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardSVGCellClientState;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardSVGCellServerState;
-import org.jdesktop.wonderland.server.cell.ChannelComponentImplMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.w3c.dom.Document;
@@ -74,10 +72,6 @@ public class WhiteboardCellMO extends App2DCellMO {
     // Default constructor, used when the cell is created via WFS
     public WhiteboardCellMO() {
         super();
-//        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
-//        WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
-//        commComponentRef = AppContext.getDataManager().createReference(commComponent);
-//        addComponent(commComponent);
     }
 
     /**
