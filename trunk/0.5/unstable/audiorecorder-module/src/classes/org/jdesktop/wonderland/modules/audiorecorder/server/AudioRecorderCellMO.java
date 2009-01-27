@@ -111,11 +111,9 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
         // of the cell and not when the cell is moved at all. This class should
         // add a transform change listener to listen for changes in the cell
         // origin after the cell has been created.
-        CellComponentServerState states[] = cellServerState.getCellComponentServerStates();
-        for (CellComponentServerState state : states) {
-            if (state instanceof PositionComponentServerState) {
-                setupRecorder(((PositionComponentServerState)state).getOrigin());
-            }
+        CellComponentServerState state = cellServerState.getComponentServerState(PositionComponentServerState.class);
+        if (state != null) {
+            setupRecorder(((PositionComponentServerState) state).getOrigin());
         }
     }
 
