@@ -74,10 +74,10 @@ public class WhiteboardCellMO extends App2DCellMO {
     // Default constructor, used when the cell is created via WFS
     public WhiteboardCellMO() {
         super();
-        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
-        WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
-        commComponentRef = AppContext.getDataManager().createReference(commComponent);
-        addComponent(commComponent);
+//        addComponent(new ChannelComponentImplMO(this), ChannelComponentMO.class);
+//        WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
+//        commComponentRef = AppContext.getDataManager().createReference(commComponent);
+//        addComponent(commComponent);
     }
 
     /**
@@ -134,6 +134,17 @@ public class WhiteboardCellMO extends App2DCellMO {
         }
         ((WhiteboardSVGCellServerState) state).setSVGDocumentXML(getDocument());
         return state;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void setLive(boolean live) {
+        super.setLive(live);
+        WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
+        commComponentRef = AppContext.getDataManager().createReference(commComponent);
+        addComponent(commComponent);
     }
 
     private void constructDocument() {
