@@ -93,7 +93,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     public CellClientState getClientState(CellClientState cellClientState,
             WonderlandClientID clientID, ClientCapabilities capabilities) {
 
-        audioRecorderLogger.info("Getting client state");
+        audioRecorderLogger.fine("Getting client state");
 
         if (cellClientState == null) {
             cellClientState = new AudioRecorderCellClientState(tapes, selectedTape, isPlaying, isRecording, userName);
@@ -128,7 +128,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        audioRecorderLogger.info("Getting client cell class name");
+        audioRecorderLogger.fine("Getting client cell class name");
         return "org.jdesktop.wonderland.modules.audiorecorder.client.AudioRecorderCell";
     }
 
@@ -136,7 +136,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
         //Add any existing files
         File tapeDir = new File(recordingDirectory);
         if (!tapeDir.exists()) {
-            audioRecorderLogger.info("Non existent directory: " + tapeDir);
+            audioRecorderLogger.fine("Non existent directory: " + tapeDir);
             tapeDir.mkdirs();
         }
         String[] tapeFiles = tapeDir.list(new FilenameFilter() {
@@ -146,7 +146,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
         });
         for (int i = 0; i < tapeFiles.length; i++) {
                 String string = tapeFiles[i];
-                audioRecorderLogger.info("tapeFile: " + string);
+                audioRecorderLogger.fine("tapeFile: " + string);
                 int index = string.indexOf(".au");
                 Tape aTape = new Tape(string.substring(0, index));
                 aTape.setUsed();
@@ -155,7 +155,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
             }
 
         if (selectedTape == null) {
-            audioRecorderLogger.info("no selected tape");
+            audioRecorderLogger.fine("no selected tape");
             selectedTape = new Tape("Untitled Tape");
             tapes.add(selectedTape);
         }
@@ -230,7 +230,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     }
 
     private void startPlaying() {
-        audioRecorderLogger.info("Start Playing");
+        audioRecorderLogger.fine("Start Playing");
         try {
             recorder.playRecording(getRecorderFilename());
         } catch (IOException e) {
@@ -239,7 +239,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     }
 
     private void startRecording() {
-        audioRecorderLogger.info("Start Recording");
+        audioRecorderLogger.fine("Start Recording");
         try {
             recorder.startRecording(getRecorderFilename());
         } catch (IOException e) {
@@ -248,7 +248,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     }
 
     private void stopPlaying() {
-        audioRecorderLogger.info("Stop Playing");
+        audioRecorderLogger.fine("Stop Playing");
         try {
             recorder.stopPlayingRecording();
         } catch (IOException e) {
@@ -257,7 +257,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     }
 
     private void stopRecording() {
-        audioRecorderLogger.info("Stop Recording");
+        audioRecorderLogger.fine("Stop Recording");
         try {
             recorder.stopRecording();
         } catch (IOException e) {
@@ -292,7 +292,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 	}
 
         if (ntcm.isRecording()) {
-            audioRecorderLogger.info("set recording volume of " + callId + " to " + ntcm.getVolume());
+            audioRecorderLogger.fine("set recording volume of " + callId + " to " + ntcm.getVolume());
 
             player.setMasterVolume(ntcm.getVolume());
         } else {
@@ -349,7 +349,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
             super(cellMO);
         }
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            audioRecorderLogger.info("message received: " + message + ", ID: " + clientID);
+            //audioRecorderLogger.info("message received: " + message + ", ID: " + clientID);
             AudioRecorderCellMO cellMO = (AudioRecorderCellMO)getCell();
             AudioRecorderCellChangeMessage arcm = (AudioRecorderCellChangeMessage)message;
             switch (arcm.getAction()) {
