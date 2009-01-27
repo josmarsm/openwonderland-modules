@@ -92,8 +92,7 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
         root.updateModelBound();
         //Set the name of the buttonRoot node
         root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
-        // Transfer the cell transform into the buttonRoot node
-        applyTransform(root, cell.getLocalTransform());
+
         //Set the state of the buttons
         boolean isRecording = ((AudioRecorderCell)cell).isRecording();
         boolean isPlaying = ((AudioRecorderCell)cell).isPlaying();
