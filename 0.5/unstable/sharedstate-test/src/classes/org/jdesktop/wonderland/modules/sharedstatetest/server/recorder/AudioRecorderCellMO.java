@@ -74,7 +74,7 @@ public class AudioRecorderCellMO extends CellMO
 
         createTapes();
 
-        callId = this.toString();
+        callId = getCellID().toString();
         int ix = callId.indexOf("@");
         if (ix >= 0) {
             callId = callId.substring(ix + 1);
