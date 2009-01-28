@@ -324,6 +324,8 @@ public class AudioRecorderCell extends Cell implements SharedMapListenerCli {
             if (((SharedBoolean) curData).getValue()) {
                 t.setUsed();
             }
+
+            tapeListModel.addElement(t);
         } else if (curData != null && ((SharedBoolean) curData).getValue()) {
             setTapeUsed(tapeName);
         }
