@@ -65,7 +65,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
         createTapes();
         isPlaying = false;
         isRecording = false;
-        callId = this.toString();
+        callId = getCellID().toString();
         int ix;
 
         if ((ix = callId.indexOf("@")) >= 0) {
