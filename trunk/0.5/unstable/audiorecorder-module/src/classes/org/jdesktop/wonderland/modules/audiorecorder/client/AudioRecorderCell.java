@@ -226,7 +226,7 @@ public class AudioRecorderCell extends Cell {
 
     void stop() {
         audioRecorderLogger.info("stop");
-	if (userName.equals(getCurrentUserName())) {
+	if (userName != null && userName.equals(getCurrentUserName())) {
             AudioRecorderCellChangeMessage msg = null;
             if (isRecording) {
                 msg = AudioRecorderCellChangeMessage.recordingMessage(getCellID(), false, userName);
