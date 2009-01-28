@@ -17,6 +17,9 @@
 
     <pathconvert property="module-server.classpath">
         <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/tools/audio-manager/lib/voicelib.jar"/>
+        <path location="${modules.dir}/tools/audio-manager/lib/bridge_connector.jar"/>
+        <path location="${modules.dir}/tools/audio-manager/lib/voip.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common,
