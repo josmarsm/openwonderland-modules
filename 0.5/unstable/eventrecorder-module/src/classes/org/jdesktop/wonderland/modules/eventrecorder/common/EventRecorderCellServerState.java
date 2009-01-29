@@ -22,14 +22,15 @@ import java.io.Serializable;
 import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.spi.CellServerStateSPI;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  *
  * @author Bernard Horan
  */
 @XmlRootElement(name="eventrecorder-cell")
-public class EventRecorderCellServerState extends CellServerState implements Serializable, CellServerStateSPI {
+@ServerState
+public class EventRecorderCellServerState extends CellServerState implements Serializable {
     private int instanceNumber;
     private Set<Tape> tapes;
     private Tape selectedTape;
