@@ -193,8 +193,7 @@ public class EventRecorderCellMO extends CellMO {
     }
 
     private String getRecorderFilename() {
-        //MUST end in '.xml'
-        return recordingDirectory + File.separator+ selectedTape.getTapeName() + ".xml";
+        return recordingDirectory + File.separator+ selectedTape.getTapeName();
     }
 
     private void setRecording(boolean r) {
