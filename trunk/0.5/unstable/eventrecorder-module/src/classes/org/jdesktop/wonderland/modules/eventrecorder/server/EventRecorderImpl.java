@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import java.io.CharArrayWriter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
@@ -94,7 +95,7 @@ public class EventRecorderImpl implements EventRecorder, Serializable {
         //2. open the file to record changes
         //3. set recording to true
         try {
-            openSyncFile(pathName+"sync");
+            openSyncFile(pathName+"-sync.xml");
             synchronize();
             endSync();
         } catch (FileNotFoundException ex) {
@@ -102,7 +103,7 @@ public class EventRecorderImpl implements EventRecorder, Serializable {
         }
         register();
         try {
-            openChangesFile(pathName);
+            openChangesFile(pathName+"-changes.xml");
             isRecording = true;
         } catch (FileNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -162,7 +163,7 @@ public class EventRecorderImpl implements EventRecorder, Serializable {
         syncWriter.println("<Cell cellID=\"" + cell.getCellID() + "\" class=\"" + cell.getClass().getCanonicalName() + "\">");
         if (serverState != null) {
             try {
-                serverState.encode(syncWriter);
+                writeServerState(serverState);
                 
             } catch (JAXBException ex) {
                 logger.log(Level.SEVERE, null, ex);
@@ -178,6 +179,19 @@ public class EventRecorderImpl implements EventRecorder, Serializable {
             syncWriter.println("</Children>");
         }
         syncWriter.println("</Cell>");
+    }
+
+    private void writeServerState(CellServerState serverState) throws JAXBException {
+        CharArrayWriter writer = new CharArrayWriter();
+        serverState.encode(writer);
+        String encodedState = writer.toString();
+        //Remove the first line
+        //Find the newline
+        int index = encodedState.indexOf("\n", 1);
+        //get everything from there to the end of the string
+        encodedState = encodedState.substring(index);
+        //write it to the syncwriter
+        syncWriter.println(encodedState);
     }
    
     
