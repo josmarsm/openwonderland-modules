@@ -74,8 +74,8 @@ public class WhiteboardWindow extends WindowGraphics2D {
     private AffineTransform scaleTransform;
     private float zoom = 1.0f;
     private boolean synced = true;
-    //private WhiteboardCellMenu cellMenu;
-    private WhiteboardControlDialog controls;
+    private WhiteboardControlPanel controls;
+    private WhiteboardControlWindow window;
     private boolean inControl = false;
     protected Object actionLock = new Object();
 
@@ -109,9 +109,6 @@ public class WhiteboardWindow extends WindowGraphics2D {
         super(app, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
         this.commComponent = commComponent;
         initCanvas(width, height);
-        controls = new WhiteboardControlDialog(null, false);
-        toolManager = new WhiteboardToolManager(this);
-        controls.addCellMenuListener(toolManager);
         showControls(true);
         wbSurface = (WhiteboardDrawingSurface) getSurface();
         whiteboardDocument = new WhiteboardDocument(this);
@@ -139,7 +136,21 @@ public class WhiteboardWindow extends WindowGraphics2D {
     }
 
     public void showControls(final boolean show) {
-        controls.setVisible(show);
+        if (window == null) {
+            try {
+                Vector2f panelPixelScale = new Vector2f(0.02f, 0.02f);
+                window = new WhiteboardControlWindow(app, 660, 40, /*TODO: until debugged: true*/ false, panelPixelScale);
+                controls = new WhiteboardControlPanel();
+                toolManager = new WhiteboardToolManager(this);
+                controls.addCellMenuListener(toolManager);
+                window.setComponent(controls);
+                window.positionRelativeTo(this, 250, 865);
+                //window.showHUDView(true);
+            } catch (InstantiationException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        window.setVisible(show);
     }
 
     public void movingMarker(MouseEvent e) {

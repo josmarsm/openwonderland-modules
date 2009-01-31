@@ -1,19 +1,25 @@
-/**
+/*
  * Project Wonderland
- *
+ * 
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
- *
+ * 
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
- *
+ * 
  * The contents of this file are subject to the GNU General Public
  * License, Version 2 (the "License"); you may not use this file
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
- *
+ * 
  * Sun designates this particular file as subject to the "Classpath"
  * exception as provided by Sun in the License file that accompanied
  * this code.
+ */
+
+/*
+ * WhiteboardControlPanel.java
+ *
+ * Created on Jan 29, 2009, 4:55:50 PM
  */
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
@@ -36,19 +42,18 @@ import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.W
  *
  * @author nsimpson
  */
-public class WhiteboardControlDialog extends javax.swing.JDialog implements CellMenu {
+public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMenu {
 
-    private static final Logger logger = Logger.getLogger(WhiteboardControlDialog.class.getName());
+    private static final Logger logger = Logger.getLogger(WhiteboardControlPanel.class.getName());
     protected boolean fillMode = false;
     protected ArrayList<WhiteboardCellMenuListener> cellMenuListeners = new ArrayList();
     protected Border border;
     protected Map toolMappings;
     protected Map colorMappings;
 
-    public WhiteboardControlDialog(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
-        //makeTransparent();
+    public WhiteboardControlPanel() {
         initComponents();
+        //makeTransparent();
         initButtonMaps();
         border = javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED);
     }
@@ -77,15 +82,24 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         colorMappings.put(WhiteboardColor.WHITE, colorWhiteButton);
     }
 
+    public void setSelectedColor(WhiteboardColor color) {
+        JButton colorButton = (JButton)colorMappings.get(color);
+        depressButton(colorButton, true);
+    }
+
+    public WhiteboardColor getSelectedColor() {
+        return WhiteboardColor.BLACK;
+    }
+
     /**
      * Make the dialog transparent
-     * 
+     *
      * This method from:
      * http://blog.keilly.com/2008/05/creating-swing-widget-part-3.html
      */
     private void makeTransparent() {
-        setUndecorated(true); // remove the window controls
-        setResizable(false);  // remove the resize control
+        //setUndecorated(true); // remove the window controls
+        //setResizable(false);  // remove the resize control
 
         // OSX transparency
         setBackground(new Color(0f, 0f, 0f, 0f));
@@ -178,7 +192,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        controlPanel = new javax.swing.JPanel();
         dragButton = new javax.swing.JButton();
         newButton = new javax.swing.JButton();
         selectButton = new javax.swing.JButton();
@@ -194,24 +207,14 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         colorWhiteButton = new javax.swing.JButton();
         syncButton = new javax.swing.JButton();
 
-        setTitle("Whiteboard");
-        setName("controlDialog"); // NOI18N
-
-        controlPanel.setBackground(new java.awt.Color(231, 230, 230));
-        controlPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 2));
-        controlPanel.setAlignmentY(0.0F);
-        controlPanel.setName("controlPanel"); // NOI18N
-
         dragButton.setEnabled(false);
         dragButton.setFocusCycleRoot(true);
         dragButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        dragButton.setName("dragButton"); // NOI18N
 
         newButton.setBackground(new java.awt.Color(231, 230, 230));
         newButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/new.png"))); // NOI18N
         newButton.setBorderPainted(false);
         newButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        newButton.setName("newButton"); // NOI18N
         newButton.setOpaque(true);
         newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -224,7 +227,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         selectButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         selectButton.setBorderPainted(false);
         selectButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        selectButton.setName("selectButton"); // NOI18N
         selectButton.setOpaque(true);
         selectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -237,7 +239,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         lineButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         lineButton.setBorderPainted(false);
         lineButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        lineButton.setName("lineButton"); // NOI18N
         lineButton.setOpaque(true);
         lineButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -250,7 +251,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         rectangleButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         rectangleButton.setBorderPainted(false);
         rectangleButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        rectangleButton.setName("rectangleButton"); // NOI18N
         rectangleButton.setOpaque(true);
         rectangleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -263,7 +263,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         ellipseButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         ellipseButton.setBorderPainted(false);
         ellipseButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        ellipseButton.setName("ellipseButton"); // NOI18N
         ellipseButton.setOpaque(true);
         ellipseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -276,7 +275,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         textButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         textButton.setBorderPainted(false);
         textButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        textButton.setName("textButton"); // NOI18N
         textButton.setOpaque(true);
         textButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -289,7 +287,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         fillButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         fillButton.setBorderPainted(false);
         fillButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        fillButton.setName("fillButton"); // NOI18N
         fillButton.setOpaque(true);
         fillButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -302,7 +299,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         colorRedButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         colorRedButton.setBorderPainted(false);
         colorRedButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorRedButton.setName("colorRedButton"); // NOI18N
         colorRedButton.setOpaque(true);
         colorRedButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -315,7 +311,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         colorGreenButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         colorGreenButton.setBorderPainted(false);
         colorGreenButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorGreenButton.setName("colorGreenButton"); // NOI18N
         colorGreenButton.setOpaque(true);
         colorGreenButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -328,7 +323,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         colorBlueButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         colorBlueButton.setBorderPainted(false);
         colorBlueButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorBlueButton.setName("colorBlueButton"); // NOI18N
         colorBlueButton.setOpaque(true);
         colorBlueButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -341,7 +335,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         colorBlackButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         colorBlackButton.setBorderPainted(false);
         colorBlackButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorBlackButton.setName("colorBlackButton"); // NOI18N
         colorBlackButton.setOpaque(true);
         colorBlackButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -354,7 +347,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         colorWhiteButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         colorWhiteButton.setBorderPainted(false);
         colorWhiteButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorWhiteButton.setName("colorWhiteButton"); // NOI18N
         colorWhiteButton.setOpaque(true);
         colorWhiteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -366,7 +358,6 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/sync.png"))); // NOI18N
         syncButton.setBorderPainted(false);
         syncButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        syncButton.setName("syncButton"); // NOI18N
         syncButton.setOpaque(true);
         syncButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -374,27 +365,27 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
             }
         });
 
-        org.jdesktop.layout.GroupLayout controlPanelLayout = new org.jdesktop.layout.GroupLayout(controlPanel);
-        controlPanel.setLayout(controlPanelLayout);
-        controlPanelLayout.setHorizontalGroup(
-            controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(controlPanelLayout.createSequentialGroup()
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
                 .add(dragButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(newButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(selectButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(lineButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(rectangleButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(ellipseButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(textButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(fillButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(colorRedButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(colorGreenButton)
@@ -405,12 +396,12 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(colorWhiteButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(syncButton)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(syncButton))
         );
-        controlPanelLayout.setVerticalGroup(
-            controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 38, Short.MAX_VALUE)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                 .add(dragButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(selectButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -426,52 +417,7 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
                 .add(colorWhiteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(syncButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(controlPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(controlPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-        );
-
-        pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void colorBlueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorBlueButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.blue();
-        }
-}//GEN-LAST:event_colorBlueButtonActionPerformed
-
-    private void colorBlackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorBlackButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.black();
-        }
-}//GEN-LAST:event_colorBlackButtonActionPerformed
-
-    private void colorGreenButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorGreenButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.green();
-        }
-}//GEN-LAST:event_colorGreenButtonActionPerformed
-
-    private void colorRedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorRedButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.red();
-        }
-}//GEN-LAST:event_colorRedButtonActionPerformed
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
         Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
@@ -544,13 +490,37 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         }
 }//GEN-LAST:event_fillButtonActionPerformed
 
-    private void syncButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncButtonActionPerformed
+    private void colorRedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorRedButtonActionPerformed
         Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
         while (iter.hasNext()) {
             WhiteboardCellMenuListener listener = iter.next();
-            listener.sync();
+            listener.red();
         }
-}//GEN-LAST:event_syncButtonActionPerformed
+}//GEN-LAST:event_colorRedButtonActionPerformed
+
+    private void colorGreenButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorGreenButtonActionPerformed
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.green();
+        }
+}//GEN-LAST:event_colorGreenButtonActionPerformed
+
+    private void colorBlueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorBlueButtonActionPerformed
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.blue();
+        }
+}//GEN-LAST:event_colorBlueButtonActionPerformed
+
+    private void colorBlackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorBlackButtonActionPerformed
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.black();
+        }
+}//GEN-LAST:event_colorBlackButtonActionPerformed
 
     private void colorWhiteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorWhiteButtonActionPerformed
         Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
@@ -560,33 +530,19 @@ public class WhiteboardControlDialog extends javax.swing.JDialog implements Cell
         }
 }//GEN-LAST:event_colorWhiteButtonActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                WhiteboardControlDialog dialog = new WhiteboardControlDialog(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
-
+    private void syncButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncButtonActionPerformed
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.sync();
+        }
+}//GEN-LAST:event_syncButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton colorBlackButton;
     private javax.swing.JButton colorBlueButton;
     private javax.swing.JButton colorGreenButton;
     private javax.swing.JButton colorRedButton;
     private javax.swing.JButton colorWhiteButton;
-    private javax.swing.JPanel controlPanel;
     private javax.swing.JButton dragButton;
     private javax.swing.JButton ellipseButton;
     private javax.swing.JButton fillButton;
