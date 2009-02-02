@@ -1,7 +1,5 @@
 /**
- * Project Looking Glass
- *
- * $RCSfile: ReelForm.java,v $
+ * Project Wonderland
  *
  * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
  *
@@ -15,8 +13,7 @@
  *
  * $Revision$
  * $Date$
- * $State: Exp $
- * $Id$
+ * $State$
  */
 
 package org.jdesktop.wonderland.modules.audiorecorder.client;
