@@ -22,14 +22,25 @@
 package org.jdesktop.wonderland.modules.audiorecorder.common;
 
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 
+/**
+ * 
+ * @author Bernard Horan
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Tape implements Serializable, Comparable {
 
     private String tapeName;
     private boolean isFresh;
+
+    public Tape() {
+        isFresh = true;
+    }
     
     public Tape(String filename) {
-        isFresh = true;
+        this();
         this.tapeName = filename;
     }
 
@@ -39,7 +50,12 @@ public class Tape implements Serializable, Comparable {
 
     @Override
     public String toString() {
-        return tapeName;
+        StringBuilder sb = new StringBuilder("[" + getClass().getSimpleName() +"]");
+        sb.append(" tapeName=");
+        sb.append(tapeName);
+        sb.append(" isFresh=");
+        sb.append(isFresh);
+        return sb.toString();
     }
 
     public boolean isFresh() {

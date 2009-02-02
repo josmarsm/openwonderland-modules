@@ -7,8 +7,6 @@ package org.jdesktop.wonderland.modules.audiorecorder.server;
 
 import com.sun.sgs.app.AppContext;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -50,21 +48,18 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     private static int INSTANCE_COUNT = 0;
     private int instanceNumber;
     private String callId;
-    private Set<Tape> tapes = new HashSet<Tape>();
-    private Tape selectedTape = null;
-    private boolean isPlaying, isRecording;
-    private String userName;
-    private String recordingDirectory;
     private Recorder recorder;
+    private AudioRecorderCellServerState serverState;
 
     public AudioRecorderCellMO() {
         super();
         addComponent(new MovableComponentMO(this));
+        serverState = new AudioRecorderCellServerState();
         instanceNumber = ++INSTANCE_COUNT;
-        recordingDirectory = "/tmp/AudioRecordings/Recorder" + instanceNumber;
+        serverState.setRecordingDirectory("/tmp/AudioRecordings/Recorder" + instanceNumber);
         createTapes();
-        isPlaying = false;
-        isRecording = false;
+        serverState.setPlaying(false);
+        serverState.setRecording(false);
         callId = getCellID().toString();
         int ix;
 
@@ -96,7 +91,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
         audioRecorderLogger.fine("Getting client state");
 
         if (cellClientState == null) {
-            cellClientState = new AudioRecorderCellClientState(tapes, selectedTape, isPlaying, isRecording, userName);
+            cellClientState = new AudioRecorderCellClientState(serverState.getTapes(), serverState.getSelectedTape(), serverState.isPlaying(), serverState.isRecording(), serverState.getUserName());
         }
 
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -120,7 +115,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     @Override
     public CellServerState getServerState(CellServerState cellServerState) {
         if (cellServerState == null) {
-            cellServerState = new AudioRecorderCellServerState();
+            cellServerState = serverState;
         }
         return super.getServerState(cellServerState);
     }
@@ -134,7 +129,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     private void createTapes() {
         //Add any existing files
-        File tapeDir = new File(recordingDirectory);
+        File tapeDir = new File(serverState.getRecordingDirectory());
         if (!tapeDir.exists()) {
             audioRecorderLogger.fine("Non existent directory: " + tapeDir);
             tapeDir.mkdirs();
@@ -150,24 +145,24 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
                 int index = string.indexOf(".au");
                 Tape aTape = new Tape(string.substring(0, index));
                 aTape.setUsed();
-                selectedTape = aTape; //Selected tape is last existing tape
-                tapes.add(aTape);
+                serverState.setSelectedTape(aTape); //Selected tape is last existing tape
+                serverState.addTape(aTape);
             }
 
-        if (selectedTape == null) {
+        if (serverState.getSelectedTape() == null) {
             audioRecorderLogger.fine("no selected tape");
-            selectedTape = new Tape("Untitled Tape");
-            tapes.add(selectedTape);
+            serverState.setSelectedTape(new Tape("Untitled Tape"));
+            serverState.addTape(serverState.getSelectedTape());
         }
     }
 
     private String getRecorderFilename() {
         //MUST end in '.au'
-        return selectedTape.getTapeName() + ".au";
+        return serverState.getSelectedTape().getTapeName() + ".au";
     }
 
     private void setPlaying(boolean p) {
-        if (isPlaying) {
+        if (serverState.isPlaying()) {
             //Already playing
             if (!p) {
                 stopPlaying();
@@ -179,11 +174,11 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
                 startPlaying();
             }
         }
-        isPlaying = p;
+        serverState.setPlaying(p);
     }
 
     private void setRecording(boolean r) {
-        if (isRecording) {
+        if (serverState.isRecording()) {
             //Already recording
             if (!r) {
                 //Stop recording
@@ -196,7 +191,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
                 startRecording();
             }
         }
-        isRecording = r;
+        serverState.setRecording(r);
 
     }
 
@@ -220,7 +215,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
 	setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
 
-	setup.recordDirectory = recordingDirectory;
+	setup.recordDirectory = serverState.getRecordingDirectory();
 
         try {
             recorder = vm.createRecorder(callId, setup);
@@ -267,7 +262,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     private void processPlayMessage(WonderlandClientID clientID, AudioRecorderCellChangeMessage arcm) {
         setPlaying(arcm.isPlaying());
-        userName = arcm.getUserName();
+        serverState.setUserName(arcm.getUserName());
 
         // send a message to all clients
         getChannel().sendAll(clientID, arcm);
@@ -275,7 +270,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     private void processRecordMessage(WonderlandClientID clientID, AudioRecorderCellChangeMessage arcm) {
         setRecording(arcm.isRecording());
-        userName = arcm.getUserName();
+        serverState.setUserName(arcm.getUserName());
 
         // send a message to all clients
         getChannel().sendAll(clientID, arcm);
@@ -312,7 +307,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     private void processTapeUsedMessage(WonderlandClientID clientID, AudioRecorderCellChangeMessage arcm) {
         String tapeName = arcm.getTapeName();
-        for (Tape aTape : tapes) {
+        for (Tape aTape : serverState.getTapes()) {
             if(aTape.getTapeName().equals(tapeName)) {
                 aTape.setUsed();
                 // send a message to all clients
@@ -323,9 +318,9 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     private void processTapeSelectedMessage(WonderlandClientID clientID, AudioRecorderCellChangeMessage arcm) {
         String tapeName = arcm.getTapeName();
-        for (Tape aTape : tapes) {
+        for (Tape aTape : serverState.getTapes()) {
             if(aTape.getTapeName().equals(tapeName)) {
-                selectedTape = aTape;
+                serverState.setSelectedTape(aTape);
                 // send a message to all clients
                 getChannel().sendAll(clientID, arcm);
             }
@@ -335,7 +330,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     private void processNewTapeMessage(WonderlandClientID clientID, AudioRecorderCellChangeMessage arcm) {
         String tapeName = arcm.getTapeName();
         Tape newTape = new Tape(tapeName);
-        tapes.add(newTape);
+        serverState.addTape(newTape);
         // send a message to all clients
         getChannel().sendAll(clientID, arcm);
     }
