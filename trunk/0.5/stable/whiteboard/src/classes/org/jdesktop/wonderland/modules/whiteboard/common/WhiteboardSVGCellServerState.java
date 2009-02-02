@@ -21,8 +21,8 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.modules.appbase.common.App2DCellServerState;
 
 /**
  * The WFS server state class for WhiteboardCellMO.
@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  */
 @XmlRootElement(name = "whiteboard-cell-svg")
 @ServerState
-public class WhiteboardSVGCellServerState extends CellServerState implements Serializable {
+public class WhiteboardSVGCellServerState extends App2DCellServerState implements Serializable {
 
     /** The user's preferred width of the whiteboard window. */
     @XmlElement(name = "preferredWidth")
