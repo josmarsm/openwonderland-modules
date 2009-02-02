@@ -59,6 +59,7 @@ public class EventRecorderCellMO extends CellMO {
 
 
     public EventRecorderCellMO() {
+        super();
         addComponent(new MovableComponentMO(this));
         instanceNumber = ++INSTANCE_COUNT;
         recorderName = "Recorder" + instanceNumber;
