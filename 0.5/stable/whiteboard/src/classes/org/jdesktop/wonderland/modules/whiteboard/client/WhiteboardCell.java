@@ -111,7 +111,6 @@ public class WhiteboardCell extends App2DCell {
             case ACTIVE:
                 // The cell is now visible
                 commComponent = getComponent(WhiteboardComponent.class);
-
                 setApp(new WhiteboardApp(getAppType(), clientState.getPreferredWidth(),
                         clientState.getPreferredHeight(), clientState.getPixelScale(),
                         commComponent));

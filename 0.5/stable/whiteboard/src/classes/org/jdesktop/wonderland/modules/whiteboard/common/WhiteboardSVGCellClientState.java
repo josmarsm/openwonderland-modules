@@ -32,8 +32,8 @@ import org.jdesktop.wonderland.modules.appbase.common.App2DCellClientState;
 public class WhiteboardSVGCellClientState extends App2DCellClientState {
 
     private static final Logger logger = Logger.getLogger(WhiteboardSVGCellClientState.class.getName());
-    private static final int DEFAULT_WIDTH = 640;
-    private static final int DEFAULT_HEIGHT = 480;
+    private static final int DEFAULT_WIDTH = 1280;
+    private static final int DEFAULT_HEIGHT = 1024;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
     private boolean decorated = true;           // show window decorations
