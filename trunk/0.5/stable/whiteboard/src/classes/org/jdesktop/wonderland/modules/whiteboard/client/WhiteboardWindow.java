@@ -64,8 +64,8 @@ public class WhiteboardWindow extends WindowGraphics2D {
     private static final Logger logger =
             Logger.getLogger(WhiteboardWindow.class.getName());
     private WhiteboardDrawingSurface wbSurface;
-    private static final int DEFAULT_WIDTH = 640;
-    private static final int DEFAULT_HEIGHT = 480;
+    private static final int DEFAULT_WIDTH = 1280;
+    private static final int DEFAULT_HEIGHT = 1024;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
     private WhiteboardToolManager toolManager;
@@ -144,7 +144,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 toolManager = new WhiteboardToolManager(this);
                 controls.addCellMenuListener(toolManager);
                 window.setComponent(controls);
-                window.positionRelativeTo(this, 250, 865);
+                window.positionRelativeTo(this, 280, 810);
                 //window.showHUDView(true);
             } catch (InstantiationException ex) {
                 throw new RuntimeException(ex);
