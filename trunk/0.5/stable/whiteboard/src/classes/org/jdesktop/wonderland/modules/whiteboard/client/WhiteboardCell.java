@@ -62,9 +62,6 @@ public class WhiteboardCell extends App2DCell {
      */
     public WhiteboardCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-//        addComponent(new ChannelComponentImpl(this), ChannelComponent.class);
-//        commComponent = new WhiteboardComponent(this);
-//        addComponent(commComponent);
         myUID = cellID.toString();
     }
 
