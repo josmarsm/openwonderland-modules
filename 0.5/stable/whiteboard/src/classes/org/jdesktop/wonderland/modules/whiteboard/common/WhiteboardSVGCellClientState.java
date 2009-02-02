@@ -36,7 +36,6 @@ public class WhiteboardSVGCellClientState extends App2DCellClientState {
     private static final int DEFAULT_HEIGHT = 480;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
-    private float pixelScale = 1.0f;            // scale factor when mapping from pixels to world units
     private boolean decorated = true;           // show window decorations
     private Point position = new Point(0, 0);   // image pan/scroll position
     private float zoom = 1.0f;

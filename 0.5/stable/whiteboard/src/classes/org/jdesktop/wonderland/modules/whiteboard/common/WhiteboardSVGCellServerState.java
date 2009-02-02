@@ -40,12 +40,7 @@ public class WhiteboardSVGCellServerState extends App2DCellServerState implement
     /** The user's preferred height of the whiteboard window. */
     @XmlElement(name = "preferredHeight")
     public int preferredHeight = 768;
-    /** The X pixel scale of the whiteboard window. */
-    @XmlElement(name = "pixelScaleX")
-    public float pixelScaleX = 0.01f;
-    /** The Y pixel scale of the whiteboard window. */
-    @XmlElement(name = "pixelScaleY")
-    public float pixelScaleY = 0.01f;
+    /** The SVG document to display */
     @XmlElement(name = "svgDocumentXML")
     public String svgDocumentXML = "";
 
@@ -75,24 +70,6 @@ public class WhiteboardSVGCellServerState extends App2DCellServerState implement
         return preferredHeight;
     }
 
-    public void setPixelScaleX(float pixelScaleX) {
-        this.pixelScaleX = pixelScaleX;
-    }
-
-    @XmlTransient
-    public float getPixelScaleX() {
-        return pixelScaleX;
-    }
-
-    public void setPixelScaleY(float pixelScaleY) {
-        this.pixelScaleY = pixelScaleY;
-    }
-
-    @XmlTransient
-    public float getPixelScaleY() {
-        return pixelScaleY;
-    }
-
     public void setSVGDocumentXML(String svgDocumentXML) {
         this.svgDocumentXML = svgDocumentXML;
     }
@@ -112,8 +89,6 @@ public class WhiteboardSVGCellServerState extends App2DCellServerState implement
         return super.toString() + " [WhiteboardSVGCellServerState]: " +
                 "preferredWidth=" + preferredWidth + "," +
                 "preferredHeight=" + preferredHeight + "," +
-                "pixelScaleX=" + pixelScaleX + "," +
-                "pixelScaleY=" + pixelScaleY + ", " +
                 "svgDocumentXML=" + svgDocumentXML;
     }
 }
