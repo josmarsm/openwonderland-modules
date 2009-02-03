@@ -12,4 +12,6 @@
 	<angle>3.141569</angle>
     </rotation>
   </position-component>
+  <preferredWidth>1280</preferredWidth>
+  <preferredHeight>1024</preferredHeight>
 </whiteboard-cell-svg>
