@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.whiteboard.client;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import java.awt.Image;
-import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardSVGCellServerState;
+import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellServerState;
 
 /**
  * The cell factory for the whiteboard

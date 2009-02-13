@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
+import org.jdesktop.wonderland.modules.whiteboard.client.cell.WhiteboardCell;
 import com.jme.math.Vector2f;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -31,6 +32,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
@@ -39,12 +41,13 @@ import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.Overlay;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardColor;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
-import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardCellMessage;
-import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardCellMessage.Action;
+import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage;
+import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.Action;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -145,12 +148,15 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 controls.addCellMenuListener(toolManager);
                 window.setComponent(controls);
                 window.positionRelativeTo(this, 280, 810);
-                //window.showHUDView(true);
             } catch (InstantiationException ex) {
                 throw new RuntimeException(ex);
             }
         }
         window.setVisible(show);
+    }
+
+    public void showHUD(boolean onHUD) {
+        window.getPrimaryView().setHud(onHUD);
     }
 
     public void movingMarker(MouseEvent e) {
@@ -406,11 +412,32 @@ public class WhiteboardWindow extends WindowGraphics2D {
         }
     }
 
+    /**
+     * Return the client id of this window's cell.
+     */
+    public BigInteger getClientID(App app) {
+        return ((WhiteboardCell) app.getDisplayer()).getClientID();
+    }
+
+    /**
+     * Return the ID of this window's cell.
+     */
+    public CellID getCellID(App app) {
+        return ((WhiteboardCell) app.getDisplayer()).getCellID();
+    }
+
+        /**
+     * Return the ID of this window's cell.
+     */
+    public String getCellUID(App app) {
+        return ((WhiteboardCell) app.getDisplayer()).getUID();
+    }
+
     protected void sendRequest(Action action, String xmlString,
             String docURI, Point position, Float zoom) {
 
-        WhiteboardCellMessage msg = new WhiteboardCellMessage(((WhiteboardCell) this.getCell()).getClientID(), this.getCell().getCellID(),
-                ((WhiteboardCell) this.getCell()).getUID(), action, xmlString, docURI, position, zoom);
+        WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(app), getCellID(app),
+                getCellUID(app), action, xmlString, docURI, position, zoom);
 
         // send request to server
         logger.fine("whiteboard: sending request: " + msg);

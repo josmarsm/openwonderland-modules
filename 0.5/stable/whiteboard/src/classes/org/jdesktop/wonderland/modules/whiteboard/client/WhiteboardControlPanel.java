@@ -53,7 +53,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
 
     public WhiteboardControlPanel() {
         initComponents();
-        //makeTransparent();
+        makeTransparent();
         initButtonMaps();
         border = javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED);
     }
@@ -83,7 +83,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     }
 
     public void setSelectedColor(WhiteboardColor color) {
-        JButton colorButton = (JButton)colorMappings.get(color);
+        JButton colorButton = (JButton) colorMappings.get(color);
         depressButton(colorButton, true);
     }
 
@@ -102,7 +102,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         //setResizable(false);  // remove the resize control
 
         // OSX transparency
-        setBackground(new Color(0f, 0f, 0f, 0f));
+        setBackground(new Color(0.933f, 0.933f, 0.933f, 1.0f));
 
         // Non-reflection version for Java 6 SE u10:
         // AWTUtilities.setWindowOpaque(this, false);

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
+import org.jdesktop.wonderland.modules.whiteboard.client.cell.WhiteboardCell;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
@@ -24,7 +25,7 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardCellMessage;
+import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage;
 
 /**
  * The client side of the communication component that provides communication between the whiteboard client and server.

@@ -29,7 +29,7 @@ import javax.swing.SwingUtilities;
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
-import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardCellMessage.Action;
+import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.Action;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -105,7 +105,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         line.setAttributeNS(null, "stroke", WhiteboardUtils.constructRGBString(lineColor));
         line.setAttributeNS(null, "stroke-width", Float.toString(strokeWeight));
 
-        String idString = ((WhiteboardCell) whiteboardWindow.getCell()).getUID() + System.currentTimeMillis();
+        String idString = whiteboardWindow.getCellUID(whiteboardWindow.getApp()) + System.currentTimeMillis();
         line.setAttributeNS(null, "id", idString);
         logger.fine("whiteboard: created line: " + line);
         return line;
@@ -128,7 +128,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
             rectangle.setAttributeNS(null, "fill-opacity", "0");
         }
 
-        String idString = ((WhiteboardCell) whiteboardWindow.getCell()).getUID() + System.currentTimeMillis();
+        String idString = whiteboardWindow.getCellUID(whiteboardWindow.getApp()) + System.currentTimeMillis();
         rectangle.setAttributeNS(null, "id", idString);
 
         return rectangle;
@@ -155,7 +155,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
             ellipse.setAttributeNS(null, "fill-opacity", "0");
         }
 
-        String idString = ((WhiteboardCell) whiteboardWindow.getCell()).getUID() + System.currentTimeMillis();
+        String idString = whiteboardWindow.getCellUID(whiteboardWindow.getApp()) + System.currentTimeMillis();
         ellipse.setAttributeNS(null, "id", idString);
 
         return ellipse;
@@ -195,7 +195,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         text.setAttributeNS(null, "font-size", String.valueOf(TEXT_FONT_SIZE));
         text.setTextContent(getter.getText());
 
-        String idString = ((WhiteboardCell) whiteboardWindow.getCell()).getUID() + System.currentTimeMillis();
+        String idString = whiteboardWindow.getCellUID(whiteboardWindow.getApp()) + System.currentTimeMillis();
         text.setAttributeNS(null, "id", idString);
 
         return text;
