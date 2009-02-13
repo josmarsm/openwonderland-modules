@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.whiteboard.client;
 import com.jme.math.Vector2f;
 import java.awt.Component;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 
@@ -43,7 +42,7 @@ public class WhiteboardControlWindow extends WindowSwing {
     public WhiteboardControlWindow(final App app, int width, int height, boolean topLevel, Vector2f pixelScale)
             throws InstantiationException {
         super(app, width, height, topLevel, pixelScale);
-        setSize(width, height);
+        //setSize(width, height);
         initializeSurface();
         setTitle("Whiteboard Control Window");
     }
@@ -53,7 +52,7 @@ public class WhiteboardControlWindow extends WindowSwing {
      */
     @Override
     public void setComponent(Component component) {
-        JmeClientMain.getFrame().getCanvas3DPanel().add(component);
+        //JmeClientMain.getFrame().getCanvas3DPanel().add(component);
         super.setComponent(component);
     }
 }

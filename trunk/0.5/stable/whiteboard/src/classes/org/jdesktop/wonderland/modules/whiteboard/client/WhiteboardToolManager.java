@@ -26,6 +26,8 @@ import java.awt.Color;
  */
 public class WhiteboardToolManager implements WhiteboardCellMenuListener {
 
+    private boolean hudState = false;
+
     public enum WhiteboardTool {
 
         NEW, SELECTOR, LINE, RECT, ELLIPSE, TEXT, FILL, DRAW, SYNC, UNSYNC
@@ -125,11 +127,15 @@ public class WhiteboardToolManager implements WhiteboardCellMenuListener {
     }
 
     public void sync() {
-        whiteboardWindow.sync(!whiteboardWindow.isSynced());
+        hudState = !hudState;
+        whiteboardWindow.showHUD(hudState);
+    //whiteboardWindow.sync(!whiteboardWindow.isSynced());
     }
 
     public void unsync() {
-        whiteboardWindow.sync(!whiteboardWindow.isSynced());
+        hudState = !hudState;
+        whiteboardWindow.showHUD(hudState);
+    //whiteboardWindow.sync(!whiteboardWindow.isSynced());
     }
 
     private void setTool(WhiteboardTool newTool) {

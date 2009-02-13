@@ -57,13 +57,6 @@ public class WhiteboardApp extends AppGraphics2D {
         // configWorld can be null because the server cell is already configured
         super(appType, new ControlArbMulti(), pixelScale);
         controlArb.setApp(this);
-
-        // This app has only one whiteboardWindow, so it is always top-level
-        try {
-            whiteboardWindow = new WhiteboardWindow(this, width, height, true, pixelScale, commComponent);
-        } catch (InstantiationException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     /**
@@ -174,6 +167,14 @@ public class WhiteboardApp extends AppGraphics2D {
             whiteboardWindow.cleanup();
             whiteboardWindow = null;
         }
+    }
+
+    /**
+     * Set the app's window
+     * @param whiteboardWindow the window
+     */
+    public void setWindow(WhiteboardWindow whiteboardWindow) {
+        this.whiteboardWindow = whiteboardWindow;
     }
 
     /**

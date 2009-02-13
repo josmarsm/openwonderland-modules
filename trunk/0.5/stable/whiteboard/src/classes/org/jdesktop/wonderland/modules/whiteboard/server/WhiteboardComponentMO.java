@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.whiteboard.server;
 
+import org.jdesktop.wonderland.modules.whiteboard.server.cell.WhiteboardCellMO;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -26,7 +27,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardCellMessage;
+import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 

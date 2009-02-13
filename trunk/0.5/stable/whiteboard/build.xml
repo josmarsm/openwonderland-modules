@@ -14,12 +14,14 @@
        
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
         <path location="${current.dir}/lib/batik-all.jar"/>
         <path location="${current.dir}/lib/xml-apis-ext.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
         <path location="${current.dir}/lib/batik-all.jar"/>
     </pathconvert>
 
