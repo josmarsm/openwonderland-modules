@@ -21,45 +21,47 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
-import java.io.CharArrayWriter;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.server.eventrecorder.EventRecorder;
 import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.server.eventrecorder.EventRecordingManager;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportListener;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportResult;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.RecordingCreationListener;
 
 /**
  *
  * @author Bernard Horan
  */
-public class EventRecorderImpl implements EventRecorder, Serializable {
+public class EventRecorderImpl implements EventRecorder, RecordingCreationListener, CellExportListener, Serializable {
     private static final Logger logger = Logger.getLogger(EventRecorderImpl.class.getName());
     private ManagedReference<CellMO> cellRef;
     private boolean isRecording = false;
-    private String name;
-    private transient PrintWriter syncWriter;
-    final private static String ENCODING = "ISO-8859-1";   
+    private String recorderName;
+    private String tapeName;
+    private Set<CellID> failedCells = new HashSet<CellID>();
     
     /** Creates a new instance of EventRecorderImpl
      * @param originCell
+     * @param name
      */
     public EventRecorderImpl(CellMO originCell, String name) {
         cellRef = AppContext.getDataManager().createReference(originCell);
-        this.name = name;
+        this.recorderName = name;
     }
 
     public void register() {
@@ -85,29 +87,20 @@ public class EventRecorderImpl implements EventRecorder, Serializable {
     }
 
     public String getName() {
-        return name;
+        return recorderName;
     }
     
 
-    void startRecording(String pathName) {
-        logger.info("start recording to: " + pathName);
-        //1. Record the sync state
-        //2. open the file to record changes
-        //3. set recording to true
-        try {
-            openSyncFile(pathName+"-sync.xml");
-            synchronize();
-            endSync();
-        } catch (FileNotFoundException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
-        register();
-        try {
-            openChangesFile(pathName+"-changes.xml");
-            isRecording = true;
-        } catch (FileNotFoundException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
+    void startRecording(String tapeName) {
+        logger.info("start recording to: " + tapeName);
+        this.tapeName = tapeName;
+        //Record the state of the current cells
+        //this rest of the procedure happens in recordingCreated
+        Set<CellID> rootCells = CellManagerMO.getCellManager().getRootCells();
+        Set<CellID> recordedCells = new HashSet<CellID>();
+        recordedCells.addAll(rootCells);
+        recordCells(recordedCells);
+        
     }
 
     public void stopRecording() {
@@ -116,20 +109,11 @@ public class EventRecorderImpl implements EventRecorder, Serializable {
         mgr.stopRecording(this);
         isRecording = false;
         unregister();
+        tapeName = null;
     }    
 
     
-    public void endSync() {
-        logger.fine("end sync");
-        syncWriter.println("</Wonderland_Sync>");
-        syncWriter.println("</Wonderland_Recorder>");
-        closeSyncFile();
-    }
-
-    private void closeSyncFile() {
-        logger.fine("closing sync file");
-        syncWriter.close();
-    }
+    
     
 
     private void openChangesFile(String changesFilename) throws FileNotFoundException {
@@ -138,63 +122,73 @@ public class EventRecorderImpl implements EventRecorder, Serializable {
         mgr.openChangesFile(this, changesFilename);
     } 
     
-    private void openSyncFile(String syncFilename) throws FileNotFoundException {
-        logger.fine("opening sync file: " + syncFilename);
-        syncWriter = new PrintWriter(new FileOutputStream(syncFilename), true);
-        syncWriter.println("<?xml version=\"1.0\" encoding=\""+ENCODING+"\"?>");
-        syncWriter.println("<Wonderland_Recorder>");
-        syncWriter.println("<Wonderland_Sync>");
+
+    /**
+     * Export a set of cells in the current world to a recording with the given
+     * name.  Use null to create a recording with a default name
+     * @param name the name or null
+     * @param cells the set of cells to record
+     */
+    private void recordCells(Set<CellID> cells) {
+        // get the export service
+        CellExportManager em = AppContext.getManager(CellExportManager.class);
+
+        // first, create a new recording.  The remainder of the export procedure will happen
+        // in the recordingCreated() method of the listener
+        em.createRecording(tapeName, cells, this);
     }
 
-    private void synchronize() {
-        logger.info("Recording initial state");
-        Set<CellID> rootCells = CellManagerMO.getCellManager().getRootCells();
-        for (CellID cellID : rootCells) {
-            CellMO rootCell = CellManagerMO.getCell(cellID);
-            synchronizeCell(rootCell);
-        }
-        logger.info("Finished recording initial state");
+    public void recordingCreated(WorldRoot worldRoot, Set<CellID> cells) {
+        //The new recording has been created, but the cells have not yet been exported
+        //Register the eventRecorder in the hope that the export succeeds
+        register();
+
+        logger.info("rootPath: " + worldRoot.getRootPath());
+
+
+        // export the cells
+        // remainder of procedure is in exportResult
+        CellExportManager em = AppContext.getManager(CellExportManager.class);
+        em.exportCells(worldRoot, cells, this);
     }
 
-    private void synchronizeCell(CellMO cell) {
-        //logger.info("cell: " + cell);
-        CellServerState serverState = cell.getServerState(null);
-        //logger.info("serverState: " + serverState);
-        syncWriter.println("<Cell cellID=\"" + cell.getCellID() + "\" class=\"" + cell.getClass().getCanonicalName() + "\">");
-        if (serverState != null) {
-            try {
-                writeServerState(serverState);
-                
-            } catch (JAXBException ex) {
-                logger.log(Level.SEVERE, null, ex);
+    public void recordingFailed(String reason, Throwable cause) {
+        logger.log(Level.WARNING, "Error creating recording: " + reason, cause);
+    }
+
+    public void exportResult(Map<CellID, CellExportResult> results) {
+        //cells have been exported
+
+        int successCount = 0;
+        int errorCount = 0;
+
+        for (Map.Entry<CellID, CellExportResult> e : results.entrySet()) {
+            CellID id = e.getKey();
+            CellExportResult res = e.getValue();
+
+            if (res.isSuccess()) {
+                successCount++;
+            } else {
+                errorCount++;
+                logger.log(Level.WARNING, "Error exporting " + id + " " + CellManagerMO.getCell(id)+ " : " +
+                           res.getFailureReason(), res.getFailureCause());
+                logger.warning("Added to failed cells");
+                failedCells.add(id);
             }
         }
-        Collection<ManagedReference<CellMO>> children = cell.getAllChildrenRefs();
-        if (children.size() > 0) {
-            syncWriter.println("<Children>");
-            for (ManagedReference<CellMO> managedReference : children) {
-                CellMO child = managedReference.get();
-                synchronizeCell(child);
-            }
-            syncWriter.println("</Children>");
-        }
-        syncWriter.println("</Cell>");
-    }
 
-    private void writeServerState(CellServerState serverState) throws JAXBException {
-        CharArrayWriter writer = new CharArrayWriter();
-        serverState.encode(writer);
-        String encodedState = writer.toString();
-        //Remove the first line
-        //Find the newline
-        int index = encodedState.indexOf("\n", 1);
-        //get everything from there to the end of the string
-        encodedState = encodedState.substring(index);
-        //write it to the syncwriter
-        syncWriter.println(encodedState);
+        //logger.warning("Exported " + successCount + " cells.  " + errorCount + " errors detected.");
+        
+        //2. open the file to record changes
+        //3. set recording to true
+
+//        try {
+//            openChangesFile(tapeName+"-changes.xml");
+//            isRecording = true;
+//        } catch (FileNotFoundException ex) {
+//            logger.log(Level.SEVERE, null, ex);
+//        }
     }
-   
-    
 
     public boolean isRecording() {
         return isRecording;
