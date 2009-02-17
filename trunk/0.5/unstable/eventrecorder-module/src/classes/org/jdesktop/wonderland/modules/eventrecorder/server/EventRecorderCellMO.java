@@ -225,7 +225,7 @@ public class EventRecorderCellMO extends CellMO {
 
     private void startRecording() {
         eventRecorderLogger.info("Start Recording");
-        eventRecorder.startRecording(getRecorderFilename());
+        eventRecorder.startRecording(selectedTape.getTapeName());
     }
 
 
