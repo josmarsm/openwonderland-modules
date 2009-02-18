@@ -44,6 +44,8 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
+import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DViewWorld;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardColor;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage;
@@ -156,7 +158,9 @@ public class WhiteboardWindow extends WindowGraphics2D {
     }
 
     public void showHUD(boolean onHUD) {
-        window.getPrimaryView().setHud(onHUD);
+        Window2DViewWorld view = window.getPrimaryView();
+        view.setOnHUD(onHUD);
+        view.setHUDLocation(500, 30);
     }
 
     public void movingMarker(MouseEvent e) {
