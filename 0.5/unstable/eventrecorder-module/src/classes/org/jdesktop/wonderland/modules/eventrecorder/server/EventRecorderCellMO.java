@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -32,7 +34,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.server.eventrecorder.EventRecorder;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellServerState;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderClientState;
@@ -41,6 +42,9 @@ import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 /**
  *
+ * Server side cell that represents the event recorder object in world.
+ * Reponsible for receiving and sending messages to and from the client cell and managing the eventrecorder object
+ * that actually does the work of recording.
  * @author Bernard Horan
  * 
  */
@@ -55,7 +59,7 @@ public class EventRecorderCellMO extends CellMO {
     private String userName;
     private String recordingDirectory;
     private String recorderName;
-    private EventRecorderImpl eventRecorder = null;
+    private ManagedReference<EventRecorderImpl> recorderRef;
 
 
     public EventRecorderCellMO() {
@@ -215,23 +219,23 @@ public class EventRecorderCellMO extends CellMO {
 
     }
 
-    private EventRecorder createEventRecorder() {
-        if (eventRecorder == null) {
-            eventRecorder = new EventRecorderImpl(this, recorderName);
+    private void createEventRecorder() {
+        if (recorderRef == null) {
+            EventRecorderImpl eventRecorder = new EventRecorderImpl(this, recorderName);
+            recorderRef = AppContext.getDataManager().createReference(eventRecorder);
         }
-        return eventRecorder;
     }
 
 
     private void startRecording() {
         eventRecorderLogger.info("Start Recording");
-        eventRecorder.startRecording(selectedTape.getTapeName());
+        recorderRef.get().startRecording(selectedTape.getTapeName());
     }
 
 
     private void stopRecording() {
         eventRecorderLogger.info("Stop Recording");
-        eventRecorder.stopRecording();
+        recorderRef.get().stopRecording();
     }
 
     
