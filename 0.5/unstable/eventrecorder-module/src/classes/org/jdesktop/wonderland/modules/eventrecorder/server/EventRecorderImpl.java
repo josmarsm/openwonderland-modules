@@ -15,13 +15,11 @@
  * $Date$
  * $State$
  */
-
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
-
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,40 +28,60 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.wfs.ChangesFile;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
 import org.jdesktop.wonderland.server.eventrecorder.EventRecorder;
 import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportResult;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.RecordingCreationListener;
 
 /**
- *
+ * An implementation of an event recorder that records the initial state of the cells as WFS and then
+ * subsequent messages
  * @author Bernard Horan
  */
-public class EventRecorderImpl implements EventRecorder, RecordingCreationListener, CellExportListener, Serializable {
+public class EventRecorderImpl implements ManagedObject, EventRecorder, RecordingCreationListener,
+        CellExportListener, ChangesFileCreationListener, ChangesFileCloseListener, Serializable {
+
     private static final Logger logger = Logger.getLogger(EventRecorderImpl.class.getName());
+    /*The reference to the cell that is the event recorder in the world */
     private ManagedReference<CellMO> cellRef;
+    /*is this recorder actually recording*/
     private boolean isRecording = false;
+    /*The name of this recorder*/
+    //TODO: is this necessary?
     private String recorderName;
+    /*The name of the tape to which the recording is being made
+     * This also provides the name of the directory into which the files are placed
+     * */
     private String tapeName;
+    /* A set of cells that for which we failed to record the initiall state
+     * At present this includes all avatars
+     * If we get a message for one of these cells, we ignore it
+     * */
     private Set<CellID> failedCells = new HashSet<CellID>();
-    
+
     /** Creates a new instance of EventRecorderImpl
-     * @param originCell
-     * @param name
+     * @param originCell the cell that is the event recorder
+     * @param name the name of the event recorder
      */
     public EventRecorderImpl(CellMO originCell, String name) {
         cellRef = AppContext.getDataManager().createReference(originCell);
         this.recorderName = name;
     }
 
+    /**
+     * Register this event recorder with the recorder manager.
+     * Once it's registered it will receive recordMessage() method calls
+     */
     public void register() {
         logger.fine("registering with recorder manager");
         if (isRecording) {
@@ -72,6 +90,10 @@ public class EventRecorderImpl implements EventRecorder, RecordingCreationListen
         RecorderManager.getDefaultManager().register(this);
     }
 
+    /**
+     * Unregister from the recorder manager, to avoid receiving any more messages
+     * to be recorded
+     */
     public void unregister() {
         logger.fine("unregistering with recorder manager");
         if (isRecording) {
@@ -82,51 +104,78 @@ public class EventRecorderImpl implements EventRecorder, RecordingCreationListen
 
     public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
         logger.fine("sender: " + sender + ", " + clientID + ", " + message);
-        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
-        mgr.recordMessage(this, sender, clientID, message);      
+        CellID cellID = message.getCellID();
+        if (failedCells.contains(cellID)) {
+            logger.warning("Ignoring message for cellID: " + cellID);
+            return;
+        }
+//        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
+//        mgr.recordMessage(this, sender, clientID, message); 
     }
 
     public String getName() {
         return recorderName;
     }
-    
 
+    /**
+     * Start recording to the tape given in the parameter
+     * @param tapeName the name of the selected tape in the event recorder
+     */
     void startRecording(String tapeName) {
         logger.info("start recording to: " + tapeName);
         this.tapeName = tapeName;
         //Record the state of the current cells
         //this rest of the procedure happens in recordingCreated
+        //Here we should find the cells that are within the range of the originCell
         Set<CellID> rootCells = CellManagerMO.getCellManager().getRootCells();
         Set<CellID> recordedCells = new HashSet<CellID>();
         recordedCells.addAll(rootCells);
         recordCells(recordedCells);
-        
     }
 
+    /**
+     * Stop the recording
+     */
     public void stopRecording() {
-        logger.info("stop recording");
-        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
-        mgr.stopRecording(this);
+        logger.info("stop recording, isRecording: " + isRecording);
+        if (!isRecording) {
+            logger.warning("Attempt to stop recording when not already recording");
+            return;
+        }
         isRecording = false;
+        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
+        mgr.closeChangesFile(tapeName, this);
         unregister();
         tapeName = null;
-    }    
+    }
 
-    
-    
-    
+    public void fileClosed(ChangesFile cFile) {
+        logger.info("Changes file successfully closed");
+    }
 
-    private void openChangesFile(String changesFilename) throws FileNotFoundException {
-        logger.fine("opening changes file: " + changesFilename);
+    public void fileClosureFailed(String reason, Throwable cause) {
+        logger.log(Level.SEVERE, reason, cause);
+    }
+
+    private void openChangesFile() {
+        logger.fine("opening changes file");
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
-        mgr.openChangesFile(this, changesFilename);
-    } 
-    
+        mgr.openChangesFile(tapeName, this);
+    }
+
+    public void fileCreated(ChangesFile cFile) {
+        logger.info("Changes file created, so start recording");
+        isRecording = true;
+        logger.info("isRecording: " + isRecording);
+    }
+
+    public void fileCreationFailed(String reason, Throwable cause) {
+        logger.log(Level.SEVERE, reason, cause);
+    }
 
     /**
-     * Export a set of cells in the current world to a recording with the given
-     * name.  Use null to create a recording with a default name
-     * @param name the name or null
+     * Export a set of cells in the current world to a recording with the tape
+     * name.  
      * @param cells the set of cells to record
      */
     private void recordCells(Set<CellID> cells) {
@@ -143,9 +192,6 @@ public class EventRecorderImpl implements EventRecorder, RecordingCreationListen
         //Register the eventRecorder in the hope that the export succeeds
         register();
 
-        logger.info("rootPath: " + worldRoot.getRootPath());
-
-
         // export the cells
         // remainder of procedure is in exportResult
         CellExportManager em = AppContext.getManager(CellExportManager.class);
@@ -158,36 +204,25 @@ public class EventRecorderImpl implements EventRecorder, RecordingCreationListen
 
     public void exportResult(Map<CellID, CellExportResult> results) {
         //cells have been exported
-
         int successCount = 0;
         int errorCount = 0;
 
         for (Map.Entry<CellID, CellExportResult> e : results.entrySet()) {
             CellID id = e.getKey();
             CellExportResult res = e.getValue();
-
             if (res.isSuccess()) {
                 successCount++;
             } else {
                 errorCount++;
-                logger.log(Level.WARNING, "Error exporting " + id + " " + CellManagerMO.getCell(id)+ " : " +
-                           res.getFailureReason(), res.getFailureCause());
-                logger.warning("Added to failed cells");
+                logger.log(Level.WARNING, "Error exporting " + id + " " + CellManagerMO.getCell(id) + " : " +
+                        res.getFailureReason(), res.getFailureCause());
+                logger.warning("Adding to failed cells");
                 failedCells.add(id);
+                logger.info("failed cells: " + failedCells);
             }
         }
 
-        //logger.warning("Exported " + successCount + " cells.  " + errorCount + " errors detected.");
-        
-        //2. open the file to record changes
-        //3. set recording to true
-
-//        try {
-//            openChangesFile(tapeName+"-changes.xml");
-//            isRecording = true;
-//        } catch (FileNotFoundException ex) {
-//            logger.log(Level.SEVERE, null, ex);
-//        }
+        openChangesFile();
     }
 
     public boolean isRecording() {
@@ -198,5 +233,4 @@ public class EventRecorderImpl implements EventRecorder, RecordingCreationListen
     public String toString() {
         return super.toString() + " name: " + getName();
     }
-    
 }
