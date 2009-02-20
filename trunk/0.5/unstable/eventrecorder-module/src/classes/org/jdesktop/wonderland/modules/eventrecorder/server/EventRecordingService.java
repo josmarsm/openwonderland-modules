@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
-import org.jdesktop.wonderland.common.wfs.ChangesFile;
+import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
 import org.jdesktop.wonderland.server.cell.CellMO;

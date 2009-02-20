@@ -23,7 +23,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import javax.xml.bind.JAXBException;
-import org.jdesktop.wonderland.common.wfs.ChangesFile;
+import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 
 /**
@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
  * @author Bernard Horan
  */
 public class EventRecorderUtils {
+    /* The prefix to add to URLs for the eventrecorder web service */
+    public static final String WEB_SERVICE_PREFIX = "eventrecorder/eventrecorder/resources/";
     /**
      * Creates a new changes file, returns a ChangesFile object representing the
      * new changes file or null upon failure
@@ -40,7 +42,7 @@ public class EventRecorderUtils {
     {
         String encodedName = URLEncoder.encode(name, "UTF-8");
         String query = "?name=" + encodedName + "&timestamp=" + timestamp;
-        URL url = new URL(CellExporterUtils.getWebServerURL(), CellExporterUtils.WFS_PREFIX + "create/changesFile" + query);
+        URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "create/changesFile" + query);
 
         return ChangesFile.decode(new InputStreamReader(url.openStream()));
     }
@@ -55,7 +57,7 @@ public class EventRecorderUtils {
     public static ChangesFile closeChangesFile(String name) throws IOException, JAXBException {
         String encodedName = URLEncoder.encode(name, "UTF-8");
         String query = "?name=" + encodedName;
-        URL url = new URL(CellExporterUtils.getWebServerURL(), CellExporterUtils.WFS_PREFIX + "close/changesFile" + query);
+        URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "close/changesFile" + query);
 
         return ChangesFile.decode(new InputStreamReader(url.openStream()));
     }

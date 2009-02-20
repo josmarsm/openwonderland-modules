@@ -28,7 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.wfs.ChangesFile;
+import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
 import org.jdesktop.wonderland.server.eventrecorder.EventRecorder;
