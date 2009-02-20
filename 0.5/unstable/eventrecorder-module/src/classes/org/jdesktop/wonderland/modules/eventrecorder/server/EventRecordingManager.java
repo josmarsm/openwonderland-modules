@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import org.jdesktop.wonderland.server.eventrecorder.*;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.wfs.ChangesFile;
+import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
