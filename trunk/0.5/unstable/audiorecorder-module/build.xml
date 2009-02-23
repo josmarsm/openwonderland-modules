@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-${module.name}-module" default="package" basedir=".">
-    <property file="my.module.properties"/>
-
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderland-${module.name}-module}"/>
+    <property file="${current.dir}/my.module.properties"/>
+
     <property name="modules.dir" location="${wonderland.dir}/modules"/>
         
     <property name="module.src" value="${module.plugin.src}"/>
