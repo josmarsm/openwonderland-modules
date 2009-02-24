@@ -22,7 +22,6 @@ import org.jdesktop.mtgame.*;
 import com.jme.scene.Node;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.sun.scenario.animation.TimingTarget;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**

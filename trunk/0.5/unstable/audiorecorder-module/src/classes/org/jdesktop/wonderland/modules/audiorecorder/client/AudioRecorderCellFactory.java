@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
 import java.awt.Image;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellServerState;
@@ -28,6 +29,7 @@ import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellSer
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  */
+@CellFactory
 public class AudioRecorderCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
