@@ -68,6 +68,7 @@ public class AudioRecorderCell extends Cell {
 
     }
 
+    @Override
     public boolean setStatus(CellStatus status) {
         super.setStatus(status);
         if (status.equals(CellStatus.ACTIVE)) {
@@ -76,7 +77,9 @@ public class AudioRecorderCell extends Cell {
         }
         if (status.equals(CellStatus.DISK)) {
             //Cleanup
-            getChannel().removeMessageReceiver(AudioRecorderCellChangeMessage.class);
+            if (getChannel() != null) {
+                getChannel().removeMessageReceiver(AudioRecorderCellChangeMessage.class);
+            }
         }
         //No change in my status, so...
         return false;

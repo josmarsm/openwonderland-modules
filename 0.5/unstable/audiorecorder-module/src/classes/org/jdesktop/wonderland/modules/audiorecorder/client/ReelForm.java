@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
