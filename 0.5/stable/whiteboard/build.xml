@@ -15,6 +15,7 @@
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
+        <path location="${modules.dir}/foundation/hud/build/client/hud-client.jar"/>
         <path location="${current.dir}/lib/batik-all.jar"/>
         <path location="${current.dir}/lib/xml-apis-ext.jar"/>
     </pathconvert>
@@ -43,9 +44,6 @@
                 <include name="*.jar"/>
 
                 <clientjar name="whiteboard-client" basedir="${build.classes.dir}">
-                    <cellfactory>
-                        <provider classname="org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardCellFactory"/>
-                    </cellfactory>
                     <include name="${module.src}/client/**"/>
                     <fileset dir="${current.dir}/src/classes">
                         <include name="${module.src}/client/resources/**/*.png"/>
