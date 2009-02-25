@@ -17,9 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
+import java.awt.Image;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import java.awt.Image;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellServerState;
 
 /**
@@ -27,6 +28,7 @@ import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellS
  * 
  * @author nsimpson
  */
+@CellFactory
 public class WhiteboardCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
