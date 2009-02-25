@@ -140,11 +140,11 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     }
 
     public void setFillMode() {
-        fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/fill.png")));
+        fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardFill32x32.png")));
     }
 
     public void setDrawMode() {
-        fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/draw.png")));
+        fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardEditStrokeFill32x32.png")));
     }
 
     public void setSynced(boolean synced) {
@@ -192,7 +192,6 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        dragButton = new javax.swing.JButton();
         newButton = new javax.swing.JButton();
         selectButton = new javax.swing.JButton();
         lineButton = new javax.swing.JButton();
@@ -207,12 +206,10 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         colorWhiteButton = new javax.swing.JButton();
         syncButton = new javax.swing.JButton();
 
-        dragButton.setEnabled(false);
-        dragButton.setFocusCycleRoot(true);
-        dragButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        setBackground(new java.awt.Color(255, 255, 255));
 
         newButton.setBackground(new java.awt.Color(231, 230, 230));
-        newButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/new.png"))); // NOI18N
+        newButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardNewDocument32x32.png"))); // NOI18N
         newButton.setBorderPainted(false);
         newButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         newButton.setOpaque(true);
@@ -223,7 +220,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         });
 
         selectButton.setBackground(new java.awt.Color(231, 230, 230));
-        selectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/select.png"))); // NOI18N
+        selectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardSelect32x32.png"))); // NOI18N
         selectButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         selectButton.setBorderPainted(false);
         selectButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
@@ -235,7 +232,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         });
 
         lineButton.setBackground(new java.awt.Color(231, 230, 230));
-        lineButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/line.png"))); // NOI18N
+        lineButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDrawLine32x32.png"))); // NOI18N
         lineButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         lineButton.setBorderPainted(false);
         lineButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
@@ -247,7 +244,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         });
 
         rectangleButton.setBackground(new java.awt.Color(231, 230, 230));
-        rectangleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/rect.png"))); // NOI18N
+        rectangleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDrawRectangle32x32.png"))); // NOI18N
         rectangleButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         rectangleButton.setBorderPainted(false);
         rectangleButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
@@ -259,7 +256,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         });
 
         ellipseButton.setBackground(new java.awt.Color(231, 230, 230));
-        ellipseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/ellipse.png"))); // NOI18N
+        ellipseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDrawEllipse32x32.png"))); // NOI18N
         ellipseButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         ellipseButton.setBorderPainted(false);
         ellipseButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
@@ -271,7 +268,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         });
 
         textButton.setBackground(new java.awt.Color(231, 230, 230));
-        textButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/text.png"))); // NOI18N
+        textButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardAddText32x32.png"))); // NOI18N
         textButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         textButton.setBorderPainted(false);
         textButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
@@ -283,7 +280,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         });
 
         fillButton.setBackground(new java.awt.Color(231, 230, 230));
-        fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/draw.png"))); // NOI18N
+        fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardEditStrokeFill32x32.png"))); // NOI18N
         fillButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         fillButton.setBorderPainted(false);
         fillButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
@@ -370,39 +367,35 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(dragButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(newButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(selectButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(lineButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(rectangleButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(ellipseButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(textButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(fillButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 0, Short.MAX_VALUE)
                 .add(colorRedButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(colorGreenButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(colorBlueButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(colorBlackButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(colorWhiteButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(syncButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 38, Short.MAX_VALUE)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(dragButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(selectButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(lineButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -537,13 +530,13 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
             listener.sync();
         }
 }//GEN-LAST:event_syncButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton colorBlackButton;
     private javax.swing.JButton colorBlueButton;
     private javax.swing.JButton colorGreenButton;
     private javax.swing.JButton colorRedButton;
     private javax.swing.JButton colorWhiteButton;
-    private javax.swing.JButton dragButton;
     private javax.swing.JButton ellipseButton;
     private javax.swing.JButton fillButton;
     private javax.swing.JButton lineButton;
