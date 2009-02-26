@@ -20,14 +20,18 @@ package org.jdesktop.wonderland.modules.whiteboard.client;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Date;
 import java.util.logging.Logger;
 
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+import org.jdesktop.wonderland.modules.hud.client.HUDComponent2D;
+import org.jdesktop.wonderland.modules.hud.client.HUDInputDialog;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.Action;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
@@ -50,6 +54,8 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     private String docURI;
     private SVGDocument svgDocument;
     private DocumentDialog svgDocumentDialog;
+    private HUDInputDialog dialog;
+    protected static final Object readyLock = new Object();
 
     /**
      * A class for handling the loading of SVG documents. This can be time
@@ -72,8 +78,8 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         }
     }
 
-    public WhiteboardDocument(WhiteboardWindow whiteboardApp) {
-        this.whiteboardWindow = whiteboardApp;
+    public WhiteboardDocument(WhiteboardWindow whiteboardWindow) {
+        this.whiteboardWindow = whiteboardWindow;
         initSVGDialog();
     }
 
@@ -163,42 +169,55 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
     private class TextGetter implements Runnable {
 
-        private String text;
+        private Point position;
 
-        public void run() {
-            text = JOptionPane.showInputDialog("Please input the text for the element");
+        public TextGetter(Point position) {
+            this.position = position;
         }
 
-        public String getText() {
-            return text;
+        public void run() {
+            if (dialog == null) {
+
+                dialog = new HUDInputDialog(whiteboardWindow.getApp());
+                dialog.setLabelText("Enter the text to add to the whiteboard:");
+            }
+            PropertyChangeListener plistener = new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent pe) {
+                    Element e = createTextElement(position, (String) pe.getNewValue());
+                    whiteboardWindow.addNewElement(e, true);
+                    dialog.setVisible(false);
+                    dialog.removePropertyChangeListener(this);
+                }
+            };
+            dialog.addPropertyChangeListener(plistener);
+            dialog.setValueText("");
+            dialog.setVisible(true);
         }
     };
 
     public Element createTextElement(Point end) {
-        TextGetter getter = new TextGetter();
-
+        TextGetter getter = new TextGetter(end);
         try {
             SwingUtilities.invokeAndWait(getter);
         } catch (Exception e) {
-            logger.warning("Failed to get text: " + e);
         }
+        return null;
+    }
 
-        if ((getter.getText() == null) || (getter.getText().equals(""))) {
-            return null;
-        }
-
+    public Element createTextElement(Point end, String text) {
         // Create the text element
-        Element text = svgDocument.createElementNS(WhiteboardUtils.svgNS, "text");
-        text.setAttributeNS(null, "x", new Integer(end.x).toString());
-        text.setAttributeNS(null, "y", new Integer(end.y).toString());
-        text.setAttributeNS(null, "fill", WhiteboardUtils.constructRGBString(whiteboardWindow.getCurrentColor()));
-        text.setAttributeNS(null, "font-size", String.valueOf(TEXT_FONT_SIZE));
-        text.setTextContent(getter.getText());
+        Element textElement = svgDocument.createElementNS(WhiteboardUtils.svgNS, "text");
+        textElement.setAttributeNS(null, "x", new Integer(end.x).toString());
+        textElement.setAttributeNS(null, "y", new Integer(end.y).toString());
+        textElement.setAttributeNS(null, "fill", WhiteboardUtils.constructRGBString(whiteboardWindow.getCurrentColor()));
+        textElement.setAttributeNS(null, "font-size", String.valueOf(TEXT_FONT_SIZE));
+        textElement.setTextContent(text);
 
         String idString = whiteboardWindow.getCellUID(whiteboardWindow.getApp()) + System.currentTimeMillis();
-        text.setAttributeNS(null, "id", idString);
+        textElement.setAttributeNS(null, "id", idString);
 
-        return text;
+        return textElement;
     }
 
     public Element moveElement(Element toMove) {

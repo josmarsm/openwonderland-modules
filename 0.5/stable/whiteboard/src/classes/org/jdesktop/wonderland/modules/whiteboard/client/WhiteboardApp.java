@@ -25,6 +25,8 @@ import com.jme.math.Vector2f;
 import java.awt.Point;
 import org.w3c.dom.svg.SVGDocument;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArb.ControlChangeListener;
 
 /**
  *
@@ -35,7 +37,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
  * @author nsimpson
  */
 @ExperimentalAPI
-public class WhiteboardApp extends AppGraphics2D {
+public class WhiteboardApp extends AppGraphics2D implements ControlChangeListener {
 
     /** The single whiteboardWindow created by this app */
     private WhiteboardWindow whiteboardWindow;
@@ -54,9 +56,9 @@ public class WhiteboardApp extends AppGraphics2D {
     public WhiteboardApp(AppType appType, int width, int height, Vector2f pixelScale,
             WhiteboardComponent commComponent) {
 
-        // configWorld can be null because the server cell is already configured
         super(appType, new ControlArbMulti(), pixelScale);
         controlArb.setApp(this);
+        controlArb.addListener(this);
     }
 
     /**
@@ -198,5 +200,15 @@ public class WhiteboardApp extends AppGraphics2D {
      */
     public void repaintCanvas() {
         whiteboardWindow.repaintCanvas();
+    }
+
+    /**
+     * The state of a control arb you are subscribed to may have changed. The state of whether this user has
+     * control or the current set of controlling users may have changed.
+     *
+     * @param controlArb The control arb that changed.
+     */
+    public void updateControl(ControlArb controlArb) {
+        System.err.println("=== control changed: " + controlArb);
     }
 }
