@@ -117,7 +117,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
         super(app, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
         this.commComponent = commComponent;
         initCanvas(width, height);
-        showControls(true);
+        showControls(false);
         wbSurface = (WhiteboardDrawingSurface) getSurface();
         whiteboardDocument = new WhiteboardDocument(this);
         addEventListeners();
@@ -152,6 +152,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 window.setComponent(controls);
                 toolManager = new WhiteboardToolManager(this);
                 controls.addCellMenuListener(toolManager);
+                window.positionRelativeTo(this, 280, 810);
 
                 // create HUD controls
                 controlComponent = new HUDComponent2D(window.getPrimaryView());
@@ -162,7 +163,10 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 throw new RuntimeException(ex);
             }
         }
-        window.setVisible(true);    // TODO: do this in HUD
+
+        // TODO: toggling controls between in-world and on HUD should happen
+        // in the HUD not here
+        window.setVisible(true); // always visible, just in different places
         controlComponent.setVisible(show);
     }
 

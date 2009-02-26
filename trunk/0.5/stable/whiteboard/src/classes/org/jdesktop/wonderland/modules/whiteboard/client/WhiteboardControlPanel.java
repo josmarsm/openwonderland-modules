@@ -192,6 +192,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        toggleHUDButton = new javax.swing.JButton();
         newButton = new javax.swing.JButton();
         selectButton = new javax.swing.JButton();
         lineButton = new javax.swing.JButton();
@@ -207,6 +208,17 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         syncButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
+
+        toggleHUDButton.setBackground(new java.awt.Color(231, 230, 230));
+        toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardToggleHUD32x32.png"))); // NOI18N
+        toggleHUDButton.setBorderPainted(false);
+        toggleHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        toggleHUDButton.setOpaque(true);
+        toggleHUDButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toggleHUDButtonActionPerformed(evt);
+            }
+        });
 
         newButton.setBackground(new java.awt.Color(231, 230, 230));
         newButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardNewDocument32x32.png"))); // NOI18N
@@ -367,6 +379,8 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(toggleHUDButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(newButton)
                 .add(0, 0, 0)
                 .add(selectButton)
@@ -378,9 +392,9 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
                 .add(ellipseButton)
                 .add(0, 0, 0)
                 .add(textButton)
-                .add(0, 0, 0)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(fillButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 0, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(colorRedButton)
                 .add(0, 0, 0)
                 .add(colorGreenButton)
@@ -396,19 +410,20 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(selectButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(lineButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(rectangleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(ellipseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(textButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(fillButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(toggleHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(colorRedButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(colorGreenButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(colorBlueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(colorBlackButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(colorWhiteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(syncButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(syncButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(fillButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(selectButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(lineButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(rectangleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(ellipseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(textButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -531,6 +546,14 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         }
 }//GEN-LAST:event_syncButtonActionPerformed
 
+    private void toggleHUDButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleHUDButtonActionPerformed
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.toggleHUD();
+        }
+}//GEN-LAST:event_toggleHUDButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton colorBlackButton;
     private javax.swing.JButton colorBlueButton;
@@ -545,5 +568,6 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     private javax.swing.JButton selectButton;
     private javax.swing.JButton syncButton;
     private javax.swing.JButton textButton;
+    private javax.swing.JButton toggleHUDButton;
     // End of variables declaration//GEN-END:variables
 }
