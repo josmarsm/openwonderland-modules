@@ -42,8 +42,8 @@ public class EventRecordingManagerImpl implements EventRecordingManager {
         service.openChangesFile(tapeName, listener);
     }
 
-    public void recordMessage(EventRecorder eventRecorder, WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-        service.recordMessage(eventRecorder, sender, clientID, message);
+    public void recordMessage(String tapeName, WonderlandClientID clientID, CellMessage message, MessageRecordingListener listener) {
+        service.recordMessage(tapeName, clientID, message, listener);
     }
 
     public void closeChangesFile(String tapeName, ChangesFileCloseListener listener) {
