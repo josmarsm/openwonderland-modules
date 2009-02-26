@@ -40,12 +40,14 @@ import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.Overlay;
+import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.App;
 import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DView;
-import org.jdesktop.wonderland.modules.appbase.client.gui.Window2DViewWorld;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+import org.jdesktop.wonderland.modules.hud.client.HUDComponent2D;
+import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDManager;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardColor;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage;
@@ -80,7 +82,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
     private float zoom = 1.0f;
     private boolean synced = true;
     private WhiteboardControlPanel controls;
-    private WhiteboardControlWindow window;
+    private WindowSwing window;
     private boolean inControl = false;
     protected Object actionLock = new Object();
 
@@ -97,6 +99,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
     private WhiteboardMouseListener svgMouseListener;
     private WhiteboardSelection selection = null;
     private JSVGCanvas svgCanvas;
+    private HUDComponent2D controlComponent;
 
     /**
      * Create a new instance of WhiteboardWindow.
@@ -143,24 +146,28 @@ public class WhiteboardWindow extends WindowGraphics2D {
     public void showControls(final boolean show) {
         if (window == null) {
             try {
-                Vector2f panelPixelScale = new Vector2f(0.02f, 0.02f);
-                window = new WhiteboardControlWindow(app, 660, 40, /*TODO: until debugged: true*/ false, panelPixelScale);
+                // create Swing controls
+                window = new WindowSwing(app, 660, 40, false, new Vector2f(0.02f, 0.02f));
                 controls = new WhiteboardControlPanel();
+                window.setComponent(controls);
                 toolManager = new WhiteboardToolManager(this);
                 controls.addCellMenuListener(toolManager);
-                window.setComponent(controls);
-                window.positionRelativeTo(this, 280, 810);
+
+                // create HUD controls
+                controlComponent = new HUDComponent2D(window.getPrimaryView());
+                HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
+                mainHUD.addComponent(controlComponent);
+                controlComponent.setLocation(500, 50);
             } catch (InstantiationException ex) {
                 throw new RuntimeException(ex);
             }
         }
-        window.setVisible(show);
+        window.setVisible(true);    // TODO: do this in HUD
+        controlComponent.setVisible(show);
     }
 
-    public void showHUD(boolean onHUD) {
-        Window2DViewWorld view = window.getPrimaryView();
-        view.setOnHUD(onHUD);
-        view.setHUDLocation(500, 30);
+    public boolean showingControls() {
+        return (controlComponent.isVisible());
     }
 
     public void movingMarker(MouseEvent e) {
@@ -430,7 +437,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
         return ((WhiteboardCell) app.getDisplayer()).getCellID();
     }
 
-        /**
+    /**
      * Return the ID of this window's cell.
      */
     public String getCellUID(App app) {

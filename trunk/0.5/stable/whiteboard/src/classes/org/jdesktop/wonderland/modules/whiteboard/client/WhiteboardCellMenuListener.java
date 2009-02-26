@@ -59,4 +59,6 @@ public interface WhiteboardCellMenuListener {
     public void sync();
 
     public void unsync();
+
+    public void toggleHUD();
 }

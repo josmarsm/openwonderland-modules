@@ -57,7 +57,7 @@ public class WhiteboardToolManager implements WhiteboardCellMenuListener {
 
     WhiteboardToolManager(WhiteboardWindow whiteboardWindow) {
         this.whiteboardWindow = whiteboardWindow;
-        setTool(WhiteboardTool.SELECTOR);
+        setTool(WhiteboardTool.TEXT);
         setColor(WhiteboardColor.BLACK);
     }
 
@@ -128,14 +128,16 @@ public class WhiteboardToolManager implements WhiteboardCellMenuListener {
 
     public void sync() {
         hudState = !hudState;
-        whiteboardWindow.showHUD(hudState);
-    //whiteboardWindow.sync(!whiteboardWindow.isSynced());
+        whiteboardWindow.sync(!whiteboardWindow.isSynced());
     }
 
     public void unsync() {
         hudState = !hudState;
-        whiteboardWindow.showHUD(hudState);
-    //whiteboardWindow.sync(!whiteboardWindow.isSynced());
+        whiteboardWindow.sync(!whiteboardWindow.isSynced());
+    }
+
+    public void toggleHUD() {
+        whiteboardWindow.showControls(!whiteboardWindow.showingControls());
     }
 
     private void setTool(WhiteboardTool newTool) {
@@ -146,19 +148,11 @@ public class WhiteboardToolManager implements WhiteboardCellMenuListener {
         if (currentTool != null) {
             //Untoggle the tool
             whiteboardWindow.deselectTool(currentTool);
-            //If the current tool is the selector, then set the color of the new tool to black
-//            if (currentTool == WhiteboardTool.SELECTOR) {
-//                setColor(WhiteboardColor.BLACK);
-//            }
             currentTool = null;
         }
         if (newTool != null) {
             //toggle the new tool
             whiteboardWindow.selectTool(newTool);
-            //If the new tool is the selector, set the color to null
-//            if (newTool == WhiteboardTool.SELECTOR) {
-//                setColor(null);
-//            }
             currentTool = newTool;
         }
     }
