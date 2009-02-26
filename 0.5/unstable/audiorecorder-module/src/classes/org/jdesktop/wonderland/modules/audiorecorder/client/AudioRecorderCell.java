@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.ListModel;
@@ -51,8 +50,6 @@ import org.jdesktop.wonderland.modules.audiorecorder.common.Tape;
  * @author Joe Provino
  */
 public class AudioRecorderCell extends Cell {
-
-    private static final Logger audioRecorderLogger = Logger.getLogger(AudioRecorderCell.class.getName());
 
     private boolean isPlaying, isRecording;
     private String userName;
@@ -96,6 +93,16 @@ public class AudioRecorderCell extends Cell {
         isPlaying = ((AudioRecorderCellClientState)cellClientState).isPlaying();
         isRecording = ((AudioRecorderCellClientState)cellClientState).isRecording();
         userName = ((AudioRecorderCellClientState)cellClientState).getUserName();
+        if(isPlaying | isRecording) {
+            if (userName == null) {
+                logger.warning("userName should not be null");
+            }
+        }
+        if (!isPlaying & !isRecording) {
+            if (userName != null) {
+                logger.warning("userName should be null");
+            }
+        }
         reelForm = new ReelForm(this);
     }
 
@@ -104,7 +111,7 @@ public class AudioRecorderCell extends Cell {
     }
 
     Tape addTape(String tapeName) {
-        audioRecorderLogger.info("add " + tapeName);
+        logger.info("add " + tapeName);
         Tape newTape = new Tape(tapeName);
         tapeListModel.addElement(newTape);
         AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.newTape(getCellID(), tapeName);
@@ -131,7 +138,7 @@ public class AudioRecorderCell extends Cell {
     }
 
     void selectedTapeChanged() {
-        audioRecorderLogger.info("selectedTape changed");
+        logger.info("selectedTape changed");
         int index = tapeSelectionModel.getMaxSelectionIndex();
         if (index >= 0) {
             Tape selectedTape = (Tape) tapeListModel.elementAt(index);
@@ -156,7 +163,7 @@ public class AudioRecorderCell extends Cell {
     }
 
     private void selectTape(String tapeName) {
-        audioRecorderLogger.info("select tape: " + tapeName);
+        logger.info("select tape: " + tapeName);
         Enumeration tapes = tapeListModel.elements();
         while (tapes.hasMoreElements()) {
             Tape aTape = (Tape) tapes.nextElement();
@@ -167,7 +174,7 @@ public class AudioRecorderCell extends Cell {
     }
 
     private void setTapeUsed(String tapeName) {
-        audioRecorderLogger.info("setTapeUsed: " + tapeName);
+        logger.info("setTapeUsed: " + tapeName);
         Enumeration tapes = tapeListModel.elements();
         while (tapes.hasMoreElements()) {
             Tape aTape = (Tape) tapes.nextElement();
@@ -178,17 +185,20 @@ public class AudioRecorderCell extends Cell {
     }
 
     void startRecording() {
-        audioRecorderLogger.info("start recording");
+        logger.info("start recording");
         if (!isPlaying) {
             Tape selectedTape = getSelectedTape();
             if (selectedTape == null) {
-                audioRecorderLogger.warning("Can't record when there's no selected tape");
+                logger.warning("Can't record when there's no selected tape");
                 return;
             }
             if (!selectedTape.isFresh()) {
-                audioRecorderLogger.warning("Overwriting existing recording");
+                logger.warning("Overwriting existing recording");
             }
             setUsed(selectedTape);
+            if (userName != null) {
+                logger.warning("userName should be null");
+            }
             userName = getCurrentUserName();
             setRecording(true);
             AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.recordingMessage(getCellID(), isRecording, userName);
@@ -199,14 +209,14 @@ public class AudioRecorderCell extends Cell {
     }
 
     private void setUsed(Tape aTape) {
-        audioRecorderLogger.info("setUsed: " + aTape);
+        logger.info("setUsed: " + aTape);
         aTape.setUsed();
         AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.setTapeUsed(getCellID(), aTape.getTapeName());
         getChannel().send(msg);
     }
 
     void startPlaying() {
-        audioRecorderLogger.info("start playing");
+        logger.info("start playing");
         if (!isRecording) {
             Tape selectedTape = getSelectedTape();
             if (selectedTape == null) {
@@ -217,19 +227,22 @@ public class AudioRecorderCell extends Cell {
                 logger.warning("Can't playback a tape that's not ben recorded");
                 return;
             }
+            if (userName != null) {
+                logger.warning("userName should be null");
+            }
             userName = getCurrentUserName();
             setPlaying(true);
             AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.playingMessage(getCellID(), isPlaying, userName);
             getChannel().send(msg);
         } else {
-            audioRecorderLogger.warning("Can't start playing when already recording");
+            logger.warning("Can't start playing when already recording");
         }
     }
 
 
     void stop() {
-        audioRecorderLogger.info("stop");
-	if (userName != null && userName.equals(getCurrentUserName())) {
+        logger.info("stop");
+        if (userName != null && userName.equals(getCurrentUserName())) {
             AudioRecorderCellChangeMessage msg = null;
             if (isRecording) {
                 msg = AudioRecorderCellChangeMessage.recordingMessage(getCellID(), false, userName);
@@ -242,19 +255,20 @@ public class AudioRecorderCell extends Cell {
             }
             setRecording(false);
             setPlaying(false);
+            userName = null;
         } else {
-            audioRecorderLogger.warning("Attempt to stop by non-initiating user");
+            logger.warning("Attempt to stop by non-initiating user");
         }
     }
 
     private void setRecording(boolean b) {
-        audioRecorderLogger.info("setRecording: " + b);
+        logger.info("setRecording: " + b);
         renderer.setRecording(b);
         isRecording = b;
     }
 
     private void setPlaying(boolean b) {
-        audioRecorderLogger.info("setPlaying: " + b);
+        logger.info("setPlaying: " + b);
         renderer.setPlaying(b);
         isPlaying = b;
     }
@@ -277,11 +291,11 @@ public class AudioRecorderCell extends Cell {
    }
 
     private String getCurrentUserName() {
-        return "USERNAME NOT SET";
+        return getCellCache().getSession().getUserID().getUsername();
     }
 
     void setReelFormVisible(boolean aBoolean) {
-        audioRecorderLogger.info("set visible: " + aBoolean);
+        logger.info("set visible: " + aBoolean);
         reelForm.setVisible(aBoolean);
     }
     
@@ -316,6 +330,7 @@ public class AudioRecorderCell extends Cell {
                         break;
                     case PLAYBACK_DONE:
                         setPlaying(false);
+                        userName = null;
                         break;
                     case PLAY:
                         setPlaying(sccm.isPlaying());
@@ -336,7 +351,7 @@ public class AudioRecorderCell extends Cell {
                         selectTape(sccm.getTapeName());
                         break;
                     default:
-                        audioRecorderLogger.severe("Unknown action type: " + sccm.getAction());
+                        logger.severe("Unknown action type: " + sccm.getAction());
 
                 }
             }
