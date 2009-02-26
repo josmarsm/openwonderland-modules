@@ -19,6 +19,8 @@
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -47,10 +49,7 @@ public class AudioRecorderCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        /*
-         * URL url = AudioRecorderPaletteInfo.class.getResource("resources/audiorecorder_preview.png");
+        URL url = AudioRecorderCellFactory.class.getResource("resources/audiorecorder_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
-         * */
-        return null;
     }
 }
