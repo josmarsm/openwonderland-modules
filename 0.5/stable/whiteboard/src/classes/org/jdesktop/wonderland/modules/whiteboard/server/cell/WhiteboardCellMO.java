@@ -117,6 +117,12 @@ public class WhiteboardCellMO extends App2DCellMO {
         pixelScale = new Vector2f(state.getPixelScaleX(), state.getPixelScaleY());
         svgDocument = WhiteboardUtils.newDocument();
         persistDocument();
+
+        String xml = state.getSVGDocumentXML();
+        if ((xml != null) && (xml.length() > 0)) {
+            setDocument(xml);
+            constructDocument();
+        }
     }
 
     /**
