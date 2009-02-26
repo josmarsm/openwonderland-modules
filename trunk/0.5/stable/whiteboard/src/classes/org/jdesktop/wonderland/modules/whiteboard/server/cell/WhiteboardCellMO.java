@@ -128,7 +128,7 @@ public class WhiteboardCellMO extends App2DCellMO {
             state = new WhiteboardSVGCellServerState();
         }
         ((WhiteboardSVGCellServerState) state).setSVGDocumentXML(getDocument());
-        return state;
+        return super.getServerState(state);
     }
 
     /**

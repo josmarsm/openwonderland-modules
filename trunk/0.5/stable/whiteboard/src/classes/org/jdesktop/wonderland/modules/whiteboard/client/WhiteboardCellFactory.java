@@ -18,9 +18,11 @@
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
 import java.awt.Image;
-import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
+import java.awt.Toolkit;
+import java.net.URL;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellServerState;
 
 /**
@@ -46,6 +48,7 @@ public class WhiteboardCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        return null;
+        URL url = WhiteboardCellFactory.class.getResource("resources/svgwhiteboard_preview.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
