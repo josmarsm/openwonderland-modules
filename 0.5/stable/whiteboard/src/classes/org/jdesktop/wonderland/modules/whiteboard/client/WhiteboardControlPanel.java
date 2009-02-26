@@ -149,9 +149,9 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
 
     public void setSynced(boolean synced) {
         if (synced == true) {
-            syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/sync.png")));
+            syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardSync32x32.png")));
         } else {
-            syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/unsync.png")));
+            syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardUnsync32x32.png")));
         }
     }
 
@@ -352,7 +352,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         });
 
         syncButton.setBackground(new java.awt.Color(231, 230, 230));
-        syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/sync.png"))); // NOI18N
+        syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardSync32x32.png"))); // NOI18N
         syncButton.setBorderPainted(false);
         syncButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         syncButton.setOpaque(true);
