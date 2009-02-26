@@ -18,7 +18,11 @@
 
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
+import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -41,9 +45,10 @@ public class ReelForm extends javax.swing.JFrame {
      * @param audioRecorderCell 
      */
     public ReelForm(AudioRecorderCell audioRecorderCell) {
-	this.audioRecorderCell = audioRecorderCell;
+        this.audioRecorderCell = audioRecorderCell;
         initComponents();
-	setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
+        tapesList.setCellRenderer(new TapeListRenderer());
+        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         tapesList.setModel(audioRecorderCell.getTapeListModel());
         ListSelectionModel tapeSelectionModel = audioRecorderCell.getTapeSelectionModel();
         tapesList.setSelectionModel(tapeSelectionModel);
@@ -52,7 +57,7 @@ public class ReelForm extends javax.swing.JFrame {
             public void valueChanged(ListSelectionEvent e) {
                 selectionChanged = true;
             }
-        } );
+        });
     }
 
     void selectTape(Tape aTape) {
@@ -192,5 +197,33 @@ public class ReelForm extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList tapesList;
     // End of variables declaration//GEN-END:variables
-    
+
+    class TapeListRenderer extends JLabel implements ListCellRenderer {
+     // This is the only method defined by ListCellRenderer.
+     // We just reconfigure the JLabel each time we're called.
+
+     public Component getListCellRendererComponent(
+       JList list,
+       Object value,            // value to display
+       int index,               // cell index
+       boolean isSelected,      // is the cell selected
+       boolean cellHasFocus)    // the list and the cell have the focus
+     {
+         Tape tape = (Tape) value;
+         String s = tape.getTapeName();
+         setText(s);
+   	   if (isSelected) {
+             setBackground(list.getSelectionBackground());
+	       setForeground(list.getSelectionForeground());
+	   }
+         else {
+	       setBackground(list.getBackground());
+	       setForeground(list.getForeground());
+	   }
+	   setEnabled(list.isEnabled());
+	   setFont(list.getFont());
+         setOpaque(true);
+         return this;
+     }
+ }
 }
