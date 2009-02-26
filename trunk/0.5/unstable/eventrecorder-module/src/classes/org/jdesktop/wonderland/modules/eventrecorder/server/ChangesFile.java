@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
@@ -44,6 +46,7 @@ import javax.xml.bind.annotation.XmlTransient;
  */
 @XmlRootElement(name="changes-file")
 public class ChangesFile {
+    final static SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
     private File file;
     @XmlElement(name="timestamp")
     private long timeOfLastChange;
@@ -83,8 +86,14 @@ public class ChangesFile {
      * @throws IOException if there is an error writing to the file
      */
     public ChangesFile(File file, long timestamp) throws IOException {
-        setFile(file);
+        setFile(file, timestamp);
         timeOfLastChange = timestamp;
+    }
+
+    public void appendMessage(String encodedMessage, long timestamp) {
+        changesWriter.println("<Message timestamp=\"" + timestamp + "\">");
+        changesWriter.println(encodedMessage);
+        changesWriter.println("</Message>");
     }
 
     /**
@@ -99,12 +108,12 @@ public class ChangesFile {
      * @param file the underlying file, whose pathname should end in changes.xml
      * @throws java.io.FileNotFoundException
      */
-    private void setFile(File file) throws FileNotFoundException {
+    private void setFile(File file, long timestamp) throws FileNotFoundException {
         this.file = file;
         changesWriter = new PrintWriter(new FileOutputStream(file), true);
         changesWriter.println("<?xml version=\"1.0\" encoding=\"" + ENCODING + "\"?>");
-        changesWriter.println("<Wonderland_Recorder>");
-        changesWriter.println("<Wonderland_Changes>");
+        changesWriter.println("<Wonderland_Recorder date=\"" + DATE_FORMATTER.format(new Date()) + "\">");
+        changesWriter.println("<Wonderland_Changes timestamp=\"" + timestamp + "\">");
     }
 
     /**

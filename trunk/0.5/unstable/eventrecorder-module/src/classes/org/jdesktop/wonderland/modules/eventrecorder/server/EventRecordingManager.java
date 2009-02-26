@@ -18,8 +18,10 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
+import java.util.Set;
 import org.jdesktop.wonderland.server.eventrecorder.*;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -39,12 +41,11 @@ public interface EventRecordingManager {
 
     /**
      *
-     * @param eventRecorder
-     * @param sender
+     * @param tapeName
      * @param clientID
      * @param message
      */
-    public void recordMessage(EventRecorder eventRecorder, WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message);
+    public void recordMessage(String tapeName, WonderlandClientID clientID, CellMessage message, MessageRecordingListener listener);
 
     /**
      *
@@ -93,6 +94,48 @@ public interface EventRecordingManager {
          */
         public void fileClosureFailed(String reason, Throwable cause);
 
+    }
+
+    /**
+     * A listener that will be notified of the result of recording a message
+     * to c changes file.  Implementations of MessageRecordingListener must
+     * be either a ManagedObject or Serializable
+     */
+    public interface MessageRecordingListener {
+        /**
+         * Notification of the result of recording a message
+         * @param result
+         */
+        public void messageRecordingResult(MessageRecordingResult result);
+    }
+
+    /**
+     * The result of recording a message
+     */
+    public interface MessageRecordingResult {
+        /**
+         * Whether or not the recording was successful
+         * @return true if the recording was successful, or false if not
+         */
+        public boolean isSuccess();
+
+        /**
+         * The id of the message that was recorded
+         * @return the id of the message
+         */
+        public MessageID getMessageID();
+
+        /**
+         * If the recording failed, return the reason
+         * @return the reason for failure, or null
+         */
+        public String getFailureReason();
+
+        /**
+         * If the recording failed, return the root cause exception
+         * @return the root cause of the failure, or null
+         */
+        public Throwable getFailureCause();
     }
 
 

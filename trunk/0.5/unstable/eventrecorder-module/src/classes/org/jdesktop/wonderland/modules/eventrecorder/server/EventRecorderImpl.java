@@ -28,9 +28,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingResult;
 import org.jdesktop.wonderland.server.eventrecorder.EventRecorder;
 import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -38,6 +40,7 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportResult;
@@ -49,7 +52,7 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.RecordingCr
  * @author Bernard Horan
  */
 public class EventRecorderImpl implements ManagedObject, EventRecorder, RecordingCreationListener,
-        CellExportListener, ChangesFileCreationListener, ChangesFileCloseListener, Serializable {
+        CellExportListener, ChangesFileCreationListener, ChangesFileCloseListener, MessageRecordingListener, Serializable {
 
     private static final Logger logger = Logger.getLogger(EventRecorderImpl.class.getName());
     /*The reference to the cell that is the event recorder in the world */
@@ -105,12 +108,13 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
     public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
         logger.fine("sender: " + sender + ", " + clientID + ", " + message);
         CellID cellID = message.getCellID();
+        //TODO: check if cellID is a cell that's within the bounds of the recorder's recording volume
         if (failedCells.contains(cellID)) {
             logger.warning("Ignoring message for cellID: " + cellID);
             return;
         }
-//        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
-//        mgr.recordMessage(this, sender, clientID, message); 
+        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
+        mgr.recordMessage(tapeName, clientID, message, this);
     }
 
     public String getName() {
@@ -232,5 +236,16 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
     @Override
     public String toString() {
         return super.toString() + " name: " + getName();
+    }
+
+    public void messageRecordingResult(MessageRecordingResult result) {
+        //message has been written, or not
+        MessageID id = result.getMessageID();
+        if (!result.isSuccess()) {
+            logger.log(Level.WARNING, "Error writing message " + id + ": " +
+                           result.getFailureReason(), result.getFailureCause());
+        } else {
+            logger.info("Success writing message " + id);
+        }
     }
 }

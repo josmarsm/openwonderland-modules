@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import java.util.Set;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingResult;
 import org.jdesktop.wonderland.server.eventrecorder.*;
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.kernel.ComponentRegistry;
@@ -34,6 +36,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +48,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
 import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingListener;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -192,10 +197,27 @@ public class EventRecordingService extends AbstractService {
 
     }
 
-    public void recordMessage(EventRecorder eventRecorder, WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-        logger.getLogger().info("sender: " + sender + ", clientID: " + clientID + ", message: " + message);
-        KernelRunnable task = new RecordMessageTask(eventRecorder.getName(), sender, clientID, message);
-        taskScheduler.scheduleTask(task, taskOwner);
+    /**
+     * Record the message onto the changes file
+     * @param tapeName the name of the tape, and hence the recording, to which the message will be appended
+     * @param clientID the client id of the sender of the message
+     * @param message the message
+     * @param listener 
+     */
+    public void recordMessage(String tapeName, WonderlandClientID clientID, CellMessage message, MessageRecordingListener listener) {
+        logger.getLogger().info("clientID: " + clientID + ", message: " + message);
+        if (!(listener instanceof ManagedObject)) {
+            listener = new ManagedMessageRecordingWrapper(listener);
+        }
+        // create a reference to the listener
+        ManagedReference<MessageRecordingListener> scl =
+                dataService.createReference(listener);
+
+        // now add the recording request to the transaction.  On commit
+        // this request will be passed on to the executor for long-running
+        // tasks
+        RecordMessage ec = new RecordMessage(tapeName, clientID, message, scl.getId());
+        ctxFactory.joinTransaction().add(ec);
     }
 
     /**
@@ -256,63 +278,177 @@ public class EventRecordingService extends AbstractService {
         }
     }
 
-    
+    /**
+     * A task that recrods a message to a file
+     * on the server.  The results are then passed to a
+     * CellExportListener identified by managed reference.
+     */
+    private class RecordMessage implements Runnable {
+        private String tapeName;
+        private WonderlandClientID clientID;
+        private CellMessage message;
+        private BigInteger listenerID;
 
-    private class RecordMessageTask implements KernelRunnable {
-
-        private final WonderlandClientSender sender;
-        private final WonderlandClientID clientID;
-        private final CellMessage message;
-        private PrintWriter changesWriter;
-        private CellID cellID;
-        private CellMO recordedCell;
-
-        RecordMessageTask(String recorderName, WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-
-            this.sender = sender;
+        private RecordMessage(String tapeName, WonderlandClientID clientID, CellMessage message, BigInteger id) {
+            this.tapeName = tapeName;
             this.clientID = clientID;
             this.message = message;
-            cellID = message.getCellID();
-            recordedCell = CellManagerMO.getCell(cellID);
-            logger.getLogger().info("recorderTable: " + recorderTable);
-
-            changesWriter = recorderTable.get(recorderName);
-
+            this.listenerID = id;
         }
 
-        public String getBaseTaskType() {
-            return "EventRecordingService.RecordMessageTask";
-        }
+        public void run() {
+            
+                MessageRecordingResultImpl result;
 
-        public void run() throws Exception {
+                // first, wrap the fields in a ChangeDescriptor in a task.
+                GetChangeDescriptor get = new GetChangeDescriptor(tapeName, clientID, message);
+                try {
+                    transactionScheduler.runTask(get, taskOwner);
+                } catch (Exception ex) {
+                    result = new MessageRecordingResultImpl(message.getMessageID(), "Error in creating change descriptor", ex);
+                }
 
-            writeChange();
-        }
+                // if the change descriptor is null, it means something went wrong
+                if (get.getChangeDescriptor() == null) {
+                    result = new MessageRecordingResultImpl(message.getMessageID(), "ChangeDescriptor is null", null);
+                }
 
-        public void writeChange() {
-            changesWriter.print("<Message ");
-            if (recordedCell != null) {
-                changesWriter.print("cellId=\"" + cellID + "\" ");
-            }
-            long delay;
-            long now = new Date().getTime();
-            delay = now - timeOfLastChange;
-            timeOfLastChange = now;
-            changesWriter.print("delay=\"" + delay + "\" ");
-            changesWriter.println(">");
-            writeMessage();
-            changesWriter.println("</Message>");
-        }
+                // now export the descriptor to the web service
+                try {
+                    EventRecorderUtils.recordChange(get.getChangeDescriptor());
+                } catch (Exception ex) {
+                    result = new MessageRecordingResultImpl(message.getMessageID(), "Error in writing message", ex);
+                }
 
-        private void writeMessage() {
+                // success
+                result = new MessageRecordingResultImpl(message.getMessageID());
+            
+
+            // notify the listener
+            NotifyMessageRecordingListener notify =
+                    new NotifyMessageRecordingListener(listenerID, result);
             try {
-                ByteBuffer byteBuffer = MessagePacker.pack(message, clientID.getID().shortValue());
-                changesWriter.println(BASE_64_ENCODER.encode(byteBuffer));
-            } catch (PackerException ex) {
-                logger.getLogger().log(Level.SEVERE, null, ex);
+                transactionScheduler.runTask(notify, taskOwner);
+            } catch (Exception ex) {
+                logger.logThrow(Level.WARNING, ex, "Error calling listener");
             }
         }
     }
+
+/**
+     * The result of recording a message
+     */
+    class MessageRecordingResultImpl implements MessageRecordingResult {
+        private MessageID messageID;
+        private boolean success;
+        private String failureReason;
+        private Throwable failureCause;
+
+        public MessageRecordingResultImpl(MessageID messageID) {
+            this.messageID = messageID;
+            this.success = true;
+        }
+
+        public MessageRecordingResultImpl(MessageID messageID, String failureReason,
+                Throwable failureCause)
+        {
+            this.success = false;
+            this.messageID = messageID;
+            this.failureReason = failureReason;
+            this.failureCause = failureCause;
+        }
+
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public MessageID getMessageID() {
+            return messageID;
+        }
+
+        public String getFailureReason() {
+            return failureReason;
+        }
+
+        public Throwable getFailureCause() {
+            return failureCause;
+        }
+    }
+
+    /**
+     * A task to create a ChangeDescriptor.
+     */
+    private class GetChangeDescriptor implements KernelRunnable {
+        private String tapeName;
+        private WonderlandClientID clientID;
+        private CellMessage message;
+        private long timestamp;
+
+        private ChangeDescriptor out;
+
+        public GetChangeDescriptor(String tapeName, WonderlandClientID clientID, CellMessage message) {
+            this.tapeName = tapeName;
+            this.clientID = clientID;
+            this.message = message;
+            timestamp = new Date().getTime();
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".GET_CHANGE_DESCRIPTOR";
+        }
+
+        public ChangeDescriptor getChangeDescriptor() {
+            return out;
+        }
+
+        public void run() throws Exception {
+            // create a ChangeDescriptor
+            out = EventRecorderUtils.getChangeDescriptor(tapeName, clientID, message, timestamp);
+        }
+    }
+
+    /**
+     * A task to notify a ChangesFileCreationListener
+     */
+    private class NotifyChangesFileCreationListener implements KernelRunnable {
+        private BigInteger listenerID;
+        private ChangesFile cFile;
+        private Exception ex;
+
+        public NotifyChangesFileCreationListener(BigInteger listenerID, ChangesFile cFile,
+                                      Exception ex)
+        {
+            this.listenerID = listenerID;
+            this.cFile = cFile;
+            this.ex = ex;
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".CHANGES_FILE_CREATION_LISTENER";
+        }
+
+        public void run() throws Exception {
+            ManagedReference<?> lr =
+                    dataService.createReferenceForId(listenerID);
+            ChangesFileCreationListener l =
+                    (ChangesFileCreationListener) lr.get();
+
+            try {
+                if (ex == null) {
+                    l.fileCreated(cFile);
+                } else {
+                    l.fileCreationFailed(ex.getMessage(), ex);
+                }
+            } finally {
+                // clean up
+                if (l instanceof ManagedChangesFileCreationWrapper) {
+                    dataService.removeObject(l);
+                }
+            }
+        }
+    }
+
 
     /**
      * A task that closes a changes file, and then notifies the changes file
@@ -395,40 +531,52 @@ public class EventRecordingService extends AbstractService {
     }
 
     /**
-     * A task to notify a ChangesFileCreationListener
+     * A wrapper around the MessageRecordingListener as a managed object.
+     * This assumes a serializable MessageRecordingListener
      */
-    private class NotifyChangesFileCreationListener implements KernelRunnable {
-        private BigInteger listenerID;
-        private ChangesFile cFile;
-        private Exception ex;
+    private static class ManagedMessageRecordingWrapper
+            implements MessageRecordingListener, ManagedObject, Serializable
+    {
+        private MessageRecordingListener wrapped;
 
-        public NotifyChangesFileCreationListener(BigInteger listenerID, ChangesFile cFile,
-                                      Exception ex)
+        public ManagedMessageRecordingWrapper(MessageRecordingListener listener)
+        {
+            wrapped = listener;
+        }
+
+        public void messageRecordingResult(MessageRecordingResult result) {
+            wrapped.messageRecordingResult(result);
+        }
+    }
+
+    /**
+     * A task to notify a MessageRecordingListener
+     */
+    private class NotifyMessageRecordingListener implements KernelRunnable {
+        private BigInteger listenerID;
+        private MessageRecordingResultImpl result;
+
+        public NotifyMessageRecordingListener(BigInteger listenerID, MessageRecordingResultImpl result)
         {
             this.listenerID = listenerID;
-            this.cFile = cFile;
-            this.ex = ex;
+            this.result = result;
         }
 
         public String getBaseTaskType() {
-            return NAME + ".CHANGES_FILE_CREATION_LISTENER";
+            return NAME + ".RECORD_MESSAGE_LISTENER";
         }
 
         public void run() throws Exception {
             ManagedReference<?> lr =
                     dataService.createReferenceForId(listenerID);
-            ChangesFileCreationListener l =
-                    (ChangesFileCreationListener) lr.get();
+            MessageRecordingListener l =
+                    (MessageRecordingListener) lr.get();
 
             try {
-                if (ex == null) {
-                    l.fileCreated(cFile);
-                } else {
-                    l.fileCreationFailed(ex.getMessage(), ex);
-                }
+                l.messageRecordingResult(result);
             } finally {
                 // clean up
-                if (l instanceof ManagedChangesFileCreationWrapper) {
+                if (l instanceof ManagedMessageRecordingWrapper) {
                     dataService.removeObject(l);
                 }
             }
