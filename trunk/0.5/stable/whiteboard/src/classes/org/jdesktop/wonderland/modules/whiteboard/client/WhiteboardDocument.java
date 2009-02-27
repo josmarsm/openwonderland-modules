@@ -176,16 +176,20 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         }
 
         public void run() {
-            if (dialog == null) {
+            dialog = null;
+            dialog = new HUDInputDialog(whiteboardWindow.getApp());
+            dialog.setLabelText("Enter the text to add to the whiteboard:");
 
-                dialog = new HUDInputDialog(whiteboardWindow.getApp());
-                dialog.setLabelText("Enter the text to add to the whiteboard:");
-            }
             PropertyChangeListener plistener = new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent pe) {
-                    Element e = createTextElement(position, (String) pe.getNewValue());
-                    whiteboardWindow.addNewElement(e, true);
+                    if (pe.getPropertyName().equals("text")) {
+                        String value = (String) pe.getNewValue();
+                        if ((value != null) && (value.length() > 0)) {
+                            Element e = createTextElement(position, value);
+                            whiteboardWindow.addNewElement(e, true);
+                        }
+                    }
                     dialog.setVisible(false);
                     dialog.removePropertyChangeListener(this);
                 }
