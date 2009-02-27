@@ -35,9 +35,9 @@
               <Component id="ellipseButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Component id="textButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Component id="fillButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Component id="colorRedButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Component id="colorGreenButton" min="-2" max="-2" attributes="0"/>
