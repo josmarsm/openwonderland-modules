@@ -143,9 +143,20 @@ public class WhiteboardCellMO extends App2DCellMO {
     @Override
     protected void setLive(boolean live) {
         super.setLive(live);
-        WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
-        commComponentRef = AppContext.getDataManager().createReference(commComponent);
-        addComponent(commComponent);
+
+        if (live == true) {
+            if (commComponentRef == null) {
+                WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
+                commComponentRef = AppContext.getDataManager().createReference(commComponent);
+                addComponent(commComponent);
+            }
+        } else {
+            if (commComponentRef != null) {
+                WhiteboardComponentMO commComponent = commComponentRef.get();
+                AppContext.getDataManager().removeObject(commComponent);
+                commComponentRef = null;
+            }
+        }
     }
 
     private void constructDocument() {
