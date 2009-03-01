@@ -53,7 +53,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
 
     public WhiteboardControlPanel() {
         initComponents();
-        makeTransparent();
+        //makeTransparent(); Does not work on Ubuntu Java 5u10 - jslott
         initButtonMaps();
         border = javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED);
     }
