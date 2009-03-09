@@ -1,0 +1,2 @@
+print('Hello from javascript - message script  \r\n') ;
+print('Message received ' + stateString[0]);
