@@ -43,8 +43,10 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.jdesktop.lg3d.wonderland.darkstar.common.setup.ModelCellSetup;
+import org.jdesktop.lg3d.wonderland.darkstar.server.cell.SimpleTerrainCellGLO;
 import org.jdesktop.lg3d.wonderland.darkstar.server.setup.BasicCellGLOSetup;
 import org.jdesktop.lg3d.wonderland.wfs.InvalidWFSCellException;
+import org.jdesktop.lg3d.wonderland.wfs.WFS;
 import org.jdesktop.lg3d.wonderland.wfs.WFSCell;
 import org.jdesktop.lg3d.wonderland.wfs.WFSCellDirectory;
 import org.jdesktop.lg3d.wonderland.wfs.WFSCellNotLoadedException;
@@ -82,7 +84,6 @@ public class UploadServlet extends HttpServlet {
     
     /** 
      * Returns a short description of the servlet.
-     * @return the description for this servlet
      */
     @Override
     public String getServletInfo() {
@@ -90,12 +91,9 @@ public class UploadServlet extends HttpServlet {
     }
     
     /** 
-     * Handles the HTTP <code>GET</code> method.<br>
-     * This is not used in this implementation.
+     * Handles the HTTP <code>GET</code> method.
      * @param request servlet request
      * @param response servlet response
-     * @throws ServletException when called
-     * @throws IOException is ignored
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -105,12 +103,9 @@ public class UploadServlet extends HttpServlet {
     } 
 
     /** 
-     * Handles the HTTP <code>POST</code> method.<br>
-     * Overrides default implementation.
+     * Handles the HTTP <code>POST</code> method.
      * @param request servlet request
      * @param response servlet response
-     * @throws ServletException
-     * @throws IOException 
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -145,8 +140,6 @@ public class UploadServlet extends HttpServlet {
 
     /**
      * Check that all required items are present
-     * @param items the items to check
-     * @return the items that are present
      */
     private List<String> checkRequired(List<FileItem> items) {
         Map<String, ItemValidator> validators = new HashMap<String, ItemValidator>();
@@ -186,9 +179,8 @@ public class UploadServlet extends HttpServlet {
     }
      
     /**
-     * Write files to the specified directory
+     * Write files to the art directory
      * @param items the list of items containing the files to write
-     * @throws IOException if there is an error writing the files
      * @throws ServletException if there is an error writing the files
      */
     private void writeFiles(List<FileItem> items) 
@@ -322,11 +314,9 @@ public class UploadServlet extends HttpServlet {
     
     /**
      * Find an item in a list by field name
-     * @param items the list of items
-     * @param name the name of the item we are trying to find
      * @return the item, or null if it is not found
      */
-    protected FileItem findItem(List<FileItem> items, String name) {
+    private FileItem findItem(List<FileItem> items, String name) {
         FileItem out = null;
         
         for (FileItem item : items) {
