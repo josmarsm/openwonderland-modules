@@ -169,9 +169,10 @@ public class ScriptingComponent extends CellComponent
             {
             public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered);
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
                 }
-            }, new BoundingVolume[] { new BoundingSphere(2f, new Vector3f()) });
+            }, new BoundingVolume[] { new BoundingSphere(10f, new Vector3f()), new BoundingSphere(6f, new Vector3f()), new BoundingSphere(2f, new Vector3f())});
         cell.addComponent(comp);
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : Prox class = " + cell.getComponent(ProximityComponent.class));                
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : After add ProximityComponent");
@@ -215,6 +216,20 @@ public class ScriptingComponent extends CellComponent
                 MouseEventListener myListener = new MouseEventListener();
                 myListener.addToEntity(mye);
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus : Cell Name = " + scriptClump);
+/*        
+        ProximityComponent comp = new ProximityComponent(cell);
+        comp.addProximityListener(new ProximityListener() 
+            {
+            public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
+                }
+            }, new BoundingVolume[] { new BoundingSphere(10f, new Vector3f()), new BoundingSphere(6f, new Vector3f()), new BoundingSphere(2f, new Vector3f())});
+        cell.addComponent(comp);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : Prox class = " + cell.getComponent(ProximityComponent.class));                
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : After add ProximityComponent");
+*/
 
                 IntercellListener ice = new IntercellListener() 
                     {
@@ -232,6 +247,25 @@ public class ScriptingComponent extends CellComponent
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In default for setStatus - status other than ACTIVE");
                 }
             }
+        }
+    
+    public void establishProximity(float outer, float middle, float inner)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishProximity - outer, middle, inner = " + outer + ", " + middle + ", " + inner);
+        ProximityComponent comp = new ProximityComponent(cell);
+        comp.addProximityListener(new ProximityListener() 
+            {
+            public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
+                stateInt[19] = proximityIndex;
+                executeScript(PROXIMITY_EVENT, null);
+                }
+            }, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()), new BoundingSphere((float)middle, new Vector3f()), new BoundingSphere((float)inner, new Vector3f())});
+        cell.addComponent(comp);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : Prox class = " + cell.getComponent(ProximityComponent.class));                
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : After add ProximityComponent");
         }
     
     public void postMessageEvent(String payload)
