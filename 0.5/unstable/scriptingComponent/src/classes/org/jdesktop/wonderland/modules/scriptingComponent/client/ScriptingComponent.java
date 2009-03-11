@@ -260,6 +260,7 @@ public class ScriptingComponent extends CellComponent
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
                 stateInt[19] = proximityIndex;
+                stateBoolean[19] = entered;
                 executeScript(PROXIMITY_EVENT, null);
                 }
             }, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()), new BoundingSphere((float)middle, new Vector3f()), new BoundingSphere((float)inner, new Vector3f())});
