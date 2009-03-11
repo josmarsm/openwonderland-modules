@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.scriptingComponent.client;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -41,9 +42,12 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.FrameRateListener;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.ProximityComponent;
+import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -56,6 +60,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.modules.scriptingComponent.client.IntercellEvent;
 
 /**
  *
@@ -64,7 +69,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
  * @author morrisford
  */
 @ExperimentalAPI
-public class ScriptingComponent extends CellComponent 
+public class ScriptingComponent extends CellComponent
     {
     private Node localNode;
     private String scriptClump = "default";
@@ -117,6 +122,7 @@ public class ScriptingComponent extends CellComponent
     public ScriptingComponent(Cell cell) 
 	{
         super(cell);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter ScriptingComponent constructor");
         eventNames[MOUSE1_EVENT] = "mouse1.js";
         eventNames[MOUSE2_EVENT] = "mouse2.js";
         eventNames[MOUSE3_EVENT] = "mouse3.js";
@@ -157,6 +163,19 @@ public class ScriptingComponent extends CellComponent
         eventScriptType[MESSAGE3_EVENT] = "javascript";
         eventScriptType[MESSAGE4_EVENT] = "javascript";
 
+/*        
+        ProximityComponent comp = new ProximityComponent(cell);
+        comp.addProximityListener(new ProximityListener() 
+            {
+            public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered);
+                }
+            }, new BoundingVolume[] { new BoundingSphere(2f, new Vector3f()) });
+        cell.addComponent(comp);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : Prox class = " + cell.getComponent(ProximityComponent.class));                
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : After add ProximityComponent");
+*/
         wm = ClientContextJME.getWorldManager();
         wm.getRenderManager().setFrameRateListener(new FrameRateListener()
             {
@@ -166,7 +185,6 @@ public class ScriptingComponent extends CellComponent
                 }
             
             }, 100);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter ScriptingComponent constructor");
     }
     
 @Override
@@ -198,6 +216,13 @@ public class ScriptingComponent extends CellComponent
                 myListener.addToEntity(mye);
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus : Cell Name = " + scriptClump);
 
+                IntercellListener ice = new IntercellListener() 
+                    {
+                    public void intercellMessage(String payload) 
+                        {
+                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In intercellMessage = payload = " + payload);
+                        }
+                    };
                 
                 executeScript(STARTUP_EVENT, null);
                 break;
@@ -208,6 +233,12 @@ public class ScriptingComponent extends CellComponent
                 }
             }
         }
+    
+    public void postMessageEvent(String payload)
+        {
+        ClientContext.getInputManager().postEvent(new IntercellEvent(payload));
+        }
+    
     public void testMethod(String ibid)
         {
         System.out.println(ibid);
@@ -810,9 +841,15 @@ public class ScriptingComponent extends CellComponent
                 }
            }
         }
-
+/*
+    public void intercellMessage(String payload) {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In intercellMessage = payload = " + payload);
+    }
+*/
+/*
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
         {
         System.out.println("ScriptingComponent : Cell " + cell + " : Enter proximity listener");
         }
+*/
     }
