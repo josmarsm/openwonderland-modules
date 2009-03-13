@@ -25,32 +25,42 @@ import org.jdesktop.wonderland.client.input.Event;
  */
 public class IntercellEvent extends Event {
     private String payload = null;
-
+    private int code = 0;
+    
     /** Default constructor */
     public IntercellEvent() {
     }
     
-    /** Constructor, takes the Enitity that has been entered/exited. */
-    public IntercellEvent(String Payload) {
+    /** Constructor, takes the payload string and the event code. */
+    public IntercellEvent(String Payload, int Code) 
+        {
         this.payload = Payload;
-    }
+        this.code = Code;
+        }
 
-    /**
-     * Returns true if this is an enter event, false if it is an exit event.
-     * 
-     * @return True for enter, false for exit
-     */
+    public String getPayload()
+        {
+        return payload;
+        }
+
+    public int getCode()
+        {
+        return code;
+        }
     /** 
      * {@inheritDoc}
      * <br>
      * If event is null, a new event of this class is created and returned.
      */
     @Override
-    public Event clone (Event event) {
-        if (event == null) {
+    public Event clone (Event event) 
+        {
+        if (event == null) 
+            {
             event = new IntercellEvent();
-        }
+            }
         ((IntercellEvent) event).payload = payload;
+        ((IntercellEvent) event).code = code;
         return super.clone(event);
     }
 }
