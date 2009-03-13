@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -40,6 +41,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.FrameRateListener;
+import org.jdesktop.mtgame.InputManager;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -111,14 +113,17 @@ public class ScriptingComponent extends CellComponent
     public static final int MESSAGE2_EVENT = 16;
     public static final int MESSAGE3_EVENT = 17;
     public static final int MESSAGE4_EVENT = 18;
-    
+
+    public static final int INTERCELL_EVENT = 19;
+            
     private String[] eventNames = new String[totalEvents];
     private String[] eventScriptType = new String[totalEvents];
     
     private WorldManager wm = null;
-    
     private String info = null;
-
+    private Vector watchMessages = new Vector();
+    private SocketInterface sif = null;
+    
     public ScriptingComponent(Cell cell) 
 	{
         super(cell);
@@ -142,6 +147,7 @@ public class ScriptingComponent extends CellComponent
         eventNames[MESSAGE2_EVENT] = "message2.js";
         eventNames[MESSAGE3_EVENT] = "message3.js";
         eventNames[MESSAGE4_EVENT] = "message4.js";
+        eventNames[INTERCELL_EVENT] = "ice.js";
 
         eventScriptType[MOUSE1_EVENT] = "javascript";
         eventScriptType[MOUSE2_EVENT] = "javascript";
@@ -162,21 +168,8 @@ public class ScriptingComponent extends CellComponent
         eventScriptType[MESSAGE2_EVENT] = "javascript";
         eventScriptType[MESSAGE3_EVENT] = "javascript";
         eventScriptType[MESSAGE4_EVENT] = "javascript";
+        eventScriptType[INTERCELL_EVENT] = "javascript";
 
-/*        
-        ProximityComponent comp = new ProximityComponent(cell);
-        comp.addProximityListener(new ProximityListener() 
-            {
-            public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
-                {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
-                }
-            }, new BoundingVolume[] { new BoundingSphere(10f, new Vector3f()), new BoundingSphere(6f, new Vector3f()), new BoundingSphere(2f, new Vector3f())});
-        cell.addComponent(comp);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : Prox class = " + cell.getComponent(ProximityComponent.class));                
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : After add ProximityComponent");
-*/
         wm = ClientContextJME.getWorldManager();
         wm.getRenderManager().setFrameRateListener(new FrameRateListener()
             {
@@ -216,28 +209,7 @@ public class ScriptingComponent extends CellComponent
                 MouseEventListener myListener = new MouseEventListener();
                 myListener.addToEntity(mye);
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus : Cell Name = " + scriptClump);
-/*        
-        ProximityComponent comp = new ProximityComponent(cell);
-        comp.addProximityListener(new ProximityListener() 
-            {
-            public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
-                {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
-                }
-            }, new BoundingVolume[] { new BoundingSphere(10f, new Vector3f()), new BoundingSphere(6f, new Vector3f()), new BoundingSphere(2f, new Vector3f())});
-        cell.addComponent(comp);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : Prox class = " + cell.getComponent(ProximityComponent.class));                
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In constructor : After add ProximityComponent");
-*/
-
-                IntercellListener ice = new IntercellListener() 
-                    {
-                    public void intercellMessage(String payload) 
-                        {
-                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In intercellMessage = payload = " + payload);
-                        }
-                    };
+                ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
                 
                 executeScript(STARTUP_EVENT, null);
                 break;
@@ -246,6 +218,52 @@ public class ScriptingComponent extends CellComponent
                 {
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In default for setStatus - status other than ACTIVE");
                 }
+            }
+        }
+
+    public void establishSocket(int code, int errorCode, String ip, int port)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket int version - Message code " + code + " Error code = " + errorCode);
+        sif = new SocketInterface(ip, port, code, errorCode);
+        sif.doIt();
+        }
+    
+    public void establishSocket(float code, float errorCode, String ip, float port)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket float version - Message code " + code + "Error code = " + errorCode);
+        sif = new SocketInterface(ip, (int)port, (int)code, (int)errorCode);
+        sif.doIt();
+        }
+    
+    public void sendMessage(String buffer)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : sendMessage - Message code "); 
+        sif.sendBuffer(buffer);
+        }
+    
+    public void watchMessage(float code)
+        {
+        if(watchMessages.contains(new Float(code)))
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " already in watch list");
+            }
+        else
+            {
+            watchMessages.add(new Float(code));
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " added to watch list");
+            }
+        }
+    
+    public void dontWatchMessage(float code)
+        {
+        if(watchMessages.contains(new Float(code)))
+            {
+            watchMessages.remove(new Float(code));
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " removed from watch list");
+            }
+        else
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " not in watch list");
             }
         }
     
@@ -259,19 +277,19 @@ public class ScriptingComponent extends CellComponent
                 {
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
-                stateInt[19] = proximityIndex;
-                stateBoolean[19] = entered;
+                stateInt[18] = proximityIndex;
+                stateBoolean[18] = entered;
                 executeScript(PROXIMITY_EVENT, null);
                 }
             }, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()), new BoundingSphere((float)middle, new Vector3f()), new BoundingSphere((float)inner, new Vector3f())});
         cell.addComponent(comp);
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : Prox class = " + cell.getComponent(ProximityComponent.class));                
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : After add ProximityComponent");
         }
     
-    public void postMessageEvent(String payload)
+    public void postMessageEvent(String payload, int Code)
         {
-        ClientContext.getInputManager().postEvent(new IntercellEvent(payload));
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
+        ClientContext.getInputManager().postEvent(new IntercellEvent(payload, Code));
         }
     
     public void testMethod(String ibid)
@@ -876,15 +894,30 @@ public class ScriptingComponent extends CellComponent
                 }
            }
         }
-/*
-    public void intercellMessage(String payload) {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In intercellMessage = payload = " + payload);
-    }
-*/
-/*
-    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
+    class IntercellListener extends EventClassListener 
         {
-        System.out.println("ScriptingComponent : Cell " + cell + " : Enter proximity listener");
+@Override
+        public Class[] eventClassesToConsume() 
+            {
+            return new Class[] { IntercellEvent.class };
+            }
+
+@Override
+        public void commitEvent(Event event) 
+            {
+            IntercellEvent ice = (IntercellEvent)event;
+            if(watchMessages.contains(new Float(ice.getCode())))
+                {
+                stateInt[19] = ice.getCode();
+                stateString[19] = ice.getPayload();
+                executeScript(INTERCELL_EVENT, null);
+                System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                }
+            else
+                {
+                System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                }
+            }
         }
-*/
+    
     }
