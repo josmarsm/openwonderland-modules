@@ -27,7 +27,6 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
 /**
  * The WFS server state class for WhiteboardCellMO.
  * 
- * @author deronj
  * @author nsimpson
  */
 @XmlRootElement(name = "whiteboard-cell-svg")
@@ -40,9 +39,12 @@ public class WhiteboardSVGCellServerState extends App2DCellServerState implement
     /** The user's preferred height of the whiteboard window. */
     @XmlElement(name = "preferredHeight")
     public int preferredHeight = 1024;
-    /** The SVG document to display */
+    /** The SVG XML to display */
     @XmlElement(name = "svgDocumentXML")
     public String svgDocumentXML = "";
+    /** The SVG document to display */
+    @XmlElement(name = "svgDocumentURI")
+    public String svgDocumentURI = "";
 
     /** Default constructor */
     public WhiteboardSVGCellServerState() {
@@ -79,6 +81,15 @@ public class WhiteboardSVGCellServerState extends App2DCellServerState implement
         return svgDocumentXML;
     }
 
+    public void setSVGDocumentURI(String svgDocumentURI) {
+        this.svgDocumentURI = svgDocumentURI;
+    }
+
+    @XmlTransient
+    public String getSVGDocumentURI() {
+        return svgDocumentURI;
+    }
+
     /**
      * Returns a string representation of this class.
      *
@@ -89,6 +100,7 @@ public class WhiteboardSVGCellServerState extends App2DCellServerState implement
         return super.toString() + " [WhiteboardSVGCellServerState]: " +
                 "preferredWidth=" + preferredWidth + "," +
                 "preferredHeight=" + preferredHeight + "," +
+                "svgDocumentURI=" + svgDocumentURI + "," +
                 "svgDocumentXML=" + svgDocumentXML;
     }
 }

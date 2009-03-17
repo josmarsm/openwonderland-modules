@@ -206,6 +206,7 @@ public class WhiteboardCellMessage extends CellMessage {
                 "action: " + getAction() + ", " +
                 "status: " + getRequestStatus() + ", " +
                 "document: " + getXMLString() + ", " +
+                "uri: " + getURI() + ", " +
                 "position: " + getPosition() + ", " +
                 "zoom: " + getZoom();
     }

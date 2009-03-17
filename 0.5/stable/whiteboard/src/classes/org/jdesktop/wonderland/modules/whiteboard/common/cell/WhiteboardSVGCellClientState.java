@@ -144,4 +144,19 @@ public class WhiteboardSVGCellClientState extends App2DCellClientState {
     public void setChecksum(String checksum) {
         this.checksum = checksum;
     }
+
+    /**
+     * Returns a string representation of this class.
+     *
+     * @return The client state information as a string.
+     */
+    @Override
+    public String toString() {
+        return super.toString() + " [WhiteboardSVGCellClientState]: " +
+                "position = " + position +
+                "preferredWidth=" + preferredWidth + "," +
+                "preferredHeight=" + preferredHeight + "," +
+                "zoom = " + zoom + ", " +
+                "decorated = " + decorated;
+    }
 }

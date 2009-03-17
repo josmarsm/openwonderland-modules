@@ -82,23 +82,6 @@ public class WhiteboardCell extends App2DCell {
     public void setClientState(CellClientState state) {
         super.setClientState(state);
         clientState = (WhiteboardSVGCellClientState) state;
-//        // TODO:
-//        // Handle Decorated, Showing application properties
-//        ((WhiteboardApp) app).setPreferredWidth(clientState.getPreferredWidth());
-//        ((WhiteboardApp) app).setPreferredHeight(clientState.getPreferredHeight());
-//        ((WhiteboardApp) app).setPixelScale(new Point2f(clientState.getPixelScale(), clientState.getPixelScale()));
-//        ((WhiteboardApp) app).setSize(clientState.getPreferredWidth(), clientState.getPreferredHeight());
-//        ((WhiteboardApp) app).setDecorated(clientState.getDecorated());
-//        ((WhiteboardApp) app).setShowing(true);
-//
-//        // Associate the app with this cell (must be done before making it visible)
-//        app.setCell(this);
-//
-//        // Make the app window visible
-//        ((WhiteboardApp) app).setVisible(true);
-
-    // Note: we used to force a sync here. But in the new implementation we will
-    // perform the sync when the cell status becomes BOUNDS.
     }
 
     /**
@@ -129,7 +112,7 @@ public class WhiteboardCell extends App2DCell {
                 } catch (InstantiationException ex) {
                     throw new RuntimeException(ex);
                 }
-                
+
                 // Make the app window visible
                 whiteboardWin.setVisible(true);
 
@@ -200,8 +183,16 @@ public class WhiteboardCell extends App2DCell {
                         break;
                     case SET_STATE:
                         if (isSynced()) {
-                            SVGDocument svgDocument = (SVGDocument) WhiteboardUtils.xmlStringToDocument(msg.getXMLString());
-                            ((WhiteboardApp) this.getApp()).setDocument(svgDocument, false);
+                            String docURI = msg.getURI();
+                            if (docURI != null) {
+                                // load an SVG document
+                                ((WhiteboardApp) this.getApp()).openDocument(docURI, false);
+                            } else {
+                                // load state from SVG XML string
+                                SVGDocument svgDocument = (SVGDocument) WhiteboardUtils.xmlStringToDocument(msg.getXMLString());
+                                ((WhiteboardApp) this.getApp()).setDocument(svgDocument, false);
+                            }
+
                             //setViewPosition(msg.getPosition());
                             //setZoom(msg.getZoom(), false);
                             logger.info("whiteboard: synced");

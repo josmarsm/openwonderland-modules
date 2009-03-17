@@ -165,7 +165,6 @@ public class WhiteboardApp extends AppGraphics2D implements ControlChangeListene
     public void cleanup() {
         super.cleanup();
         if (whiteboardWindow != null) {
-            whiteboardWindow.setVisible(false);
             whiteboardWindow.cleanup();
             whiteboardWindow = null;
         }

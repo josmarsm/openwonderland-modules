@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellS
 public class WhiteboardCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
-        return new String[]{};
+        return new String[]{"svg"};
     }
 
     public <T extends CellServerState> T getDefaultCellServerState() {
