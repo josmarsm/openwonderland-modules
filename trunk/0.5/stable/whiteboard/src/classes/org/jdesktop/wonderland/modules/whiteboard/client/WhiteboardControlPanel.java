@@ -380,7 +380,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(toggleHUDButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(0, 0, 0)
                 .add(newButton)
                 .add(0, 0, 0)
                 .add(selectButton)
