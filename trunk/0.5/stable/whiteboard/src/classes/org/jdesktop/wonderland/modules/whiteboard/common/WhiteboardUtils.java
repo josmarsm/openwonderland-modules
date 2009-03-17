@@ -66,7 +66,6 @@ public class WhiteboardUtils {
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-
         return doc;
     }
 

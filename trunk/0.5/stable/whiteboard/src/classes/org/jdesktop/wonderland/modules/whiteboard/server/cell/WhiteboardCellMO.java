@@ -23,6 +23,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.awt.Point;
 import java.util.Calendar;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -55,6 +56,8 @@ public class WhiteboardCellMO extends App2DCellMO {
 
     // SVG Document
     private transient Document svgDocument = null;
+    // SVG Document URI
+    private String svgDocumentURI = null;
     // SVG Document as XML string
     private String svgXML = null;
     // The communications component used to broadcast to all clients
@@ -118,6 +121,12 @@ public class WhiteboardCellMO extends App2DCellMO {
         svgDocument = WhiteboardUtils.newDocument();
         persistDocument();
 
+        // get the document URI from the meta data using Jordan's content-uri hack
+        Map<String, String> metadata = serverState.getMetaData();
+        if (metadata.containsKey("content-uri") == true) {
+            setDocumentURI(metadata.get("content-uri"));
+        }
+        // load the SVG XML
         String xml = state.getSVGDocumentXML();
         if ((xml != null) && (xml.length() > 0)) {
             setDocument(xml);
@@ -134,6 +143,7 @@ public class WhiteboardCellMO extends App2DCellMO {
             state = new WhiteboardSVGCellServerState();
         }
         ((WhiteboardSVGCellServerState) state).setSVGDocumentXML(getDocument());
+        ((WhiteboardSVGCellServerState) state).setSVGDocumentURI(getDocumentURI());
         return super.getServerState(state);
     }
 
@@ -214,6 +224,22 @@ public class WhiteboardCellMO extends App2DCellMO {
      */
     public String getDocument() {
         return svgXML;
+    }
+
+    /**
+     * Set the SVG document URI
+     * @param svgDocumentURI the URI of the document
+     */
+    public void setDocumentURI(String svgDocumentURI) {
+        this.svgDocumentURI = svgDocumentURI;
+    }
+
+    /**
+     * Get the SVG document URI
+     * @return the URI of the document
+     */
+    public String getDocumentURI() {
+        return svgDocumentURI;
     }
 
     /*
@@ -357,9 +383,11 @@ public class WhiteboardCellMO extends App2DCellMO {
                 switch (messageReceived.getAction()) {
                     case GET_STATE:
                         // return current state of whiteboard
+                        String xml = getDocument();
+                        String uri = getDocumentURI();
                         response = new WhiteboardCellMessage(messageReceived.getClientID(),
                                 messageReceived.getCellID(), messageReceived.getUID(),
-                                Action.SET_STATE, getDocument(), null,
+                                Action.SET_STATE, xml, uri,
                                 getPosition(), getZoom());
                         logger.fine("whiteboard Cell MO: sending set state msg: " + messageReceived.getClientID() + ", " + response);
                         commComponent.sendAllClients(clientID, response);
@@ -368,8 +396,9 @@ public class WhiteboardCellMO extends App2DCellMO {
                     case OPEN_DOCUMENT:
                         if (messageReceived.getURI() != null) {
                             // Create new Document object from URI target
-                            svgDocument = WhiteboardUtils.openDocument(messageReceived.getURI());
-                            persistDocument();
+                            setDocumentURI(messageReceived.getURI());
+                            //svgDocument = WhiteboardUtils.openDocument(messageReceived.getURI());
+                            //persistDocument();
                         }
                         break;
                     case NEW_DOCUMENT:

@@ -29,8 +29,6 @@ import javax.swing.SwingUtilities;
 
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
-import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
-import org.jdesktop.wonderland.modules.hud.client.HUDComponent2D;
 import org.jdesktop.wonderland.modules.hud.client.HUDInputDialog;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.Action;
@@ -72,8 +70,10 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         @Override
         public void run() {
             if (uri != null) {
-                svgDocument = (SVGDocument) WhiteboardUtils.openDocument(uri);
+                svgDocument = (SVGDocument) WhiteboardClientUtils.openDocument(uri);
                 svgDocumentDialog.setDocumentURL(uri);
+                // loaded an external document
+                whiteboardWindow.setDocument(svgDocument, false);
             }
         }
     }

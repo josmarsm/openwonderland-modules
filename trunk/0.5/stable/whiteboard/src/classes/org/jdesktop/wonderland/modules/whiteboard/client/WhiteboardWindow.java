@@ -143,6 +143,20 @@ public class WhiteboardWindow extends WindowGraphics2D {
         addKeyListener(new WhiteboardKeyListener(this, whiteboardDocument));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void cleanup() {
+        setVisible(false);
+        showControls(false);
+        if (window != null) {
+            window.setVisible(false);
+            window.cleanup();
+        }
+        super.cleanup();
+    }
+
     public void showControls(final boolean show) {
         if (window == null) {
             try {
