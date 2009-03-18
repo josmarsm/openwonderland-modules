@@ -388,4 +388,8 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     public void setSVGDocument(SVGDocument svgDocument) {
         this.svgDocument = svgDocument;
     }
+
+    public SVGDocument getSVGDocument() {
+        return svgDocument;
+    }
 }
