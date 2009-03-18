@@ -24,7 +24,10 @@
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Window;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragSource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -50,11 +53,15 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     protected Border border;
     protected Map toolMappings;
     protected Map colorMappings;
+    protected WhiteboardDragGestureListener gestureListener;
+    protected WhiteboardWindow window;
 
-    public WhiteboardControlPanel() {
+    public WhiteboardControlPanel(WhiteboardWindow window) {
+        this.window = window;
         initComponents();
         //makeTransparent(); Does not work on Ubuntu Java 5u10 - jslott
         initButtonMaps();
+        initListeners();
         border = javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED);
     }
 
@@ -80,6 +87,13 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         colorMappings.put(WhiteboardColor.BLUE, colorBlueButton);
         colorMappings.put(WhiteboardColor.BLACK, colorBlackButton);
         colorMappings.put(WhiteboardColor.WHITE, colorWhiteButton);
+    }
+
+    private void initListeners() {
+       DragSource ds = DragSource.getDefaultDragSource();
+       gestureListener = new WhiteboardDragGestureListener(window);
+       ds.createDefaultDragGestureRecognizer(dragButton,
+               DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
     }
 
     public void setSelectedColor(WhiteboardColor color) {
@@ -206,6 +220,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         colorBlackButton = new javax.swing.JButton();
         colorWhiteButton = new javax.swing.JButton();
         syncButton = new javax.swing.JButton();
+        dragButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(231, 230, 230));
 
@@ -374,6 +389,17 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
             }
         });
 
+        dragButton.setBackground(new java.awt.Color(231, 230, 230));
+        dragButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDrag32x32.png.png"))); // NOI18N
+        dragButton.setBorderPainted(false);
+        dragButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        dragButton.setOpaque(true);
+        dragButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dragButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -407,27 +433,28 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
                 .add(colorWhiteButton)
                 .add(0, 0, 0)
                 .add(syncButton)
-                .add(6, 6, 6))
+                .add(3, 3, 3)
+                .add(dragButton)
+                .add(3, 3, 3))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(toggleHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(selectButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(lineButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(rectangleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(ellipseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(textButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(fillButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(colorRedButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(colorGreenButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(colorBlueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(colorBlackButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(colorWhiteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(syncButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(0, 0, 0))
+            .add(toggleHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(selectButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(lineButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(rectangleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(ellipseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(textButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(fillButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(colorRedButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(colorGreenButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(colorBlueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(colorBlackButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(colorWhiteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(syncButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(dragButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -558,12 +585,17 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         }
 }//GEN-LAST:event_toggleHUDButtonActionPerformed
 
+    private void dragButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dragButtonActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_dragButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton colorBlackButton;
     private javax.swing.JButton colorBlueButton;
     private javax.swing.JButton colorGreenButton;
     private javax.swing.JButton colorRedButton;
     private javax.swing.JButton colorWhiteButton;
+    private javax.swing.JButton dragButton;
     private javax.swing.JButton ellipseButton;
     private javax.swing.JButton fillButton;
     private javax.swing.JButton lineButton;

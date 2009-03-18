@@ -41,6 +41,7 @@ import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.Overlay;
 import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.App;
@@ -99,7 +100,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
     private WhiteboardMouseListener svgMouseListener;
     private WhiteboardSelection selection = null;
     private JSVGCanvas svgCanvas;
-    private HUDComponent2D controlComponent;
+    private HUDComponent controlComponent;
 
     /**
      * Create a new instance of WhiteboardWindow.
@@ -162,7 +163,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
             try {
                 // create Swing controls
                 window = new WindowSwing(app, 660, 40, false, new Vector2f(0.02f, 0.02f));
-                controls = new WhiteboardControlPanel();
+                controls = new WhiteboardControlPanel(this);
                 window.setComponent(controls);
                 toolManager = new WhiteboardToolManager(this);
                 controls.addCellMenuListener(toolManager);
@@ -171,6 +172,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 // create HUD controls
                 controlComponent = new HUDComponent2D(window.getPrimaryView());
                 HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
+                //controlComponent = mainHUD.createComponent(controls);
                 mainHUD.addComponent(controlComponent);
                 controlComponent.setLocation(500, 50);
             } catch (InstantiationException ex) {
@@ -638,6 +640,14 @@ public class WhiteboardWindow extends WindowGraphics2D {
     public void setDocument(SVGDocument document, boolean notify) {
         whiteboardDocument.setSVGDocument(document);
         svgCanvas.setDocument(document);
+    }
+
+    /**
+     * Get the SVG document
+     * @return the SVG Document object
+     */
+    public SVGDocument getDocument() {
+        return whiteboardDocument.getSVGDocument();
     }
 
     /**
