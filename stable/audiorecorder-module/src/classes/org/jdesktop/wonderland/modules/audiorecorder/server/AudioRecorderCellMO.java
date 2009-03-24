@@ -32,7 +32,6 @@ import org.jdesktop.wonderland.modules.audiorecorder.common.Tape;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
@@ -66,7 +65,6 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     public AudioRecorderCellMO() {
         super();
-        addComponent(new MovableComponentMO(this));
         serverState = new AudioRecorderCellServerState();
         instanceNumber = ++INSTANCE_COUNT;
         serverState.setRecordingDirectory("/tmp/AudioRecordings/Recorder" + instanceNumber);
