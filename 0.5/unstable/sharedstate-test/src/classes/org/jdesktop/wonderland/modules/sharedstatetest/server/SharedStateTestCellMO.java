@@ -37,12 +37,15 @@ import org.jdesktop.wonderland.modules.sharedstate.server.SharedStateComponentMO
 import org.jdesktop.wonderland.modules.sharedstatetest.common.SharedStateTestCellServerState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 
 /**
  * Test of the shared state component
  */
 @ExperimentalAPI
 public class SharedStateTestCellMO extends CellMO { 
+    @UsesCellComponentMO(SharedStateComponentMO.class)
+    private ManagedReference<SharedStateComponentMO> stateRef;
     	
     /** Default constructor, used when cell is created via WFS */
     public SharedStateTestCellMO() {
@@ -89,7 +92,7 @@ public class SharedStateTestCellMO extends CellMO {
         super.setLive(live);
 
         if (live) {
-            SharedStateComponentMO ssc = getComponent(SharedStateComponentMO.class);
+            SharedStateComponentMO ssc = stateRef.get();
             SharedMapSrv map = ssc.get("testmap");
 
             // periodically change values
