@@ -121,11 +121,12 @@ public class WhiteboardCellMO extends App2DCellMO {
         svgDocument = WhiteboardUtils.newDocument();
         persistDocument();
 
-        // get the document URI from the meta data using Jordan's content-uri hack
-        Map<String, String> metadata = serverState.getMetaData();
-        if (metadata.containsKey("content-uri") == true) {
-            setDocumentURI(metadata.get("content-uri"));
+        // get the document URI from the server state
+        String uri = state.getSVGDocumentURI();
+        if (uri != null && uri.equals("") == false) {
+            setDocumentURI(uri);
         }
+        
         // load the SVG XML
         String xml = state.getSVGDocumentXML();
         if ((xml != null) && (xml.length() > 0)) {

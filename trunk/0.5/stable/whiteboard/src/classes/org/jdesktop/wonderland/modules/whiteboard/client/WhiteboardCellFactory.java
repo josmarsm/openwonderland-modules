@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.whiteboard.client;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
+import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
@@ -37,9 +38,16 @@ public class WhiteboardCellFactory implements CellFactorySPI {
         return new String[]{"svg"};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState() {
+    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         WhiteboardSVGCellServerState cellServerState = new WhiteboardSVGCellServerState();
 
+        // Look for the content-uri field and set if so
+        if (props != null) {
+            String uri = props.getProperty("content-uri");
+            if (uri != null) {
+                cellServerState.setSVGDocumentURI(uri);
+            }
+        }
         return (T) cellServerState;
     }
 
