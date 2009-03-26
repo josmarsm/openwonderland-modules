@@ -161,10 +161,12 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         logger.log(Level.SEVERE, reason, cause);
     }
 
-    private void openChangesFile() {
+    private void createChangesFile() {
         logger.fine("opening changes file");
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
-        mgr.openChangesFile(tapeName, this);
+        //Open the file for recording changes
+        //this rest of the procedure happens in fileCreated
+        mgr.createChangesFile(tapeName, this);
     }
 
     public void fileCreated(ChangesFile cFile) {
@@ -226,7 +228,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
             }
         }
 
-        openChangesFile();
+        createChangesFile();
     }
 
     public boolean isRecording() {

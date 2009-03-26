@@ -38,7 +38,7 @@ public class EventRecordingManagerImpl implements EventRecordingManager {
         this.service = service;
     }
 
-    public void openChangesFile(String tapeName, ChangesFileCreationListener listener) {
+    public void createChangesFile(String tapeName, ChangesFileCreationListener listener) {
         service.openChangesFile(tapeName, listener);
     }
 

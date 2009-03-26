@@ -37,7 +37,7 @@ public interface EventRecordingManager {
      * @param tapeName
      * @param listener 
      */
-    public void openChangesFile(String tapeName, ChangesFileCreationListener listener);
+    public void createChangesFile(String tapeName, ChangesFileCreationListener listener);
 
     /**
      *
