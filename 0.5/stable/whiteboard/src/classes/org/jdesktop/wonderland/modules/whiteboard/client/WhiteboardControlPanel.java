@@ -24,7 +24,6 @@
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Window;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;

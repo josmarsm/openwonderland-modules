@@ -18,15 +18,14 @@
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
 import org.w3c.dom.Element;
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
 import java.awt.Point;
 import org.w3c.dom.svg.SVGDocument;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb.ControlChangeListener;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
 
 /**
  *
@@ -51,12 +50,9 @@ public class WhiteboardApp extends AppGraphics2D implements ControlChangeListene
      * @param height The height (in pixels) of the whiteboard whiteboardWindow.
      * @param pixelScale The horizontal and vertical pixel sizes
      * (in world meters per pixel).
-     * @param commComponent The communications component for communicating with the server.
      */
-    public WhiteboardApp(AppType appType, int width, int height, Vector2f pixelScale,
-            WhiteboardComponent commComponent) {
-
-        super(appType, new ControlArbMulti(), pixelScale);
+    public WhiteboardApp(String name, Vector2f pixelScale) {
+        super(name, new ControlArbAppFocus(), pixelScale);
         controlArb.setApp(this);
         controlArb.addListener(this);
     }
@@ -183,15 +179,6 @@ public class WhiteboardApp extends AppGraphics2D implements ControlChangeListene
      */
     public WhiteboardWindow getWindow() {
         return whiteboardWindow;
-    }
-
-    /**
-     * Change the visibility of the app.
-     *
-     * @param visible Whether the application is visible.
-     */
-    public void setVisible(boolean visible) {
-        whiteboardWindow.setVisible(visible);
     }
 
     /**
