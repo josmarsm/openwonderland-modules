@@ -119,6 +119,7 @@ public class WhiteboardMouseListener implements MouseListener,
     }
 
     public void mouseMoved(MouseEvent e) {
+        //logger.info("mouse moved");
         //svgCanvas.dispatchEvent(e);
     }
 

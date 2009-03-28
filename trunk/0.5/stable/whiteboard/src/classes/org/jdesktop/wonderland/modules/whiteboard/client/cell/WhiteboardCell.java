@@ -25,7 +25,6 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.appbase.client.AppType;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellClientState;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage;
@@ -67,13 +66,6 @@ public class WhiteboardCell extends App2DCell {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public AppType getAppType() {
-        return new WhiteboardAppType();
-    }
-
-    /**
      * Initialize the whiteboard with parameters from the server.
      *
      * @param clientState the client state to initialize the cell with
@@ -95,17 +87,15 @@ public class WhiteboardCell extends App2DCell {
             case ACTIVE:
                 // The cell is now visible
                 commComponent = getComponent(WhiteboardComponent.class);
-                WhiteboardApp whiteboardApp = new WhiteboardApp(getAppType(), clientState.getPreferredWidth(),
-                        clientState.getPreferredHeight(), clientState.getPixelScale(),
-                        commComponent);
+                WhiteboardApp whiteboardApp = new WhiteboardApp("Whiteboard", clientState.getPixelScale());
                 setApp(whiteboardApp);
 
-                // Associate the app with this cell (must be done before making it visible)
-                whiteboardApp.setDisplayer(this);
+                // this cell displays the app
+                whiteboardApp.addDisplayer(this);
 
-                // This app has only one whiteboardWindow, so it is always top-level
+                // This app only has one WhiteboardWindow, so it is always top-level
                 try {
-                    whiteboardWin = new WhiteboardWindow(whiteboardApp,
+                    whiteboardWin = new WhiteboardWindow(this, whiteboardApp,
                             clientState.getPreferredWidth(), clientState.getPreferredHeight(),
                             true, clientState.getPixelScale(), commComponent);
                     whiteboardApp.setWindow(whiteboardWin);
@@ -114,14 +104,15 @@ public class WhiteboardCell extends App2DCell {
                 }
 
                 // Make the app window visible
-                whiteboardWin.setVisible(true);
+                whiteboardWin.setVisibleApp(true);
+                whiteboardWin.setVisibleUser(this, true);
 
                 // Sync
                 sync();
                 break;
             case DISK:
                 // The cell is no longer visible
-                ((WhiteboardApp) app).setVisible(false);
+                whiteboardWin.setVisibleApp(false);
                 removeComponent(WhiteboardComponent.class);
                 commComponent = null;
                 whiteboardWin = null;

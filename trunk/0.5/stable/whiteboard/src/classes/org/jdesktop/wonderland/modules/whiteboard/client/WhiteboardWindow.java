@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.whiteboard.client;
 
 import org.jdesktop.wonderland.modules.whiteboard.client.cell.WhiteboardCell;
 import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -44,9 +45,10 @@ import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.appbase.client.App;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.hud.client.HUDComponent2D;
 import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDManager;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardColor;
@@ -76,6 +78,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
     private static final int DEFAULT_HEIGHT = 1024;
     private int preferredWidth = DEFAULT_WIDTH;
     private int preferredHeight = DEFAULT_HEIGHT;
+    private WhiteboardCell cell;
     private WhiteboardToolManager toolManager;
     private WhiteboardDocument whiteboardDocument;
     private WhiteboardComponent commComponent;
@@ -112,13 +115,14 @@ public class WhiteboardWindow extends WindowGraphics2D {
      * @param pixelScale The size of the window pixels.
      * @param commComponent The communications component for communicating with the server.
      */
-    public WhiteboardWindow(final App app, int width, int height, boolean topLevel, Vector2f pixelScale,
+    public WhiteboardWindow(WhiteboardCell cell, App2D app, int width, int height, boolean topLevel, Vector2f pixelScale,
             final WhiteboardComponent commComponent)
             throws InstantiationException {
         super(app, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
+        this.cell = cell;
         this.commComponent = commComponent;
         initCanvas(width, height);
-        showControls(false);
+        showControls(true);
         wbSurface = (WhiteboardDrawingSurface) getSurface();
         whiteboardDocument = new WhiteboardDocument(this);
         addEventListeners();
@@ -149,45 +153,61 @@ public class WhiteboardWindow extends WindowGraphics2D {
      */
     @Override
     public void cleanup() {
-        setVisible(false);
+        setVisibleApp(false);
         showControls(false);
         if (window != null) {
-            window.setVisible(false);
+            window.setVisibleApp(false);
+            // window.setVisibleUser(window, false); // TODO: what's wrong here?
             window.cleanup();
         }
         super.cleanup();
     }
 
-    public void showControls(final boolean show) {
+    public void showControls(final boolean onHUD) {
+        logger.info("show controls: " + onHUD);
         if (window == null) {
             try {
                 // create Swing controls
-                window = new WindowSwing(app, 660, 40, false, new Vector2f(0.02f, 0.02f));
                 controls = new WhiteboardControlPanel(this);
+                Dimension size = controls.getPreferredSize();
+                window = new WindowSwing(app, size.width, size.height, false, new Vector2f(0.02f, 0.02f));
                 window.setComponent(controls);
+                
                 toolManager = new WhiteboardToolManager(this);
                 controls.addCellMenuListener(toolManager);
-                window.positionRelativeTo(this, 280, 810);
 
-                // create HUD controls
-                controlComponent = new HUDComponent2D(window.getPrimaryView());
+                // create HUD component
+                controlComponent = new HUDComponent2D((View2DEntity) (window.getView(cell)));
                 HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
                 //controlComponent = mainHUD.createComponent(controls);
+
+                // always visible
+                window.setVisibleApp(true);
+                window.setVisibleUser(cell, true);
+
                 mainHUD.addComponent(controlComponent);
-                controlComponent.setLocation(500, 50);
-            } catch (InstantiationException ex) {
+            } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
         }
 
         // TODO: toggling controls between in-world and on HUD should happen
         // in the HUD not here
-        window.setVisible(true); // always visible, just in different places
-        controlComponent.setVisible(show);
+        if (onHUD) {
+            // showing controls on HUD
+            controlComponent.setLocation(500, 50);
+            controlComponent.setVisible(true);
+        } else {
+            // showing controls in world
+            View2DEntity view = (View2DEntity) window.getView(cell);
+            view.setOrtho(false);
+            view.setTranslationUser(new Vector3f(-1.6f, -6.3f, 0.1f));
+        }
     }
 
     public boolean showingControls() {
-        return (controlComponent.isVisible());
+        View2DEntity view = (View2DEntity) window.getView(cell);
+        return view.isOrtho();
     }
 
     public void movingMarker(MouseEvent e) {
@@ -200,6 +220,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
     protected class MovingOverlay implements Overlay {
 
         public void paint(Graphics g) {
+            //logger.info("--- WhiteboardWindow.MovingOverlay.paint");
             Point currentPoint = svgMouseListener.getCurrentPoint();
             Point pressedPoint = svgMouseListener.getPressedPoint();
             if (currentPoint != null && selection != null) {
@@ -244,6 +265,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
     protected class DrawingOverlay implements Overlay {
 
         public void paint(Graphics g) {
+            //logger.info("--- WhiteboardWindow.DrawingOverlay.paint");
             Point currentPoint = svgMouseListener.getCurrentPoint();
             Point pressedPoint = svgMouseListener.getPressedPoint();
             if (currentPoint != null) {
@@ -382,6 +404,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
     protected class SelectionOverlay implements Overlay {
 
         public void paint(Graphics g) {
+            //logger.info("--- WhiteboardWindow.SelectionOverlay.paint");
             if (selection != null) {
                 Graphics2D g2d = (Graphics2D) g;
 
@@ -446,22 +469,30 @@ public class WhiteboardWindow extends WindowGraphics2D {
     /**
      * Return the client id of this window's cell.
      */
-    public BigInteger getClientID(App app) {
-        return ((WhiteboardCell) app.getDisplayer()).getClientID();
+    public BigInteger getClientID(App2D app) {
+        return cell.getClientID();
     }
 
     /**
      * Return the ID of this window's cell.
      */
-    public CellID getCellID(App app) {
-        return ((WhiteboardCell) app.getDisplayer()).getCellID();
+    public CellID getCellID(App2D app) {
+        return cell.getCellID();
     }
 
     /**
      * Return the ID of this window's cell.
      */
-    public String getCellUID(App app) {
-        return ((WhiteboardCell) app.getDisplayer()).getUID();
+    public String getCellUID(App2D app) {
+        return cell.getUID();
+    }
+
+    /**
+     * Return the cell
+     * @return the cell associated with this window
+     */
+    public WhiteboardCell getCell() {
+        return cell;
     }
 
     protected void sendRequest(Action action, String xmlString,
@@ -572,7 +603,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
 
     public void setInControl(boolean inControl) {
         this.inControl = inControl;
-    // TODO: show and hide control panel dialog
+    // TODO: onHUD and hide control panel dialog
     }
 
     /**

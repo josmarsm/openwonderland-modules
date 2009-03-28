@@ -34,7 +34,6 @@ import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMess
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.RequestStatus;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
-import org.jdesktop.wonderland.modules.appbase.server.AppTypeMO;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellClientState;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -89,13 +88,6 @@ public class WhiteboardCellMO extends App2DCellMO {
     /**
      * {@inheritDoc}
      */
-    public AppTypeMO getAppType() {
-        return new WhiteboardAppTypeMO();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         // If the cellClientState is null, create one
@@ -126,7 +118,7 @@ public class WhiteboardCellMO extends App2DCellMO {
         if (uri != null && uri.equals("") == false) {
             setDocumentURI(uri);
         }
-        
+
         // load the SVG XML
         String xml = state.getSVGDocumentXML();
         if ((xml != null) && (xml.length() > 0)) {
@@ -398,8 +390,8 @@ public class WhiteboardCellMO extends App2DCellMO {
                         if (messageReceived.getURI() != null) {
                             // Create new Document object from URI target
                             setDocumentURI(messageReceived.getURI());
-                            //svgDocument = WhiteboardUtils.openDocument(messageReceived.getURI());
-                            //persistDocument();
+                        //svgDocument = WhiteboardUtils.openDocument(messageReceived.getURI());
+                        //persistDocument();
                         }
                         break;
                     case NEW_DOCUMENT:

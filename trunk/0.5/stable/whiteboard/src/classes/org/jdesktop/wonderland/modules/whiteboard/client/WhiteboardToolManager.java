@@ -57,7 +57,7 @@ public class WhiteboardToolManager implements WhiteboardCellMenuListener {
 
     WhiteboardToolManager(WhiteboardWindow whiteboardWindow) {
         this.whiteboardWindow = whiteboardWindow;
-        setTool(WhiteboardTool.TEXT);
+        setTool(WhiteboardTool.LINE);
         setColor(WhiteboardColor.BLACK);
     }
 
