@@ -39,20 +39,6 @@ public class WhiteboardCellFactory implements CellFactorySPI {
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        // TODO: this is defunct in trunk, remove after merge
-        WhiteboardSVGCellServerState cellServerState = new WhiteboardSVGCellServerState();
-
-        // Look for the content-uri field and set if so
-        if (props != null) {
-            String uri = props.getProperty("content-uri");
-            if (uri != null) {
-                cellServerState.setSVGDocumentURI(uri);
-            }
-        }
-        return (T) cellServerState;
-    }
-
-    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         WhiteboardSVGCellServerState cellServerState = new WhiteboardSVGCellServerState();
 
         // Look for the content-uri field and set if so
