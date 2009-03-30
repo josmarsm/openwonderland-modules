@@ -43,6 +43,7 @@ import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.Overlay;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
@@ -122,7 +123,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
         this.cell = cell;
         this.commComponent = commComponent;
         initCanvas(width, height);
-        showControls(true);
+        showControls(false);
         wbSurface = (WhiteboardDrawingSurface) getSurface();
         whiteboardDocument = new WhiteboardDocument(this);
         addEventListeners();
@@ -169,6 +170,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
             try {
                 // create Swing controls
                 controls = new WhiteboardControlPanel(this);
+                JmeClientMain.getFrame().getFrame().add(controls);
                 Dimension size = controls.getPreferredSize();
                 window = new WindowSwing(app, size.width, size.height, false, new Vector2f(0.02f, 0.02f));
                 window.setComponent(controls);
