@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.scriptingComponent.client;
 
-import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
@@ -41,28 +40,34 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.FrameRateListener;
-import org.jdesktop.mtgame.InputManager;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentClientState;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.modules.scriptingComponent.client.IntercellEvent;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentChangeMessage;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentICEMessage;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentTransformMessage;
 
 /**
  *
@@ -91,7 +96,7 @@ public class ScriptingComponent extends CellComponent
     public int testInt = 99;
     private Vector3f worldCoor = null;
     private float frameRate = (float)0.0;
-    public final int totalEvents = 200;
+    public final int totalEvents = 30;
     public static final int MOUSE1_EVENT = 0;
     public static final int MOUSE2_EVENT = 1;
     public static final int MOUSE3_EVENT = 2;
@@ -115,61 +120,28 @@ public class ScriptingComponent extends CellComponent
     public static final int MESSAGE4_EVENT = 18;
 
     public static final int INTERCELL_EVENT = 19;
-            
-    private String[] eventNames = new String[totalEvents];
-    private String[] eventScriptType = new String[totalEvents];
+
+    public static final int YES_NOTIFY = 0;
+    public static final int NO_NOTIFY = 1;
+    private String[] eventNames;
+    private String[] eventScriptType;
     
     private WorldManager wm = null;
     private String info = null;
     private Vector watchMessages = new Vector();
     private SocketInterface sif = null;
     
+    private int iAmICEReflector = 0;
+    
+    @UsesCellComponent
+    protected ChannelComponent channelComp;
+    
+    protected ChannelComponent.ComponentMessageReceiver msgReceiver=null;
+    
     public ScriptingComponent(Cell cell) 
 	{
         super(cell);
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter ScriptingComponent constructor");
-        eventNames[MOUSE1_EVENT] = "mouse1.js";
-        eventNames[MOUSE2_EVENT] = "mouse2.js";
-        eventNames[MOUSE3_EVENT] = "mouse3.js";
-        eventNames[MOUSE1S_EVENT] = "mouse1s.py";
-        eventNames[MOUSE2S_EVENT] = "mouse2s.js";
-        eventNames[MOUSE3S_EVENT] = "mouse3s.js";
-        eventNames[MOUSE1C_EVENT] = "mouse1c.fx";
-        eventNames[MOUSE2C_EVENT] = "mouse2c.js";
-        eventNames[MOUSE3C_EVENT] = "mouse3c.java";
-        eventNames[MOUSE1A_EVENT] = "mouse1a.js";
-        eventNames[MOUSE2A_EVENT] = "mouse2a.js";
-        eventNames[MOUSE3A_EVENT] = "mouse3a.js";
-        eventNames[TIMER_EVENT] = "timer.js";
-        eventNames[STARTUP_EVENT] = "startup.js";
-        eventNames[PROXIMITY_EVENT] = "prox.js";
-        eventNames[MESSAGE1_EVENT] = "message1.js";
-        eventNames[MESSAGE2_EVENT] = "message2.js";
-        eventNames[MESSAGE3_EVENT] = "message3.js";
-        eventNames[MESSAGE4_EVENT] = "message4.js";
-        eventNames[INTERCELL_EVENT] = "ice.js";
-
-        eventScriptType[MOUSE1_EVENT] = "javascript";
-        eventScriptType[MOUSE2_EVENT] = "javascript";
-        eventScriptType[MOUSE3_EVENT] = "javascript";
-        eventScriptType[MOUSE1S_EVENT] = "jython";
-        eventScriptType[MOUSE2S_EVENT] = "javascript";
-        eventScriptType[MOUSE3S_EVENT] = "javascript";
-        eventScriptType[MOUSE1C_EVENT] = "fx";
-        eventScriptType[MOUSE2C_EVENT] = "javascript";
-        eventScriptType[MOUSE3C_EVENT] = "java";
-        eventScriptType[MOUSE1A_EVENT] = "javascript";
-        eventScriptType[MOUSE2A_EVENT] = "javascript";
-        eventScriptType[MOUSE3A_EVENT] = "javascript";
-        eventScriptType[TIMER_EVENT] = "javascript";
-        eventScriptType[STARTUP_EVENT] = "javascript";
-        eventScriptType[PROXIMITY_EVENT] = "javascript";
-        eventScriptType[MESSAGE1_EVENT] = "javascript";
-        eventScriptType[MESSAGE2_EVENT] = "javascript";
-        eventScriptType[MESSAGE3_EVENT] = "javascript";
-        eventScriptType[MESSAGE4_EVENT] = "javascript";
-        eventScriptType[INTERCELL_EVENT] = "javascript";
-
         wm = ClientContextJME.getWorldManager();
         wm.getRenderManager().setFrameRateListener(new FrameRateListener()
             {
@@ -179,14 +151,32 @@ public class ScriptingComponent extends CellComponent
                 }
             
             }, 100);
-    }
+
+            // get a named map
+        }
+
+    public String getInfo()
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In getInfo - info = " + this.info);
+        return this.info;
+        }
+    
+    public String getCellName()
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In getCellName - cellName = " + this.scriptClump);
+        return this.scriptClump;
+        }
     
 @Override
     public void setClientState(CellComponentClientState clientState) 
         {
         super.setClientState(clientState);
         info = ((ScriptingComponentClientState)clientState).getInfo();
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setClientState - info = " + info);
+        scriptClump = ((ScriptingComponentClientState)clientState).getCellName();
+        scriptURL = ((ScriptingComponentClientState)clientState).getScriptURL();
+        eventNames = ((ScriptingComponentClientState)clientState).getEventNames();
+        eventScriptType = ((ScriptingComponentClientState)clientState).getScriptType();
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setClientState - info = " + info + " cellName (scriptClump) = " + scriptClump + " scriptURL = " + scriptURL);
         }
 
     @Override
@@ -197,20 +187,122 @@ public class ScriptingComponent extends CellComponent
             case ACTIVE:
                 {
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE");
+/* Register the change message listener */
+                if (msgReceiver == null) 
+                    {
+                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() 
+                        {
+                        public void messageReceived(CellMessage message) 
+                            {
+                            if(message instanceof ScriptingComponentChangeMessage)
+                                {
+                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received change message - Message id = " + message.getCellID());
+                                if(cell.getCellID().equals(message.getCellID()))
+                                    {
+                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
+                                    ScriptingComponentChangeMessage scm = (ScriptingComponentChangeMessage)message;
+                                    scriptClump = scm.getCellName();
+                                    scriptURL = scm.getScriptURL();
+                                    eventNames = scm.getEventNames();
+                                    eventScriptType = scm.getScriptType();
+                                    }
+                                else
+                                    {
+                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                    }
+                                }
+                            else if(message instanceof ScriptingComponentICEMessage)
+                                {
+                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received ICE message - Message id = " + message.getCellID());
+                                if(cell.getCellID().equals(message.getCellID()))
+                                    {
+                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
+                                    ScriptingComponentICEMessage ice = (ScriptingComponentICEMessage)message;
+                                    if(iAmICEReflector == 1)
+                                        {
+                                        postMessageEvent(ice.getPayload(), ice.getIceCode());
+                                        }
+                                    if(watchMessages.contains(new Float(ice.getIceCode())))
+                                        {
+                                        stateInt[19] = ice.getIceCode();
+                                        stateString[19] = ice.getPayload();
+                                        executeScript(INTERCELL_EVENT, null);
+                                        }
+                                    else
+                                        {
+                                        System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getIceCode());
+                                        }
+                                    }
+                                else
+                                    {
+                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                    }
+                                }
+                            else if(message instanceof ScriptingComponentTransformMessage)
+                                {
+                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received Transform message - Message id = " + message.getCellID());
+                                if(cell.getCellID().equals(message.getCellID()))
+                                    {
+                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
+                                    final ScriptingComponentTransformMessage trm = (ScriptingComponentTransformMessage)message;
+                                    int transformCode = trm.getTransformCode();
+                                    switch(transformCode)
+                                        {
+                                        case ScriptingComponentTransformMessage.TRANSLATE_TRANSFORM:
+                                            {
+                                            SceneWorker.addWorker(new WorkCommit() 
+                                                {
+                                                public void commit() 
+                                                    {
+                                                    localNode.setLocalTranslation(trm.getVector());
+                                                    ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                                                    }
+                                                });
+                                            break;
+                                            }
+                                        case ScriptingComponentTransformMessage.ROTATE_TRANSFORM:
+                                            {
+                                            SceneWorker.addWorker(new WorkCommit() 
+                                                {
+                                                public void commit() 
+                                                    {
+                                                    localNode.setLocalRotation(trm.getTransform());
+                                                    ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                                                    }
+                                                });
+                                            break;
+                                            }
+                                        case ScriptingComponentTransformMessage.SCALE_TRANSFORM:
+                                            {
+                                            SceneWorker.addWorker(new WorkCommit() 
+                                                {
+                                                public void commit() 
+                                                    {
+                                                    localNode.setLocalScale(trm.getVector());
+                                                    ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                                                    }
+                                                });
+                                            break;
+                                            }
+                                        default:
+                                            {
+                                            
+                                            }
+                                        }
+                                    }
+                                else
+                                    {
+                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                    }
+                                }
+                            }
 
-                CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-//                System.out.println("In ScriptingComponent - renderer = " + ret);
-                Entity mye = ret.getEntity();
-//                System.out.println("In ScriptingComponent - entity = " + mye);
-                RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
-                localNode = rc.getSceneRoot();
-//                System.out.println("ScriptingComponent rootNode = " + localNode);
-
-                MouseEventListener myListener = new MouseEventListener();
-                myListener.addToEntity(mye);
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus : Cell Name = " + scriptClump);
-                ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
-                
+                        };
+                    channelComp.addMessageReceiver(ScriptingComponentChangeMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(ScriptingComponentICEMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(ScriptingComponentTransformMessage.class, msgReceiver);
+                    }
+/* Execute the startup script */
                 executeScript(STARTUP_EVENT, null);
                 break;
                 }
@@ -219,8 +311,32 @@ public class ScriptingComponent extends CellComponent
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In default for setStatus - status other than ACTIVE");
                 }
             }
+/* Register the intercell listener */
+        ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
+/* Get local node */
+        CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+        Entity mye = ret.getEntity();
+        RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
+        localNode = rc.getSceneRoot();
+/* Register mouse event listener */
+        MouseEventListener myListener = new MouseEventListener();
+        myListener.addToEntity(mye);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus : Cell Name = " + scriptClump);
         }
 
+/*
+Tell the message receiver for messages from server to broadcast incoming ICE messages
+*/
+    public void makeMeICEReflector()
+        {
+        iAmICEReflector = 1;
+        }
+    
+    public void makeMeNotICEReflector()
+        {
+        iAmICEReflector = 0;
+        }
+    
     public void establishSocket(int code, int errorCode, String ip, int port)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket int version - Message code " + code + " Error code = " + errorCode);
@@ -234,13 +350,17 @@ public class ScriptingComponent extends CellComponent
         sif = new SocketInterface(ip, (int)port, (int)code, (int)errorCode);
         sif.doIt();
         }
-    
+/*
+Send a message on the socket connection
+*/    
     public void sendMessage(String buffer)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : sendMessage - Message code "); 
         sif.sendBuffer(buffer);
         }
-    
+/*
+Tell the ICE interface to allow messages with this message code to execute the ice script
+*/    
     public void watchMessage(float code)
         {
         if(watchMessages.contains(new Float(code)))
@@ -253,7 +373,9 @@ public class ScriptingComponent extends CellComponent
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " added to watch list");
             }
         }
-    
+/*
+Tell the ICE interface to start ignoring messages with this message code
+*/    
     public void dontWatchMessage(float code)
         {
         if(watchMessages.contains(new Float(code)))
@@ -285,13 +407,49 @@ public class ScriptingComponent extends CellComponent
         cell.addComponent(comp);
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : Prox class = " + cell.getComponent(ProximityComponent.class));                
         }
-    
+
+/*
+PostMessageEvent - Send a message on the intercell interface
+This method is for scripting engines that pass integer variable as integers 
+*/
     public void postMessageEvent(String payload, int Code)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
         ClientContext.getInputManager().postEvent(new IntercellEvent(payload, Code));
         }
     
+/*
+PostMessageEvent - Send a message on the intercell interface
+This method is for scripting engines that pass integer variable as floats 
+*/
+    public void postMessageEvent(String payload, float Code)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
+        ClientContext.getInputManager().postEvent(new IntercellEvent(payload, (int)Code));
+        }
+
+/* 
+ postMessageEventToServer - Send a message to the CellMO for forwarding to mirror cells on other clients
+ This method is for scripting engines that pass integer variable as floats 
+*/
+    public void postMessageEventToServer(String payload, float Code)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEventToServer with payload = " + payload + " code = " + Code);
+        ScriptingComponentICEMessage msg = new ScriptingComponentICEMessage(cell.getCellID(), (int)Code, payload);
+        channelComp.send(msg);
+        }
+/* 
+ postMessageEventToServer - Send a message to the CellMO for forwarding to mirror cells on other clients
+ This method is for scripting engines that pass integer variable as integers 
+*/
+
+    public void postMessageEventToServer(String payload, int Code)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEventToServer with payload = " + payload + " code = " + Code);
+        ScriptingComponentICEMessage msg = new ScriptingComponentICEMessage(cell.getCellID(), Code, payload);
+        channelComp.send(msg);
+        }
+
     public void testMethod(String ibid)
         {
         System.out.println(ibid);
@@ -366,14 +524,32 @@ public class ScriptingComponent extends CellComponent
     
     public void setScriptName(String name, int which)
         {
-        eventNames[which] = name;
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptName " + which + " set to " + name);
+        if(eventNames[which].compareTo(name) != 0)
+            {
+            eventNames[which] = name;
+            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), scriptClump, scriptURL, eventNames, eventScriptType);
+            channelComp.send(msg);
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptName " + which + " set to " + name);
+            }
+        else
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptName " + which + " already " + name);
+            }
         }
     
     public void setScriptType(String name, int which)
         {
-        eventScriptType[which] = name;
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptType " + which + " set to " + name);
+        if(eventScriptType[which].compareTo(name) != 0)
+            {
+            eventScriptType[which] = name;
+            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), scriptClump, scriptURL, eventNames, eventScriptType);
+            channelComp.send(msg);
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptType " + which + " set to " + name);
+            }
+        else
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptType " + which + " already " + name);
+            }
         }
     
     public String getScriptName(int which)
@@ -390,8 +566,17 @@ public class ScriptingComponent extends CellComponent
 
     public void setScriptClump(String name)
         {
-        scriptClump = name;
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptClump to " + name);
+        if(scriptClump.compareTo(name) != 0)
+            {
+            scriptClump = name;
+            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), scriptClump, scriptURL, eventNames, eventScriptType);
+            channelComp.send(msg);
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptClump to " + name);
+            }
+        else
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : scriptClump already " + name);
+            }
         }
     
     public String getScriptClump()
@@ -402,8 +587,17 @@ public class ScriptingComponent extends CellComponent
     
     public void setScriptURL(String name)
         {
-        scriptURL = name;
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptURL to " + name);
+        if(scriptURL.compareTo(name) != 0)
+            {
+            scriptURL = name;
+            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), scriptClump, scriptURL, eventNames, eventScriptType);
+            channelComp.send(msg);
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptURL to " + name);
+            }
+        else
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : scriptURL already " + name);
+            }
         }
     
     public String getScriptURL()
@@ -519,87 +713,145 @@ public class ScriptingComponent extends CellComponent
         stateFloat[2] = worldCoor.z;
         }
    
-    public void setTranslation(float x, float y, float z)
+    public void setTranslation(float x, float y, float z, int notify)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setTranslation - node = " + localNode);
+        final Vector3f v3fn;
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setTranslation - node = " + localNode);
         Vector3f v3f = localNode.getLocalTranslation();
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setTranslation - Original translation = " + v3f);
-        Vector3f v3fn = new Vector3f(x, y, z);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setTranslation - New translation = " + v3fn);
-        localNode.setLocalTranslation(v3fn);
-        localNode.setModelBound(new BoundingBox());
-        localNode.updateModelBound();
-        ClientContextJME.getWorldManager().addToUpdateList(localNode);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setTranslation - Original translation = " + v3f);
+        v3fn = new Vector3f(x, y, z);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setTranslation - New translation = " + v3fn);
+
+        SceneWorker.addWorker(new WorkCommit() 
+            {
+            public void commit() 
+                {
+                localNode.setLocalTranslation(v3fn);
+                ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                }
+            });
+        if(notify == YES_NOTIFY)
+            doNotifyTranslate(v3fn);
         }
 
-    public void setRotation(float x, float y, float z, float w)
+    public void setRotation(float x, float y, float z, float w, int notify)
         {
+        final Quaternion roll;
+        
         Quaternion orig = localNode.getLocalRotation();
-//      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setRotation - Original rotation = " + orig);
-        Quaternion roll = new Quaternion();
-        roll.fromAngleAxis( w , new Vector3f(x, y, z) );
-//      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setRotation - New rotation = " + roll);
-        localNode.setLocalRotation(roll);
-        localNode.setModelBound(new BoundingBox());
-        localNode.updateModelBound();
-        ClientContextJME.getWorldManager().addToUpdateList(localNode);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setRotation - Original rotation = " + orig);
+        roll = new Quaternion();
+        roll.fromAngleNormalAxis( w , new Vector3f(x, y, z) );
+//        roll.fromAngleAxis( w , new Vector3f(x, y, z) );
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setRotation - New rotation = " + roll);
+        SceneWorker.addWorker(new WorkCommit() 
+            {
+            public void commit() 
+                {
+                localNode.setLocalRotation(roll);
+                ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                }
+            });
+        if(notify == YES_NOTIFY)
+            doNotifyRotate(roll);
         }
  
-    public void setScale(float x, float y, float z)
+    public void setScale(float x, float y, float z, int notify)
         {
+        final Vector3f scale;
+        
         Vector3f orig = localNode.getLocalScale();
 //      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setScale - Original scale = " + orig);
-        Vector3f scale = new Vector3f(x, y, z);
+        scale = new Vector3f(x, y, z);
 //      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setScale - New scale = " + scale);
-        localNode.setLocalScale(scale);
-        localNode.setModelBound(new BoundingBox());
-        localNode.updateModelBound();
-        ClientContextJME.getWorldManager().addToUpdateList(localNode);
+        SceneWorker.addWorker(new WorkCommit() 
+            {
+            public void commit() 
+                {
+                localNode.setLocalScale(scale);
+                ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                }
+            });
+        if(notify == YES_NOTIFY)
+            doNotifyScale(scale);
         }
  
-    public void moveObject(float x, float y, float z)
+    public void moveObject(float x, float y, float z, int notify)
         {
+        final Vector3f v3fn;
+        
         Vector3f v3f = localNode.getLocalTranslation();
 //      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In moveObject - Original translation = " + v3f);
         float X = v3f.x;
         float Y = v3f.y;
         float Z = v3f.z;
-        Vector3f v3fn = new Vector3f(X + x, Y + y, Z + z);
+        v3fn = new Vector3f(X + x, Y + y, Z + z);
 //      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In moveObject - Original translation = " + v3fn);
-        localNode.setLocalTranslation(v3fn);
-        localNode.setModelBound(new BoundingBox());
-        localNode.updateModelBound();
-        ClientContextJME.getWorldManager().addToUpdateList(localNode);
+        SceneWorker.addWorker(new WorkCommit() 
+            {
+            public void commit() 
+                {
+                localNode.setLocalTranslation(v3fn);
+                ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                }
+            });
+        if(notify == YES_NOTIFY)
+            doNotifyTranslate(v3fn);
         }
 
-    public void rotateObject(float x, float y, float z, float w)
+    public void rotateObject(float x, float y, float z, float w, int notify)
         {
-        Quaternion orig = localNode.getLocalRotation();
-//      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original rotation = " + orig);
+        final Quaternion sum;
+        Vector3f axis = new Vector3f();
+        float angle;
 
+        Quaternion orig = localNode.getLocalRotation();
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original quat = " + orig);
+        angle = orig.toAngleAxis(axis);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original angle/axis = " + angle + " / " + axis);
+        
         Quaternion roll = new Quaternion();
         roll.fromAngleAxis( w , new Vector3f(x, y, z) );
-//      System.out.println("ScriptingComponent : Cell " + cell.getCellID() +" : In rotateObject - Change rotation = " + roll);
-        Quaternion sum = orig.add(roll);
-//      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum rotation = " + sum);
-        localNode.setLocalRotation(sum);
-        localNode.setModelBound(new BoundingBox());
-        localNode.updateModelBound();
-        ClientContextJME.getWorldManager().addToUpdateList(localNode);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() +" : In rotateObject - Change quat = " + roll);
+        angle = roll.toAngleAxis(axis);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Change angle/axis = " + angle + " / " + axis);
+
+        sum = roll.mult(orig);
+        angle = sum.toAngleAxis(axis);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum quat = " + sum);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum angle/axis = " + angle + " / " + axis);
+        SceneWorker.addWorker(new WorkCommit() 
+            {
+            public void commit() 
+                {
+                localNode.setLocalRotation(sum);
+                ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                }
+            });
+        if(notify == YES_NOTIFY)
+            doNotifyRotate(sum);
         }
  
-    public void scaleObject(float x, float y, float z)
+    public void scaleObject(float x, float y, float z, int notify)
         {
+        final Vector3f sum;
+        
         Vector3f orig = localNode.getLocalScale();
 //      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In scaleObject - Original scale = " + orig);
         Vector3f scale = new Vector3f(x, y, z);
 //      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In scaleObject - Change scale = " + scale);
-        Vector3f sum = orig.add(scale);
+        sum = orig.add(scale);
 //      System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In scaleObject - Final scale = " + sum);
-        localNode.setLocalScale(sum);
-        localNode.setModelBound(new BoundingBox());
-        localNode.updateModelBound();
-        ClientContextJME.getWorldManager().addToUpdateList(localNode);
+        SceneWorker.addWorker(new WorkCommit() 
+            {
+            public void commit() 
+                {
+                localNode.setLocalScale(sum);
+                ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                }
+            });
+        if(notify == YES_NOTIFY)
+            doNotifyScale(sum);
         }
 
     public void mySleep(int milliseconds)
@@ -625,6 +877,7 @@ public class ScriptingComponent extends CellComponent
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Sleep exception in mySleep(float) method");
             }
        }
+    
     public ArrayList buildAnimation(String animationName) 
         {
         String line;
@@ -662,6 +915,7 @@ public class ScriptingComponent extends CellComponent
         aniFrame = 0;
         return aniList;
         }
+    
     class expired extends TimerTask
         {
         public void run()
@@ -698,22 +952,51 @@ public class ScriptingComponent extends CellComponent
         if(((Animation)aniList.get(aniFrame)).rest.equals("r"))
             {
 // set rotation - absolute
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setRotation");
             setRotation(((Animation)aniList.get(aniFrame)).xAxis,
                 ((Animation)aniList.get(aniFrame)).yAxis,
                 ((Animation)aniList.get(aniFrame)).zAxis,
-                ((Animation)aniList.get(aniFrame)).rot);
+                ((Animation)aniList.get(aniFrame)).rot,
+                NO_NOTIFY);
             }
-        else if(((Animation)aniList.get(aniFrame)).rest.equals("n"))
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("q"))
             {
-// Send the current transform off to the server to let other clients know that the script wants them to know where we are
-            doNotify();
+// set rotation - absolute
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call rotateObject");
+            rotateObject(((Animation)aniList.get(aniFrame)).xAxis,
+                ((Animation)aniList.get(aniFrame)).yAxis,
+                ((Animation)aniList.get(aniFrame)).zAxis,
+                ((Animation)aniList.get(aniFrame)).rot,
+                NO_NOTIFY);
+            }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("R"))
+            {
+// set rotation - absolute
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setRotation - Notify");
+            setRotation(((Animation)aniList.get(aniFrame)).xAxis,
+                ((Animation)aniList.get(aniFrame)).yAxis,
+                ((Animation)aniList.get(aniFrame)).zAxis,
+                ((Animation)aniList.get(aniFrame)).rot,
+                YES_NOTIFY);
+            }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("Q"))
+            {
+// set rotation - absolute
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call rotateObject - Notify");
+            rotateObject(((Animation)aniList.get(aniFrame)).xAxis,
+                ((Animation)aniList.get(aniFrame)).yAxis,
+                ((Animation)aniList.get(aniFrame)).zAxis,
+                ((Animation)aniList.get(aniFrame)).rot,
+                YES_NOTIFY);
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("m"))
             {
 // move object - relative move           
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call moveObject");
             moveObject(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
-                ((Animation)aniList.get(aniFrame)).zLoc);
+                ((Animation)aniList.get(aniFrame)).zLoc,
+                NO_NOTIFY);
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("t"))
             {
@@ -721,8 +1004,64 @@ public class ScriptingComponent extends CellComponent
 //translate object - absolute move            
             setTranslation(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
-                ((Animation)aniList.get(aniFrame)).zLoc);
+                ((Animation)aniList.get(aniFrame)).zLoc,
+                NO_NOTIFY);
             }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("M"))
+            {
+// move object - relative move           
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call moveObject - Notify");
+            moveObject(((Animation)aniList.get(aniFrame)).xLoc,
+                ((Animation)aniList.get(aniFrame)).yLoc,
+                ((Animation)aniList.get(aniFrame)).zLoc,
+                YES_NOTIFY);
+            }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("T"))
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setTranslation - Notify");
+//translate object - absolute move            
+            setTranslation(((Animation)aniList.get(aniFrame)).xLoc,
+                ((Animation)aniList.get(aniFrame)).yLoc,
+                ((Animation)aniList.get(aniFrame)).zLoc,
+                YES_NOTIFY);
+            }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("c"))
+            {
+// scale object - relative scale           
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call scaleObject");
+            scaleObject(((Animation)aniList.get(aniFrame)).xLoc,
+                ((Animation)aniList.get(aniFrame)).yLoc,
+                ((Animation)aniList.get(aniFrame)).zLoc,
+                NO_NOTIFY);
+            }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("s"))
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setScale");
+//scale object - absolute scale            
+            setScale(((Animation)aniList.get(aniFrame)).xLoc,
+                ((Animation)aniList.get(aniFrame)).yLoc,
+                ((Animation)aniList.get(aniFrame)).zLoc,
+                NO_NOTIFY);
+            }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("C"))
+            {
+// scale object - relative scale           
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call scaleObject - Notify");
+            scaleObject(((Animation)aniList.get(aniFrame)).xLoc,
+                ((Animation)aniList.get(aniFrame)).yLoc,
+                ((Animation)aniList.get(aniFrame)).zLoc,
+                YES_NOTIFY);
+            }
+        else if(((Animation)aniList.get(aniFrame)).rest.equals("S"))
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setScale - Notify");
+//scale object - absolute scale            
+            setScale(((Animation)aniList.get(aniFrame)).xLoc,
+                ((Animation)aniList.get(aniFrame)).yLoc,
+                ((Animation)aniList.get(aniFrame)).zLoc,
+                YES_NOTIFY);
+            }
+        
         if(((Animation)aniList.get(aniFrame)).delay > 0)
             {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call mySleep ");
@@ -732,10 +1071,7 @@ public class ScriptingComponent extends CellComponent
         if(aniFrame >= aniLast)
             {
             aniList.clear();
-//            aniFrame = 0;
             aniLast = 0;
-// Notify other clients at the end of an animation
-//            doNotify();
             return 0;
             }
         else
@@ -743,35 +1079,37 @@ public class ScriptingComponent extends CellComponent
             return 1;
             }
         }
-
+/*
     public void doTransform(double x, double y, double z, double rot, double xAxis, double yAxis, double zAxis)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doTransform - The parms " + x + "," + y + "," + z + "," + rot + "," + xAxis + "," + yAxis + "," + zAxis);
         setTranslation((float)x, (float)y, (float)z);
         setRotation((float)xAxis, (float)yAxis, (float)zAxis, (float)rot);
         }
-    
-    public void doNotify()
+*/    
+    public void doNotifyTranslate(Vector3f translate)
         {
-/*        CellTransform transform = this.getLocalTransform();
-        SimpleTerrainCellMHFChangeMessage newMsg = new SimpleTerrainCellMHFChangeMessage(getCellID(), SimpleTerrainCellMHFChangeMessage.MESSAGE_CODE_3, SimpleTerrainCellMHFChangeMessage.MESSAGE_TRANSFORM);
-        Matrix4d m4d = new Matrix4d();
-        transform.get(m4d);
-        newMsg.setTransformMatrix(m4d);
-        ChannelController.getController().sendMessage(newMsg);
- */
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Translate = " + cell.getLocalTransform());
+        ScriptingComponentTransformMessage msg = new ScriptingComponentTransformMessage(cell.getCellID(), ScriptingComponentTransformMessage.TRANSLATE_TRANSFORM, translate);
+        channelComp.send(msg);
+//        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
         }
-
-       public void restoreRest()
-       {
-/*       Quaternion rot = atRest.getRotation(null);
-       Vector3f trans = atRest.getTranslation(null);
-       Vector3f scale = atRest.getScaling(null);
-       node.setLocalRotation(rot);
-       node.setLocalTranslation(trans);
-       node.setLocalScale(scale);
- */
-       }
+    
+    public void doNotifyRotate(Quaternion transform)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Rotate = " + cell.getLocalTransform());
+        ScriptingComponentTransformMessage msg = new ScriptingComponentTransformMessage(cell.getCellID(), ScriptingComponentTransformMessage.ROTATE_TRANSFORM, transform);
+        channelComp.send(msg);
+//        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
+        }
+    
+    public void doNotifyScale(Vector3f scale)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Scale = " + cell.getLocalTransform());
+        ScriptingComponentTransformMessage msg = new ScriptingComponentTransformMessage(cell.getCellID(), ScriptingComponentTransformMessage.SCALE_TRANSFORM, scale);
+        channelComp.send(msg);
+//        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
+        }
 
     class MouseEventListener extends EventClassListener
         {
@@ -783,9 +1121,9 @@ public class ScriptingComponent extends CellComponent
 
         @Override
         public void computeEvent(Event event)
-        {
+            {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In computeEvent for mouse event");
-        }
+            }
         // Note: we don't override computeEvent because we don't do any computation in this listener.
 
         @Override
@@ -809,6 +1147,13 @@ public class ScriptingComponent extends CellComponent
             int mask = 77;
             mask = awt.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK;
 //            System.out.println("Condition = " + mask + " Button = " + mbe.getButton() + " awt.id = " + awt.getID());
+/*        CellTransform transform = this.getLocalTransform();
+        SimpleTerrainCellMHFChangeMessage newMsg = new SimpleTerrainCellMHFChangeMessage(getCellID(), SimpleTerrainCellMHFChangeMessage.MESSAGE_CODE_3, SimpleTerrainCellMHFChangeMessage.MESSAGE_TRANSFORM);
+        Matrix4d m4d = new Matrix4d();
+        transform.get(m4d);
+        newMsg.setTransformMatrix(m4d);
+        ChannelController.getController().sendMessage(newMsg);
+ */
 
             if((awt.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) > 0)
                 {

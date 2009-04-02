@@ -29,7 +29,11 @@ public class ScriptingComponentClientState extends CellComponentClientState
     {
 
     private String info;
-
+    private String cellName;
+    private String scriptURL;
+    private String[] eventNames;
+    private String[] eventScriptType;
+    
     /** Default constructor */
     public ScriptingComponentClientState() 
         {
@@ -46,5 +50,53 @@ public class ScriptingComponentClientState extends CellComponentClientState
         {
         System.out.println("ScriptingComponentClientState : In setInfo - info = " + info);
         this.info = info;
+        }
+    
+    public String getCellName() 
+        {
+        System.out.println("ScriptingComponentClientState : In getCellName - cellName = " + cellName);
+        return cellName;
+        }
+
+    public void setCellName(String cellName) 
+        {
+        System.out.println("ScriptingComponentClientState : In setCellName - cellName = " + cellName);
+        this.cellName = cellName;
+        }
+    
+    public String getScriptURL() 
+        {
+        System.out.println("ScriptingComponentClientState : In getScriptURL - scriptURL = " + scriptURL);
+        return scriptURL;
+        }
+
+    public void setScriptURL(String ScriptURL) 
+        {
+        System.out.println("ScriptingComponentClientState : In setScriptURL - scriptURL = " + scriptURL);
+        this.scriptURL = ScriptURL;
+        }
+    
+    public String[] getEventNames() 
+        {
+        System.out.println("ScriptingComponentClientState : In getEventNames");
+        return eventNames;
+        }
+
+    public void setEventNames(String[] EventNames) 
+        {
+        System.out.println("ScriptingComponentClientState : In setEventNames");
+        this.eventNames = EventNames;
+        }
+    
+    public String[] getScriptType() 
+        {
+        System.out.println("ScriptingComponentClientState : In getScriptType");
+        return eventScriptType;
+        }
+
+    public void setScriptType(String[] ScriptType) 
+        {
+        System.out.println("ScriptingComponentClientState : In setScriptType");
+        this.eventScriptType = ScriptType;
         }
     }

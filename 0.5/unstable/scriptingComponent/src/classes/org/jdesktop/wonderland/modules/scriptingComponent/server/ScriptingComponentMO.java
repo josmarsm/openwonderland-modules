@@ -17,25 +17,28 @@
  */
 package org.jdesktop.wonderland.modules.scriptingComponent.server;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentClientState;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentServerState;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentChangeMessage;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentICEMessage;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentTransformMessage;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 
 /**
  *
@@ -43,24 +46,53 @@ import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
  */
 public class ScriptingComponentMO extends CellComponentMO 
     {
+    @UsesCellComponentMO(ChannelComponentMO.class)
+    private ManagedReference<ChannelComponentMO> channelComponentRef;
 
-    private String info = null;
-
+    private ManagedReference<ScriptingComponentChangeReceiver> receiverRef;
+    
+    private String info;
+    private String cellName;
+    private String scriptURL;
+    private String[] eventNames;
+    private String[] eventScriptType;
+    private int      iceCode;
+    private String   payload;
+    private Vector3f  translateTransform;
+    private Quaternion  rotateTransform;
+    private Vector3f  scaleTransform;
+    
      /**
      * Create a ScriptingComponent for the given cell. The cell must already
      * have a ChannelComponent otherwise this method will throw an IllegalStateException
      * @param cell
      */
+
     public ScriptingComponentMO(CellMO cell) 
         {
         super(cell); 
         System.out.println("ScriptingComponentMO : In constructor");
+        // set up the reference to the receiver
+        ScriptingComponentChangeReceiver receiver = new ScriptingComponentChangeReceiver(this);
+        receiverRef = AppContext.getDataManager().createReference(receiver);
         }
-    
+
     @Override
     protected void setLive(boolean live) 
         {
         super.setLive(live);
+        if (live) 
+            {
+            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentChangeMessage.class, new ScriptingComponentChangeReceiver(this));
+            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentICEMessage.class, new ScriptingComponentChangeReceiver(this));
+            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentTransformMessage.class, new ScriptingComponentChangeReceiver(this));
+            } 
+        else 
+            {
+            channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentChangeMessage.class);
+            channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentICEMessage.class);
+            channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentTransformMessage.class);
+            }
         System.out.println("ScriptingComponentMO : In setLive = live = " + live);
         }
 
@@ -74,13 +106,17 @@ public class ScriptingComponentMO extends CellComponentMO
     @Override
     public CellComponentClientState getClientState(CellComponentClientState state, WonderlandClientID clientID, ClientCapabilities capabilities) 
         {
-        System.out.println("ScriptingComponentMO : In getClientState");
+        System.out.println("ScriptingComponentMO : In getClientState - cellName = " + cellName + " scriptURL = " + scriptURL);
 
         if (state == null) 
             {
             state = new ScriptingComponentClientState();
             }
         ((ScriptingComponentClientState)state).setInfo(info);
+        ((ScriptingComponentClientState)state).setCellName(cellName);
+        ((ScriptingComponentClientState)state).setScriptURL(scriptURL);
+        ((ScriptingComponentClientState)state).setScriptType(eventScriptType);
+        ((ScriptingComponentClientState)state).setEventNames(eventNames);
         return super.getClientState(state, clientID, capabilities);
         }
 
@@ -92,6 +128,10 @@ public class ScriptingComponentMO extends CellComponentMO
             state = new ScriptingComponentServerState();
             }
         ((ScriptingComponentServerState)state).setInfo(info);
+        ((ScriptingComponentServerState)state).setCellName(cellName);
+        ((ScriptingComponentServerState)state).setScriptURL(scriptURL);
+        ((ScriptingComponentServerState)state).setScriptType(eventScriptType);
+        ((ScriptingComponentServerState)state).setEventNames(eventNames);
         System.out.println("ScriptingComponentMO : In getServerState");
         return super.getServerState(state);
         }
@@ -101,72 +141,82 @@ public class ScriptingComponentMO extends CellComponentMO
         {
         super.setServerState(state);
         info = ((ScriptingComponentServerState)state).getInfo();
+        cellName = ((ScriptingComponentServerState)state).getCellName();
+        scriptURL = ((ScriptingComponentServerState)state).getScriptURL();
+        eventNames = ((ScriptingComponentServerState)state).getEventNames();
+        eventScriptType = ((ScriptingComponentServerState)state).getScriptType();
         System.out.println("ScriptingComponentMO - : In setServerState");
         }
+    
+    private static class ScriptingComponentChangeReceiver implements ComponentMessageReceiver 
+        {
 
-    /**
-     * Set the transform for the cell and notify all client cells of the move.
-     * @param sessionID the id of the session that originated the move, or null
-     * if the server originated it
-     * @param transform
-     */
-/*
-    public void moveRequest(WonderlandClientID clientID, CellTransform transform) {
-
-        CellMO cell = cellRef.getForUpdate();
-        ChannelComponentMO channelComponent;
-        cell.setLocalTransform(transform);
+        private final ManagedReference<ScriptingComponentMO> compRef;
         
-        channelComponent = channelComponentRef.getForUpdate();
-
-        if (cell.isLive()) {
-            channelComponent.sendAll(clientID, MovableMessage.newMovedMessage(cell.getCellID(), transform));
-        }
-    }
-*/    
-    /**
-     * Listener inteface for cell movement
-     */
-/*
-    public interface CellTransformChangeListener extends ManagedObject {
-        public void transformChanged(CellMO cell, CellTransform transform);
-    }
-
-    private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
-
-        private ManagedReference<MovableComponentMO> compRef;
-        
-        public ComponentMessageReceiverImpl(MovableComponentMO comp) {
+        public ScriptingComponentChangeReceiver(ScriptingComponentMO comp) 
+            {
             compRef = AppContext.getDataManager().createReference(comp);
-        }
-
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            MovableMessage ent = (MovableMessage) message;
+            }
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) 
+            {
+            ScriptingComponentMO cellMO = compRef.getForUpdate();
+            ChannelComponentMO chanMO = cellMO.channelComponentRef.getForUpdate();
             
-//            System.out.println("MovableComponentMO.messageReceived "+ent.getActionType());
-            switch (ent.getActionType()) {
-                case MOVE_REQUEST:
-                    // TODO check permisions
-                    
-                    compRef.getForUpdate().moveRequest(clientID, ent);
-
-                    // Only need to send a response if the move can not be completed as requested
-                    //sender.send(session, MovableMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));
-                    break;
-                case MOVED:
-                    Logger.getAnonymousLogger().severe("Server should never receive MOVED messages");
-                    break;
+            if(message instanceof ScriptingComponentChangeMessage)
+                {
+                ScriptingComponentChangeMessage ent = (ScriptingComponentChangeMessage) message;
+                cellMO.cellName = ent.getCellName();
+                cellMO.scriptURL = ent.getScriptURL();
+                cellMO.eventNames = ent.getEventNames();
+                cellMO.eventScriptType = ent.getScriptType();        
+                chanMO.sendAll(clientID, message);
+                System.out.println("ScriptingComponentMO.messageReceived - Change message - "+ cellMO.cellName + " URL = " + cellMO.scriptURL + " - Client ID = " + clientID);
+                }
+            else if(message instanceof ScriptingComponentICEMessage)
+                {
+                ScriptingComponentICEMessage ent = (ScriptingComponentICEMessage) message;
+                cellMO.iceCode = ent.getIceCode();
+                cellMO.payload = ent.getPayload();
+                chanMO.sendAll(clientID, message);
+                System.out.println("ScriptingComponentMO.messageReceived - ICE message - code = "+ cellMO.iceCode + " payload = " + cellMO.payload + " - Client ID = " + clientID);
+                }
+            else if(message instanceof ScriptingComponentTransformMessage)
+                {
+                ScriptingComponentTransformMessage ent = (ScriptingComponentTransformMessage) message;
+                int transformType = ent.getTransformCode();
+                switch(transformType)
+                    {
+                    case ScriptingComponentTransformMessage.TRANSLATE_TRANSFORM:
+                        {
+                        cellMO.translateTransform = ent.getVector();
+                        System.out.println("ScriptingComponentMO.messageReceived - Translate transform message - code = "+ ent.getTransformCode() + " transform = " + cellMO.translateTransform + " - Client ID = " + clientID);
+                        break;
+                        }
+                    case ScriptingComponentTransformMessage.ROTATE_TRANSFORM:
+                        {
+                        cellMO.rotateTransform = ent.getTransform();
+                        System.out.println("ScriptingComponentMO.messageReceived - Rotate transform message - code = "+ ent.getTransformCode() + " transform = " + cellMO.rotateTransform + " - Client ID = " + clientID);
+                        break;
+                        }
+                    case ScriptingComponentTransformMessage.SCALE_TRANSFORM:
+                        {
+                        System.out.println("ScriptingComponentMO.messageReceived - Scale transform message - code = "+ ent.getTransformCode() + " transform = " + cellMO.scaleTransform + " - Client ID = " + clientID);
+                        cellMO.scaleTransform = ent.getVector();
+                        break;
+                        }
+                    default:
+                        {
+                        break;
+                        }
+                    }
+                chanMO.sendAll(clientID, message);
+                }
+            }
+        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) 
+            {
+            ScriptingComponentMO cellMO = compRef.getForUpdate();
+            
+            System.out.println("ScriptingComponentMO.recordMessage - cellName = " + cellMO.cellName);
             }
         }
-*/
-         /**
-         * Record the message -- part of the event recording mechanism.
-         * Nothing more than the message is recorded in this implementation, delegate it to the recorder manager
-         */
-/*
-        public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            RecorderManager.getDefaultManager().recordMessage(sender, clientID, message);
-        }
     }
-*/
-}
