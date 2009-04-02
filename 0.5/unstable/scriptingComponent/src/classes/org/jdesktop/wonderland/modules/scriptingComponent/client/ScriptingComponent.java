@@ -187,6 +187,17 @@ public class ScriptingComponent extends CellComponent
             case ACTIVE:
                 {
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE");
+/* Register the intercell listener */
+                ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
+/* Get local node */
+                CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+                Entity mye = ret.getEntity();
+                RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
+                localNode = rc.getSceneRoot();
+/* Register mouse event listener */
+                MouseEventListener myListener = new MouseEventListener();
+                myListener.addToEntity(mye);
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus : Cell Name = " + scriptClump);
 /* Register the change message listener */
                 if (msgReceiver == null) 
                     {
@@ -311,17 +322,6 @@ public class ScriptingComponent extends CellComponent
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In default for setStatus - status other than ACTIVE");
                 }
             }
-/* Register the intercell listener */
-        ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
-/* Get local node */
-        CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-        Entity mye = ret.getEntity();
-        RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
-        localNode = rc.getSceneRoot();
-/* Register mouse event listener */
-        MouseEventListener myListener = new MouseEventListener();
-        myListener.addToEntity(mye);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus : Cell Name = " + scriptClump);
         }
 
 /*
