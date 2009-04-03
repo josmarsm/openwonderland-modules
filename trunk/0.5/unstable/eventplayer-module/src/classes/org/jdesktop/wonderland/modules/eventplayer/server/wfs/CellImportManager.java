@@ -38,11 +38,10 @@ public interface CellImportManager {
      * given listener with the result of that call.
      * @param name the name of the recording to create, or null to use the
      * default name
-     * @param cellID
      * @param listener a recording creation listener that will be notified of
      * the result of this call
      */
-    public void loadRecording(String name, CellID cellID, RecordingLoadingListener listener);    
+    public void loadRecording(String name, RecordingLoadingListener listener);    
 
     /**
      * A listener that will be notified of the success or failure of
@@ -57,7 +56,7 @@ public interface CellImportManager {
          * @param children 
          * @param cellID
          */
-        public void recordingLoaded(CellMap<CellImportEntry> cellMOMap, CellID cellID);
+        public void recordingLoaded(CellMap<CellImportEntry> cellMOMap);
 
         /**
          * Notification that recording creation has failed.

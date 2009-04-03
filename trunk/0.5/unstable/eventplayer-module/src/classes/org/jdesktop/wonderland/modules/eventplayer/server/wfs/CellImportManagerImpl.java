@@ -31,7 +31,7 @@ public class CellImportManagerImpl implements CellImportManager {
         this.service = service;
     }
 
-    public void loadRecording(String tapeName, CellID cellID, RecordingLoadingListener listener) {
-        service.loadRecording(tapeName, cellID, listener);
+    public void loadRecording(String tapeName, RecordingLoadingListener listener) {
+        service.loadRecording(tapeName, listener);
     }
 }
