@@ -105,7 +105,7 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
 
         // first, create a new recording.  The remainder of the export procedure will happen
         // in the recordingLoaded() method of the listener
-        im.loadRecording(tapeName, cellRef.get().getCellID(), this);
+        im.loadRecording(tapeName, this);
     }
 
     /**
@@ -158,7 +158,7 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
         logger.log(Level.SEVERE, reason, cause);
     }
 
-    public void recordingLoaded(CellMap<CellImportEntry> cellImportMap, CellID cellID) {
+    public void recordingLoaded(CellMap<CellImportEntry> cellImportMap) {
         CellMap<ManagedReference<CellMO>> cellMOMap = new CellMap();
         Set<String> keys = cellImportMap.keySet();
         for (String key : keys) {
@@ -215,9 +215,9 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
             try {
                 if (parentRef == null) {
                     logger.info("parentRef == null");
-                    if (cellID != null) {
-                        logger.info("cellID: " + cellID);
-                        CellMO parent = CellManagerMO.getCell(cellID);
+                    /*
+                    if (cellRef != null) {
+                        CellMO parent = cellRef.get();
                         logger.info("parent: " + parent);
                         parent.addChild(cellMO);
                         logger.info("WFSLoader: Parent Cell ID=" + cellMO.getParent().getCellID().toString());
@@ -227,9 +227,9 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
                             logger.info("WFSLoader: Child Cell=" + it.next().get().getCellID().toString());
                         }
                         logger.info("WFSLoader: Cell Live: " + cellMO.isLive());
-                    } else {
+                    } else {*/
                         WonderlandContext.getCellManager().insertCellInWorld(cellMO);
-                    }
+                    //}
                 }
                 else {
                     logger.info("WFSLoader: Adding child (ID=" + cellMO.getCellID().toString() +

@@ -151,7 +151,7 @@ public class CellImportService extends AbstractService {
 	            " to current version:" + currentVersion);
     }
 
-    public void loadRecording(String name, CellID cellID, RecordingLoadingListener listener) {
+    public void loadRecording(String name, RecordingLoadingListener listener) {
         logger.getLogger().info("name: " + name);
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedRecordingLoadingWrapper(listener);
@@ -164,7 +164,7 @@ public class CellImportService extends AbstractService {
         // now add the recording request to the transaction.  On commit
         // this request will be passed on to the executor for long-running
         // tasks
-        LoadRecording cr = new LoadRecording(name, cellID, scl.getId());
+        LoadRecording cr = new LoadRecording(name, scl.getId());
         ctxFactory.joinTransaction().add(cr);
     }
 
@@ -177,12 +177,10 @@ public class CellImportService extends AbstractService {
      */
     private class LoadRecording implements Runnable {
         private String name;
-        private CellID cellID;
         private BigInteger listenerID;
 
-        public LoadRecording(String name, CellID cellID, BigInteger listenerID) {
+        public LoadRecording(String name, BigInteger listenerID) {
             this.name = name;
-            this.cellID = cellID;
             this.listenerID = listenerID;
         }
 
@@ -199,7 +197,7 @@ public class CellImportService extends AbstractService {
 
             // notify the listener
             NotifyRecordingListener notify =
-                    new NotifyRecordingListener(listenerID, cellMOMap, cellID, ex);
+                    new NotifyRecordingListener(listenerID, cellMOMap, ex);
             try {
                 transactionScheduler.runTask(notify, taskOwner);
             } catch (Exception ex2) {
@@ -216,15 +214,13 @@ public class CellImportService extends AbstractService {
     private class NotifyRecordingListener implements KernelRunnable {
         private BigInteger listenerID;
         CellMap<CellImportEntry> cellMOMap;
-        private CellID cellID;
         private Exception ex;
 
-        private NotifyRecordingListener(BigInteger listenerID, CellMap<CellImportEntry> cellMOMap, CellID cellID,
+        private NotifyRecordingListener(BigInteger listenerID, CellMap<CellImportEntry> cellMOMap,
                                       Exception ex)
         {
             this.listenerID = listenerID;
             this.cellMOMap = cellMOMap;
-            this.cellID = cellID;
             this.ex = ex;
         }
 
@@ -242,7 +238,7 @@ public class CellImportService extends AbstractService {
 
             try {
                 if (ex == null) {
-                    l.recordingLoaded(cellMOMap, cellID);
+                    l.recordingLoaded(cellMOMap);
                 } else {
                     l.recordingLoadingFailed(ex.getMessage(), ex);
                 }
@@ -277,8 +273,8 @@ public class CellImportService extends AbstractService {
             wrapped.recordingLoadingFailed(reason, cause);
         }
 
-        public void recordingLoaded(CellMap<CellImportEntry> cellMOMap, CellID cellID) {
-            wrapped.recordingLoaded(cellMOMap, cellID);
+        public void recordingLoaded(CellMap<CellImportEntry> cellMOMap) {
+            wrapped.recordingLoaded(cellMOMap);
         }
     }
 
