@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<eventplayer-cell>
+    <position-component>
+        <origin>
+            <x>-4.0</x>
+            <y>0.0</y>
+            <z>4.0</z>
+        </origin>
+    </position-component>
+</eventplayer-cell>
