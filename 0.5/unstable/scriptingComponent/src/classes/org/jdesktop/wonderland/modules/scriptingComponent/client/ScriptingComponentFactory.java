@@ -75,10 +75,10 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         eventNames[MOUSE1_EVENT] = "mouse1.js";
         eventNames[MOUSE2_EVENT] = "mouse2.js";
         eventNames[MOUSE3_EVENT] = "mouse3.js";
-        eventNames[MOUSE1S_EVENT] = "mouse1s.py";
+        eventNames[MOUSE1S_EVENT] = "mouse1s.js";
         eventNames[MOUSE2S_EVENT] = "mouse2s.js";
         eventNames[MOUSE3S_EVENT] = "mouse3s.js";
-        eventNames[MOUSE1C_EVENT] = "mouse1c.fx";
+        eventNames[MOUSE1C_EVENT] = "mouse1c.js";
         eventNames[MOUSE2C_EVENT] = "mouse2c.js";
         eventNames[MOUSE3C_EVENT] = "mouse3c.java";
         eventNames[MOUSE1A_EVENT] = "mouse1a.js";
@@ -96,10 +96,10 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         eventScriptType[MOUSE1_EVENT] = "javascript";
         eventScriptType[MOUSE2_EVENT] = "javascript";
         eventScriptType[MOUSE3_EVENT] = "javascript";
-        eventScriptType[MOUSE1S_EVENT] = "jython";
+        eventScriptType[MOUSE1S_EVENT] = "javascript";
         eventScriptType[MOUSE2S_EVENT] = "javascript";
         eventScriptType[MOUSE3S_EVENT] = "javascript";
-        eventScriptType[MOUSE1C_EVENT] = "fx";
+        eventScriptType[MOUSE1C_EVENT] = "javascript";
         eventScriptType[MOUSE2C_EVENT] = "javascript";
         eventScriptType[MOUSE3C_EVENT] = "java";
         eventScriptType[MOUSE1A_EVENT] = "javascript";
