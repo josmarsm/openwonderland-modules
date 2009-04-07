@@ -1089,7 +1089,7 @@ This method is for scripting engines that pass integer variable as floats
 */    
     public void doNotifyTranslate(Vector3f translate)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Translate = " + cell.getLocalTransform());
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Translate = " + cell.getLocalTransform());
         ScriptingComponentTransformMessage msg = new ScriptingComponentTransformMessage(cell.getCellID(), ScriptingComponentTransformMessage.TRANSLATE_TRANSFORM, translate);
         channelComp.send(msg);
 //        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
@@ -1097,7 +1097,7 @@ This method is for scripting engines that pass integer variable as floats
     
     public void doNotifyRotate(Quaternion transform)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Rotate = " + cell.getLocalTransform());
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Rotate = " + cell.getLocalTransform());
         ScriptingComponentTransformMessage msg = new ScriptingComponentTransformMessage(cell.getCellID(), ScriptingComponentTransformMessage.ROTATE_TRANSFORM, transform);
         channelComp.send(msg);
 //        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
@@ -1105,7 +1105,7 @@ This method is for scripting engines that pass integer variable as floats
     
     public void doNotifyScale(Vector3f scale)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Scale = " + cell.getLocalTransform());
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Scale = " + cell.getLocalTransform());
         ScriptingComponentTransformMessage msg = new ScriptingComponentTransformMessage(cell.getCellID(), ScriptingComponentTransformMessage.SCALE_TRANSFORM, scale);
         channelComp.send(msg);
 //        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
