@@ -130,6 +130,7 @@ public class ScriptingComponent extends CellComponent
     private String info = null;
     private Vector watchMessages = new Vector();
     private SocketInterface sif = null;
+    private IncomingSocketInterface isif = null;
     
     private int iAmICEReflector = 0;
     
@@ -207,10 +208,10 @@ public class ScriptingComponent extends CellComponent
                             {
                             if(message instanceof ScriptingComponentChangeMessage)
                                 {
-                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received change message - Message id = " + message.getCellID());
+//                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received change message - Message id = " + message.getCellID());
                                 if(cell.getCellID().equals(message.getCellID()))
                                     {
-                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
+//                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
                                     ScriptingComponentChangeMessage scm = (ScriptingComponentChangeMessage)message;
                                     scriptClump = scm.getCellName();
                                     scriptURL = scm.getScriptURL();
@@ -224,10 +225,10 @@ public class ScriptingComponent extends CellComponent
                                 }
                             else if(message instanceof ScriptingComponentICEMessage)
                                 {
-                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received ICE message - Message id = " + message.getCellID());
+//                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received ICE message - Message id = " + message.getCellID());
                                 if(cell.getCellID().equals(message.getCellID()))
                                     {
-                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
+//                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
                                     ScriptingComponentICEMessage ice = (ScriptingComponentICEMessage)message;
                                     if(iAmICEReflector == 1)
                                         {
@@ -251,10 +252,10 @@ public class ScriptingComponent extends CellComponent
                                 }
                             else if(message instanceof ScriptingComponentTransformMessage)
                                 {
-                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received Transform message - Message id = " + message.getCellID());
+//                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received Transform message - Message id = " + message.getCellID());
                                 if(cell.getCellID().equals(message.getCellID()))
                                     {
-                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
+//                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
                                     final ScriptingComponentTransformMessage trm = (ScriptingComponentTransformMessage)message;
                                     int transformCode = trm.getTransformCode();
                                     switch(transformCode)
@@ -349,6 +350,20 @@ Tell the message receiver for messages from server to broadcast incoming ICE mes
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket float version - Message code " + code + "Error code = " + errorCode);
         sif = new SocketInterface(ip, (int)port, (int)code, (int)errorCode);
         sif.doIt();
+        }
+    
+    public void establishIncomingSocket(int code, int errorCode, int port)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket int version - Message code " + code + " Error code = " + errorCode);
+        isif = new IncomingSocketInterface(port, code, errorCode);
+        isif.doIt();
+        }
+    
+    public void establishIncomingSocket(float code, float errorCode, float port)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket float version - Message code " + code + "Error code = " + errorCode);
+        isif = new IncomingSocketInterface((int)port, (int)code, (int)errorCode);
+        isif.doIt();
         }
 /*
 Send a message on the socket connection
