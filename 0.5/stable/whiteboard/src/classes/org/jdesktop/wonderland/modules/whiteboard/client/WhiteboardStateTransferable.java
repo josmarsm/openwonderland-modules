@@ -24,8 +24,10 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
 import org.w3c.dom.svg.SVGDocument;
@@ -39,35 +41,50 @@ import org.w3c.dom.svg.SVGDocument;
 public class WhiteboardStateTransferable implements Transferable {
 
     private static final Logger logger = Logger.getLogger(WhiteboardStateTransferable.class.getName());
-    private static DataFlavor dataFlavor = DataFlavor.javaFileListFlavor;
+    private Set<DataFlavor> flavors = new HashSet();
     private SVGDocument document;
 
     public WhiteboardStateTransferable(SVGDocument document) {
         this.document = document;
+
+        try {
+            flavors.add(DataFlavor.javaFileListFlavor);
+            flavors.add(new DataFlavor("text/uri-list;class=java.lang.String"));
+        } catch (ClassNotFoundException e) {
+        }
     }
 
     public DataFlavor[] getTransferDataFlavors() {
-        return new DataFlavor[]{dataFlavor};
+        return flavors.toArray(new DataFlavor[]{});
     }
 
     public boolean isDataFlavorSupported(DataFlavor flavor) {
-        return dataFlavor.equals(flavor);
+        return flavors.contains(flavor);
     }
 
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-        if (flavor.equals(dataFlavor) == false) {
+        if (flavors.contains(flavor) == false) {
+            logger.warning("drag and drop: flavor: " + flavor + " not supported");
             throw new UnsupportedFlavorException(flavor);
         }
-        List fileList = new LinkedList();
+
+        File tmpFile = null;
         try {
-            File tmpFile = File.createTempFile("whiteboard", ".svg");
+            tmpFile = File.createTempFile("whiteboard", ".svg");
             DataOutputStream dstream = new DataOutputStream(new FileOutputStream(tmpFile));
             dstream.writeBytes(WhiteboardUtils.documentToXMLString(document));
             dstream.close();
-            fileList.add(tmpFile);
         } catch (IOException e) {
             logger.warning("failed to create drop file for whiteboard: " + e);
+            return null;
         }
-        return fileList;
+
+        if (flavor.equals(DataFlavor.javaFileListFlavor) == true) {
+            List<File> fileList = new LinkedList();
+            fileList.add(tmpFile);
+            return fileList;
+        } else {
+            return tmpFile.toURI() + "\r\n";
+        }
     }
 }
