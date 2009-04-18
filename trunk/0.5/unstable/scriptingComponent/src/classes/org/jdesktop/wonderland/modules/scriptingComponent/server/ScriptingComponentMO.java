@@ -20,8 +20,8 @@ package org.jdesktop.wonderland.modules.scriptingComponent.server;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentClientState;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentServerState;
@@ -31,11 +31,11 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentChangeMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentICEMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentTransformMessage;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
-import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -44,7 +44,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author morrisford
  */
-public class ScriptingComponentMO extends CellComponentMO 
+public class ScriptingComponentMO extends CellComponentMO  
     {
     @UsesCellComponentMO(ChannelComponentMO.class)
     private ManagedReference<ChannelComponentMO> channelComponentRef;
@@ -68,12 +68,12 @@ public class ScriptingComponentMO extends CellComponentMO
      * @param cell
      */
 
-    public ScriptingComponentMO(CellMO cell) 
+    public ScriptingComponentMO(CellMO cell)
         {
-        super(cell); 
+        super(cell);
         System.out.println("ScriptingComponentMO : In constructor");
         // set up the reference to the receiver
-        ScriptingComponentChangeReceiver receiver = new ScriptingComponentChangeReceiver(this);
+        ScriptingComponentChangeReceiver receiver = new ScriptingComponentChangeReceiver(cellRef, this);
         receiverRef = AppContext.getDataManager().createReference(receiver);
         }
 
@@ -81,11 +81,13 @@ public class ScriptingComponentMO extends CellComponentMO
     protected void setLive(boolean live) 
         {
         super.setLive(live);
+        ChannelComponentMO channelComponent = (ChannelComponentMO) cellRef.get().getComponent(ChannelComponentMO.class);
         if (live) 
             {
-            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentChangeMessage.class, new ScriptingComponentChangeReceiver(this));
-            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentICEMessage.class, new ScriptingComponentChangeReceiver(this));
-            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentTransformMessage.class, new ScriptingComponentChangeReceiver(this));
+            
+            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentChangeMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
+            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentICEMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
+            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentTransformMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
             } 
         else 
             {
@@ -148,14 +150,16 @@ public class ScriptingComponentMO extends CellComponentMO
         System.out.println("ScriptingComponentMO - : In setServerState");
         }
     
-    private static class ScriptingComponentChangeReceiver implements ComponentMessageReceiver 
+     private static class ScriptingComponentChangeReceiver implements ComponentMessageReceiver
         {
-
-        private final ManagedReference<ScriptingComponentMO> compRef;
+        private ManagedReference<ScriptingComponentMO> compRef;
+        private ManagedReference<CellMO> cellRef;
         
-        public ScriptingComponentChangeReceiver(ScriptingComponentMO comp) 
+        public ScriptingComponentChangeReceiver(ManagedReference<CellMO> cellRef, ScriptingComponentMO comp) 
             {
+//            super(cellMO);
             compRef = AppContext.getDataManager().createReference(comp);
+            this.cellRef = cellRef;
             }
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) 
             {
