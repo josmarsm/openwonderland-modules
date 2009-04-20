@@ -22,7 +22,9 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +66,8 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
      * */
     private String tapeName;
 
+    private Map<CellID, CellID> cellMap = new HashMap<CellID, CellID>();
+
     /** Creates a new instance of EventRecorderImpl
      * @param originCell the cell that is the event recorder
      * @param name the name of the event recorder
@@ -96,10 +100,11 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
         this.tapeName = tapeName;
         //Load the cells labelled by tape name
         //then replay messages
-        playRecording();
+        loadRecording();
+        replayMessages();
     }
 
-    private void playRecording() {
+    private void loadRecording() {
         // get the export service
         CellImportManager im = AppContext.getManager(CellImportManager.class);
 
@@ -159,6 +164,8 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
     }
 
     public void recordingLoaded(CellMap<CellImportEntry> cellImportMap) {
+        logger.info("ENTERING RECORDINGLOADED with cellMap: " + cellImportMap);
+        new Exception().printStackTrace(System.err);
         CellMap<ManagedReference<CellMO>> cellMOMap = new CellMap();
         Set<String> keys = cellImportMap.keySet();
         for (String key : keys) {
@@ -168,7 +175,8 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
             ManagedReference<CellMO> parentRef = cellMOMap.get(entry.getRelativePath());
 
             CellServerState setup = entry.getServerState();
-            logger.info(setup.toString());
+            //logger.info(setup.toString());
+            
 
             /*
              * If the cell is at the root, then the relative path will be "/"
@@ -183,9 +191,9 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
              * Create the cell and pass it the setup information
              */
             String className = setup.getServerClassName();
-            logger.info("className: " + className);
+            //logger.info("className: " + className);
             CellMO cellMO = CellMOFactory.loadCellMO(className);
-            logger.info("created cellMO: " + cellMO);
+            //logger.info("created cellMO: " + cellMO);
             if (cellMO == null) {
                 /* Log a warning and move onto the next cell */
                 logger.warning("Unable to load cell MO: " + className);
@@ -194,7 +202,7 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
 
             /* Set the cell name */
             cellMO.setName(entry.getName());
-            logger.info("set name: " + entry.getName());
+            //logger.info("set name: " + entry.getName());
 
             /** XXX TODO: add an import details cell component XXX */
 
@@ -214,7 +222,7 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
              */
             try {
                 if (parentRef == null) {
-                    logger.info("parentRef == null");
+                    //logger.info("parentRef == null");
                     /*
                     if (cellRef != null) {
                         CellMO parent = cellRef.get();
@@ -258,8 +266,24 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
             ManagedReference<CellMO> cellMORef = AppContext.getDataManager().createReference(cellMO);
             cellMOMap.put(cellPath, cellMORef);
 
+            String idValue = setup.getMetaData().get("CellID");
+            //logger.info("Old cellID value: " + idValue);
+            long id = Long.valueOf(idValue);
+            //logger.info("Old cellID id: " + id);
+            CellID oldCellID = new CellID(id);
+            //logger.info("Old cellID: " + oldCellID);
+            CellID newCellID = cellMO.getCellID();
+            //logger.info("New cellID: " + newCellID);
+            cellMap.put(oldCellID, newCellID);
+            //logger.info("new cellID from map: " + cellMap.get(oldCellID));
+
             
         }
         logger.info("COMPLETE");
+    }
+
+    private void replayMessages() {
+        //loadMessageFile();
+        //replayMessageFile();
     }
 }

@@ -62,18 +62,13 @@ public class RecordingLoaderUtils {
                 logger.warning("WFSLoader: could not fetch child dir in WFS " + recorderName);
                 continue;
             }
-            logger.info("WFSLoader: processing children in " + childdir.getRelativePath());
+            //logger.info("WFSLoader: processing children in " + childdir.getRelativePath());
 
             /* Recursively load the cells for this child */
             CellMap map = loadCellMap(recorderName, childdir, children);
             cellMOMap.putAll(map);
         }
-        logger.info("Map size: " + cellMOMap.size());
-        Set<String> keys = cellMOMap.keySet();
-        for (String string : keys) {
-            logger.info(string + " : " + cellMOMap.get(string));
-        }
-        return cellMOMap;
+         return cellMOMap;
     }
 
     /**
@@ -94,7 +89,7 @@ public class RecordingLoaderUtils {
          * instead.
          */
         Cell childs[] = dir.getChildren();
-        logger.info("childs length: " + childs.length);
+        //logger.info("childs length: " + childs.length);
         if (childs == null) {
             logger.warning("WSLoader: could not read children in WFS " + root);
             return null;
@@ -124,7 +119,7 @@ public class RecordingLoaderUtils {
              */
             importEntry.serverState = CellImporterUtils.getWFSCell(root, importEntry.relativePath, importEntry.name);
             if (importEntry.serverState == null) {
-                logger.info("unable to read cell serverState info " + importEntry.relativePath + "/" + importEntry.name);
+                logger.warning("unable to read cell serverState info " + importEntry.relativePath + "/" + importEntry.name);
                 continue;
             }
             //logger.info(setup.toString());
