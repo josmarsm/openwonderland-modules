@@ -51,6 +51,7 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -58,6 +59,7 @@ import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentClientState;
@@ -65,9 +67,15 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentChangeMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentICEMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentTransformMessage;
+//import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
+import org.jdesktop.wonderland.modules.textchat.client.TextChatConnection;
+import org.jdesktop.wonderland.modules.textchat.common.TextChatConnectionType;
 
 /**
  *
@@ -155,6 +163,26 @@ public class ScriptingComponent extends CellComponent
 
             // get a named map
         }
+    
+    public void getChat()
+        {
+        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        TextChatConnection connection = (TextChatConnection) session.getConnection(TextChatConnectionType.CLIENT_TYPE);
+        connection.sendTextMessage("This is a test", "", "");
+        }
+
+    public  void    yat()
+    {
+        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
+        for (PresenceInfo pi : pm.getAllUsers()) 
+            {
+            Cell myCell = ClientContext.getCellCache(session).getCell(pi.cellID);
+            CellTransform pos = cell.getWorldTransform();
+ 
+            System.out.println("Avatar is at: " + pos);
+            }
+    }
 
     public String getInfo()
         {

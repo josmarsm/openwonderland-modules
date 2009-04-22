@@ -14,6 +14,8 @@
 
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/tools/text-chat/build/client/textchat-client.jar"/>
+        <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
     </pathconvert>
       
     <pathconvert property="module-server.classpath">
