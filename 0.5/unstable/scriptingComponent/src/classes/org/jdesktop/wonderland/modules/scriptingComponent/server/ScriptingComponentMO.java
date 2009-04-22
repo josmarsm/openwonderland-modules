@@ -150,7 +150,7 @@ public class ScriptingComponentMO extends CellComponentMO
         System.out.println("ScriptingComponentMO - : In setServerState");
         }
     
-     private static class ScriptingComponentChangeReceiver implements ComponentMessageReceiver
+     private static class ScriptingComponentChangeReceiver implements ComponentMessageReceiver, ManagedObject
         {
         private ManagedReference<ScriptingComponentMO> compRef;
         private ManagedReference<CellMO> cellRef;
