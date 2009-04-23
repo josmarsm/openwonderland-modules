@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
 import java.awt.Color;
+import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
 
 /**
  * Class to manage the selected tool
@@ -137,7 +138,16 @@ public class WhiteboardToolManager implements WhiteboardCellMenuListener {
     }
 
     public void toggleHUD() {
-        whiteboardWindow.showControls(!whiteboardWindow.showingControls());
+        if (whiteboardWindow.getDisplayMode().equals(DisplayMode.HUD)) {
+            whiteboardWindow.setDisplayMode(DisplayMode.WORLD);
+        } else {
+            whiteboardWindow.setDisplayMode(DisplayMode.HUD);
+        }
+        whiteboardWindow.showControls(true);
+    }
+
+    public boolean isOnHUD() {
+        return (whiteboardWindow.getDisplayMode().equals(DisplayMode.HUD));
     }
 
     private void setTool(WhiteboardTool newTool) {

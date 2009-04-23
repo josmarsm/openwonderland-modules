@@ -51,24 +51,26 @@ public class WhiteboardMouseListener implements MouseListener,
     }
 
     public void mouseClicked(MouseEvent e) {
-        //svgCanvas.dispatchEvent(e);
+        logger.finest("mouse clicked: " + e.getPoint());
     }
 
     public void mouseEntered(MouseEvent e) {
-        //svgCanvas.dispatchEvent(e);
+        logger.finest("mouse entered: " + e.getPoint());
     }
 
     public void mouseExited(MouseEvent e) {
-        //svgCanvas.dispatchEvent(e);
+        logger.finest("mouse exited: " + e.getPoint());
+
         currentPoint = null;
         drawing = false;
         moving = false;
     }
 
     public void mousePressed(MouseEvent e) {
+        logger.finest("mouse pressed: " + e.getPoint());
+
         pressedPoint = new Point(e.getPoint());
-        logger.fine("whiteboard: pressed point: " + pressedPoint);
-        logger.fine("whiteboard: tool: " + whiteboardWindow.getCurrentTool());
+
         WhiteboardTool currentTool = whiteboardWindow.getCurrentTool();
         if (currentTool == WhiteboardTool.SELECTOR) {
             whiteboardWindow.singleSelection(pressedPoint);
@@ -79,10 +81,10 @@ public class WhiteboardMouseListener implements MouseListener,
     }
 
     public void mouseReleased(MouseEvent e) {
-        //svgCanvas.dispatchEvent(e);
+        logger.finest("mouse released: " + e.getPoint());
+
         Point releasedPoint = e.getPoint();
-        logger.fine("whiteboard: released point: " + releasedPoint);
-        logger.fine("whiteboard: pressed point: " + pressedPoint);
+
         WhiteboardTool currentTool = whiteboardWindow.getCurrentTool();
         // Check if drawing is true to avoid adding elements when the mouse was not dragged
         if (drawing) {
@@ -106,7 +108,8 @@ public class WhiteboardMouseListener implements MouseListener,
     }
 
     public void mouseDragged(MouseEvent e) {
-        //svgCanvas.dispatchEvent(e);
+        logger.finest("mouse dragged: " + e.getPoint());
+
         WhiteboardTool currentTool = whiteboardWindow.getCurrentTool();
         if (currentTool == WhiteboardTool.SELECTOR) {
             if (whiteboardWindow.getSelection() != null) {
@@ -119,8 +122,7 @@ public class WhiteboardMouseListener implements MouseListener,
     }
 
     public void mouseMoved(MouseEvent e) {
-        //logger.info("mouse moved");
-        //svgCanvas.dispatchEvent(e);
+        logger.finest("mouse moved: " + e.getPoint());
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {

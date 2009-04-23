@@ -89,10 +89,10 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     }
 
     private void initListeners() {
-       DragSource ds = DragSource.getDefaultDragSource();
-       gestureListener = new WhiteboardDragGestureListener(window);
-       ds.createDefaultDragGestureRecognizer(dragButton,
-               DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+        DragSource ds = DragSource.getDefaultDragSource();
+        gestureListener = new WhiteboardDragGestureListener(window);
+        ds.createDefaultDragGestureRecognizer(dragButton,
+                DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
     }
 
     public void setSelectedColor(WhiteboardColor color) {
@@ -160,6 +160,14 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardEditStrokeFill32x32.png")));
     }
 
+    public void setOnHUD(boolean onHUD) {
+        if (onHUD) {
+            toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDock32x32.png")));
+        } else {
+            toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardUndock32x32.png")));
+        }
+    }
+
     public void setSynced(boolean synced) {
         if (synced == true) {
             syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardSync32x32.png")));
@@ -224,7 +232,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         setBackground(new java.awt.Color(231, 230, 230));
 
         toggleHUDButton.setBackground(new java.awt.Color(231, 230, 230));
-        toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardToggleHUD32x32.png"))); // NOI18N
+        toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDock32x32.png"))); // NOI18N
         toggleHUDButton.setBorderPainted(false);
         toggleHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         toggleHUDButton.setOpaque(true);
@@ -434,7 +442,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
                 .add(syncButton)
                 .add(3, 3, 3)
                 .add(dragButton)
-                .add(3, 3, 3))
+                .add(6, 6, 6))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

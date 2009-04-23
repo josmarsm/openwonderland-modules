@@ -195,6 +195,6 @@ public class WhiteboardApp extends AppGraphics2D implements ControlChangeListene
      * @param controlArb The control arb that changed.
      */
     public void updateControl(ControlArb controlArb) {
-        System.err.println("=== control changed: " + controlArb);
+        whiteboardWindow.showControls(controlArb.hasControl());
     }
 }
