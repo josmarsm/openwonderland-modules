@@ -37,20 +37,19 @@ import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.Overlay;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
+import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
-import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
-import org.jdesktop.wonderland.modules.hud.client.HUDComponent2D;
 import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDManager;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardColor;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
@@ -75,10 +74,6 @@ public class WhiteboardWindow extends WindowGraphics2D {
     private static final Logger logger =
             Logger.getLogger(WhiteboardWindow.class.getName());
     private WhiteboardDrawingSurface wbSurface;
-    private static final int DEFAULT_WIDTH = 1280;
-    private static final int DEFAULT_HEIGHT = 1024;
-    private int preferredWidth = DEFAULT_WIDTH;
-    private int preferredHeight = DEFAULT_HEIGHT;
     private WhiteboardCell cell;
     private WhiteboardToolManager toolManager;
     private WhiteboardDocument whiteboardDocument;
@@ -88,10 +83,9 @@ public class WhiteboardWindow extends WindowGraphics2D {
     private boolean synced = true;
     private WhiteboardControlPanel controls;
     private WindowSwing window;
-    private boolean inControl = false;
-    protected Object actionLock = new Object();
+    protected final Object actionLock = new Object();
 
-    //Drawing variables
+    // drawing variables
     private float strokeWeight = 3;
     private Overlay drawingOverlay = new DrawingOverlay();
     private Overlay selectionOverlay = new SelectionOverlay();
@@ -104,7 +98,11 @@ public class WhiteboardWindow extends WindowGraphics2D {
     private WhiteboardMouseListener svgMouseListener;
     private WhiteboardSelection selection = null;
     private JSVGCanvas svgCanvas;
+
+    // HUD components
     private HUDComponent controlComponent;
+    private HUDComponent windowComponent;
+    private DisplayMode displayMode;
 
     /**
      * Create a new instance of WhiteboardWindow.
@@ -120,11 +118,17 @@ public class WhiteboardWindow extends WindowGraphics2D {
             final WhiteboardComponent commComponent)
             throws InstantiationException {
         super(app, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
+        logger.info("--- creating window with size: " + width + "x" + height);
         this.cell = cell;
         this.commComponent = commComponent;
         initCanvas(width, height);
+        setDisplayMode(DisplayMode.WORLD);
         showControls(false);
         wbSurface = (WhiteboardDrawingSurface) getSurface();
+        // Parent to Wonderland main window for proper focus handling
+        //JmeClientMain.getFrame().getCanvas3DPanel().add(wbSurface);
+        //setComponent(wbSurface);
+
         whiteboardDocument = new WhiteboardDocument(this);
         addEventListeners();
 
@@ -164,52 +168,76 @@ public class WhiteboardWindow extends WindowGraphics2D {
         super.cleanup();
     }
 
-    public void showControls(final boolean onHUD) {
-        logger.info("show controls: " + onHUD);
-        if (window == null) {
-            try {
-                // create Swing controls
-                controls = new WhiteboardControlPanel(this);
-                JmeClientMain.getFrame().getFrame().add(controls);
-                Dimension size = controls.getPreferredSize();
-                window = new WindowSwing(app, size.width, size.height, false, new Vector2f(0.02f, 0.02f));
-                window.setComponent(controls);
-                
-                toolManager = new WhiteboardToolManager(this);
-                controls.addCellMenuListener(toolManager);
+    /** 
+     * Sets the display mode for the control panel to in-world or on-HUD
+     * @param mode the control panel display mode
+     */
+    public void setDisplayMode(DisplayMode displayMode) {
+        this.displayMode = displayMode;
+    }
 
-                // create HUD component
-                controlComponent = new HUDComponent2D((View2DEntity) (window.getView(cell)));
+    /**
+     * Gets the control panel display mode
+     * @return the display mode of the control panel: in-world or on HUD
+     */
+    public DisplayMode getDisplayMode() {
+        return displayMode;
+    }
+
+    public void showControls(final boolean visible) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                logger.info("show controls: " + visible);
                 HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
-                //controlComponent = mainHUD.createComponent(controls);
 
-                // always visible
-                window.setVisibleApp(true);
-                window.setVisibleUser(cell, true);
+                if (controlComponent == null) {
+                    // create Swing controls
+                    controls = new WhiteboardControlPanel(WhiteboardWindow.this);
 
-                mainHUD.addComponent(controlComponent);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
+                    // add event listeners
+                    toolManager = new WhiteboardToolManager(WhiteboardWindow.this);
+                    controls.addCellMenuListener(toolManager);
+
+                    // create HUD control panel
+                    controlComponent = mainHUD.createComponent(controls, cell);
+
+                    // add HUD control panel to HUD
+                    mainHUD.addComponent(controlComponent);
+                }
+
+//                if (windowComponent == null) {
+//                    // create HUD component for whiteboard window
+//                    windowComponent = mainHUD.createComponent(this, cell);
+//
+//                    // add whiteboard window to HUD
+//                    mainHUD.addComponent(windowComponent);
+//                    windowComponent.setLocation(500, 500);
+//                }
+
+                // change visibility of controls
+                if (getDisplayMode() == DisplayMode.HUD) {
+                    controlComponent.setLocation(500, 100);
+                    if (controlComponent.isWorldVisible()) {
+                        controlComponent.setWorldVisible(false);
+                    }
+                    controlComponent.setVisible(visible);
+                } else {
+                    controlComponent.setWorldLocation(new Vector3f(-2.0f, -1.0f, 0.1f));
+                    if (controlComponent.isVisible()) {
+                        controlComponent.setVisible(false);
+                    }
+                    controlComponent.setWorldVisible(visible);     // show world view
+                }
+
+                updateMenu();
             }
-        }
+        });
 
-        // TODO: toggling controls between in-world and on HUD should happen
-        // in the HUD not here
-        if (onHUD) {
-            // showing controls on HUD
-            controlComponent.setLocation(500, 50);
-            controlComponent.setVisible(true);
-        } else {
-            // showing controls in world
-            View2DEntity view = (View2DEntity) window.getView(cell);
-            view.setOrtho(false);
-            view.setTranslationUser(new Vector3f(-1.6f, -6.3f, 0.1f));
-        }
     }
 
     public boolean showingControls() {
-        View2DEntity view = (View2DEntity) window.getView(cell);
-        return view.isOrtho();
+        return ((controlComponent != null) && (controlComponent.isVisible() || controlComponent.isWorldVisible()));
     }
 
     public void movingMarker(MouseEvent e) {
@@ -222,7 +250,6 @@ public class WhiteboardWindow extends WindowGraphics2D {
     protected class MovingOverlay implements Overlay {
 
         public void paint(Graphics g) {
-            //logger.info("--- WhiteboardWindow.MovingOverlay.paint");
             Point currentPoint = svgMouseListener.getCurrentPoint();
             Point pressedPoint = svgMouseListener.getPressedPoint();
             if (currentPoint != null && selection != null) {
@@ -267,7 +294,6 @@ public class WhiteboardWindow extends WindowGraphics2D {
     protected class DrawingOverlay implements Overlay {
 
         public void paint(Graphics g) {
-            //logger.info("--- WhiteboardWindow.DrawingOverlay.paint");
             Point currentPoint = svgMouseListener.getCurrentPoint();
             Point pressedPoint = svgMouseListener.getPressedPoint();
             if (currentPoint != null) {
@@ -278,11 +304,14 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 g2d.setStroke(markerStroke);
                 WhiteboardTool currentTool = toolManager.getTool();
                 if (currentTool == WhiteboardTool.LINE) {
+                    logger.fine("drawing line: " + pressedPoint.getX() + ", " + pressedPoint.getY() +
+                            " to " + currentPoint.getX() + ", " + currentPoint.getY());
                     g2d.drawLine((int) pressedPoint.getX(), (int) pressedPoint.getY(),
                             (int) currentPoint.getX(), (int) currentPoint.getY());
                 } else {
                     Rectangle r = WhiteboardUtils.constructRectObject(pressedPoint, currentPoint);
                     if (currentTool == WhiteboardTool.RECT) {
+                        logger.fine("drawing rectangle: " + r);
                         g2d.draw(r);
                     } else if (currentTool == WhiteboardTool.ELLIPSE) {
                         g2d.drawOval((int) r.getX(), (int) r.getY(), (int) r.getWidth(), (int) r.getHeight());
@@ -290,22 +319,6 @@ public class WhiteboardWindow extends WindowGraphics2D {
                 }
             }
         }
-    }
-
-    /**
-     * Sets the preferred width of the application
-     * @param preferredWidth the preferred width of this application
-     */
-    public void setPreferredWidth(int preferredWidth) {
-        this.preferredWidth = preferredWidth;
-    }
-
-    /**
-     * Sets the preferred height of the application
-     * @param preferredHeight the preferred height of the application
-     */
-    public void setPreferredHeight(int preferredHeight) {
-        this.preferredHeight = preferredHeight;
     }
 
     /**
@@ -406,7 +419,6 @@ public class WhiteboardWindow extends WindowGraphics2D {
     protected class SelectionOverlay implements Overlay {
 
         public void paint(Graphics g) {
-            //logger.info("--- WhiteboardWindow.SelectionOverlay.paint");
             if (selection != null) {
                 Graphics2D g2d = (Graphics2D) g;
 
@@ -601,11 +613,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
         } else {
             controls.setDrawMode();
         }
-    }
-
-    public void setInControl(boolean inControl) {
-        this.inControl = inControl;
-    // TODO: onHUD and hide control panel dialog
+        controls.setOnHUD(!toolManager.isOnHUD());
     }
 
     /**

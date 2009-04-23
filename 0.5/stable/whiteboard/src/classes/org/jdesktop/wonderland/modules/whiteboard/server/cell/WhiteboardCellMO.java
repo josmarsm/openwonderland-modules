@@ -23,7 +23,6 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.awt.Point;
 import java.util.Calendar;
-import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;

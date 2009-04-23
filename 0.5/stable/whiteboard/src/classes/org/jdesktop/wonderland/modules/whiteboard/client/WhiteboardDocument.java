@@ -17,25 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
-import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
 import java.util.logging.Logger;
-
 import javax.swing.SwingUtilities;
 
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
 import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
-import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
-import org.jdesktop.wonderland.modules.hud.client.HUDComponent2D;
+import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
 import org.jdesktop.wonderland.modules.hud.client.HUDInputDialog;
 import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDManager;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
@@ -61,8 +56,6 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     private SVGDocument svgDocument;
     private DocumentDialog svgDocumentDialog;
     private HUDInputDialog dialog;
-    private WindowSwing dialogWindow;
-    private HUDComponent2D dialogComponent;
     protected static final Object readyLock = new Object();
 
     /**
@@ -188,33 +181,18 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         }
 
         public TextGetter(Point position, boolean onHUD) {
-            logger.info("--- position: " + position);
             this.position = position;
             this.onHUD = onHUD;
         }
 
         public void run() {
-            logger.info("--- TextGetter run");
+            if (dialog == null) {
+                // create a HUD text dialog
+                dialog = new HUDInputDialog(whiteboardWindow.getCell());
 
-            if (dialogWindow == null) {
-                // create Swing controls
-                dialogWindow = new WindowSwing(whiteboardWindow.getApp(),
-                        119, 60, false, new Vector2f(0.02f, 0.02f));
-
-                // create HUD component
-                dialog = new HUDInputDialog((View2DEntity) (dialogWindow.getView(whiteboardWindow.getCell())));
-                Dimension size = dialog.getComponent().getPreferredSize();
-
-                // associate the dialog with the WindowSwing
-                dialogWindow.setComponent(dialog.getComponent());
-
-                // add the dialog to the HUD
+                // add the text dialog to the HUD
                 HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
                 mainHUD.addComponent(dialog);
-
-                // always visible
-                dialogWindow.setVisibleApp(true);
-                dialogWindow.setVisibleUser(whiteboardWindow.getCell(), true);
 
                 PropertyChangeListener plistener = new PropertyChangeListener() {
 
@@ -222,40 +200,41 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
                         if (pe.getPropertyName().equals("text")) {
                             String value = (String) pe.getNewValue();
                             if ((value != null) && (value.length() > 0)) {
-                                logger.info("--- creating text element: " + value + " at " + position);
+                                logger.info("creating text element: " + value + " at " + position);
                                 Element e = createTextElement(position, value);
                                 whiteboardWindow.addNewElement(e, true);
                             }
                         }
-                        dialogWindow.setVisibleApp(false);
+                        if (dialog.isVisible()) {
+                            dialog.setVisible(false);
+                        }
+                        if (dialog.isWorldVisible()) {
+                            dialog.setWorldVisible(false);
+                        }
+                        dialog.setValueText("");
                         dialog.removePropertyChangeListener(this);
-                        dialogWindow = null;
+                        dialog = null;
                     }
                 };
                 dialog.addPropertyChangeListener(plistener);
-                dialog.setValueText("");
-            } else {
-                dialogWindow.setVisibleApp(true);
-                dialogWindow.setVisibleUser(whiteboardWindow.getCell(), true);
             }
 
-            // TODO: toggling controls between in-world and on HUD should happen
-            // in the HUD not here
-            if (onHUD) {
+            if (whiteboardWindow.getDisplayMode() == DisplayMode.HUD) {
                 // showing controls on HUD
                 dialog.setLocation(500, 400);
+                dialog.setWorldVisible(false);
                 dialog.setVisible(true);
             } else {
                 // showing controls in world
-                View2DEntity view = (View2DEntity) dialogWindow.getView(whiteboardWindow.getCell());
-                view.setOrtho(false);
-                view.setTranslationUser(new Vector3f(-2.0f, -1.0f, 0.1f));
+                dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.2f));
+                dialog.setVisible(false);
+                dialog.setWorldVisible(true);
             }
         }
     };
 
     public Element createTextElement(Point end) {
-        TextGetter getter = new TextGetter(end, true);
+        TextGetter getter = new TextGetter(end, false);
         new Thread(getter).start();
 
         return null;
