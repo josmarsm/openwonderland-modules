@@ -25,7 +25,7 @@ import org.w3c.dom.svg.SVGDocument;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb.ControlChangeListener;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbAppFocus;
+import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 
 /**
  *
@@ -52,7 +52,7 @@ public class WhiteboardApp extends AppGraphics2D implements ControlChangeListene
      * (in world meters per pixel).
      */
     public WhiteboardApp(String name, Vector2f pixelScale) {
-        super(name, new ControlArbAppFocus(), pixelScale);
+        super(name, new ControlArbMulti(), pixelScale);
         controlArb.setApp(this);
         controlArb.addListener(this);
     }
