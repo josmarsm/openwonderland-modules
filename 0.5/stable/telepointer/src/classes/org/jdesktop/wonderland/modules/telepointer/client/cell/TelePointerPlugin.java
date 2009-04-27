@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.telepointer.client.cell;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JCheckBoxMenuItem;
+import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -33,34 +34,43 @@ import org.jdesktop.wonderland.modules.telepointer.client.cell.TelePointerCompon
  *
  * @author paulby
  */
-public class TelePointerPlugin implements ClientPlugin {
+public class TelePointerPlugin extends BaseClientPlugin
+        implements ViewManagerListener {
+
+    private JCheckBoxMenuItem telepointerMI;
 
     public void initialize(ServerSessionManager loginInfo) {
-        final JCheckBoxMenuItem sharedPointerMI = new JCheckBoxMenuItem("Telepointer");
-        sharedPointerMI.addActionListener(new ActionListener() {
+        telepointerMI = new JCheckBoxMenuItem("Telepointer");
+        telepointerMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ViewCell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
                 TelePointerComponent comp = cell.getComponent(TelePointerComponent.class);
-                if (comp!=null) {
-                    comp.setEnabled(sharedPointerMI.isSelected());
+                if (comp != null) {
+                    comp.setEnabled(telepointerMI.isSelected());
                 }
             }
         });
-        JmeClientMain.getFrame().addToEditMenu(sharedPointerMI);
-        
-        ViewManager.getViewManager().addViewManagerListener(new ViewManagerListener() {
 
-            public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
-                if (oldViewCell!=null) {
-                    oldViewCell.getComponent(TelePointerComponent.class).setEnabled(false);
-                }
-
-                newViewCell.getComponent(TelePointerComponent.class).setEnabled(sharedPointerMI.isSelected());
-            }
-
-        });
-
-
+        super.initialize(loginInfo);
     }
 
+    @Override
+    public void activate() {
+        JmeClientMain.getFrame().addToViewMenu(telepointerMI, 4);
+        ViewManager.getViewManager().addViewManagerListener(this);
+    }
+
+    @Override
+    public void deactivate() {
+        JmeClientMain.getFrame().removeFromViewMenu(telepointerMI);
+        ViewManager.getViewManager().removeViewManagerListener(this);
+    }
+
+    public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
+        if (oldViewCell != null) {
+            oldViewCell.getComponent(TelePointerComponent.class).setEnabled(false);
+        }
+
+        newViewCell.getComponent(TelePointerComponent.class).setEnabled(telepointerMI.isSelected());
+    }
 }

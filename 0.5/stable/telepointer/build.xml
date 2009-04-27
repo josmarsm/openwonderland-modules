@@ -2,10 +2,17 @@
 <project name="telepointermodule" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.telepointermodule}"/>
+
+    <!-- import properties from the common modules properties. These values
+         may overwrite some values in my.module.properties, such as the
+         location of the Wonderland directory in the case of the entire modules
+         directory being checked out instead of an individual file -->
+    <property file="${current.dir}/../modules-stable.properties"/>
+
+    <!-- import properties for this module -->
     <property file="${current.dir}/my.module.properties"/>
 
-    <property name="modules.dir" location="${wonderland.dir}/modules"/>
-        
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>    
     <property name="module.src" value="${module.plugin.src}"/>
     <property name="module.jarname" value="${module.name}"/>
  

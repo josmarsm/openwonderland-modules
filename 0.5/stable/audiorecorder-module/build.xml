@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="wonderland-${module.name}-module" default="package" basedir=".">
+<project name="wonderland-audiorecorder-module" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.wonderland-${module.name}-module}"/>
+    <dirname property="current.dir" file="${ant.file.wonderland-audiorecorder-module}"/>
+    
+    <!-- import properties from the common modules properties. These values
+         may overwrite some values in my.module.properties, such as the
+         location of the Wonderland directory in the case of the entire modules
+         directory being checked out instead of an individual file -->
+    <property file="${current.dir}/../modules-stable.properties"/>
+
+    <!-- import properties for this module -->
     <property file="${current.dir}/my.module.properties"/>
 
-    <property name="modules.dir" location="${wonderland.dir}/modules"/>
-        
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>    
     <property name="module.src" value="${module.plugin.src}"/>
     <property name="module.jarname" value="${module.name}"/>
 
@@ -22,7 +29,7 @@
                                                 -module-compile-server,
                                                 -module-compile-client"/>
     
-    <target name="package" depends="build">
+    <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
         <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
@@ -53,5 +60,5 @@
                                            
     <target name="clean" depends="-module-clean"/>
 
-    <target name="deploy" depends="package, -module-deploy"/> 
+    <target name="deploy" depends="dist, -module-deploy"/>
 </project>

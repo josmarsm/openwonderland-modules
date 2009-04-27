@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="dist" name="wonderland-modules-stable"> 
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-modules-stable}"/>
+    
+    <!-- all projects -->
+    <fileset dir="${current.dir}" id="all.projects">
+        <include name="*/**/build.xml"/>
+    </fileset> 
+
+    <target name="dist">
+        <!-- build all projects -->
+        <build-subprojects fileset="all.projects" target="dist"/>
+     
+        <!-- copy the modules into a common dist directory -->
+        <mkdir dir="dist"/>
+        <copy todir="dist">
+            <fileset dir=".">
+                <include name="**/dist/*.jar"/>
+                <exclude name="/dist/**"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </copy>
+    </target>
+    
+    <!-- clean all sub-projects -->
+    <target name="clean">
+        <!-- delete dist directory -->
+        <delete dir="dist" failonerror="false"/>
+        
+        <!-- clean sub-projects -->
+        <build-subprojects fileset="all.projects" target="clean"/>
+    </target>
+
+    <!-- macro to iterate across all subprojects -->
+    <macrodef name="build-subprojects">
+        <!-- the reference id of the fileset to iterate over -->
+        <attribute name="fileset"/>
+        
+        <!-- the build target to run -->
+        <attribute name="target"/>
+        <sequential>
+            <subant target="@{target}" inheritall="false">
+                <fileset refid="@{fileset}"/>
+            </subant>
+        </sequential>
+    </macrodef>
+</project>
