@@ -118,7 +118,7 @@ public class WhiteboardWindow extends WindowGraphics2D {
             final WhiteboardComponent commComponent)
             throws InstantiationException {
         super(app, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
-        logger.info("--- creating window with size: " + width + "x" + height);
+        logger.info("creating whiteboard with size: " + width + "x" + height);
         this.cell = cell;
         this.commComponent = commComponent;
         initCanvas(width, height);
