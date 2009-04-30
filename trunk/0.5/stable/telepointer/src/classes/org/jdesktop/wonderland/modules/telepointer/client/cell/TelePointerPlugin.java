@@ -21,14 +21,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JCheckBoxMenuItem;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
-import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.modules.telepointer.client.cell.TelePointerComponent;
 
 /**
  *
@@ -39,6 +37,7 @@ public class TelePointerPlugin extends BaseClientPlugin
 
     private JCheckBoxMenuItem telepointerMI;
 
+    @Override
     public void initialize(ServerSessionManager loginInfo) {
         telepointerMI = new JCheckBoxMenuItem("Telepointer");
         telepointerMI.addActionListener(new ActionListener() {
@@ -68,9 +67,13 @@ public class TelePointerPlugin extends BaseClientPlugin
 
     public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
         if (oldViewCell != null) {
-            oldViewCell.getComponent(TelePointerComponent.class).setEnabled(false);
+            TelePointerComponent comp = oldViewCell.getComponent(TelePointerComponent.class);
+            if (comp!=null)
+                comp.setEnabled(false);
         }
 
-        newViewCell.getComponent(TelePointerComponent.class).setEnabled(telepointerMI.isSelected());
+        TelePointerComponent comp = newViewCell.getComponent(TelePointerComponent.class);
+        if (comp!=null)
+            comp.setEnabled(telepointerMI.isSelected());
     }
 }
