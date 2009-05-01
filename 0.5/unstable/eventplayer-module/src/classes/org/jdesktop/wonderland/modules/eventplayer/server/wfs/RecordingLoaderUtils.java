@@ -29,6 +29,7 @@ public class RecordingLoaderUtils {
     /**
      * Loads a WFS root into the world, based in the given WFSCellMO with a
      * unique root name.
+     * The CellMap is ordered.
      *
      * @param rootName The unique root name of the WFS
      * @param cellID the parent to which the root should be added. May be null.

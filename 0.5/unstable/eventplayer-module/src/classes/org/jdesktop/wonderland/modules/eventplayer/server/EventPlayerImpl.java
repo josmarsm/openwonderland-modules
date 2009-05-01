@@ -41,7 +41,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.MessagePlayingListener;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager;
-import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.RecordingLoadingListener;
+import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.CellRetrievalListener;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
@@ -51,7 +51,7 @@ import org.jdesktop.wonderland.server.wfs.importer.CellMap;
  * subsequent messages
  * @author Bernard Horan
  */
-public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener, MessagePlayingListener, Serializable {
+public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, MessagePlayingListener, Serializable {
 
     private static final Logger logger = Logger.getLogger(EventPlayerImpl.class.getName());
     /*The reference to the cell that is the event recorder in the world */
@@ -110,7 +110,7 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
 
         // first, create a new recording.  The remainder of the export procedure will happen
         // in the recordingLoaded() method of the listener
-        im.loadRecording(tapeName, this);
+        im.retrieveCells(tapeName, this);
     }
 
     /**
@@ -159,20 +159,17 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void recordingLoadingFailed(String reason, Throwable cause) {
+    public void cellRetrievalFailed(String reason, Throwable cause) {
         logger.log(Level.SEVERE, reason, cause);
     }
 
-    public void recordingLoaded(CellMap<CellImportEntry> cellImportMap) {
-        logger.info("ENTERING RECORDINGLOADED with cellMap: " + cellImportMap);
-        new Exception().printStackTrace(System.err);
-        CellMap<ManagedReference<CellMO>> cellMOMap = new CellMap();
-        Set<String> keys = cellImportMap.keySet();
+    public void cellsRetrieved(CellMap<CellImportEntry> cellRetrievalMap, CellMap<CellID> cellPathMap) {
+        Set<String> keys = cellRetrievalMap.keySet();
         for (String key : keys) {
-            CellImportEntry entry = cellImportMap.get(key);
+            CellImportEntry entry = cellRetrievalMap.get(key);
             logger.info("processing child " + entry.getName());
 
-            ManagedReference<CellMO> parentRef = cellMOMap.get(entry.getRelativePath());
+            CellID parentID = cellPathMap.get(entry.getRelativePath());
 
             CellServerState setup = entry.getServerState();
             //logger.info(setup.toString());
@@ -221,7 +218,7 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
              * then we insert it directly into the world
              */
             try {
-                if (parentRef == null) {
+                if (parentID == null) {
                     //logger.info("parentRef == null");
                     /*
                     if (cellRef != null) {
@@ -240,16 +237,19 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
                     //}
                 }
                 else {
-                    logger.info("WFSLoader: Adding child (ID=" + cellMO.getCellID().toString() +
-                            ") to parent (ID=" + parentRef.get().getCellID().toString() + ")");
-                    parentRef.get().addChild(cellMO);
-                    logger.info("WFSLoader: Parent Cell ID=" + cellMO.getParent().getCellID().toString());
+                    CellMO parentCellMO = CellManagerMO.getCell(parentID);
+                    logger.info("EventPlayerImpl: Adding child " + cellMO.getName() + " (ID=" + cellMO.getCellID().toString() +
+                            ") to parent " + parentCellMO.getName() + " (ID=" + parentID.toString() + ")");
+                    
+                    parentCellMO.addChild(cellMO);
+                    logger.info("EventPlayerImpl: Children of parent Cell " + cellMO.getParent().getName() + " ID=" + cellMO.getParent().getCellID().toString());
                     Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
                     Iterator<ManagedReference<CellMO>> it = refs.iterator();
                     while (it.hasNext() == true) {
-                        logger.info("WFSLoader: Child Cell=" + it.next().get().getCellID().toString());
+                        CellMO child = it.next().get();
+                        logger.info("EventPlayerImpl: Child Cell: " + child.getName() + " ID=" + child.getCellID());
                     }
-                    logger.info("WFSLoader: Cell Live: " + cellMO.isLive());
+                    logger.info("EventPlayerImpl: Cell Live: " + cellMO.isLive());
                 }
             } catch (MultipleParentException excp) {
                 logger.log(Level.WARNING, "Attempting to add a new cell with " +
@@ -263,8 +263,7 @@ public class EventPlayerImpl implements ManagedObject, RecordingLoadingListener,
              * add the cell to its parent. If the parent is null, we add to the
              * root.
              */
-            ManagedReference<CellMO> cellMORef = AppContext.getDataManager().createReference(cellMO);
-            cellMOMap.put(cellPath, cellMORef);
+            cellPathMap.put(cellPath, cellMO.getCellID());
 
             String idValue = setup.getMetaData().get("CellID");
             //logger.info("Old cellID value: " + idValue);

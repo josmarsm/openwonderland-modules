@@ -17,11 +17,13 @@
  */
 package org.jdesktop.wonderland.modules.eventplayer.server.wfs;
 
+import com.sun.sgs.app.ManagedReference;
 import java.util.LinkedList;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellList;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 
 /**
@@ -41,14 +43,14 @@ public interface CellImportManager {
      * @param listener a recording creation listener that will be notified of
      * the result of this call
      */
-    public void loadRecording(String name, RecordingLoadingListener listener);    
+    public void retrieveCells(String name, CellRetrievalListener listener);
 
     /**
      * A listener that will be notified of the success or failure of
      * creating a recording.  Implementations of RecordingCreationListener
      * must be either a ManagedObject or Serializable.
      */
-    public interface RecordingLoadingListener {
+    public interface CellRetrievalListener {
 
 
         /**
@@ -56,14 +58,16 @@ public interface CellImportManager {
          * @param children 
          * @param cellID
          */
-        public void recordingLoaded(CellMap<CellImportEntry> cellMOMap);
+        public void cellsRetrieved(CellMap<CellImportEntry> cellMOMap, CellMap<CellID> cellPathMap);
 
         /**
          * Notification that recording creation has failed.
          * @param reason a String describing the reason for failure
          * @param cause an exception that caused the failure.
          */
-        public void recordingLoadingFailed(String reason, Throwable cause);
+        public void cellRetrievalFailed(String reason, Throwable cause);
+
+
 
     }    
 }
