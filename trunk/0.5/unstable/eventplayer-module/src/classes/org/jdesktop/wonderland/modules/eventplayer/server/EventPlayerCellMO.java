@@ -226,7 +226,7 @@ public class EventPlayerCellMO extends CellMO {
 
 
     private void startPlaying() {
-        eventPlayerLogger.info("Start Playing");
+        //eventPlayerLogger.info("Start Playing");
         playerRef.get().startPlaying(selectedTape.getTapeName());
     }
 

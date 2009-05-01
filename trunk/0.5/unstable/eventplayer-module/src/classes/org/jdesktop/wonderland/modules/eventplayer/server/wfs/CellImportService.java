@@ -35,6 +35,7 @@ import java.net.URLEncoder;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -42,8 +43,9 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellList;
-import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.RecordingLoadingListener;
+import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.CellRetrievalListener;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.wfs.importer.CellImporter;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 
@@ -151,20 +153,20 @@ public class CellImportService extends AbstractService {
 	            " to current version:" + currentVersion);
     }
 
-    public void loadRecording(String name, RecordingLoadingListener listener) {
+    public void retrieveCells(String name, CellRetrievalListener listener) {
         logger.getLogger().info("name: " + name);
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedRecordingLoadingWrapper(listener);
         }
 
         // create a reference to the listener
-        ManagedReference<RecordingLoadingListener> scl =
+        ManagedReference<CellRetrievalListener> scl =
                 dataService.createReference(listener);
 
         // now add the recording request to the transaction.  On commit
         // this request will be passed on to the executor for long-running
         // tasks
-        LoadRecording cr = new LoadRecording(name, scl.getId());
+        RetrieveCells cr = new RetrieveCells(name, scl.getId());
         ctxFactory.joinTransaction().add(cr);
     }
 
@@ -175,11 +177,11 @@ public class CellImportService extends AbstractService {
      * A task that creates a new recording, and then notifies the recording
      * creation listener identified by managed reference id.
      */
-    private class LoadRecording implements Runnable {
+    private class RetrieveCells implements Runnable {
         private String name;
         private BigInteger listenerID;
 
-        public LoadRecording(String name, BigInteger listenerID) {
+        public RetrieveCells(String name, BigInteger listenerID) {
             this.name = name;
             this.listenerID = listenerID;
         }
@@ -195,9 +197,35 @@ public class CellImportService extends AbstractService {
                 ex = ex2;
             }
 
+            notifyCellRetrieval(cellMOMap, ex);
+            
+        }
+
+        private void notifyCellRetrieval(CellMap<CellImportEntry> cellMOMap, Exception ex) {
+            CellMap<CellID> cellPathMap = new CellMap<CellID>();
+            CellMap<CellImportEntry> subMap = new CellMap<CellImportEntry>();
+            Set<String> keys = cellMOMap.keySet();
+            int count = 0;
+            int MAP_SIZE = 2; //Adjust this to change the size of the submap entries
+            for (String key : keys) {
+                //Put the entry in the submap
+                subMap.put(key, cellMOMap.get(key));
+                count ++;
+                if (count % MAP_SIZE == 0) {
+                    // notify the listener
+                    NotifyCellRetrievalListener notify =
+                            new NotifyCellRetrievalListener(listenerID, (CellMap) subMap.clone(), cellPathMap, ex);
+                    try {
+                        transactionScheduler.runTask(notify, taskOwner);
+                    } catch (Exception ex2) {
+                        logger.logThrow(Level.WARNING, ex2, "Error calling listener");
+                    }
+                    subMap.clear();
+                }
+            }
             // notify the listener
-            NotifyRecordingListener notify =
-                    new NotifyRecordingListener(listenerID, cellMOMap, ex);
+            NotifyCellRetrievalListener notify =
+                    new NotifyCellRetrievalListener(listenerID, subMap, cellPathMap, ex);
             try {
                 transactionScheduler.runTask(notify, taskOwner);
             } catch (Exception ex2) {
@@ -211,36 +239,38 @@ public class CellImportService extends AbstractService {
     /**
      * A task to notify a RecordingCreationListener
      */
-    private class NotifyRecordingListener implements KernelRunnable {
+    private class NotifyCellRetrievalListener implements KernelRunnable {
         private BigInteger listenerID;
         CellMap<CellImportEntry> cellMOMap;
+        CellMap<CellID> cellPathMap;
         private Exception ex;
 
-        private NotifyRecordingListener(BigInteger listenerID, CellMap<CellImportEntry> cellMOMap,
+        private NotifyCellRetrievalListener(BigInteger listenerID, CellMap<CellImportEntry> cellMOMap, CellMap<CellID> cellPathMap,
                                       Exception ex)
         {
             this.listenerID = listenerID;
             this.cellMOMap = cellMOMap;
+            this.cellPathMap = cellPathMap;
             this.ex = ex;
         }
 
 
 
         public String getBaseTaskType() {
-            return NAME + ".RECORDING_LISTENER";
+            return NAME + ".CELL_RETRIEVAL_LISTENER";
         }
 
         public void run() throws Exception {
             ManagedReference<?> lr =
                     dataService.createReferenceForId(listenerID);
-            RecordingLoadingListener l =
-                    (RecordingLoadingListener) lr.get();
+            CellRetrievalListener l =
+                    (CellRetrievalListener) lr.get();
 
             try {
                 if (ex == null) {
-                    l.recordingLoaded(cellMOMap);
+                    l.cellsRetrieved(cellMOMap, cellPathMap);
                 } else {
-                    l.recordingLoadingFailed(ex.getMessage(), ex);
+                    l.cellRetrievalFailed(ex.getMessage(), ex);
                 }
             } finally {
                 // clean up
@@ -260,21 +290,21 @@ public class CellImportService extends AbstractService {
      * This assumes a serializable RecordingCreationListener
      */
     private static class ManagedRecordingLoadingWrapper
-            implements RecordingLoadingListener, ManagedObject, Serializable
+            implements CellRetrievalListener, ManagedObject, Serializable
     {
-        private RecordingLoadingListener wrapped;
+        private CellRetrievalListener wrapped;
 
-        public ManagedRecordingLoadingWrapper(RecordingLoadingListener listener)
+        public ManagedRecordingLoadingWrapper(CellRetrievalListener listener)
         {
             wrapped = listener;
         }
 
-        public void recordingLoadingFailed(String reason, Throwable cause) {
-            wrapped.recordingLoadingFailed(reason, cause);
+        public void cellRetrievalFailed(String reason, Throwable cause) {
+            wrapped.cellRetrievalFailed(reason, cause);
         }
 
-        public void recordingLoaded(CellMap<CellImportEntry> cellMOMap) {
-            wrapped.recordingLoaded(cellMOMap);
+        public void cellsRetrieved(CellMap<CellImportEntry> cellMOMap, CellMap<CellID> cellPathMap) {
+            wrapped.cellsRetrieved(cellMOMap, cellPathMap);
         }
     }
 
@@ -298,6 +328,7 @@ public class CellImportService extends AbstractService {
         @Override
         public void abort(boolean retryable) {
             changes.clear();
+            logger.getLogger().severe("ABORTED");
         }
 
         @Override
