@@ -201,7 +201,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         // export the cells
         // remainder of procedure is in exportResult
         CellExportManager em = AppContext.getManager(CellExportManager.class);
-        em.exportCells(worldRoot, cells, this);
+        em.exportCells(worldRoot, cells, this, true);
     }
 
     public void recordingFailed(String reason, Throwable cause) {
