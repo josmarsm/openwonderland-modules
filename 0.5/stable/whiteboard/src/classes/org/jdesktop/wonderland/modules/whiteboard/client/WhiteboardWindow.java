@@ -48,7 +48,7 @@ import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
-import org.jdesktop.wonderland.modules.appbase.client.WindowGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDManager;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardColor;
@@ -69,7 +69,7 @@ import org.w3c.dom.svg.SVGDocument;
  * @author jbarratt
  */
 @ExperimentalAPI
-public class WhiteboardWindow extends WindowGraphics2D {
+public class WhiteboardWindow extends Window2D {
 
     private static final Logger logger =
             Logger.getLogger(WhiteboardWindow.class.getName());
@@ -620,7 +620,6 @@ public class WhiteboardWindow extends WindowGraphics2D {
      * Paint contents of window
      * @param g the graphics context on which to paint
      */
-    @Override
     protected void paint(Graphics2D g) {
         logger.finest("whiteboard: paint");
         if (svgCanvas != null) {
