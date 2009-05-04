@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
 import org.w3c.dom.Element;
-import org.jdesktop.wonderland.modules.appbase.client.AppGraphics2D;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import com.jme.math.Vector2f;
 import java.awt.Point;
 import org.w3c.dom.svg.SVGDocument;
@@ -36,7 +36,7 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
  * @author nsimpson
  */
 @ExperimentalAPI
-public class WhiteboardApp extends AppGraphics2D implements ControlChangeListener {
+public class WhiteboardApp extends App2D implements ControlChangeListener {
 
     /** The single whiteboardWindow created by this app */
     private WhiteboardWindow whiteboardWindow;
