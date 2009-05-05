@@ -58,6 +58,9 @@ public class AudioRecorderCell extends Cell {
     private DefaultListSelectionModel tapeSelectionModel;
     private ReelForm reelForm;
 
+    /** the message handler, or null if no message handler is registered */
+    private AudioRecorderCellMessageReceiver receiver = null;
+
     public AudioRecorderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         isRecording = false;
@@ -68,15 +71,19 @@ public class AudioRecorderCell extends Cell {
     @Override
     public boolean setStatus(CellStatus status) {
         super.setStatus(status);
-        if (status.equals(CellStatus.ACTIVE)) {
+        if (status.equals(CellStatus.BOUNDS)) {
             //About to become visible, so add the message receiver
-            getChannel().addMessageReceiver(AudioRecorderCellChangeMessage.class, new AudioRecorderCellMessageReceiver());
+            if (receiver == null) {
+                receiver = new AudioRecorderCellMessageReceiver();
+                getChannel().addMessageReceiver(AudioRecorderCellChangeMessage.class, receiver);
+            }
         }
         if (status.equals(CellStatus.DISK)) {
             //Cleanup
             if (getChannel() != null) {
                 getChannel().removeMessageReceiver(AudioRecorderCellChangeMessage.class);
             }
+            receiver = null;
         }
         //No change in my status, so...
         return false;
