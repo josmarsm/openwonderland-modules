@@ -64,7 +64,7 @@ public class WhiteboardToolManager implements WhiteboardCellMenuListener {
 
     // WhiteboardCellMenuListener methods
     public void newDoc() {
-        whiteboardWindow.newDocument(false);
+        whiteboardWindow.newDocument(true);
     }
 
     public void openDoc() {
