@@ -160,20 +160,13 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
      * Stop loading the recording
      */
     public void stopLoading() {
-        logger.info("stop playing, isPlaying: " + isLoading);
-        logger.info("children: " + cellRef.get().getNumChildren());
-        Collection<ManagedReference<CellMO>> children = cellRef.get().getAllChildrenRefs();
-        for (ManagedReference<CellMO> childRef : children) {
-            logger.info(childRef.get().toString());
-        }
+        logger.info("stop loading, isLoading: " + isLoading);
+        
         if (!isLoading) {
-            logger.warning("Attempt to stop playing when not already playing");
+            logger.warning("Attempt to stop playing when not already loading");
             return;
         }
         isLoading = false;
-        //Stop the messages being played
-        EventPlayingManager mgr = AppContext.getManager(EventPlayingManager.class);
-        //mgr.closeChangesFile(tapeName, this);
         tapeName = null;
     }
 
@@ -289,13 +282,13 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
                             ") to parent " + parentCellMO.getName() + " (ID=" + parentID.toString() + ")");
                     
                     parentCellMO.addChild(cellMO);
-                    logger.info("EventPlayerImpl: Children of parent Cell " + cellMO.getParent().getName() + " ID=" + cellMO.getParent().getCellID().toString());
-                    Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
-                    Iterator<ManagedReference<CellMO>> it = refs.iterator();
-                    while (it.hasNext() == true) {
-                        CellMO child = it.next().get();
-                        logger.info("EventPlayerImpl: Child Cell: " + child.getName() + " ID=" + child.getCellID());
-                    }
+//                    logger.info("EventPlayerImpl: Children of parent Cell " + cellMO.getParent().getName() + " ID=" + cellMO.getParent().getCellID().toString());
+//                    Collection<ManagedReference> refs = cellMO.getParent().getAllChildrenRefs();
+//                    Iterator<ManagedReference<CellMO>> it = refs.iterator();
+//                    while (it.hasNext() == true) {
+//                        CellMO child = it.next().get();
+//                        logger.info("EventPlayerImpl: Child Cell: " + child.getName() + " ID=" + child.getCellID());
+//                    }
                     logger.info("EventPlayerImpl: Cell Live: " + cellMO.isLive());
                 }
             } catch (MultipleParentException excp) {
