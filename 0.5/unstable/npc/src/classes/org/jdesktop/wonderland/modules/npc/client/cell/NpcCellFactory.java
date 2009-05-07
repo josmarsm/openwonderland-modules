@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.npc.client.cell;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -40,7 +42,7 @@ public class NpcCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         NpcCellServerState state = new NpcCellServerState();
         AvatarConfigComponentServerState astate = new AvatarConfigComponentServerState();
-        astate.setAvatarConfigURL("assets/configurations/MaleD_CA_00_bin.xml");
+        astate.setAvatarConfigURL("assets/configurations/MaleMeso_01.xml");
         state.addComponentServerState(astate);
 
         return (T)state;
@@ -51,6 +53,7 @@ public class NpcCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        return null;
+        URL url = NpcCellFactory.class.getResource("resources/NPC2.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
