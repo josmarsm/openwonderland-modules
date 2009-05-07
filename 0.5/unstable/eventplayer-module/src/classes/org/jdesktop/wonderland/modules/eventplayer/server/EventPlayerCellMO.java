@@ -55,11 +55,12 @@ public class EventPlayerCellMO extends CellMO {
     private int instanceNumber;
     private Set<Tape> tapes = new HashSet<Tape>();
     private Tape selectedTape = null;
-    private boolean isPlaying;
+    private boolean isLoading;
     private String userName;
     private String recordingDirectory;
     private String playerName;
     private ManagedReference<EventPlayerImpl> playerRef;
+    private boolean isPlaying;
 
 
     public EventPlayerCellMO() {
@@ -69,7 +70,7 @@ public class EventPlayerCellMO extends CellMO {
         playerName = "Player" + instanceNumber;
         recordingDirectory = "/tmp/EventRecordings/" + playerName;
         createTapes();
-        isPlaying = false;
+        isLoading = false;
     }
 
     /**
@@ -110,7 +111,7 @@ public class EventPlayerCellMO extends CellMO {
             ClientCapabilities capabilities) {
         
         if (cellClientState == null) {
-            cellClientState = new EventPlayerClientState(tapes, selectedTape, isPlaying, userName);
+            cellClientState = new EventPlayerClientState(tapes, selectedTape, isLoading, userName);
         }
         eventPlayerLogger.fine("cellClientState: " + cellClientState);
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -145,8 +146,8 @@ public class EventPlayerCellMO extends CellMO {
             state.setInstanceNumber(instanceNumber);
             state.setTapes(tapes);
             state.setSelectedTape(selectedTape);
-            state.setPlaying(isPlaying);
-            state.setPlaying(isPlaying);
+            state.setPlaying(isLoading);
+            state.setPlaying(isLoading);
             state.setUserName(userName);
             state.setRecordingDirectory(recordingDirectory);
         }
@@ -201,6 +202,22 @@ public class EventPlayerCellMO extends CellMO {
         return recordingDirectory + File.separator+ selectedTape.getTapeName();
     }
 
+    private void setLoading(boolean p) {
+        if (isLoading) {
+            //Already loading
+            if (!p) {
+                stopLoading();
+            }
+        } else {
+            //Not loading
+            if (p) {
+                //Start loading
+                startLoading();
+            }
+        }
+        isLoading = p;
+    }
+
     private void setPlaying(boolean p) {
         if (isPlaying) {
             //Already playing
@@ -208,9 +225,9 @@ public class EventPlayerCellMO extends CellMO {
                 stopPlaying();
             }
         } else {
-            //Not playing
+            //Not loading
             if (p) {
-                //Start playing
+                //Start loading
                 startPlaying();
             }
         }
@@ -225,18 +242,36 @@ public class EventPlayerCellMO extends CellMO {
     }
 
 
+    private void startLoading() {
+        //eventPlayerLogger.info("Start Loading");
+        playerRef.get().startLoading(selectedTape.getTapeName());
+    }
+
     private void startPlaying() {
         //eventPlayerLogger.info("Start Playing");
         playerRef.get().startPlaying(selectedTape.getTapeName());
     }
 
 
+    private void stopLoading() {
+        eventPlayerLogger.info("Stop Loading");
+        playerRef.get().stopLoading();
+    }
+
     private void stopPlaying() {
-        eventPlayerLogger.info("Stop Recording");
+        eventPlayerLogger.info("Stop Playing");
         playerRef.get().stopPlaying();
     }
 
     
+
+    private void processLoadMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
+        setLoading(arcm.isLoading());
+        userName = arcm.getUserName();
+
+        // send a message to all clients
+        getChannel().sendAll(clientID, arcm);
+    }
 
     private void processPlayMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
         setPlaying(arcm.isPlaying());
@@ -292,6 +327,9 @@ public class EventPlayerCellMO extends CellMO {
             EventPlayerCellMO cellMO = (EventPlayerCellMO) getCell();
             EventPlayerCellChangeMessage arcm = (EventPlayerCellChangeMessage) message;
             switch (arcm.getAction()) {
+                case LOAD:
+                    cellMO.processLoadMessage(clientID, arcm);
+                    break;
                 case PLAY:
                     cellMO.processPlayMessage(clientID, arcm);
                     break;

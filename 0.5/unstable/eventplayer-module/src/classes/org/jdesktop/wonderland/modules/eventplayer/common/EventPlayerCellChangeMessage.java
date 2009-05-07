@@ -27,13 +27,18 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 
 public class EventPlayerCellChangeMessage extends CellMessage {
+    private boolean isLoading;
 
     private EventPlayerCellChangeMessage(CellID cellID) {
         super(cellID);
     }
 
-    public enum EventRecorderAction {
+    public boolean isLoading() {
+        return isLoading;
+    }
 
+    public enum EventRecorderAction {
+        LOAD,
         PLAY,
         TAPE_SELECTED
     };
@@ -84,6 +89,22 @@ public class EventPlayerCellChangeMessage extends CellMessage {
         msg.userName = userName;
         msg.action = EventRecorderAction.PLAY;
         msg.isPlaying = playing;
+        return msg;
+    }
+
+    /**
+     * Static method used to create an instance of EventRecorderCellChangeMessage that has an action type
+     * <code>RECORD</code>.
+     * @param cellID The id of the cell for which this message is created
+     * @param recording boolean to indicate the state of the recorder
+     * @param userName the name of the user that initiated this change
+     * @return a message with appropriate state
+     */
+    public static EventPlayerCellChangeMessage loadingMessage(CellID cellID, boolean loading, String userName) {
+        EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
+        msg.userName = userName;
+        msg.action = EventRecorderAction.LOAD;
+        msg.isLoading = loading;
         return msg;
     }
 

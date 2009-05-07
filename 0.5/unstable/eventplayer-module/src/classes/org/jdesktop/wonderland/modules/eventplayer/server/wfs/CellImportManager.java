@@ -52,6 +52,8 @@ public interface CellImportManager {
      */
     public interface CellRetrievalListener {
 
+        public void allCellsRetrieved();
+
 
         /**
          * Notification that a recording has been created successfully

@@ -20,8 +20,10 @@ package org.jdesktop.wonderland.modules.eventplayer.server;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,6 +35,7 @@ import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.MessagePlayingResult;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -44,7 +47,13 @@ import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.CellRetrievalListener;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * An implementation of an event recorder that records the initial state of the cells as WFS and then
@@ -57,7 +66,7 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
     /*The reference to the cell that is the event recorder in the world */
     private ManagedReference<CellMO> cellRef;
     /*is this recorder actually recording*/
-    private boolean isPlaying = false;
+    private boolean isLoading = false;
     /*The name of this recorder*/
     //TODO: is this necessary?
     private String playerName;
@@ -67,6 +76,20 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
     private String tapeName;
 
     private Map<CellID, CellID> cellMap = new HashMap<CellID, CellID>();
+    private InputSource source;
+    private static final Map<String, Class> handlerMap = new HashMap<String, Class>();
+    static {
+        //handlerMap.put("OpenChannel", OpenChannelHandler.class);
+        //handlerMap.put("CellHierarchyMessage", CellHierarchyMessageHandler.class);
+        //handlerMap.put("OpenChannels", OpenChannelsHandler.class);
+        handlerMap.put("Wonderland_Changes", WonderlandChangesHandler.class);
+        handlerMap.put("Message", MessageHandler.class);
+        //handlerMap.put("SyncMessage", SyncMessageHandler.class);
+        //handlerMap.put("Channel", ChannelMessageHandler.class);
+    }
+    private long timeOfLastMessage;
+    private WonderlandClientID clientID;
+
 
     /** Creates a new instance of EventRecorderImpl
      * @param originCell the cell that is the event recorder
@@ -75,20 +98,41 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
     public EventPlayerImpl(CellMO originCell, String name) {
         cellRef = AppContext.getDataManager().createReference(originCell);
         this.playerName = name;
-    }
-
-    
-
-    public void playMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-        logger.fine("sender: " + sender + ", " + clientID + ", " + message);
-        CellID cellID = message.getCellID();
-        //TODO: check if cellID is a cell that's within the bounds of the recorder's recording volume
-        EventPlayingManager mgr = AppContext.getManager(EventPlayingManager.class);
-        mgr.playMessage(tapeName, clientID, message, this);
+        clientID = new PlayerClientID();
     }
 
     public String getName() {
         return playerName;
+    }
+
+    void playMessage(ReceivedMessage rMessage, long timestamp) {
+        CellMessage message = (CellMessage) rMessage.getMessage();
+        logger.info("cellmap: " + cellMap);
+        CellID oldCellID = message.getCellID();
+        logger.info("oldCellID: " + oldCellID);
+        CellID newCellID = cellMap.get(oldCellID);
+        logger.info("newCellID: " + newCellID);
+        message.setCellID(newCellID);
+        CellMO targetCell = CellManagerMO.getCell(newCellID);
+        logger.info("targetCell: " + targetCell);
+        ChannelComponentMO channel = targetCell.getComponent(ChannelComponentMO.class);
+        logger.info("channel: " + channel);
+        if (channel == null) {
+            throw new RuntimeException("No channel for " + targetCell);
+        }
+        channel.messageReceived(null, clientID, message);
+    }
+
+    /**
+     * Start recording to the tape given in the parameter
+     * @param tapeName the name of the selected tape in the event recorder
+     */
+    void startLoading(String tapeName) {
+        logger.info("start loading: " + tapeName);
+        this.tapeName = tapeName;
+        //Load the cells labelled by tape name
+        //then replay messages
+        loadRecording();
     }
 
     /**
@@ -97,10 +141,9 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
      */
     void startPlaying(String tapeName) {
         logger.info("start playing: " + tapeName);
-        this.tapeName = tapeName;
+        //this.tapeName = tapeName;
         //Load the cells labelled by tape name
         //then replay messages
-        loadRecording();
         replayMessages();
     }
 
@@ -109,29 +152,33 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
         CellImportManager im = AppContext.getManager(CellImportManager.class);
 
         // first, create a new recording.  The remainder of the export procedure will happen
-        // in the recordingLoaded() method of the listener
+        // in the cellsRetrieved() method of the listener
         im.retrieveCells(tapeName, this);
     }
 
     /**
-     * Stop the recording
+     * Stop loading the recording
      */
-    public void stopPlaying() {
-        logger.info("stop playing, isPlaying: " + isPlaying);
+    public void stopLoading() {
+        logger.info("stop playing, isPlaying: " + isLoading);
         logger.info("children: " + cellRef.get().getNumChildren());
         Collection<ManagedReference<CellMO>> children = cellRef.get().getAllChildrenRefs();
         for (ManagedReference<CellMO> childRef : children) {
             logger.info(childRef.get().toString());
         }
-        if (!isPlaying) {
+        if (!isLoading) {
             logger.warning("Attempt to stop playing when not already playing");
             return;
         }
-        isPlaying = false;
+        isLoading = false;
         //Stop the messages being played
         EventPlayingManager mgr = AppContext.getManager(EventPlayingManager.class);
         //mgr.closeChangesFile(tapeName, this);
         tapeName = null;
+    }
+
+    public void stopPlaying() {
+        
     }
 
 
@@ -270,9 +317,12 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
             long id = Long.valueOf(idValue);
             //logger.info("Old cellID id: " + id);
             CellID oldCellID = new CellID(id);
-            //logger.info("Old cellID: " + oldCellID);
+            logger.info("Old cellID: " + oldCellID);
+            if (cellMap.get(oldCellID) != null) {
+                throw new RuntimeException("Failed trying to add new cellId to cellmap where cellID already exists");
+            }
             CellID newCellID = cellMO.getCellID();
-            //logger.info("New cellID: " + newCellID);
+            logger.info("New cellID: " + newCellID);
             cellMap.put(oldCellID, newCellID);
             //logger.info("new cellID from map: " + cellMap.get(oldCellID));
 
@@ -282,7 +332,29 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
     }
 
     private void replayMessages() {
-        //loadMessageFile();
-        //replayMessageFile();
+        try {
+            XMLReader xmlReader = XMLReaderFactory.createXMLReader();
+            DefaultHandler handler = new EventHandler(this);
+            xmlReader.setContentHandler(handler);
+            xmlReader.setErrorHandler(handler);
+            xmlReader.parse(new InputSource("/Users/bh37721/.wonderland-server/0.5-dev/wfs/recordings/Untitled Tape/changes.xml"));
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } catch (SAXException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
     }
+
+    public Class getTagHandlerClass(String elementName) {
+        return handlerMap.get(elementName);
+    }
+
+    public void startChanges() {
+        timeOfLastMessage = new Date().getTime();
+    }
+
+    public void allCellsRetrieved() {
+       //TODO
+    }
+
 }

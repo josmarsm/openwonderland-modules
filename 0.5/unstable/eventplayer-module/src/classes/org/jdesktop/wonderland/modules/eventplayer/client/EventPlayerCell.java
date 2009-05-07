@@ -37,8 +37,6 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-import org.jdesktop.wonderland.client.cell.ChannelComponentImpl;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -62,6 +60,7 @@ public class EventPlayerCell extends Cell {
     private DefaultListModel tapeListModel;
     private DefaultListSelectionModel tapeSelectionModel;
     private ReelForm reelForm;
+    private boolean isLoading;
 
     public EventPlayerCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -218,6 +217,26 @@ public class EventPlayerCell extends Cell {
         getChannel().send(msg);
 
     }
+    
+    void startLoading() {
+        logger.info("start loading");
+
+        Tape selectedTape = getSelectedTape();
+        if (selectedTape == null) {
+            logger.warning("Can't playback when there's no selected tape");
+            return;
+        }
+        if (userName != null) {
+            logger.warning("userName should be null");
+        }
+        userName = getCurrentUserName();
+        setLoading(true);
+        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.loadingMessage(getCellID(), isLoading, userName);
+        getChannel().send(msg);
+
+    }
+
+
 
 
     void stop() {
@@ -245,6 +264,12 @@ public class EventPlayerCell extends Cell {
         eventPlayerLogger.info("setPlaying: " + b);
         renderer.setPlaying(b);
         isPlaying = b;
+    }
+
+    private void setLoading(boolean b) {
+        eventPlayerLogger.info("setLoading: " + b);
+        renderer.setLoading(b);
+        isLoading = b;
     }
 
 

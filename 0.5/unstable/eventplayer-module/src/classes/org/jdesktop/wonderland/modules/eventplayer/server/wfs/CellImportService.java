@@ -231,6 +231,14 @@ public class CellImportService extends AbstractService {
             } catch (Exception ex2) {
                 logger.logThrow(Level.WARNING, ex2, "Error calling listener");
             }
+            // notify the listener
+            notify =
+                    new NotifyCellRetrievalListener(listenerID);
+            try {
+                transactionScheduler.runTask(notify, taskOwner);
+            } catch (Exception ex2) {
+                logger.logThrow(Level.WARNING, ex2, "Error calling listener");
+            }
         }
     }
 
@@ -244,6 +252,7 @@ public class CellImportService extends AbstractService {
         CellMap<CellImportEntry> cellMOMap;
         CellMap<CellID> cellPathMap;
         private Exception ex;
+        private boolean completed = false;
 
         private NotifyCellRetrievalListener(BigInteger listenerID, CellMap<CellImportEntry> cellMOMap, CellMap<CellID> cellPathMap,
                                       Exception ex)
@@ -252,6 +261,11 @@ public class CellImportService extends AbstractService {
             this.cellMOMap = cellMOMap;
             this.cellPathMap = cellPathMap;
             this.ex = ex;
+        }
+
+        private NotifyCellRetrievalListener(BigInteger listenerID) {
+            this.listenerID = listenerID;
+            completed = true;
         }
 
 
@@ -268,7 +282,11 @@ public class CellImportService extends AbstractService {
 
             try {
                 if (ex == null) {
-                    l.cellsRetrieved(cellMOMap, cellPathMap);
+                    if (completed) {
+                        l.allCellsRetrieved();
+                    } else {
+                        l.cellsRetrieved(cellMOMap, cellPathMap);
+                    }
                 } else {
                     l.cellRetrievalFailed(ex.getMessage(), ex);
                 }
@@ -305,6 +323,10 @@ public class CellImportService extends AbstractService {
 
         public void cellsRetrieved(CellMap<CellImportEntry> cellMOMap, CellMap<CellID> cellPathMap) {
             wrapped.cellsRetrieved(cellMOMap, cellPathMap);
+        }
+
+        public void allCellsRetrieved() {
+            wrapped.allCellsRetrieved();
         }
     }
 
