@@ -17,17 +17,23 @@
  */
 package org.jdesktop.wonderland.modules.npc.client.cell;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.jme.AvatarRenderManager.RendererUnavailable;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 
 /**
  *
@@ -35,14 +41,47 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  */
 public class NpcCell extends Cell {
 
+    private final JMenuItem menuItem;
+    boolean menuAdded = false;
+
+    private AvatarImiJME renderer;
+
     public NpcCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+
+        menuItem = new JMenuItem("NPC " + cellID + " controls...");
+        menuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                NpcControllerFrame ncf = new NpcControllerFrame(NpcCell.this,
+                                                                renderer.getAvatarCharacter());
+                ncf.setVisible(true);
+            }
+        });
     }
 
     @Override
-    public void setClientState(CellClientState cellClientState) {
-        super.setClientState(cellClientState);
+    public boolean setStatus(CellStatus status) {
+        boolean res = super.setStatus(status);
+
+        switch (status) {
+            case BOUNDS:
+                if (!menuAdded) {
+                    JmeClientMain.getFrame().addToEditMenu(menuItem, Integer.MAX_VALUE);
+                    menuAdded = true;
+                }
+                break;
+            case DISK:
+                if (menuAdded) {
+                    JmeClientMain.getFrame().removeFromEditMenu(menuItem);
+                    menuAdded = false;
+                }
+                break;
+        }
+
+        return res;
     }
+
+
 
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
@@ -55,6 +94,10 @@ public class NpcCell extends Cell {
                 try {
                     ServerSessionManager session = getCellCache().getSession().getSessionManager();
                     ret = ClientContextJME.getAvatarRenderManager().createRenderer(session, this);
+
+                    if (ret instanceof AvatarImiJME) {
+                        renderer = (AvatarImiJME) ret;
+                    }
                 } catch (RendererUnavailable ex) {
                     Logger.getLogger(NpcCell.class.getName()).log(Level.SEVERE, null, ex);
                     ret = new AvatarJME(this);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="${module.name}" default="dist" basedir=".">
+<project name="npc" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.catwalk}"/>
+    <dirname property="current.dir" file="${ant.file.npc}"/>
 
     <property name="wonderland.dir" value="${current.dir}/../../../wonderland"/>
 
@@ -18,6 +18,7 @@
     <!-- npc is dependent on avatarbase -->
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
     </pathconvert>
     <pathconvert property="module-server.classpath">
         <path location="${modules.dir}/world/avatarbase/build/server/avatarbase-server.jar"/>
