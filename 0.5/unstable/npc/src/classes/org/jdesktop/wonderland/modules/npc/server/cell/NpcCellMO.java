@@ -39,11 +39,15 @@ public class NpcCellMO extends CellMO {
 
     public NpcCellMO(String avatarConfigURL, CellTransform transform) {
         super(new BoundingBox(new Vector3f(0,1,0), 1,2,1), transform);
+        
         AvatarConfigComponentMO avatarConfig = new AvatarConfigComponentMO(this);
         AvatarConfigComponentServerState state = new AvatarConfigComponentServerState();
         state.setAvatarConfigURL(avatarConfigURL);
         avatarConfig.setServerState(state);
         addComponent(avatarConfig);
+    }
+
+    public NpcCellMO() {
         addComponent(new ChannelComponentMO(this));
         addComponent(new MovableAvatarComponentMO(this), MovableComponentMO.class);
     }
@@ -51,7 +55,7 @@ public class NpcCellMO extends CellMO {
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID,
                                             ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.modules.avatarbase.client.cell.NpcCell";
+        return "org.jdesktop.wonderland.modules.npc.client.cell.NpcCell";
     }
 
     @Override
@@ -60,5 +64,4 @@ public class NpcCellMO extends CellMO {
 
         return super.getClientState(cellClientState, clientID, capabilities);
     }
-
 }

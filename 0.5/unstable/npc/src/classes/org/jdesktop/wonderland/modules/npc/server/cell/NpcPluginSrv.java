@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
  *
  * @author paulby
  */
-@Plugin
 public class NpcPluginSrv implements ServerPlugin {
 
     private String[] npcs = new String[] {
