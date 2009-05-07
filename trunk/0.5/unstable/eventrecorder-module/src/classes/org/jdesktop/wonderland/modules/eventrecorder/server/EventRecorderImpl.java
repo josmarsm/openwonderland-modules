@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
@@ -70,7 +71,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
      * At present this includes all avatars
      * If we get a message for one of these cells, we ignore it
      * */
-    private Set<CellID> failedCells = new HashSet<CellID>();
+    private static final String FAILED_CELLS_BINDING = "FAILED_CELLS";
 
     /** Creates a new instance of EventRecorderImpl
      * @param originCell the cell that is the event recorder
@@ -78,6 +79,8 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
      */
     public EventRecorderImpl(CellMO originCell, String name) {
         cellRef = AppContext.getDataManager().createReference(originCell);
+        ScalableHashSet<CellID> failedCells = new ScalableHashSet<CellID>();
+        AppContext.getDataManager().setBinding(FAILED_CELLS_BINDING, failedCells);
         this.recorderName = name;
     }
 
@@ -105,11 +108,15 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         RecorderManager.getDefaultManager().unregister(this);
     }
 
+    private ScalableHashSet getFailedCells() {
+        return (ScalableHashSet) AppContext.getDataManager().getBinding(FAILED_CELLS_BINDING);
+    }
+
     public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
         logger.fine("sender: " + sender + ", " + clientID + ", " + message);
         CellID cellID = message.getCellID();
         //TODO: check if cellID is a cell that's within the bounds of the recorder's recording volume
-        if (failedCells.contains(cellID)) {
+        if (getFailedCells().contains(cellID)) {
             logger.warning("Ignoring message for cellID: " + cellID);
             return;
         }
@@ -223,8 +230,8 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
                 logger.log(Level.WARNING, "Error exporting " + id + " " + CellManagerMO.getCell(id) + " : " +
                         res.getFailureReason(), res.getFailureCause());
                 logger.warning("Adding to failed cells");
-                failedCells.add(id);
-                logger.info("failed cells: " + failedCells);
+                getFailedCells().add(id);
+                logger.info("failed cells: " + getFailedCells());
             }
         }
 
