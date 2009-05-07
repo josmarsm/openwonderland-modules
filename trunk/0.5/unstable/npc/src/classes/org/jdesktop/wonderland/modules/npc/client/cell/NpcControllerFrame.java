@@ -57,11 +57,11 @@ public class NpcControllerFrame extends javax.swing.JFrame {
         rightButton = new javax.swing.JButton();
         backButton = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Avatar:");
 
-        avatarComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/FemaleD_AZ_00_bin.xml", "assets/configurations/FemaleD_CA_00_bin.xml", "assets/configurations/FemaleFG_AA_01_bin.xml", "assets/configurations/FemaleFG_AA_02_bin.xml", "assets/configurations/FemaleFG_AA_03_bin.xml", "assets/configurations/FemaleFG_CA_00_bin.xml", "assets/configurations/FemaleFG_CA_01_bin.xml", "assets/configurations/FemaleFG_CA_02_bin.xml", "assets/configurations/FemaleFG_CA_03_bin.xml", "assets/configurations/FemaleFG_CA_04_bin.xml", "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/MaleFG_AA_00_bin.xml", "assets/configurations/MaleFG_AA_01_bin.xml", "assets/configurations/MaleFG_CA_01_bin.xml", "assets/configurations/MaleFG_CA_03_bin.xml", "assets/configurations/MaleFG_CA_04_bin.xml", "assets/configurations/MaleMeso_00.xml", "assets/configurations/MaleMeso_01.xml" }));
+        avatarComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/FemaleD_AZ_00_bin.xml", "assets/configurations/FemaleD_CA_00_bin.xml", "assets/configurations/FemaleFG_AA_01_bin.xml", "assets/configurations/FemaleFG_AA_02_bin.xml", "assets/configurations/FemaleFG_AA_03_bin.xml", "assets/configurations/FemaleFG_AA_04_bin.xml", "assets/configurations/FemaleFG_AA_05_bin.xml", "assets/configurations/FemaleFG_AA_06_bin.xml", "assets/configurations/FemaleFG_CA_00_bin.xml", "assets/configurations/FemaleFG_CA_01_bin.xml", "assets/configurations/FemaleFG_CA_02_bin.xml", "assets/configurations/FemaleFG_CA_03_bin.xml", "assets/configurations/FemaleFG_CA_04_bin.xml", "assets/configurations/FemaleFG_CA_05_bin.xml", "assets/configurations/FemaleFG_CA_06_bin.xml", "assets/configurations/FemaleFG_CA_07_bin.xml", "assets/configurations/MaleFG_AA_02_bin.xml", "assets/configurations/MaleFG_AA_03_bin.xml", "assets/configurations/MaleFG_AA_04_bin.xml", "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/MaleFG_AA_00_bin.xml", "assets/configurations/MaleFG_AA_01_bin.xml", "assets/configurations/MaleFG_CA_01_bin.xml", "assets/configurations/MaleFG_CA_03_bin.xml", "assets/configurations/MaleFG_CA_04_bin.xml", "assets/configurations/MaleFG_CA_05_bin.xml", "assets/configurations/MaleFG_CA_06_bin.xml", "assets/configurations/MaleMeso_00.xml", "assets/configurations/MaleMeso_01.xml", "assets/configurations/ObamaTest.xml" }));
 
         applyButton.setText("Apply");
         applyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -130,7 +130,7 @@ public class NpcControllerFrame extends javax.swing.JFrame {
                     .add(layout.createSequentialGroup()
                         .add(128, 128, 128)
                         .add(leftButton)
-                        .add(41, 41, 41)
+                        .add(50, 50, 50)
                         .add(rightButton))
                     .add(layout.createSequentialGroup()
                         .add(188, 188, 188)
