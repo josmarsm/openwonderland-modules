@@ -106,12 +106,11 @@ class TelePointerRenderer {
             pointer.attachChild(cursor);
 
             TextLabel2D label = new TextLabel2D(username);
-            Node q = label.getBillboard(0.25f);
-            q.setLocalTranslation(0f, 0.3f, 0f);
+            label.setLocalTranslation(0f, 0.3f, 0f);
             Matrix3f rot = new Matrix3f();
             rot.fromAngleAxis((float) Math.PI, new Vector3f(0f,1f,0f));
-            q.setLocalRotation(rot);
-            pointer.attachChild(q);
+            label.setLocalRotation(rot);
+            pointer.attachChild(label);
 
             pointer.setLocalTranslation(new Vector3f());
 
