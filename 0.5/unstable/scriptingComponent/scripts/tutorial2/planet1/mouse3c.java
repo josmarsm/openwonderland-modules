@@ -190,7 +190,7 @@ class SetScripts3 extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonSaveActionPerformed
 
     private void jButtonExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExitActionPerformed
-       System.exit(0);
+       setVisible(false);
     }//GEN-LAST:event_jButtonExitActionPerformed
 
     public static void setScriptContext(ScriptContext ctx)
