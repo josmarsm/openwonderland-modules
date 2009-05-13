@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="audiorecorder-module-IDE">
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target name="run-selected-file-in-classes">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement path="./build/classes/:../wonderland/lib/jaxb/jaxb-api.jar:../wonderland/lib/jaxb/jsr173_1.0_api.jar:../wonderland/core/ext/common/mtgame.jar:../wonderland/core/ext/jme20/target/jme.jar:../wonderland/core/build/lib/wonderland-client.jar:../wonderland/core/build/lib/wonderland-common.jar:../wonderland/core/build/lib/wonderland-server.jar:../wonderland/core/ext/sgs/sgs-client-0.9.8/sgs-client-0.9.8-sources.jar:../wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../wonderland/core/ext/common/swing-layout-1.0.jar:../wonderland/core/ext/common/Scenario.jar:../wonderland/core/ext/common/jbullet.jar:../wonderland/modules/tools/audio-manager/lib/voicelib.jar:../wonderland/modules/tools/audio-manager/lib/voip.jar:../wonderland/modules/tools/audio-manager/lib/bridge_connector.jar:../wonderland/core/ext/macosx/jars/jogl.jar:../wonderland/core/ext/common/scannotation-1.0.2.jar:../wonderland/core/ext/common/javassist.jar"/>
+            </classpath>
+        </java>
+    </target>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target name="debug-selected-file-in-classes">
+        <fail unless="debug.class">Must set property 'debug.class'</fail>
+        <path id="cp">
+                <pathelement path="./build/classes/:../wonderland/lib/jaxb/jaxb-api.jar:../wonderland/lib/jaxb/jsr173_1.0_api.jar:../wonderland/core/ext/common/mtgame.jar:../wonderland/core/ext/jme20/target/jme.jar:../wonderland/core/build/lib/wonderland-client.jar:../wonderland/core/build/lib/wonderland-common.jar:../wonderland/core/build/lib/wonderland-server.jar:../wonderland/core/ext/sgs/sgs-client-0.9.8/sgs-client-0.9.8-sources.jar:../wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../wonderland/core/ext/common/swing-layout-1.0.jar:../wonderland/core/ext/common/Scenario.jar:../wonderland/core/ext/common/jbullet.jar:../wonderland/modules/tools/audio-manager/lib/voicelib.jar:../wonderland/modules/tools/audio-manager/lib/voip.jar:../wonderland/modules/tools/audio-manager/lib/bridge_connector.jar:../wonderland/core/ext/macosx/jars/jogl.jar:../wonderland/core/ext/common/scannotation-1.0.2.jar:../wonderland/core/ext/common/javassist.jar"/>
+        </path>
+        <nbjpdastart addressproperty="jpda.address" name="audiorecorder-module" transport="dt_socket">
+            <classpath refid="cp"/>
+        </nbjpdastart>
+        <java classname="${debug.class}" fork="true">
+            <classpath refid="cp"/>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+        </java>
+    </target>
+</project>

@@ -1,0 +1,14 @@
+print('Hello from javascript - mouse script  \r\n') ;
+MyClass.getInitialPosition();
+//stateFloat[0] = 40.0;
+//stateFloat[1] = 1.5;
+//stateFloat[2] = 40.0;
+stateFloat[5] = 2 * Math.PI;
+// calculate the position position
+stateFloat[3] = stateFloat[0] + Math.cos(0) * 2;
+print('Initial xx = ' + stateFloat[3] + '\r\n');
+stateFloat[4] = stateFloat[2] + Math.sin(0) * 2;
+print('Initial zz = ' + stateFloat[4] + '\r\n');
+MyClass.setTranslation(stateFloat[3], stateFloat[1], stateFloat[4]);
+stateInt[0] = 1;
+MyClass.startTimer(100, 0);
