@@ -235,7 +235,10 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDock32x32.png"))); // NOI18N
         toggleHUDButton.setBorderPainted(false);
         toggleHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        toggleHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
+        toggleHUDButton.setMinimumSize(new java.awt.Dimension(38, 38));
         toggleHUDButton.setOpaque(true);
+        toggleHUDButton.setPreferredSize(new java.awt.Dimension(38, 38));
         toggleHUDButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 toggleHUDButtonActionPerformed(evt);
@@ -246,7 +249,10 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         newButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardNewDocument32x32.png"))); // NOI18N
         newButton.setBorderPainted(false);
         newButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        newButton.setMaximumSize(new java.awt.Dimension(38, 38));
+        newButton.setMinimumSize(new java.awt.Dimension(38, 38));
         newButton.setOpaque(true);
+        newButton.setPreferredSize(new java.awt.Dimension(38, 38));
         newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
@@ -389,7 +395,10 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardSync32x32.png"))); // NOI18N
         syncButton.setBorderPainted(false);
         syncButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        syncButton.setMaximumSize(new java.awt.Dimension(38, 38));
+        syncButton.setMinimumSize(new java.awt.Dimension(38, 38));
         syncButton.setOpaque(true);
+        syncButton.setPreferredSize(new java.awt.Dimension(38, 38));
         syncButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 syncButtonActionPerformed(evt);
@@ -400,7 +409,10 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         dragButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDrag32x32.png.png"))); // NOI18N
         dragButton.setBorderPainted(false);
         dragButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        dragButton.setMaximumSize(new java.awt.Dimension(38, 38));
+        dragButton.setMinimumSize(new java.awt.Dimension(38, 38));
         dragButton.setOpaque(true);
+        dragButton.setPreferredSize(new java.awt.Dimension(38, 38));
         dragButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dragButtonActionPerformed(evt);
@@ -413,9 +425,9 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(3, 3, 3)
-                .add(toggleHUDButton)
-                .add(4, 4, 4)
-                .add(newButton)
+                .add(toggleHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0)
+                .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0)
                 .add(selectButton)
                 .add(0, 0, 0)
@@ -439,9 +451,9 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
                 .add(0, 0, 0)
                 .add(colorWhiteButton)
                 .add(0, 0, 0)
-                .add(syncButton)
-                .add(3, 3, 3)
-                .add(dragButton)
+                .add(syncButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0)
+                .add(dragButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(6, 6, 6))
         );
         layout.setVerticalGroup(
