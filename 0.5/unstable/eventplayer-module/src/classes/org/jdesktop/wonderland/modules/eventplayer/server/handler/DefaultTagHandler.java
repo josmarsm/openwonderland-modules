@@ -3,8 +3,10 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.eventplayer.server;
+package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
+import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayer;
+import org.jdesktop.wonderland.modules.eventplayer.server.MessageReplayer;
 import org.xml.sax.Attributes;
 
 /**
@@ -13,10 +15,10 @@ import org.xml.sax.Attributes;
  */
 public class DefaultTagHandler implements TagHandler {
     protected StringBuffer buffer;
-    protected EventPlayerImpl eventPlayer;
+    protected MessageReplayer messageReplayer;
     
-    public DefaultTagHandler(EventPlayerImpl eventPlayer) {
-        this.eventPlayer = eventPlayer;
+    public DefaultTagHandler(MessageReplayer messageReplayer) {
+        this.messageReplayer = messageReplayer;
     }
 
     public void startTag(Attributes atts) {

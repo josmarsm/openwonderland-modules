@@ -18,9 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server;
 
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.xml.sax.InputSource;
 
 /**
  *
@@ -37,16 +35,10 @@ public class EventPlayingManagerImpl implements EventPlayingManager {
         this.service = service;
     }
 
-    public void openChangesFile(String tapeName, ChangesFileOpenListener listener) {
-        service.openChangesFile(tapeName, listener);
+    public void replayMessages(InputSource recordingSource, MessagesReplayingListener listener) {
+        service.replayMessages(recordingSource, listener);
     }
 
-    public void playMessage(String tapeName, WonderlandClientID clientID, CellMessage message, MessagePlayingListener listener) {
-        service.playMessage(tapeName, clientID, message, listener);
-    }
-
-    public void closeChangesFile(String tapeName, ChangesFileCloseListener listener) {
-        service.closeChangesFile(tapeName, listener);
-    }
+    
 
 }

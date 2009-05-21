@@ -5,8 +5,11 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server;
 
+import org.jdesktop.wonderland.modules.eventplayer.server.handler.DefaultTagHandler;
+import org.jdesktop.wonderland.modules.eventplayer.server.handler.TagHandler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Level;
@@ -19,12 +22,12 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author bh37721
  */
 public class EventHandler extends DefaultHandler {
-    private EventPlayerImpl eventPlayer;
+    private MessageReplayer messageReplayer;
     private Stack<TagHandler> tagHandlerStack = new Stack<TagHandler>();
     
     
-    public EventHandler(EventPlayerImpl eventPlayer) {
-        this.eventPlayer = eventPlayer;
+    public EventHandler(MessageReplayer messageReplayer) {
+        this.messageReplayer = messageReplayer;
     }
     
     @Override
@@ -51,7 +54,7 @@ public class EventHandler extends DefaultHandler {
         Class tagHandlerClass = getTagHandlerClass(tagName);
         TagHandler tagHandler;
         if (tagHandlerClass == null) {
-            tagHandler = new DefaultTagHandler(eventPlayer);
+            tagHandler = new DefaultTagHandler(messageReplayer);
         } else {
             tagHandler = newTagHandler(tagHandlerClass);
         }
@@ -59,13 +62,13 @@ public class EventHandler extends DefaultHandler {
     }
     
     protected Class getTagHandlerClass(String elementName) {
-        return eventPlayer.getTagHandlerClass(elementName);
+        return messageReplayer.getTagHandlerClass(elementName);
     }
     
     protected TagHandler newTagHandler(Class handlerClass) {
         try {
-            Constructor<TagHandler> con = handlerClass.getConstructor(new Class[]{EventPlayerImpl.class});
-            return con.newInstance(eventPlayer);
+            Constructor<TagHandler> con = handlerClass.getConstructor(new Class[]{MessageReplayer.class});
+            return con.newInstance(messageReplayer);
         } catch (InstantiationException ex) {
             Logger.getLogger(EventHandler.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {

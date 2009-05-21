@@ -19,13 +19,8 @@ package org.jdesktop.wonderland.modules.eventplayer.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
-import com.sun.sgs.app.ManagedReference;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -34,15 +29,12 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
-import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.MessagePlayingResult;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.MessagePlayingListener;
+import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.MessagesReplayingListener;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.CellRetrievalListener;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -50,53 +42,40 @@ import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
- * An implementation of an event recorder that records the initial state of the cells as WFS and then
- * subsequent messages
+ * An implementation of an event player that loads a recorded state of a world and replays messages to that world.
  * @author Bernard Horan
  */
-public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, MessagePlayingListener, Serializable {
+public class EventPlayer implements ManagedObject, CellRetrievalListener, MessagesReplayingListener,Serializable {
 
-    private static final Logger logger = Logger.getLogger(EventPlayerImpl.class.getName());
-    /*The reference to the cell that is the event recorder in the world */
-    private ManagedReference<CellMO> cellRef;
-    /*is this recorder actually recording*/
+    private static final Logger logger = Logger.getLogger(EventPlayer.class.getName());
+    /*is this recorder loading a world?*/
     private boolean isLoading = false;
     /*The name of this recorder*/
     //TODO: is this necessary?
     private String playerName;
-    /*The name of the tape to which the recording is being made
-     * This also provides the name of the directory into which the files are placed
+    /*The name of the tape representing the recording
+     * This also provides the name of the directory into which the files are contained
      * */
     private String tapeName;
-
+    /*a map from old cell id to new cell id.
+     * this enables me to direct replayed messages at the appropriate cell
+     */
     private Map<CellID, CellID> cellMap = new HashMap<CellID, CellID>();
-    private InputSource source;
-    private static final Map<String, Class> handlerMap = new HashMap<String, Class>();
-    static {
-        //handlerMap.put("OpenChannel", OpenChannelHandler.class);
-        //handlerMap.put("CellHierarchyMessage", CellHierarchyMessageHandler.class);
-        //handlerMap.put("OpenChannels", OpenChannelsHandler.class);
-        handlerMap.put("Wonderland_Changes", WonderlandChangesHandler.class);
-        handlerMap.put("Message", MessageHandler.class);
-        //handlerMap.put("SyncMessage", SyncMessageHandler.class);
-        //handlerMap.put("Channel", ChannelMessageHandler.class);
-    }
-    private long timeOfLastMessage;
+    
+    /*The wonderland architecture requires that all messages originate from a wonderlandclientid
+     * For playback I use a fudged id.
+     */
     private WonderlandClientID clientID;
+    
 
 
     /** Creates a new instance of EventRecorderImpl
      * @param originCell the cell that is the event recorder
      * @param name the name of the event recorder
      */
-    public EventPlayerImpl(CellMO originCell, String name) {
-        cellRef = AppContext.getDataManager().createReference(originCell);
+    public EventPlayer(CellMO originCell, String name) {
         this.playerName = name;
         clientID = new PlayerClientID();
     }
@@ -105,9 +84,10 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
         return playerName;
     }
 
-    void playMessage(ReceivedMessage rMessage, long timestamp) {
+    public void playMessage(ReceivedMessage rMessage) {
+        
         CellMessage message = (CellMessage) rMessage.getMessage();
-        logger.info("cellmap: " + cellMap);
+        //logger.info("cellmap: " + cellMap);
         CellID oldCellID = message.getCellID();
         logger.info("oldCellID: " + oldCellID);
         CellID newCellID = cellMap.get(oldCellID);
@@ -127,7 +107,7 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
      * Start recording to the tape given in the parameter
      * @param tapeName the name of the selected tape in the event recorder
      */
-    void startLoading(String tapeName) {
+    void loadRecording(String tapeName) {
         logger.info("start loading: " + tapeName);
         this.tapeName = tapeName;
         //Load the cells labelled by tape name
@@ -156,19 +136,6 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
         im.retrieveCells(tapeName, this);
     }
 
-    /**
-     * Stop loading the recording
-     */
-    public void stopLoading() {
-        logger.info("stop loading, isLoading: " + isLoading);
-        
-        if (!isLoading) {
-            logger.warning("Attempt to stop playing when not already loading");
-            return;
-        }
-        isLoading = false;
-        tapeName = null;
-    }
 
     public void stopPlaying() {
         
@@ -178,25 +145,6 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
     @Override
     public String toString() {
         return super.toString() + " name: " + getName();
-    }
-
-    public void messagePlayingResult(MessagePlayingResult result) {
-        //message has been written, or not
-        MessageID id = result.getMessageID();
-        if (!result.isSuccess()) {
-            logger.log(Level.WARNING, "Error writing message " + id + ": " +
-                           result.getFailureReason(), result.getFailureCause());
-        } else {
-            logger.info("Success writing message " + id);
-        }
-    }
-
-    public void fileOpened(ChangesFile changesFile) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void fileOpeningFailed(String reason, Throwable cause) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void cellRetrievalFailed(String reason, Throwable cause) {
@@ -325,29 +273,20 @@ public class EventPlayerImpl implements ManagedObject, CellRetrievalListener, Me
     }
 
     private void replayMessages() {
-        try {
-            XMLReader xmlReader = XMLReaderFactory.createXMLReader();
-            DefaultHandler handler = new EventHandler(this);
-            xmlReader.setContentHandler(handler);
-            xmlReader.setErrorHandler(handler);
-            xmlReader.parse(new InputSource("/Users/bh37721/.wonderland-server/0.5-dev/wfs/recordings/Untitled Tape/changes.xml"));
-        } catch (IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        } catch (SAXException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
+        InputSource recordingSource = new InputSource("/Users/bh37721/.wonderland-server/0.5-dev/wfs/recordings/Untitled Tape/changes.xml");
+        // get the event playing service
+        EventPlayingManager epm = AppContext.getManager(EventPlayingManager.class);
+        epm.replayMessages(recordingSource, this);
     }
 
-    public Class getTagHandlerClass(String elementName) {
-        return handlerMap.get(elementName);
-    }
+    
 
-    public void startChanges() {
-        timeOfLastMessage = new Date().getTime();
-    }
+    
 
     public void allCellsRetrieved() {
        //TODO
     }
+
+    
 
 }

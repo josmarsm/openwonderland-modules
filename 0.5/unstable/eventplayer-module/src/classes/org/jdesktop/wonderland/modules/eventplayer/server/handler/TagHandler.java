@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.jdesktop.wonderland.modules.eventplayer.server;
+package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
 import org.xml.sax.Attributes;
 

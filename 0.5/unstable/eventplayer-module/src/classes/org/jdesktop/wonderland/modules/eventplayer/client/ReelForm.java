@@ -45,18 +45,19 @@ public class ReelForm extends javax.swing.JFrame {
      * @param eventRecorderCell
      */
     public ReelForm(EventPlayerCell eventRecorderCell) {
-	this.eventRecorderCell = eventRecorderCell;
+        this.eventRecorderCell = eventRecorderCell;
         initComponents();
-	setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         tapesList.setModel(eventRecorderCell.getTapeListModel());
         ListSelectionModel tapeSelectionModel = eventRecorderCell.getTapeSelectionModel();
         tapesList.setSelectionModel(tapeSelectionModel);
+        tapesList.clearSelection();
         tapeSelectionModel.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
                 selectionChanged = true;
             }
-        } );
+        });
     }
 
     void selectTape(Tape aTape) {
