@@ -68,12 +68,9 @@ public class EventPlayerCellRenderer extends BasicRenderer {
     private static final ColorRGBA PLAY_BUTTON_SELECTED = ColorRGBA.green.clone();
     private static final ColorRGBA STOP_BUTTON_DEFAULT = new ColorRGBA(0.2f, 0.2f, 0.2f, 1f);
     private static final ColorRGBA STOP_BUTTON_SELECTED = ColorRGBA.black.clone();
-    private static final ColorRGBA LOAD_BUTTON_DEFAULT = ColorRGBA.yellow.clone();
-    private static final ColorRGBA LOAD_BUTTON_SELECTED = ColorRGBA.orange.clone();
     private Node root = null;
     private Button playButton;
     private Button stopButton;
-    private Button loadButton;
     private Set<Animation> animations = new HashSet<Animation>();
 
     public EventPlayerCellRenderer(Cell cell) {
@@ -100,10 +97,8 @@ public class EventPlayerCellRenderer extends BasicRenderer {
         addOuterCasing(device);
         entity.addEntity(createReel(device, new Vector3f(0-REEL_RADIUS, 0, 0.0f)));
         entity.addEntity(createReel(device, new Vector3f(WIDTH - REEL_RADIUS, 0, 0.0f)));
-        entity.addEntity(createLoadButton(device, new Vector3f(-(WIDTH - (BUTTON_WIDTH)), HEIGHT + BUTTON_HEIGHT, 0f)));
         entity.addEntity(createStopButton(device, new Vector3f(0, HEIGHT + BUTTON_HEIGHT, 0f)));
         entity.addEntity(createPlayButton(device, new Vector3f(WIDTH - BUTTON_WIDTH, HEIGHT + BUTTON_HEIGHT, 0f)));
-
     }
 
     private void addOuterCasing(Node device) {
@@ -168,14 +163,6 @@ public class EventPlayerCellRenderer extends BasicRenderer {
         return reelEntity;
     }
 
-    private Entity createLoadButton(Node device, Vector3f position) {
-        loadButton = addButton(device, "Load", position);
-        loadButton.setColor(LOAD_BUTTON_DEFAULT);
-        loadButton.setSelectedColor(LOAD_BUTTON_SELECTED);
-        loadButton.setDefaultColor(LOAD_BUTTON_DEFAULT);
-        return loadButton.getEntity();
-    }
-
     private Entity createPlayButton(Node device, Vector3f position) {
         playButton = addButton(device, "Play", position);
         playButton.setColor(PLAY_BUTTON_DEFAULT);
@@ -205,12 +192,6 @@ public class EventPlayerCellRenderer extends BasicRenderer {
 
     void setPlaying(boolean b) {
         playButton.setSelected(b);
-        stopButton.setSelected(!b);
-        enableAnimations(b);
-    }
-
-    void setLoading(boolean b) {
-        loadButton.setSelected(b);
         stopButton.setSelected(!b);
         enableAnimations(b);
     }
@@ -353,9 +334,8 @@ public class EventPlayerCellRenderer extends BasicRenderer {
             if (!button.isSelected()) {
                 if (button == playButton) {
                     ((EventPlayerCell) cell).startPlaying();
-                } else if (button == loadButton) {
-                    ((EventPlayerCell) cell).startLoading();
-                }
+                } 
+
             }
         }
     }

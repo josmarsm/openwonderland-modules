@@ -59,7 +59,7 @@ public class EventPlayerCellMO extends CellMO {
     private String userName;
     private String recordingDirectory;
     private String playerName;
-    private ManagedReference<EventPlayerImpl> playerRef;
+    private ManagedReference<EventPlayer> playerRef;
     private boolean isPlaying;
 
 
@@ -146,8 +146,7 @@ public class EventPlayerCellMO extends CellMO {
             state.setInstanceNumber(instanceNumber);
             state.setTapes(tapes);
             state.setSelectedTape(selectedTape);
-            state.setPlaying(isLoading);
-            state.setPlaying(isLoading);
+            state.setLoading(isLoading);
             state.setUserName(userName);
             state.setRecordingDirectory(recordingDirectory);
         }
@@ -165,7 +164,7 @@ public class EventPlayerCellMO extends CellMO {
      */
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        eventPlayerLogger.fine("Getting client cell class name");
+        //eventPlayerLogger.fine("Getting client cell class name");
         return "org.jdesktop.wonderland.modules.eventplayer.client.EventPlayerCell";
     }
 
@@ -202,22 +201,6 @@ public class EventPlayerCellMO extends CellMO {
         return recordingDirectory + File.separator+ selectedTape.getTapeName();
     }
 
-    private void setLoading(boolean p) {
-        if (isLoading) {
-            //Already loading
-            if (!p) {
-                stopLoading();
-            }
-        } else {
-            //Not loading
-            if (p) {
-                //Start loading
-                startLoading();
-            }
-        }
-        isLoading = p;
-    }
-
     private void setPlaying(boolean p) {
         if (isPlaying) {
             //Already playing
@@ -236,41 +219,25 @@ public class EventPlayerCellMO extends CellMO {
 
     private void createEventPlayer() {
         if (playerRef == null) {
-            EventPlayerImpl eventPlayer = new EventPlayerImpl(this, playerName);
+            EventPlayer eventPlayer = new EventPlayer(this, playerName);
             playerRef = AppContext.getDataManager().createReference(eventPlayer);
         }
     }
 
 
-    private void startLoading() {
-        //eventPlayerLogger.info("Start Loading");
-        playerRef.get().startLoading(selectedTape.getTapeName());
+    private void loadRecording() {
+        //eventPlayerLogger.info("Load recording");
+        playerRef.get().loadRecording(selectedTape.getTapeName());
     }
 
     private void startPlaying() {
-        //eventPlayerLogger.info("Start Playing");
+        eventPlayerLogger.info("Start Playing");
         playerRef.get().startPlaying(selectedTape.getTapeName());
-    }
-
-
-    private void stopLoading() {
-        eventPlayerLogger.info("Stop Loading");
-        playerRef.get().stopLoading();
     }
 
     private void stopPlaying() {
         eventPlayerLogger.info("Stop Playing");
         playerRef.get().stopPlaying();
-    }
-
-    
-
-    private void processLoadMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
-        setLoading(arcm.isLoading());
-        userName = arcm.getUserName();
-
-        // send a message to all clients
-        getChannel().sendAll(clientID, arcm);
     }
 
     private void processPlayMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
@@ -281,18 +248,6 @@ public class EventPlayerCellMO extends CellMO {
         getChannel().sendAll(clientID, arcm);
     }
 
-
-    private void processTapeUsedMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
-        String tapeName = arcm.getTapeName();
-        for (Tape aTape : tapes) {
-            if(aTape.getTapeName().equals(tapeName)) {
-                aTape.setUsed();
-                // send a message to all clients
-                getChannel().sendAll(clientID, arcm);
-            }
-        }
-    }
-
     private void processTapeSelectedMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
         String tapeName = arcm.getTapeName();
         for (Tape aTape : tapes) {
@@ -300,16 +255,9 @@ public class EventPlayerCellMO extends CellMO {
                 selectedTape = aTape;
                 // send a message to all clients
                 getChannel().sendAll(clientID, arcm);
+                loadRecording();
             }
         }
-    }
-
-    private void processNewTapeMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
-        String tapeName = arcm.getTapeName();
-        Tape newTape = new Tape(tapeName);
-        tapes.add(newTape);
-        // send a message to all clients
-        getChannel().sendAll(clientID, arcm);
     }
 
     private ChannelComponentMO getChannel() {
@@ -328,13 +276,10 @@ public class EventPlayerCellMO extends CellMO {
             EventPlayerCellChangeMessage arcm = (EventPlayerCellChangeMessage) message;
             switch (arcm.getAction()) {
                 case LOAD:
-                    cellMO.processLoadMessage(clientID, arcm);
+                    cellMO.processTapeSelectedMessage(clientID, arcm);
                     break;
                 case PLAY:
                     cellMO.processPlayMessage(clientID, arcm);
-                    break;
-                case TAPE_SELECTED:
-                    cellMO.processTapeSelectedMessage(clientID, arcm);
                     break;
             }
         }

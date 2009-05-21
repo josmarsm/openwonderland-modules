@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -60,7 +61,6 @@ public class EventPlayerCell extends Cell {
     private DefaultListModel tapeListModel;
     private DefaultListSelectionModel tapeSelectionModel;
     private ReelForm reelForm;
-    private boolean isLoading;
 
     public EventPlayerCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -168,7 +168,7 @@ public class EventPlayerCell extends Cell {
         if (index >= 0) {
             Tape selectedTape = (Tape) tapeListModel.elementAt(index);
             logger.info("selected tape: " + selectedTape);
-            EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.tapeSelected(getCellID(), selectedTape.getTapeName());
+            EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.loadRecording(getCellID(), selectedTape.getTapeName());
             getChannel().send(msg);
         }
     }
@@ -187,8 +187,8 @@ public class EventPlayerCell extends Cell {
         tapeSelectionModel.setSelectionInterval(selectionIndex, selectionIndex);
     }
 
-    private void selectTape(String tapeName) {
-        eventPlayerLogger.info("select tape: " + tapeName);
+    private void loadRecording(String tapeName) {
+        eventPlayerLogger.info("load recording: " + tapeName);
         Enumeration tapes = tapeListModel.elements();
         while (tapes.hasMoreElements()) {
             Tape aTape = (Tape) tapes.nextElement();
@@ -213,30 +213,10 @@ public class EventPlayerCell extends Cell {
         }
         userName = getCurrentUserName();
         setPlaying(true);
-        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.playingMessage(getCellID(), isPlaying, userName);
+        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.playRecording(getCellID(), isPlaying, userName);
         getChannel().send(msg);
 
     }
-    
-    void startLoading() {
-        logger.info("start loading");
-
-        Tape selectedTape = getSelectedTape();
-        if (selectedTape == null) {
-            logger.warning("Can't playback when there's no selected tape");
-            return;
-        }
-        if (userName != null) {
-            logger.warning("userName should be null");
-        }
-        userName = getCurrentUserName();
-        setLoading(true);
-        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.loadingMessage(getCellID(), isLoading, userName);
-        getChannel().send(msg);
-
-    }
-
-
 
 
     void stop() {
@@ -244,7 +224,7 @@ public class EventPlayerCell extends Cell {
         if (userName.equals(getCurrentUserName())) {
             EventPlayerCellChangeMessage msg = null;
             if (isPlaying) {
-                msg = EventPlayerCellChangeMessage.playingMessage(getCellID(), false, userName);
+                msg = EventPlayerCellChangeMessage.playRecording(getCellID(), false, userName);
             }
             if (msg != null) {
                 getChannel().send(msg);
@@ -264,12 +244,6 @@ public class EventPlayerCell extends Cell {
         eventPlayerLogger.info("setPlaying: " + b);
         renderer.setPlaying(b);
         isPlaying = b;
-    }
-
-    private void setLoading(boolean b) {
-        eventPlayerLogger.info("setLoading: " + b);
-        renderer.setLoading(b);
-        isLoading = b;
     }
 
 
@@ -315,8 +289,8 @@ public class EventPlayerCell extends Cell {
                         setPlaying(sccm.isPlaying());
                         userName = sccm.getUserName();
                         break;
-                    case TAPE_SELECTED:
-                        selectTape(sccm.getTapeName());
+                    case LOAD:
+                        loadRecording(sccm.getTapeName());
                         break;
                     default:
                         eventPlayerLogger.severe("Unknown action type: " + sccm.getAction());

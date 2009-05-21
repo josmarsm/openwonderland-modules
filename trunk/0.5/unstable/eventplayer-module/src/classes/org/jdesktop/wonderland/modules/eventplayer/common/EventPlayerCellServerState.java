@@ -34,7 +34,7 @@ public class EventPlayerCellServerState extends CellServerState implements Seria
     private int instanceNumber;
     private Set<Tape> tapes;
     private Tape selectedTape;
-    private boolean isPlaying, isRecording;
+    private boolean isLoading;
     private String userName;
     private String recordingDirectory;
 
@@ -46,12 +46,8 @@ public class EventPlayerCellServerState extends CellServerState implements Seria
         this.instanceNumber = instanceNumber;
     }
 
-    public void setPlaying(boolean isPlaying) {
-        this.isPlaying = isPlaying;
-    }
-
-    public void setRecording(boolean isRecording) {
-        this.isRecording = isRecording;
+    public void setLoading(boolean isLoading) {
+        this.isLoading = isLoading;
     }
 
     public void setRecordingDirectory(String recordingDirectory) {

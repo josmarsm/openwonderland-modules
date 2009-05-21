@@ -57,10 +57,15 @@
             <server>
                 <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
                     <!--Add the service to darkstar-->
-                    <service type="com.sun.sgs.service.Service"
-                             provider="org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportService"/>
-                    <service type="com.sun.sgs.service.Manager"
-                             provider="org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManagerImpl"/>
+                    <service type="com.sun.sgs.service.Service">
+                        <provider classname="org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportService"/>
+                        <provider classname="org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingService"/>
+                    </service>
+                    <service type="com.sun.sgs.service.Manager">
+                        <provider classname="org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManagerImpl"/>
+                        <provider classname="org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManagerImpl"/>
+                    </service>
+                    
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
                 </serverjar>

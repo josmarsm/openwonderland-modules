@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.eventplayer.server;
+package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
+import org.jdesktop.wonderland.modules.eventplayer.server.*;
 import java.util.logging.Logger;
 import org.xml.sax.Attributes;
 
@@ -15,7 +16,7 @@ import org.xml.sax.Attributes;
 public class LoggingTagHandler implements TagHandler {
     private static final Logger logger = Logger.getLogger(LoggingTagHandler.class.getName());
 
-    public LoggingTagHandler(EventPlayerImpl eventPlayer) {
+    public LoggingTagHandler(EventPlayer eventPlayer) {
         
     }
 

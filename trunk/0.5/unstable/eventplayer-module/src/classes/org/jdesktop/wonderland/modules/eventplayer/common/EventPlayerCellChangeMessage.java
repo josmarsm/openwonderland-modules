@@ -27,27 +27,22 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 
 public class EventPlayerCellChangeMessage extends CellMessage {
-    private boolean isLoading;
-
-    private EventPlayerCellChangeMessage(CellID cellID) {
-        super(cellID);
-    }
-
-    public boolean isLoading() {
-        return isLoading;
-    }
-
-    public enum EventRecorderAction {
-        LOAD,
-        PLAY,
-        TAPE_SELECTED
-    };
-
     private EventRecorderAction action;
     private boolean isPlaying;
     private String userName;
     private double volume;
     private String tapeName;
+
+    private EventPlayerCellChangeMessage(CellID cellID) {
+        super(cellID);
+    }
+
+    public enum EventRecorderAction {
+        LOAD,
+        PLAY
+    };
+
+    
 
     public EventRecorderAction getAction() {
         return action;
@@ -69,9 +64,9 @@ public class EventPlayerCellChangeMessage extends CellMessage {
         return tapeName;
     }
 
-    public static EventPlayerCellChangeMessage tapeSelected(CellID cellID, String tapeName) {
+    public static EventPlayerCellChangeMessage loadRecording(CellID cellID, String tapeName) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
-        msg.action = EventRecorderAction.TAPE_SELECTED;
+        msg.action = EventRecorderAction.LOAD;
         msg.tapeName = tapeName;
         return msg;
     }
@@ -80,11 +75,11 @@ public class EventPlayerCellChangeMessage extends CellMessage {
      * Static method used to create an instance of EventRecorderCellChangeMessage that has an action type
      * <code>RECORD</code>.
      * @param cellID The id of the cell for which this message is created
-     * @param recording boolean to indicate the state of the recorder
+     * @param playing boolean to indicate the state of the recorder
      * @param userName the name of the user that initiated this change
      * @return a message with appropriate state
      */
-    public static EventPlayerCellChangeMessage playingMessage(CellID cellID, boolean playing, String userName) {
+    public static EventPlayerCellChangeMessage playRecording(CellID cellID, boolean playing, String userName) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
         msg.userName = userName;
         msg.action = EventRecorderAction.PLAY;
@@ -92,21 +87,7 @@ public class EventPlayerCellChangeMessage extends CellMessage {
         return msg;
     }
 
-    /**
-     * Static method used to create an instance of EventRecorderCellChangeMessage that has an action type
-     * <code>RECORD</code>.
-     * @param cellID The id of the cell for which this message is created
-     * @param recording boolean to indicate the state of the recorder
-     * @param userName the name of the user that initiated this change
-     * @return a message with appropriate state
-     */
-    public static EventPlayerCellChangeMessage loadingMessage(CellID cellID, boolean loading, String userName) {
-        EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
-        msg.userName = userName;
-        msg.action = EventRecorderAction.LOAD;
-        msg.isLoading = loading;
-        return msg;
-    }
+    
 
     
 
