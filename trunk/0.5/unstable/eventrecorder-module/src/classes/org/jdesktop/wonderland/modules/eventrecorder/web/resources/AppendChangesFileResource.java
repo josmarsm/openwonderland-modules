@@ -17,34 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.eventrecorder.web.resources;
 
-import java.io.File;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.modules.eventrecorder.server.ChangeDescriptor;
-import org.jdesktop.wonderland.tools.wfs.WFS;
-import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
-import org.jdesktop.wonderland.modules.eventrecorder.web.ChangesManager;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.web.wfs.WFSRecording;
-import org.jdesktop.wonderland.web.wfs.WFSSnapshot;
 
 /**
- * Handles Jersey RESTful requests to create a changes file in a pre-determined directory according to the
- * name. Returns an XML representation of the WorldRoot class
- * given the unique path of the wfs for later reference.
+ * Handles Jersey RESTful requests to append a message to the changes file
+ * of a recording whose name is given in the change descrptor
  * <p>
- * URI: http://<machine>:<port>/wonderland-web-wfs/wfs/append/changesFile
+ * URI: http://<machine>:<port>/eventrecorder/eventrecorder/resources/append/changesFile
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Bernard Horan
@@ -53,6 +39,7 @@ import org.jdesktop.wonderland.web.wfs.WFSSnapshot;
 public class AppendChangesFileResource {
 
     /**
+     * Append a message to a changes file
      * @param changeDescriptor The necessary information about the change message
      * @return An OK response upon success, BAD_REQUEST upon error
      */
@@ -74,16 +61,8 @@ public class AppendChangesFileResource {
             Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        ChangesManager cManager = ChangesManager.getChangesManager();
-        ChangesFile changesFile = cManager.getChangesFile(tapeName);
-        // Create the changes file check return value is not null (error if so)
-        if (changesFile == null) {
-            logger.warning("[EventRecorder] Unable to locate changesFile " + tapeName);
-            Response.status(Response.Status.BAD_REQUEST).build();
-        }
-        changesFile.appendMessage(changeDescriptor.getEncodedMessage(), changeDescriptor.getTimestamp());
-        
-        
+        recording.appendChangeMessage(changeDescriptor.getEncodedMessage(), changeDescriptor.getTimestamp());
+                
         // Formulate the response and return the world root object
         return Response.ok().build();
     }

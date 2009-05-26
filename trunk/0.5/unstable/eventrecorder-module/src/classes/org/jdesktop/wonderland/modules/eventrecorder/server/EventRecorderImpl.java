@@ -30,7 +30,6 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingResult;
@@ -113,11 +112,18 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
     }
 
     public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+        if (!isRecording) {
+            return;
+        }
         logger.fine("sender: " + sender + ", " + clientID + ", " + message);
         CellID cellID = message.getCellID();
         //TODO: check if cellID is a cell that's within the bounds of the recorder's recording volume
         if (getFailedCells().contains(cellID)) {
             logger.warning("Ignoring message for cellID: " + cellID);
+            return;
+        }
+        if (cellID.equals(cellRef.get().getCellID())) {
+            logger.warning("Ignoring message for the event recorder cell");
             return;
         }
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
@@ -160,7 +166,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         tapeName = null;
     }
 
-    public void fileClosed(ChangesFile cFile) {
+    public void fileClosed() {
         logger.info("Changes file successfully closed");
     }
 
@@ -176,7 +182,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         mgr.createChangesFile(tapeName, this);
     }
 
-    public void fileCreated(ChangesFile cFile) {
+    public void fileCreated() {
         logger.info("Changes file created, so start recording");
         isRecording = true;
         logger.info("isRecording: " + isRecording);

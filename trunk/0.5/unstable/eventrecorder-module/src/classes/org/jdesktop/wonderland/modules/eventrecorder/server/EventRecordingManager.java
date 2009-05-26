@@ -18,14 +18,9 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
-import java.util.Set;
-import org.jdesktop.wonderland.server.eventrecorder.*;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
-import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  *
@@ -64,7 +59,7 @@ public interface EventRecordingManager {
          * Notification that a snapshot has been created successfully
          * @param changesFile the changes file that was closed
          */
-        public void fileCreated(ChangesFile changesFile);
+        public void fileCreated();
 
         /**
          * Notification that changes file creation has failed.
@@ -85,7 +80,7 @@ public interface EventRecordingManager {
          * Notification that a changes file has been closed successfully
          * @param cFile the changes file that was closed
          */
-        public void fileClosed(ChangesFile cFile);
+        public void fileClosed();
 
         /**
          * Notification that snapshot creation has failed.
