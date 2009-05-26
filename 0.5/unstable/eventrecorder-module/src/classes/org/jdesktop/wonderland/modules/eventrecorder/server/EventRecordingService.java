@@ -19,9 +19,7 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
-import java.util.Set;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingResult;
-import org.jdesktop.wonderland.server.eventrecorder.*;
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
@@ -33,10 +31,8 @@ import com.sun.sgs.service.TransactionProxy;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,19 +42,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.common.messages.MessagePacker;
-import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
-import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingListener;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import sun.misc.BASE64Encoder;
 
 /**
@@ -258,18 +247,17 @@ public class EventRecordingService extends AbstractService {
         }
 
         public void run() {
-            ChangesFile cFile = null;
             Exception ex = null;
 
             try {
-                cFile = EventRecorderUtils.createChangesFile(tapeName, timestamp);
+                EventRecorderUtils.createChangesFile(tapeName, timestamp);
             } catch (Exception ex2) {
                 ex = ex2;
             }
 
             // notify the listener
             NotifyChangesFileCreationListener notify =
-                    new NotifyChangesFileCreationListener(listenerID, cFile, ex);
+                    new NotifyChangesFileCreationListener(listenerID, ex);
             try {
                 transactionScheduler.runTask(notify, taskOwner);
             } catch (Exception ex2) {
@@ -413,14 +401,11 @@ public class EventRecordingService extends AbstractService {
      */
     private class NotifyChangesFileCreationListener implements KernelRunnable {
         private BigInteger listenerID;
-        private ChangesFile cFile;
         private Exception ex;
 
-        public NotifyChangesFileCreationListener(BigInteger listenerID, ChangesFile cFile,
-                                      Exception ex)
+        public NotifyChangesFileCreationListener(BigInteger listenerID, Exception ex)
         {
             this.listenerID = listenerID;
-            this.cFile = cFile;
             this.ex = ex;
         }
 
@@ -436,7 +421,7 @@ public class EventRecordingService extends AbstractService {
 
             try {
                 if (ex == null) {
-                    l.fileCreated(cFile);
+                    l.fileCreated();
                 } else {
                     l.fileCreationFailed(ex.getMessage(), ex);
                 }
@@ -464,18 +449,17 @@ public class EventRecordingService extends AbstractService {
         }
 
         public void run() {
-            ChangesFile cFile = null;
             Exception ex = null;
 
             try {
-                cFile = EventRecorderUtils.closeChangesFile(tapeName);
+                EventRecorderUtils.closeChangesFile(tapeName);
             } catch (Exception ex2) {
                 ex = ex2;
             }
 
             // notify the listener
             NotifyChangesFileClosureListener notify =
-                    new NotifyChangesFileClosureListener(listenerID, cFile, ex);
+                    new NotifyChangesFileClosureListener(listenerID, ex);
             try {
                 transactionScheduler.runTask(notify, taskOwner);
             } catch (Exception ex2) {
@@ -502,9 +486,10 @@ public class EventRecordingService extends AbstractService {
            wrapped.fileCreationFailed(reason, cause);
         }
 
-        public void fileCreated(ChangesFile cFile) {
-            wrapped.fileCreated(cFile);
+        public void fileCreated() {
+            wrapped.fileCreated();
         }
+
     }
 
     /**
@@ -521,8 +506,8 @@ public class EventRecordingService extends AbstractService {
             wrapped = listener;
         }
 
-        public void fileClosed(ChangesFile cFile) {
-            wrapped.fileClosed(cFile);
+        public void fileClosed() {
+            wrapped.fileClosed();
         }
 
         public void fileClosureFailed(String reason, Throwable cause) {
@@ -588,14 +573,11 @@ public class EventRecordingService extends AbstractService {
      */
     private class NotifyChangesFileClosureListener implements KernelRunnable {
         private BigInteger listenerID;
-        private ChangesFile cFile;
         private Exception ex;
 
-        public NotifyChangesFileClosureListener(BigInteger listenerID, ChangesFile cFile,
-                                      Exception ex)
+        public NotifyChangesFileClosureListener(BigInteger listenerID, Exception ex)
         {
             this.listenerID = listenerID;
-            this.cFile = cFile;
             this.ex = ex;
         }
 
@@ -611,7 +593,7 @@ public class EventRecordingService extends AbstractService {
 
             try {
                 if (ex == null) {
-                    l.fileClosed(cFile);
+                    l.fileClosed();
                 } else {
                     l.fileClosureFailed(ex.getMessage(), ex);
                 }

@@ -20,19 +20,16 @@ package org.jdesktop.wonderland.modules.eventrecorder.web.resources;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
-import org.jdesktop.wonderland.modules.eventrecorder.web.ChangesManager;
+import org.jdesktop.wonderland.web.wfs.WFSManager;
+import org.jdesktop.wonderland.web.wfs.WFSRecording;
 
 /**
  * Handles Jersey RESTful requests to close a changes file in a pre-determined directory according to the
- * tapeName. Returns an XML representation of the ChangesFile class
- * given the unique path of the wfs for later reference.
+ * tapeName. 
  * <p>
- * URI: http://<machine>:<port>/wonderland-web-wfs/wfs/close/changesFile
+ * URI: http://<machine>:<port>/eventrecorder/eventrecorder/resources/close/changesFile
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Bernard Horan
@@ -41,31 +38,27 @@ import org.jdesktop.wonderland.modules.eventrecorder.web.ChangesManager;
 public class CloseChangesFileResource {
 
     /**
-     * Closes an existing changes file. Adds a
-     * new WFS object and creates the entry on disk. Returns a WorldRoot object
-     * that represents the new recording
+     * Closes an existing changes file. 
      * 
      * @param tapeName
-     * @return A ChangesFile object
+     * @return An OK response upon success, BAD_REQUEST upon error
      */
     @GET
-    @Produces({"text/plain", "application/xml", "application/json"})
     public Response closeChangesFile(@QueryParam("name") String tapeName) {
         // Do some basic stuff, get the WFS wfsManager class, etc
         Logger logger = Logger.getLogger(CloseChangesFileResource.class.getName());
-        ChangesManager cManager = ChangesManager.getChangesManager();
-        ChangesFile cFile = cManager.getChangesFile(tapeName);
-        if (cFile == null) {
-            logger.warning("[WFS] Unable to identify changes file for " + tapeName);
-            ResponseBuilder rb = Response.status(Response.Status.BAD_REQUEST);
-            return rb.build();
+        WFSManager wfsManager = WFSManager.getWFSManager();
+        if (tapeName == null) {
+            logger.severe("[EventRecorder] No tape name");
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        cFile.closeFile();
-        cManager.removeChangesFile(tapeName);
-        
-        
-        // Formulate the response and return the world root object
-        ResponseBuilder rb = Response.ok(cFile);
-        return rb.build();
+
+        WFSRecording recording = wfsManager.getWFSRecording(tapeName);
+        if (recording == null) {
+            logger.severe("[EventRecorder] Unable to identify recording " + tapeName);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        recording.closeChangesFile();
+        return Response.ok().build();
     }
 }

@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -29,9 +30,7 @@ import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
-import org.jdesktop.wonderland.modules.eventrecorder.server.ChangesFile;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 import sun.misc.BASE64Encoder;
 
@@ -47,30 +46,44 @@ public class EventRecorderUtils {
     /**
      * Creates a new changes file, returns a ChangesFile object representing the
      * new changes file or null upon failure
+     * @param name
+     * @param timestamp
+     * @throws IOException
      */
-    public static ChangesFile createChangesFile(String name, long timestamp)
-            throws IOException, JAXBException
+    public static void createChangesFile(String name, long timestamp)
+            throws IOException
     {
         String encodedName = URLEncoder.encode(name, "UTF-8");
         String query = "?name=" + encodedName + "&timestamp=" + timestamp;
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "create/changesFile" + query);
-
-        return ChangesFile.decode(new InputStreamReader(url.openStream()));
+ // Read all the text returned by the server
+        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+        String str;
+        while ((str = in.readLine()) != null) {
+            // str is one line of text; readLine() strips the newline character(s)
+            System.out.println(str);
+        }
+        in.close();
     }
 
     /**
      * 
      * @param name
-     * @return
      * @throws java.io.IOException
      * @throws javax.xml.bind.JAXBException
      */
-    public static ChangesFile closeChangesFile(String name) throws IOException, JAXBException {
+    public static void closeChangesFile(String name) throws IOException, JAXBException {
         String encodedName = URLEncoder.encode(name, "UTF-8");
         String query = "?name=" + encodedName;
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "close/changesFile" + query);
 
-        return ChangesFile.decode(new InputStreamReader(url.openStream()));
+        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+        String str;
+        while ((str = in.readLine()) != null) {
+            // str is one line of text; readLine() strips the newline character(s)
+            System.out.println(str);
+        }
+        in.close();
     }
 
     public static void recordChange(ChangeDescriptor changeDescriptor) throws IOException, JAXBException {
@@ -90,11 +103,13 @@ public class EventRecorderUtils {
 
         // For some reason, we need to read in the input for the HTTP POST to
         // work
-        InputStreamReader r = new InputStreamReader(connection.getInputStream());
-        while (r.read() != -1) {
-            // Do nothing
+        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String line;
+        while ((line = rd.readLine()) != null) {
+            System.out.println(line);
         }
-        r.close();
+        rd.close();
+
     }
 
     static ChangeDescriptor getChangeDescriptor(String tapeName, WonderlandClientID clientID, CellMessage message, long timestamp) throws PackerException {
