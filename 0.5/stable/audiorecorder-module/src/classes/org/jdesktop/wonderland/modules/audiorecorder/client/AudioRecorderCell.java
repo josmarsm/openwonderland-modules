@@ -36,6 +36,14 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -50,6 +58,9 @@ import org.jdesktop.wonderland.modules.audiorecorder.common.Tape;
  * @author Joe Provino
  */
 public class AudioRecorderCell extends Cell {
+
+    @UsesCellComponent private ContextMenuComponent contextComp = null;
+    private ContextMenuFactorySPI menuFactory = null;
 
     private boolean isPlaying, isRecording;
     private String userName;
@@ -71,6 +82,19 @@ public class AudioRecorderCell extends Cell {
     @Override
     public boolean setStatus(CellStatus status) {
         super.setStatus(status);
+        if (status == CellStatus.ACTIVE) {
+            if (menuFactory == null) {
+                    final MenuItemListener l = new MenuItemListener();
+                    menuFactory = new ContextMenuFactorySPI() {
+                        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                            return new ContextMenuItem[] {
+                                new SimpleContextMenuItem("Open Tape", l)
+                            };
+                        }
+                    };
+                    contextComp.addContextMenuFactory(menuFactory);
+                }
+        }
         if (status.equals(CellStatus.BOUNDS)) {
             //About to become visible, so add the message receiver
             if (receiver == null) {
@@ -84,6 +108,10 @@ public class AudioRecorderCell extends Cell {
                 getChannel().removeMessageReceiver(AudioRecorderCellChangeMessage.class);
             }
             receiver = null;
+            if (menuFactory != null) {
+                    contextComp.removeContextMenuFactory(menuFactory);
+                    menuFactory = null;
+            }
         }
         //No change in my status, so...
         return false;
@@ -362,6 +390,13 @@ public class AudioRecorderCell extends Cell {
 
                 }
             }
+        }
+    }
+
+    class MenuItemListener implements ContextMenuActionListener {
+
+        public void actionPerformed(ContextMenuItemEvent event) {
+            setReelFormVisible(true);
         }
     }
 

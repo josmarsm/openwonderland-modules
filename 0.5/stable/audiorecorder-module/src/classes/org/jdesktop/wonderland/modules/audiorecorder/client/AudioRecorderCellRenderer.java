@@ -50,6 +50,7 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import javax.media.opengl.GLContext;
 
 import java.lang.reflect.Method;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 
 /**
  *
@@ -163,12 +164,6 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
         clip.start();
         animations.add(clip);
 
-        //Listen to mouse events
-        ReelListener listener = new ReelListener(reelRoot);
-        listener.addToEntity(reelEntity);
-
-        // Make the secondary object pickable separately from the primary object
-        makeEntityPickable(reelEntity, reelRoot);
         return reelEntity;
     }
 
@@ -342,6 +337,10 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
             if (mbe.isClicked() == false) {
                 return;
             }
+            //Ignore if it's not the left mouse button
+            if (mbe.getButton() != ButtonId.BUTTON1) {
+                return;
+            }
 
 	    // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
 	    // In order to avoid deadlock with any threads which are already holding the AWT lock and which
@@ -395,56 +394,6 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
             if (glContext != null) {
                 glContext.makeCurrent();
             }
-        }
-    }
-
-    class ReelListener extends EventClassListener {
-
-        private Node reel;
-
-        ReelListener(Node aReel) {
-            super();
-            reel = aReel;
-        }
-
-        @Override
-        public Class[] eventClassesToConsume() {
-            return new Class[]{MouseButtonEvent3D.class};
-        }
-
-        // Note: we don't override computeEvent because we don't do any computation in this listener.
-        @Override
-        public void commitEvent(Event event) {
-            //rendererLogger.info("commit " + event + " for ");
-            MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
-            if (mbe.isClicked()) { // Handle Mouse Clicks
-		// Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
-		// In order to avoid deadlock with any threads which are already holding the AWT lock and which
-		// want to acquire the lock on the dirty rectangle so they can draw (e.g Embedded Swing threads)
-		// we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
-		// the AWT lock afterward.
-		GLContext glContext = null;
-		if (isAWTLockHeldByCurrentThreadMethod != null) {
-                    try {
-                        Boolean ret = (Boolean) isAWTLockHeldByCurrentThreadMethod.invoke(null);
-                        if (ret.booleanValue()) {
-                            glContext = GLContext.getCurrent();
-                            glContext.release();
-                        }
-                    } catch (Exception ex) {}
-                }
-
-		try {
-                    ((AudioRecorderCell) cell).setReelFormVisible(true);
-		    return;
-		} finally {
-		    //Linux-specific workaround: Reacquire the lock if necessary.
-                    if (glContext != null) {
-                        glContext.makeCurrent();
-                    }
-		}
-	    }
-                
         }
     }
 
