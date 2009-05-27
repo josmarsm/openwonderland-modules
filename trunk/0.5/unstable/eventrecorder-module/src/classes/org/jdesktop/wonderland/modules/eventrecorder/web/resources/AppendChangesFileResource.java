@@ -52,13 +52,13 @@ public class AppendChangesFileResource {
         String tapeName = changeDescriptor.getTapeName();
         if (tapeName == null) {
             logger.severe("[EventRecorder] No tape name");
-            Response.status(Response.Status.BAD_REQUEST).build();
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
         
         WFSRecording recording = wfsManager.getWFSRecording(tapeName);
         if (recording == null) {
             logger.severe("[EventRecorder] Unable to identify recording " + tapeName);
-            Response.status(Response.Status.BAD_REQUEST).build();
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
         recording.appendChangeMessage(changeDescriptor.getEncodedMessage(), changeDescriptor.getTimestamp());
