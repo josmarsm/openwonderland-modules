@@ -30,16 +30,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * Describes a cell within a wfs, including the root path of the wfs, the path
- * of the parent, the name of the cell, and the XML setup information
+ * Describes a change recorded by the event recording mechanism
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Bernard Horan
  */
 @XmlRootElement(name="change-descriptor")
 public class ChangeDescriptor {
+    /* the name of the tape (recording) for which this change is directed */
     @XmlElement(name="tape-name") private String tapeName = null;
+    /* the message from darkstar encoded into text */
     @XmlElement(name="encoded-message") private String encodedMessage = null;
+    /* the timestamp of the message */
     @XmlElement(name="timestamp") private long timestamp = 0l;
 
     /* The XML marshaller and unmarshaller for later use */
@@ -63,7 +65,8 @@ public class ChangeDescriptor {
     public ChangeDescriptor() {
     }
     
-    /** Constructor, takes all of the class attributes */
+    /** Constructor, takes all the class fields as parameters
+     */
     public ChangeDescriptor(String tapeName, long timestamp, String encodedMessage) {
         this.tapeName = tapeName;
         this.timestamp = timestamp;

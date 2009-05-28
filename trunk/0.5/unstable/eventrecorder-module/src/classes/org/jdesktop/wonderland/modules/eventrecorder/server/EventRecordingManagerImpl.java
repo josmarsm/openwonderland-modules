@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -18,22 +18,17 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
-import org.jdesktop.wonderland.server.eventrecorder.*;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
- *
+ * Implementation of EventRecordingManager.  This just forwards everything to
+ * the service.
  * @author Bernard Horan
  */
 public class EventRecordingManagerImpl implements EventRecordingManager {
     private EventRecordingService service;
 
-    /**
-     *
-     * @param service
-     */
     public EventRecordingManagerImpl(EventRecordingService service) {
         this.service = service;
     }

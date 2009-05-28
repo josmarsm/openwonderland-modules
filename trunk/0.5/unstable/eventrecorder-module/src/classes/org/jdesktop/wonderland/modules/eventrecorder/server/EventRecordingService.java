@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -28,14 +28,11 @@ import com.sun.sgs.impl.util.TransactionContextFactory;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,7 +45,6 @@ import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManage
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingListener;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import sun.misc.BASE64Encoder;
 
 /**
  * A service to support the event recorder.
@@ -63,7 +59,7 @@ public class EventRecordingService extends AbstractService {
     private static final String NAME = EventRecordingService.class.getName();
 
     /** The package name. */
-    private static final String PKG_NAME = "org.jdesktop.wonderland.server.eventrecorder";
+    private static final String PKG_NAME = "org.jdesktop.wonderland.modules.eventrecorder.server";
 
     /** The logger for this class. */
     private static final LoggerWrapper logger =
@@ -84,11 +80,6 @@ public class EventRecordingService extends AbstractService {
     /** executes the actual remote calls */
     private ExecutorService executor;
 
-    final private static BASE64Encoder BASE_64_ENCODER = new BASE64Encoder();
-
-    private Map<String, PrintWriter> recorderTable = new HashMap<String, PrintWriter>();
-    
-    private long timeOfLastChange = 0l;
 
     public EventRecordingService(Properties props,
             ComponentRegistry registry,
@@ -150,10 +141,6 @@ public class EventRecordingService extends AbstractService {
             logger.log(Level.WARNING, "Terminating executor with tasks in" +
                        "  progress: " + leftover);
         }
-        //Close any open files
-//        for (String recorderName : recorderTable.keySet()) {
-//            stopRecording(recorderName);
-//        }
     }
 
     @Override
@@ -166,7 +153,7 @@ public class EventRecordingService extends AbstractService {
 
     /**
      * Open the file into which changes will be recorded
-     * @param tapeName the name of the tape and hence the name of the directory into which the changes are recorded
+     * @param tapeName the name of the recording and hence the name of the directory into which the changes are recorded
      * @param listener to be informed of the success or failure of the operation
      */
     public void openChangesFile(String tapeName, ChangesFileCreationListener listener) {
@@ -183,7 +170,6 @@ public class EventRecordingService extends AbstractService {
         // tasks
         CreateChangesFile ccf = new CreateChangesFile(tapeName, new Date().getTime(), scl.getId());
         ctxFactory.joinTransaction().add(ccf);
-
     }
 
     /**
@@ -194,7 +180,7 @@ public class EventRecordingService extends AbstractService {
      * @param listener 
      */
     public void recordMessage(String tapeName, WonderlandClientID clientID, CellMessage message, MessageRecordingListener listener) {
-        logger.getLogger().info("clientID: " + clientID + ", message: " + message);
+        //logger.getLogger().info("clientID: " + clientID + ", message: " + message);
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedMessageRecordingWrapper(listener);
         }
@@ -215,7 +201,7 @@ public class EventRecordingService extends AbstractService {
      * @param listener to be informed of the success or failure of the operation
      */
     public void closeChangesFile(String tapeName, ChangesFileCloseListener listener) {
-        logger.getLogger().info("Tape name: " + tapeName);
+        //logger.getLogger().info("Tape name: " + tapeName);
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedChangesFileClosureWrapper(listener);
         }
@@ -269,7 +255,7 @@ public class EventRecordingService extends AbstractService {
     /**
      * A task that recrods a message to a file
      * on the server.  The results are then passed to a
-     * CellExportListener identified by managed reference.
+     * NotifyMessageRecordingListener identified by managed reference.
      */
     private class RecordMessage implements Runnable {
         private String tapeName;
@@ -285,32 +271,32 @@ public class EventRecordingService extends AbstractService {
         }
 
         public void run() {
-            
-                MessageRecordingResultImpl result;
 
-                // first, wrap the fields in a ChangeDescriptor in a task.
-                GetChangeDescriptor get = new GetChangeDescriptor(tapeName, clientID, message);
-                try {
-                    transactionScheduler.runTask(get, taskOwner);
-                } catch (Exception ex) {
-                    result = new MessageRecordingResultImpl(message.getMessageID(), "Error in creating change descriptor", ex);
-                }
+            MessageRecordingResultImpl result;
 
-                // if the change descriptor is null, it means something went wrong
-                if (get.getChangeDescriptor() == null) {
-                    result = new MessageRecordingResultImpl(message.getMessageID(), "ChangeDescriptor is null", null);
-                }
+            // first, wrap the fields in a ChangeDescriptor in a task.
+            GetChangeDescriptor get = new GetChangeDescriptor(tapeName, clientID, message);
+            try {
+                transactionScheduler.runTask(get, taskOwner);
+            } catch (Exception ex) {
+                result = new MessageRecordingResultImpl(message.getMessageID(), "Error in creating change descriptor", ex);
+            }
 
-                // now export the descriptor to the web service
-                try {
-                    EventRecorderUtils.recordChange(get.getChangeDescriptor());
-                } catch (Exception ex) {
-                    result = new MessageRecordingResultImpl(message.getMessageID(), "Error in writing message", ex);
-                }
+            // if the change descriptor is null, it means something went wrong
+            if (get.getChangeDescriptor() == null) {
+                result = new MessageRecordingResultImpl(message.getMessageID(), "ChangeDescriptor is null", null);
+            }
 
-                // success
-                result = new MessageRecordingResultImpl(message.getMessageID());
-            
+            // now export the descriptor to the web service
+            try {
+                EventRecorderUtils.recordChange(get.getChangeDescriptor());
+            } catch (Exception ex) {
+                result = new MessageRecordingResultImpl(message.getMessageID(), "Error in writing message", ex);
+            }
+
+            // success
+            result = new MessageRecordingResultImpl(message.getMessageID());
+
 
             // notify the listener
             NotifyMessageRecordingListener notify =

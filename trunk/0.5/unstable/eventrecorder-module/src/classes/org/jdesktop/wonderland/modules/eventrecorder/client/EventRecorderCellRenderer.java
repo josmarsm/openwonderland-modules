@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -48,6 +48,7 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 
 /**
  *
@@ -153,13 +154,6 @@ public class EventRecorderCellRenderer extends BasicRenderer {
         clip.setRepeatBehavior(RepeatBehavior.LOOP);
         clip.start();
         animations.add(clip);
-
-        //Listen to mouse events
-        ReelListener listener = new ReelListener(reelRoot);
-        listener.addToEntity(reelEntity);
-
-        // Make the secondary object pickable separately from the primary object
-        makeEntityPickable(reelEntity, reelRoot);
         return reelEntity;
     }
 
@@ -168,7 +162,17 @@ public class EventRecorderCellRenderer extends BasicRenderer {
         recordButton.setColor(RECORD_BUTTON_DEFAULT);
         recordButton.setSelectedColor(RECORD_BUTTON_SELECTED);
         recordButton.setDefaultColor(RECORD_BUTTON_DEFAULT);
-        return recordButton.getEntity();
+        Entity buttonEntity = recordButton.getEntity();
+        //Listen to mouse events
+        ButtonListener listener = new ButtonListener(recordButton) {
+
+            @Override
+            public void performAction(Event event) {
+                ((EventRecorderCell) cell).startRecording();
+            }
+        };
+        listener.addToEntity(buttonEntity);
+        return buttonEntity;
     }
 
     private Entity createStopButton(Node device, Vector3f position) {
@@ -176,7 +180,17 @@ public class EventRecorderCellRenderer extends BasicRenderer {
         stopButton.setColor(STOP_BUTTON_DEFAULT);
         stopButton.setSelectedColor(STOP_BUTTON_SELECTED);
         stopButton.setDefaultColor(STOP_BUTTON_DEFAULT);
-        return stopButton.getEntity();
+        Entity buttonEntity = stopButton.getEntity();
+        //Listen to mouse events
+        ButtonListener listener = new ButtonListener(stopButton) {
+
+            @Override
+            public void performAction(Event event) {
+                ((EventRecorderCell) cell).stop();
+            }
+        };
+        listener.addToEntity(buttonEntity);
+        return buttonEntity;
     }
 
     private Button addButton(Node device, String name, final Vector3f position) {
@@ -237,11 +251,6 @@ public class EventRecorderCellRenderer extends BasicRenderer {
             buttonEntity = new Entity(name);
             RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(buttonRoot);
             buttonEntity.addComponent(RenderComponent.class, rc);
-
-            //Listen to mouse events
-            ButtonListener listener = new ButtonListener(this);
-            listener.addToEntity(buttonEntity);
-
             // Make the secondary object pickable separately from the primary object
             makeEntityPickable(buttonEntity, buttonRoot);
         }
@@ -296,11 +305,9 @@ public class EventRecorderCellRenderer extends BasicRenderer {
         }
     }
 
-    class ButtonListener extends EventClassListener {
+    abstract class ButtonListener extends EventClassListener {
 
-        private Button button;
-
-    
+        private Button button;   
 
         ButtonListener(Button aButton) {
             super();
@@ -321,48 +328,17 @@ public class EventRecorderCellRenderer extends BasicRenderer {
             if (mbe.isClicked() == false) {
                 return;
             }
-
-            if (button == stopButton) {
-                /*
-                 * We always handle the stop button.
-                 */
-                ((EventRecorderCell) cell).stop();
+            //ignore any mouse button that isn't the left one
+            if (mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
-            //
-            //Only care about the case when the button isn't already selected'
             if (!button.isSelected()) {
-                if (button == recordButton) {
-                    ((EventRecorderCell) cell).startRecording();
-                } 
-
+                performAction(event);
             }
+
         }
+
+        public abstract void performAction(Event event);
     }
 
-    class ReelListener extends EventClassListener {
-
-        private Node reel;
-
-        ReelListener(Node aReel) {
-            super();
-            reel = aReel;
-        }
-
-        @Override
-        public Class[] eventClassesToConsume() {
-            return new Class[]{MouseButtonEvent3D.class};
-        }
-
-        // Note: we don't override computeEvent because we don't do any computation in this listener.
-        @Override
-        public void commitEvent(Event event) {
-            //rendererLogger.info("commit " + event + " for ");
-            MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
-            if (mbe.isClicked()) { // Handle Mouse Clicks
-                 ((EventRecorderCell) cell).setReelFormVisible(true);
-		    }
-                
-        }
-    }
 }

@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -23,29 +23,40 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
- *
+ * A service for recording events in Wonderland.  This service provides a set of
+ * asynchronous mechanisms for creating and closing a changes file, and writing messages to that
+ * file.  Callers will be notified if the file creation/closure succeeds or fails and also the result of
+ * writing a message to the file.
  * @author Bernard Horan
  */
 public interface EventRecordingManager {
     /**
-     *
-     * @param tapeName
-     * @param listener 
+     * Create a file to record changes. This method will contact
+     * the remote web service to create a the file, and then call the
+     * given listener with the result of that call.
+     * @param tapeName the name of the recording for which to create a file
+     * @param listener a changes file creation listener that will be notified of
+     * the result of this call
      */
     public void createChangesFile(String tapeName, ChangesFileCreationListener listener);
 
     /**
-     *
-     * @param tapeName
-     * @param clientID
-     * @param message
+     * Write a message to the changes file.  This method will use a web service to
+     * wrap up the parameters into a message and then use another web service to write the
+     * encoded message to the changes file.  Finally, the listener will be
+     * notified with the results of the call.
+     * @param tapeName the name of the recording for which the message is to be recorded
+     * @param clientID the id of the client that sent the message
+     * @param message the message that was sent and is to be recorded
+     * @param listener a message recording listener that will be notified of the result of this call
      */
     public void recordMessage(String tapeName, WonderlandClientID clientID, CellMessage message, MessageRecordingListener listener);
 
     /**
-     *
-     * @param tapeName
-     * @param listener
+     * Close the file that is used to record changes. This method contacts a web service
+     * to close the file and then calls the listener with the result of that call.
+     * @param tapeName the name of the recording that manages the changes file
+     * @param listener a changes file close listener that will be notified with the result of this call
      */
     public void closeChangesFile(String tapeName, ChangesFileCloseListener listener);
 
@@ -56,8 +67,7 @@ public interface EventRecordingManager {
      */
     public interface ChangesFileCreationListener {
         /**
-         * Notification that a snapshot has been created successfully
-         * @param changesFile the changes file that was closed
+         * Notification that a file has been created successfully
          */
         public void fileCreated();
 
@@ -72,18 +82,17 @@ public interface EventRecordingManager {
 
     /**
      * A listener that will be notified of the success or failure of
-     * creating a snapshot.  Implementations of ChangesFileCreationListener
+     * closing a changes file.  Implementations of ChangesFileCreationListener
      * must be either a ManagedObject or Serializable.
      */
     public interface ChangesFileCloseListener {
         /**
          * Notification that a changes file has been closed successfully
-         * @param cFile the changes file that was closed
          */
         public void fileClosed();
 
         /**
-         * Notification that snapshot creation has failed.
+         * Notification that changes file closure has failed.
          * @param reason a String describing the reason for failure
          * @param cause an exception that caused the failure.
          */
@@ -93,13 +102,13 @@ public interface EventRecordingManager {
 
     /**
      * A listener that will be notified of the result of recording a message
-     * to c changes file.  Implementations of MessageRecordingListener must
+     * to a changes file.  Implementations of MessageRecordingListener must
      * be either a ManagedObject or Serializable
      */
     public interface MessageRecordingListener {
         /**
          * Notification of the result of recording a message
-         * @param result
+         * @param result the result of recording a message
          */
         public void messageRecordingResult(MessageRecordingResult result);
     }

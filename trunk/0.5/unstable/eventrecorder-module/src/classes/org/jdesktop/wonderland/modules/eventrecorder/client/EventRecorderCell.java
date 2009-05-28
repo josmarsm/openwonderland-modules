@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.client;
 
+import java.awt.Dialog;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -37,7 +39,14 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -55,6 +64,9 @@ public class EventRecorderCell extends Cell {
 
     private static final Logger eventRecorderLogger = Logger.getLogger(EventRecorderCell.class.getName());
 
+    @UsesCellComponent private ContextMenuComponent contextComp = null;
+    private ContextMenuFactorySPI menuFactory = null;
+
     private boolean isRecording;
     private String userName;
     private EventRecorderCellRenderer renderer;
@@ -65,7 +77,7 @@ public class EventRecorderCell extends Cell {
     public EventRecorderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         isRecording = false;
-        eventRecorderLogger.info("cellID: " + cellID);
+        //eventRecorderLogger.info("cellID: " + cellID);
     }
 
     /**
@@ -91,15 +103,32 @@ public class EventRecorderCell extends Cell {
      */
     @Override
     public boolean setStatus(CellStatus status) {
-        eventRecorderLogger.info("status: " + status);
+        //eventRecorderLogger.info("status: " + status);
         super.setStatus(status);
         if (status.equals(CellStatus.ACTIVE)) {
             //About to become visible, so add the message receiver
             getChannel().addMessageReceiver(EventRecorderCellChangeMessage.class, new EventRecorderCellMessageReceiver());
+            if (status == CellStatus.ACTIVE) {
+            if (menuFactory == null) {
+                    final MenuItemListener l = new MenuItemListener();
+                    menuFactory = new ContextMenuFactorySPI() {
+                        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                            return new ContextMenuItem[] {
+                                new SimpleContextMenuItem("Open Tape...", l)
+                            };
+                        }
+                    };
+                    contextComp.addContextMenuFactory(menuFactory);
+                }
+        }
         }
         if (status.equals(CellStatus.DISK)) {
             //Cleanup
             getChannel().removeMessageReceiver(EventRecorderCellChangeMessage.class);
+            if (menuFactory != null) {
+                    contextComp.removeContextMenuFactory(menuFactory);
+                    menuFactory = null;
+            }
         }
         //No change in my status, so...
         return false;
@@ -218,6 +247,14 @@ public class EventRecorderCell extends Cell {
         }
     }
 
+    /**
+     * This is the start of the recording process.
+     * Send a message to the server to try to start recording, but don't
+     * change MY state
+     * I get informed that the server has successfully started recording
+     * via the message receiver.
+     * See method setRecording()
+     */
     void startRecording() {
         eventRecorderLogger.info("start recording");
         
@@ -227,12 +264,16 @@ public class EventRecorderCell extends Cell {
             return;
         }
         if (!selectedTape.isFresh()) {
+            int response = JOptionPane.showConfirmDialog(null, "Overwrite Existing recording named ?", selectedTape.getTapeName(), JOptionPane.YES_NO_OPTION);
+            if (response == JOptionPane.NO_OPTION) {
+                return;
+            }
             eventRecorderLogger.warning("Overwriting existing recording");
+
         }
-        setUsed(selectedTape);
         userName = getCurrentUserName();
-        setRecording(true);
-        EventRecorderCellChangeMessage msg = EventRecorderCellChangeMessage.recordingMessage(getCellID(), isRecording, userName);
+
+        EventRecorderCellChangeMessage msg = EventRecorderCellChangeMessage.recordingMessage(getCellID(), true, userName);
         getChannel().send(msg);
         
     }
@@ -264,6 +305,11 @@ public class EventRecorderCell extends Cell {
 
     private void setRecording(boolean b) {
         eventRecorderLogger.info("setRecording: " + b);
+        //If the recording has started the selected tape is no longer fresh
+        if (b) {
+            getSelectedTape().setUsed();
+        }
+
         renderer.setRecording(b);
         isRecording = b;
     }
@@ -283,7 +329,7 @@ public class EventRecorderCell extends Cell {
    }
 
     private String getCurrentUserName() {
-        return "USERNAME NOT SET";
+        return getCellCache().getSession().getUserID().getUsername();
     }
 
     void setReelFormVisible(boolean aBoolean) {
@@ -326,6 +372,13 @@ public class EventRecorderCell extends Cell {
 
                 }
             }
+        }
+    }
+
+    class MenuItemListener implements ContextMenuActionListener {
+
+        public void actionPerformed(ContextMenuItemEvent event) {
+            setReelFormVisible(true);
         }
     }
 
