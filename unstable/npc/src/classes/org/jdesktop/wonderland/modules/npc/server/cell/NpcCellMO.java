@@ -93,10 +93,9 @@ public class NpcCellMO extends CellMO {
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             NpcCellMO cellMO = (NpcCellMO)getCell();
             NpcCellChangeMessage sccm = (NpcCellChangeMessage)message;
-            cellMO.npcPosition = sccm.getNpcPosition();
+            cellMO.npcPosition = sccm.getCellTransform().getTranslation(null);
+            cellMO.setLocalTransform(sccm.getCellTransform());
             cellMO.sendCellMessage(clientID, message);
-
-
         }
     }
 }
