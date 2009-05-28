@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -32,12 +32,14 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellServerState;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderClientState;
 import org.jdesktop.wonderland.modules.eventrecorder.common.Tape;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 /**
@@ -48,7 +50,7 @@ import org.jdesktop.wonderland.server.cell.MovableComponentMO;
  * @author Bernard Horan
  * 
  */
-public class EventRecorderCellMO extends CellMO {
+public class EventRecorderCellMO extends CellMO implements ChangesFileCreationListener {
     
     private static final Logger eventRecorderLogger = Logger.getLogger(EventRecorderCellMO.class.getName());
     private static int INSTANCE_COUNT = 0;
@@ -79,7 +81,7 @@ public class EventRecorderCellMO extends CellMO {
      */
     @Override
     protected void setLive(boolean live) {
-        eventRecorderLogger.info("live: " + live);
+        //eventRecorderLogger.info("live: " + live);
         super.setLive(live);
         if (live) {
             ChannelComponentMO channel = getChannel();
@@ -112,7 +114,7 @@ public class EventRecorderCellMO extends CellMO {
         if (cellClientState == null) {
             cellClientState = new EventRecorderClientState(tapes, selectedTape, isRecording, userName);
         }
-        eventRecorderLogger.fine("cellClientState: " + cellClientState);
+        //eventRecorderLogger.fine("cellClientState: " + cellClientState);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -137,7 +139,7 @@ public class EventRecorderCellMO extends CellMO {
      */
     @Override
     public CellServerState getServerState(CellServerState cellServerState) {
-        eventRecorderLogger.info("Getting server state");
+        //eventRecorderLogger.info("Getting server state");
         /* Create a new EventRecorderCellServerState and populate its members */
         if (cellServerState == null) {
             cellServerState = new EventRecorderCellServerState();
@@ -164,11 +166,16 @@ public class EventRecorderCellMO extends CellMO {
      */
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        eventRecorderLogger.fine("Getting client cell class name");
+        //eventRecorderLogger.fine("Getting client cell class name");
         return "org.jdesktop.wonderland.modules.eventrecorder.client.EventRecorderCell";
     }
 
+    boolean isRecording() {
+        return isRecording;
+    }
+
     private void createTapes() {
+        //TODO: need to get list of recordings here
         //Add any existing files
         File tapeDir = new File(recordingDirectory);
         if (!tapeDir.exists()) {
@@ -202,6 +209,8 @@ public class EventRecorderCellMO extends CellMO {
     }
 
     private void setRecording(boolean r) {
+        //eventRecorderLogger.info("setRecording: " + r);
+        //eventRecorderLogger.info("isRecording: " + isRecording);
         if (isRecording) {
             //Already recording
             if (!r) {
@@ -216,7 +225,6 @@ public class EventRecorderCellMO extends CellMO {
             }
         }
         isRecording = r;
-
     }
 
     private void createEventRecorder() {
@@ -241,11 +249,12 @@ public class EventRecorderCellMO extends CellMO {
     
 
     private void processRecordMessage(WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
+        //eventRecorderLogger.info("isRecording: " + arcm.isRecording());
         setRecording(arcm.isRecording());
         userName = arcm.getUserName();
 
         // send a message to all clients
-        getChannel().sendAll(clientID, arcm);
+        //getChannel().sendAll(clientID, arcm);
     }
 
 
@@ -281,6 +290,23 @@ public class EventRecorderCellMO extends CellMO {
 
     private ChannelComponentMO getChannel() {
         return getComponent(ChannelComponentMO.class);
+    }
+
+    public void fileCreated() {
+        logger.info("Changes file created, so start recording");
+        //Register the eventRecorder, so it can start receiving messages to record
+        recorderRef.get().register();
+        //Let clients know that we're now recording, so that can change their UI
+        // send a message to all clients
+        EventRecorderCellChangeMessage arcm = EventRecorderCellChangeMessage.recordingMessage(cellID, isRecording, userName);
+        getChannel().sendAll(null, arcm);
+    }
+
+    public void fileCreationFailed(String reason, Throwable cause) {
+        //There has been a problem creating the changes file
+        //Log the error and terminate
+        logger.log(Level.SEVERE, reason, cause);
+        isRecording = false;
     }
 
     private static class EventRecorderCellMOMessageReceiver extends AbstractComponentMessageReceiver {

@@ -35,28 +35,27 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 import sun.misc.BASE64Encoder;
 
 /**
- *
+ * A ultility class used to call web services from the darkstar service
  * @author Bernard Horan
  */
 public class EventRecorderUtils {
     /* The prefix to add to URLs for the eventrecorder web service */
-    public static final String WEB_SERVICE_PREFIX = "eventrecorder/eventrecorder/resources/";
+    private static final String WEB_SERVICE_PREFIX = "eventrecorder/eventrecorder/resources/";
 
     final private static BASE64Encoder BASE_64_ENCODER = new BASE64Encoder();
     /**
-     * Creates a new changes file, returns a ChangesFile object representing the
-     * new changes file or null upon failure
-     * @param name
-     * @param timestamp
+     * Creates a new changes file
+     * @param name the name of the recording for which the changes file should be created
+     * @param timestamp the timestamp at which the changes began
      * @throws IOException
      */
-    public static void createChangesFile(String name, long timestamp)
+    static void createChangesFile(String name, long timestamp)
             throws IOException
     {
         String encodedName = URLEncoder.encode(name, "UTF-8");
         String query = "?name=" + encodedName + "&timestamp=" + timestamp;
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "create/changesFile" + query);
- // Read all the text returned by the server
+        // Read all the text returned by the server
         BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
         String str;
         while ((str = in.readLine()) != null) {
@@ -67,12 +66,12 @@ public class EventRecorderUtils {
     }
 
     /**
-     * 
-     * @param name
+     * Close a changes file
+     * @param name the name of the recording managing the changes file
      * @throws java.io.IOException
      * @throws javax.xml.bind.JAXBException
      */
-    public static void closeChangesFile(String name) throws IOException, JAXBException {
+    static void closeChangesFile(String name) throws IOException, JAXBException {
         String encodedName = URLEncoder.encode(name, "UTF-8");
         String query = "?name=" + encodedName;
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "close/changesFile" + query);
@@ -86,7 +85,13 @@ public class EventRecorderUtils {
         in.close();
     }
 
-    public static void recordChange(ChangeDescriptor changeDescriptor) throws IOException, JAXBException {
+    /**
+     * Record a change onto a changes file
+     * @param changeDescriptor a description of the change, including the name of the recording
+     * @throws java.io.IOException
+     * @throws javax.xml.bind.JAXBException
+     */
+    static void recordChange(ChangeDescriptor changeDescriptor) throws IOException, JAXBException {
         // Open an output connection to the URL, pass along any exceptions
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "append/changesFile");
 
@@ -112,6 +117,15 @@ public class EventRecorderUtils {
 
     }
 
+    /**
+     * Create a change descriptor that wraps the paramaters
+     * @param tapeName the name of the recording
+     * @param clientID the id of the client that sent the message
+     * @param message the message received from the client that is to be recorded
+     * @param timestamp the timestamp for the message
+     * @return a ChangeDescriptor that wraps the parameters
+     * @throws org.jdesktop.wonderland.common.messages.MessagePacker.PackerException
+     */
     static ChangeDescriptor getChangeDescriptor(String tapeName, WonderlandClientID clientID, CellMessage message, long timestamp) throws PackerException {
         ByteBuffer byteBuffer = MessagePacker.pack(message, clientID.getID().shortValue());
         String encodedMessage = BASE_64_ENCODER.encode(byteBuffer);
