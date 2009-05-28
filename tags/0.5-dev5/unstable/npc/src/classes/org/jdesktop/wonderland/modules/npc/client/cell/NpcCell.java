@@ -47,7 +47,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.npc.common.NpcCellChangeMessage;
 
@@ -60,28 +59,25 @@ public class NpcCell extends Cell {
 
     private final JMenuItem menuItem;
     boolean menuAdded = false;
-
     private AvatarImiJME renderer;
-    
     @UsesCellComponent
     private ProximityComponent proximity;
-    
     @UsesCellComponent
     private MovableAvatarComponent movableAvatar;
-
     private proximityListener1 listenerProx;
-  
     private BoundingVolume[] boundingVolume;
     private Vector3f npcPosition;
+    private GoTo myGoTo;
 
     public NpcCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
         menuItem = new JMenuItem("NPC " + cellID + " controls...");
         menuItem.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 NpcControllerFrame ncf = new NpcControllerFrame(NpcCell.this,
-                                                                renderer.getAvatarCharacter());
+                        renderer.getAvatarCharacter());
                 ncf.setVisible(true);
             }
         });
@@ -108,7 +104,7 @@ public class NpcCell extends Cell {
                 if (listenerProx == null) {
                     boundingVolume = new BoundingVolume[1];
                     boundingVolume[0] = this.getLocalBounds();
-                    listenerProx= new proximityListener1();
+                    listenerProx = new proximityListener1();
 
                     proximity.addProximityListener(listenerProx, boundingVolume);
 
@@ -120,16 +116,14 @@ public class NpcCell extends Cell {
         return res;
     }
 
-
-
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         CellRenderer ret = null;
-        switch(rendererType) {
-            case RENDERER_2D :
+        switch (rendererType) {
+            case RENDERER_2D:
                 // No 2D Renderer yet
                 break;
-            case RENDERER_JME :
+            case RENDERER_JME:
                 try {
                     ServerSessionManager session = getCellCache().getSession().getSessionManager();
                     ret = ClientContextJME.getAvatarRenderManager().createRenderer(session, this);
@@ -146,78 +140,76 @@ public class NpcCell extends Cell {
 
         return ret;
     }
-    
-    public void move(int x, int y, int z){
+
+    public void move(int x, int y, int z) {
         npcPosition = new Vector3f(x, y, z);
-        
+
         goTo();
-        
-        NpcCellChangeMessage msg = new NpcCellChangeMessage(getCellID(), npcPosition);
-        sendCellMessage(msg);    
-    }
-    
-    public void goTo(){
-    
+
+        CellTransform transform = new CellTransform(null, npcPosition, null);
+        NpcCellChangeMessage msg = new NpcCellChangeMessage(getCellID(), transform);
+        sendCellMessage(msg);
+
         CharacterMotionListener motionListener = new CharacterMotionListener() {
+
             public void transformUpdate(Vector3f translation, PMatrix rotation) {
-                        
+                //Check if NPC has reached his destination
+                if (!myGoTo.verify()) {
+                    CellTransform transform = new CellTransform(renderer.getAvatarCharacter().getQuaternion(), npcPosition, null);
+                    movableAvatar.localMoveRequest(transform, 0, false, null, null);
+                }
             }
         };
-        
+
         renderer.getAvatarCharacter().getController().addCharacterMotionListener(motionListener);
-        motionListener.transformUpdate(renderer.getAvatarCharacter().getController().getPosition(), null);
-           
-        GameContext context = renderer.getAvatarCharacter().getContext() ;
-      
-        CharacterSteeringHelm helm = context.getSteering();
-        //Vector3f myvector = new Vector3f(x,y,z);
-        GoTo myGoTo=new GoTo(npcPosition, context);
-        helm.addTaskToTop(myGoTo);
-        helm.setEnable(true);
-        
-        
-        proximity.removeProximityListener(listenerProx);
-        
-        listenerProx = null;
-        boundingVolume = null;
-        
-        CellTransform transform = new CellTransform(null, npcPosition, null);
-        movableAvatar.localMoveRequest(transform);
-        
-        
-        boundingVolume = new BoundingVolume[1];
-        boundingVolume[0] = this.getWorldBounds();
-       
-        listenerProx = new proximityListener1();
-        proximity.addProximityListener(listenerProx, boundingVolume);
-            
     }
-    
+
+    public void goTo() {
+        GameContext context = renderer.getAvatarCharacter().getContext();
+        CharacterSteeringHelm helm = context.getSteering();
+        myGoTo = new GoTo(npcPosition, context);
+        helm.clearTasks();
+        helm.setEnable(true);
+        helm.addTaskToTop(myGoTo);
+
+    }
+
     class NpcCellMessageReceiver implements ComponentMessageReceiver {
-        
+
         public void messageReceived(CellMessage message) {
-            NpcCellChangeMessage sccm = (NpcCellChangeMessage)message;
+            NpcCellChangeMessage sccm = (NpcCellChangeMessage) message;
             if (!sccm.getSenderID().equals(getCellCache().getSession().getID())) {
-                npcPosition = sccm.getNpcPosition();
+                //npcPosition = sccm.getNpcPosition();
+                npcPosition = sccm.getCellTransform().getTranslation(null);
                 goTo();
             }
+
+            proximity.removeProximityListener(listenerProx);
+
+            listenerProx = null;
+            boundingVolume = null;
+
+            boundingVolume = new BoundingVolume[1];
+            boundingVolume[0] = NpcCell.this.getWorldBounds();
+
+            listenerProx = new proximityListener1();
+            proximity.addProximityListener(listenerProx, boundingVolume);
+
         }
     }
 
-    
-    class proximityListener1 implements ProximityListener{
-        public void viewEnterExit( boolean entered,
-                Cell cell,  CellID viewCellID,  com.jme.bounding.BoundingVolume proximityVolume, int proximityIndex)
-            {
-            if(entered){
+    class proximityListener1 implements ProximityListener {
+
+        public void viewEnterExit(boolean entered,
+                Cell cell, CellID viewCellID, com.jme.bounding.BoundingVolume proximityVolume, int proximityIndex) {
+            if (entered) {
                 //Do here whatever you want
                 System.out.println("*****IN");
-            }
-            else{
+            } else {
                 //Do here whatever you want
                 System.out.println("************OUT");
             }
-                    
-            }
+
         }
+    }
 }
