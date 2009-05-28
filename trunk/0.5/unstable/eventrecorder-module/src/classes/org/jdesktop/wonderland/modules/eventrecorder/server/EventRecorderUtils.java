@@ -30,6 +30,7 @@ import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
+import org.jdesktop.wonderland.modules.eventrecorder.server.WFSRecordingList;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 import sun.misc.BASE64Encoder;
@@ -132,6 +133,22 @@ public class EventRecorderUtils {
         return new ChangeDescriptor(tapeName, timestamp, encodedMessage);
     }
 
-    
+    /**
+     * Returns all of the WFS recording names or null upon error
+     */
+    static WFSRecordingList getWFSRecordings() {
+        /*
+         * Try to open up a connection the Jersey RESTful resource and parse
+         * the stream. Upon error return null.
+         */
+        try {
+            URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "recordings");
+            //CellImporter.getLogger().info("WFS: Loading roots at " + url.toExternalForm());
+            return WFSRecordingList.decode(url.openStream());
+        } catch (java.lang.Exception excp) {
+            //CellImporter.getLogger().info("WFS: Error loading roots: " + excp.toString());
+            return null;
+        }
+    }
 
 }

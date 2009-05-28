@@ -150,6 +150,16 @@ public class EventRecorderCell extends Cell {
 
         isRecording = ((EventRecorderClientState)setupData).isRecording();
         userName = ((EventRecorderClientState)setupData).getUserName();
+        if(isRecording) {
+            if (userName == null) {
+                logger.warning("userName should not be null");
+            }
+        }
+        if (!isRecording) {
+            if (userName != null) {
+                logger.warning("userName should be null");
+            }
+        }
         reelForm = new ReelForm(this);
     }
 
@@ -264,7 +274,7 @@ public class EventRecorderCell extends Cell {
             return;
         }
         if (!selectedTape.isFresh()) {
-            int response = JOptionPane.showConfirmDialog(null, "Overwrite Existing recording named ?", selectedTape.getTapeName(), JOptionPane.YES_NO_OPTION);
+            int response = JOptionPane.showConfirmDialog(null, "Overwrite Existing recording named " + selectedTape.getTapeName() + "?", "Existing Tape", JOptionPane.YES_NO_OPTION);
             if (response == JOptionPane.NO_OPTION) {
                 return;
             }

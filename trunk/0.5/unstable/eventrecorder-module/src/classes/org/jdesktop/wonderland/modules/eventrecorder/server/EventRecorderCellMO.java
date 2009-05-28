@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.util.ScalableHashSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -40,6 +41,7 @@ import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellSer
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderClientState;
 import org.jdesktop.wonderland.modules.eventrecorder.common.Tape;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
+import org.jdesktop.wonderland.modules.eventrecorder.server.WFSRecordingList;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 /**
@@ -54,12 +56,7 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
     
     private static final Logger eventRecorderLogger = Logger.getLogger(EventRecorderCellMO.class.getName());
     private static int INSTANCE_COUNT = 0;
-    private int instanceNumber;
-    private Set<Tape> tapes = new HashSet<Tape>();
-    private Tape selectedTape = null;
-    private boolean isPlaying, isRecording;
-    private String userName;
-    private String recordingDirectory;
+    private EventRecorderCellServerState serverState;
     private String recorderName;
     private ManagedReference<EventRecorderImpl> recorderRef;
 
@@ -67,11 +64,11 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
     public EventRecorderCellMO() {
         super();
         addComponent(new MovableComponentMO(this));
-        instanceNumber = ++INSTANCE_COUNT;
+        int instanceNumber = ++INSTANCE_COUNT;
+        serverState = new EventRecorderCellServerState();
         recorderName = "Recorder" + instanceNumber;
-        recordingDirectory = "/tmp/EventRecordings/" + recorderName;
         createTapes();
-        isRecording = false;
+        serverState.setRecording(false);
     }
 
     /**
@@ -110,9 +107,9 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
     @Override
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID,
             ClientCapabilities capabilities) {
-        
+
         if (cellClientState == null) {
-            cellClientState = new EventRecorderClientState(tapes, selectedTape, isRecording, userName);
+            cellClientState = new EventRecorderClientState(serverState.getTapes(), serverState.getSelectedTape(), serverState.isRecording(), serverState.getUserName());
         }
         //eventRecorderLogger.fine("cellClientState: " + cellClientState);
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -140,17 +137,8 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
     @Override
     public CellServerState getServerState(CellServerState cellServerState) {
         //eventRecorderLogger.info("Getting server state");
-        /* Create a new EventRecorderCellServerState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new EventRecorderCellServerState();
-            EventRecorderCellServerState state = (EventRecorderCellServerState)cellServerState;
-            state.setInstanceNumber(instanceNumber);
-            state.setTapes(tapes);
-            state.setSelectedTape(selectedTape);
-            state.setPlaying(isPlaying);
-            state.setRecording(isRecording);
-            state.setUserName(userName);
-            state.setRecordingDirectory(recordingDirectory);
+            cellServerState = serverState;
         }
         return super.getServerState(cellServerState);
     }
@@ -171,47 +159,30 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
     }
 
     boolean isRecording() {
-        return isRecording;
+        return serverState.isRecording();
     }
 
     private void createTapes() {
-        //TODO: need to get list of recordings here
-        //Add any existing files
-        File tapeDir = new File(recordingDirectory);
-        if (!tapeDir.exists()) {
-            eventRecorderLogger.info("Non existent directory: " + tapeDir);
-            tapeDir.mkdirs();
-        }
-        String[] tapeFiles = tapeDir.list(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".xml");
-            }
-        });
-        for (int i = 0; i < tapeFiles.length; i++) {
-                String string = tapeFiles[i];
-                eventRecorderLogger.info("tapeFile: " + string);
-                int index = string.indexOf(".xml");
-                Tape aTape = new Tape(string.substring(0, index));
+        WFSRecordingList recordingList = EventRecorderUtils.getWFSRecordings();
+        String[] recordingNames = recordingList.getRecordings();
+        for (int i = 0; i < recordingNames.length; i++) {
+                String name = recordingNames[i];
+                Tape aTape = new Tape(name);
                 aTape.setUsed();
-                selectedTape = aTape; //Selected tape is last existing tape
-                tapes.add(aTape);
-            }
-
-        if (selectedTape == null) {
-            eventRecorderLogger.info("no selected tape");
-            selectedTape = new Tape("Untitled Tape");
-            tapes.add(selectedTape);
+                serverState.setSelectedTape(aTape); //Selected tape is last existing tape
+                serverState.addTape(aTape);
         }
-    }
-
-    private String getRecorderFilename() {
-        return recordingDirectory + File.separator+ selectedTape.getTapeName();
+        if (serverState.getSelectedTape() == null) {
+            eventRecorderLogger.info("no selected tape");
+            serverState.setSelectedTape(new Tape("Untitled Tape"));
+            serverState.addTape(serverState.getSelectedTape());
+        }
     }
 
     private void setRecording(boolean r) {
         //eventRecorderLogger.info("setRecording: " + r);
         //eventRecorderLogger.info("isRecording: " + isRecording);
-        if (isRecording) {
+        if (isRecording()) {
             //Already recording
             if (!r) {
                 //Stop recording
@@ -224,7 +195,7 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
                 startRecording();
             }
         }
-        isRecording = r;
+        serverState.setRecording(r);
     }
 
     private void createEventRecorder() {
@@ -237,7 +208,7 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
 
     private void startRecording() {
         eventRecorderLogger.info("Start Recording");
-        recorderRef.get().startRecording(selectedTape.getTapeName());
+        recorderRef.get().startRecording(serverState.getSelectedTape().getTapeName());
     }
 
 
@@ -251,7 +222,7 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
     private void processRecordMessage(WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
         //eventRecorderLogger.info("isRecording: " + arcm.isRecording());
         setRecording(arcm.isRecording());
-        userName = arcm.getUserName();
+        serverState.setUserName(arcm.getUserName());
 
         // send a message to all clients
         //getChannel().sendAll(clientID, arcm);
@@ -260,7 +231,7 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
 
     private void processTapeUsedMessage(WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
         String tapeName = arcm.getTapeName();
-        for (Tape aTape : tapes) {
+        for (Tape aTape : serverState.getTapes()) {
             if(aTape.getTapeName().equals(tapeName)) {
                 aTape.setUsed();
                 // send a message to all clients
@@ -271,9 +242,9 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
 
     private void processTapeSelectedMessage(WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
         String tapeName = arcm.getTapeName();
-        for (Tape aTape : tapes) {
+        for (Tape aTape : serverState.getTapes()) {
             if(aTape.getTapeName().equals(tapeName)) {
-                selectedTape = aTape;
+                serverState.setSelectedTape(aTape);
                 // send a message to all clients
                 getChannel().sendAll(clientID, arcm);
             }
@@ -283,7 +254,7 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
     private void processNewTapeMessage(WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
         String tapeName = arcm.getTapeName();
         Tape newTape = new Tape(tapeName);
-        tapes.add(newTape);
+        serverState.addTape(newTape);
         // send a message to all clients
         getChannel().sendAll(clientID, arcm);
     }
@@ -298,7 +269,7 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
         recorderRef.get().register();
         //Let clients know that we're now recording, so that can change their UI
         // send a message to all clients
-        EventRecorderCellChangeMessage arcm = EventRecorderCellChangeMessage.recordingMessage(cellID, isRecording, userName);
+        EventRecorderCellChangeMessage arcm = EventRecorderCellChangeMessage.recordingMessage(cellID, isRecording(), serverState.getUserName());
         getChannel().sendAll(null, arcm);
     }
 
@@ -306,7 +277,7 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
         //There has been a problem creating the changes file
         //Log the error and terminate
         logger.log(Level.SEVERE, reason, cause);
-        isRecording = false;
+        serverState.setRecording(false);
     }
 
     private static class EventRecorderCellMOMessageReceiver extends AbstractComponentMessageReceiver {
