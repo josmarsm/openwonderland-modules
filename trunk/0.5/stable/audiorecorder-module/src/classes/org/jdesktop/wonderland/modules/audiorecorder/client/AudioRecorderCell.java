@@ -88,7 +88,7 @@ public class AudioRecorderCell extends Cell {
                     menuFactory = new ContextMenuFactorySPI() {
                         public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                             return new ContextMenuItem[] {
-                                new SimpleContextMenuItem("Open Tape", l)
+                                new SimpleContextMenuItem("Open Tape...", l)
                             };
                         }
                     };

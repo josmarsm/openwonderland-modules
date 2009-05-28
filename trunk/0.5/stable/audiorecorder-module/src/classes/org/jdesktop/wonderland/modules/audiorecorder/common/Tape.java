@@ -22,12 +22,14 @@ package org.jdesktop.wonderland.modules.audiorecorder.common;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * 
  * @author Bernard Horan
  */
 @XmlAccessorType(XmlAccessType.FIELD)
+@XmlType( namespace="audiorecorder" )
 public class Tape implements Serializable, Comparable {
 
     private String tapeName;
