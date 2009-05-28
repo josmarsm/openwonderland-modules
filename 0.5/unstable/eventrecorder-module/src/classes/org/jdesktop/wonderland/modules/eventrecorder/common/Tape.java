@@ -20,14 +20,27 @@
 package org.jdesktop.wonderland.modules.eventrecorder.common;
 
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 
+/**
+ *
+ * @author Bernard Horan
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType( namespace="eventrecorder" )
 public class Tape implements Serializable, Comparable {
 
     private String tapeName;
     private boolean isFresh;
     
-    public Tape(String filename) {
+    public Tape() {
         isFresh = true;
+    }
+
+    public Tape(String filename) {
+        this();
         this.tapeName = filename;
     }
 
@@ -37,7 +50,12 @@ public class Tape implements Serializable, Comparable {
 
     @Override
     public String toString() {
-        return tapeName;
+        StringBuilder sb = new StringBuilder("[" + getClass().getSimpleName() +"]");
+        sb.append(" tapeName=");
+        sb.append(tapeName);
+        sb.append(" isFresh=");
+        sb.append(isFresh);
+        return sb.toString();
     }
 
     public boolean isFresh() {
