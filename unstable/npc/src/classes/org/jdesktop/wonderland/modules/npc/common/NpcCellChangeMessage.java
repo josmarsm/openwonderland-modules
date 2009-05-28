@@ -24,6 +24,7 @@ package org.jdesktop.wonderland.modules.npc.common;
 
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 
@@ -34,9 +35,19 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 public class NpcCellChangeMessage extends CellMessage{
     
     private Vector3f npcPosition;
+    private CellTransform transform;
+
+    public NpcCellChangeMessage(CellID cellID, CellTransform transform) {
+        super(cellID);
+        this.transform = transform;
+    }
     
     public Vector3f getNpcPosition(){
         return npcPosition;
+    }
+    
+    public CellTransform getCellTransform(){
+        return transform;
     }
     
     public void setNpcPosition(Vector3f npcPosition){
