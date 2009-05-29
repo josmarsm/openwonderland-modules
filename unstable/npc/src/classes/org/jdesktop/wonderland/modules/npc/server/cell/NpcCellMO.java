@@ -23,25 +23,19 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigComponentServerState;
-import org.jdesktop.wonderland.modules.npc.common.NpcCellChangeMessage;
-import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.MovableAvatarComponentMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  *
  * @author paulby
- * @author david <dmaroto@it.uc3m.es> UC3M - "Project España Virtual"
  */
 public class NpcCellMO extends CellMO {
-    private Vector3f npcPosition;
 
     public NpcCellMO(String avatarConfigURL, CellTransform transform) {
         super(new BoundingBox(new Vector3f(0,1,0), 1,2,1), transform);
@@ -69,33 +63,5 @@ public class NpcCellMO extends CellMO {
             ClientCapabilities capabilities) {
 
         return super.getClientState(cellClientState, clientID, capabilities);
-    }
-    
-    @Override
-    protected void setLive(boolean live) {
-        super.setLive(live);
-
-        ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
-        if (live == true) {
-            channel.addMessageReceiver(NpcCellChangeMessage.class,
-                (ChannelComponentMO.ComponentMessageReceiver)new NpcCellMessageReceiver(this));
-        }
-        else {
-            channel.removeMessageReceiver(NpcCellChangeMessage.class);
-        }
-    }
-
-    
-    private static class NpcCellMessageReceiver extends AbstractComponentMessageReceiver {
-        public NpcCellMessageReceiver(NpcCellMO cellMO) {
-            super(cellMO);
-        }
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            NpcCellMO cellMO = (NpcCellMO)getCell();
-            NpcCellChangeMessage sccm = (NpcCellChangeMessage)message;
-            cellMO.npcPosition = sccm.getCellTransform().getTranslation(null);
-            cellMO.setLocalTransform(sccm.getCellTransform());
-            cellMO.sendCellMessage(clientID, message);
-        }
     }
 }
