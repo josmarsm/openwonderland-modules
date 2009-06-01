@@ -33,6 +33,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class ScriptingComponentServerState extends CellComponentServerState 
     {
+        private final int totalEvents = 30;
 
     @XmlElement(name="info")
     private String info;
@@ -44,7 +45,7 @@ public class ScriptingComponentServerState extends CellComponentServerState
     private String[] eventNames;
     @XmlElement(name="event-script-type")
     private String[] eventScriptType;
-    
+
     /** Default constructor */
     public ScriptingComponentServerState() 
         {
