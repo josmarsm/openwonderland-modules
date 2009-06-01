@@ -26,14 +26,16 @@
         
         <module name="wonderOSC" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/wonderOSC.jar"
                 moduleDescription="Control wonderland using OSC protocol" builddir="${build.dir}">
-            <include name="${current.dir}/license-javaosc.rtf"/>
+            
             <client>
                 <clientjar name="wonderOSC-client" basedir="${build.classes.dir}">
                     <clientplugin provider="org.jdesktop.wonderland.modules.wonderOSC.client.wonderOSCPlugin"/>
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
-                    
-                        <zipfileset src="${current.dir}/lib/javaosc.jar" />
+                     <fileset dir="${current.dir}/licenses">
+                        <include name="**/*.rtf"/>
+                    </fileset>
+                    <zipfileset src="${current.dir}/lib/javaosc.jar" />
                 </clientjar>
             </client>
         </module>
