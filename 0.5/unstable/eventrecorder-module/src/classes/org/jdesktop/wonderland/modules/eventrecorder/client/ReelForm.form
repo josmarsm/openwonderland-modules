@@ -82,6 +82,7 @@
                 <StringItem index="4" value="Item 5"/>
               </StringArray>
             </Property>
+            <Property name="selectionMode" type="int" value="0"/>
             <Property name="toolTipText" type="java.lang.String" value="List of Available Tapes"/>
           </Properties>
         </Component>

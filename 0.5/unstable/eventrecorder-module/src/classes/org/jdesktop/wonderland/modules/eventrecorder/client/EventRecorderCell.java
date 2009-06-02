@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
@@ -51,9 +52,11 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderClientState;
 import org.jdesktop.wonderland.modules.eventrecorder.common.Tape;
+import org.jdesktop.wonderland.modules.eventrecorder.common.TapeStateMessageResponse;
 
 /**
  *
@@ -73,6 +76,7 @@ public class EventRecorderCell extends Cell {
     private DefaultListModel tapeListModel;
     private DefaultListSelectionModel tapeSelectionModel;
     private ReelForm reelForm;
+    private boolean isSelectingTape = false;
 
     public EventRecorderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -146,7 +150,8 @@ public class EventRecorderCell extends Cell {
         super.setClientState(setupData);
         Set<Tape> tapes = ((EventRecorderClientState)setupData).getTapes();
         Tape selectedTape = ((EventRecorderClientState)setupData).getSelectedTape();
-        createTapeModels(tapes, selectedTape);
+        //createTapeModels(tapes, selectedTape);
+        createTapeModels();
 
         isRecording = ((EventRecorderClientState)setupData).isRecording();
         userName = ((EventRecorderClientState)setupData).getUserName();
@@ -221,18 +226,20 @@ public class EventRecorderCell extends Cell {
         }
     }
 
-    private void createTapeModels(Set<Tape> tapes, Tape selectedTape) {
+    private void createTapeModels() {
+        tapeListModel = new DefaultListModel();
+        tapeSelectionModel = new DefaultListSelectionModel();
+        tapeSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+    }
+    private void updateTapeModels(Set<Tape> tapes, Tape selectedTape) {
         List sortedTapes = new ArrayList(tapes);
         Collections.sort(sortedTapes);
-        tapeListModel = new DefaultListModel();
+        tapeListModel.clear();
+        tapeSelectionModel.clearSelection();
         for (Iterator it = sortedTapes.iterator(); it.hasNext();) {
             tapeListModel.addElement(it.next());
         }
-
-        tapeSelectionModel = new DefaultListSelectionModel();
-        tapeSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        int selectionIndex = sortedTapes.indexOf(selectedTape);
-        tapeSelectionModel.setSelectionInterval(selectionIndex, selectionIndex);
+        reelForm.selectTape(selectedTape);
     }
 
     private void selectTape(String tapeName) {
@@ -342,14 +349,22 @@ public class EventRecorderCell extends Cell {
         return getCellCache().getSession().getUserID().getUsername();
     }
 
-    void setReelFormVisible(boolean aBoolean) {
-        eventRecorderLogger.info("set visible: " + aBoolean);
-        reelForm.setVisible(aBoolean);
+    void openReelForm() {
+        //Let the server know I'm selecting a tape and wait to get a message back (processTapeStateMessage())
+        EventRecorderCellChangeMessage msg = EventRecorderCellChangeMessage.selectingTape(getCellID());
+        try {
+            TapeStateMessageResponse response = (TapeStateMessageResponse) getChannel().sendAndWait(msg);
+            if (response.getAction() == TapeStateMessageResponse.TapeStateAction.TAPE_STATE) {
+                //Need to open the form BEFORE updating models, otherwise ignored
+                reelForm.setVisible(true);
+                updateTapeModels(response.getTapes(), response.getSelectedTape());               
+            } else {
+                eventRecorderLogger.severe("Failed response from server");
+            }
+        } catch (InterruptedException ex) {
+            eventRecorderLogger.log(Level.SEVERE, "connection with server interrupted", ex);
+        }
     }
-    
-
-    
-
     
 
     class EventRecorderCellMessageReceiver implements ComponentMessageReceiver {
@@ -383,12 +398,13 @@ public class EventRecorderCell extends Cell {
                 }
             }
         }
+
     }
 
     class MenuItemListener implements ContextMenuActionListener {
 
         public void actionPerformed(ContextMenuItemEvent event) {
-            setReelFormVisible(true);
+            openReelForm();
         }
     }
 
