@@ -70,4 +70,34 @@ public class Tape implements Serializable, Comparable {
     public String getTapeName() {
         return tapeName;
     }
+
+    /**
+     * Return true if the name of the tape is equal and
+     * the freshness is identical
+     * @param o
+     * @return
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Tape)) {
+            return false;
+        } else {
+            Tape tape = (Tape) o;
+            if (tape.isFresh() != isFresh) {
+                return false;
+            }
+            if (!tape.getTapeName().equals(tapeName)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 59 * hash + (this.tapeName != null ? this.tapeName.hashCode() : 0);
+        hash = 59 * hash + (this.isFresh ? 1 : 0);
+        return hash;
+    }
 }

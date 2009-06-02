@@ -57,6 +57,10 @@ public class EventRecorderCellServerState extends CellServerState implements Ser
         tapes.add(aTape);
     }
 
+    public void clearTapes() {
+        tapes.clear();
+    }
+
     public Tape getSelectedTape() {
         return selectedTape;
     }

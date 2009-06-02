@@ -20,9 +20,6 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.util.ScalableHashSet;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -31,18 +28,23 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import java.io.File;
-import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellServerState;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderClientState;
 import org.jdesktop.wonderland.modules.eventrecorder.common.Tape;
+import org.jdesktop.wonderland.modules.eventrecorder.common.TapeStateMessageResponse;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
-import org.jdesktop.wonderland.modules.eventrecorder.server.WFSRecordingList;
+import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.ListRecordingsListener;
 
 /**
  *
@@ -52,7 +54,7 @@ import org.jdesktop.wonderland.server.cell.MovableComponentMO;
  * @author Bernard Horan
  * 
  */
-public class EventRecorderCellMO extends CellMO implements ChangesFileCreationListener {
+public class EventRecorderCellMO extends CellMO implements ChangesFileCreationListener, ListRecordingsListener {
     
     private static final Logger eventRecorderLogger = Logger.getLogger(EventRecorderCellMO.class.getName());
     private static int INSTANCE_COUNT = 0;
@@ -67,7 +69,6 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
         int instanceNumber = ++INSTANCE_COUNT;
         serverState = new EventRecorderCellServerState();
         recorderName = "Recorder" + instanceNumber;
-        createTapes();
         serverState.setRecording(false);
     }
 
@@ -162,21 +163,35 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
         return serverState.isRecording();
     }
 
-    private void createTapes() {
-        WFSRecordingList recordingList = EventRecorderUtils.getWFSRecordings();
-        String[] recordingNames = recordingList.getRecordings();
-        for (int i = 0; i < recordingNames.length; i++) {
-                String name = recordingNames[i];
+    private void updateTapes(String[] tapeNames) {
+        //tapeNames are the names of the recordings as known to the web service
+        //firstly, remove all the existing tape names
+        serverState.clearTapes();
+        //Now add a tape of each name
+        for (int i = 0; i < tapeNames.length; i++) {
+                String name = tapeNames[i];
                 Tape aTape = new Tape(name);
                 aTape.setUsed();
-                serverState.setSelectedTape(aTape); //Selected tape is last existing tape
                 serverState.addTape(aTape);
         }
-        if (serverState.getSelectedTape() == null) {
-            eventRecorderLogger.info("no selected tape");
-            serverState.setSelectedTape(new Tape("Untitled Tape"));
-            serverState.addTape(serverState.getSelectedTape());
+        //Check to see if the currently selected tape still exists
+        //If not, set it to be the first one
+        if (!serverState.getTapes().contains(serverState.getSelectedTape())) {
+            List<Tape> sortedTapes = new ArrayList(serverState.getTapes());
+            Collections.sort(sortedTapes);
+            serverState.setSelectedTape(sortedTapes.get(0));
         }
+    }
+
+    private void processTapeStateMessage(WonderlandClientID clientID, WonderlandClientSender sender, EventRecorderCellChangeMessage arcm) {
+        eventRecorderLogger.info("clientID: " + clientID + ", sender: " + sender);
+        MessageID messageID  = arcm.getMessageID();
+        eventRecorderLogger.info("messageID: " + messageID);
+        CellExportManager mgr = AppContext.getManager(CellExportManager.class);
+        eventRecorderLogger.info("asynchronously requesting recordings");
+        //If successful, async method call to reocordingsListed()
+        //If not successful, async call to recordingsListfailed()
+        mgr.listRecordings(messageID, sender, clientID, this);
     }
 
     private void setRecording(boolean r) {
@@ -280,6 +295,21 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
         serverState.setRecording(false);
     }
 
+    public void listRecordingsResult(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, WFSRecordingList recordings) {
+        eventRecorderLogger.info("received recordings: " + recordings.getRecordings());
+        updateTapes(recordings.getRecordings());
+        eventRecorderLogger.info("serverState: " + serverState);
+        TapeStateMessageResponse tsmr = TapeStateMessageResponse.tapeStateMessage(messageID, serverState);
+        eventRecorderLogger.info("responding to original synchronous request");
+        sender.send(clientID, tsmr);
+    }
+
+    public void listRecordingsFailed(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, String message, Exception ex) {
+        eventRecorderLogger.log(Level.SEVERE, message, ex);
+        TapeStateMessageResponse tsmr = TapeStateMessageResponse.tapeStateFailedMessage(messageID);
+        sender.send(clientID, tsmr);
+    }
+
     private static class EventRecorderCellMOMessageReceiver extends AbstractComponentMessageReceiver {
 
         public EventRecorderCellMOMessageReceiver(EventRecorderCellMO cellMO) {
@@ -303,6 +333,8 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
                 case NEW_TAPE:
                     cellMO.processNewTapeMessage(clientID, arcm);
                     break;
+                case REQUEST_TAPE_STATE:
+                    cellMO.processTapeStateMessage(clientID, sender, arcm);
             }
         }
 

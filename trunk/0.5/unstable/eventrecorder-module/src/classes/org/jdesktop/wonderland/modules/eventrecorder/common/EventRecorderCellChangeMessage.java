@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.common;
 
+import java.util.Set;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
@@ -28,16 +29,24 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 public class EventRecorderCellChangeMessage extends CellMessage {
 
+    
+    
+
+    
+
     private EventRecorderCellChangeMessage(CellID cellID) {
         super(cellID);
     }
+
+    
 
     public enum EventRecorderAction {
 
         RECORD,
         TAPE_USED,
         TAPE_SELECTED,
-        NEW_TAPE
+        NEW_TAPE,
+        REQUEST_TAPE_STATE
     };
 
     private EventRecorderAction action;
@@ -84,6 +93,13 @@ public class EventRecorderCellChangeMessage extends CellMessage {
         msg.tapeName = tapeName;
         return msg;
     }
+
+    public static EventRecorderCellChangeMessage selectingTape(CellID cellID) {
+        EventRecorderCellChangeMessage msg = new EventRecorderCellChangeMessage(cellID);
+        msg.action = EventRecorderAction.REQUEST_TAPE_STATE;
+        return msg;
+    }
+
 
     /**
      * Static method used to create an instance of EventRecorderCellChangeMessage that has an action type
