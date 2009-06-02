@@ -2,18 +2,25 @@
 <project name="wonderOSC" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderOSC}"/>
-    <property name="modules.dir" location="${current.dir}/../.."/>
-        
-    <property name="module.src" value="org/jdesktop/wonderland/modules/wonderOSC"/>
-    <property name="module.jarname" value="wonderOSC"/>
     
-    <!-- import common build file -->
+
+     <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+   
+
+
+    
+<!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
 
     <pathconvert property="module-client.classpath">
-    <path location="${module.dir}/world/avatarbase/build/classes"/>
-    <path location="${module.dir}/world/avatarbase/lib/avatars.jar"/>
+        <path location="${module.dir}/world/avatarbase/build/classes"/>
+        <path location="${module.dir}/world/avatarbase/lib/avatars.jar"/>
     <path location="${current.dir}/lib/javaosc.jar"/>
     </pathconvert>
     
