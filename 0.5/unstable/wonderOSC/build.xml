@@ -35,6 +35,10 @@
                      <fileset dir="${current.dir}/licenses">
                         <include name="**/*.rtf"/>
                     </fileset>
+    <!--                <fileset dir="${current.dir}">
+                        <include name="**/samples/**"/>
+                    </fileset>-->
+                    
                     <zipfileset src="${current.dir}/lib/javaosc.jar" />
                 </clientjar>
             </client>

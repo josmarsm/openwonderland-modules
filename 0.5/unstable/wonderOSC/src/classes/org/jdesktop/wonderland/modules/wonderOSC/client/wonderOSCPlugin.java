@@ -75,7 +75,6 @@ public class wonderOSCPlugin extends BaseClientPlugin implements ViewManagerList
         } else {
             wonderOSCPanelRef.get().setAvatarCharactar(avatar.getAvatarCharacter());
         }
-        System.out.println("fin primary view");
         AvatarConfigManager.getAvatarConfigManager().setViewCell(newViewCell);
         
         JmeClientMain.getFrame().addToWindowMenu(ExtCtrlFrameMI, 2);
@@ -84,7 +83,6 @@ public class wonderOSCPlugin extends BaseClientPlugin implements ViewManagerList
 
 
     public void cleanup(){
-        System.out.println(" clean");
         loginManager.removeLifecycleListener(lifecycleListener);
         super.cleanup();
         return;
@@ -92,10 +90,10 @@ public class wonderOSCPlugin extends BaseClientPlugin implements ViewManagerList
 
    @Override
    public void initialize(ServerSessionManager loginManager) {
-       System.out.println("inicio init");
+
         this.loginManager = loginManager;
         
-        System.out.println("fin init 1");
+
 
         //////////////////////////
 
@@ -140,22 +138,22 @@ public class wonderOSCPlugin extends BaseClientPlugin implements ViewManagerList
    }
 
     protected void activate(){
-        System.out.println(" activate");
+
         ClientContextJME.getViewManager().addViewManagerListener(this);
         if (ClientContextJME.getViewManager().getPrimaryViewCell() != null) {
             // fake a view cell changed event
             primaryViewCellChanged(null, ClientContextJME.getViewManager().getPrimaryViewCell());
         }
-        System.out.println("fin activate");
+
 
 
     }
 
       protected void deactivate(){
-          System.out.println(" deactivate");
+
             JmeClientMain.getFrame().removeFromWindowMenu(ExtCtrlFrameMI);
             ClientContextJME.getViewManager().removeViewManagerListener(this);
-            System.out.println(" deactivate");
+
       }
   
     
