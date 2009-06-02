@@ -22,16 +22,21 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import imi.character.avatar.AvatarContext.TriggerNames;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -67,15 +72,24 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentChangeMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentICEMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentTransformMessage;
 //import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.textchat.client.TextChatConnection;
+import org.jdesktop.wonderland.modules.textchat.client.TextChatConnection.TextChatListener;
 import org.jdesktop.wonderland.modules.textchat.common.TextChatConnectionType;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 
 /**
  *
@@ -87,8 +101,10 @@ import org.jdesktop.wonderland.modules.textchat.common.TextChatConnectionType;
 public class ScriptingComponent extends CellComponent
     {
     private Node localNode;
-    private String scriptClump = "default";
-    private String scriptURL = "http://localhost:8800/test/compiled_models";
+//    private String scriptClump = "default";
+//    private String scriptURL = "http://172.16.126.9:8080/webdav/content/";
+    private String scriptClump;
+    private String scriptURL;
     public String stateString[] = {null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null};
     public int stateInt[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     public boolean stateBoolean[] = {false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false};
@@ -128,12 +144,19 @@ public class ScriptingComponent extends CellComponent
     public static final int MESSAGE4_EVENT = 18;
 
     public static final int INTERCELL_EVENT = 19;
+    public static final int CHAT_EVENT = 20;
+    public static final int PRESENCE_EVENT = 21;
+
 
     public static final int YES_NOTIFY = 0;
     public static final int NO_NOTIFY = 1;
+/*
     private String[] eventNames;
     private String[] eventScriptType;
-    
+*/
+    private String[] eventNames = new String[totalEvents];
+    private String[] eventScriptType = new String[totalEvents];
+
     private WorldManager wm = null;
     private String info = null;
     private Vector watchMessages = new Vector();
@@ -141,16 +164,54 @@ public class ScriptingComponent extends CellComponent
     private IncomingSocketInterface isif = null;
     
     private int iAmICEReflector = 0;
-    
+    private TextChatConnection chatConnection = null;
+    private PresenceManager pm = null;
+    private WonderlandSession clientSession = null;
+
+    private ArrayList presenceList = null;
+
+    private ContentRepository       repo;
+
+    private   int       ICECode             = 0;
+    private   String    ICEMessage          = null;
+
+    private   int       proximityBounds     = 0;
+    private   Boolean   proximityDir        = false;
+
+    private   String    chatMessage         = null;
+    private   String    chatFrom            = null;
+    private   String    chatTo              = null;
+
+    private   float     initialX            = 0;
+    private   float     initialY            = 0;
+    private   float     initialZ            = 0;
+
+    private   float     coorX               = 0;
+    private   float     coorY               = 0;
+    private   float     coorZ               = 0;
+
+    private   int       ICEEventCode         = 0;
+    private   String    ICEEventMessage      = null;
+
+    private   Cell      theCell;
+    private   AvatarImiJME avatarRenderer;
+
     @UsesCellComponent
     protected ChannelComponent channelComp;
     
     protected ChannelComponent.ComponentMessageReceiver msgReceiver=null;
-    
+
+    /**
+     * The ScriptingComponent constructor
+     *
+     * @param cell
+     */
     public ScriptingComponent(Cell cell) 
-	{
+        {
         super(cell);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter ScriptingComponent constructor");
+        theCell = cell;
+        System.out.println("ScriptingComponent : Cell " + cell + " - id = " + cell.getCellID() + " : Enter ScriptingComponent constructor");
+
         wm = ClientContextJME.getWorldManager();
         wm.getRenderManager().setFrameRateListener(new FrameRateListener()
             {
@@ -160,43 +221,383 @@ public class ScriptingComponent extends CellComponent
                 }
             
             }, 100);
+        repo = ContentRepositoryRegistry.getInstance().getRepository(cell.getCellCache().getSession().getSessionManager());
+/*
+        eventNames[MOUSE1_EVENT] = "mouse1.js";
+        eventNames[MOUSE2_EVENT] = "mouse2.js";
+        eventNames[MOUSE3_EVENT] = "mouse3.js";
+        eventNames[MOUSE1S_EVENT] = "mouse1s.js";
+        eventNames[MOUSE2S_EVENT] = "mouse2s.js";
+        eventNames[MOUSE3S_EVENT] = "mouse3s.js";
+        eventNames[MOUSE1C_EVENT] = "mouse1c.js";
+        eventNames[MOUSE2C_EVENT] = "mouse2c.js";
+        eventNames[MOUSE3C_EVENT] = "mouse3c.java";
+        eventNames[MOUSE1A_EVENT] = "mouse1a.js";
+        eventNames[MOUSE2A_EVENT] = "mouse2a.js";
+        eventNames[MOUSE3A_EVENT] = "mouse3a.js";
+        eventNames[TIMER_EVENT] = "timer.js";
+        eventNames[STARTUP_EVENT] = "startup.js";
+        eventNames[PROXIMITY_EVENT] = "prox.js";
+        eventNames[MESSAGE1_EVENT] = "message1.js";
+        eventNames[MESSAGE2_EVENT] = "message2.js";
+        eventNames[MESSAGE3_EVENT] = "message3.js";
+        eventNames[MESSAGE4_EVENT] = "message4.js";
+        eventNames[INTERCELL_EVENT] = "ice.js";
+        eventNames[CHAT_EVENT] = "chat.js";
+        eventNames[PRESENCE_EVENT] = "presence.js";
 
-            // get a named map
+        eventScriptType[MOUSE1_EVENT] = "javascript";
+        eventScriptType[MOUSE2_EVENT] = "javascript";
+        eventScriptType[MOUSE3_EVENT] = "javascript";
+        eventScriptType[MOUSE1S_EVENT] = "javascript";
+        eventScriptType[MOUSE2S_EVENT] = "javascript";
+        eventScriptType[MOUSE3S_EVENT] = "javascript";
+        eventScriptType[MOUSE1C_EVENT] = "javascript";
+        eventScriptType[MOUSE2C_EVENT] = "javascript";
+        eventScriptType[MOUSE3C_EVENT] = "java";
+        eventScriptType[MOUSE1A_EVENT] = "javascript";
+        eventScriptType[MOUSE2A_EVENT] = "javascript";
+        eventScriptType[MOUSE3A_EVENT] = "javascript";
+        eventScriptType[TIMER_EVENT] = "javascript";
+        eventScriptType[STARTUP_EVENT] = "javascript";
+        eventScriptType[PROXIMITY_EVENT] = "javascript";
+        eventScriptType[MESSAGE1_EVENT] = "javascript";
+        eventScriptType[MESSAGE2_EVENT] = "javascript";
+        eventScriptType[MESSAGE3_EVENT] = "javascript";
+        eventScriptType[MESSAGE4_EVENT] = "javascript";
+        eventScriptType[INTERCELL_EVENT] = "javascript";
+        eventScriptType[CHAT_EVENT] = "javascript";
+        eventScriptType[PRESENCE_EVENT] = "javascript";
+*/
+        }
+
+    public  void    stopAvatarForward()
+        {
+        System.out.println("stopAvatarForward");
+        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Forward);
+        }
+
+    public  void    startAvatarForward()
+        {
+        System.out.println("startAvatarForward");
+        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Forward);
+        }
+
+    public  void    stopAvatarBack()
+        {
+        System.out.println("stopAvatarBack");
+        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Back);
+        }
+
+    public  void    startAvatarBack()
+        {
+        System.out.println("startAvatarBack");
+        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Back);
+        }
+
+    public  void    stopAvatarLeft()
+        {
+        System.out.println("stopAvatarLeft");
+        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Left);
+        }
+
+    public  void    startAvatarLeft()
+        {
+        System.out.println("startAvatarLeft");
+        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Left);
+        }
+
+    public  void    stopAvatarRight()
+        {
+        System.out.println("stopAvatarRight");
+        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Right);
+        }
+
+    public  void    startAvatarRight()
+        {
+        System.out.println("startAvatarRight");
+        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Right);
+        }
+
+    public  void    stopAvatarUp()
+        {
+        System.out.println("stopAvatarUp");
+        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Up);
+        }
+
+    public  void    startAvatarUp()
+        {
+        System.out.println("startAvatarUp");
+        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Up);
+        }
+
+    public  void    stopAvatarDown()
+        {
+        System.out.println("stopAvatarDown");
+        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Down);
+        }
+
+    public  void    startAvatarDown()
+        {
+        System.out.println("startAvatarDown");
+        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Down);
+        }
+
+    public  void    setAvatarRenderer(AvatarImiJME AvatarRenderer)
+        {
+        avatarRenderer = AvatarRenderer;
+        }
+
+/**
+ * contentCreateDir - method for calls from a script to create a directory path in the user area on the content area
+ *
+ * @param theDir String contains the directory path to create
+ * @return
+ */
+    public int contentCreateDir(String theDir)
+        {
+        int     i = -1;
+        int     j = 0;
+        
+        List<ContentNode> children = null;
+        ContentCollection current = null;
+        
+        try {
+
+            ContentCollection ccr = repo.getUserRoot();
+            System.out.println("The root node = " + ccr.getName());
+            current = ccr;
+            
+            String[] result = theDir.split("/");
+            for (i = 0; i < result.length; i++) 
+                {
+                int size = current.getChildren().size();
+                children = current.getChildren();
+            
+                for(j = 0; j < size; j++)
+                    {
+                    String name = children.get(j).getName();
+                    System.out.println("Checking node = " + name);
+                    if(name.equals(result[i]))
+                        {
+                        System.out.println("Don't need to create node - " + result[i] + " - get it instead");
+                        current = (ContentCollection) current.getChild(result[i]);
+                        break;
+                        }
+                    }
+                 System.out.println("Exit for loop with " + j);
+                 if(j == size)
+                    {
+                    System.out.println("Creating the node - " + result[i]);
+                    current.createChild(result[i], Type.COLLECTION);
+                    current = (ContentCollection) current.getChild(result[i]);
+                    }
+                }
+            return 0;
+            } 
+        catch (ContentRepositoryException ex) 
+            {
+            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            return i;
+            }
         }
     
+    public void tryRepo(String dummy) 
+        {
+        List<ContentNode> children;
+        
+        try {
+            ContentCollection cc = repo.getUserRoot();
+//            cc.createChild("child1", Type.COLLECTION);
+            System.out.println("The user root node = " + cc.getName());
+            
+            ContentCollection ccr = repo.getRoot();
+            System.out.println("The root node = " + ccr.getName());
+
+            int size = ccr.getChildren().size();
+            children = ccr.getChildren();
+            
+            for(int i = 0; i < size; i++)
+                {
+                System.out.println("The node = " + children.get(i).getName());
+                
+                }
+            ContentCollection ccsr = repo.getSystemRoot();
+            System.out.println("The system root node = " + ccsr.getName());
+
+            
+        } catch (ContentRepositoryException ex) {
+            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        }
+   /**
+    * sendChat - send a chat message through the WL text chat interface
+    *
+    * @param msg String the message to be send
+    * @param from String the sender
+    * @param to String the receiver
+    */
+    public void sendChat(String msg, String from, String to)
+        {
+        System.out.println("Enter sendChat with message = " + msg + " from = " + from + " to = " + to);
+        chatConnection.sendTextMessage(msg, from, to);
+        }
+    /**
+     * getChat - establish the connection out to the text chat interface and the chat listener
+     * 
+     */
     public void getChat()
         {
+        System.out.println("Enter getChat");
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-        TextChatConnection connection = (TextChatConnection) session.getConnection(TextChatConnectionType.CLIENT_TYPE);
-        connection.sendTextMessage("This is a test", "", "");
+        chatConnection = (TextChatConnection) session.getConnection(TextChatConnectionType.CLIENT_TYPE);
+        chatConnection.addTextChatListener(new TextChatListener()
+            {
+
+            public void textMessage(String arg0, String arg1, String arg2)
+                {
+                System.out.println("Text message = " + arg0 + " - from " + arg1 + " - to " + arg2);
+                chatMessage = arg0;
+                chatFrom = arg1;
+                chatTo = arg2;
+                executeScript(CHAT_EVENT, null);
+                }
+
+            });
+        chatConnection.sendTextMessage("This is a test", "morris", "morrisford");
         }
 
+    /**
+     * yat - a query to determine what avatars are present and where - method to be called from a script
+     *
+     */
     public  void    yat()
-    {
-        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-        PresenceManager pm = PresenceManagerFactory.getPresenceManager(session);
-        for (PresenceInfo pi : pm.getAllUsers()) 
+        {
+        System.out.println("Enter yat");
+        if(presenceList != null)
             {
-            Cell myCell = ClientContext.getCellCache(session).getCell(pi.cellID);
-            CellTransform pos = cell.getWorldTransform();
- 
-            System.out.println("Avatar is at: " + pos);
+            presenceList.clear();
             }
-    }
+        else
+            {
+            presenceList = new ArrayList();
+            }
+        System.out.println("After presenceList");
+        for (PresenceInfo pi : pm.getAllUsers())
+            {
+            System.out.println("Inside yat loop - pi = " + pi.toString());
+            Cell myCell = ClientContext.getCellCache(clientSession).getCell(pi.cellID);
+            CellTransform pos = myCell.getWorldTransform();
 
+            Vector3f v3f = new Vector3f();
+            pos.getTranslation(v3f);
+
+            PresenceItem presenceItem = new PresenceItem();
+            presenceItem.x = v3f.x;
+            presenceItem.y = v3f.y;
+            presenceItem.z = v3f.z;
+            String[] result = pi.userID.toString().split("=");
+            String[] piTokens = result[1].split(" ");
+
+            presenceItem.name = piTokens[0];
+            presenceItem.clientID = pi.clientID;
+            presenceList.add(presenceItem);
+            System.out.println("In yat - set item - x = " + presenceItem.x + " z = " + presenceItem.z);
+            }
+        }
+    /**
+     * unrollYatsForIncoming - take the results from the last yat and send them one at a time out the incoming socket connection
+     *
+     */
+    public  void    unrollYatsForIncoming()
+        {
+        for(int i = 0; i < presenceList.size(); i++)
+            {
+            PresenceItem pi = (PresenceItem)presenceList.get(i);
+            String msg = String.format("001,%s,%d,%f,%f", pi.name, pi.clientID, pi.x, pi.z);
+            sendIncomingMessage(msg);
+            }
+        }
+    /**
+     * getYat - extablist a connection to the presence interface and a listener for presence events - script call method
+     *
+     */
+    public  void    getYat()
+        {
+        clientSession = LoginManager.getPrimary().getPrimarySession();
+        pm = PresenceManagerFactory.getPresenceManager(clientSession);
+        pm.addPresenceManagerListener(new PresenceManagerListener()
+            {
+
+            public void presenceInfoChanged(PresenceInfo pi, ChangeType arg1)
+                {
+                if(presenceList != null)
+                    {
+                    presenceList.clear();
+                    }
+                else
+                    {
+                    presenceList = new ArrayList();
+                    }
+
+                Cell myCell = ClientContext.getCellCache(clientSession).getCell(pi.cellID);
+                CellTransform pos = myCell.getWorldTransform();
+
+                Vector3f v3f = new Vector3f();
+                pos.getTranslation(v3f);
+
+                PresenceItem presenceItem = new PresenceItem();
+                presenceItem.x = v3f.x;
+                presenceItem.y = v3f.y;
+                presenceItem.z = v3f.z;
+                String[] result = pi.userID.toString().split("=");
+                String[] piTokens = result[1].split(" ");
+
+                presenceItem.name = piTokens[0];
+                presenceItem.clientID = pi.clientID;
+                presenceList.add(presenceItem);
+                System.out.println("In yat - set item - x = " + presenceItem.x + " z = " + presenceItem.z);
+
+                executeScript(PRESENCE_EVENT, null);
+                System.out.println("presenceInfoChanged - " + v3f + "Change type = " + arg1);
+                }
+
+            public void aliasChanged(String arg0, PresenceInfo arg1)
+                {
+                System.out.println("presence aliasChanged");
+                }
+
+            });
+        }
+
+    /**
+     * getInfo - get the 'info' for this cell and return
+     *
+     * @return String the info
+     */
     public String getInfo()
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In getInfo - info = " + this.info);
         return this.info;
         }
-    
+
+    /**
+     * getCellName - get the cell name and return it
+     *
+     * @return String the name
+     */
     public String getCellName()
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In getCellName - cellName = " + this.scriptClump);
         return this.scriptClump;
         }
     
-@Override
+    /**
+     * setClientState - set the properties for this cell
+     *
+     * @param clientState CellComponentClientState
+     */
+    @Override
     public void setClientState(CellComponentClientState clientState) 
         {
         super.setClientState(clientState);
@@ -208,9 +609,15 @@ public class ScriptingComponent extends CellComponent
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setClientState - info = " + info + " cellName (scriptClump) = " + scriptClump + " scriptURL = " + scriptURL);
         }
 
+    /**
+     * setStatus
+     *
+     * @param status CellStatus
+     */
     @Override
     public void setStatus(CellStatus status)
         {
+//        mySleep(1000);
         switch(status)
             {
             case ACTIVE:
@@ -220,6 +627,8 @@ public class ScriptingComponent extends CellComponent
                 ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
 /* Get local node */
                 CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+
+                System.out.println("In component setStatus - renderer = " + ret);
                 Entity mye = ret.getEntity();
                 RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
                 localNode = rc.getSceneRoot();
@@ -264,8 +673,8 @@ public class ScriptingComponent extends CellComponent
                                         }
                                     if(watchMessages.contains(new Float(ice.getIceCode())))
                                         {
-                                        stateInt[19] = ice.getIceCode();
-                                        stateString[19] = ice.getPayload();
+                                        ICECode = ice.getIceCode();
+                                        ICEMessage = ice.getPayload();
                                         executeScript(INTERCELL_EVENT, null);
                                         }
                                     else
@@ -353,19 +762,31 @@ public class ScriptingComponent extends CellComponent
             }
         }
 
-/*
-Tell the message receiver for messages from server to broadcast incoming ICE messages
-*/
+    /**
+     * makeMeICEREflector - Tell the message receiver for messages from server to broadcast incoming ICE messages - script method
+     *
+     */
     public void makeMeICEReflector()
         {
         iAmICEReflector = 1;
         }
     
+    /**
+     * makeMeNotICEReflector - Tell the message receiver to stop reflecting messages from server to broadcast incoming ICE messages - script method
+     */
     public void makeMeNotICEReflector()
         {
         iAmICEReflector = 0;
         }
-    
+
+    /**
+     * establishSocket - initialize an outgoing socket connection (int parameters) - script method
+     *
+     * @param code int code for ICE messages that will be incoming from this socket
+     * @param errorCode int code for ICE error messages that may come in from this socket
+     * @param ip String the ip address for the connection
+     * @param port int the port for the connection
+     */
     public void establishSocket(int code, int errorCode, String ip, int port)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket int version - Message code " + code + " Error code = " + errorCode);
@@ -373,13 +794,28 @@ Tell the message receiver for messages from server to broadcast incoming ICE mes
         sif.doIt();
         }
     
+    /**
+     * establishSocket - initialize an outgoing socket connection (float parameters) - script method
+     *
+     * @param code float code for ICE messages that will be incoming from this socket
+     * @param errorCode float code for ICE error messages that may come in from this socket
+     * @param ip String the ip address for the connection
+     * @param port float the port for the connection
+     */
     public void establishSocket(float code, float errorCode, String ip, float port)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket float version - Message code " + code + "Error code = " + errorCode);
         sif = new SocketInterface(ip, (int)port, (int)code, (int)errorCode);
         sif.doIt();
         }
-    
+
+    /**
+     * establishIncomingSocket - initialize a socket to wait for incoming socket connections (int parameters) - script method
+     *
+     * @param code int code for ICE messages that will be incoming from this socket
+     * @param errorCode int code for ICE error messages that may come in from this socket
+     * @param port int port to use to listen for connections
+     */
     public void establishIncomingSocket(int code, int errorCode, int port)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket int version - Message code " + code + " Error code = " + errorCode);
@@ -387,23 +823,47 @@ Tell the message receiver for messages from server to broadcast incoming ICE mes
         isif.doIt();
         }
     
+    /**
+     * establishIncomingSocket - initialize a socket to wait for incoming socket connections (float parameters) - script method
+     *
+     * @param code float code for ICE messages that will be incoming from this socket
+     * @param errorCode float code for ICE error messages that may come in from this socket
+     * @param port int float to use to listen for connections
+     */
     public void establishIncomingSocket(float code, float errorCode, float port)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket float version - Message code " + code + "Error code = " + errorCode);
         isif = new IncomingSocketInterface((int)port, (int)code, (int)errorCode);
         isif.doIt();
         }
-/*
-Send a message on the socket connection
-*/    
+
+    /**
+     * sendMessage - send a message on the outgoing socket connection - script message
+     *
+     * @param buffer String the message to send
+     */
     public void sendMessage(String buffer)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : sendMessage - Message code "); 
         sif.sendBuffer(buffer);
         }
-/*
-Tell the ICE interface to allow messages with this message code to execute the ice script
-*/    
+
+    /**
+     * sendIncomingMessage - send a message on the incoming socket connection - script method
+     * 
+     * @param buffer String the message to send
+     */
+    public void sendIncomingMessage(String buffer)
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : sendMessage - Message code ");
+        isif.sendSocketMessage(buffer);
+        }
+
+    /**
+     * watchMessage - Tell the ICE interface to allow messages with this message code to execute the ice script - script method
+     *
+     * @param code float code
+     */
     public void watchMessage(float code)
         {
         if(watchMessages.contains(new Float(code)))
@@ -416,9 +876,12 @@ Tell the ICE interface to allow messages with this message code to execute the i
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " added to watch list");
             }
         }
-/*
-Tell the ICE interface to start ignoring messages with this message code
-*/    
+
+    /**
+     * dontWatchMessage - Tell the ICE interface to stop allowing messages with this code - script method
+     *
+     * @param code float code
+     */
     public void dontWatchMessage(float code)
         {
         if(watchMessages.contains(new Float(code)))
@@ -431,7 +894,14 @@ Tell the ICE interface to start ignoring messages with this message code
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " not in watch list");
             }
         }
-    
+
+    /**
+     * establishProximity - connect to the proximity interface and establish a proximity listener with three radii - script method
+     *
+     * @param outer float the outer most radius
+     * @param middle float the middle radius
+     * @param inner float the inner most radius
+     */
     public void establishProximity(float outer, float middle, float inner)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishProximity - outer, middle, inner = " + outer + ", " + middle + ", " + inner);
@@ -442,8 +912,8 @@ Tell the ICE interface to start ignoring messages with this message code
                 {
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
-                stateInt[18] = proximityIndex;
-                stateBoolean[18] = entered;
+                proximityBounds = proximityIndex;
+                proximityDir = entered;
                 executeScript(PROXIMITY_EVENT, null);
                 }
             }, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()), new BoundingSphere((float)middle, new Vector3f()), new BoundingSphere((float)inner, new Vector3f())});
@@ -451,41 +921,49 @@ Tell the ICE interface to start ignoring messages with this message code
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : Prox class = " + cell.getComponent(ProximityComponent.class));                
         }
 
-/*
-PostMessageEvent - Send a message on the intercell interface
-This method is for scripting engines that pass integer variable as integers 
-*/
+    /**
+     * postMessageEvent - send an ICE message (int parameter) - script method
+     *
+     * @param payload String contents of the message
+     * @param Code int the message code
+     */
     public void postMessageEvent(String payload, int Code)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
         ClientContext.getInputManager().postEvent(new IntercellEvent(payload, Code));
         }
     
-/*
-PostMessageEvent - Send a message on the intercell interface
-This method is for scripting engines that pass integer variable as floats 
-*/
+    /**
+     * postMessageEvent - send an ICE message (float parameter) - script method
+     *
+     * @param payload String contents of the message
+     * @param Code float the message code
+     */
     public void postMessageEvent(String payload, float Code)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
         ClientContext.getInputManager().postEvent(new IntercellEvent(payload, (int)Code));
         }
 
-/* 
- postMessageEventToServer - Send a message to the CellMO for forwarding to mirror cells on other clients
- This method is for scripting engines that pass integer variable as floats 
-*/
+    /**
+     * postMessageEventToServer - send an ICE message to the ScriptingComponentMO to be forwarded to the companion ScriptingComponent on other clients (int parameter)- script method
+     *
+     * @param payload String the message
+     * @param Code int message code
+     */
     public void postMessageEventToServer(String payload, float Code)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEventToServer with payload = " + payload + " code = " + Code);
         ScriptingComponentICEMessage msg = new ScriptingComponentICEMessage(cell.getCellID(), (int)Code, payload);
         channelComp.send(msg);
         }
-/* 
- postMessageEventToServer - Send a message to the CellMO for forwarding to mirror cells on other clients
- This method is for scripting engines that pass integer variable as integers 
-*/
 
+    /**
+     * postMessageEventToServer - send an ICE message to the ScriptingComponentMO to be forwarded to the companion ScriptingComponent on other clients (float parameter)- script method
+     *
+     * @param payload String the message
+     * @param Code float message code
+     */
     public void postMessageEventToServer(String payload, int Code)
         {
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEventToServer with payload = " + payload + " code = " + Code);
@@ -538,12 +1016,6 @@ This method is for scripting engines that pass integer variable as floats
         return stateBoolean[which];
         }
     
-    public void getFrameRate()
-        {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter getFrameRate fr = " + frameRate + " st = " + new Float(frameRate).toString());
-        stateFloat[3] = frameRate;
-        }
-    
     public void setFrameRate(float frames)
         {
         frameRate = frames;
@@ -558,11 +1030,6 @@ This method is for scripting engines that pass integer variable as floats
     public void putName(String theName)
         {
     testName = theName;    
-        }
-    
-    public void getAniFrame()
-        {
-        stateInt[0] = aniFrame;
         }
     
     public void setScriptName(String name, int which)
@@ -648,20 +1115,26 @@ This method is for scripting engines that pass integer variable as floats
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : getScriptURL - get " + scriptURL);
         return scriptURL;
         }
+
+    public void clearScriptMap()
+        {
+        scriptMap.clear();
+        }
     
     public void executeScript(int eventType, Vector3f coorW)
        {
        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Start of executeScript - this = " + this + " Frame Rate = " + frameRate);
        worldCoor = coorW;
        
-       stateString[0] = "Morris - state string 0";
-       
        try
            {
            String thePath = buildScriptPath(eventNames[eventType]);
            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : scriptPath = " + thePath);
            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script type = " + eventScriptType[eventType]);
-           ScriptEngineManager engineManager = new ScriptEngineManager();
+           WonderlandSession session = cell.getCellCache().getSession();
+           ClassLoader cl = session.getSessionManager().getClassloader();
+           System.out.println("Inside the executeScript - just before engineManager");
+           ScriptEngineManager engineManager = new ScriptEngineManager(cl);
            ScriptEngine jsEngine = engineManager.getEngineByName(eventScriptType[eventType]);  
            Bindings bindings = jsEngine.createBindings();
            
@@ -672,13 +1145,28 @@ This method is for scripting engines that pass integer variable as floats
            bindings.put("stateInt", stateInt);
            bindings.put("stateBoolean", stateBoolean);
            bindings.put("stateFloat", stateFloat);
-           bindings.put("name", testName);
-           bindings.put("testInt", testInt);
            bindings.put("Event", eventType);
            bindings.put("FrameRate", frameRate);
            bindings.put("eventNames", eventNames);
            bindings.put("eventScriptType", eventScriptType);
+           bindings.put("initialX", initialX);
+           bindings.put("initialY", initialY);
+           bindings.put("initialZ", initialZ);
+           bindings.put("coorX", coorX);
+           bindings.put("coorY", coorY);
+           bindings.put("coorZ", coorZ);
+           bindings.put("chatMessage", chatMessage);
+           bindings.put("chatFrom", chatFrom);
+           bindings.put("chatTo", chatTo);
+           bindings.put("ICECode", ICECode);
+           bindings.put("ICEMessage", ICEMessage);
+           bindings.put("ICEEventCode", ICEEventCode);
+           bindings.put("ICEEventMessage", ICEEventMessage);
+           bindings.put("proximityBounds", proximityBounds);
+           bindings.put("proximityDir", proximityDir);
+           bindings.put("aniFrame", aniFrame);
            
+
  //          if((jsEngine instanceof Compilable) && !(jsEngine instanceof Invocable))
            if(jsEngine instanceof Compilable)
                {
@@ -744,16 +1232,16 @@ This method is for scripting engines that pass integer variable as floats
     public void getInitialPosition()
         {
         Vector3f v3f = localNode.getLocalTranslation();
-        stateFloat[0] = v3f.x;
-        stateFloat[1] = v3f.y;
-        stateFloat[2] = v3f.z;
+        initialX = v3f.x;
+        initialY = v3f.y;
+        initialZ = v3f.z;
         }
 
     public void getWorldCoor()
         {
-        stateFloat[0] = worldCoor.x;
-        stateFloat[1] = worldCoor.y;
-        stateFloat[2] = worldCoor.z;
+        coorX = worldCoor.x;
+        coorY = worldCoor.y;
+        coorZ = worldCoor.z;
         }
    
     public void setTranslation(float x, float y, float z, int notify)
@@ -785,8 +1273,6 @@ This method is for scripting engines that pass integer variable as floats
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setRotation - Original rotation = " + orig);
         roll = new Quaternion();
         roll.fromAngleNormalAxis( w , new Vector3f(x, y, z) );
-//        roll.fromAngleAxis( w , new Vector3f(x, y, z) );
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setRotation - New rotation = " + roll);
         SceneWorker.addWorker(new WorkCommit() 
             {
             public void commit() 
@@ -985,8 +1471,17 @@ This method is for scripting engines that pass integer variable as floats
         public  float   xAxis;
         public  float   yAxis;
         public  float   zAxis;
-        public  float     delay;
+        public  float   delay;
         public  String  rest;
+        }
+
+    class PresenceItem
+        {
+        public  float   x;
+        public  float   y;
+        public  float   z;
+        public  String  name;
+        public  BigInteger  clientID;
         }
 
     public int playAnimationFrame()
@@ -1296,8 +1791,8 @@ This method is for scripting engines that pass integer variable as floats
             IntercellEvent ice = (IntercellEvent)event;
             if(watchMessages.contains(new Float(ice.getCode())))
                 {
-                stateInt[19] = ice.getCode();
-                stateString[19] = ice.getPayload();
+                ICEEventCode = ice.getCode();
+                ICEEventMessage = ice.getPayload();
                 executeScript(INTERCELL_EVENT, null);
                 System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - payload = " + ice.getPayload() + " Code = " + ice.getCode());
                 }

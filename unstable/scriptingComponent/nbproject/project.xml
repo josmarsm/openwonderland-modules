@@ -24,14 +24,20 @@
             </folders>
             <ide-actions>
                 <action name="build">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>package</target>
                 </action>
                 <action name="clean">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>clean</target>
                 </action>
                 <action name="rebuild">
+                    <script>nbproject/nbjdk.xml</script>
                     <target>clean</target>
                     <target>package</target>
+                </action>
+                <action name="javadoc">
+                    <target>build</target>
                 </action>
             </ide-actions>
             <view>
@@ -48,6 +54,7 @@
                     <ide-action name="build"/>
                     <ide-action name="rebuild"/>
                     <ide-action name="clean"/>
+                    <ide-action name="javadoc"/>
                     <action>
                         <label>Deploy Module to Server</label>
                         <target>deploy</target>
@@ -59,7 +66,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../wonderland-trunk/lib/jaxb/jaxb-api.jar:../wonderland-trunk/core/ext/common/mtgame.jar:../wonderland-trunk/core/ext/jme20/target/jme.jar:../wonderland-trunk/core/build/lib/wonderland-client.jar:../wonderland-trunk/core/build/lib/wonderland-common.jar:../wonderland-trunk/core/build/lib/wonderland-server.jar:../wonderland-trunk/core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:../wonderland-trunk/core/ext/sgs/sgs-client-0.9.8/lib/sgs-shared-1.3.jar:../wonderland-trunk/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../wonderland-trunk/modules/tools/sharedstate/build/client/sharedstate-client.jar:../wonderland-trunk/modules/tools/sharedstate/build/server/sharedstate-server.jar:../wonderland-trunk/modules/dist/sharedstate.jar:../wonderland-trunk/modules/tools/text-chat/build/client/textchat-client.jar:../wonderland-trunk/modules/tools/presence-manager/build/lib/client/presencemanager-client.jar</classpath>
+                <classpath mode="compile">../wonderland/lib/jaxb/jaxb-api.jar:../wonderland/core/ext/common/mtgame.jar:../wonderland/core/ext/jme20/target/jme.jar:../wonderland/core/build/lib/wonderland-client.jar:../wonderland/core/build/lib/wonderland-common.jar:../wonderland/core/build/lib/wonderland-server.jar:../wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:../wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-shared-1.3.jar:../wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../wonderland/modules/tools/sharedstate/build/client/sharedstate-client.jar:../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar:../wonderland/modules/dist/sharedstate.jar:../wonderland/modules/tools/text-chat/build/client/textchat-client.jar:../wonderland/modules/tools/presence-manager/build/lib/client/presencemanager-client.jar:../wonderland/modules/foundation/content-repository/build/client/contentrepo-client.jar:../wonderland/modules/world/avatarbase/lib/avatars.jar:../wonderland/core/ext/jme20/target/jme-font.jar:../wonderland/core/ext/jme20/target/jme-scene.jar:../wonderland/modules/world/avatarbase/build/client/avatarbase-client.jar:../wonderland/modules/world/avatarbase/build/server/avatarbase-server.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

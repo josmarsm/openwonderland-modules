@@ -57,7 +57,9 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
     public static final int MESSAGE4_EVENT = 18;
 
     public static final int INTERCELL_EVENT = 19;
-            
+    public static final int CHAT_EVENT = 20;
+    public static final int PRESENCE_EVENT = 21;
+
 
     public String getDisplayName() 
         {
@@ -71,7 +73,7 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         ScriptingComponentServerState state = new ScriptingComponentServerState();
         state.setInfo("Default");
         state.setCellName("default");
-        state.setScriptURL("http://localhost:8800/test/compiled_models");
+        state.setScriptURL("http://172.16.126.9:8080/webdav/content/");
         eventNames[MOUSE1_EVENT] = "mouse1.js";
         eventNames[MOUSE2_EVENT] = "mouse2.js";
         eventNames[MOUSE3_EVENT] = "mouse3.js";
@@ -92,6 +94,8 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         eventNames[MESSAGE3_EVENT] = "message3.js";
         eventNames[MESSAGE4_EVENT] = "message4.js";
         eventNames[INTERCELL_EVENT] = "ice.js";
+        eventNames[CHAT_EVENT] = "chat.js";
+        eventNames[PRESENCE_EVENT] = "presence.js";
 
         eventScriptType[MOUSE1_EVENT] = "javascript";
         eventScriptType[MOUSE2_EVENT] = "javascript";
@@ -113,6 +117,9 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         eventScriptType[MESSAGE3_EVENT] = "javascript";
         eventScriptType[MESSAGE4_EVENT] = "javascript";
         eventScriptType[INTERCELL_EVENT] = "javascript";
+        eventScriptType[CHAT_EVENT] = "javascript";
+        eventScriptType[PRESENCE_EVENT] = "javascript";
+
         state.setEventNames(eventNames);
         state.setScriptType(eventScriptType);
         return (T)state;
