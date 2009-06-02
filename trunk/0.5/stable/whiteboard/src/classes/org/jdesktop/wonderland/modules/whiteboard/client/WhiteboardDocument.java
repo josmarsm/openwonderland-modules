@@ -189,6 +189,8 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
             if (dialog == null) {
                 // create a HUD text dialog
                 dialog = new HUDInputDialog(whiteboardWindow.getCell());
+                dialog.setLocation(500, 400);
+                dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.2f));
 
                 // add the text dialog to the HUD
                 HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
@@ -219,17 +221,8 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
                 dialog.addPropertyChangeListener(plistener);
             }
 
-            if (whiteboardWindow.getDisplayMode() == DisplayMode.HUD) {
-                // showing controls on HUD
-                dialog.setLocation(500, 400);
-                dialog.setWorldVisible(false);
-                dialog.setVisible(true);
-            } else {
-                // showing controls in world
-                dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.2f));
-                dialog.setVisible(false);
-                dialog.setWorldVisible(true);
-            }
+            dialog.setVisible(whiteboardWindow.getDisplayMode() == DisplayMode.HUD);
+            dialog.setWorldVisible(whiteboardWindow.getDisplayMode() != DisplayMode.HUD);
         }
     };
 
