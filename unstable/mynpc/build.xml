@@ -14,7 +14,7 @@
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
         <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
-	<path location="${wonderland.dir}/../scriptingComponent/build/client/scriptingComponent-client.jar"/>
+	<path location="${wonderland.dir}/../scriptingComponent/build/client/scripting-component-module-client.jar"/>
     </pathconvert>
        
     <pathconvert property="module-server.classpath">
