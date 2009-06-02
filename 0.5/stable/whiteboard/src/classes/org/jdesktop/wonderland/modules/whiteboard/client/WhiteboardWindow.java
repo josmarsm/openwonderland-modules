@@ -23,6 +23,7 @@ import com.jme.math.Vector3f;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
@@ -37,7 +38,6 @@ import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.swing.JSVGCanvas;
@@ -185,7 +185,7 @@ public class WhiteboardWindow extends Window2D {
     }
 
     public void showControls(final boolean visible) {
-        SwingUtilities.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
 
             public void run() {
                 logger.info("show controls: " + visible);
@@ -201,33 +201,24 @@ public class WhiteboardWindow extends Window2D {
 
                     // create HUD control panel
                     controlComponent = mainHUD.createComponent(controls, cell);
+                    controlComponent.setLocation(500, 100);
 
                     // add HUD control panel to HUD
                     mainHUD.addComponent(controlComponent);
                 }
 
-//                if (windowComponent == null) {
-//                    // create HUD component for whiteboard window
-//                    windowComponent = mainHUD.createComponent(this, cell);
-//
-//                    // add whiteboard window to HUD
-//                    mainHUD.addComponent(windowComponent);
-//                    windowComponent.setLocation(500, 500);
-//                }
-
                 // change visibility of controls
                 if (getDisplayMode() == DisplayMode.HUD) {
-                    controlComponent.setLocation(500, 100);
                     if (controlComponent.isWorldVisible()) {
                         controlComponent.setWorldVisible(false);
                     }
                     controlComponent.setVisible(visible);
                 } else {
-                    controlComponent.setWorldLocation(new Vector3f(-2.0f, -1.0f, 0.1f));
+                    controlComponent.setWorldLocation(new Vector3f(2.0f, -4.7f, 0.5f));
                     if (controlComponent.isVisible()) {
                         controlComponent.setVisible(false);
                     }
-                    controlComponent.setWorldVisible(visible);     // show world view
+                    controlComponent.setWorldVisible(visible); // show world view
                 }
 
                 updateMenu();
