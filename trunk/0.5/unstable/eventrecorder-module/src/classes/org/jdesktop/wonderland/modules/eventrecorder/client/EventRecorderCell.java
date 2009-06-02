@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.client;
 
-import java.awt.Dialog;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,7 +51,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderClientState;
 import org.jdesktop.wonderland.modules.eventrecorder.common.Tape;
@@ -76,12 +74,12 @@ public class EventRecorderCell extends Cell {
     private DefaultListModel tapeListModel;
     private DefaultListSelectionModel tapeSelectionModel;
     private ReelForm reelForm;
-    private boolean isSelectingTape = false;
 
     public EventRecorderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         isRecording = false;
-        //eventRecorderLogger.info("cellID: " + cellID);
+        createTapeModels();
+        reelForm = new ReelForm(this);
     }
 
     /**
@@ -150,8 +148,7 @@ public class EventRecorderCell extends Cell {
         super.setClientState(setupData);
         Set<Tape> tapes = ((EventRecorderClientState)setupData).getTapes();
         Tape selectedTape = ((EventRecorderClientState)setupData).getSelectedTape();
-        //createTapeModels(tapes, selectedTape);
-        createTapeModels();
+        updateTapeModels(tapes, selectedTape);
 
         isRecording = ((EventRecorderClientState)setupData).isRecording();
         userName = ((EventRecorderClientState)setupData).getUserName();
@@ -165,7 +162,7 @@ public class EventRecorderCell extends Cell {
                 logger.warning("userName should be null");
             }
         }
-        reelForm = new ReelForm(this);
+        
     }
 
     /**
@@ -294,15 +291,6 @@ public class EventRecorderCell extends Cell {
         getChannel().send(msg);
         
     }
-
-    private void setUsed(Tape aTape) {
-        eventRecorderLogger.info("setUsed: " + aTape);
-        aTape.setUsed();
-        EventRecorderCellChangeMessage msg = EventRecorderCellChangeMessage.setTapeUsed(getCellID(), aTape.getTapeName());
-        getChannel().send(msg);
-    }
-
-
 
     void stop() {
         eventRecorderLogger.info("stop");
