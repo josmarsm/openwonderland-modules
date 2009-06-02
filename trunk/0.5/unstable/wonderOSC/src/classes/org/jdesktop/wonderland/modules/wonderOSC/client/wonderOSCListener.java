@@ -116,11 +116,9 @@ class avatarMoveRight extends wonderOSCListener{
 class sunSpotXYZ extends wonderOSCListener{
     @Override
     void act(String address,  java.lang.Object[] args){
-        System.out.println("recibido ");
         Float X= (Float) args[0];
         Float Y= (Float) args[1];
         Float Z= (Float) args[2];
-        System.out.println( X +" " +Y+" " +Z);
         
         if(Y>0.4){
             avatarCharacter.triggerActionStop(TriggerNames.Move_Back);
@@ -171,7 +169,7 @@ class listenerFactory{
 			return null;
 		}
         catch (Exception e) {					// No puedo instanciar la clase
-			System.out.println("class not instantiated");
+			 System.out.println("class not instantiated");
 			return null;
 		}
     }
