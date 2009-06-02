@@ -29,19 +29,12 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 public class EventRecorderCellChangeMessage extends CellMessage {
 
-    
-    
-
-    
 
     private EventRecorderCellChangeMessage(CellID cellID) {
         super(cellID);
     }
 
-    
-
     public enum EventRecorderAction {
-
         RECORD,
         TAPE_USED,
         TAPE_SELECTED,

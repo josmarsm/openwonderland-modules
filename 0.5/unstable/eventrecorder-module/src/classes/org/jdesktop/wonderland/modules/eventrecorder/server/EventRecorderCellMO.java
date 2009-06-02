@@ -45,6 +45,7 @@ import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.ListRecordingsListener;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 
 /**
  *
@@ -69,6 +70,7 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
         int instanceNumber = ++INSTANCE_COUNT;
         serverState = new EventRecorderCellServerState();
         recorderName = "Recorder" + instanceNumber;
+        createTapes();
         serverState.setRecording(false);
     }
 
@@ -163,8 +165,29 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
         return serverState.isRecording();
     }
 
+    private void createTapes() {
+        WFSRecordingList recordingList = CellExporterUtils.getWFSRecordings();
+        String[] tapeNames = recordingList.getRecordings();
+        for (int i = 0; i < tapeNames.length; i++) {
+                String name = tapeNames[i];
+                Tape aTape = new Tape(name);
+                aTape.setUsed();
+                serverState.setSelectedTape(aTape); //Selected tape is last existing tape
+                serverState.addTape(aTape);
+        }
+        if (serverState.getSelectedTape() == null) {
+            eventRecorderLogger.info("no selected tape");
+            serverState.setSelectedTape(new Tape("Untitled Tape"));
+            serverState.addTape(serverState.getSelectedTape());
+        }
+    }
+
     private void updateTapes(String[] tapeNames) {
         //tapeNames are the names of the recordings as known to the web service
+        //If there's no tapes, do nothing
+        if (tapeNames.length < 1) {
+            return;
+        }
         //firstly, remove all the existing tape names
         serverState.clearTapes();
         //Now add a tape of each name
@@ -243,18 +266,6 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
         //getChannel().sendAll(clientID, arcm);
     }
 
-
-    private void processTapeUsedMessage(WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
-        String tapeName = arcm.getTapeName();
-        for (Tape aTape : serverState.getTapes()) {
-            if(aTape.getTapeName().equals(tapeName)) {
-                aTape.setUsed();
-                // send a message to all clients
-                getChannel().sendAll(clientID, arcm);
-            }
-        }
-    }
-
     private void processTapeSelectedMessage(WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
         String tapeName = arcm.getTapeName();
         for (Tape aTape : serverState.getTapes()) {
@@ -285,6 +296,11 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
         //Let clients know that we're now recording, so that can change their UI
         // send a message to all clients
         EventRecorderCellChangeMessage arcm = EventRecorderCellChangeMessage.recordingMessage(cellID, isRecording(), serverState.getUserName());
+        getChannel().sendAll(null, arcm);
+        //The selected tape is no longer fresh
+        //Change its state and let clients know
+        serverState.getSelectedTape().setUsed();
+        arcm = EventRecorderCellChangeMessage.setTapeUsed(cellID, serverState.getSelectedTape().getTapeName());
         getChannel().sendAll(null, arcm);
     }
 
@@ -323,9 +339,6 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
             switch (arcm.getAction()) {
                 case RECORD:
                     cellMO.processRecordMessage(clientID, arcm);
-                    break;
-                case TAPE_USED:
-                    cellMO.processTapeUsedMessage(clientID, arcm);
                     break;
                 case TAPE_SELECTED:
                     cellMO.processTapeSelectedMessage(clientID, arcm);
