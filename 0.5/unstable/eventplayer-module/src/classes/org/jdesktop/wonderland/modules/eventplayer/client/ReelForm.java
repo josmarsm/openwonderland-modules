@@ -86,6 +86,7 @@ public class ReelForm extends javax.swing.JFrame {
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        tapesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         tapesList.setToolTipText("List of Available Tapes");
         jScrollPane1.setViewportView(tapesList);
 

@@ -20,28 +20,32 @@
 package org.jdesktop.wonderland.modules.eventplayer.common;
 
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 
+/**
+ * 
+ * @author Bernard Horan
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType( namespace="eventplayer" )
 public class Tape implements Serializable, Comparable {
 
     private String tapeName;
-    private boolean isFresh;
+
+    public Tape() {
+    }
     
     public Tape(String filename) {
-        isFresh = true;
+        this();
         this.tapeName = filename;
     }
 
-    public void setUsed() {
-        isFresh = false;
-    }
 
     @Override
     public String toString() {
         return tapeName;
-    }
-
-    public boolean isFresh() {
-        return isFresh;
     }
 
     public int compareTo(Object o) {

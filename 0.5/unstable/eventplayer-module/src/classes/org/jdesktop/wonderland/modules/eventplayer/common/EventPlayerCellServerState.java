@@ -19,7 +19,13 @@
 package org.jdesktop.wonderland.modules.eventplayer.common;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
@@ -29,29 +35,41 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  * @author Bernard Horan
  */
 @XmlRootElement(name="eventplayer-cell")
+// bind all non-static, non-transient fields
+// to XML unless annotated with @XmlTransient
+@XmlAccessorType(XmlAccessType.FIELD)
 @ServerState
 public class EventPlayerCellServerState extends CellServerState implements Serializable {
-    private int instanceNumber;
-    private Set<Tape> tapes;
+    @XmlElementWrapper(name = "tapes")
+    @XmlElement(name="tape")
+    private Set<Tape> tapes = new HashSet<Tape>();
+
     private Tape selectedTape;
-    private boolean isLoading;
+
     private String userName;
-    private String recordingDirectory;
+
+    @XmlAttribute(required=true)
+    private boolean isPlaying;
+
+
+    public void addTape(Tape aTape) {
+        tapes.add(aTape);
+    }
+
+    public void clearTapes() {
+        tapes.clear();
+    }
 
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.eventplayer.server.EventPlayerCellMO";
     }
 
-    public void setInstanceNumber(int instanceNumber) {
-        this.instanceNumber = instanceNumber;
+    public boolean isPlaying() {
+        return isPlaying;
     }
 
-    public void setLoading(boolean isLoading) {
-        this.isLoading = isLoading;
-    }
-
-    public void setRecordingDirectory(String recordingDirectory) {
-        this.recordingDirectory = recordingDirectory;
+    public void setPlaying(boolean p) {
+        isPlaying = p;
     }
 
     public void setSelectedTape(Tape selectedTape) {
@@ -64,5 +82,32 @@ public class EventPlayerCellServerState extends CellServerState implements Seria
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public Set<Tape> getTapes() {
+        return tapes;
+    }
+
+    public Tape getSelectedTape() {
+        return selectedTape;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(super.toString());
+        builder.append(" isPlayinging=");
+        builder.append(isPlaying);
+        builder.append(" userName=");
+        builder.append(userName);
+        builder.append(" selectedTape=");
+        builder.append(selectedTape);
+        builder.append(" tapes=");
+        builder.append(tapes);
+        return builder.toString();
     }
 }

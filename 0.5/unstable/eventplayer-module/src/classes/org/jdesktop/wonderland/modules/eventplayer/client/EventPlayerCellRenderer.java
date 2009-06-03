@@ -360,7 +360,7 @@ public class EventPlayerCellRenderer extends BasicRenderer {
             //rendererLogger.info("commit " + event + " for ");
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
             if (mbe.isClicked()) { // Handle Mouse Clicks
-                 ((EventPlayerCell) cell).setReelFormVisible(true);
+                 ((EventPlayerCell) cell).openReelForm();
 		    }
                 
         }

@@ -34,10 +34,11 @@ public class EventPlayerClientState extends CellClientState {
 
     /** Default constructor */
     public EventPlayerClientState() {
+        super();
     }
 
      public EventPlayerClientState(Set<Tape> tapes, Tape selectedTape, boolean isPlaying, String userName) {
-        super();
+        this();
         this.tapes = tapes;
         this.selectedTape = selectedTape;
         this.isPlaying = isPlaying;

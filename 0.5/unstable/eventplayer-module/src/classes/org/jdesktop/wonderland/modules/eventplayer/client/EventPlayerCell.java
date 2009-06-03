@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
@@ -37,7 +38,14 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -45,6 +53,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerClientState;
 import org.jdesktop.wonderland.modules.eventplayer.common.Tape;
+import org.jdesktop.wonderland.modules.eventplayer.common.TapeStateMessageResponse;
 
 /**
  *
@@ -54,6 +63,9 @@ import org.jdesktop.wonderland.modules.eventplayer.common.Tape;
 public class EventPlayerCell extends Cell {
 
     private static final Logger eventPlayerLogger = Logger.getLogger(EventPlayerCell.class.getName());
+
+    @UsesCellComponent private ContextMenuComponent contextComp = null;
+    private ContextMenuFactorySPI menuFactory = null;
 
     private boolean isPlaying;
     private String userName;
@@ -65,7 +77,8 @@ public class EventPlayerCell extends Cell {
     public EventPlayerCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         isPlaying = false;
-        eventPlayerLogger.info("cellID: " + cellID);
+        createTapeModels();
+        reelForm = new ReelForm(this);
     }
 
     /**
@@ -91,15 +104,39 @@ public class EventPlayerCell extends Cell {
      */
     @Override
     public boolean setStatus(CellStatus status) {
-        eventPlayerLogger.info("status: " + status);
+        //eventPlayerLogger.info("status: " + status);
         super.setStatus(status);
-        if (status.equals(CellStatus.ACTIVE)) {
+        if (status == CellStatus.ACTIVE) {
             //About to become visible, so add the message receiver
             getChannel().addMessageReceiver(EventPlayerCellChangeMessage.class, new EventPlayerCellMessageReceiver());
+            if (menuFactory == null) {
+                final ContextMenuActionListener l = new ContextMenuActionListener() {
+
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        openReelForm();
+                    }
+                };
+                menuFactory = new ContextMenuFactorySPI() {
+
+                    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                        return new ContextMenuItem[]{
+                                    new SimpleContextMenuItem("Open Tape...", l)
+                                };
+                    }
+                };
+                contextComp.addContextMenuFactory(menuFactory);
+            }
         }
-        if (status.equals(CellStatus.DISK)) {
+        if (status == CellStatus.DISK) {
             //Cleanup
-            getChannel().removeMessageReceiver(EventPlayerCellChangeMessage.class);
+            ChannelComponent channel = getChannel();
+            if (channel != null) {
+                getChannel().removeMessageReceiver(EventPlayerCellChangeMessage.class);
+            }
+            if (menuFactory != null) {
+                contextComp.removeContextMenuFactory(menuFactory);
+                menuFactory = null;
+            }
         }
         //No change in my status, so...
         return false;
@@ -117,11 +154,20 @@ public class EventPlayerCell extends Cell {
         super.setClientState(setupData);
         Set<Tape> tapes = ((EventPlayerClientState)setupData).getTapes();
         Tape selectedTape = ((EventPlayerClientState)setupData).getSelectedTape();
-        createTapeModels(tapes, selectedTape);
+        updateTapeModels(tapes, selectedTape);
 
         isPlaying = ((EventPlayerClientState)setupData).isPlaying();
         userName = ((EventPlayerClientState)setupData).getUserName();
-        reelForm = new ReelForm(this);
+        if(isPlaying) {
+            if (userName == null) {
+                logger.warning("userName should not be null");
+            }
+        }
+        if (!isPlaying) {
+            if (userName != null) {
+                logger.warning("userName should be null");
+            }
+        }
     }
 
     /**
@@ -173,18 +219,20 @@ public class EventPlayerCell extends Cell {
         }
     }
 
-    private void createTapeModels(Set<Tape> tapes, Tape selectedTape) {
+    private void createTapeModels() {
+        tapeListModel = new DefaultListModel();
+        tapeSelectionModel = new DefaultListSelectionModel();
+        tapeSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+    }
+    private void updateTapeModels(Set<Tape> tapes, Tape selectedTape) {
         List sortedTapes = new ArrayList(tapes);
         Collections.sort(sortedTapes);
-        tapeListModel = new DefaultListModel();
+        tapeListModel.clear();
+        tapeSelectionModel.clearSelection();
         for (Iterator it = sortedTapes.iterator(); it.hasNext();) {
             tapeListModel.addElement(it.next());
         }
-
-        tapeSelectionModel = new DefaultListSelectionModel();
-        tapeSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        int selectionIndex = sortedTapes.indexOf(selectedTape);
-        tapeSelectionModel.setSelectionInterval(selectionIndex, selectionIndex);
+        reelForm.selectTape(selectedTape);
     }
 
     private void loadRecording(String tapeName) {
@@ -233,11 +281,6 @@ public class EventPlayerCell extends Cell {
         } else {
             eventPlayerLogger.warning("Attempt to stop by non-initiating user");
         }
-        eventPlayerLogger.info("Children: " + getNumChildren());
-        List<Cell> children = this.getChildren();
-        for (Cell cell : children) {
-            eventPlayerLogger.info(cell.toString());
-        }
     }
 
     private void setPlaying(boolean b) {
@@ -260,13 +303,36 @@ public class EventPlayerCell extends Cell {
        }
    }
 
-    private String getCurrentUserName() {
-        return "USERNAME NOT SET";
+     private void selectTape(String tapeName) {
+        eventPlayerLogger.info("select tape: " + tapeName);
+        Enumeration tapes = tapeListModel.elements();
+        while (tapes.hasMoreElements()) {
+            Tape aTape = (Tape) tapes.nextElement();
+            if (aTape.getTapeName().equals(tapeName)) {
+                reelForm.selectTape(aTape);
+            }
+        }
     }
 
-    void setReelFormVisible(boolean aBoolean) {
-        eventPlayerLogger.info("set visible: " + aBoolean);
-        reelForm.setVisible(aBoolean);
+    private String getCurrentUserName() {
+        return getCellCache().getSession().getUserID().getUsername();
+    }
+
+    void openReelForm() {
+        //Let the server know I'm selecting a tape and wait to get a message back (processTapeStateMessage())
+        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.selectingTape(getCellID());
+        try {
+            TapeStateMessageResponse response = (TapeStateMessageResponse) getChannel().sendAndWait(msg);
+            if (response.getAction() == TapeStateMessageResponse.TapeStateAction.TAPE_STATE) {
+                //Need to open the form BEFORE updating models, otherwise ignored
+                reelForm.setVisible(true);
+                updateTapeModels(response.getTapes(), response.getSelectedTape());
+            } else {
+                eventPlayerLogger.severe("Failed response from server");
+            }
+        } catch (InterruptedException ex) {
+            eventPlayerLogger.log(Level.SEVERE, "connection with server interrupted", ex);
+        }
     }
     
 

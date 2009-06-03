@@ -32,45 +32,48 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerCellServerState;
 import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerClientState;
 import org.jdesktop.wonderland.modules.eventplayer.common.Tape;
+import org.jdesktop.wonderland.modules.eventplayer.common.TapeStateMessageResponse;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.ListRecordingsListener;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 
 /**
  *
- * Server side cell that represents the event recorder object in world.
- * Reponsible for receiving and sending messages to and from the client cell and managing the eventrecorder object
- * that actually does the work of recording.
+ * Server side cell that represents the event player object in world.
+ * Reponsible for receiving and sending messages to and from the client cell and managing the eventplayer object
+ * that actually does the work of loading and playing recordings.
  * @author Bernard Horan
  * 
  */
-public class EventPlayerCellMO extends CellMO {
+public class EventPlayerCellMO extends CellMO implements ListRecordingsListener {
     
     private static final Logger eventPlayerLogger = Logger.getLogger(EventPlayerCellMO.class.getName());
     private static int INSTANCE_COUNT = 0;
-    private int instanceNumber;
-    private Set<Tape> tapes = new HashSet<Tape>();
-    private Tape selectedTape = null;
-    private boolean isLoading;
-    private String userName;
-    private String recordingDirectory;
+    private EventPlayerCellServerState serverState;
     private String playerName;
     private ManagedReference<EventPlayer> playerRef;
-    private boolean isPlaying;
 
 
     public EventPlayerCellMO() {
         super();
         addComponent(new MovableComponentMO(this));
-        instanceNumber = ++INSTANCE_COUNT;
+        int instanceNumber = ++INSTANCE_COUNT;
+        serverState = new EventPlayerCellServerState();
         playerName = "Player" + instanceNumber;
-        recordingDirectory = "/tmp/EventRecordings/" + playerName;
         createTapes();
-        isLoading = false;
     }
 
     /**
@@ -111,9 +114,9 @@ public class EventPlayerCellMO extends CellMO {
             ClientCapabilities capabilities) {
         
         if (cellClientState == null) {
-            cellClientState = new EventPlayerClientState(tapes, selectedTape, isLoading, userName);
+            cellClientState = new EventPlayerClientState(serverState.getTapes(), serverState.getSelectedTape(), serverState.isPlaying(), serverState.getUserName());
         }
-        eventPlayerLogger.fine("cellClientState: " + cellClientState);
+        //eventPlayerLogger.fine("cellClientState: " + cellClientState);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -141,14 +144,7 @@ public class EventPlayerCellMO extends CellMO {
         eventPlayerLogger.info("Getting server state");
         /* Create a new EventRecorderCellServerState and populate its members */
         if (cellServerState == null) {
-            cellServerState = new EventPlayerCellServerState();
-            EventPlayerCellServerState state = (EventPlayerCellServerState)cellServerState;
-            state.setInstanceNumber(instanceNumber);
-            state.setTapes(tapes);
-            state.setSelectedTape(selectedTape);
-            state.setLoading(isLoading);
-            state.setUserName(userName);
-            state.setRecordingDirectory(recordingDirectory);
+            cellServerState = serverState;
         }
         return super.getServerState(cellServerState);
     }
@@ -169,70 +165,77 @@ public class EventPlayerCellMO extends CellMO {
     }
 
     private void createTapes() {
-        //Add any existing files
-        File tapeDir = new File(recordingDirectory);
-        if (!tapeDir.exists()) {
-            eventPlayerLogger.info("Non existent directory: " + tapeDir);
-            tapeDir.mkdirs();
+        WFSRecordingList recordingList = CellExporterUtils.getWFSRecordings();
+        String[] tapeNames = recordingList.getRecordings();
+        for (int i = 0; i < tapeNames.length; i++) {
+                String name = tapeNames[i];
+                Tape aTape = new Tape(name);
+                serverState.addTape(aTape);
         }
-        String[] tapeFiles = tapeDir.list(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".xml");
-            }
-        });
-        for (int i = 0; i < tapeFiles.length; i++) {
-                String string = tapeFiles[i];
-                eventPlayerLogger.info("tapeFile: " + string);
-                int index = string.indexOf(".xml");
-                Tape aTape = new Tape(string.substring(0, index));
-                aTape.setUsed();
-                selectedTape = aTape; //Selected tape is last existing tape
-                tapes.add(aTape);
-            }
-
-        if (selectedTape == null) {
-            eventPlayerLogger.info("no selected tape");
-            selectedTape = new Tape("Untitled Tape");
-            tapes.add(selectedTape);
+        if (serverState.getTapes().isEmpty()) {
+            eventPlayerLogger.warning("no tapes");
         }
     }
 
-    private String getPlayerFilename() {
-        return recordingDirectory + File.separator+ selectedTape.getTapeName();
+    private void updateTapes(String[] tapeNames) {
+        //tapeNames are the names of the recordings as known to the web service
+        //If there's no tapes, do nothing
+        if (tapeNames.length < 1) {
+            return;
+        }
+        //firstly, remove all the existing tape names
+        serverState.clearTapes();
+        //Now add a tape of each name
+        for (int i = 0; i < tapeNames.length; i++) {
+                String name = tapeNames[i];
+                Tape aTape = new Tape(name);
+                serverState.addTape(aTape);
+        }
+    }
+
+    private void processTapeStateMessage(WonderlandClientID clientID, WonderlandClientSender sender, EventPlayerCellChangeMessage arcm) {
+        eventPlayerLogger.info("clientID: " + clientID + ", sender: " + sender);
+        MessageID messageID  = arcm.getMessageID();
+        eventPlayerLogger.info("messageID: " + messageID);
+        CellExportManager mgr = AppContext.getManager(CellExportManager.class);
+        eventPlayerLogger.info("asynchronously requesting recordings");
+        //If successful, async method call to reocordingsListed()
+        //If not successful, async call to recordingsListfailed()
+        mgr.listRecordings(messageID, sender, clientID, this);
     }
 
     private void setPlaying(boolean p) {
-        if (isPlaying) {
+        if (serverState.isPlaying()) {
             //Already playing
             if (!p) {
                 stopPlaying();
             }
         } else {
-            //Not loading
+            //Not playing
             if (p) {
-                //Start loading
+                //Start playing
                 startPlaying();
             }
         }
-        isPlaying = p;
+        serverState.setPlaying(p);
     }
 
     private void createEventPlayer() {
         if (playerRef == null) {
-            EventPlayer eventPlayer = new EventPlayer(this, playerName);
+            EventPlayer eventPlayer = new EventPlayer(this);
             playerRef = AppContext.getDataManager().createReference(eventPlayer);
         }
     }
 
 
     private void loadRecording() {
-        //eventPlayerLogger.info("Load recording");
-        playerRef.get().loadRecording(selectedTape.getTapeName());
+        eventPlayerLogger.info("Load recording");
+        playerRef.get().loadRecording(serverState.getSelectedTape().getTapeName());
     }
 
     private void startPlaying() {
         eventPlayerLogger.info("Start Playing");
-        playerRef.get().startPlaying(selectedTape.getTapeName());
+        playerRef.get().startPlaying(serverState.getSelectedTape().getTapeName());
     }
 
     private void stopPlaying() {
@@ -242,7 +245,7 @@ public class EventPlayerCellMO extends CellMO {
 
     private void processPlayMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
         setPlaying(arcm.isPlaying());
-        userName = arcm.getUserName();
+        serverState.setUserName(arcm.getUserName());
 
         // send a message to all clients
         getChannel().sendAll(clientID, arcm);
@@ -250,14 +253,29 @@ public class EventPlayerCellMO extends CellMO {
 
     private void processTapeSelectedMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
         String tapeName = arcm.getTapeName();
-        for (Tape aTape : tapes) {
+        for (Tape aTape : serverState.getTapes()) {
             if(aTape.getTapeName().equals(tapeName)) {
-                selectedTape = aTape;
+                serverState.setSelectedTape(aTape);
                 // send a message to all clients
                 getChannel().sendAll(clientID, arcm);
                 loadRecording();
             }
         }
+    }
+
+    public void listRecordingsResult(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, WFSRecordingList recordings) {
+        eventPlayerLogger.info("received recordings: " + recordings.getRecordings());
+        updateTapes(recordings.getRecordings());
+        eventPlayerLogger.info("serverState: " + serverState);
+        TapeStateMessageResponse tsmr = TapeStateMessageResponse.tapeStateMessage(messageID, serverState);
+        eventPlayerLogger.info("responding to original synchronous request");
+        sender.send(clientID, tsmr);
+    }
+
+    public void listRecordingsFailed(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, String message, Exception ex) {
+        eventPlayerLogger.log(Level.SEVERE, message, ex);
+        TapeStateMessageResponse tsmr = TapeStateMessageResponse.tapeStateFailedMessage(messageID);
+        sender.send(clientID, tsmr);
     }
 
     private ChannelComponentMO getChannel() {
@@ -281,6 +299,11 @@ public class EventPlayerCellMO extends CellMO {
                 case PLAY:
                     cellMO.processPlayMessage(clientID, arcm);
                     break;
+                case REQUEST_TAPE_STATE:
+                    cellMO.processTapeStateMessage(clientID, sender, arcm);
+                    break;
+                default:
+                    eventPlayerLogger.severe("Unknown action type: " + arcm.getAction());
             }
         }
 

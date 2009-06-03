@@ -27,6 +27,14 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 
 public class EventPlayerCellChangeMessage extends CellMessage {
+
+    
+    public enum EventRecorderAction {
+        LOAD,
+        PLAY,
+        REQUEST_TAPE_STATE
+    };
+
     private EventRecorderAction action;
     private boolean isPlaying;
     private String userName;
@@ -37,10 +45,7 @@ public class EventPlayerCellChangeMessage extends CellMessage {
         super(cellID);
     }
 
-    public enum EventRecorderAction {
-        LOAD,
-        PLAY
-    };
+    
 
     
 
@@ -88,7 +93,11 @@ public class EventPlayerCellChangeMessage extends CellMessage {
     }
 
     
-
+    public static EventPlayerCellChangeMessage selectingTape(CellID cellID) {
+        EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
+        msg.action = EventRecorderAction.REQUEST_TAPE_STATE;
+        return msg;
+    }
     
 
     
