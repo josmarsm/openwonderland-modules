@@ -1,0 +1,326 @@
+Script started on Sat May 23 18:25:34 2009
+bash-3.2$ ant -v
+Apache Ant version 1.7.0 compiled on February 29 2008
+Buildfile: build.xml
+Detected Java version: 1.6 in: /System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home
+Detected OS: Mac OS X
+parsing buildfile /Users/morrisford/w5-trunk-5/mynpc/build.xml with URI = file:/Users/morrisford/w5-trunk-5/mynpc/build.xml
+Project base dir set to: /Users/morrisford/w5-trunk-5/mynpc
+[antlib:org.apache.tools.ant] Could not load definitions from resource org/apache/tools/ant/antlib.xml. It could not be found.
+ [property] Loading /Users/morrisford/w5-trunk-5/mynpc/my.module.properties
+Property "ant.file.wonderland-${module.name" has not been set
+Importing file /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-build.xml from /Users/morrisford/w5-trunk-5/mynpc/build.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-build.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-build.xml
+Importing file /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-setup.xml from /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-build.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-setup.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-setup.xml
+Override ignored for property "module.build-scripts.dir"
+Importing file /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml from /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-setup.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml
+Override ignored for property "top.dir"
+ [property] Loading Environment env.
+parsing buildfile jar:file:/Users/morrisford/w5-trunk-5/wonderland/lib/ant/ant-contrib.jar!/net/sf/antcontrib/antlib.xml with URI = jar:file:/Users/morrisford/w5-trunk-5/wonderland/lib/ant/ant-contrib.jar!/net/sf/antcontrib/antlib.xml
+Importing file /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/platform-setup.xml from /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/platform-setup.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/platform-setup.xml
+Property "env.DYLD_LIBRARY_PATH" has not been set
+ [property] Loading /Users/morrisford/w5-trunk-5/wonderland/my.build.properties
+ [property] Unable to find property file: /Users/morrisford/w5-trunk-5/wonderland/my.build.properties
+ [property] Loading /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.properties
+Override ignored for property "wonderland.dir"
+Importing file /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/classpath.xml from /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/classpath.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/classpath.xml
+[pathconvert] Set property jaxb.classpath = /Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/activation.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-api.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-xjc.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb1-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jsr173_1.0_api.jar
+[pathconvert] Set property ant.classpath = /Users/morrisford/w5-trunk-5/wonderland/lib/ant/ant.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/ant/ant-launcher.jar
+Property "build.verbose" has not been set
+Property "build-setup.echoed" has not been set
+[available] Found: nbproject
+ [macrodef] creating macro  unpack-lib-zip
+ [property] Loading /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module.properties
+Importing file /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/classpath.xml from /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-setup.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/classpath.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/classpath.xml
+Importing file /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml from /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-build.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml
+Override ignored for property "setup.build-scripts.dir"
+Override ignored for property "top.dir"
+Importing file /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml from /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml
+Skipped already imported file:
+   /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml
+ [property] Loading /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.properties
+Importing file /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/package-setup.xml from /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/package-setup.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/package-setup.xml
+ [macrodef] creating macro  wl-compile
+ [macrodef] creating macro  wl-compile-client
+ [macrodef] creating macro  wl-services
+Importing file /Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/core-setup.xml from /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-build.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/core-setup.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/core-setup.xml
+Override ignored for property "top.dir"
+Importing file /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml from /Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/core-setup.xml
+Skipped already imported file:
+   /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml
+ [property] Loading /Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/core.properties
+Importing file /Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/classpath.xml from /Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/core-setup.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/classpath.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/classpath.xml
+[pathconvert] Set property jme.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-gamestates.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-awt.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-audio.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-scene.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-model.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-collada.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-xml.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-terrain.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-font.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/lib/lwjgl/lwjgl_util.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/jogl.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/gluegen-rt.jar
+[pathconvert] Set property wonderland.lib.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/common/derby.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-beanutils-core.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-codec-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-httpclient-3.0.1.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-logging-1.1.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/swing-layout-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/mtgame.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/jbullet.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/vecmath.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javolution.jar
+[pathconvert] Set property darkstar.server.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-0.9.8.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-shared-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/db-4.5.20.jar
+[pathconvert] Set property darkstar.client.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-shared-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/mina-core-1.1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/slf4j-api-1.4.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/slf4j-jdk14-1.4.0.jar
+[pathconvert] Set property core-common-compile.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-gamestates.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-awt.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-audio.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-scene.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-model.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-collada.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-xml.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-terrain.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-font.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/lib/lwjgl/lwjgl_util.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/jogl.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/gluegen-rt.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/activation.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-api.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-xjc.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb1-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jsr173_1.0_api.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/Scenario.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/stun.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/scannotation-1.0.2.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javassist.jar
+[pathconvert] Set property core-common.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-gamestates.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-awt.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-audio.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-scene.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-model.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-collada.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-xml.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-terrain.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-font.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/lib/lwjgl/lwjgl_util.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/jogl.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/gluegen-rt.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/activation.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-api.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-xjc.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb1-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jsr173_1.0_api.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/Scenario.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/stun.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/scannotation-1.0.2.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javassist.jar:/Users/morrisford/w5-trunk-5/wonderland/core/build/lib/wonderland-common.jar
+[pathconvert] Set property core-client-compile.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-gamestates.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-awt.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-audio.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-scene.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-model.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-collada.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-xml.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-terrain.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-font.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/lib/lwjgl/lwjgl_util.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/jogl.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/gluegen-rt.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/activation.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-api.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-xjc.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb1-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jsr173_1.0_api.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/Scenario.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/stun.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/scannotation-1.0.2.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javassist.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/derby.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-beanutils-core.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-codec-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-httpclient-3.0.1.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-logging-1.1.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/swing-layout-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/mtgame.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/jbullet.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/vecmath.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javolution.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-shared-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/mina-core-1.1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/slf4j-api-1.4.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/slf4j-jdk14-1.4.0.jar
+[pathconvert] Set property core-client.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-gamestates.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-awt.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-audio.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-scene.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-model.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-collada.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-xml.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-terrain.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-font.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/lib/lwjgl/lwjgl_util.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/jogl.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/gluegen-rt.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/activation.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-api.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-xjc.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb1-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jsr173_1.0_api.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/Scenario.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/stun.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/scannotation-1.0.2.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javassist.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/derby.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-beanutils-core.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-codec-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-httpclient-3.0.1.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-logging-1.1.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/swing-layout-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/mtgame.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/jbullet.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/vecmath.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javolution.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-shared-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/mina-core-1.1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/slf4j-api-1.4.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/slf4j-jdk14-1.4.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/build/lib/wonderland-client.jar:/Users/morrisford/w5-trunk-5/wonderland/core/build/lib/wonderland-common.jar
+[pathconvert] Set property core-server-compile.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-gamestates.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-awt.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-audio.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-scene.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-model.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-collada.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-xml.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-terrain.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-font.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/lib/lwjgl/lwjgl_util.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/jogl.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/gluegen-rt.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/activation.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-api.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-xjc.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb1-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jsr173_1.0_api.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/Scenario.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/stun.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/scannotation-1.0.2.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javassist.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-0.9.8.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-shared-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/db-4.5.20.jar
+[pathconvert] Set property core-server.classpath = /Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-gamestates.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-awt.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-audio.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-scene.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-model.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-collada.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-xml.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-terrain.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-font.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/lib/lwjgl/lwjgl_util.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/jogl.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/gluegen-rt.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/activation.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-api.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-xjc.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb1-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jsr173_1.0_api.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/Scenario.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/stun.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/scannotation-1.0.2.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javassist.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-0.9.8.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-shared-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/db-4.5.20.jar:/Users/morrisford/w5-trunk-5/wonderland/core/build/lib/wonderland-server.jar:/Users/morrisford/w5-trunk-5/wonderland/core/build/lib/wonderland-common.jar
+Importing file /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-build.xml from /Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-build.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-build.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-build.xml
+Importing file /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-setup.xml from /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-build.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-setup.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-setup.xml
+Override ignored for property "web.build-scripts.dir"
+Override ignored for property "top.dir"
+Importing file /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml from /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-setup.xml
+Skipped already imported file:
+   /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/setup.xml
+ [property] Loading /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web.properties
+Importing file /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/classpath.xml from /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-setup.xml
+parsing buildfile /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/classpath.xml with URI = file:/Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/classpath.xml
+[pathconvert] Set property web.glassfish.classpath = /Users/morrisford/w5-trunk-5/wonderland/web/lib/glassfish/glassfish-embedded-custom-v3-prelude-b11-02_21_2009.jar
+[pathconvert] Set property web.apache.classpath = /Users/morrisford/w5-trunk-5/wonderland/web/lib/apache/commons-io-1.4.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/apache/commons-fileupload-1.2.1.jar
+[pathconvert] Set property web.restlib.classpath = /Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/asm-3.1.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jersey-core-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jersey-json-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jersey-server-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jettison-1.0.1.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jsr311-api-1.0.jar
+[pathconvert] Set property web.utils.classpath = /Users/morrisford/w5-trunk-5/wonderland/web/utils/dist/wonderland-web-utils.jar
+[pathconvert] Set property web.classpath = /Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/activation.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-api.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-xjc.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb1-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jsr173_1.0_api.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/glassfish/glassfish-embedded-custom-v3-prelude-b11-02_21_2009.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/apache/commons-io-1.4.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/apache/commons-fileupload-1.2.1.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/asm-3.1.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jersey-core-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jersey-json-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jersey-server-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jettison-1.0.1.jar:/Users/morrisford/w5-trunk-5/wonderland/web/lib/restlib/jsr311-api-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/web/utils/dist/wonderland-web-utils.jar
+Importing file /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml from /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-build.xml
+Skipped already imported file:
+   /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml
+Importing file /Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/core-setup.xml from /Users/morrisford/w5-trunk-5/wonderland/web/build-tools/build-scripts/web-build.xml
+Skipped already imported file:
+   /Users/morrisford/w5-trunk-5/wonderland/core/build-tools/build-scripts/core-setup.xml
+[pathconvert] Set property module-client.classpath = /Users/morrisford/w5-trunk-5/wonderland/modules/world/avatarbase/build/client/avatarbase-client.jar
+[pathconvert] Set property module-server.classpath = /Users/morrisford/w5-trunk-5/wonderland/modules/world/avatarbase/build/server/avatarbase-server.jar
+Build sequence for target(s) `dist' is [-module-ant-task, -module-init, -module-compile-common, -module-compile-server, -module-compile-client, build, dist]
+Complete build sequence is [-module-ant-task, -module-init, -module-compile-common, -module-compile-server, -module-compile-client, build, dist, -check-scenegraph-timestamps, -fetch-scenegraph-zip, module.build.-module-deploy, core.setup.fetch-scenegraph, core.setup.-fetch-scenegraph-zip, module.build.-module-compile-common, module.build.-module-ant-task, -web-clean, fetch-scenegraph, core.setup.unpack-scenegraph, core.setup.-check-scenegraph-timestamps, init, core.setup.unpack-core-libs, -module-compile-web, clean-core-libs, -core-scrub-libs, -setup-pack200, core.setup.init, module.build.-module-compile-server, core.setup.clean-core-libs, module.build.-module-clean, web.build.-web-clean, -web-build-init, setup.package.-setup-package-server, module.build.-module-compile-client, module.build.-module-init, -web-compile, core.setup.-core-scrub-libs, -module-clean, clean, unpack-core-libs, setup.build-setup.-setup-pack200, web.build.-web-build-init, web.build.-web-compile, -setup-package-server, -module-deploy, deploy, unpack-scenegraph, , module.build.-module-compile-web]
+
+-module-ant-task:
+
+-module-init:
+    [mkdir] Skipping /Users/morrisford/w5-trunk-5/mynpc/build/classes because it already exists.
+    [mkdir] Skipping /Users/morrisford/w5-trunk-5/mynpc/build/lib because it already exists.
+Override ignored for property "module-client.classpath"
+Override ignored for property "module-server.classpath"
+Override ignored for property "module.jarname"
+
+-module-compile-common:
+    [javac] org/jdesktop/wonderland/modules/mynpc/common/mynpcCellClientState.java omitted as /Users/morrisford/w5-trunk-5/mynpc/build/classes/org/jdesktop/wonderland/modules/mynpc/common/mynpcCellClientState.class is up to date.
+    [javac] org/jdesktop/wonderland/modules/mynpc/common/mynpcCellServerState.java omitted as /Users/morrisford/w5-trunk-5/mynpc/build/classes/org/jdesktop/wonderland/modules/mynpc/common/mynpcCellServerState.class is up to date.
+
+-module-compile-server:
+    [javac] org/jdesktop/wonderland/modules/mynpc/server/mynpcCellMO.java omitted as /Users/morrisford/w5-trunk-5/mynpc/build/classes/org/jdesktop/wonderland/modules/mynpc/server/mynpcCellMO.class is up to date.
+
+-module-compile-client:
+    [javac] org/jdesktop/wonderland/modules/mynpc/client/jme/cellrenderer/mynpcCellRenderer.java added as org/jdesktop/wonderland/modules/mynpc/client/jme/cellrenderer/mynpcCellRenderer.class doesn't exist.
+    [javac] org/jdesktop/wonderland/modules/mynpc/client/mynpcCell.java added as org/jdesktop/wonderland/modules/mynpc/client/mynpcCell.class doesn't exist.
+    [javac] org/jdesktop/wonderland/modules/mynpc/client/mynpcCellFactory.java added as org/jdesktop/wonderland/modules/mynpc/client/mynpcCellFactory.class doesn't exist.
+    [javac] org/jdesktop/wonderland/modules/mynpc/client/resources/NPC2.png skipped - don't know how to handle it
+    [javac] Compiling 3 source files to /Users/morrisford/w5-trunk-5/mynpc/build/classes
+    [javac] Using modern compiler
+    [javac] Compilation arguments:
+    [javac] '-nowarn'
+    [javac] '-deprecation'
+    [javac] '-d'
+    [javac] '/Users/morrisford/w5-trunk-5/mynpc/build/classes'
+    [javac] '-classpath'
+    [javac] '/Users/morrisford/w5-trunk-5/mynpc/build/classes:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-gamestates.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-awt.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-audio.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-scene.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-model.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-collada.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-xml.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-terrain.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/target/jme-font.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/jme20/lib/lwjgl/lwjgl_util.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/jogl.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/macosx/jars/gluegen-rt.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/activation.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-api.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb-xjc.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jaxb1-impl.jar:/Users/morrisford/w5-trunk-5/wonderland/lib/jaxb/jsr173_1.0_api.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/Scenario.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/stun.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/scannotation-1.0.2.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javassist.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/derby.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-beanutils-core.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-codec-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-httpclient-3.0.1.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/commons-logging-1.1.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/swing-layout-1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/mtgame.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/jbullet.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/vecmath.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/common/javolution.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-shared-1.3.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/mina-core-1.1.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/slf4j-api-1.4.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/ext/sgs/sgs-client-0.9.8/lib/slf4j-jdk14-1.4.0.jar:/Users/morrisford/w5-trunk-5/wonderland/core/build/lib/wonderland-client.jar:/Users/morrisford/w5-trunk-5/wonderland/core/build/lib/wonderland-common.jar:/Users/morrisford/w5-trunk-5/wonderland/modules/world/avatarbase/build/client/avatarbase-client.jar:/usr/share/ant/lib/ant-launcher.jar:/usr/share/ant/lib/ant-jai.jar:/usr/share/ant/lib/ant-jmf.jar:/usr/share/ant/lib/ant-junit.jar:/usr/share/ant/lib/ant-nodeps.jar:/usr/share/ant/lib/ant-swing.jar:/usr/share/ant/lib/ant-testutil.jar:/usr/share/ant/lib/ant-trax.jar:/usr/share/ant/lib/ant.jar:/usr/share/ant/lib/xercesImpl.jar:/usr/share/ant/lib/xml-apis.jar'
+    [javac] '-sourcepath'
+    [javac] '/Users/morrisford/w5-trunk-5/mynpc/src/classes'
+    [javac] '-target'
+    [javac] '1.5'
+    [javac] '-g:lines,vars,source'
+    [javac] '-source'
+    [javac] '1.5'
+    [javac] 
+    [javac] The ' characters around the executable and arguments are
+    [javac] not part of the command.
+    [javac] Files to be compiled:
+    [javac]     /Users/morrisford/w5-trunk-5/mynpc/src/classes/org/jdesktop/wonderland/modules/mynpc/client/jme/cellrenderer/mynpcCellRenderer.java
+    [javac]     /Users/morrisford/w5-trunk-5/mynpc/src/classes/org/jdesktop/wonderland/modules/mynpc/client/mynpcCell.java
+    [javac]     /Users/morrisford/w5-trunk-5/mynpc/src/classes/org/jdesktop/wonderland/modules/mynpc/client/mynpcCellFactory.java
+    [javac] /Users/morrisford/w5-trunk-5/mynpc/src/classes/org/jdesktop/wonderland/modules/mynpc/client/mynpcCell.java:20: package org.jdesktop.wonderland.modules.scriptingComponent.client does not exist
+    [javac] import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingComponent;
+    [javac]                                                                 ^
+    [javac] /Users/morrisford/w5-trunk-5/mynpc/src/classes/org/jdesktop/wonderland/modules/mynpc/client/mynpcCell.java:33: cannot find symbol
+    [javac] symbol  : class ScriptingComponent
+    [javac] location: class org.jdesktop.wonderland.modules.mynpc.client.mynpcCell
+    [javac]         ScriptingComponent comp = new ScriptingComponent(this);
+    [javac]         ^
+    [javac] /Users/morrisford/w5-trunk-5/mynpc/src/classes/org/jdesktop/wonderland/modules/mynpc/client/mynpcCell.java:33: cannot find symbol
+    [javac] symbol  : class ScriptingComponent
+    [javac] location: class org.jdesktop.wonderland.modules.mynpc.client.mynpcCell
+    [javac]         ScriptingComponent comp = new ScriptingComponent(this);
+    [javac]                                       ^
+    [javac] Note: /Users/morrisford/w5-trunk-5/mynpc/src/classes/org/jdesktop/wonderland/modules/mynpc/client/mynpcCellFactory.java uses unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] 3 errors
+
+BUILD FAILED
+/Users/morrisford/w5-trunk-5/wonderland/modules/build-tools/build-scripts/module-build.xml:94: The following error occurred while executing this line:
+/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml:61: The following error occurred while executing this line:
+/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml:37: Compile failed; see the compiler error output for details.
+	at org.apache.tools.ant.ProjectHelper.addLocationToBuildException(ProjectHelper.java:541)
+	at org.apache.tools.ant.taskdefs.MacroInstance.execute(MacroInstance.java:394)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.Target.execute(Target.java:357)
+	at org.apache.tools.ant.Target.performTasks(Target.java:385)
+	at org.apache.tools.ant.Project.executeSortedTargets(Project.java:1329)
+	at org.apache.tools.ant.Project.executeTarget(Project.java:1298)
+	at org.apache.tools.ant.helper.DefaultExecutor.executeTargets(DefaultExecutor.java:41)
+	at org.apache.tools.ant.Project.executeTargets(Project.java:1181)
+	at org.apache.tools.ant.Main.runBuild(Main.java:698)
+	at org.apache.tools.ant.Main.startAnt(Main.java:199)
+	at org.apache.tools.ant.launch.Launcher.run(Launcher.java:257)
+	at org.apache.tools.ant.launch.Launcher.main(Launcher.java:104)
+Caused by: /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml:61: The following error occurred while executing this line:
+/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml:37: Compile failed; see the compiler error output for details.
+	at org.apache.tools.ant.ProjectHelper.addLocationToBuildException(ProjectHelper.java:541)
+	at org.apache.tools.ant.taskdefs.MacroInstance.execute(MacroInstance.java:394)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.Sequential.execute(Sequential.java:62)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.MacroInstance.execute(MacroInstance.java:391)
+	... 16 more
+Caused by: /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml:37: Compile failed; see the compiler error output for details.
+	at org.apache.tools.ant.taskdefs.Javac.compile(Javac.java:999)
+	at org.apache.tools.ant.taskdefs.Javac.execute(Javac.java:820)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.Sequential.execute(Sequential.java:62)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.MacroInstance.execute(MacroInstance.java:391)
+	... 30 more
+--- Nested Exception ---
+/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml:61: The following error occurred while executing this line:
+/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml:37: Compile failed; see the compiler error output for details.
+	at org.apache.tools.ant.ProjectHelper.addLocationToBuildException(ProjectHelper.java:541)
+	at org.apache.tools.ant.taskdefs.MacroInstance.execute(MacroInstance.java:394)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.Sequential.execute(Sequential.java:62)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.MacroInstance.execute(MacroInstance.java:391)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.Target.execute(Target.java:357)
+	at org.apache.tools.ant.Target.performTasks(Target.java:385)
+	at org.apache.tools.ant.Project.executeSortedTargets(Project.java:1329)
+	at org.apache.tools.ant.Project.executeTarget(Project.java:1298)
+	at org.apache.tools.ant.helper.DefaultExecutor.executeTargets(DefaultExecutor.java:41)
+	at org.apache.tools.ant.Project.executeTargets(Project.java:1181)
+	at org.apache.tools.ant.Main.runBuild(Main.java:698)
+	at org.apache.tools.ant.Main.startAnt(Main.java:199)
+	at org.apache.tools.ant.launch.Launcher.run(Launcher.java:257)
+	at org.apache.tools.ant.launch.Launcher.main(Launcher.java:104)
+Caused by: /Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml:37: Compile failed; see the compiler error output for details.
+	at org.apache.tools.ant.taskdefs.Javac.compile(Javac.java:999)
+	at org.apache.tools.ant.taskdefs.Javac.execute(Javac.java:820)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.Sequential.execute(Sequential.java:62)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.MacroInstance.execute(MacroInstance.java:391)
+	... 30 more
+--- Nested Exception ---
+/Users/morrisford/w5-trunk-5/wonderland/build-tools/build-scripts/build-setup.xml:37: Compile failed; see the compiler error output for details.
+	at org.apache.tools.ant.taskdefs.Javac.compile(Javac.java:999)
+	at org.apache.tools.ant.taskdefs.Javac.execute(Javac.java:820)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.Sequential.execute(Sequential.java:62)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.MacroInstance.execute(MacroInstance.java:391)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.Sequential.execute(Sequential.java:62)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.taskdefs.MacroInstance.execute(MacroInstance.java:391)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor2.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:105)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.Target.execute(Target.java:357)
+	at org.apache.tools.ant.Target.performTasks(Target.java:385)
+	at org.apache.tools.ant.Project.executeSortedTargets(Project.java:1329)
+	at org.apache.tools.ant.Project.executeTarget(Project.java:1298)
+	at org.apache.tools.ant.helper.DefaultExecutor.executeTargets(DefaultExecutor.java:41)
+	at org.apache.tools.ant.Project.executeTargets(Project.java:1181)
+	at org.apache.tools.ant.Main.runBuild(Main.java:698)
+	at org.apache.tools.ant.Main.startAnt(Main.java:199)
+	at org.apache.tools.ant.launch.Launcher.run(Launcher.java:257)
+	at org.apache.tools.ant.launch.Launcher.main(Launcher.java:104)
+
+Total time: 2 seconds
+bash-3.2$ exit
+exit
+
+Script done on Sat May 23 18:25:43 2009
