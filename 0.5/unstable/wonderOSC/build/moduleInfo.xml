@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<wonderland-module>
-    <name>wonderOSC</name>
-    <version>
-        <major>1</major>
-        <minor>0</minor>
-    </version>
-    <description>Control wonderland using OSC protocol</description>
-</wonderland-module>
