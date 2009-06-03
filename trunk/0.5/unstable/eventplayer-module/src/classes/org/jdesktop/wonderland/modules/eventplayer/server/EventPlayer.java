@@ -50,11 +50,6 @@ import org.xml.sax.InputSource;
 public class EventPlayer implements ManagedObject, CellRetrievalListener, MessagesReplayingListener,Serializable {
 
     private static final Logger logger = Logger.getLogger(EventPlayer.class.getName());
-    /*is this recorder loading a world?*/
-    private boolean isLoading = false;
-    /*The name of this recorder*/
-    //TODO: is this necessary?
-    private String playerName;
     /*The name of the tape representing the recording
      * This also provides the name of the directory into which the files are contained
      * */
@@ -75,17 +70,11 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
      * @param originCell the cell that is the event recorder
      * @param name the name of the event recorder
      */
-    public EventPlayer(CellMO originCell, String name) {
-        this.playerName = name;
+    public EventPlayer(CellMO originCell) {
         clientID = new PlayerClientID();
     }
 
-    public String getName() {
-        return playerName;
-    }
-
-    public void playMessage(ReceivedMessage rMessage) {
-        
+    public void playMessage(ReceivedMessage rMessage) {        
         CellMessage message = (CellMessage) rMessage.getMessage();
         //logger.info("cellmap: " + cellMap);
         CellID oldCellID = message.getCellID();
@@ -112,7 +101,11 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
         this.tapeName = tapeName;
         //Load the cells labelled by tape name
         //then replay messages
-        loadRecording();
+        CellImportManager im = AppContext.getManager(CellImportManager.class);
+
+        // first, create a new recording.  The remainder of the export procedure will happen
+        // in the cellsRetrieved() method of the listener
+        im.retrieveCells(tapeName, this);
     }
 
     /**
@@ -127,24 +120,8 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
         replayMessages();
     }
 
-    private void loadRecording() {
-        // get the export service
-        CellImportManager im = AppContext.getManager(CellImportManager.class);
-
-        // first, create a new recording.  The remainder of the export procedure will happen
-        // in the cellsRetrieved() method of the listener
-        im.retrieveCells(tapeName, this);
-    }
-
-
     public void stopPlaying() {
         
-    }
-
-
-    @Override
-    public String toString() {
-        return super.toString() + " name: " + getName();
     }
 
     public void cellRetrievalFailed(String reason, Throwable cause) {
