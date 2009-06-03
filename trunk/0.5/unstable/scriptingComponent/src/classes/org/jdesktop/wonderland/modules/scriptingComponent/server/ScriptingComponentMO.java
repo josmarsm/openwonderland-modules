@@ -55,7 +55,6 @@ public class ScriptingComponentMO extends CellComponentMO
 
     private String info;
     private String cellName;
-    private String scriptURL;
 //    private String[] eventNames;
     private String[] eventNames = new String[totalEvents];
 //    private String[] eventScriptType;
@@ -110,7 +109,7 @@ public class ScriptingComponentMO extends CellComponentMO
 
         info = "Default";
         cellName = "default";
-        scriptURL = "http://127.0.0.1:8080/webdav/content/";
+
         eventNames[MOUSE1_EVENT] = "mouse1.js";
         eventNames[MOUSE2_EVENT] = "mouse2.js";
         eventNames[MOUSE3_EVENT] = "mouse3.js";
@@ -190,7 +189,7 @@ public class ScriptingComponentMO extends CellComponentMO
     @Override
     public CellComponentClientState getClientState(CellComponentClientState state, WonderlandClientID clientID, ClientCapabilities capabilities) 
         {
-        System.out.println("ScriptingComponentMO : In getClientState - cellName = " + cellName + " scriptURL = " + scriptURL);
+        System.out.println("ScriptingComponentMO : In getClientState - cellName = " + cellName);
 
         if (state == null) 
             {
@@ -198,7 +197,6 @@ public class ScriptingComponentMO extends CellComponentMO
             }
         ((ScriptingComponentClientState)state).setInfo(info);
         ((ScriptingComponentClientState)state).setCellName(cellName);
-        ((ScriptingComponentClientState)state).setScriptURL(scriptURL);
         ((ScriptingComponentClientState)state).setScriptType(eventScriptType);
         ((ScriptingComponentClientState)state).setEventNames(eventNames);
         return super.getClientState(state, clientID, capabilities);
@@ -213,7 +211,6 @@ public class ScriptingComponentMO extends CellComponentMO
             }
         ((ScriptingComponentServerState)state).setInfo(info);
         ((ScriptingComponentServerState)state).setCellName(cellName);
-        ((ScriptingComponentServerState)state).setScriptURL(scriptURL);
         ((ScriptingComponentServerState)state).setScriptType(eventScriptType);
         ((ScriptingComponentServerState)state).setEventNames(eventNames);
         System.out.println("ScriptingComponentMO : In getServerState");
@@ -226,7 +223,6 @@ public class ScriptingComponentMO extends CellComponentMO
         super.setServerState(state);
         info = ((ScriptingComponentServerState)state).getInfo();
         cellName = ((ScriptingComponentServerState)state).getCellName();
-        scriptURL = ((ScriptingComponentServerState)state).getScriptURL();
         eventNames = ((ScriptingComponentServerState)state).getEventNames();
         eventScriptType = ((ScriptingComponentServerState)state).getScriptType();
         System.out.println("ScriptingComponentMO - : In setServerState");
@@ -252,11 +248,10 @@ public class ScriptingComponentMO extends CellComponentMO
                 {
                 ScriptingComponentChangeMessage ent = (ScriptingComponentChangeMessage) message;
                 cellMO.cellName = ent.getCellName();
-                cellMO.scriptURL = ent.getScriptURL();
                 cellMO.eventNames = ent.getEventNames();
                 cellMO.eventScriptType = ent.getScriptType();        
                 chanMO.sendAll(clientID, message);
-                System.out.println("ScriptingComponentMO.messageReceived - Change message - "+ cellMO.cellName + " URL = " + cellMO.scriptURL + " - Client ID = " + clientID);
+                System.out.println("ScriptingComponentMO.messageReceived - Change message - "+ cellMO.cellName + " - Client ID = " + clientID);
                 }
             else if(message instanceof ScriptingComponentICEMessage)
                 {

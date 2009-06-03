@@ -30,7 +30,6 @@ public class ScriptingComponentClientState extends CellComponentClientState
 
     private String info;
     private String cellName;
-    private String scriptURL;
     private String[] eventNames;
     private String[] eventScriptType;
     
@@ -63,19 +62,7 @@ public class ScriptingComponentClientState extends CellComponentClientState
         System.out.println("ScriptingComponentClientState : In setCellName - cellName = " + cellName);
         this.cellName = cellName;
         }
-    
-    public String getScriptURL() 
-        {
-        System.out.println("ScriptingComponentClientState : In getScriptURL - scriptURL = " + scriptURL);
-        return scriptURL;
-        }
 
-    public void setScriptURL(String ScriptURL) 
-        {
-        System.out.println("ScriptingComponentClientState : In setScriptURL - scriptURL = " + scriptURL);
-        this.scriptURL = ScriptURL;
-        }
-    
     public String[] getEventNames() 
         {
         System.out.println("ScriptingComponentClientState : In getEventNames");
