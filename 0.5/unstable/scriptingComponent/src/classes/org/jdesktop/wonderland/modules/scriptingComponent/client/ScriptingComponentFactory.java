@@ -73,7 +73,6 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         ScriptingComponentServerState state = new ScriptingComponentServerState();
         state.setInfo("Default");
         state.setCellName("default");
-        state.setScriptURL("http://127.0.0.1:8080/webdav/content/");
         eventNames[MOUSE1_EVENT] = "mouse1.js";
         eventNames[MOUSE2_EVENT] = "mouse2.js";
         eventNames[MOUSE3_EVENT] = "mouse3.js";

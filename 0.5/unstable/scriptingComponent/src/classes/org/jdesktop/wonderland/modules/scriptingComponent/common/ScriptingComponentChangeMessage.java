@@ -6,15 +6,13 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 public class ScriptingComponentChangeMessage extends CellMessage
     {
     private String cellName = null;
-    private String scriptURL = null;
     private String[] eventNames;
     private String[] eventScriptType;
 
-    public ScriptingComponentChangeMessage(CellID cellID, String cellName, String ScriptURL, String[] EventNames, String[] ScriptType)
+    public ScriptingComponentChangeMessage(CellID cellID, String cellName, String[] EventNames, String[] ScriptType)
         {
         super(cellID);
         this.cellName = cellName;
-        this.scriptURL = ScriptURL;
         this.eventNames = EventNames;
         this.eventScriptType = ScriptType;
         }
@@ -27,16 +25,6 @@ public class ScriptingComponentChangeMessage extends CellMessage
     public void setCellName(String cellName)
         {
         this.cellName = cellName;
-        }
-    
-    public String getScriptURL()
-        {
-        return this.scriptURL;
-        }
-    
-    public void setScriptURL(String ScriptURL)
-        {
-        this.scriptURL = ScriptURL;
         }
     
     public String[] getEventNames()

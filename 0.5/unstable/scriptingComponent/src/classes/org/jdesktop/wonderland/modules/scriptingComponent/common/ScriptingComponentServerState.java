@@ -39,8 +39,6 @@ public class ScriptingComponentServerState extends CellComponentServerState
     private String info;
     @XmlElement(name="cell-name")
     private String cellName;
-    @XmlElement(name="script-url")
-    private String scriptURL;
     @XmlElement(name="event-names")
     private String[] eventNames;
     @XmlElement(name="event-script-type")
@@ -81,18 +79,7 @@ public class ScriptingComponentServerState extends CellComponentServerState
         System.out.println("ScriptingComponentServerState : In setCellName - cellName = " + cellName);
         this.cellName = cellName;
         }
-    @XmlTransient public String getScriptURL() 
-        {
-        System.out.println("ScriptingComponentServerState : In getScriptURL - scriptURL = " + scriptURL);
-        return scriptURL;
-        }
 
-    public void setScriptURL(String ScriptURL) 
-        {
-        System.out.println("ScriptingComponentServerState : In setScriptURL - scriptURL = " + ScriptURL);
-        this.scriptURL = ScriptURL;
-        }
-    
     @XmlTransient public String[] getEventNames() 
         {
         System.out.println("ScriptingComponentServerState : In getEventNames");
