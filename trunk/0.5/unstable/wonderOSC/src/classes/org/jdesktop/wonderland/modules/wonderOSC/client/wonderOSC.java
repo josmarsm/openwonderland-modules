@@ -42,7 +42,7 @@ import org.jdesktop.wonderland.modules.wonderOSC.client.*;
  *
  */
 final public class wonderOSC extends Thread {
-    public static int   SERVERPORT=3010;
+    public static int SERVERPORT=3010;
     private WlAvatarCharacter avatarCharacter;
     Iterable<String> actions;
     private DataInputStream is = null;
@@ -55,16 +55,25 @@ final public class wonderOSC extends Thread {
         logger = Logger.getLogger("wonderOSC");
         try{        
             receiver=new OSCPortIn(SERVERPORT);
-        }catch( java.net.SocketException e){}
-        return;
-        
+        }catch( java.net.SocketException e){ 
+            logger.severe(e.toString());
+        }
+        return;        
     }
 
     @Override
     public void run(){
         
-        receiver.startListening();
-        receiver.run();
+       // receiver.startListening();
+
+         try{
+              receiver.run();
+         }catch(Exception e){
+             logger.severe("Error in OSC-run");
+         }
+
+        
+        receiver.close();
             return;
     }
 
@@ -81,18 +90,13 @@ final public class wonderOSC extends Thread {
 
     public void closeForever(){
         if(this.receiver.isListening()){
-            receiver.stopListening();
-            receiver.close();
+            try{
+                receiver.stopListening();
+                 receiver.close();
+             }catch(Exception e){
+                logger.severe("Error in OSC-run");
+            }
         }
-    }
-
-    void reopen(){
-        receiver.startListening();
-    }
-
-    public void closeForNow(){
-        receiver.stopListening();
-        
     }
 }
 

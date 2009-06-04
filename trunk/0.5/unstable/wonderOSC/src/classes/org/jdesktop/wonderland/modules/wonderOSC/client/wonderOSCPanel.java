@@ -134,9 +134,13 @@ public class wonderOSCPanel extends javax.swing.JPanel {
                 .addContainerGap(58, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    wonderOSC OSCconn;
+    wonderOSC OSCconn=null;
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-                //close conn
+                if (OSCconn != null){
+                    OSCconn.closeForever();
+                    OSCconn=null;
+
+                }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
