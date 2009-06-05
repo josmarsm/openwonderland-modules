@@ -46,6 +46,8 @@ public class XMPPPresenceManager {
     private static final LoggerWrapper logger =
             new LoggerWrapper(Logger.getLogger(XMPPPresenceManager.class.getName()));
 
+    private PresenceUserListener listener;
+
     public XMPPPresenceManager(XMPPPresenceService xmppPS)
     {
         service = xmppPS;
@@ -65,11 +67,21 @@ public class XMPPPresenceManager {
         // lets try using the UserManager notification mechanism for deciding when a good time to update would be.
         UserManager manager = UserManager.getUserManager();
 
+        listener = new PresenceUserListener();
         // Using this inner class as an indirection to avoid serialization problems.
-        manager.addUserListener(new PresenceUserListener());
+        manager.addUserListener(listener);
 
         // Do one update now to change off the default "initializing presence" notice.
         // this.updatePresence();
+    }
+
+    /**
+     * Stops presence updating by removing the listener on login/logout events.
+     */
+    public void stopPresenceUpdating()
+    {
+        UserManager manager = UserManager.getUserManager();
+        manager.removeUserListener(listener);
     }
 
     /**
