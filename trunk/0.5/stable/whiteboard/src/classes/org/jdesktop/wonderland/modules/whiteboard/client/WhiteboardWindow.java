@@ -215,7 +215,7 @@ public class WhiteboardWindow extends Window2D {
                     }
                     controlComponent.setVisible(visible);
                 } else {
-                    controlComponent.setWorldLocation(new Vector3f(2.0f, -4.7f, 0.5f));
+                    controlComponent.setWorldLocation(new Vector3f(0.0f, -3.7f, 0.1f));
                     if (controlComponent.isVisible()) {
                         controlComponent.setVisible(false);
                     }
