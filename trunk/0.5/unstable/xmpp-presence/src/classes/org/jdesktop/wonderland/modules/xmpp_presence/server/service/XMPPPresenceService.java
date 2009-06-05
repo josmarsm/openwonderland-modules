@@ -18,12 +18,14 @@
 package org.jdesktop.wonderland.modules.xmpp_presence.server.service;
 
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.impl.auth.IdentityImpl;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.TransactionProxy;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -31,6 +33,10 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
+import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.modules.textchat.common.TextChatConnectionType;
+import org.jdesktop.wonderland.modules.textchat.server.TextChatConnectionHandler;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -67,25 +73,28 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
 
     private static final LoggerWrapper logger =
             new LoggerWrapper(Logger.getLogger(XMPPPresenceService.class.getName()));
-
-    // TODO decide if this really needs to be transient (probably not)
+    /**
+     * Reference to the actual XMPP connection, as provided by Smack.
+     */
     private XMPPConnection conn;
     private UserManager userManager;
-
-//    private final TaskScheduler taskScheduler;
     private ComponentRegistry registry;
 
+    // Keys for the properties file that specifies Service parameters.
     public static final String XMPP_SERVER_PROPERTY = "wonderland.modules.xmpp-presence.server";
     public static final String XMPP_SERVER_PORT_PROPERTY = "wonderland.modules.xmpp-presence.port";
     public static final String XMPP_ACCOUNT_PROPERTY = "wonderland.modules.xmpp-presence.account";
     public static final String XMPP_PASSWORD_PROPERTY = "wonderland.modules.xmpp-presence.password";
     public static final String XMPP_DOMAIN_WHITELIST_PROPERTY = "wonderland.modules.xmpp-presence.domain-whitelist";
 
-
     private boolean domainWhitelisting = false;
     private Vector<String> whitelistedDomains;
 
     private boolean validConfiguration = false;
+
+    private HashMap<String, ConversationManager> conversationManagers = new HashMap<String, ConversationManager>();
+
+    private TransactionProxy txnProxy;
 
     public XMPPPresenceService(Properties props,
             ComponentRegistry registry,
@@ -96,6 +105,8 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
         // Grab all the configuration from the properties files.
         validConfiguration = true;
 
+        txnProxy = proxy;
+
         String server;
         int port;
         String account = null;
@@ -105,43 +116,48 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
 
         logger.log(Level.INFO, "login: " + props.getProperty("wonderland.modules.xmpp-presence.account"));
 
-        if(props.containsKey(XMPP_SERVER_PROPERTY))
+        if (props.containsKey(XMPP_SERVER_PROPERTY)) {
             server = props.getProperty(XMPP_SERVER_PROPERTY);
-        else
+        } else {
             server = "jabber.org";
+        }
 
-        if(props.containsKey(XMPP_SERVER_PORT_PROPERTY))
+        if (props.containsKey(XMPP_SERVER_PORT_PROPERTY)) {
             port = Integer.parseInt(props.getProperty(XMPP_SERVER_PORT_PROPERTY));
-        else
+        } else {
             port = 5222;
+        }
 
-        if(props.containsKey(XMPP_ACCOUNT_PROPERTY))
+        if (props.containsKey(XMPP_ACCOUNT_PROPERTY)) {
             account = props.getProperty(XMPP_ACCOUNT_PROPERTY);
-        else
+        } else {
             validConfiguration = false;
+        }
 
-        if(props.containsKey(XMPP_PASSWORD_PROPERTY))
+        if (props.containsKey(XMPP_PASSWORD_PROPERTY)) {
             password = props.getProperty(XMPP_PASSWORD_PROPERTY);
-        else
+        } else {
             validConfiguration = false;
+        }
 
-        if(props.containsKey(XMPP_DOMAIN_WHITELIST_PROPERTY)) {
+        if (props.containsKey(XMPP_DOMAIN_WHITELIST_PROPERTY)) {
             String domainList = props.getProperty(XMPP_DOMAIN_WHITELIST_PROPERTY);
             whitelistedDomains = new Vector<String>(Arrays.asList(domainList.split(",")));
-            
-            if(whitelistedDomains.size() > 0)
+
+            if (whitelistedDomains.size() > 0) {
                 domainWhitelisting = true;
-            else
+            } else {
                 domainWhitelisting = false;
-        }
-        else {
+            }
+        } else {
             domainWhitelisting = false;
         }
 
-        logger.log(Level.INFO, account + " on " + server + ":" + port + " with pass '" + password + "'. whitelistedDomains: " + whitelistedDomains + " (valid configuration? " + validConfiguration +")");
+        logger.log(Level.INFO, account + " on " + server + ":" + port + " with pass '" + password + "'. whitelistedDomains: " + whitelistedDomains + " (valid configuration? " + validConfiguration + ")");
 
-        if(!validConfiguration)
+        if (!validConfiguration) {
             throw new RuntimeException("Credentials " + account + ":" + password + " are not valid. Both must be non-null. See the javadoc for instructions on how to set these properties.");
+        }
 
 
         ConnectionConfiguration cc = new ConnectionConfiguration(server, port);
@@ -183,7 +199,7 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
     }
 
     @Override
-    protected void doReady(){
+    protected void doReady() {
         logger.log(Level.INFO, "XMPP Presence Service Ready.");
     }
 
@@ -204,6 +220,7 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
         logger.log(Level.FINER, "Updating status message.");
 
         try {
+            logger.log(Level.INFO, "About to schedule a task: " + transactionScheduler + "; proxy: " + txnProxy.getCurrentOwner());
 
             transactionScheduler.scheduleTask(new StatusUpdateKernelRunnable(), txnProxy.getCurrentOwner());
         } catch (Exception e) {
@@ -212,15 +229,50 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
     }
 
     /**
-     * Triggered when someone opens a chat with the wonderland XMPP user.
+     * Triggered when someone opens a chat with the wonderland XMPP user. Called by Smack.
+     * 
      * @param chat
      * @param createdLocally
      */
     public void chatCreated(Chat chat, boolean createdLocally) {
-        logger.log(Level.INFO, "Chat opened by: " + chat.getParticipant());
 
-        // set this delegate class as a listener to messages from this chat conversation (to make it easier to manage chat states)
-        chat.addMessageListener(new ConversationManager());
+        // This is a bit counter-intuitive. The docs make it seem like the mappaing from
+        // "chat" to conversation is 1:1, ie when you send the first message to someone
+        // it creates a new "chat" object, and that chat object persists for the rest
+        // of the conversation between you and the conversation-starter. This isn't true,
+        // though. It's up to the remote client to decide what constitutes a chat, because
+        // this chatCreated method fires whenever there's a new threadID, and threadIDs
+        // seem to be created at the whim of either client. As a result, we have to
+        // be a little more savvy about conversations here and keep track of who we're
+        // talking to.
+
+        try {
+
+            logger.log(Level.INFO, "Chat opened by: " + chat.getParticipant() + " threadID: " + chat.getThreadID());
+
+            ConversationManager cm = conversationManagers.get(chat.getParticipant());
+
+            // If we already have a conversation manager for this person, use it. Otherwise,
+            // make a new one and put it in the map.
+            //
+            // (there might be a bug here where this gets persisted across conversations, so the message
+            //  only gets sent on your first convo EVER with the server. Need to find a way to plug into
+            //  conversation-closed events.)
+            if (cm == null) {
+                cm = new ConversationManager();
+                conversationManagers.put(chat.getParticipant(), cm);
+
+                // Send welcome message.
+                chat.sendMessage("Hi! Any messages you type to me will be sent in-world. Any responses from in-world avatars that start with an '@' will be sent back to you here.");
+            }
+
+
+            // set this delegate class as a listener to messages from this chat conversation (to make it easier to manage chat states)
+            chat.addMessageListener(cm);
+
+        } catch (XMPPException ex) {
+            logger.log(Level.WARNING, "Error sending welcome chat message to xmpp user: " + ex.getMessage());
+        }
     }
 
     protected class ConversationManager implements MessageListener {
@@ -228,16 +280,31 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
         public void processMessage(Chat chat, Message message) {
             // Be aware that this seems to trigger for typing events too. This is a bit of a tricky matter,
             // and for the purposes of this module we're just going to ignore anything that's null.
-            
-            logger.log(Level.INFO, chat.getParticipant() + ": " + message.getBody() + " <- " + message.getType());
+            //
+            // (getting typing messages would be interesting, but seems to be substantially trickier...
+            //  you need to register a packet listener that can find non-standard XMPP XML tags
+            //  that represent the typing state, because it's technically an XMPP extension.)
+            if (message.getBody() == null) {
+                return;
+            }
 
+            logger.log(Level.FINER, chat.getParticipant() + ": " + message.getBody() + " (threadID: " + chat.getThreadID() + ")");
+
+            try {
+            // Now spin off a task in a transaction to handle the message sending.
+            // Spent a while trying to get the txnProxy object to cough up the right identity object, but it turns out
+            // that only works if you're already in a transaction. I'm not, here, so we just have to make up our own
+            // Identity object. As far as I can tell, it's used only for accounting purposes, so as long as it's clear,
+            // there are no procedural implications to making your own up on the spot. 
+            transactionScheduler.scheduleTask(new ProcessMessageKernelRunnable(chat, message), new IdentityImpl("XMPPConversationManager"));
+            } catch (Exception e)
+            {
+                logger.log(Level.WARNING, "BAD", e);
+            }
         }
-
     }
 
     protected class StatusUpdateKernelRunnable implements KernelRunnable {
-
-        UserManager manager;
 
         /**
          * The name of the webserver class users. This is a bad hack that stands in for not
@@ -249,7 +316,6 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
         private static final String WEBSERVER_NAME = "webserver";
 
         public StatusUpdateKernelRunnable() {
-
         }
 
         public String getBaseTaskType() {
@@ -257,7 +323,7 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
         }
 
         public void run() {
-            manager = WonderlandContext.getUserManager();
+            UserManager manager = WonderlandContext.getUserManager();
 
             String userList = "";
             int validUserCount = 0;
@@ -269,8 +335,9 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
 
                 // See comment for this constant about why I do this now,
                 // and why I would like to find a cleaner way to manage it.
-                if(user.getUsername().equals(WEBSERVER_NAME))
-                        continue;
+                if (user.getUsername().equals(WEBSERVER_NAME)) {
+                    continue;
+                }
 
                 if (!first) {
                     userList += ", ";
@@ -283,19 +350,60 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
                 first = false;
             }
 
-            
+
             String statusMessage = validUserCount + " users in-world";
-            if(validUserCount > 0)
+            if (validUserCount > 0) {
                 statusMessage += ": ";
+            }
+
+            statusMessage += userList;
 
             // Pack up the packet and send it out.
             Presence presence = new Presence(Presence.Type.available);
             presence.setStatus(statusMessage);
             conn.sendPacket(presence);
-            
+
             logger.log(Level.FINEST, "XMPP presence packet sent.");
 
         }
     }
 
+    /**
+     * Encapsulates the process of bridging messages from XMPP into the Wonderland
+     * text-chat system. Because we're interacting with the CommsManager and TextChat
+     * handlers, this needs to happen in a transaction.
+     */
+    protected class ProcessMessageKernelRunnable implements KernelRunnable {
+
+        private String participant;
+        private String threadID;
+        private String msgBody;
+
+        protected ProcessMessageKernelRunnable(Chat c, Message msg) {
+            // Grab these to avoid having references to the Smack/XMPP
+            // objects. Those references might cause problems with
+            // Darkstar.
+            participant = c.getParticipant();
+            threadID = c.getThreadID();
+            msgBody = msg.getBody();
+        }
+
+        public String getBaseTaskType() {
+            return "XMPPPresenceService.handleMessageKernelTask";
+        }
+
+        public void run() throws Exception {
+            // Send the message in-world.
+            ClientConnectionHandler handler = null;
+            CommsManager cm = WonderlandContext.getCommsManager();
+            handler = cm.getClientHandler(TextChatConnectionType.CLIENT_TYPE);
+            
+            if (handler == null) {
+                logger.log(Level.WARNING, "Could not send XMPP chat message in-world because TextChatClientHandler could not be found.");
+                return;
+            }
+            TextChatConnectionHandler tcch = (TextChatConnectionHandler) handler;
+            tcch.sendGlobalMessage(participant, msgBody);
+        }
+    }
 }
