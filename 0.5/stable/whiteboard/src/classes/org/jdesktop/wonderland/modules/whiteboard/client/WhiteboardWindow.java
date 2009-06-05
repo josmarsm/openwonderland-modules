@@ -42,15 +42,16 @@ import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.swing.JSVGCanvas;
 import org.apache.batik.swing.gvt.Overlay;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
-import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDManager;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardColor;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage;
@@ -189,7 +190,7 @@ public class WhiteboardWindow extends Window2D {
 
             public void run() {
                 logger.info("show controls: " + visible);
-                HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
+                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
                 if (controlComponent == null) {
                     // create Swing controls
@@ -201,7 +202,7 @@ public class WhiteboardWindow extends Window2D {
 
                     // create HUD control panel
                     controlComponent = mainHUD.createComponent(controls, cell);
-                    controlComponent.setLocation(500, 100);
+                    controlComponent.setPreferredLocation(Layout.SOUTH);
 
                     // add HUD control panel to HUD
                     mainHUD.addComponent(controlComponent);
