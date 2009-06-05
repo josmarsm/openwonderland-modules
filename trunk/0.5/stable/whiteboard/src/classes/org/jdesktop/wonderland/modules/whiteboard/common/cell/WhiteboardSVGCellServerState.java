@@ -35,10 +35,10 @@ public class WhiteboardSVGCellServerState extends App2DCellServerState implement
 
     /** The user's preferred width of the whiteboard window. */
     @XmlElement(name = "preferredWidth")
-    public int preferredWidth = 1024;
+    public int preferredWidth = 800;
     /** The user's preferred height of the whiteboard window. */
     @XmlElement(name = "preferredHeight")
-    public int preferredHeight = 800;
+    public int preferredHeight = 600;
     /** The SVG XML to display */
     @XmlElement(name = "svgDocumentXML")
     public String svgDocumentXML = "";

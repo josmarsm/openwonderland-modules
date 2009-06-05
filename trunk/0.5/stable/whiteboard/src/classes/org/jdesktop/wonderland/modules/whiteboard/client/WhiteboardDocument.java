@@ -29,10 +29,11 @@ import javax.swing.SwingUtilities;
 
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.modules.hud.client.HUDInputDialog;
-import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDManager;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.Action;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
@@ -189,11 +190,11 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
             if (dialog == null) {
                 // create a HUD text dialog
                 dialog = new HUDInputDialog(whiteboardWindow.getCell());
-                dialog.setLocation(500, 400);
+                dialog.setPreferredLocation(Layout.SOUTH);
                 dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.2f));
 
                 // add the text dialog to the HUD
-                HUD mainHUD = WonderlandHUDManager.getHUDManager().getHUD("main");
+                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
                 mainHUD.addComponent(dialog);
 
                 PropertyChangeListener plistener = new PropertyChangeListener() {
