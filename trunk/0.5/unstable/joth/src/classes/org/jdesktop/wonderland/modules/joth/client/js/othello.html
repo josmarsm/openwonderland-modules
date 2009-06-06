@@ -1,0 +1,70 @@
+<!--
+ Project Wonderland
+
+ Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+
+ Redistributions in source code form must reproduce the above
+ copyright and this condition.
+
+ The contents of this file are subject to the GNU General Public
+ License, Version 2 (the "License"); you may not use this file
+ except in compliance with the License. A copy of the License is
+ available at http://www.opensource.org/licenses/gpl-license.php.
+
+ Sun designates this particular file as subject to the "Classpath"
+ exception as provided by Sun in the License file that accompanied
+ this code.
+-->
+
+<!----------------------------------------------------------------
+The HTML file used to display the game of Othello in a browser.
+It's basically a table which contains images of either an empty square,
+a white piece or a black piece.
+Author: deronj@dev.java.net
+-->
+
+<html>
+<head>
+<title>JavaScript Othello</title>
+</head>
+
+<body>
+    <table id="board" border cellspacing=0 cellpadding=0>
+    <tbody></tbody>
+    </table>
+    <br>
+    <strong>It is </strong><strong id="whoseTurn">white</strong><strong>'s turn.</strong>
+    <br>
+    <strong>White Pieces: </strong><strong id="whiteCount">0</strong>
+    <br>
+    <strong>Black Pieces: </strong><strong id="blackCount">0</strong>
+    <br>
+    <i id="errorMsg"></i>
+</body>
+
+<script type="text/javascript" src="UIDom.js"></script>
+<script type="text/javascript" src="Game.js"></script>
+<script type="text/javascript" src="Board.js"></script>
+<script type="text/javascript" src="Direction.js"></script>
+<script type="text/javascript" src="Square.js"></script>
+<script type="text/javascript" src="SquareList.js"></script>
+<script type="text/javascript" src="othello_html.js"></script>
+
+<script>
+
+var numRows = game.getBoard().getNumRows();
+var numCols = game.getBoard().getNumCols();
+
+// Generate the desired table size
+for (var r = 0; r < numRows; r++) {
+    var row = document.getElementById('board').insertRow(-1);
+    for (var c = 0; c < numCols; c++) {
+        var sq  = row.insertCell(-1);
+        sq.innerHTML = 
+		'<img id="' + r + '_' + c + 
+	        '" src="images/empty.gif" onclick="onclickHandler(event);">';			
+
+    }
+}
+</script>
+</html>
