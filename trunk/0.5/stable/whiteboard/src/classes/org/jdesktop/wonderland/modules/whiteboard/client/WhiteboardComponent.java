@@ -63,30 +63,32 @@ public class WhiteboardComponent extends CellComponent {
      * @param status The current status of this cell.
      */
     @Override
-    public void setStatus(CellStatus status) {
+    protected void setStatus(CellStatus status, boolean increasing) {
         switch (status) {
-            case INACTIVE:
-                channelComp = cell.getComponent(ChannelComponent.class);
-                if (channelComp == null) {
-                    throw new IllegalStateException("Cell does not have a ChannelComponent");
+            case ACTIVE:
+                if (increasing) {
+                    channelComp = cell.getComponent(ChannelComponent.class);
+                    if (channelComp == null) {
+                        throw new IllegalStateException("Cell does not have a ChannelComponent");
+                    }
+
+                    if (msgReceiver == null) {
+                        msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
+
+                            public void messageReceived(CellMessage message) {
+                                // All messages sent over the connection are of this type
+                                WhiteboardCellMessage msg = (WhiteboardCellMessage) message;
+                                cell.processMessage(msg);
+                            }
+                        };
+                        channelComp.addMessageReceiver(WhiteboardCellMessage.class, msgReceiver);
+                    }
+
+                    // Must do *after* registering the listener.
+                    //cell.sync();
+
+                    logger.info("whiteboard: cell initialization complete, cellID = " + cell.getCellID());
                 }
-
-                if (msgReceiver == null) {
-                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
-
-                        public void messageReceived(CellMessage message) {
-                            // All messages sent over the connection are of this type
-                            WhiteboardCellMessage msg = (WhiteboardCellMessage) message;
-                            cell.processMessage(msg);
-                        }
-                    };
-                    channelComp.addMessageReceiver(WhiteboardCellMessage.class, msgReceiver);
-                }
-
-                // Must do *after* registering the listener.
-                //cell.sync();
-
-                logger.info("whiteboard: cell initialization complete, cellID = " + cell.getCellID());
                 break;
             case DISK:
                 if (msgReceiver != null) {
