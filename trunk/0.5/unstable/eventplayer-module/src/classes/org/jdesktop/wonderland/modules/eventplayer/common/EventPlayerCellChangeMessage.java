@@ -77,10 +77,10 @@ public class EventPlayerCellChangeMessage extends CellMessage {
     }
 
     /**
-     * Static method used to create an instance of EventRecorderCellChangeMessage that has an action type
+     * Static method used to create an instance of EventPlayerCellChangeMessage that has an action type
      * <code>RECORD</code>.
      * @param cellID The id of the cell for which this message is created
-     * @param playing boolean to indicate the state of the recorder
+     * @param playing boolean to indicate the state of the player
      * @param userName the name of the user that initiated this change
      * @return a message with appropriate state
      */

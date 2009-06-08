@@ -27,7 +27,7 @@ import org.xml.sax.InputSource;
  */
 public interface EventPlayingManager {
 
-    public void replayMessages(InputSource recordingSource, MessagesReplayingListener listener);
+    public void replayMessages(String tapeName, MessagesReplayingListener listener);
 
     /**
      * A listener that will be notified of the result of recording a message

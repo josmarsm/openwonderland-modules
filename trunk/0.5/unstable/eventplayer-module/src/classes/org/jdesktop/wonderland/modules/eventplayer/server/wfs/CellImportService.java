@@ -191,8 +191,7 @@ public class CellImportService extends AbstractService {
             CellMap<CellImportEntry> cellMOMap = null;
 
             try {
-                String encodedName = name.replace(" ","%20");
-                cellMOMap = RecordingLoaderUtils.loadCellMap("recordings/" + encodedName + "/world-wfs");
+                cellMOMap = RecordingLoaderUtils.loadCellMap(name);
             } catch (Exception ex2) {
                 ex = ex2;
             }

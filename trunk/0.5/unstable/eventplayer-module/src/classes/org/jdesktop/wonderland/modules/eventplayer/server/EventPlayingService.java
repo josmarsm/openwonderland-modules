@@ -39,8 +39,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.MessagesReplayingListener;
+import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -48,7 +50,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
- * A service to support the event recorder.
+ * A service to support the event player.
  * This class is responsible for recording the initial state of the world when
  * the recording begins and then for recording messages that have been intercepted
  * by the RecorderManager.
@@ -156,8 +158,8 @@ public class EventPlayingService extends AbstractService {
                 " to current version:" + currentVersion);
     }
 
-    void replayMessages(InputSource recordingSource, MessagesReplayingListener listener) {
-        logger.getLogger().info("recording source: " + recordingSource);
+    void replayMessages(String tapeName, MessagesReplayingListener listener) {
+        logger.getLogger().info("tapename: " + tapeName);
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedMessagesReplayingWrapper(listener);
         }
@@ -168,7 +170,7 @@ public class EventPlayingService extends AbstractService {
         // now add the recording request to the transaction.  On commit
         // this request will be passed on to the executor for long-running
         // tasks
-        ReplayMessages ec = new ReplayMessages(recordingSource, scl.getId());
+        ReplayMessages ec = new ReplayMessages(tapeName, scl.getId());
         ctxFactory.joinTransaction().add(ec);
     }
 
@@ -178,7 +180,7 @@ public class EventPlayingService extends AbstractService {
      * CellExportListener identified by managed reference.
      */
     private class ReplayMessages extends MessageReplayer implements Runnable {
-        private InputSource recordingSource;
+        private String tapeName;
         private BigInteger listenerID;
         /*
      * The time of the last message that was played or, if no message
@@ -187,18 +189,22 @@ public class EventPlayingService extends AbstractService {
         private long recordingStartTime;
         private long playbackStartTime;
 
-        private ReplayMessages(InputSource recordingSource, BigInteger id) {
-            this.recordingSource = recordingSource;
+        private ReplayMessages(String tapeName, BigInteger id) {
+            this.tapeName = tapeName;
             this.listenerID = id;
         }
 
         public void run() {
+            
             try {
+                InputSource recordingSource = RecordingLoaderUtils.getRecordingInputSource(tapeName);
                 XMLReader xmlReader = XMLReaderFactory.createXMLReader();
                 DefaultHandler handler = new EventHandler(this);
                 xmlReader.setContentHandler(handler);
                 xmlReader.setErrorHandler(handler);
                 xmlReader.parse(recordingSource);
+            } catch (JAXBException ex) {
+                Logger.getLogger(EventPlayingService.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, null, ex);
             } catch (SAXException ex) {
