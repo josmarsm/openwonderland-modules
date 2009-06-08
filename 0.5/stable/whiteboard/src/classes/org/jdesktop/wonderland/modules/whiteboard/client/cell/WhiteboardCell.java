@@ -80,46 +80,48 @@ public class WhiteboardCell extends App2DCell {
      * This is called when the status of the cell changes.
      */
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
+    public void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
             case ACTIVE:
-                // The cell is now visible
-                commComponent = getComponent(WhiteboardComponent.class);
-                WhiteboardApp whiteboardApp = new WhiteboardApp("Whiteboard", clientState.getPixelScale());
-                setApp(whiteboardApp);
+                if (increasing) {
+                    // The cell is now visible
+                    commComponent = getComponent(WhiteboardComponent.class);
+                    WhiteboardApp whiteboardApp = new WhiteboardApp("Whiteboard", clientState.getPixelScale());
+                    setApp(whiteboardApp);
 
-                // this cell displays the app
-                whiteboardApp.addDisplayer(this);
+                    // this cell displays the app
+                    whiteboardApp.addDisplayer(this);
 
-                // This app only has one WhiteboardWindow, so it is always top-level
-                try {
-                    whiteboardWin = new WhiteboardWindow(this, whiteboardApp,
-                            clientState.getPreferredWidth(), clientState.getPreferredHeight(),
-                            true, clientState.getPixelScale(), commComponent);
-                    whiteboardApp.setWindow(whiteboardWin);
-                } catch (InstantiationException ex) {
-                    throw new RuntimeException(ex);
+                    // This app only has one WhiteboardWindow, so it is always top-level
+                    try {
+                        whiteboardWin = new WhiteboardWindow(this, whiteboardApp,
+                                clientState.getPreferredWidth(), clientState.getPreferredHeight(),
+                                true, clientState.getPixelScale(), commComponent);
+                        whiteboardApp.setWindow(whiteboardWin);
+                    } catch (InstantiationException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+                    // Make the app window visible
+                    whiteboardWin.setVisibleApp(true);
+                    whiteboardWin.setVisibleUser(this, true);
+
+                    // Sync
+                    sync();
                 }
-
-                // Make the app window visible
-                whiteboardWin.setVisibleApp(true);
-                whiteboardWin.setVisibleUser(this, true);
-
-                // Sync
-                sync();
                 break;
             case DISK:
-                // The cell is no longer visible
-                whiteboardWin.setVisibleApp(false);
-                removeComponent(WhiteboardComponent.class);
-                commComponent = null;
-                whiteboardWin = null;
+                if (!increasing) {
+                    // The cell is no longer visible
+                    whiteboardWin.setVisibleApp(false);
+                    removeComponent(WhiteboardComponent.class);
+                    commComponent = null;
+                    whiteboardWin = null;
+                }
                 break;
         }
-
-        return ret;
     }
 
     public String getUID() {

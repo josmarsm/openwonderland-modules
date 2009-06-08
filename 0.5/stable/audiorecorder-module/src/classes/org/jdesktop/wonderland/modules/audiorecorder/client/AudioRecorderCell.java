@@ -80,9 +80,9 @@ public class AudioRecorderCell extends Cell {
     }
 
     @Override
-    public boolean setStatus(CellStatus status) {
-        super.setStatus(status);
-        if (status == CellStatus.ACTIVE) {
+    public void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
+        if (increasing && status == CellStatus.RENDERING) {
             if (menuFactory == null) {
                     final MenuItemListener l = new MenuItemListener();
                     menuFactory = new ContextMenuFactorySPI() {
@@ -95,7 +95,7 @@ public class AudioRecorderCell extends Cell {
                     contextComp.addContextMenuFactory(menuFactory);
                 }
         }
-        if (status.equals(CellStatus.BOUNDS)) {
+        if (increasing && status.equals(CellStatus.ACTIVE)) {
             //About to become visible, so add the message receiver
             if (receiver == null) {
                 receiver = new AudioRecorderCellMessageReceiver();
@@ -114,7 +114,6 @@ public class AudioRecorderCell extends Cell {
             }
         }
         //No change in my status, so...
-        return false;
     }
 
     @Override

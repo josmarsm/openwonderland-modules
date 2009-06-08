@@ -65,7 +65,7 @@ public class WhiteboardComponent extends CellComponent {
     @Override
     public void setStatus(CellStatus status) {
         switch (status) {
-            case BOUNDS:
+            case INACTIVE:
                 channelComp = cell.getComponent(ChannelComponent.class);
                 if (channelComp == null) {
                     throw new IllegalStateException("Cell does not have a ChannelComponent");
