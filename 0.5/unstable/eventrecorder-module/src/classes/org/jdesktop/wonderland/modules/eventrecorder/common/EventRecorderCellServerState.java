@@ -40,8 +40,6 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @XmlAccessorType(XmlAccessType.FIELD)
 @ServerState
 public class EventRecorderCellServerState extends CellServerState implements Serializable {
-    private int instanceNumber;
-    
     @XmlElementWrapper(name = "tapes")
     @XmlElement(name="tape")
     private Set<Tape> tapes = new HashSet<Tape>();
@@ -71,10 +69,6 @@ public class EventRecorderCellServerState extends CellServerState implements Ser
 
     public boolean isRecording() {
         return isRecording;
-    }
-
-    public void setInstanceNumber(int instanceNumber) {
-        this.instanceNumber = instanceNumber;
     }
 
     public void setRecording(boolean isRecording) {
