@@ -20,7 +20,9 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import java.io.IOException;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
@@ -46,6 +48,7 @@ import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.ListRecordingsListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
+import org.jdesktop.wonderland.server.wfs.importer.CellImporterUtils;
 
 /**
  *
@@ -166,7 +169,16 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
     }
 
     private void createTapes() {
-        WFSRecordingList recordingList = CellExporterUtils.getWFSRecordings();
+        WFSRecordingList recordingList = null;
+        try {
+            recordingList = CellExporterUtils.getWFSRecordings();
+        } catch (JAXBException ex) {
+            eventRecorderLogger.log(Level.SEVERE, "Failed to retrieved list of recordings", ex);
+            return;
+        } catch (IOException ex) {
+            eventRecorderLogger.log(Level.SEVERE, "Failed to retrieved list of recordings", ex);
+            return;
+        }
         String[] tapeNames = recordingList.getRecordings();
         for (int i = 0; i < tapeNames.length; i++) {
                 String name = tapeNames[i];
@@ -348,6 +360,9 @@ public class EventRecorderCellMO extends CellMO implements ChangesFileCreationLi
                     break;
                 case REQUEST_TAPE_STATE:
                     cellMO.processTapeStateMessage(clientID, sender, arcm);
+                    break;
+                default:
+                    eventRecorderLogger.severe("Unknown action type: " + arcm.getAction());
             }
         }
 

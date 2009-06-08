@@ -107,10 +107,9 @@ public class EventRecorderCell extends Cell {
     public boolean setStatus(CellStatus status) {
         //eventRecorderLogger.info("status: " + status);
         super.setStatus(status);
-        if (status.equals(CellStatus.ACTIVE)) {
+        if (status == CellStatus.ACTIVE) {
             //About to become visible, so add the message receiver
             getChannel().addMessageReceiver(EventRecorderCellChangeMessage.class, new EventRecorderCellMessageReceiver());
-            if (status == CellStatus.ACTIVE) {
             if (menuFactory == null) {
                     final MenuItemListener l = new MenuItemListener();
                     menuFactory = new ContextMenuFactorySPI() {
@@ -123,8 +122,7 @@ public class EventRecorderCell extends Cell {
                     contextComp.addContextMenuFactory(menuFactory);
                 }
         }
-        }
-        if (status.equals(CellStatus.DISK)) {
+        if (status == CellStatus.DISK) {
             //Cleanup
             getChannel().removeMessageReceiver(EventRecorderCellChangeMessage.class);
             if (menuFactory != null) {
