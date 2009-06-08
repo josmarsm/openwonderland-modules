@@ -67,8 +67,8 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
 
 
     /** Creates a new instance of EventRecorderImpl
-     * @param originCell the cell that is the event recorder
-     * @param name the name of the event recorder
+     * @param originCell the cell that is the event player
+     * @param name the name of the event player
      */
     public EventPlayer(CellMO originCell) {
         clientID = new PlayerClientID();
@@ -94,7 +94,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
 
     /**
      * Start recording to the tape given in the parameter
-     * @param tapeName the name of the selected tape in the event recorder
+     * @param tapeName the name of the selected tape in the event player
      */
     void loadRecording(String tapeName) {
         logger.info("start loading: " + tapeName);
@@ -110,7 +110,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
 
     /**
      * Start recording to the tape given in the parameter
-     * @param tapeName the name of the selected tape in the event recorder
+     * @param tapeName the name of the selected tape in the event player
      */
     void startPlaying(String tapeName) {
         logger.info("start playing: " + tapeName);
@@ -250,10 +250,9 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
     }
 
     private void replayMessages() {
-        InputSource recordingSource = new InputSource("/Users/bh37721/.wonderland-server/0.5-dev/wfs/recordings/Untitled Tape/changes.xml");
         // get the event playing service
         EventPlayingManager epm = AppContext.getManager(EventPlayingManager.class);
-        epm.replayMessages(recordingSource, this);
+        epm.replayMessages(tapeName, this);
     }
 
     

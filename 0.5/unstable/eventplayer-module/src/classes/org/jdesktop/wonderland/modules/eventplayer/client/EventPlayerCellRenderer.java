@@ -102,7 +102,7 @@ public class EventPlayerCellRenderer extends BasicRenderer {
     }
 
     private void addOuterCasing(Node device) {
-        Box casing = new Box("Event Recorder Casing", new Vector3f(0, 0, 0), WIDTH, HEIGHT, DEPTH); //x, y, z
+        Box casing = new Box("Event Player Casing", new Vector3f(0, 0, 0), WIDTH, HEIGHT, DEPTH); //x, y, z
         casing.setModelBound(new BoundingBox());
         casing.updateModelBound();
         ColorRGBA casingColour = new ColorRGBA(0f, 0f, 1f, 0.2f);

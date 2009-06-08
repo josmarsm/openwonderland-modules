@@ -35,8 +35,8 @@ public class EventPlayingManagerImpl implements EventPlayingManager {
         this.service = service;
     }
 
-    public void replayMessages(InputSource recordingSource, MessagesReplayingListener listener) {
-        service.replayMessages(recordingSource, listener);
+    public void replayMessages(String tapeName, MessagesReplayingListener listener) {
+        service.replayMessages(tapeName, listener);
     }
 
     
