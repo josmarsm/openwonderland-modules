@@ -77,8 +77,8 @@ public class TelePointerComponent extends CellComponent {
     }
     
     @Override
-    public void setStatus(CellStatus status) {
-        super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
         switch (status) {
             case DISK:
                 if (msgReceiver != null && channelComp != null) {
@@ -86,9 +86,8 @@ public class TelePointerComponent extends CellComponent {
                     msgReceiver = null;
                 }
                 break;
-            case BOUNDS: {
-                if (msgReceiver == null) {
-                    pointer = TelePointerRenderer.getSharedPointerRenderer().createSharedPointer(((AvatarCell)cell).getIdentity().getUsername());
+            case ACTIVE: {
+                if (increasing && msgReceiver == null) {
                     msgReceiver = new ChannelComponent.ComponentMessageReceiver() {
 
                         public void messageReceived(CellMessage message) {
@@ -99,7 +98,7 @@ public class TelePointerComponent extends CellComponent {
                             }
 
                             if (!senderID.equals(cell.getCellCache().getSession().getID())) {
-                                pointer.handleMessage((TelePointerMessage) message);
+                                handleMessage((TelePointerMessage) message);
                             }
                         }
                     };
@@ -108,6 +107,13 @@ public class TelePointerComponent extends CellComponent {
                 }
             }
         }
+    }
+
+    private void handleMessage(TelePointerMessage msg) {
+        if (pointer==null) {
+            pointer = TelePointerRenderer.getSharedPointerRenderer().createSharedPointer(((AvatarCell)cell).getIdentity().getUsername());
+        }
+        pointer.handleMessage(msg);
     }
 
     /**
@@ -146,7 +152,7 @@ public class TelePointerComponent extends CellComponent {
                         msg.setMouseEventID(((MouseEvent)lastEvent.getAwtEvent()).getID());
                         channelComp.send(msg);
                         lastEvent = null;
-                        pointer.handleMessage(msg);     // Render the local cursor
+                        handleMessage(msg);     // Render the local cursor
                     }
                 }
 
