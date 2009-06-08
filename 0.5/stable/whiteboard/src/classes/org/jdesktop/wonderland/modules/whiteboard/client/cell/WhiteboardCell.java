@@ -80,7 +80,7 @@ public class WhiteboardCell extends App2DCell {
      * This is called when the status of the cell changes.
      */
     @Override
-    public void setStatus(CellStatus status, boolean increasing) {
+    protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
         switch (status) {
