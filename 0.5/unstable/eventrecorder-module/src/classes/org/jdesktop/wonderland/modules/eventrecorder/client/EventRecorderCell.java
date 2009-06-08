@@ -101,13 +101,12 @@ public class EventRecorderCell extends Cell {
      * in your method.
      *
      * @param status the cell status
-     * @return true if the status was changed, false if the new and previous status are the same
      */
     @Override
-    public boolean setStatus(CellStatus status) {
+    protected void setStatus(CellStatus status, boolean increasing) {
         //eventRecorderLogger.info("status: " + status);
-        super.setStatus(status);
-        if (status == CellStatus.ACTIVE) {
+        super.setStatus(status, increasing);
+        if (increasing && status == CellStatus.ACTIVE) {
             //About to become visible, so add the message receiver
             getChannel().addMessageReceiver(EventRecorderCellChangeMessage.class, new EventRecorderCellMessageReceiver());
             if (menuFactory == null) {
@@ -130,8 +129,6 @@ public class EventRecorderCell extends Cell {
                     menuFactory = null;
             }
         }
-        //No change in my status, so...
-        return false;
     }
 
     /**
