@@ -26,6 +26,7 @@ import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.TransactionProxy;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -99,6 +100,8 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
 
     private HashMap<String, ConversationManager> conversationManagers = new HashMap<String, ConversationManager>();
 
+    private String jnlpURL;
+
     /**
      * How long to wait without a conversation event until the ConversationManager for that address
      * is removed. In ms.
@@ -110,6 +113,13 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
             TransactionProxy proxy) {
 
         super(props, registry, proxy, logger);
+
+        try {
+            jnlpURL = WonderlandContext.getWebServerURL() + "wonderland-web-front/app/Wonderland.jnlp";
+        } catch (MalformedURLException ex) {
+            logger.log(Level.WARNING, "Error getting web server URL: " + ex);
+        }
+
 
         // Grab all the configuration from the properties files.
         validConfiguration = true;
@@ -281,7 +291,7 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
                 conversationManagers.put(chat.getParticipant(), cm);
 
                 // Send welcome message.
-                chat.sendMessage("Hi! Any messages you type to me will be sent in-world. Any responses from in-world avatars that start with an '@' will be sent back to you here.");
+                chat.sendMessage("Hi! Any messages you type to me will be sent in-world. You can join the world here: " + jnlpURL);
 
                 sendWorldMessage("Server", this.removeResource(chat.getParticipant()) + " has joined the world. Messages that start with '@' will be sent to them.");
             }
@@ -295,27 +305,10 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
         }
     }
 
-//    public void init() {
-//        // check the data manager to see if the listener is there. If it is,
-//
-//        try {
-//            TextChatMessageListener listener = (TextChatMessageListener) AppContext.getDataManager().getBinding(CHAT_MESSAGE_LISTENER_BINDING);
-//            logger.log(Level.INFO, "Found an existing listener object. No need to make a new one.");
-//        } catch (NameNotBoundException e) {
-//            logger.log(Level.INFO, "Listener not yet set. About to schedule listener registration.");
-//            // Sign up for in-world messages.
-//            transactionScheduler.scheduleTask(new RegisterChatListenerKernelRunnable(new TextMessageListener(), RegisterChatListenerKernelRunnable.REGISTER), new IdentityImpl("XMPP Presence Service"));
-//        }
-//    }
-
     public void sendMessageToConnectedXMPPClients(String message) {
         if(!validConfiguration) {
             logger.log(Level.WARNING, "Tried to send messagea to connected XMPP clients, but XMPP configuration was not valid. Make sure to set an account name and password.");
         }
-        // It's a little lame to do this every time messages happen, but I don't really feel
-        // like making a whole new repeated task to check this. This works almost as well,
-        // just feels a little less clean.
-//        checkForExpiredConnections();
         
         for (String name : conversationManagers.keySet()) {
             ConversationManager cm = conversationManagers.get(name);
@@ -343,6 +336,8 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
             sendWorldMessage("Server", removeResource(name) + " has disconnected.");
 
             // Send a good-bye message to the XMPP client? (this might be annoying)
+            // (this is indeed a little annoying, and tends to cause people
+            //  to reconnect because they bring the IM window to front again.)
 //            ConversationManager cm = this.conversationManagers.get(name);
 //            cm.sendMessage("Your connection to this world has expired. Anything you say will still be sent in-world, but you won't hear ");
 
@@ -473,12 +468,22 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
             }
 
 
-            String statusMessage = validUserCount + " users in-world";
-            if (validUserCount > 0) {
-                statusMessage += ": ";
-            }
+            String statusMessage = "";
 
-            statusMessage += userList;
+            if (validUserCount > 0) {
+                statusMessage += validUserCount + " ";
+                if(validUserCount == 1)
+                    statusMessage = "user in-world: ";
+                else
+                    statusMessage = "users in-world: ";
+                
+                statusMessage += userList;
+            }
+            else {
+                statusMessage = "No users in-world.";
+            }
+            
+            statusMessage += "\n" + jnlpURL;
 
             // Pack up the packet and send it out.
             Presence presence = new Presence(Presence.Type.available);
@@ -525,59 +530,4 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
             tcch.sendGlobalMessage(from, msgBody);
         }
     }
-
-
-//    private class RegisterChatListenerKernelRunnable implements KernelRunnable {
-//
-//        private int type;
-//        private TextMessageListener listener;
-//
-//        public final static int REGISTER = 0;
-//        public final static int DEREGISTER = 1;
-//
-//        protected RegisterChatListenerKernelRunnable(TextMessageListener l, int t) {
-//            listener = l;
-//            type = t;
-//        }
-//
-//        public void run() throws Exception {
-//                // Sign up for in-world messages, too.
-//            if(type==REGISTER)
-//                logger.log(Level.INFO, "About to register: " + listener);
-//            else if(type==DEREGISTER)
-//                logger.log(Level.INFO, "About to deregister: " + listener);
-//            try {
-//                CommsManager cm = WonderlandContext.getCommsManager();
-//                logger.log(Level.INFO, "Got comms manager: " + cm);
-//                ClientConnectionHandler handler = cm.getClientHandler(TextChatConnectionType.CLIENT_TYPE);
-//                logger.log(Level.INFO, "got handler: " + handler);
-//
-//
-//                TextChatConnectionHandler tcch = (TextChatConnectionHandler) handler;
-//
-//                if (tcch == null) {
-//                    logger.log(Level.WARNING, "Could not register to receive in-world chat messages because TextChatClientHandler could not be found.");
-//                    return;
-//                }
-//
-//                // Accomdate both adding/removing of listeners here, so we can use
-//                // this same class on both ends of the life cycle.
-//                if(type==REGISTER)
-//                    tcch.addTextChatMessageListener(listener);
-//                else if(type==DEREGISTER)
-//                    tcch.removeTextChatMessageListener(listener);
-//
-//                // Now add this into the data manager, since we think we're officially registered.
-//                logger.log(Level.INFO, "Registered TextChatMessageListener. About to put it in the data manager...");
-//                AppContext.getDataManager().setBinding(CHAT_MESSAGE_LISTENER_BINDING, listener);
-//            } catch (Exception e) {
-//                logger.log(Level.WARNING, "Couldn't register for chat messages: " + e.getMessage());
-//            }
-//        }
-//
-//        public String getBaseTaskType() {
-//            return "XMPP_PresenceService.RegisterChatListenerKernelRunnable";
-//        }
-//    }
-
 }
