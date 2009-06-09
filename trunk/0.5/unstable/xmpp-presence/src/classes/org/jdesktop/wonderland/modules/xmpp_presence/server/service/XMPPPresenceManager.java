@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.xmpp_presence.server.service;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
-import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.UserListener;
@@ -61,6 +60,11 @@ public class XMPPPresenceManager {
      */
     public void startPresenceUpdating()
     {
+        if(!service.isValidConfiguration()) {
+            logger.log(Level.WARNING, "Tried to start presence updating, but XMPP configuration was not valid. Make sure to set an account name and password.");
+            return;
+        }
+
         // Start a recurring task that updates the status messages.
         // AppContext.getTaskManager().schedulePeriodicTask(new StatusMessageUpdateTask(), 100, 3000);
 
@@ -89,6 +93,11 @@ public class XMPPPresenceManager {
      */
     public void updatePresence()
     {
+        if(!service.isValidConfiguration()) {
+            logger.log(Level.WARNING, "Tried to update presence information, but XMPP configuration was not valid. Make sure to set an account name and password.");
+            return;
+        }
+
         service.doUpdateStatusMessage();
     }
 
@@ -102,6 +111,9 @@ public class XMPPPresenceManager {
 
     public void userLoggedInEvent(WonderlandClientID clientID) {
         AppContext.getTaskManager().scheduleTask(new StatusMessageUpdateTask());
+    }
+
+    public void sendMessageToConnectedXMPPClients(String message) {
     }
 
     /**
@@ -123,6 +135,13 @@ public class XMPPPresenceManager {
         }
 
     }
-    
 
+    public void textMessageReceived(String fromUserName, String message) {
+
+        service.checkForExpiredConnections();
+
+        if (message.charAt(0) == '@') {
+            service.sendMessageToConnectedXMPPClients(fromUserName + ": " + message);
+        }
+    }
 }

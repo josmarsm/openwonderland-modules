@@ -15,7 +15,7 @@
     <pathconvert property="module-server.classpath">
         <path location="${current.dir}/lib/smack.jar"/>
         <path location="${current.dir}/lib/smackx.jar"/>
-	<path location="${modules.dir}/tools/text-chat/build/server/textchat-server.jar"/>
+            <path location="${modules.dir}/tools/text-chat/build/server/textchat-server.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common, 
@@ -35,6 +35,8 @@
                 </clientjar> 
 	    </client>
 
+        <!-- Depends on the text-chat module for bridging XMPP messages into and out of the world. -->
+        <requires name="textchat" version="1"/>
 
         <!-- Using ${current.dir}/lib as suggested by jkaplan didn't work, for some reason. Suspect it has something to do with having a dash in
              my module name? Figure out later. -->
