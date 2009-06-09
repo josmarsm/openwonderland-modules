@@ -18,7 +18,9 @@
 package org.jdesktop.wonderland.modules.xmpp_presence.server.service;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.Task;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
+import java.io.Serializable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.UserListener;
@@ -41,14 +43,11 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 public class XMPPPresenceManager {
 
     XMPPPresenceService service;
-
     private static final LoggerWrapper logger =
             new LoggerWrapper(Logger.getLogger(XMPPPresenceManager.class.getName()));
-
     private PresenceUserListener listener;
 
-    public XMPPPresenceManager(XMPPPresenceService xmppPS)
-    {
+    public XMPPPresenceManager(XMPPPresenceService xmppPS) {
         service = xmppPS;
 
     }
@@ -58,15 +57,13 @@ public class XMPPPresenceManager {
      * the UserListener system so it can be notified of user join/leave events,
      * which it takes as signals to update the presence information.
      */
-    public void startPresenceUpdating()
-    {
-        if(!service.isValidConfiguration()) {
+    public void startPresenceUpdating() {
+        if (!service.isValidConfiguration()) {
             logger.log(Level.WARNING, "Tried to start presence updating, but XMPP configuration was not valid. Make sure to set an account name and password.");
             return;
         }
 
         // Start a recurring task that updates the status messages.
-        // AppContext.getTaskManager().schedulePeriodicTask(new StatusMessageUpdateTask(), 100, 3000);
 
         // lets try using the UserManager notification mechanism for deciding when a good time to update would be.
         UserManager manager = UserManager.getUserManager();
@@ -75,15 +72,16 @@ public class XMPPPresenceManager {
         // Using this inner class as an indirection to avoid serialization problems.
         manager.addUserListener(listener);
 
-        // Do one update now to change off the default "initializing presence" notice.
-        // this.updatePresence();
+        // Kick off a task that periodically cleans out expired XMPP connections
+        // (ie connections from which we haven't seen an event in a while)
+        // no need to run this that often; being off by a few seconds is no big deal.
+        AppContext.getTaskManager().schedulePeriodicTask(new ExpireConnectionsTask(), 0, 3000);
     }
 
     /**
      * Stops presence updating by removing the listener on login/logout events.
      */
-    public void stopPresenceUpdating()
-    {
+    public void stopPresenceUpdating() {
         UserManager manager = UserManager.getUserManager();
         manager.removeUserListener(listener);
     }
@@ -91,9 +89,8 @@ public class XMPPPresenceManager {
     /**
      * Trigger a one-time presence update. 
      */
-    public void updatePresence()
-    {
-        if(!service.isValidConfiguration()) {
+    public void updatePresence() {
+        if (!service.isValidConfiguration()) {
             logger.log(Level.WARNING, "Tried to update presence information, but XMPP configuration was not valid. Make sure to set an account name and password.");
             return;
         }
@@ -133,7 +130,6 @@ public class XMPPPresenceManager {
             XMPPPresenceManager manager = AppContext.getManager(XMPPPresenceManager.class);
             manager.userLoggedInEvent(clientID);
         }
-
     }
 
     public void textMessageReceived(String fromUserName, String message) {
@@ -141,7 +137,27 @@ public class XMPPPresenceManager {
         service.checkForExpiredConnections();
 
         if (message.charAt(0) == '@') {
-            service.sendMessageToConnectedXMPPClients(fromUserName + ": " + message);
+            service.sendMessageToConnectedXMPPClients(fromUserName + ": " + message.substring(1));
+        }
+    }
+
+    public void checkForExpiredConnections() {
+        service.checkForExpiredConnections();
+    }
+
+    private static class ExpireConnectionsTask implements Task, Serializable {
+
+        public void run() {
+            XMPPPresenceManager manager = AppContext.getManager(XMPPPresenceManager.class);
+            manager.checkForExpiredConnections();
+        }
+    }
+
+    private static class StatusMessageUpdateTask implements Task, Serializable {
+
+        public void run() {
+            XMPPPresenceManager manager = AppContext.getManager(XMPPPresenceManager.class);
+            manager.updatePresence();
         }
     }
 }
