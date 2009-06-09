@@ -35,7 +35,10 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 
 /**
- *
+ * Does the startup work for the XMPPPresenceService. Its two main jobs are
+ * registering the service as a listener for text chat messages and kicking
+ * off the presenceUpdating task.
+ * 
  * @author drew
  */
 @Plugin
@@ -73,6 +76,13 @@ public class XMPPPresenceServerPlugin implements ServerPlugin {
         }
     }
 
+    /**
+     * A task that handles the registartion of a callback object with the TextChatConnectionHandler.
+     *
+     * Checks to see if such a listener already exists in the DataManager. If it does, then
+     * do nothing. Otherwise, create a new one and register it appropriately.
+     * 
+     */
     protected static class ChatRegistrationTask implements Task, Serializable {
 
         public void run() {
