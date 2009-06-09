@@ -315,7 +315,7 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
         // It's a little lame to do this every time messages happen, but I don't really feel
         // like making a whole new repeated task to check this. This works almost as well,
         // just feels a little less clean.
-        checkForExpiredConnections();
+//        checkForExpiredConnections();
         
         for (String name : conversationManagers.keySet()) {
             ConversationManager cm = conversationManagers.get(name);
@@ -324,7 +324,6 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
         }
 
     }
-
 
     protected void checkForExpiredConnections() {
         HashSet<String> managersToRemove = new HashSet<String>();
