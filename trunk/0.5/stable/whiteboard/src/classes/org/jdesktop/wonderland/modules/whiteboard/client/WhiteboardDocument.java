@@ -33,7 +33,7 @@ import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
-import org.jdesktop.wonderland.modules.hud.client.HUDInputDialog;
+import org.jdesktop.wonderland.modules.hud.client.HUDDialogComponent;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.Action;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
@@ -56,7 +56,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     private String docURI;
     private SVGDocument svgDocument;
     private DocumentDialog svgDocumentDialog;
-    private HUDInputDialog dialog;
+    private HUDDialogComponent dialog;
     protected static final Object readyLock = new Object();
 
     /**
@@ -189,7 +189,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         public void run() {
             if (dialog == null) {
                 // create a HUD text dialog
-                dialog = new HUDInputDialog(whiteboardWindow.getCell());
+                dialog = new HUDDialogComponent(whiteboardWindow.getCell());
                 dialog.setPreferredLocation(Layout.SOUTH);
                 dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.2f));
 

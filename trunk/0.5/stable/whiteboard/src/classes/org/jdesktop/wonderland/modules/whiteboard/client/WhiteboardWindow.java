@@ -37,7 +37,10 @@ import java.awt.geom.Rectangle2D;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.gvt.GraphicsNode;
 import org.apache.batik.swing.JSVGCanvas;
@@ -47,6 +50,7 @@ import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.hud.HUDMessage;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
@@ -103,6 +107,7 @@ public class WhiteboardWindow extends Window2D {
     // HUD components
     private HUDComponent controlComponent;
     private HUDComponent windowComponent;
+    private HUDComponent messageComponent;
     private DisplayMode displayMode;
 
     /**
@@ -123,6 +128,7 @@ public class WhiteboardWindow extends Window2D {
         this.cell = cell;
         this.commComponent = commComponent;
         initCanvas(width, height);
+        initHUD();
         setDisplayMode(DisplayMode.WORLD);
         showControls(false);
         wbSurface = (WhiteboardDrawingSurface) getSurface();
@@ -144,6 +150,14 @@ public class WhiteboardWindow extends Window2D {
         svgCanvas.addSVGDocumentLoaderListener(whiteboardDocument);
         svgCanvas.addGVTTreeRendererListener(new WhiteboardGVTTreeRendererListener(this));
         svgCanvas.addUpdateManagerListener(new WhiteboardUpdateManagerListener((WhiteboardApp) this.getApp()));
+    }
+
+    private void initHUD() {
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        messageComponent = mainHUD.createMessage("");
+        messageComponent.setPreferredLocation(Layout.NORTHEAST);
+        messageComponent.setDecoratable(false);
+        mainHUD.addComponent(messageComponent);
     }
 
     private void addEventListeners() {
@@ -332,13 +346,32 @@ public class WhiteboardWindow extends Window2D {
         showHUDMessage(message, 1000);
     }
 
+    private class Dismisser extends TimerTask {
+
+        public void run() {
+            System.err.println("--- dismissing message");
+            messageComponent.setVisible(false);
+        }
+    }
+
     /**
      * Show a status message in the HUD and remove it after a timeout
      * @param message the string to display in the message
      * @param timeout the period in milliseconds to display the message for
      */
-    void showHUDMessage(String message, int timeout) {
-        logger.info(this.getClass().getName() + ": " + message);
+    public void showHUDMessage(final String message, final int timeout) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                logger.info(this.getClass().getName() + ": " + message);
+                ((HUDMessage) messageComponent).setMessage(message);
+                messageComponent.setVisible(true);
+                Timer t = new Timer();
+                t.schedule(new Dismisser(), (long) timeout);
+            }
+        });
+
+
 //        URL[] imgURLs = {HUD.SIMPLE_BOX_IMAGE_URL,
 //            EventController.class.getResource("resources/preferences-system-windows.png")
 //        };
@@ -364,6 +397,9 @@ public class WhiteboardWindow extends Window2D {
      * off the screen first
      */
     public void hideHUDMessage(boolean immediately) {
+        if (messageComponent.isVisible()) {
+            messageComponent.setVisible(false);
+        }
 //        if (msgButton != null) {
 //            if (!immediately) {
 //                msgButton.changeLocation(new Point(-45, 50));
