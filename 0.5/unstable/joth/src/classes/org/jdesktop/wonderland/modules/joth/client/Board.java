@@ -18,20 +18,18 @@
 
 package org.jdesktop.wonderland.modules.joth.client;
 
-/**
- * Board: A 2D game board consisting of squares.
- * @author dj
+/**********************************************************************
+ * Board: A 2D game board consisting of squares. A square may be empty, 
+ * black or white.
+ * @author deronj@dev.java.net
  */
 public class Board {
 
     /** The number of rows in the board singleton. */
-    public static final int NUM_ROWS = 8;
+    public static final int NUM_ROWS = 5;
 
     /** The number of columns in the board singleton. */
-    public static final int NUM_COLS = 8;
-
-    /** The board singleton. */
-    private static Board board;
+    public static final int NUM_COLS = 5;
 
     /** The number of rows in this board. */
     private int numRows;
@@ -51,30 +49,61 @@ public class Board {
     /** The number of black pieces on the board. */
     private int blackCount = 0;
 
-    /** Returns the board singleton. */
-    public static Board getBoard () {
-        if (board != null) {
-            board = new Board(NUM_ROWS, NUM_COLS);
-        }
-        return board;
-    }
-    
-    /** 
-     * Create a new instance of Board.
+    /** The UI which displays this board. */
+    private UI ui;
+
+    /**
+     * Constructor for class Board.
      * @param numRows The number of rows in the board. 
      * @param numCols The number of columns in the board. 
      */
     public Board (int numRows, int numCols) {
+
+        // Remember the size
         this.numRows = numRows;
         this.numCols = numCols;
 
+        // The contents of the board: initially empty.
         squares = new Color[numRows][];
-        for (int row = 0; row < numRows; row++) {
-            squares[row] = new Color[numCols];
-            for (int col = 0; col < numCols; col++) {
-                squares[row][col] = Color.EMPTY;
+        for (int r = 0; r < numRows; r++) {
+            Color[] row = new Color[numCols];
+            for (int c = 0; c < numCols; c++) {
+                row[c] = Color.EMPTY;
             }
+            squares[r] = row;
         }
+
+        // Initialize piece counts
+        whiteCount = 0;
+        blackCount = 0;
+    }
+
+    /** Specify the UI to use to display this board. */
+    public void setUI (UI ui) {
+        this.ui = ui;
+    }
+
+    /**
+     * Return the number of rows in this board.
+     */
+    public int getNumRows () {
+        return numRows;
+    }
+
+    /**
+     * Return the number of columns in this board.
+     */
+    public int getNumCols () {
+        return numCols;
+    }
+
+    /**
+     * Set the given square to the given color.
+     * @param sq The square to set.
+     * @param color The color to put in the square.
+     */
+    public void setContents (Square sq, Color color) {
+        squares[sq.getRow()][sq.getCol()] = color; 
     }
 
     /** 
@@ -90,17 +119,17 @@ public class Board {
      * Return the contents of the given square.
      * @param sq The square of interest..
      */
-    public Color getContents (Square sq) {
+    public Color getContentsOfSquare (Square sq) {
         return getContents(sq.getRow(), sq.getCol());
     }
 
     /** 
      * Increment the given piece count.
-     * @param which The color counter to increment.
+     * @param which The color counter to increment
      */
-    public void countIncrement (Board.Color which) {
-        if (which == Board.Color.EMPTY) return;
-        if (which == Board.Color.WHITE) {
+    public void countIncrement (Color which) {
+        if (which == Color.EMPTY) return;
+        if (which == Color.WHITE) {
             whiteCount++;
         } else {
             blackCount++;
@@ -108,15 +137,15 @@ public class Board {
     }
 
     /** 
-     * Decrement the given piece count.
-     * @param which The color counter to deccrement.
+     * Decrement the given count.
+     * @param which The type of count to decrement
      */
-    public void countDecrement (Board.Color which) {
-        if (which == Board.Color.EMPTY) return;
-        if (which == Board.Color.WHITE) {
-            whiteCount--;
+    public void countDecrement (Color which) {
+        if (which == Color.EMPTY) return;
+        if (which == Color.WHITE) {
+            this.whiteCount--;
         } else {
-            blackCount--;
+            this.blackCount--;
         }
     }
 
@@ -137,7 +166,7 @@ public class Board {
     /**
      * Return the total number of  pieces on the board.
      */
-    public int getTotalCount () {
+    public int getTotalCount  () {
         return getWhiteCount() + getBlackCount();
     }
 
@@ -145,14 +174,26 @@ public class Board {
      * Returns whether the game is over. The game is over when
      * all squares are filled with a piece.
      */
-    public boolean isGameOver () {
-        return getTotalCount = numRows * numCols;
+    public boolean isGameOver  () {
+        return getTotalCount() == numRows * numCols;
     }
 
     /**
-     * Return the opposite color of the current color.
+     * Returns the message which says who won (i.e. who has the most pieces or a tie).
      */
-    public Color oppositeColor (Color color) {
+    public String getWinnerMessage  () {
+        if (whiteCount == blackCount) {
+            return "It's a tie.";
+        } else {
+            String winner = (whiteCount > blackCount) ? "White" : "Black";
+            return winner + " wins!";
+        }
+    }
+
+    /**
+     * Return the opposite color of the given color.
+     */
+    public static Color oppositeColor (Color color) {
         if (color == Color.WHITE) {
             return Color.BLACK;
         } else {
@@ -163,7 +204,8 @@ public class Board {
     /**
      * Redisplay the given square.
      */
-    Square.prototype.updateDisplay = function (sq) {
-        this.boardDisplay.updateDisplay(sq);
+    public void updateUI (Square sq) {
+        ui.updateSquare(sq);
     }
 }
+

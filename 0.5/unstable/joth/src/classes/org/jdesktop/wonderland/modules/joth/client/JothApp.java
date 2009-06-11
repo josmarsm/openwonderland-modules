@@ -15,30 +15,29 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.swingtest.client;
+
+package org.jdesktop.wonderland.modules.joth.client;
 
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
 import com.jme.math.Vector2f;
-import org.jdesktop.wonderland.common.ExperimentalAPI;
 
 /**
  *
- * A Swing test application.
+ * The Othello application.
  *
- * @author paulby,deronj
+ * @author deronj@dev.java.net
  */
-@ExperimentalAPI
-public class SwingTestApp extends App2D {
+public class JothApp extends App2D {
 
     /**
-     * Create a new instance of SwingTestApp. This in turn creates
+     * Create a new instance of JothApp. This in turn creates
      * and makes visible the single window used by the app.
      *
      * @param name The name of the app.
      * @param pixelScale The horizontal and vertical pixel sizes (in world meters per pixel).
      */
-    public SwingTestApp(String name, Vector2f pixelScale) {
+    public JothApp(String name, Vector2f pixelScale) {
         super(name, new ControlArbMulti(), pixelScale);
         controlArb.setApp(this);
     }

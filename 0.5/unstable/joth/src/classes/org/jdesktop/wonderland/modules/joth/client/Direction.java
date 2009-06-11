@@ -16,11 +16,12 @@
  * this code.
  */
 
-/**
- * Direction: Defines a direction for stepping within the board.
- * @author dj
- */
+package org.jdesktop.wonderland.modules.joth.client;
 
+/***************************************************************
+ * Direction: Defines a direction for stepping within the board.
+ * @author deronj@dev.java.net
+ */
 public class Direction {
 
     // Orthogonal and diagonal directions
@@ -34,13 +35,13 @@ public class Direction {
     public static final Direction NORTHWEST = new Direction(-1, -1);
 
     // All possible directions
-    public static final Direction directions = 
-        [ NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST ];
+    public static final Direction[] ALL_DIRECTIONS = new Direction[] {
+        NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST };
 
     /** The movement along the row (-1 is to the left, 0 is no movement, +1 is to the right). */
     private int deltaRow;
 
-    /* The movement along the column (-1 is above, 0 is no movement, +1 is below). */
+    /** The movement along the column (-1 is above, 0 is no movement, +1 is below). */
     private int deltaCol;
 
     /** 
@@ -67,6 +68,7 @@ public class Direction {
         return this.deltaCol;
     }
 
+    @Override
     public String toString () {
         return "[" + deltaRow + "," + deltaCol + "]";
     }

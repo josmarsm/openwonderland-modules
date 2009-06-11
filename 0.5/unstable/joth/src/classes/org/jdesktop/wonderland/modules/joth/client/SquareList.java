@@ -16,16 +16,25 @@
  * this code.
  */
 
-/**
+package org.jdesktop.wonderland.modules.joth.client;
+
+import java.util.LinkedList;
+
+/********************************
  * SquareList: A list of squares.
- * @author dj
+ * @author deronj@dev.java.net
  */
 
 public class SquareList {
 
-    /** The list of squares. */
     private LinkedList<Square> list = new LinkedList<Square>();
-        
+
+    /**
+     * Construct a new instance of SquareList.
+     */
+    public SquareList () {
+    }
+
     /**
      * Returns the length of the list
      */
@@ -37,23 +46,24 @@ public class SquareList {
      * Add a square to this list.
      */
     public void add (Square sq) {
-        list.add(sq);
+        list.addLast(sq);
     }
 
     /**
-     * Append a list of squares to this list.
+     * Add a list of squares to this list.
      */
-    public void add (LinkedList<Square> sqs) {
-        list.addAll(sqs);
+    public void add (LinkedList<Square> addendList) {
+        for (Square sq : addendList) {
+            list.add(sq);            
+        }					  
     }
 
     /**
      * Flip the squares in this list in the board to the given color.
      */
-    public void flip (currentColor) {
+    public void flip (Board.Color color) {
         for (Square sq : list) {
             sq.placePiece(color);
-            sq.updateDisplay();
         }
     }
 

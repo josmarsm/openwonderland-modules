@@ -49,7 +49,7 @@ SquareList.prototype.add = function (addend) {
 }		    
 
 /**
- * Flip the squares in this list in the board to the current color.
+ * Flip the squares in this list in the board to the given color.
  */
 SquareList.prototype.flip = function (color) {
     for (var i=0; i<this.ary.length; i++) {
