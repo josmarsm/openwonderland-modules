@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.joth.client;
 
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.awt.event.MouseEvent;
 import org.jdesktop.mtgame.CollisionComponent;
@@ -87,6 +88,9 @@ public class BoardDisplay {
          RenderComponent rc =
              ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
          rootEntity.addComponent(RenderComponent.class, rc);
+
+         // Center the board display in the cell
+         rootNode.setLocalTranslation(new Vector3f(-getWidth()/2f, -getHeight()/2f, 0f));
      }
 
      /**
@@ -114,6 +118,19 @@ public class BoardDisplay {
          return rootNode;
      }
 
+    /**
+     * Return the total width of the board display.
+     */
+    public float getWidth() {
+        return board.getNumRows() * SquareGeometry.WIDTH;
+    }
+
+     /**
+     * Return the total height of the board display.
+     */
+    public float getHeight() {
+        return board.getNumCols() * SquareGeometry.HEIGHT;
+    }
      /**
       * Create a subgraph for a particular square.
       */
