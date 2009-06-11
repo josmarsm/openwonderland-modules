@@ -189,8 +189,7 @@ public class WhiteboardCell extends App2DCell {
                             //setViewPosition(msg.getPosition());
                             //setZoom(msg.getZoom(), false);
                             logger.info("whiteboard: synced");
-                        // TODO: who shows HUD messages?
-                        // whiteboardWindow.showHUDMessage("synced", 3000);
+                            whiteboardWin.showHUDMessage("synced", 3000);
                         }
                         break;
                     case SET_ZOOM:
@@ -246,12 +245,12 @@ public class WhiteboardCell extends App2DCell {
         if ((syncing == false) && (synced == true)) {
             synced = false;
             logger.info("whiteboard: unsynced");
-        //whiteboardWindow.showHUDMessage("unsynced", 3000);
+            whiteboardWin.showHUDMessage("unsynced", 3000);
         //whiteboardWindow.updateMenu();
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
             logger.info("whiteboard: requesting sync with shared state");
-            //whiteboardWindow.showHUDMessage("syncing...", 3000);
+            whiteboardWin.showHUDMessage("syncing...", 3000);
             //whiteboardWindow.updateMenu();
             sendRequest(Action.GET_STATE, null, null, null, null);
         }
