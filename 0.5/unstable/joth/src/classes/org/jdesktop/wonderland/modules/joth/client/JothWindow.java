@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.joth.client;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.joth.client.cell.JothCell;
@@ -42,7 +43,7 @@ public class JothWindow
 
     public JothWindow (JothCell cell, App2D app, int width, int height, boolean decorated,
                        Vector2f pixelScale) {
-        super(app, width, height, decorated, pixelScale);
+        super(app, Window2D.Type.PRIMARY, width, height, decorated, pixelScale);
         this.cell = cell;
 
         controlPanel = new JothControlPanel();

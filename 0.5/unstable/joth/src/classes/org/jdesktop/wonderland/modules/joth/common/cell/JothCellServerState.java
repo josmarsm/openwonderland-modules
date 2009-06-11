@@ -36,6 +36,6 @@ public class JothCellServerState extends App2DCellServerState {
     /** {@inheritDoc} */
     @Override
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.swingtest.server.cell.JothCellMO";
+        return "org.jdesktop.wonderland.modules.joth.server.cell.JothCellMO";
     }
 }
