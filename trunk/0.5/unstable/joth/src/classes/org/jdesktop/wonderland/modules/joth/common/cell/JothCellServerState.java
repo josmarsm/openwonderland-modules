@@ -17,9 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.joth.common.cell;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
 

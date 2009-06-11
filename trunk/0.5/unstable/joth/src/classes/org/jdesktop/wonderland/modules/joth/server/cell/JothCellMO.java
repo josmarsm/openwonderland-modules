@@ -17,13 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.joth.server.cell;
 
-import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.modules.joth.common.cell.JothCellClientState;
-import org.jdesktop.wonderland.modules.joth.common.cell.JothCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
