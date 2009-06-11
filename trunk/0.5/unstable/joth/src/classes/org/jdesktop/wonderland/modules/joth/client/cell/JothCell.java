@@ -17,6 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.joth.client.cell;
 
+import com.jme.math.Vector2f;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
+import org.jdesktop.wonderland.modules.joth.client.JothApp;
+import org.jdesktop.wonderland.modules.joth.client.JothMain;
+import org.jdesktop.wonderland.modules.joth.client.JothWindow;
+import org.jdesktop.wonderland.modules.joth.common.cell.JothCellClientState;
+
 
 /**
  * Client cell for the Othello game.
@@ -28,6 +40,8 @@ public class JothCell extends App2DCell {
 
     /** The logger used by this class */
     private static final Logger logger = Logger.getLogger(JothCell.class.getName());
+    /** The JothMain singleton. */
+    private JothMain main;
     /** The (singleton) window created by the Othello program. */
     private JothWindow window;
     /** The cell client state message received from the server cell */
@@ -58,40 +72,36 @@ public class JothCell extends App2DCell {
      * This is called when the status of the cell changes.
      */
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean ret = super.setStatus(status);
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
         switch (status) {
 
             // The cell is now visible
             case ACTIVE:
+                if (increasing) {
+                    JothApp stApp = new JothApp("Othello", new Vector2f(0.01f, 0.01f));
+                    setApp(stApp);
 
-                JothApp stApp = new JothApp("Othello", clientState.getPixelScale());
-                setApp(stApp);
+                    // Tell the app to be displayed in this cell.
+                    stApp.addDisplayer(this);
 
-                // Tell the app to be displayed in this cell.
-                stApp.addDisplayer(this);
-
-                // This app has only one window, so it is always top-level
-                try {
-                    window = new JothWindow(this, stApp, clientState.getPreferredWidth(), 
-                                                 clientState.getPreferredHeight(), true, pixelScale);
-                } catch (InstantiationException ex) {
-                    throw new RuntimeException(ex);
+                    // This app has only one window, so it is always top-level
+                    window = new JothWindow(this, stApp, 500, 300, true, new Vector2f(0.01f, 0.01f));
+                
+                    main = new JothMain(this, window);
+                    main.setVisible(true);
                 }
-
-                // Both the app and the user want this window to be visible
-                window.setVisibleApp(true);
-                window.setVisibleUser(this, true);
                 break;
 
             // The cell is no longer visible
             case DISK:
-                window.setVisibleApp(false);
-                window = null;
+                if (!increasing) {
+                    main.setVisible(false);
+                    main = null;
+                    window = null;
+                }
                 break;
         }
-
-        return ret;
     }
 }
