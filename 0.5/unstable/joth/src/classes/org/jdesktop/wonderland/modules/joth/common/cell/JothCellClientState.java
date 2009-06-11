@@ -28,6 +28,6 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 
 public class JothCellClientState extends App2DCellClientState {
     public JothCellClientState () {
-        super(new Vector(0.01f, 0.01f));
+        super(new Vector2f(0.01f, 0.01f));
     }
 }
