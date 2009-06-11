@@ -49,7 +49,7 @@ public class SquareGeometry extends Quad {
         this.parentNode = parentNode;
 
         ColorRGBA color;
-        if ((row % col) == 0) {
+        if ((row ^ col) == 0) {
             color = LIGHT_COLOR;
         } else {
             color = DARK_COLOR;
