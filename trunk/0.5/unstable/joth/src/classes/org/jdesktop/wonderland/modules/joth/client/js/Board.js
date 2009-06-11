@@ -173,7 +173,7 @@ Board.NUM_ROWS = 5;
 Board.NUM_COLS = 5;
 
 /**
- * Return the opposite color of the current color.
+ * Return the opposite color of the given color.
  */
 Board.oppositeColor = function (color) {
     if (color == Board.Color.WHITE) {

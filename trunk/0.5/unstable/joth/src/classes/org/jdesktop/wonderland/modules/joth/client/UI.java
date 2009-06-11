@@ -16,6 +16,10 @@
  * this code.
  */
 
+package org.jdesktop.wonderland.modules.joth.client;
+
+import org.jdesktop.wonderland.client.input.Event;
+
 /*********************************************************
  * UI: Specifies the interface between the Othello game
  * and it's user interface.
@@ -54,4 +58,7 @@ public interface UI {
 
     /** Given a click event, determine which square it is in. */
     public Square eventToSquare (Event event);
+
+    /** Control the visibility of the UI display. */
+    public void setVisible (boolean visible);
 }
