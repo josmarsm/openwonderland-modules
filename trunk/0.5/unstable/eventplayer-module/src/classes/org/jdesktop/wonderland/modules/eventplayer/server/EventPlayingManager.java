@@ -19,7 +19,6 @@
 package org.jdesktop.wonderland.modules.eventplayer.server;
 
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
-import org.xml.sax.InputSource;
 
 /**
  *
@@ -35,6 +34,8 @@ public interface EventPlayingManager {
      * be either a ManagedObject or Serializable
      */
     public interface MessagesReplayingListener {
+
+        public void allMessagesPlayed();
 
         public void playMessage(ReceivedMessage message);
 

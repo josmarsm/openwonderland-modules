@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.modules.eventplayer.server;
 import java.util.HashMap;
 import java.util.Map;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
+import org.jdesktop.wonderland.modules.eventplayer.server.handler.EndMessageHandler;
 import org.jdesktop.wonderland.modules.eventplayer.server.handler.MessageHandler;
 import org.jdesktop.wonderland.modules.eventplayer.server.handler.WonderlandChangesHandler;
 
@@ -29,7 +30,11 @@ public abstract class MessageReplayer {
     static {
         handlerMap.put("Wonderland_Changes", WonderlandChangesHandler.class);
         handlerMap.put("Message", MessageHandler.class);
+        handlerMap.put("EndMessage", EndMessageHandler.class);
     }
+
+    public abstract void endChanges(long timestamp);
+    
 
     public Class getTagHandlerClass(String elementName) {
         return handlerMap.get(elementName);

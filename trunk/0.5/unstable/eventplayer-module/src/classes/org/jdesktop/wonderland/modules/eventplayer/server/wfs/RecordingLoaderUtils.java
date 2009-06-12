@@ -43,6 +43,7 @@ public class RecordingLoaderUtils {
      * @param cellID the parent to which the root should be added. May be null.
      */
     public static CellMap<CellImportEntry> loadCellMap(String tapeName) throws JAXBException, IOException {
+        logger.info("tapeName: " + tapeName);
         WorldRoot recordingRoot = getRecordingRoot(tapeName);
         logger.info("recordingRoot: " + recordingRoot);
         String recordingName = recordingRoot.getRootPath();
@@ -163,10 +164,10 @@ public class RecordingLoaderUtils {
     }
 
     public static WorldRoot getRecordingRoot(String tapeName) throws JAXBException, IOException {
-        System.out.println("In CellImporterUtils.getRecordingRoot");
+        logger.info("tapeName: " + tapeName);
         String encodedName = URLEncoder.encode(tapeName, "UTF-8");
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "getrecording/" + encodedName);
-
+        logger.info("url: " + url);
         return WorldRoot.decode(new InputStreamReader(url.openStream()));
     }
 
@@ -175,6 +176,8 @@ public class RecordingLoaderUtils {
         logger.info("recordingRoot: " + recordingRoot);
         String encodedName = URLEncoder.encode(tapeName, "UTF-8");
         URL url = new URL(CellImporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "getrecording/" + encodedName + "/changes");
+        logger.info("url: " + url);
+
         return new InputSource(new InputStreamReader(url.openStream()));
     }
 

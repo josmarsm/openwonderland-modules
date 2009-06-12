@@ -232,6 +232,19 @@ public class EventPlayingService extends AbstractService {
             playbackStartTime = new Date(new java.util.Date().getTime()).getTime();
             recordingStartTime = startTime;
     }
+
+        @Override
+        public void endChanges(long timestamp) {
+            long startTime = timestamp - recordingStartTime + playbackStartTime;
+            // notify the listener
+            NotifyMessagesReplayingListener notify =
+                    new NotifyMessagesReplayingListener(listenerID);
+            try {
+                transactionScheduler.scheduleTask(notify, taskOwner, startTime);
+            } catch (Exception ex) {
+                logger.logThrow(Level.WARNING, ex, "Error calling listener");
+            }
+        }
     }
 
 
@@ -255,6 +268,10 @@ public class EventPlayingService extends AbstractService {
             wrapped.playMessage(message);
         }
 
+        public void allMessagesPlayed() {
+            wrapped.allMessagesPlayed();
+        }
+
         
     }
 
@@ -264,6 +281,12 @@ public class EventPlayingService extends AbstractService {
     private class NotifyMessagesReplayingListener implements KernelRunnable {
         private ReceivedMessage message;
         private BigInteger listenerID;
+        private boolean completed = false;
+
+        private NotifyMessagesReplayingListener(BigInteger listenerID) {
+            this.listenerID = listenerID;
+            completed = true;
+        }
 
 
 
@@ -283,7 +306,11 @@ public class EventPlayingService extends AbstractService {
                     (MessagesReplayingListener) lr.get();
 
             try {
-                l.playMessage(message);
+                if (completed) {
+                    l.allMessagesPlayed();
+                } else {
+                    l.playMessage(message);
+                }
             } finally {
                 // clean up
                 if (l instanceof ManagedMessagesReplayingWrapper) {

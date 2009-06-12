@@ -201,6 +201,9 @@ public class CellImportService extends AbstractService {
         }
 
         private void notifyCellRetrieval(CellMap<CellImportEntry> cellMOMap, Exception ex) {
+            logger.getLogger().info("cellMap: " + cellMOMap);
+            logger.getLogger().info("exception: " + ex);
+
             CellMap<CellID> cellPathMap = new CellMap<CellID>();
             CellMap<CellImportEntry> subMap = new CellMap<CellImportEntry>();
             Set<String> keys = cellMOMap.keySet();

@@ -20,6 +20,9 @@ package org.jdesktop.wonderland.modules.eventplayer.web.resources;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -65,8 +68,18 @@ public class RecordingsResource {
     @GET
     @Path("{recording}")
     @Produces({"text/plain", "application/xml", "application/json"})
-    public Response getRecording(@PathParam("recording") String tapeName) {
+    public Response getRecording(@PathParam("recording") String encodedName) {
         Logger logger = Logger.getLogger(RecordingsResource.class.getName());
+        logger.info("encodedName: " + encodedName);
+        String tapeName = null;
+        try {
+            tapeName = URLDecoder.decode(encodedName, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            logger.log(Level.SEVERE, "Failed to decode tapeName", ex);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        logger.info("tapeName: " + tapeName);
+
         if (tapeName == null) {
             logger.severe("[EventPlayer] No tape name");
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -87,8 +100,17 @@ public class RecordingsResource {
     @GET
     @Path("{recording}/changes")
     @Produces({"text/plain"})
-    public Response getChanges(@PathParam("recording") String tapeName) {
+    public Response getChanges(@PathParam("recording") String encodedName) {
         Logger logger = Logger.getLogger(RecordingsResource.class.getName());
+        logger.info("encodedName: " + encodedName);
+        String tapeName = null;
+        try {
+            tapeName = URLDecoder.decode(encodedName, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            logger.log(Level.SEVERE, "Failed to decode tapeName", ex);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        logger.info("tapeName: " + tapeName);
         if (tapeName == null) {
             logger.severe("[EventPlayer] No tape name");
             return Response.status(Response.Status.BAD_REQUEST).build();

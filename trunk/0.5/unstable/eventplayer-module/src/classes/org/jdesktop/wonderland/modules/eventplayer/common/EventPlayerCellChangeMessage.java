@@ -29,13 +29,14 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 public class EventPlayerCellChangeMessage extends CellMessage {
 
     
-    public enum EventRecorderAction {
+    public enum EventPlayerAction {
         LOAD,
         PLAY,
-        REQUEST_TAPE_STATE
+        REQUEST_TAPE_STATE,
+        PLAYBACK_DONE
     };
 
-    private EventRecorderAction action;
+    private EventPlayerAction action;
     private boolean isPlaying;
     private String userName;
     private double volume;
@@ -49,7 +50,7 @@ public class EventPlayerCellChangeMessage extends CellMessage {
 
     
 
-    public EventRecorderAction getAction() {
+    public EventPlayerAction getAction() {
         return action;
     }
 
@@ -71,7 +72,7 @@ public class EventPlayerCellChangeMessage extends CellMessage {
 
     public static EventPlayerCellChangeMessage loadRecording(CellID cellID, String tapeName) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
-        msg.action = EventRecorderAction.LOAD;
+        msg.action = EventPlayerAction.LOAD;
         msg.tapeName = tapeName;
         return msg;
     }
@@ -87,7 +88,7 @@ public class EventPlayerCellChangeMessage extends CellMessage {
     public static EventPlayerCellChangeMessage playRecording(CellID cellID, boolean playing, String userName) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
         msg.userName = userName;
-        msg.action = EventRecorderAction.PLAY;
+        msg.action = EventPlayerAction.PLAY;
         msg.isPlaying = playing;
         return msg;
     }
@@ -95,10 +96,19 @@ public class EventPlayerCellChangeMessage extends CellMessage {
     
     public static EventPlayerCellChangeMessage selectingTape(CellID cellID) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
-        msg.action = EventRecorderAction.REQUEST_TAPE_STATE;
+        msg.action = EventPlayerAction.REQUEST_TAPE_STATE;
         return msg;
     }
     
-
+    /**
+     * Static method used to create an instance of AudioRecorderCellMessage that has an action type
+     * <code>PLAYBACK_DONE</code>.
+     * @param cellID The id of the cell for which this message is created
+     */
+    public static EventPlayerCellChangeMessage playbackDoneMessage(CellID cellID) {
+        EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
+        msg.action = EventPlayerAction.PLAYBACK_DONE;
+        return msg;
+    }
     
 }
