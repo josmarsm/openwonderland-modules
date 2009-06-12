@@ -355,6 +355,10 @@ public class EventPlayerCell extends Cell {
                     case LOAD:
                         loadRecording(sccm.getTapeName());
                         break;
+                    case PLAYBACK_DONE:
+                        setPlaying(false);
+                        userName = null;
+                        break;
                     default:
                         eventPlayerLogger.severe("Unknown action type: " + sccm.getAction());
 

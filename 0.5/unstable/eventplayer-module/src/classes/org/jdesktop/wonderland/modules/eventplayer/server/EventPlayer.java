@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.eventplayer.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,6 +64,9 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
      * For playback I use a fudged id.
      */
     private WonderlandClientID clientID;
+
+    
+    private ManagedReference<EventPlayerCellMO> playerCellMORef;
     
 
 
@@ -70,7 +74,8 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
      * @param originCell the cell that is the event player
      * @param name the name of the event player
      */
-    public EventPlayer(CellMO originCell) {
+    public EventPlayer(EventPlayerCellMO playerCell) {
+        playerCellMORef = AppContext.getDataManager().createReference(playerCell);
         clientID = new PlayerClientID();
     }
 
@@ -260,7 +265,12 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
     
 
     public void allCellsRetrieved() {
-       //TODO
+       logger.info("All Cells Retrived");
+    }
+
+    public void allMessagesPlayed() {
+        logger.info("All Messages Played");
+        playerCellMORef.get().playbackDone();
     }
 
     

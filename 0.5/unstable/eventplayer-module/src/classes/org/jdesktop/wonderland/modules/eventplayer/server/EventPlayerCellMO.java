@@ -255,6 +255,12 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         playerRef.get().stopPlaying();
     }
 
+    void playbackDone() {
+        ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
+        EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.playbackDoneMessage(getCellID());
+        channel.sendAll(null, epccm);
+    }
+
     private void processPlayMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
         setPlaying(arcm.isPlaying());
         serverState.setUserName(arcm.getUserName());

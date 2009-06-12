@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.modules.eventplayer.common.Tape;
  */
 public class ReelForm extends javax.swing.JFrame {
     
-    private EventPlayerCell eventRecorderCell;
+    private EventPlayerCell eventPlayerCell;
     private boolean selectionChanged = false;
 
     public ReelForm() {
@@ -42,14 +42,14 @@ public class ReelForm extends javax.swing.JFrame {
     }
     
     /** Creates new form AvatatarOrbNameForm
-     * @param eventRecorderCell
+     * @param eventPlayerCell
      */
-    public ReelForm(EventPlayerCell eventRecorderCell) {
-        this.eventRecorderCell = eventRecorderCell;
+    public ReelForm(EventPlayerCell eventPlayerCell) {
+        this.eventPlayerCell = eventPlayerCell;
         initComponents();
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
-        tapesList.setModel(eventRecorderCell.getTapeListModel());
-        ListSelectionModel tapeSelectionModel = eventRecorderCell.getTapeSelectionModel();
+        tapesList.setModel(eventPlayerCell.getTapeListModel());
+        ListSelectionModel tapeSelectionModel = eventPlayerCell.getTapeSelectionModel();
         tapesList.setSelectionModel(tapeSelectionModel);
         tapesList.clearSelection();
         tapeSelectionModel.addListSelectionListener(new ListSelectionListener() {
@@ -123,7 +123,7 @@ public class ReelForm extends javax.swing.JFrame {
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
         if (selectionChanged) {
-            eventRecorderCell.selectedTapeChanged();
+            eventPlayerCell.selectedTapeChanged();
             selectionChanged = false;
         }
         setVisible(false);
