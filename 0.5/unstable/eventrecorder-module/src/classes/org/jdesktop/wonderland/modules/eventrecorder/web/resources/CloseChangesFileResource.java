@@ -44,7 +44,7 @@ public class CloseChangesFileResource {
      * @return An OK response upon success, BAD_REQUEST upon error
      */
     @GET
-    public Response closeChangesFile(@QueryParam("name") String tapeName) {
+    public Response closeChangesFile(@QueryParam("name") String tapeName, @QueryParam("timestamp") long timestamp) {
         // Do some basic stuff, get the WFS wfsManager class, etc
         Logger logger = Logger.getLogger(CloseChangesFileResource.class.getName());
         WFSManager wfsManager = WFSManager.getWFSManager();
@@ -58,7 +58,7 @@ public class CloseChangesFileResource {
             logger.severe("[EventRecorder] Unable to identify recording " + tapeName);
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        recording.closeChangesFile();
+        recording.closeChangesFile(timestamp);
         return Response.ok().build();
     }
 }

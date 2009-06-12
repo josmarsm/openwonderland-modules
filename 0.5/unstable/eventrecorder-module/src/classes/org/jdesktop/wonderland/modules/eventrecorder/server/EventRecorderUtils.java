@@ -26,6 +26,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
@@ -43,6 +44,8 @@ public class EventRecorderUtils {
     /* The prefix to add to URLs for the eventrecorder web service */
     private static final String WEB_SERVICE_PREFIX = "eventrecorder/eventrecorder/resources/";
 
+    private static final Logger logger = Logger.getLogger(EventRecorderUtils.class.getName());
+
     final private static BASE64Encoder BASE_64_ENCODER = new BASE64Encoder();
     /**
      * Creates a new changes file
@@ -51,11 +54,13 @@ public class EventRecorderUtils {
      * @throws IOException
      */
     static void createChangesFile(String name, long timestamp)
-            throws IOException
-    {
+            throws IOException {
+        logger.info("name: " + name);
         String encodedName = URLEncoder.encode(name, "UTF-8");
+        logger.info("encodedName: " + encodedName);
         String query = "?name=" + encodedName + "&timestamp=" + timestamp;
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "create/changesFile" + query);
+        logger.info("url: " + url);
         // Read all the text returned by the server
         BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
         String str;
@@ -72,9 +77,9 @@ public class EventRecorderUtils {
      * @throws java.io.IOException
      * @throws javax.xml.bind.JAXBException
      */
-    static void closeChangesFile(String name) throws IOException, JAXBException {
+    static void closeChangesFile(String name, long timestamp) throws IOException, JAXBException {
         String encodedName = URLEncoder.encode(name, "UTF-8");
-        String query = "?name=" + encodedName;
+        String query = "?name=" + encodedName + "&timestamp=" + timestamp;
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "close/changesFile" + query);
 
         BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));

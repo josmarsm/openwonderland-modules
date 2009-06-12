@@ -213,7 +213,7 @@ public class EventRecordingService extends AbstractService {
         // now add the file closure request to the transaction.  On commit
         // this request will be passed on to the executor for long-running
         // tasks
-        CloseChangesFile ccf = new CloseChangesFile(tapeName, scl.getId());
+        CloseChangesFile ccf = new CloseChangesFile(tapeName, new Date().getTime(), scl.getId());
         ctxFactory.joinTransaction().add(ccf);
     }
 
@@ -236,6 +236,7 @@ public class EventRecordingService extends AbstractService {
             Exception ex = null;
 
             try {
+                logger.getLogger().info("tapeName: " + tapeName);
                 EventRecorderUtils.createChangesFile(tapeName, timestamp);
             } catch (Exception ex2) {
                 ex = ex2;
@@ -428,17 +429,19 @@ public class EventRecordingService extends AbstractService {
     private class CloseChangesFile implements Runnable {
         private String tapeName;
         private BigInteger listenerID;
+        private long timestamp;
 
-        public CloseChangesFile(String tapeName, BigInteger listenerID) {
+        public CloseChangesFile(String tapeName, long timestamp, BigInteger listenerID) {
             this.tapeName = tapeName;
             this.listenerID = listenerID;
+            this.timestamp = timestamp;
         }
 
         public void run() {
             Exception ex = null;
 
             try {
-                EventRecorderUtils.closeChangesFile(tapeName);
+                EventRecorderUtils.closeChangesFile(tapeName, timestamp);
             } catch (Exception ex2) {
                 ex = ex2;
             }
