@@ -120,7 +120,6 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
             logger.log(Level.WARNING, "Error getting web server URL: " + ex);
         }
 
-
         // Grab all the configuration from the properties files.
         validConfiguration = true;
 
@@ -276,7 +275,7 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
 
         try {
 
-            logger.log(Level.FINER, "Chat opened by: " + chat.getParticipant() + " threadID: " + chat.getThreadID());
+            logger.log(Level.INFO, "Chat opened by: " + chat.getParticipant() + " threadID: " + chat.getThreadID());
 
             ConversationManager cm = conversationManagers.get(chat.getParticipant());
 
@@ -287,12 +286,14 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
             //  only gets sent on your first convo EVER with the server. Need to find a way to plug into
             //  conversation-closed events.)
             if (cm == null) {
+                logger.log(Level.INFO, "No conversation manager found.");
                 cm = new ConversationManager();
                 conversationManagers.put(chat.getParticipant(), cm);
 
                 // Send welcome message.
                 chat.sendMessage("Hi! Any messages you type to me will be sent in-world. You can join the world here: " + jnlpURL);
 
+                logger.log(Level.INFO, "Sent message to new user.");
                 sendWorldMessage("Server", this.removeResource(chat.getParticipant()) + " has joined the world. Messages that start with '@' will be sent to them.");
             }
 
@@ -309,7 +310,9 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
         if(!validConfiguration) {
             logger.log(Level.WARNING, "Tried to send messagea to connected XMPP clients, but XMPP configuration was not valid. Make sure to set an account name and password.");
         }
-        
+
+        logger.log(Level.INFO, "sending message to XMPP clients: " + message + "(" + conversationManagers.keySet() + ")");
+
         for (String name : conversationManagers.keySet()) {
             ConversationManager cm = conversationManagers.get(name);
 
@@ -467,15 +470,13 @@ public class XMPPPresenceService extends AbstractService implements ChatManagerL
                 first = false;
             }
 
-
-            String statusMessage = "";
+            String statusMessage;
 
             if (validUserCount > 0) {
-                statusMessage += validUserCount + " ";
                 if(validUserCount == 1)
-                    statusMessage = "user in-world: ";
+                    statusMessage = "1 user in-world: ";
                 else
-                    statusMessage = "users in-world: ";
+                    statusMessage = validUserCount + " users in-world: ";
                 
                 statusMessage += userList;
             }
