@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -51,9 +51,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * A service to support the event player.
- * This class is responsible for recording the initial state of the world when
- * the recording begins and then for recording messages that have been intercepted
- * by the RecorderManager.
+ * This class is responsible for replaying messages that have been parsed from the recording.
  * @author Bernard Horan
  */
 public class EventPlayingService extends AbstractService {
@@ -144,10 +142,6 @@ public class EventPlayingService extends AbstractService {
             logger.log(Level.WARNING, "Terminating executor with tasks in" +
                        "  progress: " + leftover);
         }
-        //Close any open files
-//        for (String recorderName : recorderTable.keySet()) {
-//            stopRecording(recorderName);
-//        }
     }
 
     @Override
@@ -159,7 +153,7 @@ public class EventPlayingService extends AbstractService {
     }
 
     void replayMessages(String tapeName, MessagesReplayingListener listener) {
-        logger.getLogger().info("tapename: " + tapeName);
+        //logger.getLogger().info("tapename: " + tapeName);
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedMessagesReplayingWrapper(listener);
         }
@@ -175,9 +169,9 @@ public class EventPlayingService extends AbstractService {
     }
 
     /**
-     * A task that recrods a message to a file
-     * on the server.  The results are then passed to a
-     * CellExportListener identified by managed reference.
+     * A task that replays a set of messages
+     * The results are then passed to a
+     * NotifyMessagesReplayingListener identified by managed reference.
      */
     private class ReplayMessages extends MessageReplayer implements Runnable {
         private String tapeName;
@@ -204,11 +198,11 @@ public class EventPlayingService extends AbstractService {
                 xmlReader.setErrorHandler(handler);
                 xmlReader.parse(recordingSource);
             } catch (JAXBException ex) {
-                Logger.getLogger(EventPlayingService.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(EventPlayingService.class.getName()).log(Level.SEVERE, "failed due to JAXB exception", ex);
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, "failed due to IO exception", ex);
             } catch (SAXException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, "failed due to SAX exception", ex);
             }
 
             
@@ -251,8 +245,8 @@ public class EventPlayingService extends AbstractService {
     
 
     /**
-     * A wrapper around the MessageRecordingListener as a managed object.
-     * This assumes a serializable MessageRecordingListener
+     * A wrapper around the MessagesReplayingListener as a managed object.
+     * This assumes a serializable MessagesReplayingListener
      */
     private static class ManagedMessagesReplayingWrapper
             implements MessagesReplayingListener, ManagedObject, Serializable
@@ -276,7 +270,7 @@ public class EventPlayingService extends AbstractService {
     }
 
     /**
-     * A task to notify a MessageRecordingListener
+     * A task to notify a MessagesReplayingListener
      */
     private class NotifyMessagesReplayingListener implements KernelRunnable {
         private ReceivedMessage message;

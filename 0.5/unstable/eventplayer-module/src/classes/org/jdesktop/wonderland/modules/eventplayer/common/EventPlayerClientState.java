@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -23,8 +23,8 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 
 /**
- *
- * @author bh37721
+ * Class to represent the state of the event player client
+ * @author Bernard Horan
  */
 public class EventPlayerClientState extends CellClientState {
     private Set<Tape> tapes;
@@ -37,7 +37,14 @@ public class EventPlayerClientState extends CellClientState {
         super();
     }
 
-     public EventPlayerClientState(Set<Tape> tapes, Tape selectedTape, boolean isPlaying, String userName) {
+    /**
+     * Constructor to set the state of fields
+     * @param tapes the initial state of the tapes field
+     * @param selectedTape the initial state of the selectedTape field
+     * @param isPlaying the initial state of the isPlaying boolean field
+     * @param userName the initial state of the userName field
+     */
+    public EventPlayerClientState(Set<Tape> tapes, Tape selectedTape, boolean isPlaying, String userName) {
         this();
         this.tapes = tapes;
         this.selectedTape = selectedTape;
@@ -45,18 +52,34 @@ public class EventPlayerClientState extends CellClientState {
         this.userName = userName;
     }
 
+    /**
+     * Access the collection of tapes
+     * @return the set of tapes
+     */
     public Set getTapes() {
         return tapes;
     }
 
+    /**
+     * Access the selectedTape field
+     * @return the selected Tape
+     */
     public Tape getSelectedTape() {
         return selectedTape;
     }
 
+    /**
+     * Access the isPlaying field
+     * @return isPlaying
+     */
     public boolean isPlaying() {
         return isPlaying;
     }
 
+    /**
+     * Access the userName field
+     * @return the user name
+     */
     public String getUserName() {
         return userName;
     }

@@ -56,9 +56,9 @@ import org.jdesktop.wonderland.modules.eventplayer.common.Tape;
 import org.jdesktop.wonderland.modules.eventplayer.common.TapeStateMessageResponse;
 
 /**
- *
+ * A cell that plays back eevents recorded by the event recorder.
+ * Currently has no audio playback.
  * @author Bernard Horan
- * @author Joe Provino
  */
 public class EventPlayerCell extends Cell {
 
@@ -74,6 +74,11 @@ public class EventPlayerCell extends Cell {
     private DefaultListSelectionModel tapeSelectionModel;
     private ReelForm reelForm;
 
+    /**
+     * Constructor, give
+     * @param cellID the cell's unique ID
+     * @param cellCache the cell cache which instantiated, and owns, this cell
+     */
     public EventPlayerCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         isPlaying = false;
@@ -103,11 +108,11 @@ public class EventPlayerCell extends Cell {
      */
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
-        //eventPlayerLogger.info("status: " + status);
         super.setStatus(status, increasing);
         if (increasing && status == CellStatus.ACTIVE) {
             //About to become visible, so add the message receiver
             getChannel().addMessageReceiver(EventPlayerCellChangeMessage.class, new EventPlayerCellMessageReceiver());
+            //Add menu item to open a tape to the right-hand button context menu
             if (menuFactory == null) {
                 final ContextMenuActionListener l = new ContextMenuActionListener() {
 
@@ -144,7 +149,8 @@ public class EventPlayerCell extends Cell {
      * major configuration change. The cell will already be attached to its parent
      * before the initial call of this method
      *
-     * @param setupData
+     * @param setupData the data received from the server that describes the state of the
+     * corresponding server-side cell
      */
     @Override
     public void setClientState(CellClientState setupData) {
@@ -157,12 +163,12 @@ public class EventPlayerCell extends Cell {
         userName = ((EventPlayerClientState)setupData).getUserName();
         if(isPlaying) {
             if (userName == null) {
-                logger.warning("userName should not be null");
+                eventPlayerLogger.warning("userName should not be null");
             }
         }
         if (!isPlaying) {
             if (userName != null) {
-                logger.warning("userName should be null");
+                eventPlayerLogger.warning("userName should be null");
             }
         }
     }
@@ -206,11 +212,13 @@ public class EventPlayerCell extends Cell {
     }
 
     void selectedTapeChanged() {
-        eventPlayerLogger.info("selectedTape changed");
+        //the selected tape has changed
+        //eventPlayerLogger.info("selectedTape changed");
         int index = tapeSelectionModel.getMaxSelectionIndex();
         if (index >= 0) {
+            //if there's a selected tape let the server know that the selected tape has changed
             Tape selectedTape = (Tape) tapeListModel.elementAt(index);
-            logger.info("selected tape: " + selectedTape);
+            //logger.info("selected tape: " + selectedTape);
             EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.loadRecording(getCellID(), selectedTape.getTapeName());
             getChannel().send(msg);
         }
@@ -233,7 +241,7 @@ public class EventPlayerCell extends Cell {
     }
 
     private void loadRecording(String tapeName) {
-        eventPlayerLogger.info("load recording: " + tapeName);
+        //eventPlayerLogger.info("load recording: " + tapeName);
         Enumeration tapes = tapeListModel.elements();
         while (tapes.hasMoreElements()) {
             Tape aTape = (Tape) tapes.nextElement();
@@ -246,15 +254,15 @@ public class EventPlayerCell extends Cell {
     
 
     void startPlaying() {
-        logger.info("start playing");
+        //logger.info("start playing");
 
         Tape selectedTape = getSelectedTape();
         if (selectedTape == null) {
-            logger.warning("Can't playback when there's no selected tape");
+            eventPlayerLogger.warning("Can't playback when there's no selected tape");
             return;
         }
         if (userName != null) {
-            logger.warning("userName should be null");
+            eventPlayerLogger.warning("userName should be null");
         }
         userName = getCurrentUserName();
         setPlaying(true);
@@ -265,7 +273,7 @@ public class EventPlayerCell extends Cell {
 
 
     void stop() {
-        eventPlayerLogger.info("stop");
+        //eventPlayerLogger.info("stop");
         if (userName.equals(getCurrentUserName())) {
             EventPlayerCellChangeMessage msg = null;
             if (isPlaying) {
@@ -281,7 +289,7 @@ public class EventPlayerCell extends Cell {
     }
 
     private void setPlaying(boolean b) {
-        eventPlayerLogger.info("setPlaying: " + b);
+        //eventPlayerLogger.info("setPlaying: " + b);
         renderer.setPlaying(b);
         isPlaying = b;
     }
@@ -301,7 +309,7 @@ public class EventPlayerCell extends Cell {
    }
 
      private void selectTape(String tapeName) {
-        eventPlayerLogger.info("select tape: " + tapeName);
+        //eventPlayerLogger.info("select tape: " + tapeName);
         Enumeration tapes = tapeListModel.elements();
         while (tapes.hasMoreElements()) {
             Tape aTape = (Tape) tapes.nextElement();

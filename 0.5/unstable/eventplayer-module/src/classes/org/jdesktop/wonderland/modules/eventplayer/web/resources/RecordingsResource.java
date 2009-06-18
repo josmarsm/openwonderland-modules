@@ -22,9 +22,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.GET;
@@ -33,13 +30,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.web.wfs.WFSRecording;
 
 /**
- * The WFSRecordingsResource class is a Jersey RESTful resource that allows clients
+ * The RecordingsResource class is a Jersey RESTful resource that allows clients
  * to query for the WFS recording names by using a URI.
  * <p>
  * The format of the URI is: http://<machine>:<port>eventplayer/eventplayer/resources/getrecording.
@@ -55,14 +51,16 @@ import org.jdesktop.wonderland.web.wfs.WFSRecording;
 public class RecordingsResource {
 
     /**
-     * Returns the JAXB XML serialization of the WFS recording names. Returns
+     * Returns the JAXB XML serialization of the WorldRoot for the given
+     * recording. Returns
      * the XML via an HTTP GET request. The format of the URI is:
      * <p>
-     * /wfs/listrecordings
+     * http://<machine>:<port>eventplayer/eventplayer/resources/getrecording/{recording_name}
      * <p>
      * Returns BAD_REQUEST to the HTTP connection upon error
      *
-     * @return The XML serialization of the wfs recordings via HTTP GET
+     * @param encodedName the encoded name of the recording
+     * @return The XML serialization of the WorldRoot of the recording via HTTP GET
      */
 
     @GET
@@ -70,15 +68,15 @@ public class RecordingsResource {
     @Produces({"text/plain", "application/xml", "application/json"})
     public Response getRecording(@PathParam("recording") String encodedName) {
         Logger logger = Logger.getLogger(RecordingsResource.class.getName());
-        logger.info("encodedName: " + encodedName);
+        //logger.info("encodedName: " + encodedName);
         String tapeName = null;
         try {
             tapeName = URLDecoder.decode(encodedName, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
-            logger.log(Level.SEVERE, "Failed to decode tapeName", ex);
+            logger.log(Level.SEVERE, "[EventPlayer] Failed to decode tapeName", ex);
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        logger.info("tapeName: " + tapeName);
+        //logger.info("tapeName: " + tapeName);
 
         if (tapeName == null) {
             logger.severe("[EventPlayer] No tape name");
@@ -97,20 +95,32 @@ public class RecordingsResource {
         return Response.ok(worldRoot).build();
     }
 
+
+    /**
+     * Returns a stream containing the content of the given recording's
+     * changes file via an HTTP GET request. The format of the URI is:
+     * <p>
+     * http://<machine>:<port>eventplayer/eventplayer/resources/getrecording/{recording_name}/changes
+     * <p>
+     * Returns BAD_REQUEST to the HTTP connection upon error
+     *
+     * @param encodedName the encoded name of the recording
+     * @return stream of the changes file of the recording via HTTP GET
+     */
     @GET
     @Path("{recording}/changes")
     @Produces({"text/plain"})
     public Response getChanges(@PathParam("recording") String encodedName) {
         Logger logger = Logger.getLogger(RecordingsResource.class.getName());
-        logger.info("encodedName: " + encodedName);
+        //logger.info("encodedName: " + encodedName);
         String tapeName = null;
         try {
             tapeName = URLDecoder.decode(encodedName, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
-            logger.log(Level.SEVERE, "Failed to decode tapeName", ex);
+            logger.log(Level.SEVERE, "[Eventplayer] Failed to decode tapeName", ex);
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        logger.info("tapeName: " + tapeName);
+        //logger.info("tapeName: " + tapeName);
         if (tapeName == null) {
             logger.severe("[EventPlayer] No tape name");
             return Response.status(Response.Status.BAD_REQUEST).build();

@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
-import com.sun.sgs.impl.sharedutil.PropertiesWrapper;
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.impl.util.TransactionContext;
 import com.sun.sgs.impl.util.TransactionContextFactory;
@@ -31,7 +30,6 @@ import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.net.URLEncoder;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -41,20 +39,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.wfs.CellList;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.CellRetrievalListener;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.wfs.importer.CellImporter;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 
 /**
- *
+ * A service for importing cells
  * @author kaplanj
  * @author bernard horan
  */
-public class CellImportService extends AbstractService {
+public class CellImportService extends AbstractService implements CellImportManager {
 
     /** The name of this class. */
     private static final String NAME = CellImportService.class.getName();
@@ -174,8 +168,8 @@ public class CellImportService extends AbstractService {
 
 
     /**
-     * A task that creates a new recording, and then notifies the recording
-     * creation listener identified by managed reference id.
+     * A task that retrieves cells, and then notifies the CellRetrievalListener
+     * identified by managed reference id.
      */
     private class RetrieveCells implements Runnable {
         private String name;
@@ -201,8 +195,8 @@ public class CellImportService extends AbstractService {
         }
 
         private void notifyCellRetrieval(CellMap<CellImportEntry> cellMOMap, Exception ex) {
-            logger.getLogger().info("cellMap: " + cellMOMap);
-            logger.getLogger().info("exception: " + ex);
+            //logger.getLogger().info("cellMap: " + cellMOMap);
+            //logger.getLogger().info("exception: " + ex);
 
             CellMap<CellID> cellPathMap = new CellMap<CellID>();
             CellMap<CellImportEntry> subMap = new CellMap<CellImportEntry>();
@@ -247,7 +241,7 @@ public class CellImportService extends AbstractService {
     
 
     /**
-     * A task to notify a RecordingCreationListener
+     * A task to notify a CellRetrievalListener
      */
     private class NotifyCellRetrievalListener implements KernelRunnable {
         private BigInteger listenerID;
@@ -306,8 +300,8 @@ public class CellImportService extends AbstractService {
     
 
     /**
-     * A wrapper around the RecordingCreationListener as a managed object.
-     * This assumes a serializable RecordingCreationListener
+     * A wrapper around the CellRetrievalListener as a managed object.
+     * This assumes a serializable CellRetrievalListener
      */
     private static class ManagedRecordingLoadingWrapper
             implements CellRetrievalListener, ManagedObject, Serializable
