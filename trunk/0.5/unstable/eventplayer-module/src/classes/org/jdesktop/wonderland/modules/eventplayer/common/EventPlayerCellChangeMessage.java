@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- *
+ * Represents a message between client and server.
  * @author Bernard Horan
  */
 
@@ -94,6 +94,12 @@ public class EventPlayerCellChangeMessage extends CellMessage {
     }
 
     
+    /**
+     * Static method to create an instance of EventPlayerCellChangeMessage that has an action type
+     * <code>REQUEST_TAPE_STATE</code>.
+     * @param cellID The id of the cell for which this message is created
+     * @return a message with appropriate state and action
+     */
     public static EventPlayerCellChangeMessage selectingTape(CellID cellID) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
         msg.action = EventPlayerAction.REQUEST_TAPE_STATE;
@@ -104,6 +110,7 @@ public class EventPlayerCellChangeMessage extends CellMessage {
      * Static method used to create an instance of AudioRecorderCellMessage that has an action type
      * <code>PLAYBACK_DONE</code>.
      * @param cellID The id of the cell for which this message is created
+     * @return a message with appropriate state and action
      */
     public static EventPlayerCellChangeMessage playbackDoneMessage(CellID cellID) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);

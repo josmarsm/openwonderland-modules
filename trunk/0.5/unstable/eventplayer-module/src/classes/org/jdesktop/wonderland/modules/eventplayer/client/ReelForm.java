@@ -21,15 +21,13 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.client;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JOptionPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.modules.eventplayer.common.Tape;
 
 /**
- *
+ * Dialogue box for selecting a "reel"
  * @author  Bernard Horan
  */
 public class ReelForm extends javax.swing.JFrame {
@@ -41,8 +39,8 @@ public class ReelForm extends javax.swing.JFrame {
         initComponents();
     }
     
-    /** Creates new form AvatatarOrbNameForm
-     * @param eventPlayerCell
+    /** Creates new form ReelForm
+     * @param eventPlayerCell the cell that initiates this dialogue box
      */
     public ReelForm(EventPlayerCell eventPlayerCell) {
         this.eventPlayerCell = eventPlayerCell;

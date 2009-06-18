@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.modules.eventplayer.server;
@@ -9,8 +22,6 @@ import org.jdesktop.wonderland.modules.eventplayer.server.handler.DefaultTagHand
 import org.jdesktop.wonderland.modules.eventplayer.server.handler.TagHandler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,14 +29,19 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- *
- * @author bh37721
+ * An XML SAX handler for handing messages that have been recorded by the
+ * event recorder.
+ * @author Bernard Horan
  */
 public class EventHandler extends DefaultHandler {
     private MessageReplayer messageReplayer;
     private Stack<TagHandler> tagHandlerStack = new Stack<TagHandler>();
     
     
+    /**
+     * Create a new instance of this class
+     * @param messageReplayer the object responsible for replaying the messages
+     */
     public EventHandler(MessageReplayer messageReplayer) {
         this.messageReplayer = messageReplayer;
     }
@@ -50,8 +66,13 @@ public class EventHandler extends DefaultHandler {
     
     
     
+    /**
+     * Create a new instance of a TagHandler for an XML element named tagName
+     * @param tagName the name of the XML element for which a TagHandler is to be created
+     * @return an instance of a implementation of TagHandler
+     */
     protected TagHandler newTagHandler(String tagName) {
-        Class tagHandlerClass = getTagHandlerClass(tagName);
+        Class<TagHandler> tagHandlerClass = getTagHandlerClass(tagName);
         TagHandler tagHandler;
         if (tagHandlerClass == null) {
             tagHandler = new DefaultTagHandler(messageReplayer);
@@ -61,11 +82,21 @@ public class EventHandler extends DefaultHandler {
         return tagHandler;
     }
     
-    protected Class getTagHandlerClass(String elementName) {
+    /**
+     * Return a class that should be used to handle XML elements named elementName
+     * @param elementName the name of the XML element
+     * @return a class that should be a implementation of TagHandler
+     */
+    protected Class<TagHandler> getTagHandlerClass(String elementName) {
         return messageReplayer.getTagHandlerClass(elementName);
     }
     
-    protected TagHandler newTagHandler(Class handlerClass) {
+    /**
+     * Create a new instance of an implementation of TagHandler
+     * @param handlerClass an implementation of TagHandler
+     * @return an instance of a TagHandler class
+     */
+    protected TagHandler newTagHandler(Class<TagHandler> handlerClass) {
         try {
             Constructor<TagHandler> con = handlerClass.getConstructor(new Class[]{MessageReplayer.class});
             return con.newInstance(messageReplayer);

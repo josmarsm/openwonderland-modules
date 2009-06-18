@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -21,8 +21,6 @@ package org.jdesktop.wonderland.modules.eventplayer.server;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -32,11 +30,6 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -51,7 +44,6 @@ import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.ListRecordingsListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
-import org.jdesktop.wonderland.server.wfs.importer.CellImporterUtils;
 
 /**
  *
@@ -66,7 +58,6 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     private static final Logger eventPlayerLogger = Logger.getLogger(EventPlayerCellMO.class.getName());
     private static int INSTANCE_COUNT = 0;
     private EventPlayerCellServerState serverState;
-    private String playerName;
     private ManagedReference<EventPlayer> playerRef;
 
 
@@ -75,18 +66,12 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         addComponent(new MovableComponentMO(this));
         int instanceNumber = ++INSTANCE_COUNT;
         serverState = new EventPlayerCellServerState();
-        playerName = "Player" + instanceNumber;
         createTapes();
     }
 
-    /**
-     * Set the live state of this cell. Live cells are connected to the
-     * world root and are present in the world, non-live cells are not
-     * @param live
-     */
     @Override
     protected void setLive(boolean live) {
-        eventPlayerLogger.info("live: " + live);
+        //eventPlayerLogger.info("live: " + live);
         super.setLive(live);
         if (live) {
             ChannelComponentMO channel = getChannel();
@@ -144,7 +129,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
      */
     @Override
     public CellServerState getServerState(CellServerState cellServerState) {
-        eventPlayerLogger.info("Getting server state");
+        //eventPlayerLogger.info("Getting server state");
         /* Create a new EventRecorderCellServerState and populate its members */
         if (cellServerState == null) {
             cellServerState = serverState;
@@ -206,11 +191,11 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     }
 
     private void processTapeStateMessage(WonderlandClientID clientID, WonderlandClientSender sender, EventPlayerCellChangeMessage arcm) {
-        eventPlayerLogger.info("clientID: " + clientID + ", sender: " + sender);
+        //eventPlayerLogger.info("clientID: " + clientID + ", sender: " + sender);
         MessageID messageID  = arcm.getMessageID();
-        eventPlayerLogger.info("messageID: " + messageID);
+        //eventPlayerLogger.info("messageID: " + messageID);
         CellExportManager mgr = AppContext.getManager(CellExportManager.class);
-        eventPlayerLogger.info("asynchronously requesting recordings");
+        //eventPlayerLogger.info("asynchronously requesting recordings");
         //If successful, async method call to reocordingsListed()
         //If not successful, async call to recordingsListfailed()
         mgr.listRecordings(messageID, sender, clientID, this);
@@ -241,17 +226,17 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
 
 
     private void loadRecording() {
-        eventPlayerLogger.info("Load recording");
+        //eventPlayerLogger.info("Load recording");
         playerRef.get().loadRecording(serverState.getSelectedTape().getTapeName());
     }
 
     private void startPlaying() {
-        eventPlayerLogger.info("Start Playing");
+        //eventPlayerLogger.info("Start Playing");
         playerRef.get().startPlaying(serverState.getSelectedTape().getTapeName());
     }
 
     private void stopPlaying() {
-        eventPlayerLogger.info("Stop Playing");
+        //eventPlayerLogger.info("Stop Playing");
         playerRef.get().stopPlaying();
     }
 
@@ -325,10 +310,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
             }
         }
 
-        @Override
-        protected void postRecordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            super.postRecordMessage(sender, clientID, message);
-        }
+        
     }
 
     

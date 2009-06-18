@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -31,7 +31,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
- *
+ * Class to represent the state of the event player cell on the server
  * @author Bernard Horan
  */
 @XmlRootElement(name="eventplayer-cell")
@@ -52,10 +52,17 @@ public class EventPlayerCellServerState extends CellServerState implements Seria
     private boolean isPlaying;
 
 
+    /**
+     * Add a tape to the collection of tapes
+     * @param aTape a tape to be added
+     */
     public void addTape(Tape aTape) {
         tapes.add(aTape);
     }
 
+    /**
+     * Empty the collection of tapes
+     */
     public void clearTapes() {
         tapes.clear();
     }
@@ -64,34 +71,66 @@ public class EventPlayerCellServerState extends CellServerState implements Seria
         return "org.jdesktop.wonderland.modules.eventplayer.server.EventPlayerCellMO";
     }
 
+    /**
+     * Returns state of iPlaying boolean
+     * @return true if isPlaying is true, false otherwise
+     */
     public boolean isPlaying() {
         return isPlaying;
     }
 
+    /**
+     * Set the state of the iPlaying boolean
+     * @param p the new state of the isPlaying boolean
+     */
     public void setPlaying(boolean p) {
         isPlaying = p;
     }
 
+    /**
+     * Set the state of the selectedTape field
+     * @param selectedTape the new state of the selectedTape field
+     */
     public void setSelectedTape(Tape selectedTape) {
         this.selectedTape = selectedTape;
     }
 
+    /**
+     * Set the collection of tapes
+     * @param tapes a collection of tapes
+     */
     public void setTapes(Set<Tape> tapes) {
         this.tapes = tapes;
     }
 
+    /**
+     * Set the state of the userName field
+     * @param userName the new state of the userName field
+     */
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    /**
+     * Access the collection of tapes
+     * @return a Set of tapes
+     */
     public Set<Tape> getTapes() {
         return tapes;
     }
 
+    /**
+     * Access the state of the selectedTape field
+     * @return the selectedTape
+     */
     public Tape getSelectedTape() {
         return selectedTape;
     }
 
+    /**
+     * Access the state of the userName field
+     * @return the userName
+     */
     public String getUserName() {
         return userName;
     }

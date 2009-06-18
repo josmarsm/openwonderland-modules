@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * $Revision$
+ * $Date$
+ * $State$
  */
 
 package org.jdesktop.wonderland.modules.eventplayer.server.handler;
@@ -13,12 +26,12 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.xml.sax.Attributes;
 import sun.misc.BASE64Decoder;
 
 
 /**
+ * A Tag Handler that handles XML elements named "Message".<br>
  *
  * @author bh37721
  */
@@ -34,6 +47,7 @@ public class MessageHandler extends DefaultTagHandler {
     @Override
     public void startTag(Attributes atts) {
         super.startTag(atts);
+        //Get the timestamp from the attributes of the XML element
         String timestampString = atts.getValue("timestamp");
         timestamp = Long.parseLong(timestampString);
     }
@@ -41,14 +55,17 @@ public class MessageHandler extends DefaultTagHandler {
     @Override
     public void endTag() {
         super.endTag();
+        //Decode the string content of the XML element into a bytebuffer
+        //Unpack the byte buffer into a message
+        //tell the message replayer to play the message
         try {
             ByteBuffer byteBuffer = Base64_Decoder.decodeBufferToByteBuffer(buffer.toString());
             ReceivedMessage rMessage = MessagePacker.unpack(byteBuffer);
             messageReplayer.playMessage(rMessage, timestamp);
         } catch (PackerException ex) {
-            Logger.getLogger(MessageHandler.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, "Failed to pack message", ex);
         } catch (IOException ex) {
-            Logger.getLogger(MessageHandler.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, "IO Exception", ex);
         }
 
         

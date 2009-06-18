@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.eventplayer.server.wfs;
@@ -22,25 +35,27 @@ import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 import org.xml.sax.InputSource;
 
 /**
- *
- * @author bh37721
+ * Helper utilities
+ * @author Jordan Slott
+ * @author Bernard Horan
  */
 public class RecordingLoaderUtils {
     /* The prefix to add to URLs for the eventplayer web service */
     private static final String WEB_SERVICE_PREFIX = "eventplayer/eventplayer/resources/";
     
-    /* The logger for the wfs loader */
+    /* The logger for this class */
     private static final Logger logger = Logger.getLogger(RecordingLoaderUtils.class.getName());
 
 
 
     /**
-     * Loads a WFS root into the world, based in the given WFSCellMO with a
-     * unique root name.
+     * Retrieve a map of cells given by the name of the recording
      * The CellMap is ordered.
      *
-     * @param rootName The unique root name of the WFS
-     * @param cellID the parent to which the root should be added. May be null.
+     * @param tapeName The unique name of the recording
+     * @return a map of cells that have been loaded. The map is ordered
+     * @throws JAXBException
+     * @throws IOException
      */
     public static CellMap<CellImportEntry> loadCellMap(String tapeName) throws JAXBException, IOException {
         logger.info("tapeName: " + tapeName);
@@ -93,6 +108,7 @@ public class RecordingLoaderUtils {
      * @param root The root directory of the WFS being loaded
      * @param dir The current directory of children to load
      * @param children A list of child directories remaining to be loaded
+     * @return the map of cells, ordered
      */
     public static CellMap<CellImportEntry> loadCellMap(String root, CellList dir, LinkedList<CellList> children) {
         /* Conatins a map of canonical cell names in WFS to cell objects */
@@ -163,6 +179,13 @@ public class RecordingLoaderUtils {
         return cellMOMap;
     }
 
+    /**
+     * Get the worldRoot object for a recording
+     * @param tapeName the name of the recording
+     * @return a world root object that identifies the path of the recording
+     * @throws javax.xml.bind.JAXBException
+     * @throws java.io.IOException
+     */
     public static WorldRoot getRecordingRoot(String tapeName) throws JAXBException, IOException {
         logger.info("tapeName: " + tapeName);
         String encodedName = URLEncoder.encode(tapeName, "UTF-8");
@@ -171,6 +194,13 @@ public class RecordingLoaderUtils {
         return WorldRoot.decode(new InputStreamReader(url.openStream()));
     }
 
+    /**
+     * Get an input source for the changes file of a recording
+     * @param tapeName the name of the recording
+     * @return an input source for use by an XML parser
+     * @throws javax.xml.bind.JAXBException
+     * @throws java.io.IOException
+     */
     public static InputSource getRecordingInputSource(String tapeName) throws JAXBException, IOException {
         WorldRoot recordingRoot = getRecordingRoot(tapeName);
         logger.info("recordingRoot: " + recordingRoot);

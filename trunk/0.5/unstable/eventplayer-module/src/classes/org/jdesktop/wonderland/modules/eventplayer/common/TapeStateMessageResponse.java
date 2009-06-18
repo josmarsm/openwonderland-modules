@@ -71,14 +71,26 @@ public class TapeStateMessageResponse extends ResponseMessage {
         return tsm;
     }
 
+    /**
+     * Access the tapes field
+     * @return a set of tapes
+     */
     public Set<Tape> getTapes() {
         return tapes;
     }
 
+    /**
+     * Access the selectedTape field
+     * @return the selected tape
+     */
     public Tape getSelectedTape() {
         return selectedTape;
     }
 
+    /**
+     * Access the action that this message represents
+     * @return the action
+     */
     public TapeStateAction getAction() {
         return action;
     }

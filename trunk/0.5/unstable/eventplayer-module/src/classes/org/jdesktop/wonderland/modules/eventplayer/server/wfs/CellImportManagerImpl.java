@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.eventplayer.server.wfs;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-
 /**
  * Implementation of CellImportManager.  This just forwards everything to
  * the service.
