@@ -72,7 +72,6 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         System.out.println("ScriptingComponentFactory : In getDefaultCellComponentService");
         ScriptingComponentServerState state = new ScriptingComponentServerState();
         state.setInfo("Default");
-        state.setCellName("default");
         eventNames[MOUSE1_EVENT] = "mouse1.js";
         eventNames[MOUSE2_EVENT] = "mouse2.js";
         eventNames[MOUSE3_EVENT] = "mouse3.js";

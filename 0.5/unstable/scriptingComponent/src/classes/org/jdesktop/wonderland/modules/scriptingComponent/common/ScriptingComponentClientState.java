@@ -29,7 +29,6 @@ public class ScriptingComponentClientState extends CellComponentClientState
     {
 
     private String info;
-    private String cellName;
     private String[] eventNames;
     private String[] eventScriptType;
     
@@ -50,19 +49,6 @@ public class ScriptingComponentClientState extends CellComponentClientState
         System.out.println("ScriptingComponentClientState : In setInfo - info = " + info);
         this.info = info;
         }
-    
-    public String getCellName() 
-        {
-        System.out.println("ScriptingComponentClientState : In getCellName - cellName = " + cellName);
-        return cellName;
-        }
-
-    public void setCellName(String cellName) 
-        {
-        System.out.println("ScriptingComponentClientState : In setCellName - cellName = " + cellName);
-        this.cellName = cellName;
-        }
-
     public String[] getEventNames() 
         {
         System.out.println("ScriptingComponentClientState : In getEventNames");

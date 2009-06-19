@@ -101,7 +101,6 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
 public class ScriptingComponent extends CellComponent
     {
     private Node localNode;
-    private String scriptClump;
     public String stateString[] = {null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null};
     public int stateInt[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     public boolean stateBoolean[] = {false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false};
@@ -207,6 +206,7 @@ public class ScriptingComponent extends CellComponent
         {
         super(cell);
         theCell = cell;
+        System.out.println("******************** Cell name = " + cell.getName());
         System.out.println("ScriptingComponent : Cell " + cell + " - id = " + cell.getCellID() + " : Enter ScriptingComponent constructor");
 
         wm = ClientContextJME.getWorldManager();
@@ -577,18 +577,6 @@ public class ScriptingComponent extends CellComponent
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In getInfo - info = " + this.info);
         return this.info;
         }
-
-    /**
-     * getCellName - get the cell name and return it
-     *
-     * @return String the name
-     */
-    public String getCellName()
-        {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In getCellName - cellName = " + this.scriptClump);
-        return this.scriptClump;
-        }
-    
     /**
      * setClientState - set the properties for this cell
      *
@@ -599,10 +587,9 @@ public class ScriptingComponent extends CellComponent
         {
         super.setClientState(clientState);
         info = ((ScriptingComponentClientState)clientState).getInfo();
-        scriptClump = ((ScriptingComponentClientState)clientState).getCellName();
         eventNames = ((ScriptingComponentClientState)clientState).getEventNames();
         eventScriptType = ((ScriptingComponentClientState)clientState).getScriptType();
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setClientState - info = " + info + " cellName (scriptClump) = " + scriptClump);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setClientState - info = " + info);
         }
 
     /**
@@ -631,7 +618,7 @@ public class ScriptingComponent extends CellComponent
 /* Register mouse event listener */
                 MouseEventListener myListener = new MouseEventListener();
                 myListener.addToEntity(mye);
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus : Cell Name = " + scriptClump);
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus");
 /* Register the change message listener */
                 if (msgReceiver == null) 
                     {
@@ -646,7 +633,6 @@ public class ScriptingComponent extends CellComponent
                                     {
 //                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
                                     ScriptingComponentChangeMessage scm = (ScriptingComponentChangeMessage)message;
-                                    scriptClump = scm.getCellName();
                                     eventNames = scm.getEventNames();
                                     eventScriptType = scm.getScriptType();
                                     }
@@ -1032,7 +1018,7 @@ public class ScriptingComponent extends CellComponent
         if(eventNames[which].compareTo(name) != 0)
             {
             eventNames[which] = name;
-            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), scriptClump, eventNames, eventScriptType);
+            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), eventNames, eventScriptType);
             channelComp.send(msg);
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptName " + which + " set to " + name);
             }
@@ -1047,7 +1033,7 @@ public class ScriptingComponent extends CellComponent
         if(eventScriptType[which].compareTo(name) != 0)
             {
             eventScriptType[which] = name;
-            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), scriptClump, eventNames, eventScriptType);
+            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), eventNames, eventScriptType);
             channelComp.send(msg);
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptType " + which + " set to " + name);
             }
@@ -1069,27 +1055,6 @@ public class ScriptingComponent extends CellComponent
         return eventScriptType[which];
         }
 
-    public void setScriptClump(String name)
-        {
-        if(scriptClump.compareTo(name) != 0)
-            {
-            scriptClump = name;
-            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), scriptClump, eventNames, eventScriptType);
-            channelComp.send(msg);
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptClump to " + name);
-            }
-        else
-            {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : scriptClump already " + name);
-            }
-        }
-    
-    public String getScriptClump()
-        {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : getScriptClump - get " + scriptClump);
-        return scriptClump;
-        }
- 
     public void clearScriptMap()
         {
         scriptMap.clear();
@@ -1099,6 +1064,7 @@ public class ScriptingComponent extends CellComponent
        {
        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Start of executeScript - this = " + this + " Frame Rate = " + frameRate);
        worldCoor = coorW;
+       getInitialPosition();
        
        try
            {
@@ -1199,7 +1165,7 @@ public class ScriptingComponent extends CellComponent
     
     private String buildScriptPath(String theScript)
         {
-        String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/scripts/" + scriptClump + "/" + theScript;
+        String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/scripts/" + theCell.getName() + "/" + theScript;
         return thePath;
         }
     
@@ -1209,6 +1175,7 @@ public class ScriptingComponent extends CellComponent
         initialX = v3f.x;
         initialY = v3f.y;
         initialZ = v3f.z;
+        System.out.append("Initial pos in getInitialPosition = " + initialX + ", " + initialY + ", " + initialZ);
         }
 
     public void getWorldCoor()
