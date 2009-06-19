@@ -54,7 +54,6 @@ public class ScriptingComponentMO extends CellComponentMO
     private int totalEvents = 30;
 
     private String info;
-    private String cellName;
 //    private String[] eventNames;
     private String[] eventNames = new String[totalEvents];
 //    private String[] eventScriptType;
@@ -108,7 +107,6 @@ public class ScriptingComponentMO extends CellComponentMO
         receiverRef = AppContext.getDataManager().createReference(receiver);
 
         info = "Default";
-        cellName = "default";
 
         eventNames[MOUSE1_EVENT] = "mouse1.js";
         eventNames[MOUSE2_EVENT] = "mouse2.js";
@@ -189,14 +187,12 @@ public class ScriptingComponentMO extends CellComponentMO
     @Override
     public CellComponentClientState getClientState(CellComponentClientState state, WonderlandClientID clientID, ClientCapabilities capabilities) 
         {
-        System.out.println("ScriptingComponentMO : In getClientState - cellName = " + cellName);
 
         if (state == null) 
             {
             state = new ScriptingComponentClientState();
             }
         ((ScriptingComponentClientState)state).setInfo(info);
-        ((ScriptingComponentClientState)state).setCellName(cellName);
         ((ScriptingComponentClientState)state).setScriptType(eventScriptType);
         ((ScriptingComponentClientState)state).setEventNames(eventNames);
         return super.getClientState(state, clientID, capabilities);
@@ -210,7 +206,6 @@ public class ScriptingComponentMO extends CellComponentMO
             state = new ScriptingComponentServerState();
             }
         ((ScriptingComponentServerState)state).setInfo(info);
-        ((ScriptingComponentServerState)state).setCellName(cellName);
         ((ScriptingComponentServerState)state).setScriptType(eventScriptType);
         ((ScriptingComponentServerState)state).setEventNames(eventNames);
         System.out.println("ScriptingComponentMO : In getServerState");
@@ -222,7 +217,6 @@ public class ScriptingComponentMO extends CellComponentMO
         {
         super.setServerState(state);
         info = ((ScriptingComponentServerState)state).getInfo();
-        cellName = ((ScriptingComponentServerState)state).getCellName();
         eventNames = ((ScriptingComponentServerState)state).getEventNames();
         eventScriptType = ((ScriptingComponentServerState)state).getScriptType();
         System.out.println("ScriptingComponentMO - : In setServerState");
@@ -247,11 +241,10 @@ public class ScriptingComponentMO extends CellComponentMO
             if(message instanceof ScriptingComponentChangeMessage)
                 {
                 ScriptingComponentChangeMessage ent = (ScriptingComponentChangeMessage) message;
-                cellMO.cellName = ent.getCellName();
                 cellMO.eventNames = ent.getEventNames();
                 cellMO.eventScriptType = ent.getScriptType();        
                 chanMO.sendAll(clientID, message);
-                System.out.println("ScriptingComponentMO.messageReceived - Change message - "+ cellMO.cellName + " - Client ID = " + clientID);
+                System.out.println("ScriptingComponentMO.messageReceived - Change message - Client ID = " + clientID);
                 }
             else if(message instanceof ScriptingComponentICEMessage)
                 {
@@ -297,7 +290,7 @@ public class ScriptingComponentMO extends CellComponentMO
             {
             ScriptingComponentMO cellMO = compRef.getForUpdate();
             
-            System.out.println("ScriptingComponentMO.recordMessage - cellName = " + cellMO.cellName);
+            System.out.println("ScriptingComponentMO.recordMessage");
             }
         }
     }
