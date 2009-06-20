@@ -22,6 +22,10 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Cylinder;
 import com.jme.bounding.BoundingBox;
+import com.jme.renderer.ColorRGBA;
+import com.jme.scene.state.MaterialState;
+import com.jme.scene.state.RenderState;
+import com.jme.system.DisplaySystem;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
@@ -31,18 +35,23 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
  */
 public class Piece extends Node {
 
-    // TODO: note: for now, pieces have a single color.
+    // TODO: note: for now pieces are all one color or the other.
+    public static final ColorRGBA BLACK = new ColorRGBA(0f, 0f, 0f, 1f);
+    public static final ColorRGBA WHITE = new ColorRGBA(1f, 1f, 1f, 1f);
 
     /** The distance of the center of the piece above the board. */
-    private static final float Z_OFFSET = 0.2f;
+    private static final float Z_OFFSET = 0.1f;
 
     /** The radius of a disk. */
-    private static final float DISK_RADIUS = 0.2f;
+    private static final float DISK_RADIUS = 0.15f;
 
     /** The height of a disk. */
     private static final float DISK_HEIGHT = 0.1f;
 
-    Board.Color color;
+    /** The cylinder of the piece. */
+    Cylinder cyl;
+
+    private Board.Color color;
 
     public Piece (Board.Color color) {
         super("Node for a " + color + " piece");
@@ -51,13 +60,37 @@ public class Piece extends Node {
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
                 setLocalTranslation(new Vector3f(0f, 0f, Z_OFFSET));
-                Cylinder cyl = new Cylinder(Piece.this.color + " Cylinder", 10, 10, DISK_RADIUS, DISK_HEIGHT);
+                cyl = new Cylinder(Piece.this.color + " Cylinder", 20, 20, DISK_RADIUS, DISK_HEIGHT, true);
                 cyl.setModelBound(new BoundingBox());
                 cyl.updateModelBound();
                 attachChild(cyl);
                 ClientContextJME.getWorldManager().addToUpdateList(Piece.this);
             }
         } , null);
+
+        if (color == Board.Color.WHITE) {
+            setColor(WHITE);
+        } else {
+            setColor(BLACK);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public synchronized void setColor(final ColorRGBA color) {
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                MaterialState ms = (MaterialState) cyl.getRenderState(RenderState.RS_MATERIAL);
+                if (ms == null) {
+                    ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                    cyl.setRenderState(ms);
+                }
+                ms.setAmbient(new ColorRGBA(color));
+                ms.setDiffuse(new ColorRGBA(color));
+                ClientContextJME.getWorldManager().addToUpdateList(Piece.this);
+            }
+        }, null); 
     }
 
     public Board.Color getColor () {

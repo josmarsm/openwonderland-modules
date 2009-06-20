@@ -32,6 +32,8 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
  */
 public class SquareNode extends Node {
 
+    private static final float Z_OFFSET = 0.05f;
+
     private int row;
     private int col;
     private Piece displayedPiece;
@@ -64,7 +66,7 @@ public class SquareNode extends Node {
     private void initTransform() {
         float x = SquareGeometry.WIDTH * ((float)row + 0.5f);
         float y = SquareGeometry.HEIGHT * ((float)col + 0.5f);
-        setLocalTranslation(new Vector3f(x, y, 0f));
+        setLocalTranslation(new Vector3f(x, y, Z_OFFSET));
     }
 
     /**
