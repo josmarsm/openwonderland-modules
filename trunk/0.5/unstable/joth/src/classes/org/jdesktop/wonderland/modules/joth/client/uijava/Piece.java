@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.joth.client;
+package org.jdesktop.wonderland.modules.joth.client.uijava;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
@@ -28,6 +28,7 @@ import com.jme.scene.state.RenderState;
 import com.jme.system.DisplaySystem;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.joth.client.gamejava.Board;
 
 /***************************************************************
  * Piece: A 3D disk which represents a game piece.

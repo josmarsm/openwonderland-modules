@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.joth.client;
+package org.jdesktop.wonderland.modules.joth.client.gamejava;
 
 import java.util.LinkedList;
 

@@ -24,9 +24,9 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
-import org.jdesktop.wonderland.modules.joth.client.JothApp;
+import org.jdesktop.wonderland.modules.joth.client.uijava.JothApp;
 import org.jdesktop.wonderland.modules.joth.client.JothMain;
-import org.jdesktop.wonderland.modules.joth.client.JothWindow;
+import org.jdesktop.wonderland.modules.joth.client.uijava.JothWindow;
 import org.jdesktop.wonderland.modules.joth.common.cell.JothCellClientState;
 
 

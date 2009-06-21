@@ -9,7 +9,7 @@
  * Created on Jun 8, 2009, 5:56:14 PM
  */
 
-package org.jdesktop.wonderland.modules.joth.client;
+package org.jdesktop.wonderland.modules.joth.client.uijava;
 
 /**
  *

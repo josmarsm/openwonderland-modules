@@ -18,8 +18,11 @@
 
 package org.jdesktop.wonderland.modules.joth.client;
 
-import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
+import org.jdesktop.wonderland.modules.joth.client.gamejava.Game;
+import org.jdesktop.wonderland.modules.joth.client.gamejava.Square;
+import org.jdesktop.wonderland.modules.joth.client.uijava.JothWindow;
+import org.jdesktop.wonderland.modules.joth.client.uijava.UIWLSimple;
 
 /************************************
  * JothMain: The Othello main module.
