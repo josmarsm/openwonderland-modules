@@ -16,11 +16,14 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.joth.client;
+package org.jdesktop.wonderland.modules.joth.client.uijava;
 
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
+import org.jdesktop.wonderland.modules.joth.client.JothMain;
+import org.jdesktop.wonderland.modules.joth.client.gamejava.Game;
+import org.jdesktop.wonderland.modules.joth.client.gamejava.Square;
+import org.jdesktop.wonderland.modules.joth.client.gamejava.UI;
 
 /*********************************************
  * UIWLSimple: A simple Othello Wonderland UI.

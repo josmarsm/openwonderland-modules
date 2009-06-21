@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.joth.client;
+package org.jdesktop.wonderland.modules.joth.client.uijava;
 
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;

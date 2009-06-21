@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.joth.client;
+package org.jdesktop.wonderland.modules.joth.client.uijava;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
@@ -24,6 +24,7 @@ import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.joth.client.gamejava.Board;
 
 /***************************************************************************
  * SquareNode: A JME node for a square which contains additional information 

@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.joth.client;
+package org.jdesktop.wonderland.modules.joth.client.uijava;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
@@ -33,6 +33,9 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.modules.joth.client.gamejava.Board;
+import org.jdesktop.wonderland.modules.joth.client.gamejava.Square;
 
 /**********************************************
  * BoardDisplay: Displays the board for the UI.
@@ -208,7 +211,7 @@ public class BoardDisplay {
 	/**
 	 * This will be called when a mouse event occurs over one of the components of the button box.
 	 */
-	public void commitEvent (Event event) {
+	public void commitEvent (final Event event) {
 
 	    // Only respond to mouse button click events
 	    MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
@@ -216,7 +219,11 @@ public class BoardDisplay {
 		buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
                 MouseEvent me = (MouseEvent) buttonEvent.getAwtEvent();
                 if (me.getModifiersEx() == 0) {
-                    ui.squareClicked(event);
+                    SwingUtilities.invokeLater(new Runnable () {
+                        public void run () {
+                            ui.squareClicked(event);
+                        }
+                    });
                 }
 	    }
 	}
