@@ -22,6 +22,7 @@ import java.util.Set;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.modules.grouptextchat.common.GroupChatMessage;
 import org.jdesktop.wonderland.modules.grouptextchat.common.TextChatMessage;
 import org.jdesktop.wonderland.modules.grouptextchat.common.TextChatConnectionType;
 import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
@@ -48,8 +49,8 @@ public class TextChatConnection extends BaseConnection {
      * @param from The user name the message is from
      * @param to The user name the message is to
      */
-    public void sendTextMessage(String message, String from, String to) {
-        super.send(new TextChatMessage(message, from, to, GroupID.getGlobalGroupID()));
+    public void sendTextMessage(String message, String from, GroupID group) {
+        super.send(new TextChatMessage(message, from, group));
     }
 
     /**
@@ -57,14 +58,22 @@ public class TextChatConnection extends BaseConnection {
      */
     public void handleMessage(Message message) {
         if (message instanceof TextChatMessage) {
-            String text = ((TextChatMessage) message).getTextMessage();
-            String from = ((TextChatMessage) message).getFromUserName();
-            String to = ((TextChatMessage) message).getToUserName();
+            TextChatMessage msg = ((TextChatMessage)message);
+
+            String text = msg.getTextMessage();
+            String from = msg.getFromUserName();
+            GroupID group = msg.getGroup();
+            
             synchronized (listeners) {
                 for (TextChatListener listener : listeners) {
-                    listener.textMessage(text, from, to);
+                    listener.textMessage(text, from, group);
                 }
             }
+        }
+        else if(message instanceof GroupChatMessage) {
+            GroupChatMessage gcm = (GroupChatMessage)message;
+            // Manage the UI appropriately. For now, just write a logger message.
+            System.out.println("Got GroupChatMessage: " + gcm.getAction() + " gid: " + gcm.getGroupID());
         }
     }
 
@@ -107,6 +116,6 @@ public class TextChatConnection extends BaseConnection {
          * @param from The String user name from which the message came
          * @param to The String user name to which the message is intended
          */
-        public void textMessage(String message, String from, String to);
+        public void textMessage(String message, String from, GroupID group);
     }
 }

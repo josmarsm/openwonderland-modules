@@ -22,6 +22,7 @@ import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
 
 /**
  * A JFrame to display a text chat window.
@@ -33,7 +34,7 @@ public class TextChatJFrame extends javax.swing.JFrame {
     private Logger logger = Logger.getLogger(TextChatJFrame.class.getName());
     private TextChatConnection textChatConnection = null;
     private String localUser = null;
-    private String remoteUser = null;
+    private GroupID group = null;
 
     /** Creates new form GlobalTextChatJFrame */
     public TextChatJFrame() {
@@ -53,7 +54,7 @@ public class TextChatJFrame extends javax.swing.JFrame {
         sendButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String text = messageTextField.getText();
-                textChatConnection.sendTextMessage(text, localUser, remoteUser);
+                textChatConnection.sendTextMessage(text, localUser, group);
                 messageTextField.setText("");
                 appendTextMessage(text, localUser);
             }
@@ -82,20 +83,24 @@ public class TextChatJFrame extends javax.swing.JFrame {
      * @param remoteUser The user name of the other user
      */
     public void setActive(TextChatConnection connection, String localUser,
-            String remoteUser) {
+            GroupID recipient) {
 
         this.textChatConnection = connection;
         this.localUser = localUser;
-        this.remoteUser = remoteUser;
+        this.group = recipient;
         messageTextField.setEnabled(true);
         sendButton.setEnabled(true);
 
         // Set the title based upon the remote user. If the remote user is "",
         // then insert "Everyone"
-        String title = "Text Chat All";
-        if (remoteUser != null && remoteUser.equals("") == false) {
-            title = "Text Chat (" + remoteUser + ")";
-        }
+        
+        String title = "Text Chat Error";
+
+        if(this.group == GroupID.getGlobalGroupID())
+            title = "Global Chat";
+        else
+            title = "Group Chat " + group;
+
         setTitle(title);
     }
 
@@ -103,10 +108,15 @@ public class TextChatJFrame extends javax.swing.JFrame {
      * Deactivates the chat by displaying a message and turning off the GUI.
      */
     public void deactivate() {
-        String date = new SimpleDateFormat("h:mm a").format(new Date());
-        String msg = "--- User " + remoteUser + " has left the world at " +
-                date + " ---\n";
-        messageTextArea.append(msg);
+
+        //TODO Fix this to be recipient aware.
+//        String date = new SimpleDateFormat("h:mm a").format(new Date());
+//
+//        String msg = "--- User " + recipient.getUser() + " has left the world at " +
+//                date + " ---\n";
+//        messageTextArea.append(msg);
+
+        
         messageTextField.setEnabled(false);
         sendButton.setEnabled(false);
     }
@@ -115,10 +125,13 @@ public class TextChatJFrame extends javax.swing.JFrame {
      * Re-activates the chat by displaying a message and turning on the GUI.
      */
     public void reactivate() {
-        String date = new SimpleDateFormat("h:mm a").format(new Date());
-        String msg = "--- User " + remoteUser + " has joined the world at " +
-                date + " ---\n";
-        messageTextArea.append(msg);
+
+        //TODO Fix this to be recipient aware.
+//        String date = new SimpleDateFormat("h:mm a").format(new Date());
+//        String msg = "--- User " + recipient.getUser() + " has joined the world at " +
+//                date + " ---\n";
+//        messageTextArea.append(msg);
+        
         messageTextField.setEnabled(true);
         sendButton.setEnabled(true);
     }
