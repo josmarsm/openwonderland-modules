@@ -95,7 +95,13 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
                     return;
                 }
                 String remoteUser = id.getUsername();
-                chatManager.startChat(remoteUser);
+//                chatManager.startChat(remoteUser);
+
+                //TODO Make this work again. Instead of just instantly showing
+                // the window, we want to send a message to the server requesting
+                // a group chat with this person. Then the server's response
+                // will create the window using the same pathway as normal
+                // multiparty group chats.
             }
         });
     }

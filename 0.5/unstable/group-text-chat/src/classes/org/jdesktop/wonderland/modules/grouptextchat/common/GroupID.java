@@ -37,16 +37,17 @@ public class GroupID implements Serializable {
 
     private static long firstGroupID = 1;
 
-    private static long nextGroupID = firstGroupID;
+//    private static long nextGroupID = firstGroupID;
 
     public static GroupID globalGroup = null;
 
+//    public static long GLOBAL_GROUP_ID = 0;
+
     /**
-     * Creates a new instance of CellID. Users should never call this, CellIDs
-     * are only created by
+     * Creates a new instance of GroupID. 
      */
     @InternalAPI
-    private GroupID(long id) {
+    public GroupID(long id) {
         this.id = id;
     }
 
@@ -58,13 +59,13 @@ public class GroupID implements Serializable {
         if(globalGroup==null) {
             globalGroup = new GroupID(0);
         }
-        
+
         return globalGroup;
     }
 
-    public static GroupID getNewGroupID() {
-        return new GroupID(nextGroupID++);
-    }
+//    public static GroupID getNewGroupID() {
+//        return new GroupID(nextGroupID++);
+//    }
 
     @Override
     public boolean equals(Object obj) {

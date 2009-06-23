@@ -25,22 +25,19 @@ import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
  * then it is meant for all users.
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Drew Harry <drew_harry@dev.java.net>
  */
 public class TextChatMessage extends Message {
 
     private String textMessage = null;
     private String fromUserName = null;
-    private String toUserName = null;
-
-    private GroupID toGroup = null;
+    private GroupID group = null;
 
     /** Constructor */
-    public TextChatMessage(String msg, String fromUserName, String toUserName, GroupID toGroup) {
+    public TextChatMessage(String msg, String fromUserName, GroupID group) {
         this.textMessage = msg;
         this.fromUserName = fromUserName;
-        this.toUserName = toUserName;
-
-        this.toGroup = toGroup;
+        this.group = group;
     }
 
     /**
@@ -53,16 +50,6 @@ public class TextChatMessage extends Message {
     }
 
     /**
-     * Returns the name of the user to which the messages is sent. If meant
-     * for everyone, this returns an empty string.
-     *
-     * @return A String user name
-     */
-    public String getToUserName() {
-        return (toUserName != null) ? toUserName : "";
-    }
-
-    /**
      * Returns the text of the text chat message.
      *
      * @return A String text chat message
@@ -72,11 +59,15 @@ public class TextChatMessage extends Message {
     }
 
     /**
-     * Returns the GroupID that this message is sent to.
-     *
-     * @return GroupID of the text chat group this message is meant for.
+     * Returns the recipient of this message.
+     * 
+     * @return A ChatRecipient object describing who (or which group) this message is for.
      */
-    public GroupID getToGroup() {
-        return toGroup;
+    public GroupID getGroup() {
+        return this.group;
+    }
+
+    public void setGroup(GroupID group) {
+        this.group = group;
     }
 }
