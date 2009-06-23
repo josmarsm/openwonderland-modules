@@ -30,6 +30,7 @@ import com.jme.scene.state.BlendState;
 import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
+import com.jme.scene.state.RenderState.StateType;
 import com.sun.scenario.animation.Animation;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Clip.RepeatBehavior;
@@ -116,18 +117,18 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
         casing.setModelBound(new BoundingBox());
         casing.updateModelBound();
         ColorRGBA casingColour = new ColorRGBA(0f, 0f, 1f, 0.2f);
-        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
+        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
         matState.setDiffuse(casingColour);
         casing.setRenderState(matState);
         //casing.setLightCombineMode(Spatial.LightCombineMode.Off);
-        BlendState as = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_BLEND);
+        BlendState as = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Blend);
         as.setEnabled(true);
         as.setBlendEnabled(true);
         as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
         as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
         casing.setRenderState(as);
 
-        CullState cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_CULL);
+        CullState cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Cull);
         cs.setEnabled(true);
         cs.setCullFace(CullState.Face.Back);
         casing.setRenderState(cs);
@@ -313,13 +314,11 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
     }
 
     class ButtonListener extends EventClassListener {
-
-        private Button button;
-
-    
+        private Button button; 
 
         ButtonListener(Button aButton) {
             super();
+            setSwingSafe(true);
             button = aButton;
         }
 
@@ -342,75 +341,23 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
                 return;
             }
 
-	    // Linux-specific workaround: On Linux JOGL holds the SunToolkit AWT lock in mtgame commit methods.
-	    // In order to avoid deadlock with any threads which are already holding the AWT lock and which
-	    // want to acquire the lock on the dirty rectangle so they can draw (e.g Embedded Swing threads)
-	    // we need to temporarily release the AWT lock before we lock the dirty rectangle and then reacquire
-	    // the AWT lock afterward.
-	    GLContext glContext = null;
-	    if (isAWTLockHeldByCurrentThreadMethod != null) {
-                try {
-                    Boolean ret = (Boolean) isAWTLockHeldByCurrentThreadMethod.invoke(null);
-                    if (ret.booleanValue()) {
-                        glContext = GLContext.getCurrent();
-                        glContext.release();
-                    }
-                } catch (Exception ex) {}
-            }
-
             if (button == stopButton) {
                 /*
                  * We always handle the stop button.
                  */
-		try {
-                    ((AudioRecorderCell) cell).stop();
-                    return;
-		} finally {
-		    //Linux-specific workaround: Reacquire the lock if necessary.
-                    if (glContext != null) {
-                        glContext.makeCurrent();
-                    }
-		}
+                ((AudioRecorderCell) cell).stop();
+                return;
             }
             //
             //Only care about the case when the button isn't already selected'
             if (!button.isSelected()) {
-		try {
-                    if (button == recordButton) {
-                        ((AudioRecorderCell) cell).startRecording();
-                    } else if (button == playButton) {
-                        ((AudioRecorderCell) cell).startPlaying();
-                    }
-		    return;
-		} finally {
-		    //Linux-specific workaround: Reacquire the lock if necessary.
-                    if (glContext != null) {
-                        glContext.makeCurrent();
-                    }
-		}
-            }
-
-	    //Linux-specific workaround: Reacquire the lock if necessary.
-            if (glContext != null) {
-                glContext.makeCurrent();
+                if (button == recordButton) {
+                    ((AudioRecorderCell) cell).startRecording();
+                } else if (button == playButton) {
+                    ((AudioRecorderCell) cell).startPlaying();
+                }
+                return;
             }
         }
     }
-
-    // We need to call this method reflectively because it isn't available in Java 5
-    // BTW: we don't support Java 5 on Linux, so this is okay.
-    private static boolean isLinux = System.getProperty("os.name").equals("Linux");
-    private static Method isAWTLockHeldByCurrentThreadMethod;
-    static {
-        if (isLinux) {
-            try {
-                Class awtToolkitClass = Class.forName("sun.awt.SunToolkit");
-                isAWTLockHeldByCurrentThreadMethod =
-                    awtToolkitClass.getMethod("isAWTLockHeldByCurrentThread");
-            } catch (ClassNotFoundException ex) {
-            } catch (NoSuchMethodException ex) {
-            }
-        }
-    }
-
 }
