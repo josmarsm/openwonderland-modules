@@ -24,14 +24,14 @@
             </folders>
             <ide-actions>
                 <action name="build">
-                    <target>package</target>
+                    <target>dist</target>
                 </action>
                 <action name="clean">
                     <target>clean</target>
                 </action>
                 <action name="rebuild">
                     <target>clean</target>
-                    <target>package</target>
+                    <target>dist</target>
                 </action>
                 <action name="run.single">
                     <script>nbproject/ide-file-targets.xml</script>
