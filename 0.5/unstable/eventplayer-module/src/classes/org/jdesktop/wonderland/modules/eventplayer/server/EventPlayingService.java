@@ -29,6 +29,7 @@ import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.LinkedList;
@@ -40,9 +41,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
-import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.MessagesReplayingListener;
+import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.ChangeReplayingListener;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils;
+import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -55,6 +62,13 @@ import org.xml.sax.helpers.XMLReaderFactory;
  * @author Bernard Horan
  */
 public class EventPlayingService extends AbstractService {
+    private static enum Action {
+        COMPLETED,
+        MESSAGE,
+        LOAD_CELL,
+        UNLOAD_CELL
+        };
+
 
     /** The name of this class. */
     private static final String NAME = EventPlayingService.class.getName();
@@ -152,28 +166,28 @@ public class EventPlayingService extends AbstractService {
                 " to current version:" + currentVersion);
     }
 
-    void replayMessages(String tapeName, MessagesReplayingListener listener) {
+    void replayChanges(String tapeName, ChangeReplayingListener listener) {
         //logger.getLogger().info("tapename: " + tapeName);
         if (!(listener instanceof ManagedObject)) {
-            listener = new ManagedMessagesReplayingWrapper(listener);
+            listener = new ManagedChangesReplayingWrapper(listener);
         }
         // create a reference to the listener
-        ManagedReference<MessagesReplayingListener> scl =
+        ManagedReference<ChangeReplayingListener> scl =
                 dataService.createReference(listener);
 
         // now add the recording request to the transaction.  On commit
         // this request will be passed on to the executor for long-running
         // tasks
-        ReplayMessages ec = new ReplayMessages(tapeName, scl.getId());
+        ReplayChanges ec = new ReplayChanges(tapeName, scl.getId());
         ctxFactory.joinTransaction().add(ec);
     }
 
     /**
-     * A task that replays a set of messages
+     * A task that replays a stream of changes
      * The results are then passed to a
-     * NotifyMessagesReplayingListener identified by managed reference.
+     * NotifyChangesReplayingListener identified by managed reference.
      */
-    private class ReplayMessages extends MessageReplayer implements Runnable {
+    private class ReplayChanges extends ChangeReplayer implements Runnable {
         private String tapeName;
         private BigInteger listenerID;
         /*
@@ -183,7 +197,7 @@ public class EventPlayingService extends AbstractService {
         private long recordingStartTime;
         private long playbackStartTime;
 
-        private ReplayMessages(String tapeName, BigInteger id) {
+        private ReplayChanges(String tapeName, BigInteger id) {
             this.tapeName = tapeName;
             this.listenerID = id;
         }
@@ -198,11 +212,11 @@ public class EventPlayingService extends AbstractService {
                 xmlReader.setErrorHandler(handler);
                 xmlReader.parse(recordingSource);
             } catch (JAXBException ex) {
-                Logger.getLogger(EventPlayingService.class.getName()).log(Level.SEVERE, "failed due to JAXB exception", ex);
+                logger.getLogger().log(Level.SEVERE, "failed due to JAXB exception", ex);
             } catch (IOException ex) {
-                logger.log(Level.SEVERE, "failed due to IO exception", ex);
+                logger.getLogger().log(Level.SEVERE, "failed due to IO exception", ex);
             } catch (SAXException ex) {
-                logger.log(Level.SEVERE, "failed due to SAX exception", ex);
+                logger.getLogger().log(Level.SEVERE, "failed due to SAX exception", ex);
             }
 
             
@@ -212,8 +226,8 @@ public class EventPlayingService extends AbstractService {
         public void playMessage(ReceivedMessage rMessage, long timestamp) {
             long startTime = timestamp - recordingStartTime + playbackStartTime;
             // notify the listener
-            NotifyMessagesReplayingListener notify =
-                    new NotifyMessagesReplayingListener(rMessage, listenerID);
+            NotifyChangesReplayingListener notify =
+                    new NotifyChangesReplayingListener(rMessage, listenerID);
             try {
                 transactionScheduler.scheduleTask(notify, taskOwner, startTime);
             } catch (Exception ex) {
@@ -231,8 +245,48 @@ public class EventPlayingService extends AbstractService {
         public void endChanges(long timestamp) {
             long startTime = timestamp - recordingStartTime + playbackStartTime;
             // notify the listener
-            NotifyMessagesReplayingListener notify =
-                    new NotifyMessagesReplayingListener(listenerID);
+            NotifyChangesReplayingListener notify =
+                    new NotifyChangesReplayingListener(listenerID);
+            try {
+                transactionScheduler.scheduleTask(notify, taskOwner, startTime);
+            } catch (Exception ex) {
+                logger.logThrow(Level.WARNING, ex, "Error calling listener");
+            }
+        }
+
+        @Override
+        public void loadCell(String setupInfo, long timestamp) {
+            logger.getLogger().info("loadCell");
+            long startTime = timestamp - recordingStartTime + playbackStartTime;
+            //Need to remove the first line of the string, the processing instruction
+            //Beats me, too.
+            int index = setupInfo.indexOf('>');
+            setupInfo = setupInfo.substring(index + 1);
+            //logger.info("setupInfo: " + setupInfo);
+            CellServerState setup;
+            try {
+                setup = CellServerState.decode(new StringReader(setupInfo));
+            } catch (JAXBException ex) {
+                logger.getLogger().log(Level.SEVERE, "failed to parse cell server state", ex);
+                return;
+            }
+            // notify the listener
+            NotifyChangesReplayingListener notify =
+                    new NotifyChangesReplayingListener(setup, listenerID);
+            try {
+                transactionScheduler.scheduleTask(notify, taskOwner, startTime);
+            } catch (Exception ex) {
+                logger.logThrow(Level.WARNING, ex, "Error calling listener");
+            }
+        }
+
+        @Override
+        public void unloadCell(CellID cellID, long timestamp) {
+            logger.getLogger().info("unloadCell: " + cellID);
+            long startTime = timestamp - recordingStartTime + playbackStartTime;
+            // notify the listener
+            NotifyChangesReplayingListener notify =
+                    new NotifyChangesReplayingListener(cellID, listenerID);
             try {
                 transactionScheduler.scheduleTask(notify, taskOwner, startTime);
             } catch (Exception ex) {
@@ -245,15 +299,15 @@ public class EventPlayingService extends AbstractService {
     
 
     /**
-     * A wrapper around the MessagesReplayingListener as a managed object.
-     * This assumes a serializable MessagesReplayingListener
+     * A wrapper around the ChangeReplayingListener as a managed object.
+     * This assumes a serializable ChangeReplayingListener
      */
-    private static class ManagedMessagesReplayingWrapper
-            implements MessagesReplayingListener, ManagedObject, Serializable
+    private static class ManagedChangesReplayingWrapper
+            implements ChangeReplayingListener, ManagedObject, Serializable
     {
-        private MessagesReplayingListener wrapped;
+        private ChangeReplayingListener wrapped;
 
-        public ManagedMessagesReplayingWrapper(MessagesReplayingListener listener)
+        public ManagedChangesReplayingWrapper(ChangeReplayingListener listener)
         {
             wrapped = listener;
         }
@@ -262,55 +316,131 @@ public class EventPlayingService extends AbstractService {
             wrapped.playMessage(message);
         }
 
-        public void allMessagesPlayed() {
-            wrapped.allMessagesPlayed();
+        public void allChangesPlayed() {
+            wrapped.allChangesPlayed();
+        }
+
+        public void unloadCell(CellID cellID) {
+            wrapped.unloadCell(cellID);
+        }
+
+        public void loadedCell(CellID oldCellID, CellID newCellID) {
+            wrapped.loadedCell(oldCellID, newCellID);
         }
 
         
     }
 
     /**
-     * A task to notify a MessagesReplayingListener
+     * A task to notify a ChangeReplayingListener
      */
-    private class NotifyMessagesReplayingListener implements KernelRunnable {
+    private class NotifyChangesReplayingListener implements KernelRunnable {
         private ReceivedMessage message;
         private BigInteger listenerID;
-        private boolean completed = false;
+        private Action actionType;
+        private CellServerState setup;
+        private CellID cellID;
 
-        private NotifyMessagesReplayingListener(BigInteger listenerID) {
+        private NotifyChangesReplayingListener(BigInteger listenerID) {
             this.listenerID = listenerID;
-            completed = true;
+            actionType = Action.COMPLETED;
         }
 
-
-
-        private NotifyMessagesReplayingListener(ReceivedMessage message, BigInteger listenerID) {
+        private NotifyChangesReplayingListener(ReceivedMessage message, BigInteger listenerID) {
             this.message = message;
             this.listenerID = listenerID;
+            actionType = Action.MESSAGE;
+        }
+
+        private NotifyChangesReplayingListener(CellID cellID, BigInteger listenerID) {
+            this.cellID = cellID;
+            this.listenerID = listenerID;
+            actionType = Action.UNLOAD_CELL;
+        }
+
+        private NotifyChangesReplayingListener(CellServerState setup, BigInteger listenerID) {
+            this.listenerID = listenerID;
+            this.setup = setup;
+            actionType = Action.LOAD_CELL;
         }
 
         public String getBaseTaskType() {
-            return NAME + ".REPLAY_MESSAGES_LISTENER";
+            return NAME + ".REPLAY_CHANGES_LISTENER";
         }
 
         public void run() throws Exception {
             ManagedReference<?> lr =
                     dataService.createReferenceForId(listenerID);
-            MessagesReplayingListener l =
-                    (MessagesReplayingListener) lr.get();
+            ChangeReplayingListener l =
+                    (ChangeReplayingListener) lr.get();
 
             try {
-                if (completed) {
-                    l.allMessagesPlayed();
-                } else {
-                    l.playMessage(message);
+                switch (actionType) {
+                    case COMPLETED:
+                        l.allChangesPlayed();
+                        break;
+                    case MESSAGE:
+                        l.playMessage(message);
+                        break;
+                    case LOAD_CELL:
+                        loadCell(l);
+                        break;
+                    case UNLOAD_CELL:
+                        l.unloadCell(cellID);
+                        break;
+                    default:
+                        throw new RuntimeException("Unknown case in switch, actionType: " + actionType);
                 }
             } finally {
                 // clean up
-                if (l instanceof ManagedMessagesReplayingWrapper) {
+                if (l instanceof ManagedChangesReplayingWrapper) {
                     dataService.removeObject(l);
                 }
             }
+        }
+
+        private void loadCell(ChangeReplayingListener listener) {
+            /*
+             * Create the cell and pass it the setup information
+             */
+            String className = setup.getServerClassName();
+            logger.getLogger().info("className: " + className);
+            CellMO cellMO = null;
+            try {
+                cellMO = CellMOFactory.loadCellMO(className);
+            } catch (Exception e) {
+                logger.getLogger().log(Level.SEVERE, "Failed to load cell: " + className, e);
+                return;
+            }
+            logger.getLogger().info("created cellMO: " + cellMO);
+            if (cellMO == null) {
+                /* Log a warning and move onto the next cell */
+                logger.getLogger().severe("Unable to load cell MO: " + className);
+                return;
+            }
+            /* Call the cell's setup method */
+            try {
+                cellMO.setServerState(setup);
+            } catch (ClassCastException cce) {
+                logger.getLogger().log(Level.WARNING, "Error setting up new cell " +
+                        cellMO.getName() + " of type " +
+                        cellMO.getClass(), cce);
+                return;
+            }
+            try {
+                WonderlandContext.getCellManager().insertCellInWorld(cellMO);
+            } catch (MultipleParentException ex) {
+                logger.getLogger().log(Level.SEVERE, "A cell cannot have multiple parents", ex);
+            }
+            String idString = setup.getMetaData().get("CellID");
+            logger.getLogger().info("Old cellID value: " + idString);
+            long id = Long.valueOf(idString);
+            logger.getLogger().info("Old cellID id: " + id);
+            CellID oldCellID = new CellID(id);
+            logger.getLogger().info("Old cellID: " + oldCellID);
+            CellID newCellID = cellMO.getCellID();
+            logger.getLogger().info("New cellID: " + newCellID);
+            listener.loadedCell(oldCellID, newCellID);
         }
     }
 
@@ -329,11 +459,13 @@ public class EventPlayingService extends AbstractService {
         }
 
         public void add(Runnable change) {
+            logger.getLogger().info("change: " + change);
             changes.add(change);
         }
 
         @Override
         public void abort(boolean retryable) {
+            logger.getLogger().severe("retryable: " + retryable);
             changes.clear();
         }
 

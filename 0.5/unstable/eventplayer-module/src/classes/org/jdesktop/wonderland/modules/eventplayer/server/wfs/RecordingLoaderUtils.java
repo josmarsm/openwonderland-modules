@@ -63,7 +63,7 @@ public class RecordingLoaderUtils {
         logger.info("recordingRoot: " + recordingRoot);
         String recordingName = recordingRoot.getRootPath();
         logger.info("recordingName: " + recordingName);
-        CellMap<CellImportEntry> cellMOMap = new CellMap();
+        CellMap<CellImportEntry> cellMOMap = new CellMap<CellImportEntry>();
         //logger.info("rootName: " + recorderName);
         /* A queue (last-in, first-out) containing a list of cell to search down */
         LinkedList<CellList> children = new LinkedList<CellList>();

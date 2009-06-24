@@ -241,6 +241,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     }
 
     void playbackDone() {
+        serverState.setPlaying(false);
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.playbackDoneMessage(getCellID());
         channel.sendAll(null, epccm);

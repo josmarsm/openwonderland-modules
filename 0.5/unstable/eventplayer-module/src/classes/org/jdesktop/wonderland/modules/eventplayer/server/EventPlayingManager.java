@@ -18,39 +18,53 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server;
 
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 
 /**
  * Interface for the event playing manager, responsible (as its name suggests)
- * for replaying messages.
+ * for replaying changes/events.
  * @author Bernard Horan
  */
 public interface EventPlayingManager {
 
     /**
-     * Replay the messages from a named recording
+     * Replay the changes from a named recording
      * @param tapeName the name of the recording
      * @param listener the object that should be notified for callbacks
      */
-    public void replayMessages(String tapeName, MessagesReplayingListener listener);
+    public void replayChanges(String tapeName, ChangeReplayingListener listener);
 
     /**
-     * A listener that will be notified of the result of replaying messages
-     * from a changes file.  Implementations of MessagesReplayingListener must
+     * A listener that will be notified of the result of replaying changes
+     * from a changes file.  Implementations of ChangeReplayingListener must
      * be either a ManagedObject or Serializable
      */
-    public interface MessagesReplayingListener {
+    public interface ChangeReplayingListener {
 
         /**
-         * All the messages from this recording have been played
+         * All the changes from this recording have been played
          */
-        public void allMessagesPlayed();
+        public void allChangesPlayed();
+
+        /**
+         * A cell has been loaded
+         * @param oldCellID the old id of the cell, when recorded
+         * @param newCellID the new id of the cell as it exists in wonderland
+         */
+        public void loadedCell(CellID oldCellID, CellID newCellID);
 
         /**
          * Replay a message
          * @param message a received message that has been parsed from the recording
          */
         public void playMessage(ReceivedMessage message);
+
+        /**
+         * Unload a cell with the id specified
+         * @param oldCellID the id of the cell to be unloaded
+         */
+        public void unloadCell(CellID oldCellID);
 
     }
 
