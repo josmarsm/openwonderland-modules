@@ -31,17 +31,17 @@ import sun.misc.BASE64Decoder;
 
 
 /**
- * A Tag Handler that handles XML elements named "Message".<br>
+ * A Tag Handler that handles XML elements named "Message".
  *
- * @author bh37721
+ * @author Bernard Horan
  */
 public class MessageHandler extends DefaultTagHandler {
     private final static BASE64Decoder Base64_Decoder = new BASE64Decoder();
     private static final Logger logger = Logger.getLogger(MessageHandler.class.getName());
     private long timestamp;
     
-    public MessageHandler(MessageReplayer messageReplayer) {
-        super(messageReplayer);
+    public MessageHandler(ChangeReplayer changeReplayer) {
+        super(changeReplayer);
     }
     
     @Override
@@ -57,11 +57,11 @@ public class MessageHandler extends DefaultTagHandler {
         super.endTag();
         //Decode the string content of the XML element into a bytebuffer
         //Unpack the byte buffer into a message
-        //tell the message replayer to play the message
+        //tell the change replayer to play the message
         try {
             ByteBuffer byteBuffer = Base64_Decoder.decodeBufferToByteBuffer(buffer.toString());
             ReceivedMessage rMessage = MessagePacker.unpack(byteBuffer);
-            messageReplayer.playMessage(rMessage, timestamp);
+            changeReplayer.playMessage(rMessage, timestamp);
         } catch (PackerException ex) {
             logger.log(Level.SEVERE, "Failed to pack message", ex);
         } catch (IOException ex) {

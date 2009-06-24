@@ -18,7 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
-import org.jdesktop.wonderland.modules.eventplayer.server.MessageReplayer;
+import org.jdesktop.wonderland.modules.eventplayer.server.ChangeReplayer;
 import org.xml.sax.Attributes;
 
 /**
@@ -29,14 +29,14 @@ import org.xml.sax.Attributes;
 public class DefaultTagHandler implements TagHandler {
     //keeps the string contents of the XML element
     protected StringBuffer buffer;
-    protected MessageReplayer messageReplayer;
+    protected ChangeReplayer changeReplayer;
     
     /**
      * Create an instance of this class with the argument
-     * @param messageReplayer the object responsible for replaying messages
+     * @param changeReplayer the object responsible for replaying changes
      */
-    public DefaultTagHandler(MessageReplayer messageReplayer) {
-        this.messageReplayer = messageReplayer;
+    public DefaultTagHandler(ChangeReplayer changeReplayer) {
+        this.changeReplayer = changeReplayer;
     }
 
     public void startTag(Attributes atts) {

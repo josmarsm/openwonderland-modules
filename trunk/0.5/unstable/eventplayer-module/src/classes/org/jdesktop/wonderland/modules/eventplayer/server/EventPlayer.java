@@ -35,7 +35,7 @@ import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUti
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.MessagesReplayingListener;
+import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.ChangeReplayingListener;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.CellRetrievalListener;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.server.wfs.importer.CellMap;
  * An implementation of an event player that loads a recorded state of a world and replays messages to that world.
  * @author Bernard Horan
  */
-public class EventPlayer implements ManagedObject, CellRetrievalListener, MessagesReplayingListener,Serializable {
+public class EventPlayer implements ManagedObject, CellRetrievalListener, ChangeReplayingListener, Serializable {
 
     private static final Logger logger = Logger.getLogger(EventPlayer.class.getName());
     /*The name of the tape representing the recording
@@ -84,6 +84,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
      */
     public void playMessage(ReceivedMessage rMessage) {
         CellMessage message = (CellMessage) rMessage.getMessage();
+        logger.info("message: " + message);
         //logger.info("cellmap: " + cellMap);
         CellID oldCellID = message.getCellID();
         //logger.info("oldCellID: " + oldCellID);
@@ -91,6 +92,10 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
         //logger.info("newCellID: " + newCellID);
         message.setCellID(newCellID);
         CellMO targetCell = CellManagerMO.getCell(newCellID);
+        if (targetCell == null) {
+            logger.severe("Could not find cell for ID: " + newCellID);
+            return;
+        }
         //logger.info("targetCell: " + targetCell);
         ChannelComponentMO channel = targetCell.getComponent(ChannelComponentMO.class);
         //logger.info("channel: " + channel);
@@ -265,8 +270,8 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
         // get the event playing service
         EventPlayingManager epm = AppContext.getManager(EventPlayingManager.class);
         //Call the method on the service
-        //Callbacks to this object via playMessage() and allMessagesPlayed()
-        epm.replayMessages(tapeName, this);
+        //Callbacks to this object via playMessage() and allChangesPlayed()
+        epm.replayChanges(tapeName, this);
     }
 
     
@@ -277,9 +282,31 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Messag
        logger.info("All Cells Retrived");
     }
 
-    public void allMessagesPlayed() {
+    public void allChangesPlayed() {
         logger.info("All Messages Played");
         playerCellMORef.get().playbackDone();
+    }
+
+    public void loadedCell(CellID oldCellID, CellID newCellID) {
+        if (cellMap.get(oldCellID) != null) {
+            throw new RuntimeException("Failed trying to add new cellId to cellmap where cellID already exists");
+        }
+        
+        cellMap.put(oldCellID, newCellID);
+        logger.info("new cellID from map: " + cellMap.get(oldCellID));
+
+    }
+
+    public void unloadCell(CellID oldCellID) {
+        logger.info("oldCellID: " + oldCellID);
+        CellID newCellID = cellMap.get(oldCellID);
+        logger.info("newCellID: " + newCellID);
+        CellMO targetCell = CellManagerMO.getCell(newCellID);
+        if (targetCell == null) {
+            logger.severe("Could not find cell for ID: " + newCellID);
+            return;
+        }
+        CellManagerMO.getCellManager().removeCellFromWorld(targetCell);
     }
 
     

@@ -29,12 +29,12 @@ import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * An XML SAX handler for handing messages that have been recorded by the
+ * An XML SAX handler for handing changes/events that have been recorded by the
  * event recorder.
  * @author Bernard Horan
  */
 public class EventHandler extends DefaultHandler {
-    private MessageReplayer messageReplayer;
+    private ChangeReplayer messageReplayer;
     private Stack<TagHandler> tagHandlerStack = new Stack<TagHandler>();
     
     
@@ -42,7 +42,7 @@ public class EventHandler extends DefaultHandler {
      * Create a new instance of this class
      * @param messageReplayer the object responsible for replaying the messages
      */
-    public EventHandler(MessageReplayer messageReplayer) {
+    public EventHandler(ChangeReplayer messageReplayer) {
         this.messageReplayer = messageReplayer;
     }
     
@@ -98,7 +98,7 @@ public class EventHandler extends DefaultHandler {
      */
     protected TagHandler newTagHandler(Class<TagHandler> handlerClass) {
         try {
-            Constructor<TagHandler> con = handlerClass.getConstructor(new Class[]{MessageReplayer.class});
+            Constructor<TagHandler> con = handlerClass.getConstructor(new Class[]{ChangeReplayer.class});
             return con.newInstance(messageReplayer);
         } catch (InstantiationException ex) {
             Logger.getLogger(EventHandler.class.getName()).log(Level.SEVERE, null, ex);

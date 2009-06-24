@@ -18,7 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
-import org.jdesktop.wonderland.modules.eventplayer.server.MessageReplayer;
+import org.jdesktop.wonderland.modules.eventplayer.server.ChangeReplayer;
 import org.xml.sax.Attributes;
 
 /**
@@ -28,8 +28,8 @@ import org.xml.sax.Attributes;
 public class EndMessageHandler extends DefaultTagHandler {
     private long timestamp;
 
-    public EndMessageHandler(MessageReplayer messageReplayer) {
-        super(messageReplayer);
+    public EndMessageHandler(ChangeReplayer changeReplayer) {
+        super(changeReplayer);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class EndMessageHandler extends DefaultTagHandler {
     @Override
     public void endTag() {
         super.endTag();
-        //Inform the message replayer that we've hit the end of the changes
-        messageReplayer.endChanges(timestamp);
+        //Inform the change replayer that we've hit the end of the changes
+        changeReplayer.endChanges(timestamp);
     }
 }

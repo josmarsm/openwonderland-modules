@@ -21,12 +21,16 @@ package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 import org.jdesktop.wonderland.modules.eventplayer.server.ChangeReplayer;
 import org.xml.sax.Attributes;
 
+
 /**
- * A tag handler responsible for handling the XML element named "WonderlandChanges"
- * @author Bernard Horan
+ * A Tag Handler that handles XML elements named "LoadedCell".
+ *
+ * @author bh37721
  */
-public class WonderlandChangesHandler extends DefaultTagHandler {
-    public WonderlandChangesHandler(ChangeReplayer changeReplayer) {
+public class LoadedCellHandler extends DefaultTagHandler {
+    private long timestamp;
+    
+    public LoadedCellHandler(ChangeReplayer changeReplayer) {
         super(changeReplayer);
     }
     
@@ -35,9 +39,16 @@ public class WonderlandChangesHandler extends DefaultTagHandler {
         super.startTag(atts);
         //Get the timestamp from the attributes of the XML element
         String timestampString = atts.getValue("timestamp");
-        long timestamp = Long.parseLong(timestampString);
-        //Tell the change replayer the start time of the changes
-        changeReplayer.startChanges(timestamp);
+        timestamp = Long.parseLong(timestampString);
     }
     
+    @Override
+    public void endTag() {
+        super.endTag();
+        //The buffer contains the setupInfo
+        changeReplayer.loadCell(buffer.toString(), timestamp);
+
+        
+    }
+
 }
