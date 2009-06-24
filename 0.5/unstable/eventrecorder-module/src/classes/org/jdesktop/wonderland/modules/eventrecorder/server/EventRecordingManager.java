@@ -18,15 +18,16 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
- * A service for recording events in Wonderland.  This service provides a set of
- * asynchronous mechanisms for creating and closing a changes file, and writing messages to that
+ * A service for recording events/changes in Wonderland.  This service provides a set of
+ * asynchronous mechanisms for creating and closing a changes file, and writing changes to that
  * file.  Callers will be notified if the file creation/closure succeeds or fails and also the result of
- * writing a message to the file.
+ * writing a change to the file.
  * @author Bernard Horan
  */
 public interface EventRecordingManager {
@@ -39,6 +40,23 @@ public interface EventRecordingManager {
      * the result of this call
      */
     public void createChangesFile(String tapeName, ChangesFileCreationListener listener);
+
+
+    /**
+     * Record the details of a loaded cell onto the changes file.
+     * @param tapeName the name of the recording to which the change should be recorded
+     * @param cellID the id of the cell that has been loaded
+     * @param listener a loaded cell recording listener that will be notified of the result of this call
+     */
+    public void recordLoadedCell(String tapeName, CellID cellID, LoadedCellRecordingListener listener);
+    
+    /**
+     * Record the details of an unloaded cell onto the changes file.
+     * @param tapeName the name of the recording to which the change should be recorded
+     * @param cellID the id of the cell that has been unloaded
+     * @param listener a loaded cell recording listener that will be notified of the result of this call
+     */
+    public void recordUnloadedCell(String tapeName, CellID cellID, UnloadedCellsRecordingListener listener);
 
     /**
      * Write a message to the changes file.  This method will use a web service to
@@ -140,6 +158,37 @@ public interface EventRecordingManager {
          * @return the root cause of the failure, or null
          */
         public Throwable getFailureCause();
+    }
+
+    /**
+     * A listener that will be notified with the result of recording that
+     * a cell has been loaded.
+     */
+    public interface LoadedCellRecordingListener {
+
+        /**
+         * The result of recording a change in which a cell was loaded
+         * @param cellID the cell for which the change was recorded
+         * @param exception any exception if the recording of the change failed
+         */
+        public void recordLoadedCellResult(CellID cellID, Exception exception);
+        
+    }
+
+    /**
+     * A listener that will be notified with the result of recording that
+     * a cell has been unloaded.
+     */
+    public interface UnloadedCellsRecordingListener {
+
+        /**
+         * The result of recording a change in which a cell was unloaded
+         * @param cellID the cell for which the change was recorded
+         * @param exception any exception if the recording of the change failed
+         */
+        public void recordUnloadedCellResult(CellID cellID, Exception exception);
+
+
     }
 
 

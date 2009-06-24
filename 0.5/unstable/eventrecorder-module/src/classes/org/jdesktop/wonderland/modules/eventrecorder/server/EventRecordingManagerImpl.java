@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -34,7 +35,7 @@ public class EventRecordingManagerImpl implements EventRecordingManager {
     }
 
     public void createChangesFile(String tapeName, ChangesFileCreationListener listener) {
-        service.openChangesFile(tapeName, listener);
+        service.createChangesFile(tapeName, listener);
     }
 
     public void recordMessage(String tapeName, WonderlandClientID clientID, CellMessage message, MessageRecordingListener listener) {
@@ -43,6 +44,14 @@ public class EventRecordingManagerImpl implements EventRecordingManager {
 
     public void closeChangesFile(String tapeName, ChangesFileCloseListener listener) {
         service.closeChangesFile(tapeName, listener);
+    }
+
+    public void recordLoadedCell(String tapeName, CellID cellID, LoadedCellRecordingListener listener) {
+        service.recordLoadedCell(tapeName, cellID, listener);
+    }
+
+    public void recordUnloadedCell(String tapeName, CellID cellID, UnloadedCellsRecordingListener listener) {
+        service.recordUnloadedCell(tapeName, cellID, listener);
     }
 
 }

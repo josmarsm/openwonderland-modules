@@ -22,16 +22,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
-import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 import sun.misc.BASE64Encoder;
@@ -77,7 +80,7 @@ public class EventRecorderUtils {
      * @throws java.io.IOException
      * @throws javax.xml.bind.JAXBException
      */
-    static void closeChangesFile(String name, long timestamp) throws IOException, JAXBException {
+    static void closeChangesFile(String name, long timestamp) throws IOException {
         String encodedName = URLEncoder.encode(name, "UTF-8");
         String query = "?name=" + encodedName + "&timestamp=" + timestamp;
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "close/changesFile" + query);
@@ -93,13 +96,13 @@ public class EventRecorderUtils {
 
     /**
      * Record a change onto a changes file
-     * @param changeDescriptor a description of the change, including the name of the recording
+     * @param messageDescriptor a description of the message, including the name of the recording
      * @throws java.io.IOException
      * @throws javax.xml.bind.JAXBException
      */
-    static void recordChange(ChangeDescriptor changeDescriptor) throws IOException, JAXBException {
+    static void recordChange(MessageDescriptor messageDescriptor) throws IOException, JAXBException {
         // Open an output connection to the URL, pass along any exceptions
-        URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "append/changesFile");
+        URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "recordMessage/changesFile");
 
         URLConnection connection = url.openConnection();
         connection.setDoOutput(true);
@@ -109,7 +112,7 @@ public class EventRecorderUtils {
         OutputStreamWriter w = new OutputStreamWriter(connection.getOutputStream());
 
         // Write out the class as an XML stream to the output connection
-        changeDescriptor.encode(w);
+        messageDescriptor.encode(w);
         w.close();
 
         // For some reason, we need to read in the input for the HTTP POST to
@@ -129,13 +132,102 @@ public class EventRecorderUtils {
      * @param clientID the id of the client that sent the message
      * @param message the message received from the client that is to be recorded
      * @param timestamp the timestamp for the message
-     * @return a ChangeDescriptor that wraps the parameters
+     * @return a MessageDescriptor that wraps the parameters
      * @throws org.jdesktop.wonderland.common.messages.MessagePacker.PackerException
      */
-    static ChangeDescriptor getChangeDescriptor(String tapeName, WonderlandClientID clientID, CellMessage message, long timestamp) throws PackerException {
+    static MessageDescriptor getMessageDescriptor(String tapeName, WonderlandClientID clientID, CellMessage message, long timestamp) throws PackerException {
         ByteBuffer byteBuffer = MessagePacker.pack(message, clientID.getID().shortValue());
         String encodedMessage = BASE_64_ENCODER.encode(byteBuffer);
-        return new ChangeDescriptor(tapeName, timestamp, encodedMessage);
+        return new MessageDescriptor(tapeName, timestamp, encodedMessage);
+    }
+
+    /**
+     * Get a loaded cell descriptor for the given cell.
+     * @param tapeName the name of the recording for the descriptor
+     * @param cellMO the cell to get a descriptor for
+     * @param timestamp the timestamp for the change
+     * @return a LoadedCellDescriptor that describes the loaded cell
+     * @throws IOException
+     * @throws JAXBException
+     */
+    public static LoadedCellDescriptor getLoadedCellDescriptor(String tapeName, CellMO cellMO, long timestamp)
+        throws IOException, JAXBException
+    {
+        // Create the cell on the server, fetch the setup information from the
+        // cell. If the cell does not return a valid setup object, then simply
+        // ignore the cell
+        CellServerState setup = cellMO.getServerState(null);
+        if (setup == null) {
+            return null;
+        }
+        // Put the cellID of the cell in its metadata
+        String cellID = cellMO.getCellID().toString();
+        setup.getMetaData().put("CellID", cellID);
+
+        // Write the setup information as an XML string. If we have trouble
+        // writing this, then punt.
+        StringWriter sw = new StringWriter();
+        setup.encode(sw);
+        String setupStr = sw.toString();
+
+        // Create the descriptor for the cell using the tape name, the timestamp
+        // and setup information we obtained from the
+        // cell
+        return new LoadedCellDescriptor(tapeName, setupStr, timestamp);
+    }
+
+    /**
+     * Appends to the changes file the description of the loaded cell
+     * @param descriptor the descriptor to be recorded
+     * @throws IOException
+     * @throws JAXBException
+     */
+    public static void recordedLoadedCell(LoadedCellDescriptor descriptor)
+            throws IOException, JAXBException
+    {
+        // Open an output connection to the URL, pass along any exceptions
+        URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "recordLoadedCell/changesFile");
+
+        URLConnection connection = url.openConnection();
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        connection.setUseCaches(false);
+        connection.setRequestProperty("Content-Type", "application/xml");
+        OutputStreamWriter w = new OutputStreamWriter(connection.getOutputStream());
+
+        // Write out the class as an XML stream to the output connection
+        descriptor.encode(w);
+        w.close();
+
+        // For some reason, we need to read in the input for the HTTP POST to
+        // work
+        InputStreamReader r = new InputStreamReader(connection.getInputStream());
+        while (r.read() != -1) {
+            // Do nothing
+        }
+        r.close();
+    }
+
+    /**
+     * Append a message to the changes file of the recording with the details of the 
+     * cell that's been unloaded
+     * @param tapeName the name of the recording to which this change is appended
+     * @param cellID the id of the cell that has been unloaded
+     * @param timestamp the timestamp of the change
+     * @throws java.io.IOException
+     */
+    public static void recordedUnloadedCell(String tapeName, CellID cellID, long timestamp) throws IOException {
+        String encodedName = URLEncoder.encode(tapeName, "UTF-8");
+        String query = "?name=" + encodedName + "&timestamp=" + timestamp + "&cellID=" + cellID;
+        URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "recordUnloadedCell/changesFile" + query);
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+        String str;
+        while ((str = in.readLine()) != null) {
+            // str is one line of text; readLine() strips the newline character(s)
+            System.out.println(str);
+        }
+        in.close();
     }
 
 }

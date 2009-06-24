@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.LoadedCellRecordingListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingResult;
 import org.jdesktop.wonderland.server.eventrecorder.EventRecorder;
 import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
@@ -39,6 +40,7 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingListener;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.UnloadedCellsRecordingListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportResult;
@@ -50,7 +52,7 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.RecordingCr
  * @author Bernard Horan
  */
 public class EventRecorderImpl implements ManagedObject, EventRecorder, RecordingCreationListener,
-        CellExportListener, ChangesFileCloseListener, MessageRecordingListener, Serializable {
+        CellExportListener, ChangesFileCloseListener, MessageRecordingListener, LoadedCellRecordingListener, UnloadedCellsRecordingListener,Serializable {
 
     private static final Logger logger = Logger.getLogger(EventRecorderImpl.class.getName());
     /*The reference to the cell that is the event recorder in the world */
@@ -116,6 +118,27 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
         mgr.recordMessage(tapeName, clientID, message, this);
     }
+    
+    void recordLoadedCell(CellID cellID) {
+        //Ensure that we don't record the event recorder cell
+        if (cellID == eventRecorderCellID) {
+            logger.warning("Not recording the load of my own cellMO");
+            return;
+        }
+        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
+        //Callback is via recordLoadedCellResult()
+        mgr.recordLoadedCell(tapeName, cellID, this);
+        
+    }
+
+    void recordUnloadedCell(CellID cellID) {
+        //TODO What to do if we unload the cell that's recording??!!
+        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
+        //Callback is via recordUnloadedCellResult()
+        mgr.recordUnloadedCell(tapeName, cellID, this);
+    }
+
+
 
     public String getName() {
         return recorderName;
@@ -124,14 +147,13 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
     /**
      * Start recording to the tape given in the parameter
      * @param tapeName the name of the selected tape in the event recorder
+     * @param rootcells the cells currently loaded and visible in the viewcellcache of the recorder
      */
-    void startRecording(String tapeName) {
+    void startRecording(String tapeName, Set<CellID> rootCells) {
         logger.info("start recording to: " + tapeName);
         this.tapeName = tapeName;
         //Record the state of the current cells
         //this rest of the procedure happens in recordingCreated
-        //Here we should find the cells that are within the range of the originCell
-        Set<CellID> rootCells = CellManagerMO.getCellManager().getRootCells();
         Set<CellID> recordedCells = new HashSet<CellID>();
         recordedCells.addAll(rootCells);
         //Remove the event recorder cell, we don't want it to be recorded
@@ -166,7 +188,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
     }
 
     private void createChangesFile() {
-        logger.fine("opening changes file");
+        logger.info("opening changes file");
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
         //Open the file for recording changes
         //on success the EventRecorderCellMO receives a call to fileCreated()
@@ -193,9 +215,13 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
     public void recordingCreated(WorldRoot worldRoot, Set<CellID> cells) {
         //The new recording has been created, but the cells have not yet been exported
         // export the cells
-        // remainder of procedure is in exportResult
+        // remainder of procedure is in recordLoadedCellsResult
+        if (cells.isEmpty()) {
+            logger.warning("no cells to export");
+        } 
         CellExportManager em = AppContext.getManager(CellExportManager.class);
         em.exportCells(worldRoot, cells, this, true);
+        
     }
 
     public void recordingFailed(String reason, Throwable cause) {
@@ -222,11 +248,11 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
                 getFailedCells().add(id);
             }
         }
-        if (successCount == 0) {
+        if (!results.isEmpty() && (successCount == 0)) {
             logger.severe("Failed to export any cells to the recording, terminating recording");
             return;
         }
-        //We've succeeded in exporting the cells, so create the changes file to record the messages
+        //We've succeeded in exporting the cells (if there were any), so create the changes file to record the messages
         createChangesFile();
     }
 
@@ -255,6 +281,23 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
                            result.getFailureReason(), result.getFailureCause());
         } else {
             //logger.info("Success writing message " + id);
+        }
+    }
+
+    public void recordLoadedCellResult(CellID cellID, Exception exception) {
+        if (exception != null) {
+            logger.log(Level.SEVERE, "Failed to record loaded cell " + CellManagerMO.getCell(cellID) + " id: " + cellID, exception);
+            getFailedCells().add(cellID);
+        } else {
+            logger.info("recorded loadCell: " + cellID);
+        }
+    }
+
+    public void recordUnloadedCellResult(CellID cellID, Exception exception) {
+        if (exception != null) {
+            logger.log(Level.SEVERE, "Failed to record unloaded cell  id: " + cellID , exception);
+        } else {
+            logger.info("recorded unloadCell: " + cellID);
         }
     }
 }

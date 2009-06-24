@@ -17,49 +17,63 @@
  */
 package org.jdesktop.wonderland.modules.eventrecorder.web.resources;
 
+import java.io.PrintWriter;
 import java.util.logging.Logger;
-import javax.ws.rs.GET;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import org.jdesktop.wonderland.modules.eventrecorder.server.MessageDescriptor;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.web.wfs.WFSRecording;
+import org.jdesktop.wonderland.web.wfs.WFSRecordingWriter;
 
 /**
- * Handles Jersey RESTful requests to close a changes file in a pre-determined directory according to the
- * tapeName. 
+ * Handles Jersey RESTful requests to append a message to the changes file
+ * of a recording whose name is given in the message descrptor
  * <p>
- * URI: http://<machine>:<port>/eventrecorder/eventrecorder/resources/close/changesFile?name=Untitled+Tape&timestamp=99999
+ * URI: http://<machine>:<port>/eventrecorder/eventrecorder/resources/recordMessage/changesFile
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Bernard Horan
  */
-@Path(value="/close/changesFile")
-public class CloseChangesFileResource {
+@Path(value="/recordMessage/changesFile")
+public class RecordMessageResource {
 
     /**
-     * Closes an existing changes file. 
-     * 
-     * @param tapeName the name of the recording
-     * @param timestamp the timestamp for the closing of the changes file (i.e. the end of the recording)
+     * Append a message to a changes file
+     * @param messageDescriptor The necessary information about the message
      * @return An OK response upon success, BAD_REQUEST upon error
      */
-    @GET
-    public Response closeChangesFile(@QueryParam("name") String tapeName, @QueryParam("timestamp") long timestamp) {
+    @POST
+    @Consumes({"application/xml"})
+    public Response recordMessage(final MessageDescriptor messageDescriptor) {
         // Do some basic stuff, get the WFS wfsManager class, etc
-        Logger logger = Logger.getLogger(CloseChangesFileResource.class.getName());
+        Logger logger = Logger.getLogger(RecordMessageResource.class.getName());
         WFSManager wfsManager = WFSManager.getWFSManager();
+        String tapeName = messageDescriptor.getTapeName();
         if (tapeName == null) {
             logger.severe("[EventRecorder] No tape name");
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-
+        
         WFSRecording recording = wfsManager.getWFSRecording(tapeName);
         if (recording == null) {
             logger.severe("[EventRecorder] Unable to identify recording " + tapeName);
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        recording.closeChangesFile(timestamp);
+        WFSRecordingWriter recorder = new WFSRecordingWriter() {
+
+            public void recordChange(PrintWriter writer) {
+                writer.println("<Message timestamp=\"" + messageDescriptor.getTimestamp() + "\">");
+                writer.println(messageDescriptor.getEncodedMessage());
+                writer.println("</Message>");
+            }
+        };
+        recording.recordChange(recorder);
+                
+        // Formulate the response and return the world root object
         return Response.ok().build();
     }
+    
 }

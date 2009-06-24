@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.web.wfs.WFSRecording;
  * Handles Jersey RESTful requests to create a changes file in a pre-determined directory according to the
  * name. 
  * <p>
- * URI: http://<machine>:<port>/eventrecorder/eventrecorder/resources/create/changesFile?name=Untitled%Tape&timestamp=99999
+ * URI: http://<machine>:<port>/eventrecorder/eventrecorder/resources/create/changesFile?name=Untitled+Tape&timestamp=99999
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Bernard Horan
