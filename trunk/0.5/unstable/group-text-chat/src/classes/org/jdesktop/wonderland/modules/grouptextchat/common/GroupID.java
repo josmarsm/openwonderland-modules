@@ -35,13 +35,13 @@ public class GroupID implements Serializable {
 
 //    private static GroupID invalidCellID = new CellID(Long.MIN_VALUE);
 
-    private static long firstGroupID = 1;
+    public static final long FIRST_GROUP_ID = 1;
 
 //    private static long nextGroupID = firstGroupID;
 
-    public static GroupID globalGroup = null;
+//    public static GroupID globalGroup = null;
 
-//    public static long GLOBAL_GROUP_ID = 0;
+    public static final long GLOBAL_GROUP_ID = 0;
 
     /**
      * Creates a new instance of GroupID. 
@@ -55,13 +55,14 @@ public class GroupID implements Serializable {
      *
      * @return The groupID representin the global chat channel.
      */
-    public static GroupID getGlobalGroupID() {
-        if(globalGroup==null) {
-            globalGroup = new GroupID(0);
-        }
 
-        return globalGroup;
-    }
+//    public static GroupID getGlobalGroupID() {
+//        if(globalGroup==null) {
+//            globalGroup = new GroupID(0);
+//        }
+//
+//        return globalGroup;
+//    }
 
 //    public static GroupID getNewGroupID() {
 //        return new GroupID(nextGroupID++);
@@ -86,14 +87,6 @@ public class GroupID implements Serializable {
             str = Long.toString(id);
 
         return str;
-    }
-
-    /**
-     * Get the first cell ID that should be assigned to cells
-     * @return
-     */
-    public static long getFirstGroupID() {
-        return firstGroupID;
     }
 
     /**

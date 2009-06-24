@@ -113,7 +113,7 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
         Set<WonderlandClientID> recipients = null;
         GroupID toGroup = tcm.getGroup();
 
-        if(toGroup.equals(GroupID.getGlobalGroupID())) {
+        if(toGroup.equals(new GroupID(GroupID.GLOBAL_GROUP_ID))) {
             recipients = sender.getClients();
 
             // now notify listeners of a new message. For now, listeners only
@@ -139,13 +139,16 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
             // of a non-zero message should be.
 
             GroupChatsSet gcs = (GroupChatsSet) AppContext.getDataManager().getBinding(GroupChatsSet.ID);
+
+
             AppContext.getDataManager().markForUpdate(gcs);
             
             if(gcs.groups.containsKey(toGroup)) {
-                recipients = gcs.groups.get(toGroup);
+                // Clone it first, so when we remove the client later we don't remove it from the actual group.
+                recipients = new HashSet<WonderlandClientID>(gcs.groups.get(toGroup));
+                logger.log(Level.INFO, "Received a message for GroupID: " + toGroup + " group recipients: " + recipients);
             } else {
                 logger.log(Level.WARNING, "Received a message for GroupID " + toGroup + " but that group isn't a known group. Known Groups: " + gcs.groups.keySet());
-
 
                 // Just make an empty set so the rest of the method works fine
                 recipients = new HashSet<WonderlandClientID>();
@@ -199,12 +202,13 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
                 this.removeUserFromChatGroup(group, clientID);
                 this.sendGlobalMessage("User: " + clientID + " has left GroupID: " + group);
                 return tcm;
-            } else {
+            }
+            else {
 
-                GroupID groupID = new GroupID(Integer.parseInt(pieces[0]));
-
-                logger.log(Level.INFO, "Setting groupID on message and passing it on: " + groupID);
-                tcm.setGroup(groupID);
+//                GroupID groupID = new GroupID(Integer.parseInt(pieces[0]));
+//
+//                logger.log(Level.INFO, "Setting groupID on message and passing it on: " + groupID);
+//                tcm.setGroup(groupID);
                 return tcm;
                 }
 
@@ -247,7 +251,7 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
         Set<WonderlandClientID> clientIDs = sender.getClients();
 
         // Construct a new message with appropriate fields.
-        TextChatMessage textMessage = new TextChatMessage(msg, from, GroupID.getGlobalGroupID());
+        TextChatMessage textMessage = new TextChatMessage(msg, from, new GroupID(GroupID.GLOBAL_GROUP_ID));
         sender.send(clientIDs, textMessage);
     }
 
@@ -351,7 +355,7 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
         } catch (NameNotBoundException e) {
             nextGroupID = new NextGroupID();
-            nextGroupID.next = GroupID.getFirstGroupID();
+            nextGroupID.next = GroupID.FIRST_GROUP_ID;
 
             AppContext.getDataManager().setBinding(NextGroupID.ID, nextGroupID);
         }

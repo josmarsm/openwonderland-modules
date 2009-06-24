@@ -117,54 +117,58 @@ public class ChatUserListJFrame extends javax.swing.JFrame {
         presenceManager = PresenceManagerFactory.getPresenceManager(session);
         initUserList();
 
-         // Listen for changes in the users, and update the list as appropriate
-        presenceManager.addPresenceManagerListener(new PresenceManagerListener() {
-            public void userAdded(PresenceInfo pInfo) {
-                // Add the user if it does not already exist and it is not the
-                // same as this user.
-                String displayName = getDisplayName(pInfo.userID);
-                if (userMap.containsKey(displayName) == false) {
-                    if (pInfo.userID.equals(localUserIdentity) == false) {
-                        userMap.put(displayName, pInfo.userID);
-                        listModel.addElement(displayName);
-                    }
-                }
-
-                // Check to see if a frame already exists from a previous
-                // session. If so, then reactivate it.
-                chatManager.reactivateChat(pInfo.userID.getUsername());
-            }
-
-            public void userRemoved(PresenceInfo pInfo) {
-                // Remove the user if it does exist and it is not the same as
-                // this user.
-                String displayName = getDisplayName(pInfo.userID);
-                if (userMap.containsKey(displayName) == true) {
-                    if (pInfo.userID.equals(localUserIdentity) == false) {
-                        userMap.remove(displayName);
-                        listModel.removeElement(displayName);
-                    }
-                }
-
-                // Ask the Chat Manager if it has a frame corresponding to the
-                // user chat. If so, then it de-activates it.
-                chatManager.deactivateChat(pInfo.userID.getUsername());
-            }
-
-            public void presenceInfoChanged(PresenceInfo pInfo, ChangeType type) {
-                // Dispatch toe userAdded() or userRemoved()
-                if (type == ChangeType.USER_ADDED) {
-                    userAdded(pInfo);
-                }
-                else if (type == ChangeType.USER_REMOVED) {
-                    userRemoved(pInfo);
-                }
-            }
-
-            public void usernameAliasChanged(PresenceInfo arg1) {
-                // do nothing
-            }
-        });
+        // Listen for changes in the users, and update the list as appropriate
+        // This is a nice feature - if you have a 1 on 1 chat with someone and they
+        // log off and come back, their old window reactivates. I'm not sure how we'll
+        // pull that off with group chat. TODO Brainstorm with Jordan.
+        
+//        presenceManager.addPresenceManagerListener(new PresenceManagerListener() {
+//            public void userAdded(PresenceInfo pInfo) {
+//                // Add the user if it does not already exist and it is not the
+//                // same as this user.
+//                String displayName = getDisplayName(pInfo.userID);
+//                if (userMap.containsKey(displayName) == false) {
+//                    if (pInfo.userID.equals(localUserIdentity) == false) {
+//                        userMap.put(displayName, pInfo.userID);
+//                        listModel.addElement(displayName);
+//                    }
+//                }
+//
+//                // Check to see if a frame already exists from a previous
+//                // session. If so, then reactivate it.
+//                chatManager.reactivateChat(pInfo.userID.getUsername());
+//            }
+//
+//            public void userRemoved(PresenceInfo pInfo) {
+//                // Remove the user if it does exist and it is not the same as
+//                // this user.
+//                String displayName = getDisplayName(pInfo.userID);
+//                if (userMap.containsKey(displayName) == true) {
+//                    if (pInfo.userID.equals(localUserIdentity) == false) {
+//                        userMap.remove(displayName);
+//                        listModel.removeElement(displayName);
+//                    }
+//                }
+//
+//                // Ask the Chat Manager if it has a frame corresponding to the
+//                // user chat. If so, then it de-activates it.
+//                chatManager.deactivateChat(pInfo.userID.getUsername());
+//            }
+//
+//            public void presenceInfoChanged(PresenceInfo pInfo, ChangeType type) {
+//                // Dispatch toe userAdded() or userRemoved()
+//                if (type == ChangeType.USER_ADDED) {
+//                    userAdded(pInfo);
+//                }
+//                else if (type == ChangeType.USER_REMOVED) {
+//                    userRemoved(pInfo);
+//                }
+//            }
+//
+//            public void usernameAliasChanged(PresenceInfo arg1) {
+//                // do nothing
+//            }
+//        });
     }
 
     /**
