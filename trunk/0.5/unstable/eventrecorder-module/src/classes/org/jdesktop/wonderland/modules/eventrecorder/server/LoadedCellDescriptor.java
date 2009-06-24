@@ -19,8 +19,6 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import java.io.Reader;
 import java.io.Writer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -30,62 +28,42 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
- * Describes a change recorded by the event recording mechanism
+ * Describes a cell that has been loaded so that it may be recorded.
+ * Represents tha name of the tape, a timestamp and the XML setup information
  * 
- * @author Jordan Slott <jslott@dev.java.net>
  * @author Bernard Horan
  */
-@XmlRootElement(name="change-descriptor")
-public class ChangeDescriptor {
+@XmlRootElement(name="loadedcell-descriptor")
+public class LoadedCellDescriptor {
     /* the name of the tape (recording) for which this change is directed */
     @XmlElement(name="tape-name") private String tapeName = null;
-    /* the message from darkstar encoded into text */
-    @XmlElement(name="encoded-message") private String encodedMessage = null;
-    /* the timestamp of the message */
+    @XmlElement(name="xml-setup-info") private String setupInfo = null;
+    /* the timestamp of the change */
     @XmlElement(name="timestamp") private long timestamp = 0l;
 
-    /* The XML marshaller and unmarshaller for later use */
-    private static Marshaller marshaller = null;
-    private static Unmarshaller unmarshaller = null;
-    
-    /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
+    private static JAXBContext jaxbContext = null;
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(ChangeDescriptor.class);
-            ChangeDescriptor.unmarshaller = jc.createUnmarshaller();
-            ChangeDescriptor.marshaller = jc.createMarshaller();
-            ChangeDescriptor.marshaller.setProperty("jaxb.formatted.output", true);
+            jaxbContext = JAXBContext.newInstance(LoadedCellDescriptor.class);
         } catch (javax.xml.bind.JAXBException excp) {
-            Logger.getLogger(ChangeDescriptor.class.getName()).log(Level.WARNING,
-                    "[WFS] Unable to create JAXBContext", excp);
+            System.out.println(excp.toString());
         }
     }
     
     /** Default constructor */
-    public ChangeDescriptor() {
+    public LoadedCellDescriptor() {
     }
     
-    /** Constructor, takes all the class fields as parameters
-     */
-    public ChangeDescriptor(String tapeName, long timestamp, String encodedMessage) {
+    /** Constructor, takes all of the class attributes */
+    public LoadedCellDescriptor(String tapeName, String setupInfo, long timestamp) {
         this.tapeName = tapeName;
+        this.setupInfo = setupInfo;
         this.timestamp = timestamp;
-        this.encodedMessage = encodedMessage;
     }
 
     @XmlTransient
-    public String getTapeName() {
-        return tapeName;
-    }
-
-    @XmlTransient
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    @XmlTransient
-    public String getEncodedMessage() {
-        return encodedMessage;
+    public String getSetupInfo() {
+        return setupInfo;
     }
     
     /**
@@ -95,17 +73,32 @@ public class ChangeDescriptor {
      * @throw ClassCastException If the input file does not map to this class
      * @throw JAXBException Upon error reading the XML stream
      */
-    public static ChangeDescriptor decode(Reader r) throws JAXBException {
-        return (ChangeDescriptor)ChangeDescriptor.unmarshaller.unmarshal(r);        
+    public static LoadedCellDescriptor decode(Reader r) throws JAXBException {
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        return (LoadedCellDescriptor)unmarshaller.unmarshal(r);        
     }
     
     /**
      * Writes the XML representation of this class to a writer.
      * <p>
      * @param w The output writer to write to
-     * @throws JAXBException Upon error writing the XML file
+     * @throw JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        ChangeDescriptor.marshaller.marshal(this, w);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty("jaxb.formatted.output", true);
+        marshaller.marshal(this, w);
     }
+
+    public String getTapeName() {
+        return tapeName;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    
+
+    
 }

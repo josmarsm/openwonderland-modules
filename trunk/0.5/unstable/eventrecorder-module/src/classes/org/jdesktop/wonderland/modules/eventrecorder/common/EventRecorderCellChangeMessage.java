@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.common;
 
-import java.util.Set;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
@@ -44,17 +43,12 @@ public class EventRecorderCellChangeMessage extends CellMessage {
 
     private EventRecorderAction action;
     private boolean isRecording;
-    private boolean isPlaying;
     private String userName;
     private double volume;
     private String tapeName;
 
     public EventRecorderAction getAction() {
         return action;
-    }
-
-    public boolean isPlaying() {
-        return isPlaying;
     }
 
     public boolean isRecording() {

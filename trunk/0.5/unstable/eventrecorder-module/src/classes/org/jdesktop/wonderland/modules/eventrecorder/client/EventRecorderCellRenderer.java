@@ -29,13 +29,11 @@ import com.jme.scene.shape.Cylinder;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
+import com.jme.scene.state.RenderState.StateType;
 import com.sun.scenario.animation.Animation;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Clip.RepeatBehavior;
-import com.sun.scenario.animation.Interpolators;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
@@ -55,8 +53,6 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
  * @author bh37721
  */
 public class EventRecorderCellRenderer extends BasicRenderer {
-
-    private static final Logger rendererLogger = Logger.getLogger(EventRecorderCellRenderer.class.getName());
 
     private static final float WIDTH = 0.6f; //x-extent
     private static final float HEIGHT = WIDTH /2 ; //y-extent was 0.3f
@@ -107,18 +103,18 @@ public class EventRecorderCellRenderer extends BasicRenderer {
         casing.setModelBound(new BoundingBox());
         casing.updateModelBound();
         ColorRGBA casingColour = new ColorRGBA(0f, 0f, 1f, 0.2f);
-        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_MATERIAL);
+        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
         matState.setDiffuse(casingColour);
         casing.setRenderState(matState);
         //casing.setLightCombineMode(Spatial.LightCombineMode.Off);
-        BlendState as = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_BLEND);
+        BlendState as = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Blend);
         as.setEnabled(true);
         as.setBlendEnabled(true);
         as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
         as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
         casing.setRenderState(as);
 
-        CullState cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_CULL);
+        CullState cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Cull);
         cs.setEnabled(true);
         cs.setCullFace(CullState.Face.Back);
         casing.setRenderState(cs);
@@ -311,6 +307,7 @@ public class EventRecorderCellRenderer extends BasicRenderer {
 
         ButtonListener(Button aButton) {
             super();
+            setSwingSafe(true);
             button = aButton;
         }
 

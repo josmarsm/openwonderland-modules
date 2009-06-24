@@ -123,7 +123,10 @@ public class EventRecorderCell extends Cell {
         }
         if (status == CellStatus.DISK) {
             //Cleanup
-            getChannel().removeMessageReceiver(EventRecorderCellChangeMessage.class);
+            ChannelComponent channel = getChannel();
+            if (channel != null) {
+                channel.removeMessageReceiver(EventRecorderCellChangeMessage.class);
+            }
             if (menuFactory != null) {
                     contextComp.removeContextMenuFactory(menuFactory);
                     menuFactory = null;

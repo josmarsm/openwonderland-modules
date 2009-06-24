@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.LoadedCellRecordingListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingResult;
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.kernel.ComponentRegistry;
@@ -30,6 +32,7 @@ import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,10 +44,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.common.wfs.CellPath;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingListener;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportResult;
 
 /**
  * A service to support the event recorder.
@@ -53,7 +60,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * by the RecorderManager.
  * @author Bernard Horan
  */
-public class EventRecordingService extends AbstractService {
+public class EventRecordingService extends AbstractService implements EventRecordingManager {
 
     /** The name of this class. */
     private static final String NAME = EventRecordingService.class.getName();
@@ -156,7 +163,7 @@ public class EventRecordingService extends AbstractService {
      * @param tapeName the name of the recording and hence the name of the directory into which the changes are recorded
      * @param listener to be informed of the success or failure of the operation
      */
-    public void openChangesFile(String tapeName, ChangesFileCreationListener listener) {
+    public void createChangesFile(String tapeName, ChangesFileCreationListener listener) {
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedChangesFileCreationWrapper(listener);
         }
@@ -168,7 +175,7 @@ public class EventRecordingService extends AbstractService {
         // now add the file creation request to the transaction.  On commit
         // this request will be passed on to the executor for long-running
         // tasks
-        CreateChangesFile ccf = new CreateChangesFile(tapeName, new Date().getTime(), scl.getId());
+        CreateChangesFile ccf = new CreateChangesFile(tapeName, scl.getId());
         ctxFactory.joinTransaction().add(ccf);
     }
 
@@ -213,8 +220,41 @@ public class EventRecordingService extends AbstractService {
         // now add the file closure request to the transaction.  On commit
         // this request will be passed on to the executor for long-running
         // tasks
-        CloseChangesFile ccf = new CloseChangesFile(tapeName, new Date().getTime(), scl.getId());
+        CloseChangesFile ccf = new CloseChangesFile(tapeName, scl.getId());
         ctxFactory.joinTransaction().add(ccf);
+    }
+
+    public void recordLoadedCell(String tapeName, CellID cellID, LoadedCellRecordingListener listener) {
+
+        if (!(listener instanceof ManagedObject)) {
+            listener = new ManagedLoadedCellRecordingWrapper(listener);
+        }
+
+        // create a reference to the listener
+        ManagedReference<LoadedCellRecordingListener> scl =
+                dataService.createReference(listener);
+
+        // now add the recordloadedcell request to the transaction.  On commit
+        // this request will be passed on to the executor for long-running
+        // tasks
+        RecordLoadedCell ec = new RecordLoadedCell(tapeName, cellID, scl.getId());
+        ctxFactory.joinTransaction().add(ec);
+    }
+
+    public void recordUnloadedCell(String tapeName, CellID cellID, UnloadedCellsRecordingListener listener) {
+        if (!(listener instanceof ManagedObject)) {
+            listener = new ManagedUnloadedCellsRecordingWrapper(listener);
+        }
+
+        // create a reference to the listener
+        ManagedReference<UnloadedCellsRecordingListener> scl =
+                dataService.createReference(listener);
+        // now add the recordunloadedcell request to the transaction.  On commit
+        // this request will be passed on to the executor for long-running
+        // tasks
+        RecordUnloadedCell ec = new RecordUnloadedCell(tapeName, cellID, scl.getId());
+        ctxFactory.joinTransaction().add(ec);
+
     }
 
     /**
@@ -226,9 +266,9 @@ public class EventRecordingService extends AbstractService {
         private BigInteger listenerID;
         private long timestamp;
 
-        public CreateChangesFile(String tapeName, long timestamp, BigInteger listenerID) {
+        public CreateChangesFile(String tapeName, BigInteger listenerID) {
             this.tapeName = tapeName;
-            this.timestamp = timestamp;
+            this.timestamp = new Date().getTime();
             this.listenerID = listenerID;
         }
 
@@ -276,7 +316,7 @@ public class EventRecordingService extends AbstractService {
             MessageRecordingResultImpl result;
 
             // first, wrap the fields in a ChangeDescriptor in a task.
-            GetChangeDescriptor get = new GetChangeDescriptor(tapeName, clientID, message);
+            GetMessageDescriptor get = new GetMessageDescriptor(tapeName, clientID, message);
             try {
                 transactionScheduler.runTask(get, taskOwner);
             } catch (Exception ex) {
@@ -284,13 +324,13 @@ public class EventRecordingService extends AbstractService {
             }
 
             // if the change descriptor is null, it means something went wrong
-            if (get.getChangeDescriptor() == null) {
+            if (get.getMessageDescriptor() == null) {
                 result = new MessageRecordingResultImpl(message.getMessageID(), "ChangeDescriptor is null", null);
             }
 
             // now export the descriptor to the web service
             try {
-                EventRecorderUtils.recordChange(get.getChangeDescriptor());
+                EventRecorderUtils.recordChange(get.getMessageDescriptor());
             } catch (Exception ex) {
                 result = new MessageRecordingResultImpl(message.getMessageID(), "Error in writing message", ex);
             }
@@ -352,17 +392,17 @@ public class EventRecordingService extends AbstractService {
     }
 
     /**
-     * A task to create a ChangeDescriptor.
+     * A task to create a MessageDescriptor.
      */
-    private class GetChangeDescriptor implements KernelRunnable {
+    private class GetMessageDescriptor implements KernelRunnable {
         private String tapeName;
         private WonderlandClientID clientID;
         private CellMessage message;
         private long timestamp;
 
-        private ChangeDescriptor out;
+        private MessageDescriptor out;
 
-        public GetChangeDescriptor(String tapeName, WonderlandClientID clientID, CellMessage message) {
+        public GetMessageDescriptor(String tapeName, WonderlandClientID clientID, CellMessage message) {
             this.tapeName = tapeName;
             this.clientID = clientID;
             this.message = message;
@@ -370,16 +410,16 @@ public class EventRecordingService extends AbstractService {
         }
 
         public String getBaseTaskType() {
-            return NAME + ".GET_CHANGE_DESCRIPTOR";
+            return NAME + ".GET_MESSAGE_DESCRIPTOR";
         }
 
-        public ChangeDescriptor getChangeDescriptor() {
+        public MessageDescriptor getMessageDescriptor() {
             return out;
         }
 
         public void run() throws Exception {
             // create a ChangeDescriptor
-            out = EventRecorderUtils.getChangeDescriptor(tapeName, clientID, message, timestamp);
+            out = EventRecorderUtils.getMessageDescriptor(tapeName, clientID, message, timestamp);
         }
     }
 
@@ -431,10 +471,10 @@ public class EventRecordingService extends AbstractService {
         private BigInteger listenerID;
         private long timestamp;
 
-        public CloseChangesFile(String tapeName, long timestamp, BigInteger listenerID) {
+        public CloseChangesFile(String tapeName, BigInteger listenerID) {
             this.tapeName = tapeName;
             this.listenerID = listenerID;
-            this.timestamp = timestamp;
+            this.timestamp = new Date().getTime();
         }
 
         public void run() {
@@ -449,6 +489,43 @@ public class EventRecordingService extends AbstractService {
             // notify the listener
             NotifyChangesFileClosureListener notify =
                     new NotifyChangesFileClosureListener(listenerID, ex);
+            try {
+                transactionScheduler.runTask(notify, taskOwner);
+            } catch (Exception ex2) {
+                logger.logThrow(Level.WARNING, ex2, "Error calling listener");
+            }
+        }
+    }
+
+    /**
+     * A task that records the unloading of a cell, and then notifies the
+     * UnloadedCellsRecordingListener identified by managed reference id.
+     */
+    private class RecordUnloadedCell implements Runnable {
+        private String tapeName;
+        private BigInteger listenerID;
+        private long timestamp;
+        private CellID cellID;
+
+        private RecordUnloadedCell(String tapeName, CellID cellID, BigInteger id) {
+            this.tapeName = tapeName;
+            this.listenerID = id;
+            this.timestamp = new Date().getTime();
+            this.cellID = cellID;
+        }
+
+        public void run() {
+            Exception ex = null;
+
+            try {
+                EventRecorderUtils.recordedUnloadedCell(tapeName, cellID, timestamp);
+            } catch (Exception ex2) {
+                ex = ex2;
+            }
+
+            // notify the listener
+            NotifyUnloadCellsRecordingListener notify =
+                    new NotifyUnloadCellsRecordingListener(listenerID, cellID, ex);
             try {
                 transactionScheduler.runTask(notify, taskOwner);
             } catch (Exception ex2) {
@@ -591,6 +668,219 @@ public class EventRecordingService extends AbstractService {
                 if (l instanceof ManagedChangesFileClosureWrapper) {
                     dataService.removeObject(l);
                 }
+            }
+        }
+    }
+
+    /**
+     * A task to notify a LoadedCellsRecordingListener
+     */
+    private class NotifyLoadCellRecordingListener implements KernelRunnable {
+        private BigInteger listenerID;
+        private CellID cellID;
+        private Exception exception;
+
+         private NotifyLoadCellRecordingListener(BigInteger listenerID, CellID cellID, Exception ex) {
+            this.listenerID = listenerID;
+            this.cellID = cellID;
+            this.exception = ex;
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".LOAD_CELL_RECORDING_LISTENER";
+        }
+
+        public void run() throws Exception {
+            ManagedReference<?> lr =
+                    dataService.createReferenceForId(listenerID);
+            LoadedCellRecordingListener l =
+                    (LoadedCellRecordingListener) lr.get();
+
+            try {
+                l.recordLoadedCellResult(cellID, exception);
+            } finally {
+                // clean up
+                if (l instanceof ManagedLoadedCellRecordingWrapper) {
+                    dataService.removeObject(l);
+                }
+            }
+        }
+    }
+
+    /**
+     * A task to notify an UnloadCellsRecordingListener
+     */
+    private class NotifyUnloadCellsRecordingListener implements KernelRunnable {
+        private BigInteger listenerID;
+        private Exception exception;
+        private CellID cellID;
+
+        private NotifyUnloadCellsRecordingListener(BigInteger listenerID, CellID cellID, Exception ex) {
+            this.listenerID = listenerID;
+            this.exception = ex;
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".UNLOAD_CELL_RECORDING_LISTENER";
+        }
+
+        public void run() throws Exception {
+            ManagedReference<?> lr =
+                    dataService.createReferenceForId(listenerID);
+            UnloadedCellsRecordingListener l =
+                    (UnloadedCellsRecordingListener) lr.get();
+
+            try {
+                l.recordUnloadedCellResult(cellID, exception);
+
+            } finally {
+                // clean up
+                if (l instanceof ManagedLoadedCellRecordingWrapper) {
+                    dataService.removeObject(l);
+                }
+            }
+        }
+    }
+
+    /**
+     * A wrapper around the LoadedCellRecordingListener as a managed object.
+     * This assumes a serializable LoadedCellRecordingListener
+     */
+    private static class ManagedLoadedCellRecordingWrapper
+            implements LoadedCellRecordingListener, ManagedObject, Serializable
+    {
+        private LoadedCellRecordingListener wrapped;
+
+        public ManagedLoadedCellRecordingWrapper(LoadedCellRecordingListener listener)
+        {
+            wrapped = listener;
+        }
+
+        public void recordLoadedCellResult(CellID cellID, Exception ex) {
+            wrapped.recordLoadedCellResult(cellID, ex);
+        }
+
+        
+    }
+
+    /**
+     * A wrapper around the UnloadedCellsRecordingListener as a managed object.
+     * This assumes a serializable UnloadedCellsRecordingListener
+     */
+    private static class ManagedUnloadedCellsRecordingWrapper
+            implements UnloadedCellsRecordingListener, ManagedObject, Serializable
+    {
+        private UnloadedCellsRecordingListener wrapped;
+
+        public ManagedUnloadedCellsRecordingWrapper(UnloadedCellsRecordingListener listener)
+        {
+            wrapped = listener;
+        }
+
+        public void recordUnloadedCellResult(CellID cellID, Exception exception) {
+            wrapped.recordUnloadedCellResult(cellID, exception);
+        }
+
+
+
+
+    }
+
+    /**
+     * A task to resolve a CellID into a LoadedCellDescriptor.
+     */
+    private class GetLoadedCellDescriptor implements KernelRunnable {
+        private String tapeName;
+        private CellID cellID;
+        private long timestamp;
+        private LoadedCellDescriptor out;
+
+        public GetLoadedCellDescriptor(String tapeName, CellID cellID, long timestamp)
+        {
+            this.tapeName = tapeName;
+            this.cellID = cellID;
+            this.timestamp = timestamp;
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".GET_LOADED_CELL_DESCRIPTOR";
+        }
+
+        public LoadedCellDescriptor getCellDescriptor() {
+            return out;
+        }
+
+        public void run() throws Exception {
+            // resolve the cell ID into a cell
+            CellMO cell = CellManagerMO.getCell(cellID);
+            if (cell == null) {
+                throw new IllegalArgumentException("No such cell " + cellID);
+            }
+
+            // now create a cell descriptor for the cell
+            out = EventRecorderUtils.getLoadedCellDescriptor(tapeName, cell, timestamp);
+       }
+    }
+
+
+    /**
+     * A task that coordinates the recording of the event of a cell being loaded
+     * to a recording accessible via a web service.
+     * The results are then passed to a
+     * LoadCellRecordingListener identified by managed reference.
+     */
+    private class RecordLoadedCell implements Runnable {
+        private String tapeName;
+        private CellID cellID;
+        private BigInteger listenerID;
+        private long timestamp;
+
+        public RecordLoadedCell(String tapeName, CellID cellID, BigInteger listenerID)
+        {
+            this.tapeName = tapeName;
+            this.listenerID = listenerID;
+            this.timestamp = new Date().getTime();
+            this.cellID = cellID;
+        }
+
+        public void run() {
+            Exception ex = null;
+            // first, resolve the cell ID into a LoadedCellDescriptor in a task.
+            GetLoadedCellDescriptor get = new GetLoadedCellDescriptor(tapeName, cellID, timestamp);
+            try {
+                transactionScheduler.runTask(get, taskOwner);
+            } catch (Exception e) {
+                ex = e;
+                notifyListener(ex);
+                return;
+            }
+
+            // if the cell descriptor is null, it means this cell can't
+            // be persisted.  That's fine, just ignore the cell
+            if (get.getCellDescriptor() == null) {
+                ex = new RuntimeException("Cell cannot be exported, id: " + cellID);
+                notifyListener(ex);
+                return;
+            }
+
+            // now export the descriptor to the web service
+            try {
+                EventRecorderUtils.recordedLoadedCell(get.getCellDescriptor());
+            } catch (Exception e) {
+                ex = e;
+            }
+            notifyListener(ex);
+            
+        }
+
+        private void notifyListener(Exception ex) {
+            // notify the listener
+            NotifyLoadCellRecordingListener notify =
+                    new NotifyLoadCellRecordingListener(listenerID, cellID, ex);
+            try {
+                transactionScheduler.runTask(notify, taskOwner);
+            } catch (Exception e) {
+                logger.logThrow(Level.WARNING, ex, "Error calling listener");
             }
         }
     }
