@@ -29,8 +29,8 @@ import org.jdesktop.wonderland.common.messages.Message;
 public class GroupChatMessage extends Message {
 
     public enum GroupAction {
-        JOINED,
-        LEFT
+        WELCOME,
+        GOODBYE
     }
 
     private GroupAction action;

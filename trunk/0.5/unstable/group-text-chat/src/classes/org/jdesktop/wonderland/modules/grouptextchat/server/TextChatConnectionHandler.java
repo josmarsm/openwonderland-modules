@@ -19,16 +19,22 @@ package org.jdesktop.wonderland.modules.grouptextchat.server;
 
 import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.NameNotBoundException;
+import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.modules.grouptextchat.common.GroupChatMessage;
+import org.jdesktop.wonderland.modules.grouptextchat.common.GroupChatMessage.GroupAction;
 import org.jdesktop.wonderland.modules.grouptextchat.common.TextChatMessage;
 import org.jdesktop.wonderland.modules.grouptextchat.common.TextChatConnectionType;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -45,27 +51,20 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class TextChatConnectionHandler implements ClientConnectionHandler, Serializable {
 
-    private static Logger logger = Logger.getLogger(TextChatConnectionHandler.class.getName());
+    private static final LoggerWrapper logger = new LoggerWrapper(Logger.getLogger(TextChatConnectionHandler.class.getName()));
 
-    /**
-     * Stores the classes that have registered as listening for new chat messages.
-     */
-    private Set<ManagedReference> listeners = new HashSet<ManagedReference>();
-
-    /**
-     * Stores the mapping between groupIDs and users in that group. Users are allowed
-     * to be in an arbitrary number of groups. S
-     */
-    private Map<GroupID, Set<WonderlandClientID>> groups = new HashMap<GroupID, Set<WonderlandClientID>>();
-
-    private long nextGroupID = GroupID.getFirstGroupID();
+    private static String NEXT_GROUP_ID_BINDING = "NEXT_GROUP_ID";
 
     public ConnectionType getConnectionType() {
         return TextChatConnectionType.CLIENT_TYPE;
     }
 
     public void registered(WonderlandClientSender sender) {
-        // ignore
+        GroupChatsSet gcs = new GroupChatsSet();
+        AppContext.getDataManager().setBinding(GroupChatsSet.ID, gcs);
+
+        ListenersSet ls = new ListenersSet();
+        AppContext.getDataManager().setBinding(ListenersSet.ID, ls);
     }
 
     public void clientConnected(WonderlandClientSender sender,
@@ -124,19 +123,28 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
             // all listeners get all messages, even if they're sent to
             // specific people. It's up to listeners to decide what to do
             // with them.
-            for(ManagedReference listenerRef : this.listeners) {
+
+            ListenersSet ls = (ListenersSet) AppContext.getDataManager().getBinding(ListenersSet.ID);
+            AppContext.getDataManager().markForUpdate(ls);
+
+
+            for(ManagedReference listenerRef : ls.listeners) {
                 TextChatMessageListener listener = (TextChatMessageListener)listenerRef.get();
-                logger.info("Sending to listener: " + listener);
+                logger.log(Level.INFO, "Sending to listener: " + listener);
                 listener.handleMessage(tcm);
             }
         } else {
             // If we're not on channel 0, then we should be on one of the other
             // channels. Check the groups map to figure out who the recipients
             // of a non-zero message should be.
-            if(groups.containsKey(toGroup)) {
-                recipients = groups.get(toGroup);
+
+            GroupChatsSet gcs = (GroupChatsSet) AppContext.getDataManager().getBinding(GroupChatsSet.ID);
+            AppContext.getDataManager().markForUpdate(gcs);
+            
+            if(gcs.groups.containsKey(toGroup)) {
+                recipients = gcs.groups.get(toGroup);
             } else {
-                logger.warning("Received a message for GroupID " + toGroup + " but that group isn't a known group. Known Groups: " + groups.keySet());
+                logger.log(Level.WARNING, "Received a message for GroupID " + toGroup + " but that group isn't a known group. Known Groups: " + gcs.groups.keySet());
 
 
                 // Just make an empty set so the rest of the method works fine
@@ -195,7 +203,7 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
                 GroupID groupID = new GroupID(Integer.parseInt(pieces[0]));
 
-                logger.info("Setting groupID on message and passing it on: " + groupID);
+                logger.log(Level.INFO, "Setting groupID on message and passing it on: " + groupID);
                 tcm.setGroup(groupID);
                 return tcm;
                 }
@@ -223,7 +231,7 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      * @param msg The body of the text chat message.
      */
     public void sendGlobalMessage(String from, String msg) {
-        logger.finer("Sending global message from " + from + ": " + msg);
+        logger.log(Level.FINER, "Sending global message from " + from + ": " + msg);
         // Originally included for the XMPP plugin, so people chatting with the XMPP bot
         // can have their messages replicated in-world with appropriate names.
         //
@@ -250,8 +258,10 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      * @param listener The listener object.
      */
     public void addTextChatMessageListener(TextChatMessageListener listener) {
-        
-        this.listeners.add(AppContext.getDataManager().createReference(listener));
+        ListenersSet ls = (ListenersSet) AppContext.getDataManager().getBinding(ListenersSet.ID);
+        AppContext.getDataManager().markForUpdate(ls);
+
+        ls.listeners.add(AppContext.getDataManager().createReference(listener));
     }
 
     /**
@@ -260,7 +270,10 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      * @param listener The listener object.
      */
     public void removeTextChatMessageListener(TextChatMessageListener listener) {
-        this.listeners.remove(AppContext.getDataManager().createReference(listener));
+        ListenersSet ls = (ListenersSet) AppContext.getDataManager().getBinding(ListenersSet.ID);
+        AppContext.getDataManager().markForUpdate(ls);
+
+        ls.listeners.remove(AppContext.getDataManager().createReference(listener));
     }
 
     /**
@@ -271,17 +284,27 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      * @param wcid The id of the client.
      */
     public void addUserToChatGroup(GroupID gid, WonderlandClientID wcid) {
-        if(groups.containsKey(gid)) {
-            Set<WonderlandClientID> s = groups.get(gid);
+
+        GroupChatsSet gcs = (GroupChatsSet) AppContext.getDataManager().getBinding(GroupChatsSet.ID);
+
+        if(gcs.groups.containsKey(gid)) {
+            Set<WonderlandClientID> s = gcs.groups.get(gid);
+            AppContext.getDataManager().markForUpdate(gcs);
+
             s.add(wcid);
-            logger.info("Added user: " + wcid + " to group: " + gid + " userlist now: " + s);
+            System.out.println("Added user: " + wcid + " to group: " + gid + " userlist now: " + s);
             
             // I don't think I need to do this, but having weird issues.
-            groups.put(gid, s);
+            //            gcs.groups.put(gid, s);
 
-            // Send a message to the client telling it to display a new tab on the client UI. 
+            // Send a message to the client telling it to display a new tab on the client UI.
+            GroupChatMessage msg = new GroupChatMessage(gid, GroupAction.WELCOME);
+
+            CommsManager cm = WonderlandContext.getCommsManager();
+            WonderlandClientSender sender = cm.getSender(TextChatConnectionType.CLIENT_TYPE);
+            sender.send(wcid, msg);
         } else {
-            logger.warning("Attempted to add user " + wcid + " to unknown text chat group " + gid + " (known groups: " + groups.keySet() + ")");
+            System.out.println("Attempted to add user " + wcid + " to unknown text chat group " + gid + " (known groups: " + gcs.groups.keySet() + ")");
         }
     }
 
@@ -292,16 +315,25 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      * @param wcid The id of the client.
      */
     public void removeUserFromChatGroup(GroupID gid, WonderlandClientID wcid) {
-        if(groups.containsKey(gid)) {
-            Set<WonderlandClientID> s = groups.get(gid);
+
+        GroupChatsSet gcs = (GroupChatsSet) AppContext.getDataManager().getBinding(GroupChatsSet.ID);
+//        AppContext.getDataManager().markForUpdate(gcs);
+
+
+        if(gcs.groups.containsKey(gid)) {
+            Set<WonderlandClientID> s = gcs.groups.get(gid);
             s.remove(wcid);
-            logger.info("Removed user: " + wcid + " from group: " + gid + " userlist now: " + s);
+            logger.log(Level.INFO, "Removed user: " + wcid + " from group: " + gid + " userlist now: " + s);
 
             // Send a message to the client telling it to remove the right tab on the client UI.
+            GroupChatMessage msg = new GroupChatMessage(gid, GroupAction.GOODBYE);
 
+            CommsManager cm = WonderlandContext.getCommsManager();
+            WonderlandClientSender sender = cm.getSender(TextChatConnectionType.CLIENT_TYPE);
+            sender.send(wcid, msg);
 
         } else {
-            logger.warning("Attempted to remove user " + wcid + " to unknown text chat group " + gid);
+            logger.log(Level.WARNING, "Attempted to remove user " + wcid + " to unknown text chat group " + gid);
         }
     }
 
@@ -311,11 +343,31 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      * @return The GroupID of the new group.
      */
     public GroupID createChatGroup() {
-        GroupID gid = new GroupID(nextGroupID++);
+        
+               NextGroupID nextGroupID;
+        try {
 
-        groups.put(gid, new HashSet<WonderlandClientID>());
+            nextGroupID = (NextGroupID) AppContext.getDataManager().getBinding(NextGroupID.ID);
 
-        logger.info("Created group: " + gid + " (known groups: " + groups.keySet() + ") nextGroupID=" + nextGroupID + "(Handler: " + this + ")");
+        } catch (NameNotBoundException e) {
+            nextGroupID = new NextGroupID();
+            nextGroupID.next = GroupID.getFirstGroupID();
+
+            AppContext.getDataManager().setBinding(NextGroupID.ID, nextGroupID);
+        }
+
+        GroupID gid = new GroupID(nextGroupID.next);
+
+        nextGroupID.next++;
+        
+        AppContext.getDataManager().markForUpdate(nextGroupID);
+
+        GroupChatsSet gcs = (GroupChatsSet) AppContext.getDataManager().getBinding(GroupChatsSet.ID);
+        AppContext.getDataManager().markForUpdate(gcs);
+
+        gcs.groups.put(gid, new HashSet<WonderlandClientID>());
+
+        System.out.println("Created group: " + gid + " (known groups: " + gcs.groups.keySet() + ") nextGroupID=" + nextGroupID + "(Handler: " + this + ")");
         return gid;
     }
 
@@ -326,9 +378,9 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      * @param gid
      * @return
      */
-    public boolean chatGroupExists(GroupID gid) {
-        return groups.containsKey(gid);
-    }
+//    public boolean chatGroupExists(GroupID gid) {
+//        return groups.containsKey(gid);
+//    }
 
     /**
      * Convenience method that removes the specified user from all text chat groups.
@@ -337,14 +389,33 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      * @param wcid
      */
     public void removeUserFromAllGroups(WonderlandClientID wcid) {
-        for(GroupID gid : groups.keySet()) {
-            Set<WonderlandClientID> s = groups.get(gid);
+
+        GroupChatsSet gcs = (GroupChatsSet) AppContext.getDataManager().getBinding(GroupChatsSet.ID);
+        AppContext.getDataManager().markForUpdate(gcs);
+
+
+        for(GroupID gid : gcs.groups.keySet()) {
+            gcs.groups.get(gid).remove(wcid);
+            
 
             // Not sure on the etiquette here - is it cheaper to check to see if
             // the set contains the user before trying to remove it?
-            s.remove(wcid);
         }
     }
 
+    private static class ListenersSet implements ManagedObject, Serializable {
+        public static final String ID="TEXT_CHAT_LISTENERS_SET";
+        public Set<ManagedReference> listeners = new HashSet<ManagedReference>();
+    }
+
+    private static class GroupChatsSet implements ManagedObject, Serializable {
+        public static final String ID="TEXT_CHAT_GROUP_CHATS_SET";
+        public Map<GroupID, Set<WonderlandClientID>> groups = new HashMap<GroupID, Set<WonderlandClientID>>();
+    }
+
+    private static class NextGroupID implements ManagedObject, Serializable {
+        public static final String ID="NEXT_GROUP_CHAT_ID";
+        public long next;
+    }
 
 }
