@@ -67,7 +67,7 @@ public class ChatManager implements TextChatListener {
         // that it gets garbage collected
         final TextChatJFrame textChatJFrame = new TextChatJFrame();
         final WeakReference<TextChatJFrame> frameRef = new WeakReference(textChatJFrame);
-        textChatFrameRefMap.put(GroupID.getGlobalGroupID(), frameRef);
+        textChatFrameRefMap.put(new GroupID(GroupID.GLOBAL_GROUP_ID), frameRef);
 
         // Add the global text chat frame to the menu item. Listen for when it
         // is selected or de-selected and show/hide the frame as appropriate.
@@ -187,8 +187,8 @@ public class ChatManager implements TextChatListener {
 
         // Next, for the global chat, set its information and make it visible
         // initially.
-        TextChatJFrame textChatJFrame = textChatFrameRefMap.get(GroupID.getGlobalGroupID()).get();
-        textChatJFrame.setActive(textChatConnection, localUserName, GroupID.getGlobalGroupID());
+        TextChatJFrame textChatJFrame = textChatFrameRefMap.get(new GroupID(GroupID.GLOBAL_GROUP_ID)).get();
+        textChatJFrame.setActive(textChatConnection, localUserName, new GroupID(GroupID.GLOBAL_GROUP_ID));
         textChatMenuItem.setEnabled(true);
         textChatMenuItem.setSelected(true);
         textChatJFrame.setVisible(true);
@@ -208,7 +208,10 @@ public class ChatManager implements TextChatListener {
             // Check to see if the text chat window already exists. If so, then
             // we do nothing and return.
             WeakReference<TextChatJFrame> ref = textChatFrameRefMap.get(group);
+            
             if (ref != null) {
+                // activate the frame if it already exists.
+                reactivateChat(group);
                 return;
             }
 
@@ -232,18 +235,18 @@ public class ChatManager implements TextChatListener {
     }
 
     /**
-     * Deactivates the text chat given the remote user's name, if such a frame
+     * Deactivates the text chat given the GroupID of the chat, if such a frame
      * exists. Displays a message in the window and turns off its GUI.
      *
-     * @param remoteUser The remote participants user name
+     * @param GroupID The groupID for the chat that should be deactivated.
      */
-    public void deactivateChat(String remoteUser) {
+    public void deactivateChat(GroupID group) {
         // Do all of this synchronized, so that we do not interfere with the
         // code to create chats
         synchronized (textChatFrameRefMap) {
             // Check to see if the text chat window exists. If not, then do
             // nothing.
-            WeakReference<TextChatJFrame> ref = textChatFrameRefMap.get(remoteUser);
+            WeakReference<TextChatJFrame> ref = textChatFrameRefMap.get(group);
             if (ref == null) {
                 return;
             }
@@ -256,13 +259,13 @@ public class ChatManager implements TextChatListener {
      * Re-activates the text chat given the remote user's name, if such a frame
      * exists. Displays a message in the window and turns on its GUI.
      */
-    public void reactivateChat(String remoteUser) {
+    public void reactivateChat(GroupID group) {
         // Do all of this synchronized, so that we do not interfere with the
         // code to create chats
         synchronized (textChatFrameRefMap) {
             // Check to see if the text chat window exists. If not, then do
             // nothing.
-            WeakReference<TextChatJFrame> ref = textChatFrameRefMap.get(remoteUser);
+            WeakReference<TextChatJFrame> ref = textChatFrameRefMap.get(group);
             if (ref == null) {
                 return;
             }
@@ -279,7 +282,7 @@ public class ChatManager implements TextChatListener {
         // empty string, then this is a "global" or "group" message and we fetch its
         // frame. It should exist. We always add the message, no matter whether
         // the frame is visible or not.
-        if (group == GroupID.getGlobalGroupID()) {
+        if (group.equals(new GroupID(GroupID.GLOBAL_GROUP_ID))) {
             TextChatJFrame frame = textChatFrameRefMap.get(group).get();
             frame.appendTextMessage(message, fromUser);
             return;
@@ -297,33 +300,43 @@ public class ChatManager implements TextChatListener {
 
         synchronized (textChatFrameRefMap) {
             WeakReference<TextChatJFrame> ref = textChatFrameRefMap.get(group);
+            
+            if(ref==null) logger.warning("Received a chat message for a group which doesn't have a frame. The client should only receive messages from a group after getting a WELCOME message from that group.");
+
             if (ref != null) {
                 TextChatJFrame frame = ref.get();
                 frame.appendTextMessage(message, fromUser);
                 return;
             }
 
+
+            // Turned off for now, because we're switching to managing
+            // the existence/visibility/activation of chat windows
+            // in response to WELCOME/GOODBYE messages from the server,
+            // instead of inferring from the arrival of messages that a chat
+            // is starting/ending.
+            
             // Finally, we reached here when we have a message from a specific
             // user, but the frame does not exist, and is not visible. So we
             // create it and add to the map and display it.
-            TextChatJFrame frame = new TextChatJFrame();
-            final String userKey = fromUser;
-
-
-            frame.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent e) {
-                    // Remove from the map which will let it garbage collect
-                    synchronized (textChatFrameRefMap) {
-                        e.getWindow().dispose();
-                        textChatFrameRefMap.remove(userKey);
-                    }
-                }
-            });
-            textChatFrameRefMap.put(group, new WeakReference(frame));
-            frame.setActive(textChatConnection, fromUser, group);
-            frame.setVisible(true);
-            frame.appendTextMessage(message, fromUser);
+//            TextChatJFrame frame = new TextChatJFrame();
+//            final String userKey = fromUser;
+//
+//
+//            frame.addWindowListener(new WindowAdapter() {
+//                @Override
+//                public void windowClosing(WindowEvent e) {
+//                    // Remove from the map which will let it garbage collect
+//                    synchronized (textChatFrameRefMap) {
+//                        e.getWindow().dispose();
+//                        textChatFrameRefMap.remove(userKey);
+//                    }
+//                }
+//            });
+//            textChatFrameRefMap.put(group, new WeakReference(frame));
+//            frame.setActive(textChatConnection, fromUser, group);
+//            frame.setVisible(true);
+//            frame.appendTextMessage(message, fromUser);
             
         }
     }

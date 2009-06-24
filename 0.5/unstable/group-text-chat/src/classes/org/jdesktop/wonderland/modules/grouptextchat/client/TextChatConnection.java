@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.grouptextchat.client;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -33,6 +34,7 @@ import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class TextChatConnection extends BaseConnection {
+    private static final Logger logger = Logger.getLogger(TextChatConnection.class.getName());
 
     /**
      * @inheritDoc()
@@ -72,8 +74,43 @@ public class TextChatConnection extends BaseConnection {
         }
         else if(message instanceof GroupChatMessage) {
             GroupChatMessage gcm = (GroupChatMessage)message;
+
             // Manage the UI appropriately. For now, just write a logger message.
-            System.out.println("Got GroupChatMessage: " + gcm.getAction() + " gid: " + gcm.getGroupID());
+            logger.info("Got GroupChatMessage: " + gcm.getAction() + " gid: " + gcm.getGroupID());
+
+
+            switch(gcm.getAction()) {
+                case WELCOME:
+                    // Add the appropriate tab to the UI.
+                    synchronized (listeners) {
+                    for (TextChatListener listener : listeners) {
+
+                        // We don't need to disambiguate between old chats that are restarting
+                        // and new chats here - the ChatManager will do that for us (although
+                        // we should also think about other potential listeners who might
+                        // not track that information.)
+                        listener.startChat(gcm.getGroupID());
+                    }
+                    }
+                    break;
+                case GOODBYE:
+                    // Remove the appropriate tab from the UI.
+                    synchronized (listeners) {
+                    for (TextChatListener listener : listeners) {
+
+                        // We don't need to disambiguate between old chats that are restarting
+                        // and new chats here - the ChatManager will do that for us (although
+                        // we should also think about other potential listeners who might
+                        // not track that information.)
+                        listener.deactivateChat(gcm.getGroupID());
+                    }
+                    }
+                    break;
+                default:
+                    logger.warning("Received GroupChatMessage with unknown action: " + gcm.getAction());
+                    break;
+            }
+
         }
     }
 
@@ -117,5 +154,21 @@ public class TextChatConnection extends BaseConnection {
          * @param to The String user name to which the message is intended
          */
         public void textMessage(String message, String from, GroupID group);
+
+        /**
+         * A message indicating that a chat has been opened. Includes the
+         * groupID of that chat.
+         *
+         * @param group The GroupID for the new chat group.
+         */
+        public void startChat(GroupID group);
+
+        /**
+         * A message indicating that this client has left the specified chat
+         * group.
+         * 
+         * @param group The group chat that is ending.
+         */
+        public void deactivateChat(GroupID group);
     }
 }

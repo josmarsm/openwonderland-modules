@@ -96,7 +96,7 @@ public class TextChatJFrame extends javax.swing.JFrame {
         
         String title = "Text Chat Error";
 
-        if(this.group == GroupID.getGlobalGroupID())
+        if(this.group.equals(new GroupID(GroupID.GLOBAL_GROUP_ID)))
             title = "Global Chat";
         else
             title = "Group Chat " + group;
