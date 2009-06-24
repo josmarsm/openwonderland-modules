@@ -15,29 +15,28 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+
 package org.jdesktop.wonderland.modules.grouptextchat.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
 
 /**
- * A JFrame to display a text chat window.
- * 
+ *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Drew Harry <drew_harry@dev.java.net>
  */
-public class TextChatJFrame extends javax.swing.JFrame {
+public class TextChatJPanel extends javax.swing.JPanel {
 
-    private Logger logger = Logger.getLogger(TextChatJFrame.class.getName());
+    private Logger logger = Logger.getLogger(TextChatJPanel.class.getName());
     private TextChatConnection textChatConnection = null;
     private String localUser = null;
     private GroupID group = null;
 
-    /** Creates new form GlobalTextChatJFrame */
-    public TextChatJFrame() {
+    /** Creates new form TextChatJPanel */
+    public TextChatJPanel() {
         initComponents();
 
         // Listen for a Return on the text entry field, and click the Send
@@ -59,7 +58,7 @@ public class TextChatJFrame extends javax.swing.JFrame {
                 appendTextMessage(text, localUser);
             }
         });
-        
+
         // Pick a good initial size for the frame
         setSize(300, 450);
     }
@@ -93,15 +92,15 @@ public class TextChatJFrame extends javax.swing.JFrame {
 
         // Set the title based upon the remote user. If the remote user is "",
         // then insert "Everyone"
-        
-        String title = "Text Chat Error";
-
-        if(this.group.equals(new GroupID(GroupID.GLOBAL_GROUP_ID)))
-            title = "Global Chat";
-        else
-            title = "Group Chat " + group;
-
-        setTitle(title);
+//
+//        String title = "Text Chat Error";
+//
+//        if(this.group.equals(new GroupID(GroupID.GLOBAL_GROUP_ID)))
+//            title = "Global Chat";
+//        else
+//            title = "Group Chat " + group;
+//
+//        setTitle(title);
     }
 
     /**
@@ -116,7 +115,7 @@ public class TextChatJFrame extends javax.swing.JFrame {
 //                date + " ---\n";
 //        messageTextArea.append(msg);
 
-        
+
         messageTextField.setEnabled(false);
         sendButton.setEnabled(false);
     }
@@ -131,7 +130,7 @@ public class TextChatJFrame extends javax.swing.JFrame {
 //        String msg = "--- User " + recipient.getUser() + " has joined the world at " +
 //                date + " ---\n";
 //        messageTextArea.append(msg);
-        
+
         messageTextField.setEnabled(true);
         sendButton.setEnabled(true);
     }
@@ -147,15 +146,41 @@ public class TextChatJFrame extends javax.swing.JFrame {
         java.awt.GridBagConstraints gridBagConstraints;
 
         mainPanel = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        messageTextArea = new javax.swing.JTextArea();
         textEntryPanel = new javax.swing.JPanel();
         messageTextField = new javax.swing.JTextField();
         sendButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        messageTextArea = new javax.swing.JTextArea();
 
-        getContentPane().setLayout(new java.awt.GridLayout(1, 0));
+        setMaximumSize(new java.awt.Dimension(800, 600));
+        setMinimumSize(new java.awt.Dimension(800, 600));
 
+        mainPanel.setMinimumSize(new java.awt.Dimension(400, 300));
+        mainPanel.setPreferredSize(new java.awt.Dimension(800, 600));
         mainPanel.setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(800, 600));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(1000, 600));
+
+        messageTextArea.setColumns(20);
+        messageTextArea.setEditable(false);
+        messageTextArea.setLineWrap(true);
+        messageTextArea.setRows(5);
+        messageTextArea.setWrapStyleWord(true);
+        messageTextArea.setPreferredSize(new java.awt.Dimension(100, 16));
+        jScrollPane1.setViewportView(messageTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        mainPanel.add(jScrollPane1, gridBagConstraints);
 
         textEntryPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -175,35 +200,29 @@ public class TextChatJFrame extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
         mainPanel.add(textEntryPanel, gridBagConstraints);
 
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-        messageTextArea.setColumns(20);
-        messageTextArea.setEditable(false);
-        messageTextArea.setLineWrap(true);
-        messageTextArea.setRows(5);
-        messageTextArea.setWrapStyleWord(true);
-        jScrollPane1.setViewportView(messageTextArea);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
-        mainPanel.add(jScrollPane1, gridBagConstraints);
-
-        getContentPane().add(mainPanel);
-
-        pack();
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 800, Short.MAX_VALUE)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 600, Short.MAX_VALUE)
+            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
@@ -213,4 +232,5 @@ public class TextChatJFrame extends javax.swing.JFrame {
     private javax.swing.JButton sendButton;
     private javax.swing.JPanel textEntryPanel;
     // End of variables declaration//GEN-END:variables
+
 }
