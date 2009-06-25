@@ -148,7 +148,7 @@ public class CellImportService extends AbstractService implements CellImportMana
     }
 
     public void retrieveCells(String name, CellRetrievalListener listener) {
-        logger.getLogger().info("name: " + name);
+        //logger.getLogger().info("name: " + name);
         if (!(listener instanceof ManagedObject)) {
             listener = new ManagedRecordingLoadingWrapper(listener);
         }
