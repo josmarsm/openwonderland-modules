@@ -256,7 +256,7 @@ public class EventPlayingService extends AbstractService {
 
         @Override
         public void loadCell(String setupInfo, long timestamp) {
-            logger.getLogger().info("loadCell");
+            //logger.getLogger().info("loadCell");
             long startTime = timestamp - recordingStartTime + playbackStartTime;
             //Need to remove the first line of the string, the processing instruction
             //Beats me, too.
@@ -282,7 +282,7 @@ public class EventPlayingService extends AbstractService {
 
         @Override
         public void unloadCell(CellID cellID, long timestamp) {
-            logger.getLogger().info("unloadCell: " + cellID);
+            //logger.getLogger().info("unloadCell: " + cellID);
             long startTime = timestamp - recordingStartTime + playbackStartTime;
             // notify the listener
             NotifyChangesReplayingListener notify =
@@ -404,7 +404,7 @@ public class EventPlayingService extends AbstractService {
              * Create the cell and pass it the setup information
              */
             String className = setup.getServerClassName();
-            logger.getLogger().info("className: " + className);
+            //logger.getLogger().info("className: " + className);
             CellMO cellMO = null;
             try {
                 cellMO = CellMOFactory.loadCellMO(className);
@@ -412,7 +412,7 @@ public class EventPlayingService extends AbstractService {
                 logger.getLogger().log(Level.SEVERE, "Failed to load cell: " + className, e);
                 return;
             }
-            logger.getLogger().info("created cellMO: " + cellMO);
+            //logger.getLogger().info("created cellMO: " + cellMO);
             if (cellMO == null) {
                 /* Log a warning and move onto the next cell */
                 logger.getLogger().severe("Unable to load cell MO: " + className);
@@ -433,13 +433,13 @@ public class EventPlayingService extends AbstractService {
                 logger.getLogger().log(Level.SEVERE, "A cell cannot have multiple parents", ex);
             }
             String idString = setup.getMetaData().get("CellID");
-            logger.getLogger().info("Old cellID value: " + idString);
+            //logger.getLogger().info("Old cellID value: " + idString);
             long id = Long.valueOf(idString);
-            logger.getLogger().info("Old cellID id: " + id);
+            //logger.getLogger().info("Old cellID id: " + id);
             CellID oldCellID = new CellID(id);
-            logger.getLogger().info("Old cellID: " + oldCellID);
+            //logger.getLogger().info("Old cellID: " + oldCellID);
             CellID newCellID = cellMO.getCellID();
-            logger.getLogger().info("New cellID: " + newCellID);
+            //logger.getLogger().info("New cellID: " + newCellID);
             listener.loadedCell(oldCellID, newCellID);
         }
     }
@@ -459,7 +459,6 @@ public class EventPlayingService extends AbstractService {
         }
 
         public void add(Runnable change) {
-            logger.getLogger().info("change: " + change);
             changes.add(change);
         }
 

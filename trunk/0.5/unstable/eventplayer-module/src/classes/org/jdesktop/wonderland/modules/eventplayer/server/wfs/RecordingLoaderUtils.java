@@ -58,11 +58,11 @@ public class RecordingLoaderUtils {
      * @throws IOException
      */
     public static CellMap<CellImportEntry> loadCellMap(String tapeName) throws JAXBException, IOException {
-        logger.info("tapeName: " + tapeName);
+        //logger.info("tapeName: " + tapeName);
         WorldRoot recordingRoot = getRecordingRoot(tapeName);
-        logger.info("recordingRoot: " + recordingRoot);
+        //logger.info("recordingRoot: " + recordingRoot);
         String recordingName = recordingRoot.getRootPath();
-        logger.info("recordingName: " + recordingName);
+        //logger.info("recordingName: " + recordingName);
         CellMap<CellImportEntry> cellMOMap = new CellMap<CellImportEntry>();
         //logger.info("rootName: " + recorderName);
         /* A queue (last-in, first-out) containing a list of cell to search down */
@@ -88,7 +88,7 @@ public class RecordingLoaderUtils {
             CellList childdir = children.removeFirst();
             if (childdir == null) {
                 /* Log an error and continue, though this should never happen */
-                logger.warning("WFSLoader: could not fetch child dir in WFS " + recordingName);
+                logger.warning("RecordingLoader: could not fetch child dir in WFS " + recordingName);
                 continue;
             }
             //logger.info("WFSLoader: processing children in " + childdir.getRelativePath());
@@ -187,10 +187,10 @@ public class RecordingLoaderUtils {
      * @throws java.io.IOException
      */
     public static WorldRoot getRecordingRoot(String tapeName) throws JAXBException, IOException {
-        logger.info("tapeName: " + tapeName);
+        //logger.info("tapeName: " + tapeName);
         String encodedName = URLEncoder.encode(tapeName, "UTF-8");
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "getrecording/" + encodedName);
-        logger.info("url: " + url);
+        //logger.info("url: " + url);
         return WorldRoot.decode(new InputStreamReader(url.openStream()));
     }
 
@@ -203,10 +203,10 @@ public class RecordingLoaderUtils {
      */
     public static InputSource getRecordingInputSource(String tapeName) throws JAXBException, IOException {
         WorldRoot recordingRoot = getRecordingRoot(tapeName);
-        logger.info("recordingRoot: " + recordingRoot);
+        //logger.info("recordingRoot: " + recordingRoot);
         String encodedName = URLEncoder.encode(tapeName, "UTF-8");
         URL url = new URL(CellImporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "getrecording/" + encodedName + "/changes");
-        logger.info("url: " + url);
+        //logger.info("url: " + url);
 
         return new InputSource(new InputStreamReader(url.openStream()));
     }

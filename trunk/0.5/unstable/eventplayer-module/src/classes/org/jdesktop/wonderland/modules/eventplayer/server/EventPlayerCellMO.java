@@ -268,11 +268,11 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     }
 
     public void listRecordingsResult(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, WFSRecordingList recordings) {
-        eventPlayerLogger.info("received recordings: " + recordings.getRecordings());
+        //eventPlayerLogger.info("received recordings: " + recordings.getRecordings());
         updateTapes(recordings.getRecordings());
-        eventPlayerLogger.info("serverState: " + serverState);
+        //eventPlayerLogger.info("serverState: " + serverState);
         TapeStateMessageResponse tsmr = TapeStateMessageResponse.tapeStateMessage(messageID, serverState);
-        eventPlayerLogger.info("responding to original synchronous request");
+        //eventPlayerLogger.info("responding to original synchronous request");
         sender.send(clientID, tsmr);
     }
 

@@ -84,7 +84,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
      */
     public void playMessage(ReceivedMessage rMessage) {
         CellMessage message = (CellMessage) rMessage.getMessage();
-        logger.info("message: " + message);
+        //logger.info("message: " + message);
         //logger.info("cellmap: " + cellMap);
         CellID oldCellID = message.getCellID();
         //logger.info("oldCellID: " + oldCellID);
@@ -105,7 +105,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         try {
             channel.messageReceived(null, clientID, message);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "failed to replay message id: " + rMessage.getMessage().getMessageID(), e);
+            logger.log(Level.SEVERE, "failed to replay message: " + rMessage.getMessage(), e);
         }
     }
 
@@ -130,7 +130,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
      * @param tapeName the name of the selected tape in the event player
      */
     void startPlaying(String tapeName) {
-        logger.info("start playing: " + tapeName);
+        //logger.info("start playing: " + tapeName);
         //this.tapeName = tapeName;
         //Load the cells labelled by tape name
         //then replay messages
@@ -283,7 +283,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
     }
 
     public void allChangesPlayed() {
-        logger.info("All Messages Played");
+        //logger.info("All Messages Played");
         playerCellMORef.get().playbackDone();
     }
 
@@ -293,14 +293,14 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         }
         
         cellMap.put(oldCellID, newCellID);
-        logger.info("new cellID from map: " + cellMap.get(oldCellID));
+        //logger.info("new cellID from map: " + cellMap.get(oldCellID));
 
     }
 
     public void unloadCell(CellID oldCellID) {
-        logger.info("oldCellID: " + oldCellID);
+        //logger.info("oldCellID: " + oldCellID);
         CellID newCellID = cellMap.get(oldCellID);
-        logger.info("newCellID: " + newCellID);
+        //logger.info("newCellID: " + newCellID);
         CellMO targetCell = CellManagerMO.getCell(newCellID);
         if (targetCell == null) {
             logger.severe("Could not find cell for ID: " + newCellID);
