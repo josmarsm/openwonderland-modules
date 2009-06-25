@@ -108,11 +108,16 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         CellID cellID = message.getCellID();
         //TODO: check if cellID is a cell that's within the bounds of the recorder's recording volume
         if (getFailedCells().contains(cellID)) {
-            logger.warning("Ignoring message for cellID: " + cellID);
+            //logger.warning("Ignoring message for cell: " + CellManagerMO.getCell(cellID) + ", id: " + cellID);
             return;
         }
         if (cellID.equals(eventRecorderCellID)) {
             logger.warning("Ignoring message for the event recorder cell");
+            return;
+        }
+        EventRecorderCellMO cellMO = (EventRecorderCellMO) CellManagerMO.getCell(eventRecorderCellID);
+        if (!cellMO.getLoadedCells().contains(cellID)) {
+            logger.warning("Ignoring message for cell that is not within my range: " + CellManagerMO.getCell(cellID));
             return;
         }
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
@@ -120,11 +125,13 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
     }
     
     void recordLoadedCell(CellID cellID) {
+        
         //Ensure that we don't record the event recorder cell
-        if (cellID == eventRecorderCellID) {
-            logger.warning("Not recording the load of my own cellMO");
+        if (cellID.equals(eventRecorderCellID)) {
+            logger.warning("Not recording the load of the event recorder cell");
             return;
         }
+        logger.info("cell: " + CellManagerMO.getCell(cellID) + ", id: " + cellID);
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
         //Callback is via recordLoadedCellResult()
         mgr.recordLoadedCell(tapeName, cellID, this);
@@ -150,7 +157,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
      * @param rootcells the cells currently loaded and visible in the viewcellcache of the recorder
      */
     void startRecording(String tapeName, Set<CellID> rootCells) {
-        logger.info("start recording to: " + tapeName);
+        //logger.info("start recording to: " + tapeName);
         this.tapeName = tapeName;
         //Record the state of the current cells
         //this rest of the procedure happens in recordingCreated
@@ -176,7 +183,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
     }
 
     public void fileClosed() {
-        logger.info("Changes file successfully closed");
+        //logger.info("Changes file successfully closed");
         tapeName = null;
     }
 
@@ -188,7 +195,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
     }
 
     private void createChangesFile() {
-        logger.info("opening changes file");
+        //logger.info("opening changes file");
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
         //Open the file for recording changes
         //on success the EventRecorderCellMO receives a call to fileCreated()
@@ -289,7 +296,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
             logger.log(Level.SEVERE, "Failed to record loaded cell " + CellManagerMO.getCell(cellID) + " id: " + cellID, exception);
             getFailedCells().add(cellID);
         } else {
-            logger.info("recorded loadCell: " + cellID);
+            //logger.info("recorded loadCell: " + cellID);
         }
     }
 
@@ -297,7 +304,7 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         if (exception != null) {
             logger.log(Level.SEVERE, "Failed to record unloaded cell  id: " + cellID , exception);
         } else {
-            logger.info("recorded unloadCell: " + cellID);
+            //logger.info("recorded unloadCell: " + cellID);
         }
     }
 }

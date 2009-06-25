@@ -276,7 +276,7 @@ public class EventRecordingService extends AbstractService implements EventRecor
             Exception ex = null;
 
             try {
-                logger.getLogger().info("tapeName: " + tapeName);
+                //logger.getLogger().info("tapeName: " + tapeName);
                 EventRecorderUtils.createChangesFile(tapeName, timestamp);
             } catch (Exception ex2) {
                 ex = ex2;
@@ -718,6 +718,7 @@ public class EventRecordingService extends AbstractService implements EventRecor
         private NotifyUnloadCellsRecordingListener(BigInteger listenerID, CellID cellID, Exception ex) {
             this.listenerID = listenerID;
             this.exception = ex;
+            this.cellID = cellID;
         }
 
         public String getBaseTaskType() {
