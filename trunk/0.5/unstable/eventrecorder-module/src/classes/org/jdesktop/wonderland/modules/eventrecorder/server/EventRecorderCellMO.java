@@ -32,7 +32,9 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
@@ -176,6 +178,10 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         return eventRecorderCellCacheRef.getForUpdate();
     }
 
+    Set<CellID> getLoadedCells() {
+        return eventRecorderCellCacheRef.get().getLoadedCells();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -283,7 +289,7 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
 
 
     private void startRecording(WonderlandClientSender sender, WonderlandClientID clientID) {
-        eventRecorderLogger.info("Start Recording");
+        //eventRecorderLogger.info("Start Recording");
         UserMO user = WonderlandContext.getUserManager().getUser(clientID);
         userRef = AppContext.getDataManager().createReference(user);
         createCellCache();
@@ -293,7 +299,7 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
 
 
     private void stopRecording( WonderlandClientID clientID) {
-        eventRecorderLogger.info("Stop Recording");
+        //eventRecorderLogger.info("Stop Recording");
         eventRecorderCellCacheRef.get().logout(clientID);
         eventRecorderCellCacheRef = null;
         userRef = null;
@@ -336,7 +342,7 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     }
 
     public void fileCreated() {
-        logger.info("Changes file created, so start recording");
+        //logger.info("Changes file created, so start recording");
         //Register the eventRecorder, so it can start receiving messages to record
         recorderRef.get().register();
         //Let clients know that we're now recording, so that can change their UI

@@ -58,12 +58,12 @@ public class EventRecorderUtils {
      */
     static void createChangesFile(String name, long timestamp)
             throws IOException {
-        logger.info("name: " + name);
+        //logger.info("name: " + name);
         String encodedName = URLEncoder.encode(name, "UTF-8");
-        logger.info("encodedName: " + encodedName);
+        //logger.info("encodedName: " + encodedName);
         String query = "?name=" + encodedName + "&timestamp=" + timestamp;
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "create/changesFile" + query);
-        logger.info("url: " + url);
+        //logger.info("url: " + url);
         // Read all the text returned by the server
         BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
         String str;

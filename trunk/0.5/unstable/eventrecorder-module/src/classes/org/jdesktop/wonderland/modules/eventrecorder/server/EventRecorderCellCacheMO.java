@@ -64,8 +64,8 @@ public class EventRecorderCellCacheMO extends ViewCellCacheMO {
         ViewCellMO view = viewRef.get();
         UniverseManagerFactory.getUniverseManager().viewLogin(view);
 
-        logger.info("EventRecorderCellCacheMO.login() CELL CACHE LOGIN FOR USER "
-                    + clientID.getSession().getName() + " AS " + identity.getUsername());
+//        logger.info("EventRecorderCellCacheMO.login() CELL CACHE LOGIN FOR USER "
+//                    + clientID.getSession().getName() + " AS " + identity.getUsername());
 
         // set up the revalidate scheduler
         scheduler = new ImmediateRevalidateScheduler(sender, clientID);
@@ -117,11 +117,11 @@ public class EventRecorderCellCacheMO extends ViewCellCacheMO {
         // oldCells contains the set of cells to be removed from client memory
         for(CellDescription ref : removeCells) {
             if (loaded.remove(ref.getCellID())) {
-                logger.info("Leaving cell " + ref.getCellID() +
-                                " cellcache for user "+identity.getUsername());
+//                logger.info("Leaving cell " + ref.getCellID() +
+//                                " cellcache for user "+identity.getUsername());
                 
 
-                // schedule the add operation
+                // schedule the unload operation
                 CellUnloadOp op = new CellUnloadOp(ref, clientID,
                                                    viewCellCacheRef,
                                                    capabilities);
