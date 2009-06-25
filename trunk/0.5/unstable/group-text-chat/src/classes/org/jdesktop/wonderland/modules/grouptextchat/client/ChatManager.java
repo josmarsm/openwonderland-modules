@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.grouptextchat.client;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,6 +30,9 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JTabbedPane;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.jdesktop.wonderland.client.comms.ConnectionFailureException;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
@@ -58,6 +62,16 @@ public class ChatManager implements TextChatListener {
     private ServerSessionManager loginInfo = null;
     private SessionLifecycleListener sessionListener = null;
 
+    private Map<Integer, Timer> flashTimers = new HashMap<Integer, Timer>();
+
+    private static Color TAB_BACKGROUND = Color.GRAY;
+    private static Color TAB_FOREGROUND = Color.GRAY;
+
+    private static final Color TAB_FLASH_BACKGROUND = Color.RED;
+    private static final Color TAB_FLASH_FOREGROUND = Color.RED;
+
+    private int currentChatPanelIndex = 0;
+
     /** Constructor */
     public ChatManager(final ServerSessionManager loginInfo) {
 //        logger.warning("CONSTRUCTING CHAT MANAGER");
@@ -71,12 +85,20 @@ public class ChatManager implements TextChatListener {
         // First create the text chat frame and keep a weak reference to it so
         // that it gets garbage collected
 
-
         tabbedChatPane = new JTabbedPane();
         tabbedChatPane.setTabPlacement(JTabbedPane.BOTTOM);
         tabbedChatPane.setPreferredSize(new Dimension(400, 300));
         tabbedChatPane.setMinimumSize(new Dimension(400, 300));
 
+        // Add a change listener so we know when different tabs are selected.
+        tabbedChatPane.addChangeListener(new ChangeListener () {
+
+            public void stateChanged(ChangeEvent arg0) {
+                tabSelected(tabbedChatPane.getSelectedIndex());
+            }
+           
+
+        });
 
         chatFrame = new JFrame();
         chatFrame.setTitle("Chat");
@@ -86,9 +108,20 @@ public class ChatManager implements TextChatListener {
         
         // Make the global chat panel.
         final TextChatJPanel textChatJPanel = new TextChatJPanel();
+        textChatJPanel.setSelected(true);
 
         // add it to the tab pane
         tabbedChatPane.addTab("Global Chat", textChatJPanel);
+
+        logger.warning("*****Checking chat pane index: " + tabbedChatPane.indexOfComponent(textChatJPanel));
+        logger.warning("*****Checking chat pane index: " + tabbedChatPane.indexOfComponent(textChatJPanel));
+
+
+        // Grab the starting colors, which might be L&F specific, so we
+        // don't want to hardcode them. But we will assume that they're
+        // the same for every tab.
+        TAB_BACKGROUND = tabbedChatPane.getBackgroundAt(0);
+        TAB_FOREGROUND = tabbedChatPane.getForegroundAt(0);
 
         textChatPanelMap.put(new GroupID(GroupID.GLOBAL_GROUP_ID), textChatJPanel);
 
@@ -145,6 +178,7 @@ public class ChatManager implements TextChatListener {
         }
     }
 
+
     /**
      * Unregister and menus we have created, etc.
      */
@@ -159,7 +193,7 @@ public class ChatManager implements TextChatListener {
         JTabbedPane tabbedPane = this.tabbedChatPane;
         for (Map.Entry<GroupID, TextChatJPanel> entry :
             textChatPanelMap.entrySet()) {
-                int tabLocation = tabbedPane.indexOfComponent(entry.getValue());
+                int tabLocation = tabbedPane.indexOfTabComponent(entry.getValue());
 
                 // Remove them from the tabbed pane.
                 if(tabLocation != -1)
@@ -214,34 +248,15 @@ public class ChatManager implements TextChatListener {
 
         // Next, for the global chat, set its information and make it visible
         // initially.
-//        TextChatJFrame textChatJFrame = textChatPanelRefMap.get(new GroupID(GroupID.GLOBAL_GROUP_ID)).get();
-//        textChatJFrame.setActive(textChatConnection, localUserName, new GroupID(GroupID.GLOBAL_GROUP_ID));
-//        JFrame chatFrame = this.chatFrame.get();
         TextChatJPanel globalChatPanel = textChatPanelMap.get(new GroupID(GroupID.GLOBAL_GROUP_ID));
-        logger.warning("textChatConnection: " + textChatConnection + "; localUserName: " + localUserName + "; globalChatPanel: " + globalChatPanel);
-
-//        for(GroupID gid : textChatPanelMap.keySet()) {
-//            WeakReference ref = textChatPanelMap.get(gid);
-//
-//            logger.warning("gid: " + gid + " -> " + ref.get());
-//
-//        }
-
-//        for(int i=0; i < this.tabbedChatPane.get().getTabCount(); i++)
-//        {
-//            Component component = this.tabbedChatPane.get().getComponentAt(i);
-//            logger.warning("TabbedChatPanel @" + i + " -> " + component);
-//        }
 
         globalChatPanel.setActive(textChatConnection, localUserName, new GroupID(GroupID.GLOBAL_GROUP_ID));
+        this.tabbedChatPane.setTitleAt(0, globalChatPanel.getTitle());
 
         textChatMenuItem.setEnabled(true);
         textChatMenuItem.setSelected(true);
 
         chatFrame.setVisible(true);
-//        this.tabbedChatPaneRef.get().setVisible(true);
-
-//        textChatJFrame.setVisible(true);
     }
 
     /**
@@ -268,6 +283,7 @@ public class ChatManager implements TextChatListener {
             // Otherwise, create the frame, add it to the map, and display
             TextChatJPanel newPanel = new TextChatJPanel();
             final GroupID key = group;
+
 //            frame.addWindowListener(new WindowAdapter() {
 //                @Override
 //                public void windowClosing(WindowEvent e) {
@@ -278,11 +294,14 @@ public class ChatManager implements TextChatListener {
 //                    }
 //                }
 //            });
+            
             textChatPanelMap.put(group, newPanel);
             newPanel.setActive(textChatConnection, localUserName, group);
 
             this.tabbedChatPane.addTab("Group Chat " + group, newPanel);
-//            frame.setVisible(true);
+
+            logger.warning("New tab index: " + this.tabbedChatPane.indexOfComponent(newPanel));
+            logger.warning("New tab index (from map): " + this.tabbedChatPane.indexOfComponent(textChatPanelMap.get(group)));
         }
     }
 
@@ -332,61 +351,49 @@ public class ChatManager implements TextChatListener {
         // empty string, then this is a "global" or "group" message and we fetch its
         // frame. It should exist. We always add the message, no matter whether
         // the frame is visible or not.
-        if (group.equals(new GroupID(GroupID.GLOBAL_GROUP_ID))) {
-            TextChatJPanel panel = textChatPanelMap.get(group);
-            panel.appendTextMessage(message, fromUser);
-            return;
-        }
 
-//         || recipient.getType()==ChatRecipient.Type.GROUP
-        // ADD IN CASE FOR GROUP CHAT HERE - NEED TO CHECK FOR EXISTENCE LIKE
-        // IN THE TOUSER CASE
 
         // Otherwise, the "toUser" is for this specific user. We fetch the
         // frame associated with the "from" user. If it exists (which also
         // means it is visible, then add the message.
 
-
-
         synchronized (textChatPanelMap) {
+            
             TextChatJPanel chatPanel = textChatPanelMap.get(group);
+
+            logger.warning("Message received, panel index: " + this.tabbedChatPane.indexOfComponent(chatPanel));
+            int tabIndex = this.tabbedChatPane.indexOfComponent(chatPanel);
             
             if(chatPanel==null) logger.warning("Received a chat message for a group which doesn't have a frame. The client should only receive messages from a group after getting a WELCOME message from that group.");
 
             if (chatPanel != null) {
-//                TextChatJPanel panel = chatPanel.get();
                 chatPanel.appendTextMessage(message, fromUser);
-                return;
-            }
 
-            // Turned off for now, because we're switching to managing
-            // the existence/visibility/activation of chat windows
-            // in response to WELCOME/GOODBYE messages from the server,
-            // instead of inferring from the arrival of messages that a chat
-            // is starting/ending.
-            
-            // Finally, we reached here when we have a message from a specific
-            // user, but the frame does not exist, and is not visible. So we
-            // create it and add to the map and display it.
-//            TextChatJFrame frame = new TextChatJFrame();
-//            final String userKey = fromUser;
-//
-//
-//            frame.addWindowListener(new WindowAdapter() {
-//                @Override
-//                public void windowClosing(WindowEvent e) {
-//                    // Remove from the map which will let it garbage collect
-//                    synchronized (textChatFrameRefMap) {
-//                        e.getWindow().dispose();
-//                        textChatFrameRefMap.remove(userKey);
-//                    }
-//                }
-//            });
-//            textChatFrameRefMap.put(group, new WeakReference(frame));
-//            frame.setActive(textChatConnection, fromUser, group);
-//            frame.setVisible(true);
-//            frame.appendTextMessage(message, fromUser);
-            
+                logger.info("Got message, checking for selection: " + this.tabbedChatPane.getSelectedIndex() + " appended Text to index: " + this.tabbedChatPane.indexOfTabComponent(chatPanel));
+
+                    // Now check to see if we need to flash the tab. We do this only
+                    // if the tab is not currently selected.
+                if(chatPanel != this.tabbedChatPane.getSelectedComponent()) {
+                    this.tabbedChatPane.setTitleAt(tabIndex, chatPanel.getTitle());
+                    this.tabbedChatPane.setIconAt(tabIndex, chatPanel.getIcon());
+                }
+            }
         }
     }
+
+    private void tabSelected(int tabIndex) {
+        logger.warning("TAB SELECTED EVENT: " + tabIndex);
+        
+        TextChatJPanel oldPane = (TextChatJPanel) this.tabbedChatPane.getComponentAt(currentChatPanelIndex);
+        oldPane.setSelected(false);
+
+        TextChatJPanel newPane = (TextChatJPanel) this.tabbedChatPane.getComponentAt(tabIndex);
+        newPane.setSelected(true);
+
+        this.tabbedChatPane.setTitleAt(tabIndex, newPane.getTitle());
+        this.tabbedChatPane.setIconAt(tabIndex, newPane.getIcon());
+
+        currentChatPanelIndex = tabIndex;
+    }
+
 }

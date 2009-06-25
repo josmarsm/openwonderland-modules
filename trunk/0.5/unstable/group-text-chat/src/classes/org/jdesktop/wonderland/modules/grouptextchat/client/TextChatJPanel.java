@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.grouptextchat.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
 
 /**
@@ -34,6 +35,10 @@ public class TextChatJPanel extends javax.swing.JPanel {
     private TextChatConnection textChatConnection = null;
     private String localUser = null;
     private GroupID group = null;
+
+    private int unreadMessages = 0;
+
+    private boolean selected = false;
 
     /** Creates new form TextChatJPanel */
     public TextChatJPanel() {
@@ -70,6 +75,9 @@ public class TextChatJPanel extends javax.swing.JPanel {
         String msg = userName + ": " + message + "\n";
         messageTextArea.append(msg);
         messageTextArea.setCaretPosition(messageTextArea.getText().length());
+
+        if(!selected)
+            unreadMessages++;
     }
 
     /**
@@ -133,6 +141,39 @@ public class TextChatJPanel extends javax.swing.JPanel {
 
         messageTextField.setEnabled(true);
         sendButton.setEnabled(true);
+    }
+
+    public String getTitle() {
+        String messages = "";
+
+        if(unreadMessages > 0) {
+            messages = " (" + unreadMessages + ")";
+        }
+
+        if(group==null)
+            return "";
+        
+        if(group.equals(new GroupID(GroupID.GLOBAL_GROUP_ID)))
+            return "Global Chat" + messages;
+        else
+            return "Group Chat " + group.toString() + messages;
+    }
+
+    public Icon getIcon() {
+        // Just a stub for now. Add in an icon later
+        // for tabs that have unread messages.
+        if(unreadMessages > 0) return null;
+        else return null;
+    }
+
+    void setSelected(boolean selected) {
+
+        // If we're not currently selected and we're being set to selected
+        // then set the unread messages to 0.
+        
+        if(!this.selected && selected)
+            this.unreadMessages = 0;
+        this.selected = selected;
     }
 
     /** This method is called from within the constructor to
