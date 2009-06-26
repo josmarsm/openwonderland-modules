@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -112,10 +113,7 @@ public class ChatManager implements TextChatListener {
 
         // add it to the tab pane
         tabbedChatPane.addTab("Global Chat", textChatJPanel);
-
-        logger.warning("*****Checking chat pane index: " + tabbedChatPane.indexOfComponent(textChatJPanel));
-        logger.warning("*****Checking chat pane index: " + tabbedChatPane.indexOfComponent(textChatJPanel));
-
+        tabbedChatPane.setTabComponentAt(0, new TextChatTab(tabbedChatPane));
 
         // Grab the starting colors, which might be L&F specific, so we
         // don't want to hardcode them. But we will assume that they're
@@ -180,7 +178,7 @@ public class ChatManager implements TextChatListener {
 
 
     /**
-     * Unregister and menus we have created, etc.
+     * Unregister any menus we have created, etc.
      */
     public void unregister() {
         // Close down and remove any existing windows, start with the user list
@@ -215,7 +213,7 @@ public class ChatManager implements TextChatListener {
      * dialog.
      */
     private void setPrimarySession(WonderlandSession session) {
-        logger.warning("setting Primary Session: " + session);
+        logger.finer("setting Primary Session: " + session);
         // Capture the local user name for later use
         localUserName = session.getUserID().getUsername();
         
@@ -284,7 +282,9 @@ public class ChatManager implements TextChatListener {
             TextChatJPanel newPanel = new TextChatJPanel();
             final GroupID key = group;
 
-//            frame.addWindowListener(new WindowAdapter() {
+            // Add this back in later. Though do we really want people to be able to close this window?
+            // just going to cause troubles. 
+//            chatFrame.addWindowListener(new WindowAdapter() {
 //                @Override
 //                public void windowClosing(WindowEvent e) {
 //                    // Remove from the map which will let it garbage collect
@@ -299,9 +299,7 @@ public class ChatManager implements TextChatListener {
             newPanel.setActive(textChatConnection, localUserName, group);
 
             this.tabbedChatPane.addTab("Group Chat " + group, newPanel);
-
-            logger.warning("New tab index: " + this.tabbedChatPane.indexOfComponent(newPanel));
-            logger.warning("New tab index (from map): " + this.tabbedChatPane.indexOfComponent(textChatPanelMap.get(group)));
+            tabbedChatPane.setTabComponentAt(tabbedChatPane.indexOfComponent(newPanel), new TextChatTab(tabbedChatPane));
         }
     }
 
@@ -322,6 +320,8 @@ public class ChatManager implements TextChatListener {
                 return;
             }
             chatPanel.deactivate();
+
+            ((TextChatTab)this.tabbedChatPane.getTabComponentAt(tabbedChatPane.indexOfComponent(chatPanel))).setCloseButtonEnabled(true);
         }
     }
 
@@ -340,6 +340,8 @@ public class ChatManager implements TextChatListener {
                 return;
             }
             chatPanel.reactivate();
+
+            ((TextChatTab)this.tabbedChatPane.getTabComponentAt(tabbedChatPane.indexOfComponent(chatPanel))).setCloseButtonEnabled(false);
         }
     }
 
@@ -361,7 +363,7 @@ public class ChatManager implements TextChatListener {
             
             TextChatJPanel chatPanel = textChatPanelMap.get(group);
 
-            logger.warning("Message received, panel index: " + this.tabbedChatPane.indexOfComponent(chatPanel));
+            logger.finer("Message received, panel index: " + this.tabbedChatPane.indexOfComponent(chatPanel));
             int tabIndex = this.tabbedChatPane.indexOfComponent(chatPanel);
             
             if(chatPanel==null) logger.warning("Received a chat message for a group which doesn't have a frame. The client should only receive messages from a group after getting a WELCOME message from that group.");
@@ -369,7 +371,7 @@ public class ChatManager implements TextChatListener {
             if (chatPanel != null) {
                 chatPanel.appendTextMessage(message, fromUser);
 
-                logger.info("Got message, checking for selection: " + this.tabbedChatPane.getSelectedIndex() + " appended Text to index: " + this.tabbedChatPane.indexOfTabComponent(chatPanel));
+                logger.finest("Got message, checking for selection: " + this.tabbedChatPane.getSelectedIndex() + " appended Text to index: " + this.tabbedChatPane.indexOfTabComponent(chatPanel));
 
                     // Now check to see if we need to flash the tab. We do this only
                     // if the tab is not currently selected.
@@ -381,9 +383,13 @@ public class ChatManager implements TextChatListener {
         }
     }
 
-    private void tabSelected(int tabIndex) {
-        logger.warning("TAB SELECTED EVENT: " + tabIndex);
-        
+    /**
+     * An event that fires when a tab is selected. We use this for managing
+     * the unread-messages counting, primarily.
+     * 
+     * @param tabIndex The tab index of the tab that is selected.
+     */
+    private void tabSelected(int tabIndex) {        
         TextChatJPanel oldPane = (TextChatJPanel) this.tabbedChatPane.getComponentAt(currentChatPanelIndex);
         oldPane.setSelected(false);
 
