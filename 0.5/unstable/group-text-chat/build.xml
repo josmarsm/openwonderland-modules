@@ -18,8 +18,18 @@
 
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
-                                                -module-compile-client"/>
-    
+                                                -module-compile-client,
+                                                -module-jar-common"/>
+
+    <target name="-module-jar-common" depends="-module-compile-common">
+      <mkdir dir="${current.dir}/build/common"/>
+      <jar destfile="${current.dir}/build/common/${module.name}-common.jar">
+        <fileset dir="${build.classes.dir}">
+          <include name="${module.src}/common/**"/>
+        </fileset>
+      </jar>
+    </target>
+
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
@@ -32,9 +42,6 @@
                     <include name="${module.src}/common/**"/>
                 </clientjar> 
 	    </client>
-
-        <!-- Depends on the text-chat module for bridging XMPP messages into and out of the world. -->
-        <requires name="textchat" version="1"/>
 
         <!-- Using ${current.dir}/lib as suggested by jkaplan didn't work, for some reason. Suspect it has something to do with having a dash in
              my module name? Figure out later. -->
