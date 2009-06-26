@@ -193,24 +193,25 @@ public class TextChatJPanel extends javax.swing.JPanel {
         messageTextField = new javax.swing.JTextField();
         sendButton = new javax.swing.JButton();
 
-        setMaximumSize(new java.awt.Dimension(800, 600));
-        setMinimumSize(new java.awt.Dimension(800, 600));
+        setMaximumSize(new java.awt.Dimension(4000, 3000));
+        setMinimumSize(new java.awt.Dimension(400, 300));
+        setPreferredSize(new java.awt.Dimension(400, 300));
 
         mainPanel.setMinimumSize(new java.awt.Dimension(400, 300));
-        mainPanel.setPreferredSize(new java.awt.Dimension(800, 600));
+        mainPanel.setPreferredSize(new java.awt.Dimension(400, 300));
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        jScrollPane1.setMinimumSize(new java.awt.Dimension(800, 600));
-        jScrollPane1.setPreferredSize(new java.awt.Dimension(1000, 600));
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 50));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(400, 300));
 
         messageTextArea.setColumns(20);
         messageTextArea.setEditable(false);
         messageTextArea.setLineWrap(true);
         messageTextArea.setRows(5);
         messageTextArea.setWrapStyleWord(true);
-        messageTextArea.setPreferredSize(new java.awt.Dimension(100, 16));
+        messageTextArea.setPreferredSize(null);
         jScrollPane1.setViewportView(messageTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -252,15 +253,15 @@ public class TextChatJPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 800, Short.MAX_VALUE)
+            .add(0, 400, Short.MAX_VALUE)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 800, Short.MAX_VALUE))
+                .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 600, Short.MAX_VALUE)
+            .add(0, 300, Short.MAX_VALUE)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE))
+                .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
