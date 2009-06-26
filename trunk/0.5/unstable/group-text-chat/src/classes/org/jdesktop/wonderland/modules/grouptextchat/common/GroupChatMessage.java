@@ -22,7 +22,8 @@ import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  * Message object for notifying clients about their being added to/removed from
- * a chat group.
+ * a chat group, as well as for notifying clients of other people joining/leaving
+ * the chat group.
  *
  * @author Drew Harry <drew_harry@dev.java.net>
  */
@@ -30,15 +31,25 @@ public class GroupChatMessage extends Message {
 
     public enum GroupAction {
         WELCOME,
-        GOODBYE
+        GOODBYE,
+        JOINED,
+        LEFT
     }
 
     private GroupAction action;
     private GroupID gid;
 
+    private String name;
+
     public GroupChatMessage(GroupID gid, GroupAction action) {
         this.gid = gid;
         this.action = action;
+    }
+
+    public GroupChatMessage(GroupID gid, GroupAction action, String name) {
+        this.gid = gid;
+        this.action = action;
+        this.name = name;
     }
 
     /**
@@ -51,10 +62,18 @@ public class GroupChatMessage extends Message {
 
     /**
      *
-     * @return The group the action is
+     * @return The group the action is related to.
      */
     public GroupID getGroupID() {
         return gid;
+    }
+
+    /**
+     * 
+     * @return the username of a user who has joined or left the specified group.
+     */
+    public String getName() {
+        return name;
     }
 
     

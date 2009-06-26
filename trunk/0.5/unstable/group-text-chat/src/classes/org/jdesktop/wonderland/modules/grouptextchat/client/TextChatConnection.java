@@ -106,6 +106,22 @@ public class TextChatConnection extends BaseConnection {
                     }
                     }
                     break;
+                case JOINED:
+                    synchronized (listeners) {
+                    for (TextChatListener listener : listeners) {
+                        listener.userJoinedChat(gcm.getGroupID(), gcm.getName());
+                    }
+                    }
+                    
+                    break;
+                case LEFT:
+                    synchronized (listeners) {
+                    for (TextChatListener listener : listeners) {
+                        listener.userLeftChat(gcm.getGroupID(), gcm.getName());
+                    }
+                    }
+                    
+                    break;
                 default:
                     logger.warning("Received GroupChatMessage with unknown action: " + gcm.getAction());
                     break;
@@ -170,5 +186,21 @@ public class TextChatConnection extends BaseConnection {
          * @param group The group chat that is ending.
          */
         public void deactivateChat(GroupID group);
+
+        /**
+         * A message indicating that a remote user has joined a chat group.
+         * @param group
+         * @param userName
+         */
+        public void userJoinedChat(GroupID group, String userName);
+
+        /**
+         * A message indicating that a remote user has left a chat group.
+         *
+         * @param group
+         * @param userName
+         */
+        public void userLeftChat(GroupID group, String userName);
+
     }
 }

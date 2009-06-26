@@ -62,10 +62,21 @@ public class TextChatTab extends JPanel {
 
          //make JLabel read titles from JTabbedPane
         JLabel label = new JLabel() {
+            String oldText = "";
+
             public String getText() {
                 int i = pane.indexOfTabComponent(TextChatTab.this);
                 if (i != -1) {
-                    return pane.getTitleAt(i);
+                    String newText = pane.getTitleAt(i);
+                    if(oldText != newText) {
+                        // Add a dummy element to force a reflow.
+                        JLabel dummy = new JLabel("");
+                        add(dummy);
+                        remove(dummy);
+                        oldText = newText;
+                    }
+
+                    return newText;
                 }
                 return null;
             }

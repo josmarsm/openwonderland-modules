@@ -378,6 +378,13 @@ public class ChatManager implements TextChatListener {
                 if(chatPanel != this.tabbedChatPane.getSelectedComponent()) {
                     this.tabbedChatPane.setTitleAt(tabIndex, chatPanel.getTitle());
                     this.tabbedChatPane.setIconAt(tabIndex, chatPanel.getIcon());
+
+//                    this.tabbedChatPane.getTabComponentAt(tabIndex).validate();
+//                    this.tabbedChatPane.getTabComponentAt(tabIndex).repaint();
+
+                    this.tabbedChatPane.validate();
+                    this.tabbedChatPane.repaint();
+                    this.tabbedChatPane.revalidate();
                 }
             }
         }
@@ -399,7 +406,29 @@ public class ChatManager implements TextChatListener {
         this.tabbedChatPane.setTitleAt(tabIndex, newPane.getTitle());
         this.tabbedChatPane.setIconAt(tabIndex, newPane.getIcon());
 
+        if(this.tabbedChatPane.getTabComponentAt(tabIndex) != null)
+        {
+//           this.tabbedChatPane.getTabComponentAt(tabIndex).validate();
+//           this.tabbedChatPane.getTabComponentAt(tabIndex).repaint();
+
+           this.tabbedChatPane.validate();
+           this.tabbedChatPane.repaint();
+           this.tabbedChatPane.revalidate();
+
+        }
+        
         currentChatPanelIndex = tabIndex;
+    }
+
+    public void userJoinedChat(GroupID group, String userName) {
+        // Figure out which pane to send the message to and append away.
+        TextChatJPanel chatPanel = this.textChatPanelMap.get(group);
+        chatPanel.appendTextMessage("--- " + userName + " has joined ---", null);
+    }
+
+    public void userLeftChat(GroupID group, String userName) {
+        TextChatJPanel chatPanel = this.textChatPanelMap.get(group);
+        chatPanel.appendTextMessage("--- " + userName + " has left ---", null);
     }
 
 }

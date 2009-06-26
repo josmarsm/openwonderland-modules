@@ -297,6 +297,8 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
             Set<WonderlandClientID> s = gcs.groups.get(gid);
             AppContext.getDataManager().markForUpdate(gcs);
 
+
+
             s.add(wcid);
             logger.log(Level.WARNING, "Added user: " + wcid + " to group: " + gid + " userlist now: " + s);
             
@@ -306,6 +308,15 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
             CommsManager cm = WonderlandContext.getCommsManager();
             WonderlandClientSender sender = cm.getSender(TextChatConnectionType.CLIENT_TYPE);
             sender.send(wcid, msg);
+
+            // Send a message to everyone in the group that the person has joined.
+            // We'll send it to the new user too, since it's helpful to see a "you
+            // joined" message even if there's no chat recently, to show that
+            // it's working.
+            if(s.size() > 0) {
+                msg = new GroupChatMessage(gid, GroupAction.JOINED, WonderlandContext.getUserManager().getUser(wcid).getUsername());
+                sender.send(s, msg);
+            }
 
         } else {
             logger.log(Level.WARNING, "Attempted to add user " + wcid + " to unknown text chat group " + gid + " (known groups: " + gcs.groups.keySet() + ")");
@@ -324,8 +335,6 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
         if(gcs.groups.containsKey(gid)) {
             Set<WonderlandClientID> s = gcs.groups.get(gid);
-            s.remove(wcid);
-            logger.log(Level.INFO, "Removed user: " + wcid + " from group: " + gid + " userlist now: " + s);
 
             // Send a message to the client telling it to remove the right tab on the client UI.
             GroupChatMessage msg = new GroupChatMessage(gid, GroupAction.GOODBYE);
@@ -333,6 +342,15 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
             CommsManager cm = WonderlandContext.getCommsManager();
             WonderlandClientSender sender = cm.getSender(TextChatConnectionType.CLIENT_TYPE);
             sender.send(wcid, msg);
+
+            // Send a message to everyone in the group that the person has left.
+            if(s.size() > 0) {
+                msg = new GroupChatMessage(gid, GroupAction.LEFT, WonderlandContext.getUserManager().getUser(wcid).getUsername());
+                sender.send(s, msg);
+            }
+
+            s.remove(wcid);
+            logger.log(Level.FINE, "Removed user: " + wcid + " from group: " + gid + " userlist now: " + s);
 
         } else {
             logger.log(Level.WARNING, "Attempted to remove user " + wcid + " to unknown text chat group " + gid);
@@ -386,11 +404,16 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
 
         for(GroupID gid : gcs.groups.keySet()) {
-            gcs.groups.get(gid).remove(wcid);
+//            gcs.groups.get(gid).remove(wcid);
             
 
             // Not sure on the etiquette here - is it cheaper to check to see if
             // the set contains the user before trying to remove it?
+            if(gcs.groups.get(gid).contains(wcid)) {
+                // route through the other method so leave notifcations get sent properly.
+                this.removeUserFromChatGroup(gid, wcid);
+            }
+
         }
     }
 
