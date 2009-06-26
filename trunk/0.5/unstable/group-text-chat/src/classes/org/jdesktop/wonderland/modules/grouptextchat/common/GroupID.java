@@ -43,6 +43,8 @@ public class GroupID implements Serializable {
 
     public static final long GLOBAL_GROUP_ID = 0;
 
+    public static final long INVALID_GROUP_ID = -1;
+
     /**
      * Creates a new instance of GroupID. 
      */
@@ -51,6 +53,10 @@ public class GroupID implements Serializable {
         this.id = id;
     }
 
+
+    public GroupID() {
+        this.id = INVALID_GROUP_ID;
+    }
     /**
      *
      * @return The groupID representin the global chat channel.
