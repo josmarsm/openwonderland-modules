@@ -84,15 +84,6 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
         tcm = this.processMessage(tcm, clientID);
 
-        // Check to see if the message is for a specific person.
-        // If it is, send to that person and return. Ignore the
-        // group mechanics.
-//        String toUser = tcm.getToUserName();
-
-        // Otherwise, we need to send the message to a specific client, based
-        // upon the "to" field. Loop through the list of clients and find the
-        // one with the matching user name
-
         // Sending to specific users is turned off for now. That will get
         // folded into the group system later.
 //        if(toUser != null && toUser.equals("") == false) {
@@ -130,7 +121,7 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
             for(ManagedReference listenerRef : ls.listeners) {
                 TextChatMessageListener listener = (TextChatMessageListener)listenerRef.get();
-                logger.log(Level.INFO, "Sending to listener: " + listener);
+                logger.log(Level.FINER, "Sending to listener: " + listener);
                 listener.handleMessage(tcm);
             }
         } else {
@@ -146,7 +137,7 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
             if(gcs.groups.containsKey(toGroup)) {
                 // Clone it first, so when we remove the client later we don't remove it from the actual group.
                 recipients = new HashSet<WonderlandClientID>(gcs.groups.get(toGroup));
-                logger.log(Level.INFO, "Received a message for GroupID: " + toGroup + " group recipients: " + recipients);
+                logger.log(Level.FINER, "Received a message for GroupID: " + toGroup + " group recipients: " + recipients);
             } else {
                 logger.log(Level.WARNING, "Received a message for GroupID " + toGroup + " but that group isn't a known group. Known Groups: " + gcs.groups.keySet());
 
@@ -161,6 +152,23 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
         return;
     }
 
+    /**
+     * Used to provide a text-based interface to adding/removing users from chat groups.
+     *
+     * Shouldn't ever be used in production, but it's the only way I had to easily
+     * see if the group system was working.
+     *
+     * Syntax: /join - create a new group and join it
+     *         /join [id] - join the group with [id]
+     *         /leave [id] - leave the group with [id]
+     *
+     * An older version of this would also route messages to channels,
+     * which is why it returns a TCM.
+     *
+     * @param tcm
+     * @param clientID
+     * @return
+     */
     private TextChatMessage processMessage(TextChatMessage tcm, WonderlandClientID clientID) {
         // Provides a sort of lame text protocol for asking to be added/removed from groups for testing purposes.
         String msgText = tcm.getTextMessage();
@@ -190,7 +198,6 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
                 this.addUserToChatGroup(newGroup, clientID);
 
-                this.sendGlobalMessage("User: " + clientID + " joined GroupID: " + newGroup);
                 return tcm;
             } else if(pieces[0].equals("leave")) {
 
@@ -200,15 +207,10 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
                 GroupID group = new GroupID(Integer.parseInt(pieces[1]));
 
                 this.removeUserFromChatGroup(group, clientID);
-                this.sendGlobalMessage("User: " + clientID + " has left GroupID: " + group);
                 return tcm;
             }
             else {
 
-//                GroupID groupID = new GroupID(Integer.parseInt(pieces[0]));
-//
-//                logger.log(Level.INFO, "Setting groupID on message and passing it on: " + groupID);
-//                tcm.setGroup(groupID);
                 return tcm;
                 }
 
@@ -296,19 +298,17 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
             AppContext.getDataManager().markForUpdate(gcs);
 
             s.add(wcid);
-            System.out.println("Added user: " + wcid + " to group: " + gid + " userlist now: " + s);
+            logger.log(Level.WARNING, "Added user: " + wcid + " to group: " + gid + " userlist now: " + s);
             
-            // I don't think I need to do this, but having weird issues.
-            //            gcs.groups.put(gid, s);
-
             // Send a message to the client telling it to display a new tab on the client UI.
             GroupChatMessage msg = new GroupChatMessage(gid, GroupAction.WELCOME);
 
             CommsManager cm = WonderlandContext.getCommsManager();
             WonderlandClientSender sender = cm.getSender(TextChatConnectionType.CLIENT_TYPE);
             sender.send(wcid, msg);
+
         } else {
-            System.out.println("Attempted to add user " + wcid + " to unknown text chat group " + gid + " (known groups: " + gcs.groups.keySet() + ")");
+            logger.log(Level.WARNING, "Attempted to add user " + wcid + " to unknown text chat group " + gid + " (known groups: " + gcs.groups.keySet() + ")");
         }
     }
 
@@ -321,8 +321,6 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
     public void removeUserFromChatGroup(GroupID gid, WonderlandClientID wcid) {
 
         GroupChatsSet gcs = (GroupChatsSet) AppContext.getDataManager().getBinding(GroupChatsSet.ID);
-//        AppContext.getDataManager().markForUpdate(gcs);
-
 
         if(gcs.groups.containsKey(gid)) {
             Set<WonderlandClientID> s = gcs.groups.get(gid);
@@ -371,20 +369,9 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
         gcs.groups.put(gid, new HashSet<WonderlandClientID>());
 
-        System.out.println("Created group: " + gid + " (known groups: " + gcs.groups.keySet() + ") nextGroupID=" + nextGroupID + "(Handler: " + this + ")");
+        logger.log(Level.INFO, "Created group: " + gid + " (known groups: " + gcs.groups.keySet() + ") nextGroupID=" + nextGroupID);
         return gid;
     }
-
-    /**
-     * Convenience method for checking if a group exists. Probably not necessary
-     * for the final system, but useful for testing purposes.
-     *
-     * @param gid
-     * @return
-     */
-//    public boolean chatGroupExists(GroupID gid) {
-//        return groups.containsKey(gid);
-//    }
 
     /**
      * Convenience method that removes the specified user from all text chat groups.
