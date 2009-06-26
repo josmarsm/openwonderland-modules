@@ -12,8 +12,16 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
+    <pathconvert property="module-server.classpath">
+        <path location="${current.dir}/../group-text-chat/build/server/group-text-chat-server.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-common.classpath">
+        <path location="${current.dir}/../group-text-chat/build/common/group-text-chat-common.jar"/>
+    </pathconvert>
+
     <pathconvert property="module-client.classpath">
-        <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
+        <path location="${current.dir}/../group-text-chat/build/client/group-text-chat-client.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common, 
@@ -33,8 +41,8 @@
                 </clientjar> 
 	    </client>
 
-        <!-- Depends on the text-chat module for bridging XMPP messages into and out of the world. -->
-        <requires name="textchat" version="1"/>
+        <!-- Depends on the group-text-chat module for bridging XMPP messages into and out of the world. -->
+        <requires name="group-text-chat" version="1"/>
 
         <!-- Using ${current.dir}/lib as suggested by jkaplan didn't work, for some reason. Suspect it has something to do with having a dash in
              my module name? Figure out later. -->

@@ -19,16 +19,24 @@
 package org.jdesktop.wonderland.modules.chatzones.common;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
 
 @XmlRootElement(name="chat-zone-cell")
 @ServerState
 public class ChatZonesCellServerState extends CellServerState {
 
+    @XmlElement(name="group")
+    private GroupID group = null;
 
     public ChatZonesCellServerState() {
     }
+
+    @XmlTransient public GroupID getChatGroup() { return this.group; }
+    public void setChatGroup(GroupID group) { this.group = group; }
 
     @Override
     public String getServerClassName() {
