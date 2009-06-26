@@ -18,6 +18,20 @@
 
 package org.jdesktop.wonderland.modules.chatzones.common;
 
-public class ChatZonesCellServerState {
+import javax.xml.bind.annotation.XmlRootElement;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
+@XmlRootElement(name="chat-zone-cell")
+@ServerState
+public class ChatZonesCellServerState extends CellServerState {
+
+
+    public ChatZonesCellServerState() {
+    }
+
+    @Override
+    public String getServerClassName() {
+        return "org.jdesktop.wonderland.modules.chatzones.server.ChatZonesCellMO";
+    }
 }

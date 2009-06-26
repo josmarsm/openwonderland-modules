@@ -18,6 +18,49 @@
 
 package org.jdesktop.wonderland.modules.chatzones.client.jme.cell;
 
-public class ChatZonesCellRenderer {
+import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
+import com.jme.scene.Node;
+import com.jme.scene.TriMesh;
+import com.jme.scene.shape.Box;
+import java.util.logging.Logger;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+
+public class ChatZonesCellRenderer extends BasicRenderer {
+    private Node node = null;
+
+
+    private static final Logger logger =
+            Logger.getLogger(ChatZonesCellRenderer.class.getName());
+
+    public ChatZonesCellRenderer(Cell cell) {
+        super(cell);
+    }
+
+    @Override
+    protected Node createSceneGraph(Entity entity) {
+
+        logger.info("Creating scene graph for entity: " + entity);
+
+        String name = cell.getCellID().toString();
+
+        TriMesh mesh = new Box(cell.getCellID().toString(), new Vector3f(), 4, 4, 4f);
+
+        if (mesh == null) {
+          node = new Node();
+          return node;
+        }
+
+        node = new Node();
+        node.attachChild(mesh);
+        node.setModelBound(new BoundingBox());
+        node.updateModelBound();
+        node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
+
+        return node;
+    }
+
 
 }

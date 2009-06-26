@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.chatzones.common;
 
-public class ChatZonesCellChangeMessage {
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
+public class ChatZonesCellChangeMessage extends CellMessage {
 
 }
