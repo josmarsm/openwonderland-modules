@@ -23,9 +23,14 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
+import com.jme.scene.state.BlendState;
+import com.jme.scene.state.CullState;
+import com.jme.scene.state.RenderState.StateType;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 
 public class ChatZonesCellRenderer extends BasicRenderer {
@@ -58,6 +63,21 @@ public class ChatZonesCellRenderer extends BasicRenderer {
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
         node.setName("Cell_"+cell.getCellID()+":"+cell.getName());
+
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        BlendState alphaState = (BlendState)rm.createRendererState(StateType.Blend);
+        alphaState.setBlendEnabled(true);
+        alphaState.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+        alphaState.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
+        alphaState.setTestEnabled(true);
+        alphaState.setTestFunction(BlendState.TestFunction.GreaterThan);
+        alphaState.setEnabled(true);
+        mesh.setRenderState(alphaState);
+
+        CullState cullState = (CullState)rm.createRendererState(StateType.Cull);
+        cullState.setCullFace(CullState.Face.Back);
+        node.setRenderState(cullState);
+
 
         return node;
     }

@@ -18,6 +18,11 @@
 
 package org.jdesktop.wonderland.modules.chatzones.server;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
+import com.sun.sgs.app.ManagedReference;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -25,15 +30,36 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellChangeMessage;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellClientState;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellServerState;
+import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
+import org.jdesktop.wonderland.modules.grouptextchat.common.TextChatConnectionType;
+import org.jdesktop.wonderland.modules.grouptextchat.server.TextChatConnectionHandler;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 public class ChatZonesCellMO extends CellMO {
 
-        @Override
+    private static final Logger logger = Logger.getLogger(ChatZonesCellMO.class.getName());
+
+    private GroupID group;
+
+    @UsesCellComponentMO(ProximityComponentMO.class)
+    private ManagedReference<ProximityComponentMO> proxRef;
+
+    private ChatZoneProximityListener proxListener;
+
+
+    public ChatZonesCellMO () {
+        super();        
+    }
+
+    @Override
     public String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.chatzones.client.ChatZonesCell";
     }
@@ -41,15 +67,24 @@ public class ChatZonesCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState state) {
         super.setServerState(state);
-//        this.url = ((ChatZonesCellServerState)state).getUrl();
+        
+        this.group = ((ChatZonesCellServerState)state).getChatGroup();
     }
 
     @Override
     public CellServerState getServerState(CellServerState state) {
         if (state == null) {
             state = new ChatZonesCellServerState();
+
+            // do my init work here? Not sure where it's supposed to go.
+
+            CommsManager cm = WonderlandContext.getCommsManager();
+            TextChatConnectionHandler handler = (TextChatConnectionHandler) cm.getClientHandler(TextChatConnectionType.CLIENT_TYPE);
+
+            group = handler.createChatGroup();
         }
-//        ((ChatZonesCellServerState)state).setUrl(this.url);
+
+        ((ChatZonesCellServerState)state).setChatGroup(group);
         return super.getServerState(state);
     }
 
@@ -58,6 +93,7 @@ public class ChatZonesCellMO extends CellMO {
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
             cellClientState = new ChatZonesCellClientState();
+
         }
 //        ((ChatZonesCellClientState)cellClientState).setShapeType(shapeType);
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -67,12 +103,25 @@ public class ChatZonesCellMO extends CellMO {
     protected void setLive(boolean live) {
         super.setLive(live);
 
+        logger.info("Setting ChatZonesCellMO live: " + live);
+
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
-        if(live==true) {
+        if(live) {
             channel.addMessageReceiver(ChatZonesCellChangeMessage.class, (ChannelComponentMO.ComponentMessageReceiver)new ChatZonesCellMessageReceiver(this));
+
+            // Just guessing here...
+            BoundingVolume[] bounds = {new BoundingBox(new Vector3f(), 4, 4, 4)};
+
+            proxListener =
+                new ChatZoneProximityListener();
+            proxRef.getForUpdate().addProximityListener(proxListener, bounds);
+
+            logger.info("Just set proximity listener: " + proxListener);
         }
         else {
             channel.removeMessageReceiver(ChatZonesCellChangeMessage.class);
+
+            proxRef.getForUpdate().removeProximityListener(proxListener);
         }
     }
 
