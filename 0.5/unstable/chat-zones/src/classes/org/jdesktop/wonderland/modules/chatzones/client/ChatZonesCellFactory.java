@@ -18,6 +18,29 @@
 
 package org.jdesktop.wonderland.modules.chatzones.client;
 
-public class ChatZonesCellFactory {
+import java.awt.Image;
+import java.util.Properties;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellServerState;
+
+@CellFactory
+public class ChatZonesCellFactory implements CellFactorySPI{
+    public String[] getExtensions() {
+        return new String[] {};
+    }
+
+    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+        return (T)new ChatZonesCellServerState();
+    }
+
+    public String getDisplayName() {
+        return "Chat Zone Cell";
+    }
+
+    public Image getPreviewImage() {
+        return null;
+   }
 
 }

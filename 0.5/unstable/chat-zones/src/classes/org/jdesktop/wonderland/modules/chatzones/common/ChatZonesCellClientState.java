@@ -18,6 +18,14 @@
 
 package org.jdesktop.wonderland.modules.chatzones.common;
 
-public class ChatZonesCellClientState {
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+
+public class ChatZonesCellClientState extends CellClientState {
+
+    // No state here yet.
+    
+    public ChatZonesCellClientState() {
+        
+    }
 
 }
