@@ -72,7 +72,16 @@ public class TextChatJPanel extends javax.swing.JPanel {
      * Adds a text message, given the user name and message to the chat window.
      */
     public void appendTextMessage(String message, String userName) {
-        String msg = userName + ": " + message + "\n";
+
+        // This distinction is so we can send notification messages
+        // like when people join/leave a chat session without
+        // having to prepend a username in front of it. 
+        String msg;
+        if(userName!=null)
+            msg = userName + ": " + message + "\n";
+        else
+            msg = message + "\n";
+
         messageTextArea.append(msg);
         messageTextArea.setCaretPosition(messageTextArea.getText().length());
 
