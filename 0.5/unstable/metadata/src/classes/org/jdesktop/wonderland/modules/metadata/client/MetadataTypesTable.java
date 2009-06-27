@@ -195,7 +195,7 @@ public class MetadataTypesTable extends JTabbedPane {
   private void printMetatypeMap(){
       for(Entry<Class, JTable> e : metatypeMap.entrySet()){
             logger.log(Level.INFO, "Key, Val: " + e.getKey() + ", " + e.getValue());
-       }
+      }
   }
 
 
