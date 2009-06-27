@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.TreeSet;
 import javax.naming.OperationNotSupportedException;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
@@ -35,21 +36,10 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 public class MetadataComponentServerState extends CellComponentServerState {
 
     private ArrayList<Metadata> metadata;
-    // TODO in the future, this can be stored perhaps by the service, and sent
-    // out only on request of new cells/metadata compos. new meta types
-    // register with the service, which also sends this out.
-    private TreeSet<String> metadataTypes;
-
-    public TreeSet<String> getMetadataTypes(){
-        return metadataTypes;
-    }
 
     /** Default constructor */
     public MetadataComponentServerState() {
         metadata = new ArrayList<Metadata>();
-        metadataTypes = new  TreeSet<String>();
-        metadataTypes.add("Metadata");
-        metadataTypes.add("SimpleMetadata");
     }
 
     @Override

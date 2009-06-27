@@ -17,6 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
+import java.util.ArrayList;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+
 
 
 /**
@@ -33,5 +37,9 @@ public class MetadataManagerImpl implements MetadataManager {
 
     public void test() {
         service.test();
+    }
+
+    public void setCellMetadata(CellID id, ArrayList<Metadata> metadata){
+      service.setCellMetadata(id, metadata);
     }
 }

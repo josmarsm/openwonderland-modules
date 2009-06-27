@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -44,8 +45,10 @@ import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
+import org.apache.directory.server.core.CoreSession;
 import org.apache.directory.server.core.DefaultDirectoryService;
 import org.apache.directory.server.core.DirectoryService;
 import org.apache.directory.server.core.entry.ServerEntry;
@@ -64,6 +68,9 @@ import org.apache.directory.server.xdbm.Index;
 import org.apache.directory.shared.ldap.entry.Entry;
 import org.apache.directory.shared.ldap.exception.LdapNameNotFoundException;
 import org.apache.directory.shared.ldap.name.LdapDN;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.SimpleMetadata;
 import org.jdesktop.wonderland.server.auth.WonderlandServerIdentity;
 
 
@@ -103,6 +110,12 @@ public class MetadataService extends AbstractService {
     
     /** The directory service */
     private DirectoryService dirService;
+
+    /** the root context of the ldap server (dc=wonderland) */
+    private InitialDirContext rootCtx;
+
+    /** backend search DB (e.g. LDAP implementation) */
+    private EmbeddedADS db;
     
 
     public MetadataService(Properties props,
@@ -110,7 +123,6 @@ public class MetadataService extends AbstractService {
                            TransactionProxy proxy)
     {
         super(props, registry, proxy, logger);
-
         this.registry = registry;
 
         logger.log(Level.CONFIG, "Creating MetadataService properties: {0}",
@@ -120,8 +132,12 @@ public class MetadataService extends AbstractService {
         // create the transaction context factory
         ctxFactory = new TransactionContextFactoryImpl(proxy);
         try {
-          init();
-            /*
+          // TODO  get this from the scanner in the future
+          ArrayList<Metadata> tmp = new ArrayList<Metadata>();
+          tmp.add(new Metadata(null, null));
+          tmp.add(new SimpleMetadata(null, null));
+          db = new EmbeddedADS(tmp);
+           /*
 	         * Check service version.
  	         */
             transactionScheduler.runTask(new KernelRunnable() {
@@ -232,145 +248,47 @@ public class MetadataService extends AbstractService {
         }
     }
     
-    
-    /**
-     *
-     *  APACHEDS CODE
-     *
-     */
 
-    
-    /**
-     * Add a new partition to the server
-     *
-     * @param partitionId The partition Id
-     * @param partitionDn The partition DN
-     * @return The newly added partition
-     * @throws Exception If the partition can't be added
-     */
-    private Partition addPartition( String partitionId, String partitionDn ) throws Exception
-    {
-        // Create a new partition named 'foo'.
-        Partition partition = new JdbmPartition();
-        partition.setId( partitionId );
-        partition.setSuffix( partitionDn );
-        dirService.addPartition( partition );
-
-        return partition;
-    }
-
-
-    /**
-     * Add a new set of index on the given attributes
-     *
-     * @param partition The partition on which we want to add index
-     * @param attrs The list of attributes to index
-     */
-    private void addIndex( Partition partition, String... attrs )
-    {
-        // Index some attributes on the apache partition
-        HashSet<Index<?, ServerEntry>> indexedAttributes = new HashSet<Index<?, ServerEntry>>();
-
-        for ( String attribute:attrs )
-        {
-            indexedAttributes.add( new JdbmIndex<String,ServerEntry>( attribute ) );
-        }
-
-        ((JdbmPartition)partition).setIndexedAttributes( indexedAttributes );
-    }
-
-
-    /**
-     * Initialize the server. It creates the partition, add the index, and
-     * inject the context entries for the created partitions.
-     *
-     * @throws Exception if there were some problems why initializing the system
-     */
-    private void init() throws Exception
-    {
-        logger.log(Level.INFO, "[METADATA EADS] erase any old jbdm files");
-        File jbdmFolder = new File("/Users/Matt/sun/metadata/JNDIdemo/server-work");
-        deleteDir(jbdmFolder);
-        // Initialize the LDAP service
-        dirService = new DefaultDirectoryService();
-
-        // Disable the ChangeLog system
-        dirService.getChangeLog().setEnabled( false );
-        dirService.setDenormalizeOpAttrsEnabled( true );
-
-        // Create some new partitions named 'foo', 'bar' and 'apache'.
-        Partition fooPartition = addPartition( "foo", "dc=foo,dc=com" );
-        Partition barPartition = addPartition( "bar", "dc=bar,dc=com" );
-        Partition apachePartition = addPartition( "apache", "dc=apache,dc=org");
-
-        // Index some attributes on the apache partition
-        addIndex( apachePartition, "objectClass", "ou", "uid" );
-
-        // And start the service
-        dirService.startup();
-
-
-        // Inject the foo root entry if it does not already exist
-        try
-        {
-            dirService.getAdminSession().lookup( fooPartition.getSuffixDn() );
-        }
-        catch ( LdapNameNotFoundException lnnfe )
-        {
-            logger.log(Level.INFO, "[METADATA EADS] had to make foo root");
-            LdapDN dnFoo = new LdapDN( "dc=foo,dc=com" );
-            ServerEntry entryFoo = dirService.newEntry( dnFoo );
-            entryFoo.add( "objectClass", "top", "domain", "extensibleObject" );
-            entryFoo.add( "dc", "foo" );
-            dirService.getAdminSession().add( entryFoo );
-        }
-
-        // Inject the bar root entry
-        try
-        {
-            dirService.getAdminSession().lookup( barPartition.getSuffixDn() );
-        }
-        catch ( LdapNameNotFoundException lnnfe )
-        {
-            LdapDN dnBar = new LdapDN( "dc=bar,dc=com" );
-            ServerEntry entryBar = dirService.newEntry( dnBar );
-            entryBar.add( "objectClass", "top", "domain", "extensibleObject" );
-            entryBar.add( "dc", "bar" );
-            dirService.getAdminSession().add( entryBar );
-        }
-
-        // Inject the apache root entry
-        try
-        {
-            dirService.getAdminSession().lookup( apachePartition.getSuffixDn() );
-        }
-        catch ( LdapNameNotFoundException lnnfe )
-        {
-            LdapDN dnApache = new LdapDN( "dc=Apache,dc=Org" );
-            ServerEntry entryApache = dirService.newEntry( dnApache );
-            entryApache.add( "objectClass", "top", "domain", "extensibleObject" );
-            entryApache.add( "dc", "Apache" );
-            dirService.getAdminSession().add( entryApache );
-        }
-    }
-
-    // Deletes all files and subdirectories under dir.
-    // Returns true if all deletions were successful.
-    // If a deletion fails, the method stops attempting to delete and returns false.
-    public static boolean deleteDir(File dir) {
-      if (dir.isDirectory()) {
-      String[] children = dir.list();
-      for (int i=0; i<children.length; i++) {
-       boolean success = deleteDir(new File(dir, children[i]));
-        if (!success) {
-          return false;
-        }
+    public void setCellMetadata(CellID id, ArrayList<Metadata> metadata){
+      db.eraseMetadataForCell(id);
+      for(Metadata m:metadata){
+        db.addMetadata(id, m);
       }
-     }
-
-      // The directory is now empty so delete it
-      return dir.delete();
     }
+
+    public void eraseCell(CellID id){
+      db.eraseCell(id);
+    }
+
+    /**
+     * Search the entire server for cells with metadata maching the search
+     * terms. One metadata object my match more than one filter element.
+     *
+     *
+     * @param filters the search terms
+     * @return a map of CellID's to an ArrayList<Integer> of metadata ID's
+     * that matched a search term for that cell.
+     */
+    public Map<CellID, ArrayList<Integer> > search(MetadataSearchFilters filters){
+      throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    /**
+     * Search passed in cell and its children for cells with metadata maching
+     * the search terms. One metadata object my match more than one filter
+     * element.
+     *
+     *
+     * @param scope the cell to scope the search under
+     * @param filters the search term
+     * @return a map of CellID's to an ArrayList<Integer> of metadata ID's
+     * that matched a search term for that cell.
+     */
+    public ArrayList<Metadata> search(CellID scope, MetadataSearchFilters filters){
+      throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+
 
     /**
      * We just do a lookup on the server to check that it's available.

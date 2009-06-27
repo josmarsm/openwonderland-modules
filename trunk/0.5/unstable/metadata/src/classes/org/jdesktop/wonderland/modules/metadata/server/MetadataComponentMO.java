@@ -56,8 +56,6 @@ public class MetadataComponentMO extends CellComponentMO {
     @UsesCellComponentMO(ChannelComponentMO.class)
     private ManagedReference<ChannelComponentMO> channelRef;
     
-    /** Reference to the Metadata service */
-    // static MetadataManager metaService = AppContext.getManager(MetadataManager.class);
 
     // @UsesCellComponentMO(SampleCellSubComponentMO.class)
     // private ManagedReference<SampleCellSubComponentMO> subComponentRef;
@@ -154,13 +152,20 @@ public class MetadataComponentMO extends CellComponentMO {
      
      @Override
      public void setServerState(CellComponentServerState state) {
-         super.setServerState(state);
-         MetadataComponentServerState s = (MetadataComponentServerState) state;
-         MetadataComponentServerState s0 = (MetadataComponentServerState) getServerState(null);
-         mcss = (MetadataComponentServerState) state;
-         logger.log(Level.INFO, "[METADATA COMPONENT MO] set server state.. count was  " + s0.metaCount() + " and is now " + s.metaCount());
-         // TODO
-         // I believe this is where I should add things to apacheDS
+       // TODO
+       // in the future, could diff past and present state, or include
+       // 'add remove modify' in server state, and be more efficient here
+       // for now, just erase everything under the cell in search DB
+       // and replace with new data
+       super.setServerState(state);
+       MetadataComponentServerState s = (MetadataComponentServerState) state;
+       MetadataComponentServerState s0 = (MetadataComponentServerState) getServerState(null);
+       mcss = (MetadataComponentServerState) state;
+       logger.log(Level.INFO, "[METADATA COMPONENT MO] set server state.. count was  " + s0.metaCount() + " and is now " + s.metaCount());
+
+       MetadataManager metaService = AppContext.getManager(MetadataManager.class);
+//       metaService.setCellMetadata(cellID, mcss.getMetadata());
+       metaService.setCellMetadata(this.cellID, mcss.getMetadata());
      }
 
     // Metadata functions
