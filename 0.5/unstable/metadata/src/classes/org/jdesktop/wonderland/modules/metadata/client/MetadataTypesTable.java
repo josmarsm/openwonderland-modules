@@ -24,6 +24,7 @@ import javax.swing.table.AbstractTableModel;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
 
 /**
  *
@@ -151,7 +152,7 @@ public class MetadataTypesTable extends JTabbedPane {
     String created = Metadata.dateFormat.format(date);
     Metadata tmp = defaultMetadata.get(tab);
     // this will change the Metadata in the defaults map, but that is fine
-    tmp.put("Created", new MetadataValue(created, false, true));
+    tmp.put("Created", new MetadataValue(created, false, true, Datatype.DATE));
     mod.addRow(defaultMetadata.get(tab));
   }
 

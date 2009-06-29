@@ -18,8 +18,6 @@
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
-import java.io.File;
-import java.util.HashSet;
 import java.util.Hashtable;
 
 
@@ -56,17 +54,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
-import org.apache.directory.server.core.CoreSession;
-import org.apache.directory.server.core.DefaultDirectoryService;
 import org.apache.directory.server.core.DirectoryService;
-import org.apache.directory.server.core.entry.ServerEntry;
 import org.apache.directory.server.core.jndi.CoreContextFactory;
-import org.apache.directory.server.core.partition.Partition;
-import org.apache.directory.server.core.partition.impl.btree.jdbm.JdbmIndex;
-import org.apache.directory.server.core.partition.impl.btree.jdbm.JdbmPartition;
-import org.apache.directory.server.xdbm.Index;
 import org.apache.directory.shared.ldap.entry.Entry;
-import org.apache.directory.shared.ldap.exception.LdapNameNotFoundException;
 import org.apache.directory.shared.ldap.name.LdapDN;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
@@ -115,7 +105,7 @@ public class MetadataService extends AbstractService {
     private InitialDirContext rootCtx;
 
     /** backend search DB (e.g. LDAP implementation) */
-    private EmbeddedADS db;
+    private MetadataBackendInterface db;
     
 
     public MetadataService(Properties props,
@@ -250,7 +240,7 @@ public class MetadataService extends AbstractService {
     
 
     public void setCellMetadata(CellID id, ArrayList<Metadata> metadata){
-      db.eraseMetadataForCell(id);
+      db.clearCellMetadata(id);
       for(Metadata m:metadata){
         db.addMetadata(id, m);
       }

@@ -8,7 +8,11 @@ package org.jdesktop.wonderland.modules.metadata.server.service;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -23,11 +27,13 @@ import javax.naming.Context;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.OperationNotSupportedException;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.Attribute;
 
 
+import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
@@ -40,10 +46,12 @@ import org.apache.directory.server.core.partition.Partition;
 import org.apache.directory.server.core.partition.impl.btree.jdbm.JdbmIndex;
 import org.apache.directory.server.core.partition.impl.btree.jdbm.JdbmPartition;
 import org.apache.directory.server.xdbm.Index;
+import org.apache.directory.shared.ldap.exception.LdapInvalidAttributeValueException;
 import org.apache.directory.shared.ldap.exception.LdapNameNotFoundException;
 import org.apache.directory.shared.ldap.name.LdapDN;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
 
@@ -51,9 +59,8 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
  *
  * @author mabonner
  */
-public class EmbeddedADS
+public class EmbeddedADS implements MetadataBackendInterface
 {
-  // TODO put this into the interface/abstract class
   /** The package name. */
   private static final String PKG_NAME = "org.jdesktop.wonderland.modules.metadata.server.service";
   /** the logger for this class */
@@ -88,19 +95,154 @@ public class EmbeddedADS
    *  book-keeping trees set up by ApacheDS
    */
   static DirContext rootCtx;
+  /**
+   * the DN to name the WL ctx (topCtx) in rootCtx
+   */
+  static final String wlCtxDN = "dc=wonderland";
   /** immediately below root, contains all cells and metadata */
   static DirContext topCtx;
 
-  void addMetadata(CellID id, Metadata metadata) {
-    throw new UnsupportedOperationException("Not yet implemented");
+  static final DateFormat ldapDateFormat = new SimpleDateFormat("yyyyMMddhhmmssZ");
+
+
+  /**
+   * adds the passed metadata object to the cell named id.
+   * throws exceptions and logs errors if the cell does not exist or the
+   * metadata type has not been registered.
+   * @param cid id of cell to add metadata to
+   * @param metadata metadata object to add
+   */
+  public void addMetadata(CellID cid, Metadata metadata) {
+    // check if the cell exists, prepare a context if it does
+    DirContext cellCtx = getCellCtx(cid);
+    if(cellCtx == null){
+      logger.log(Level.SEVERE, "[EADS]could not add metadata to cell - could not " +
+              "find cell id:" + cid);
+    }
+
+    // prepare attributes
+    BasicAttributes attrs = new BasicAttributes(true);
+
+    // object class
+    BasicAttribute metaOC = new BasicAttribute("objectclass");
+    String nameLdap = classnameToLDAP(metadata.getClass().getName());
+    metaOC.add(nameLdap);
+    attrs.put(metaOC);
+    logger.log(Level.INFO, "[EADS] adding metadata of type " + nameLdap +
+            " to cell " + cid);
+
+    // this class's attributes
+    for(Entry<String, MetadataValue> e : metadata.getAttributes()){
+      String attrName = attrnameToLDAP(e.getKey());
+      MetadataValue mv = e.getValue();
+      String val = mv.getVal();
+      logger.log(Level.INFO, "[EADS] attribute " + attrName + "with raw value " +
+              val);
+      BasicAttribute attr = new BasicAttribute(attrName);
+
+      // the value
+      if(mv.type == Datatype.DATE){
+        // convert to ldap date
+        try {
+          Date d = Metadata.dateFormat.parse(val);
+          val = ldapDateFormat.format(d);
+        } catch (ParseException ex) {
+          logger.log(Level.SEVERE, "[EADS] invalid date syntax adding metadata" +
+                  " to cell id: " + cid + ", string:" + val);
+        }
+      }
+
+      // add to collection
+      attr.add(val);
+      attrs.put(attr);
+    }
+    try {
+      // finally, add the new entry
+      cellCtx.createSubcontext("mID=" + metadata.id, attrs);
+    } catch (NamingException ex) {
+      logger.log(Level.INFO, "[EADS] error adding metadata of type " + nameLdap +
+            " to cell " + cid);
+    }
   }
 
-  public void eraseCell(CellID id) {
-    throw new UnsupportedOperationException("Not yet implemented");
+
+  public void eraseCell(CellID cid){
+    try {
+      DirContext cellCtx = (DirContext) rootCtx.lookup(getCellDN(cid));
+      eraseContext(cellCtx);
+    } catch (NamingException ex) {
+      logger.log(Level.SEVERE, "[EADS] error erasing cell with id: " + cid);
+    }
+
   }
 
-  public void eraseMetadataForCell(CellID id) {
-    throw new UnsupportedOperationException("Not yet implemented");
+  /**
+   * searches ldap tree for cell with given ID.
+   * @param cid cell id to find
+   * @return the cell's DN
+   */
+  private String getCellDN(CellID cid){
+    String filter = "(&(objectclass=cell)(cid="+ cid +"))";
+    String cellScope = wlCtxDN;
+    SearchControls ctls = new SearchControls();
+    ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+    NamingEnumeration results;
+    SearchResult si = null;
+    try {
+      results = rootCtx.search(cellScope, filter, ctls);
+      si = (SearchResult)results.next();
+    } catch (NamingException ex) {
+      logger.log(Level.SEVERE, "[EADS] could not find cell with id: " + cid);
+    }
+    return si.getName();
+  }
+
+
+  private void eraseContext(DirContext delCtx) throws NamingException {
+      NamingEnumeration list = delCtx.listBindings("");
+
+      // go through all bindings
+      while (list.hasMore()) {
+          NameClassPair nc = (NameClassPair)list.next();
+          try{
+            DirContext subCtx = (DirContext) rootCtx.lookup(nc.getName());
+            // recurse
+            eraseContext(subCtx);
+          }
+          catch ( LdapNameNotFoundException lnnfe ){
+            System.out.println("severe error...");
+          }
+
+      }
+
+      // by the time we return here, context should be empty
+      rootCtx.destroySubcontext(delCtx.getNameInNamespace());
+  }
+
+
+
+  public void eraseMetadata(int mid){
+    // find the metadata cell
+    String filter = "(&(mid="+ mid + "))";
+    SearchControls ctls = new SearchControls();
+    ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+    NamingEnumeration results = null;
+    try {
+      results = rootCtx.search(wlCtxDN, filter, ctls);
+      SearchResult si = (SearchResult)results.next();
+      rootCtx.destroySubcontext(si.getName());
+    } catch (NamingException ex) {
+      logger.log(Level.SEVERE, "[EADS] error erasing metadata, could not find mid:" + mid);
+    }
+  }
+
+  /**
+   * Remove all metadata from a cell
+   *
+   * @param cid id of cell to remove metadata from
+   */
+  public void clearCellMetadata(CellID cid) {
+//    throw(new OperationNotSupportedException("not supported yet"));
   }
 
   /**
@@ -113,24 +255,63 @@ public class EmbeddedADS
    * TODO will scan class loader take care of duplication checking anyway?
    * @param m example of the type to register
    */
-  public void registerMetadataType(Metadata m) {
-    // register all attributes
-    for(Entry<String, MetadataValue> e : m.getAttributes()){
-            logger.log(Level.INFO, "Key, Val: " + e.getKey() + ", " + e.getValue());
+  public void registerMetadataType(Metadata m) throws Exception {
+    // build required elements for LDAP
+    logger.log(Level.INFO, "[EADS] registering new metadata type #" + metaCount);
+    // NAME our unique class name
+    // convert to ldap friendly name
+    String nameLdap = classnameToLDAP(m.getClass().getName());
+    logger.log(Level.INFO, "type name: " + nameLdap);
 
-            
+    // SUP super classes
+    // super-classes are not used. if superclasses were needed, fetch as follows
+    ArrayList<String> supersLdap = new ArrayList<String>();
+    //
+    // fetch all super classes
+    // 
+    // Class superClass = m.getClass().getSuperclass();
+    // Class objClass = Object.class;
+    // while(!superClass.equals(objClass)){
+    //   String superName = toLdapFriendlyStr(superClass.getName());
+    //   logger.log(Level.INFO, "superclass name: " + superName);
+    //   supersLdap.add(superName);
+    //   superClass = superClass.getSuperclass();
+    // }
+    
+    // DESC
+    String descLdap = "registered type #" + metaCount;
+
+    // MUST attributes
+    // register all these attributes as we assemble our MUST list
+    ArrayList<String> mustLdap = new ArrayList<String>();
+    String attrName = "";
+    for(Entry<String, MetadataValue> e : m.getAttributes()){
+      try{
+      // make LDAP friendly
+        attrName = attrnameToLDAP(e.getKey());
+  //      logger.log(Level.INFO, "Key, Val: " + e.getKey() + ", " + e.getValue());
+        MetadataValue mv = e.getValue();
+        registerAttribute("'(" + attrName + "')" , "registered attribute #" + attrCount, e.getValue().type);
+        mustLdap.add(attrName);
+        logger.log(Level.INFO, "[EADS] new attribute: " + attrName);
+      }
+      catch(LdapInvalidAttributeValueException ex){
+        logger.log(Level.SEVERE, "[EADS] Attribute " + attrName + " for type "
+                + m.getClass().getName() + " has invalid LDAP syntax\nMetadata type" +
+                "will not be registered");
+        throw(new Exception("[EADS] Attribute " + attrName + " for type " +
+                m.getClass().getName() + " has invalid LDAP syntax"));
       }
 
-    // for the moment, treat them all as strings
-    // convert to ldap friendly name
-    String ldapName = m.getClass().getName().replaceAll("\\.", "-");
-    Class superClass = m.getClass().getSuperclass();
-    String superName = superClass.getName();
-    while(!superName.equals("java.lang.Object")){
-      System.out.println(superName);
-      superClass = superClass.getSuperclass();
-      superName = superClass.getName();
     }
+
+    // MAY attributes
+    // (no optional attributes allowed in current implementation)
+    ArrayList<String> mayLdap = new ArrayList<String>();
+
+    // finally, register the type
+    registerObjectClass(nameLdap, descLdap, supersLdap, mustLdap, mayLdap);
+   
   }
 
   /**
@@ -152,6 +333,26 @@ public class EmbeddedADS
     }
     res += " )";
     return res;
+  }
+
+  /**
+   * If this cell id exists, return a context to it. If not, return null.
+   * @param cid id of the cell to find
+   * @return
+   */
+  private DirContext getCellCtx(CellID cid) {
+    DirContext cellCtx;
+    String dn = getCellDN(cid);
+    try{
+      cellCtx = (DirContext) rootCtx.lookup(dn);
+    }
+    catch(NamingException e){
+      // if an exception was thrown, things weren't yet properly initialized
+      // or the cell simply wasn't found
+      logger.log(Level.INFO, "[EADS] could not get cell context for cellID: + cid");
+      return null;
+    }
+    return cellCtx;
   }
 
   /** register a new attribute with the embedded LDAP server
@@ -226,6 +427,26 @@ public class EmbeddedADS
   }
 
   /**
+   * convert a full classname like org.site.module.class to an ldap friendly
+   * version by replacing all "." with "-", e.g. returns "org-site-module-class"
+   * @param str the name to convert
+   * @return
+   */
+  private String classnameToLDAP(String str) {
+    return str.replaceAll("\\.", "-");
+  }
+
+  /**
+   * convert an attribute name like "date created" to an ldap friendly
+   * version by replacing all " " with "-", e.g. returns "date-created"
+   * @param str the attribute to convert
+   * @return
+   */
+  private String attrnameToLDAP(String str) {
+    return str.replaceAll(" ", "-");
+  }
+
+  /**
    * used to store a cellID attribute and the context it can be located in,
    * saving re-looking it up.
    */
@@ -275,30 +496,32 @@ public class EmbeddedADS
    * @param cids found cell cellID's are added to this list
    * @throws javax.naming.NamingException
    */
-  private void getAllCells(DirContext ctx, String scope, LinkedList<pairCidAndCtx> cids) throws NamingException {
+  private void getAllCells(DirContext ctx, String scope, LinkedList<pairCidAndCtx> cids) {
     // get all cells
     String f1 = "(&(objectclass=cell)(cid=*))";
     // will store their cID's
     String[] attrIDs = {"cid"};
     SearchControls ctls = new SearchControls();
     ctls.setReturningAttributes(attrIDs);
-    NamingEnumeration answer = ctx.search(scope, f1, ctls);
-
-  //    Attributes matchAttrs = new BasicAttributes(true); // ignore attribute name case
-  //    matchAttrs.put(new BasicAttribute("objectclass", "cell"));
-  //    NamingEnumeration answer = rootCtx.search("dc=wonderland", matchAttrs);
-    // all found we have found are in this context... we will pair this context
-    // with the cID's we save
-    DirContext cellCtx = (DirContext)ctx.lookup(scope);
-    while (answer.hasMore()) {
-      SearchResult sr = (SearchResult)answer.next();
-//      logger.log(Level.INFO, (">>> found new cell" + sr.getName());
-      for (NamingEnumeration e = sr.getAttributes().getAll(); e.hasMore();){
-        Attribute attr = (Attribute)e.next();
-  //        logger.log(Level.INFO, (attr.get());
-        Integer i = Integer.parseInt((String)attr.get());
-        cids.add(new pairCidAndCtx(cellCtx,i));
+    NamingEnumeration answer;
+    try {
+      answer = ctx.search(scope, f1, ctls);
+      // all found we have found are in this context... we will pair this context
+      // with the cID's we save
+      DirContext cellCtx = (DirContext)ctx.lookup(scope);
+      while (answer.hasMore()) {
+        SearchResult sr = (SearchResult)answer.next();
+  //      logger.log(Level.INFO, (">>> found new cell" + sr.getName());
+        for (NamingEnumeration e = sr.getAttributes().getAll(); e.hasMore();){
+          Attribute attr = (Attribute)e.next();
+    //        logger.log(Level.INFO, (attr.get());
+          Integer i = Integer.parseInt((String)attr.get());
+          cids.add(new pairCidAndCtx(cellCtx,i));
+        }
       }
+    } catch (NamingException ex) {
+      logger.log(Level.SEVERE, "[EADS] error retrieving all cells " +
+                  " from scope: " + scope + ", ctx:" + ctx);
     }
   }
 
@@ -319,7 +542,7 @@ public class EmbeddedADS
    *            during recursion are complete
    * @throws javax.naming.NamingException
    */
-  private HashMap<Integer, Set<Integer>> searchHelper(LinkedList<pairCidAndCtx> cids, ArrayList<String> filters, DirContext ctx, HashMap<Integer, Set<Integer>> results) throws NamingException {
+  private HashMap<Integer, Set<Integer>> search(LinkedList<pairCidAndCtx> cids, ArrayList<String> filters, HashMap<Integer, Set<Integer>> results) throws NamingException {
     pairCidAndCtx pair = cids.poll();
     if(pair == null){
       // no other cells to search
@@ -370,33 +593,83 @@ public class EmbeddedADS
     }
 
 
-    return  searchHelper(cids, filters, ctx, results);
+    return  search(cids, filters, results);
   }
-
 
   /**
-   * Search all or a subset of cells based on a list of filters, describing
-   * metadata attached to the cells.
-   * @param filters the list of filters to match
-   * @param rootCtx context in which to begin search. To search all cells, pass the
-   *            wl parent context. To search a particular cell's children, pass
-   *            in that cell's context. Doese NOT search the cell pointed to
-   *            by context, even if context points at a cell.
-   * @return
-   * @throws javax.naming.NamingException
+   * Implementation for Backend interface.
+   *
+   * Search all cells in the world, finding cells with metadata satisfying the
+   * passed in MetadataSearchFilters
+   *
+   * @param filters search criteria
+   * @param cid id of parent cell to scope the search
+   * @return map, mapping cell id's (as Integers) whose metadata that matched the
+   * search, to a set of metadata id's that matched the search for that cell.
    */
-  HashMap<Integer, Set<Integer> > searchMetadata(ArrayList<String> filters, DirContext rootCtx) throws NamingException {
-    DirContext wlCtx = (DirContext) rootCtx.lookup("dc=wonderland");
-    // start from root
-    // get all cells
-
+  public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
     LinkedList<pairCidAndCtx> cids = new LinkedList<pairCidAndCtx>();
-    getAllCells(rootCtx, "dc=wonderland", cids);
+    HashMap<Integer, Set<Integer> > results = null;
+    
+    // the only difference between the two search Metadata methods is here
+    // this 'all' version gets all cells for searching
+    
+    getAllCells(rootCtx, wlCtxDN, cids);
 
-    logger.log(Level.INFO, "searchMetadata for " + filters.size() + " filters");
-    return searchHelper(cids, filters, wlCtx, new HashMap<Integer, Set<Integer> >());
+    ArrayList<String> filterList = convertFiltersToLDAP(filters);
+    logger.log(Level.INFO, "searchMetadata for " + filterList.size() + " filters");
+    try {
+      results = search(cids, filterList, new HashMap<Integer, Set<Integer>>());
+    } catch (NamingException ex) {
+      logger.log(Level.SEVERE, "[EADS] error searching for metadata " +
+                  " with filters: " + filters);
+    }
+    return results;
   }
 
+  /**
+   * Search all cells beneath cid, finding cells with metadata satisfying the
+   * passed in MetadataSearchFilters
+   *
+   * @param filters search criteria
+   * @param cid id of parent cell to scope the search
+   * @return map, mapping cell id's (as Integers) whose metadata that matched the
+   * search, to a set of metadata id's that matched the search for that cell.
+   */
+  public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
+    LinkedList<pairCidAndCtx> cids = new LinkedList<pairCidAndCtx>();
+    HashMap<Integer, Set<Integer> > results = null;
+
+    // the only difference between the two search Metadata methods is here
+    // this 'scoped' version gets only cells below a certain parent for searching
+    String dn = getCellDN(cid);
+    try {
+      getAllCells(rootCtx, dn, cids);
+      
+      ArrayList<String> filterList = convertFiltersToLDAP(filters);
+
+      
+
+      logger.log(Level.INFO, "searchMetadata for " + filterList.size() + " filters");
+    
+      results = search(cids, filterList, new HashMap<Integer, Set<Integer>>());
+    } catch (Exception ex) {
+      logger.log(Level.SEVERE, "[EADS] error searching for metadata " +
+                  " scoped under cellID: " + cid + " with filters: " + filters);
+      logger.log(Level.SEVERE, "Exception: " + ex);
+    }
+    return results;
+  }
+
+  /**
+   * Convert a MetadataSearchFilters object into an LDAP search filters string
+   *
+   * @return the list of filters, in RFC 2254 format
+   */
+  private ArrayList<String> convertFiltersToLDAP(MetadataSearchFilters filters){
+    ArrayList<String> result = new ArrayList<String>();
+    return result;
+  }
   
 
     /** The directory service */
@@ -461,7 +734,7 @@ public class EmbeddedADS
         service.setDenormalizeOpAttrsEnabled( true );
 
         // TODO make this name the name of the WL server
-        Partition worldPartition = addPartition( "world", "dc=wonderland");
+        Partition worldPartition = addPartition( "world", wlCtxDN);
 
         // Index some attributes on the apache partition
         addIndex( worldPartition, "objectClass", "ou", "uid" );
@@ -478,7 +751,7 @@ public class EmbeddedADS
         catch ( LdapNameNotFoundException lnnfe )
         {
             logger.log(Level.INFO, "had to make world root");
-            LdapDN rootDN = new LdapDN( "dc=wonderland" );
+            LdapDN rootDN = new LdapDN( wlCtxDN );
             ServerEntry rootEntry = service.newEntry( rootDN );
             rootEntry.add( "objectClass", "top", "domain", "dcObject" );
             rootEntry.add( "dc", "wonderland" );
@@ -497,7 +770,7 @@ public class EmbeddedADS
 
         // create context
         rootCtx = new InitialDirContext(env);
-        topCtx = (DirContext) rootCtx.lookup("dc=wonderland");
+        topCtx = (DirContext) rootCtx.lookup(wlCtxDN);
 
         // register interior attributes
         registerAttribute("('cellID' 'cID')", "cellID from darkstar", Datatype.INTEGER);
@@ -505,14 +778,14 @@ public class EmbeddedADS
 
         // register cell object class
         ArrayList<String> classes = new ArrayList<String>();
-        classes.add("cell");
         classes.add("top");
         ArrayList<String> mustAttrs = new ArrayList<String>();
         mustAttrs.add("cID");
         ArrayList<String> mayAttrs = new ArrayList<String>();
 
         registerObjectClass("cell", "Represents a cell, will have metadata below it", classes, mustAttrs, mayAttrs);
-        
+        // register the default metadata type
+        registerMetadataType(new Metadata(null, null));
     }
 
 
@@ -534,7 +807,7 @@ public class EmbeddedADS
     // Deletes all files and subdirectories under dir.
     // Returns true if all deletions were successful.
     // If a deletion fails, the method stops attempting to delete and returns false.
-    public static boolean deleteDir(File dir) {
+    private static boolean deleteDir(File dir) {
       if (dir.isDirectory()) {
       String[] children = dir.list();
       for (int i=0; i<children.length; i++) {
