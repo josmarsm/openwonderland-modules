@@ -19,23 +19,59 @@
 package org.jdesktop.wonderland.modules.chatzones.server;
 
 import com.jme.bounding.BoundingVolume;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.grouptextchat.common.TextChatConnectionType;
+import org.jdesktop.wonderland.modules.grouptextchat.server.TextChatConnectionHandler;
+import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
+import org.jdesktop.wonderland.server.cell.ViewCellCacheMO;
+import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 public class ChatZoneProximityListener implements ProximityListenerSrv, Serializable {
 
     private static final Logger logger = Logger.getLogger(ChatZoneProximityListener.class.getName());
 
-
     public void viewEnterExit(boolean entered, CellID cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
-        
+
+        // We have to do a little dance here to get a WonderlandClientID out of the
+        // ViewCell system. But this works pretty well, although it does depend
+        // on a hacked version of the ViewCellCacheMO and we haven't sent that
+        // upstream yet. 
+        CellManagerMO cm = WonderlandContext.getCellManager();
+        CellMO cellMO = cm.getCell(viewCellID);
+
+        WonderlandClientID wcid = null;
+
+        if(cellMO instanceof ViewCellMO) {
+            ViewCellMO viewCell = (ViewCellMO)cellMO;
+            ViewCellCacheMO viewCellCache = viewCell.getCellCache();
+            wcid = viewCellCache.getClientID();
+        }
+        else {
+            logger.info("Got a cell that wasn't a ViewCellMO.");
+            return;
+        }
+
+        if(wcid==null) {
+            logger.warning("Couldn't get a wcid for the viewCellID: " + viewCellID);
+            return;
+        }
+
+        // Get our root cell.
+        ChatZonesCellMO chatZone = (ChatZonesCellMO) cm.getCell(cell);
+
+        // Send messages back to the parent that we have a user entering the cell.
         if(entered) {
-            logger.info("ENTERED CELL");
+            chatZone.userEnteredCell(wcid);
         } else {
-            logger.info("EXITED CELL");
+            chatZone.userLeftCell(wcid);
         }
 
     }
