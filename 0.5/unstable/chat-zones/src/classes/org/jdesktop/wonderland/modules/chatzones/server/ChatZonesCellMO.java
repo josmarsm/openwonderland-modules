@@ -75,13 +75,6 @@ public class ChatZonesCellMO extends CellMO {
     public CellServerState getServerState(CellServerState state) {
         if (state == null) {
             state = new ChatZonesCellServerState();
-
-            // do my init work here? Not sure where it's supposed to go.
-
-            CommsManager cm = WonderlandContext.getCommsManager();
-            TextChatConnectionHandler handler = (TextChatConnectionHandler) cm.getClientHandler(TextChatConnectionType.CLIENT_TYPE);
-
-            group = handler.createChatGroup();
         }
 
         ((ChatZonesCellServerState)state).setChatGroup(group);
@@ -95,7 +88,6 @@ public class ChatZonesCellMO extends CellMO {
             cellClientState = new ChatZonesCellClientState();
 
         }
-//        ((ChatZonesCellClientState)cellClientState).setShapeType(shapeType);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -117,6 +109,13 @@ public class ChatZonesCellMO extends CellMO {
             proxRef.getForUpdate().addProximityListener(proxListener, bounds);
 
             logger.info("Just set proximity listener: " + proxListener);
+
+            // do my init work here? Not sure where it's supposed to go.
+            CommsManager cm = WonderlandContext.getCommsManager();
+            TextChatConnectionHandler handler = (TextChatConnectionHandler) cm.getClientHandler(TextChatConnectionType.CLIENT_TYPE);
+
+            group = handler.createChatGroup();
+            logger.info("Setting up Chat Zone, got chat group: " + group);
         }
         else {
             channel.removeMessageReceiver(ChatZonesCellChangeMessage.class);
@@ -135,9 +134,16 @@ public class ChatZonesCellMO extends CellMO {
             ChatZonesCellMO cellMO = (ChatZonesCellMO)getCell();
 
             ChatZonesCellChangeMessage bsccm = (ChatZonesCellChangeMessage)message;
-
-
-//            cellMO.sendCellMessage(clientID, bsccm);
         }
+    }
+
+    void userEnteredCell(WonderlandClientID wcid) {
+        TextChatConnectionHandler tcmh = (TextChatConnectionHandler) WonderlandContext.getCommsManager().getClientHandler(TextChatConnectionType.CLIENT_TYPE);
+        tcmh.addUserToChatGroup(group, wcid);
+    }
+
+    void userLeftCell(WonderlandClientID wcid) {
+        TextChatConnectionHandler tcmh = (TextChatConnectionHandler) WonderlandContext.getCommsManager().getClientHandler(TextChatConnectionType.CLIENT_TYPE);
+        tcmh.removeUserFromChatGroup(group, wcid);
     }
 }
