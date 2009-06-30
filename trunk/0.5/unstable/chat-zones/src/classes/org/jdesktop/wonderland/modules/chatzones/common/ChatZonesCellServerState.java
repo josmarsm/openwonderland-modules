@@ -32,11 +32,17 @@ public class ChatZonesCellServerState extends CellServerState {
     @XmlElement(name="group")
     private GroupID group = null;
 
+    @XmlElement(name="numAvatarsInZone")
+    private int numAvatarsInZone = 0;
+
     public ChatZonesCellServerState() {
     }
 
     @XmlTransient public GroupID getChatGroup() { return this.group; }
     public void setChatGroup(GroupID group) { this.group = group; }
+
+    @XmlTransient public int getNumAvatarsInZone() { return this.numAvatarsInZone; }
+    public void setNumAvatarsInZone(int numAvatarInZone) { this.numAvatarsInZone = numAvatarsInZone; }
 
     @Override
     public String getServerClassName() {

@@ -18,16 +18,20 @@
 
 package org.jdesktop.wonderland.modules.chatzones.server;
 
-import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingCapsule;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.LineSegment;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellChangeMessage;
+import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellChangeMessage.ChatZoneAction;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellClientState;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellServerState;
 import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
@@ -37,6 +41,7 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.CommsManager;
@@ -49,14 +54,22 @@ public class ChatZonesCellMO extends CellMO {
 
     private GroupID group;
 
+    private int numAvatarsInZone = 0;
+
     @UsesCellComponentMO(ProximityComponentMO.class)
     private ManagedReference<ProximityComponentMO> proxRef;
+
+    @UsesCellComponentMO(MovableComponentMO.class)
+    private ManagedReference<MovableComponentMO> moveRef;
 
     private ChatZoneProximityListener proxListener;
 
 
     public ChatZonesCellMO () {
-        super();        
+        super();
+
+        // Need to do this before the Cell goes live.
+        this.setLocalBounds(new BoundingCapsule(new Vector3f(), new LineSegment(new Vector3f(0, 0, -10), new Vector3f(0, 0, 10)), 1));
     }
 
     @Override
@@ -69,6 +82,7 @@ public class ChatZonesCellMO extends CellMO {
         super.setServerState(state);
         
         this.group = ((ChatZonesCellServerState)state).getChatGroup();
+        this.numAvatarsInZone = ((ChatZonesCellServerState)state).getNumAvatarsInZone();
     }
 
     @Override
@@ -78,6 +92,8 @@ public class ChatZonesCellMO extends CellMO {
         }
 
         ((ChatZonesCellServerState)state).setChatGroup(group);
+        ((ChatZonesCellServerState)state).setNumAvatarsInZone(numAvatarsInZone);
+
         return super.getServerState(state);
     }
 
@@ -88,6 +104,8 @@ public class ChatZonesCellMO extends CellMO {
             cellClientState = new ChatZonesCellClientState();
 
         }
+
+        ((ChatZonesCellClientState)cellClientState).setNumAvatarsInZone(this.numAvatarsInZone);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -102,11 +120,13 @@ public class ChatZonesCellMO extends CellMO {
             channel.addMessageReceiver(ChatZonesCellChangeMessage.class, (ChannelComponentMO.ComponentMessageReceiver)new ChatZonesCellMessageReceiver(this));
 
             // Just guessing here...
-            BoundingVolume[] bounds = {new BoundingBox(new Vector3f(), 4, 4, 4)};
+//            logger.info("localBounds: " + this.getLocalBounds());
+            BoundingVolume[] bounds = {this.getLocalBounds()};
 
             proxListener =
                 new ChatZoneProximityListener();
             proxRef.getForUpdate().addProximityListener(proxListener, bounds);
+
 
             logger.info("Just set proximity listener: " + proxListener);
 
@@ -119,7 +139,6 @@ public class ChatZonesCellMO extends CellMO {
         }
         else {
             channel.removeMessageReceiver(ChatZonesCellChangeMessage.class);
-
             proxRef.getForUpdate().removeProximityListener(proxListener);
         }
     }
@@ -137,13 +156,83 @@ public class ChatZonesCellMO extends CellMO {
         }
     }
 
-    void userEnteredCell(WonderlandClientID wcid) {
+    /**
+     * This event is fired by the ProximityListener when an avatar enters this
+     * cell.
+     *
+     * @param wcid The WonderlandClientID of the avatar that entered the cell.
+     */
+    public void userEnteredCell(WonderlandClientID wcid) {
         TextChatConnectionHandler tcmh = (TextChatConnectionHandler) WonderlandContext.getCommsManager().getClientHandler(TextChatConnectionType.CLIENT_TYPE);
         tcmh.addUserToChatGroup(group, wcid);
+
+        this.numAvatarsInZone++;
+
+        logger.info("numAvatarsInZone: " + numAvatarsInZone);
+
+        this.updateScaleTransform();
+
+        // Send a message to all clients that the number of avatars in this
+        // cell has changed. 
+        ChatZonesCellChangeMessage msg = new ChatZonesCellChangeMessage(ChatZoneAction.JOINED);
+        msg.setName(wcid.getSession().getName());
+        msg.setNumAvatarInZone(numAvatarsInZone);
+        this.sendCellMessage(null, msg);
+
+//        this.updateProximityListenerBounds();
     }
 
-    void userLeftCell(WonderlandClientID wcid) {
+    /**
+     * This event is fired by the ProximityListener when an avatar leaves this
+     * cell.
+     *
+     * @param wcid The WonderlandClientID of the avatar that entered the cell.
+     */
+    public void userLeftCell(WonderlandClientID wcid) {
         TextChatConnectionHandler tcmh = (TextChatConnectionHandler) WonderlandContext.getCommsManager().getClientHandler(TextChatConnectionType.CLIENT_TYPE);
         tcmh.removeUserFromChatGroup(group, wcid);
+
+        this.numAvatarsInZone--;
+
+        logger.info("numAvatarsInZone: " + numAvatarsInZone);
+
+
+        this.updateScaleTransform();
+
+
+        // Send a message to all clients that the number of avatars in this
+        // cell has changed.
+        ChatZonesCellChangeMessage msg = new ChatZonesCellChangeMessage(ChatZoneAction.LEFT);
+        msg.setName(wcid.getSession().getName());
+        msg.setNumAvatarInZone(numAvatarsInZone);
+        this.sendCellMessage(null, msg);
+
+//        this.updateProximityListenerBounds();
+    }
+
+    /**
+     * Call this when we have reason to think the bounds of the cell have
+     * updated and we should change the proximity listener appropriately.
+     */
+    public void updateProximityListenerBounds() {
+        BoundingVolume[] bounds = {this.getLocalBounds()};
+
+        logger.info("Updating proximity bounds: " + bounds);
+
+        ProximityComponentMO proxComp = proxRef.getForUpdate();
+        proxComp.removeProximityListener(proxListener);
+        proxComp.addProximityListener(proxListener, bounds);
+    }
+
+    private void updateScaleTransform() {
+        // Decide how big we should be based on the number of avatars in the cell.
+
+        // Start with linear scaling.
+        float scaleFactor = (float) (1 + 0.1 * numAvatarsInZone);
+        CellTransform scale = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f(scaleFactor, 1, scaleFactor));
+
+        MovableComponentMO mc = this.moveRef.getForUpdate();
+        mc.moveRequest(null, scale);
+        logger.info("Just send a scale change request to MoveComponent with scaleFactor: " + scaleFactor);
     }
 }
