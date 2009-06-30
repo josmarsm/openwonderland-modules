@@ -22,10 +22,18 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 public class ChatZonesCellClientState extends CellClientState {
 
-    // No state here yet.
+    private int numAvatarsInZone = 0;
     
     public ChatZonesCellClientState() {
         
+    }
+
+    public int getNumAvatarsInZone() {
+        return numAvatarsInZone;
+    }
+
+    public void setNumAvatarsInZone(int numAvatarsInZone) {
+        this.numAvatarsInZone = numAvatarsInZone;
     }
 
 }

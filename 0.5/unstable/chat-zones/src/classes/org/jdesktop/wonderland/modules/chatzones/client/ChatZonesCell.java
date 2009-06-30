@@ -44,6 +44,9 @@ public class ChatZonesCell extends Cell {
     private static final Logger logger =
             Logger.getLogger(ChatZonesCell.class.getName());
 
+    private int numAvatarsInZone = 0;
+    private String label = "";
+
     public ChatZonesCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
@@ -99,7 +102,31 @@ public class ChatZonesCell extends Cell {
         public void messageReceived(CellMessage message) {
             ChatZonesCellChangeMessage bsccm = (ChatZonesCellChangeMessage)message;
 
-            // Check and see if it's for us? Might need to throw it out.
+            switch(bsccm.getAction()) {
+                case JOINED:
+                    numAvatarsInZone++;
+
+                    logger.warning(bsccm.getName() + " joined the zone.");
+                    if(bsccm.getNumAvatarInZone()!=numAvatarsInZone) {
+                        logger.warning("avatar count is out of sync with server, syncing: " +bsccm.getNumAvatarInZone() + " -> " + numAvatarsInZone);
+                        numAvatarsInZone = bsccm.getNumAvatarInZone();
+                    }
+                    break;
+                case LEFT:
+                    numAvatarsInZone--;
+                    logger.warning(bsccm.getName() + " left the zone.");
+                    if(bsccm.getNumAvatarInZone()!=numAvatarsInZone) {
+                        logger.warning("avatar count is out of sync with server, syncing: " +bsccm.getNumAvatarInZone() + " -> " + numAvatarsInZone);
+                        numAvatarsInZone = bsccm.getNumAvatarInZone();
+                    }
+                    break;
+                case LABEL:
+                    break;
+                default:
+                    break;
+            }
+
+            logger.warning("Received message! Current avatarsInZone: " + numAvatarsInZone + " current label: " + label);
         }
     }
 

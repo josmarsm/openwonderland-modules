@@ -21,5 +21,49 @@ package org.jdesktop.wonderland.modules.chatzones.common;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 public class ChatZonesCellChangeMessage extends CellMessage {
+    public enum ChatZoneAction {
+        JOINED,
+        LEFT,
+        LABEL
+    }
 
+    public String name;
+
+    public String label;
+
+    public ChatZoneAction action;
+
+    public int numAvatarInZone = 0;
+
+    public ChatZonesCellChangeMessage(ChatZoneAction action) {
+        this.action = action;
+    }
+    
+    public ChatZoneAction getAction() {
+        return action;
+    }
+
+    public int getNumAvatarInZone() {
+        return numAvatarInZone;
+    }
+
+    public void setNumAvatarInZone(int numAvatarInZone) {
+        this.numAvatarInZone = numAvatarInZone;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
 }

@@ -19,13 +19,11 @@
 package org.jdesktop.wonderland.modules.chatzones.server;
 
 import com.jme.bounding.BoundingVolume;
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.grouptextchat.common.TextChatConnectionType;
-import org.jdesktop.wonderland.modules.grouptextchat.server.TextChatConnectionHandler;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
@@ -37,6 +35,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 public class ChatZoneProximityListener implements ProximityListenerSrv, Serializable {
 
     private static final Logger logger = Logger.getLogger(ChatZoneProximityListener.class.getName());
+
+    Set<WonderlandClientID> clientsInCell = new HashSet<WonderlandClientID>();
 
     public void viewEnterExit(boolean entered, CellID cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
 
@@ -67,11 +67,24 @@ public class ChatZoneProximityListener implements ProximityListenerSrv, Serializ
         // Get our root cell.
         ChatZonesCellMO chatZone = (ChatZonesCellMO) cm.getCell(cell);
 
+        // We need to filter these. Because we're adding/removing this listener
+        // every time the size of the cell changes, it's triggering new events
+        // every time because it forgets that the person was already there.
+        // So we need to track it here, because this object persists across those
+        // add/remove operations.
+        
+
         // Send messages back to the parent that we have a user entering the cell.
         if(entered) {
-            chatZone.userEnteredCell(wcid);
+            if(!clientsInCell.contains(wcid)) {
+                clientsInCell.add(wcid);
+                chatZone.userEnteredCell(wcid);
+            }
         } else {
-            chatZone.userLeftCell(wcid);
+            if(clientsInCell.contains(wcid)) {
+                clientsInCell.remove(wcid);
+                chatZone.userLeftCell(wcid);
+            }
         }
 
     }
