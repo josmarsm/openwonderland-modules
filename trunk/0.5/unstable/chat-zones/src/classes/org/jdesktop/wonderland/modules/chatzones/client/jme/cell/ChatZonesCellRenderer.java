@@ -64,6 +64,7 @@ public class ChatZonesCellRenderer extends BasicRenderer {
 
         TriMesh mesh = new Tube(name, 1, 0, 3, 50, 50);
 
+        
 //        float outerRadius = 1.0 + 0.2 *
 //
 //
