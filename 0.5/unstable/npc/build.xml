@@ -3,7 +3,6 @@
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.npc}"/>
 
-    <property name="wonderland.dir" value="${current.dir}/../../../wonderland"/>
 
     <!-- import properties for this module -->
     <property file="${current.dir}/my.module.properties"/>
