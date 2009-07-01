@@ -19,6 +19,8 @@
 package org.jdesktop.wonderland.modules.chatzones.client;
 
 import java.util.logging.Logger;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -41,6 +43,8 @@ public class ChatZonesCell extends Cell {
 
     private MouseEventListener listener = null;
 
+    private ChatZoneLabelDialog labelDialog = null;
+
     private static final Logger logger =
             Logger.getLogger(ChatZonesCell.class.getName());
 
@@ -49,6 +53,8 @@ public class ChatZonesCell extends Cell {
 
     public ChatZonesCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+
+        
     }
 
     @Override
@@ -73,18 +79,31 @@ public class ChatZonesCell extends Cell {
                 channel.removeMessageReceiver(ChatZonesCellChangeMessage.class);
                 break;
             case ACTIVE:
+
+                labelDialog = new ChatZoneLabelDialog(this);
+//                logger.warning("MADE A NEW LABEL DIALOG BOX");
+
                 if(listener==null) {
-                    listener =  new MouseEventListener();
+                    listener =  new MouseEventListener(labelDialog);
                     listener.addToEntity(renderer.getEntity());
 
                     logger.info("Making cell active and added a new listener: " + listener);
                 }
                 channel.addMessageReceiver(ChatZonesCellChangeMessage.class, new ChatZonesCellMessageReceiver());
+
+
                 break;
 
             default:
                 break;
         }
+    }
+
+    public void setLabel(String newLabel) {
+        logger.warning("Setting group label to: " + newLabel);
+
+        // Now we send a message to the server with the changed name, and wait
+        // for its response before we update anything locally. 
     }
 
     @Override
@@ -132,6 +151,15 @@ public class ChatZonesCell extends Cell {
 
     class MouseEventListener extends EventClassListener {
 
+        private JFrame labelDialog;
+
+        public MouseEventListener (JFrame d) {
+            super();
+
+            labelDialog = d;
+            setSwingSafe(true);
+        }
+
         @Override
         public Class[] eventClassesToConsume() {
             return new Class[] { MouseButtonEvent3D.class };
@@ -142,6 +170,10 @@ public class ChatZonesCell extends Cell {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
 
             logger.info("Got click! " + event);
+//            SwingUtilities.invokeLater(new Thread() {
+//                labelDialog.setvisible(true);
+//            });
+            labelDialog.setVisible(true);
         }
 
     }

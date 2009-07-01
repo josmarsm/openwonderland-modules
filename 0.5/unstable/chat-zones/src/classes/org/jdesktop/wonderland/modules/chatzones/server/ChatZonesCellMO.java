@@ -127,7 +127,6 @@ public class ChatZonesCellMO extends CellMO {
                 new ChatZoneProximityListener();
             proxRef.getForUpdate().addProximityListener(proxListener, bounds);
 
-
             logger.info("Just set proximity listener: " + proxListener);
 
             // do my init work here? Not sure where it's supposed to go.
@@ -229,7 +228,7 @@ public class ChatZonesCellMO extends CellMO {
 
         // Start with linear scaling.
         float scaleFactor = (float) (1 + 0.1 * numAvatarsInZone);
-        CellTransform scale = new CellTransform(new Quaternion(), new Vector3f(), new Vector3f(scaleFactor, 1, scaleFactor));
+        CellTransform scale = new CellTransform(new Quaternion(), this.getLocalTransform(null).getTranslation(null), new Vector3f(scaleFactor, 1, scaleFactor));
 
         MovableComponentMO mc = this.moveRef.getForUpdate();
         mc.moveRequest(null, scale);
