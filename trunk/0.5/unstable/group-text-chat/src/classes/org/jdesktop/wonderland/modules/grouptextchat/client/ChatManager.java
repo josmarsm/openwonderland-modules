@@ -414,7 +414,6 @@ public class ChatManager implements TextChatListener {
            this.tabbedChatPane.validate();
            this.tabbedChatPane.repaint();
            this.tabbedChatPane.revalidate();
-
         }
         
         currentChatPanelIndex = tabIndex;
@@ -429,6 +428,27 @@ public class ChatManager implements TextChatListener {
     public void userLeftChat(GroupID group, String userName) {
         TextChatJPanel chatPanel = this.textChatPanelMap.get(group);
         chatPanel.appendTextMessage("--- " + userName + " has left ---", null);
+    }
+
+    public void groupLabelChanged(GroupID groupID) {
+
+        logger.warning("GROUP LABEL CHANGING, TESTING EXISTENCE: " + groupID + "; " + groupID.getLabel());
+        if(this.textChatPanelMap.containsKey(groupID)) {
+            // This little dance works because the newGroupID has a different label, but
+            // having a different label but the same groupID will still evaluate to
+            // equals.
+            TextChatJPanel existingChatPanel = this.textChatPanelMap.get(groupID);
+            this.textChatPanelMap.put(groupID, existingChatPanel);
+
+            existingChatPanel.setGroup(groupID);
+
+            // We need to force a redraw here, because otherwise the label won't
+            // change until we click on it.
+            logger.warning("NAME CHANGING, GROUP ID NOW: " + groupID.getLabel());
+            logger.warning("name of existing chat panel: " + existingChatPanel.getTitle());
+
+            this.tabbedChatPane.setTitleAt(tabbedChatPane.indexOfComponent(existingChatPanel), existingChatPanel.getTitle());
+        }
     }
 
 }

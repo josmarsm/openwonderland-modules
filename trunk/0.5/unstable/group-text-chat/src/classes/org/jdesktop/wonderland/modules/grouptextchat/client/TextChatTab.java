@@ -49,7 +49,7 @@ public class TextChatTab extends JPanel {
     private final JTabbedPane pane;
     private boolean closeButtonEnabled = false;
     private JButton closeButton;
-
+    private JLabel label;
 
     public TextChatTab (final JTabbedPane pane) {
         super(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -61,7 +61,7 @@ public class TextChatTab extends JPanel {
         setOpaque(false);
 
          //make JLabel read titles from JTabbedPane
-        JLabel label = new JLabel() {
+        label = new JLabel() {
             String oldText = "";
 
             public String getText() {
@@ -90,7 +90,6 @@ public class TextChatTab extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 
     }
-
 
     private class TabButton extends JButton implements ActionListener {
         public TabButton() {
@@ -169,6 +168,14 @@ public class TextChatTab extends JPanel {
             }
         }
     };
+
+//    public void relabel() {
+//        label.setText(label.getText());
+//        label.invalidate();
+//        label.repaint();
+//        this.invalidate();
+//        this.repaint();
+//    }
 
     public void setCloseButtonEnabled(boolean enabled) {
         if(enabled & !this.closeButtonEnabled) {

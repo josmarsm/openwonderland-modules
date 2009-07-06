@@ -33,13 +33,9 @@ public class GroupID implements Serializable {
 
     private transient String str = null;
 
-//    private static GroupID invalidCellID = new CellID(Long.MIN_VALUE);
+    private String label = "";
 
     public static final long FIRST_GROUP_ID = 1;
-
-//    private static long nextGroupID = firstGroupID;
-
-//    public static GroupID globalGroup = null;
 
     public static final long GLOBAL_GROUP_ID = 0;
 
@@ -57,22 +53,6 @@ public class GroupID implements Serializable {
     public GroupID() {
         this.id = INVALID_GROUP_ID;
     }
-    /**
-     *
-     * @return The groupID representin the global chat channel.
-     */
-
-//    public static GroupID getGlobalGroupID() {
-//        if(globalGroup==null) {
-//            globalGroup = new GroupID(0);
-//        }
-//
-//        return globalGroup;
-//    }
-
-//    public static GroupID getNewGroupID() {
-//        return new GroupID(nextGroupID++);
-//    }
 
     @Override
     public boolean equals(Object obj) {
@@ -95,11 +75,13 @@ public class GroupID implements Serializable {
         return str;
     }
 
-    /**
-     * Returns a cellID that represents an invalid cell
-     * @return
-     */
-//    public static GroupID getInvalidGroupID() {
-//        return invalidCellID;
-//    }
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+
 }
