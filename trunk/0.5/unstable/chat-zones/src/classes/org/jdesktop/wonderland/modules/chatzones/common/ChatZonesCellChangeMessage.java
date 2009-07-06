@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.chatzones.common;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
 
 public class ChatZonesCellChangeMessage extends CellMessage {
     public enum ChatZoneAction {
@@ -66,4 +67,5 @@ public class ChatZonesCellChangeMessage extends CellMessage {
     public void setLabel(String label) {
         this.label = label;
     }
+
 }

@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.chatzones.client;
 
 import java.util.logging.Logger;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -36,6 +35,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.chatzones.client.jme.cell.ChatZonesCellRenderer;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellChangeMessage;
+import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellChangeMessage.ChatZoneAction;
 
 public class ChatZonesCell extends Cell {
 
@@ -49,12 +49,11 @@ public class ChatZonesCell extends Cell {
             Logger.getLogger(ChatZonesCell.class.getName());
 
     private int numAvatarsInZone = 0;
-    private String label = "";
+    private String label = "Media Lab";
 
     public ChatZonesCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-
-        
+  
     }
 
     @Override
@@ -68,42 +67,69 @@ public class ChatZonesCell extends Cell {
 
         ChannelComponent channel = getComponent(ChannelComponent.class);
 
-        switch(status) {
-            case DISK:
-                if(listener != null) {
-                    listener.removeFromEntity(renderer.getEntity());
-                    listener = null;
 
-                    logger.info("Cell getting set to DISK.");
-                }
-                channel.removeMessageReceiver(ChatZonesCellChangeMessage.class);
-                break;
-            case ACTIVE:
+        if(status==CellStatus.ACTIVE && increasing) {
 
-                labelDialog = new ChatZoneLabelDialog(this);
-//                logger.warning("MADE A NEW LABEL DIALOG BOX");
+            labelDialog = new ChatZoneLabelDialog(this);
 
-                if(listener==null) {
-                    listener =  new MouseEventListener(labelDialog);
-                    listener.addToEntity(renderer.getEntity());
-
-                    logger.info("Making cell active and added a new listener: " + listener);
-                }
-                channel.addMessageReceiver(ChatZonesCellChangeMessage.class, new ChatZonesCellMessageReceiver());
+            listener = new MouseEventListener(labelDialog);
+            listener.addToEntity(renderer.getEntity());
 
 
-                break;
-
-            default:
-                break;
+            channel.addMessageReceiver(ChatZonesCellChangeMessage.class, new ChatZonesCellMessageReceiver());
+        } else if (status==CellStatus.DISK && !increasing) {
+            listener.removeFromEntity(renderer.getEntity());
+            listener = null;
+            
+            channel.removeMessageReceiver(ChatZonesCellChangeMessage.class);
         }
+
+
+//        switch(status) {
+//            case DISK:
+//                if(listener != null) {
+//                    listener.removeFromEntity(renderer.getEntity());
+//                    listener = null;
+//
+//                    logger.info("Cell getting set to DISK.");
+//                }
+//                if(!increasing) channel.removeMessageReceiver(ChatZonesCellChangeMessage.class);
+//                break;
+//            case ACTIVE:
+//
+//                labelDialog = new ChatZoneLabelDialog(this);
+////                logger.warning("MADE A NEW LABEL DIALOG BOX");
+//
+//                if(listener==null) {
+//                    listener =  new MouseEventListener(labelDialog);
+//                    listener.addToEntity(renderer.getEntity());
+//
+//                    logger.info("Making cell active and added a new listener: " + listener);
+//                }
+//                if(increasing) channel.addMessageReceiver(ChatZonesCellChangeMessage.class, new ChatZonesCellMessageReceiver());
+//
+//                break;
+//
+//            default:
+//                break;
+//        }
     }
 
     public void setLabel(String newLabel) {
         logger.warning("Setting group label to: " + newLabel);
 
+        this.label = newLabel;
         // Now we send a message to the server with the changed name, and wait
-        // for its response before we update anything locally. 
+        // for its response before we update anything locally.
+        // (no particular resaon not to update, but useful for debugging)
+        ChatZonesCellChangeMessage msg = new ChatZonesCellChangeMessage(ChatZoneAction.LABEL);
+        msg.setLabel(newLabel);
+
+        this.sendCellMessage(msg);
+    }
+
+    public String getLabel() {
+        return this.label;
     }
 
     @Override
@@ -117,6 +143,8 @@ public class ChatZonesCell extends Cell {
         }
     }
 
+
+ 
     class ChatZonesCellMessageReceiver implements ComponentMessageReceiver {
         public void messageReceived(CellMessage message) {
             ChatZonesCellChangeMessage bsccm = (ChatZonesCellChangeMessage)message;
@@ -140,6 +168,9 @@ public class ChatZonesCell extends Cell {
                     }
                     break;
                 case LABEL:
+                    logger.warning("Changed cell name to: " + bsccm.getLabel());
+                    label = bsccm.getLabel();
+                    renderer.updateLabel();
                     break;
                 default:
                     break;

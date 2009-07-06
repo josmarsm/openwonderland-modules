@@ -32,7 +32,7 @@ public class ChatZoneLabelDialog extends JFrame {
     public ChatZoneLabelDialog(ChatZonesCell cell) {
         this.cell = cell;
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
-
+        initComponents();
     }
 
     /** This method is called from within the constructor to
@@ -111,6 +111,7 @@ public class ChatZoneLabelDialog extends JFrame {
 
     private void setLabelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setLabelButtonActionPerformed
         this.cell.setLabel(this.chatZoneLabelField.getText());
+        this.setVisible(false);
     }//GEN-LAST:event_setLabelButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
