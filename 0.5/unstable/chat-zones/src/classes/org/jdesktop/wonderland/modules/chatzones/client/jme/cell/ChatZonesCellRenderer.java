@@ -19,10 +19,8 @@
 package org.jdesktop.wonderland.modules.chatzones.client.jme.cell;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingCapsule;
-import com.jme.math.LineSegment;
-import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
+import com.jme.renderer.Renderer;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Tube;
@@ -31,6 +29,7 @@ import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.RenderState.StateType;
+import java.awt.Color;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderManager;
@@ -46,10 +45,10 @@ public class ChatZonesCellRenderer extends BasicRenderer {
 
     private static final Logger logger =
             Logger.getLogger(ChatZonesCellRenderer.class.getName());
+    private ChatZoneLabelNode labelNode;
 
     public ChatZonesCellRenderer(Cell cell) {
         super(cell);
-
         this.chatZoneCell = (ChatZonesCell) cell;
     }
 
@@ -99,7 +98,6 @@ public class ChatZonesCellRenderer extends BasicRenderer {
 
         // IMPORTANT: since the sphere will be transparent, place it
         // in the transparent render queue!
-//        mesh.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
 
         if (mesh == null) {
           node = new Node();
@@ -120,7 +118,7 @@ public class ChatZonesCellRenderer extends BasicRenderer {
         MaterialState matState3 = (MaterialState)
         rm.createRendererState(RenderState.StateType.Material);
         matState3.setDiffuse(color);
-        node.setRenderState(matState3);
+        mesh.setRenderState(matState3);
 
         BlendState alphaState = (BlendState)rm.createRendererState(StateType.Blend);
         alphaState.setBlendEnabled(true);
@@ -133,11 +131,19 @@ public class ChatZonesCellRenderer extends BasicRenderer {
 
         CullState cullState = (CullState)rm.createRendererState(StateType.Cull);
         cullState.setCullFace(CullState.Face.Back);
-        node.setRenderState(cullState);
+        mesh.setRenderState(cullState);
 
+        node.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
+
+        // Make a label node.
+        labelNode = new ChatZoneLabelNode(chatZoneCell.getLabel());
+        labelNode.setLocalTranslation(0, 0, 0);
+        node.attachChild(labelNode);
 
         return node;
     }
 
-
+    public void updateLabel() {
+        this.labelNode.setText(this.chatZoneCell.getLabel(), new Color(1f, 1f, 1f), new Color(0f, 0f, 0f));
+    }
 }

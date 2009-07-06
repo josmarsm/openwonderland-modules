@@ -142,6 +142,14 @@ public class ChatZonesCellMO extends CellMO {
         }
     }
 
+//    public updateGroupLabel(String label) {
+//        group.setLabel(label);
+//        ChatZonesCellChangeMessage msg = new ChatZonesCellChangeMessage(ChatZoneAction.LABEL);
+//        msg.setLabel(label);
+//        sendCellMessage(clientID, msg);
+//    }
+//
+    
     private static class ChatZonesCellMessageReceiver extends AbstractComponentMessageReceiver {
         public ChatZonesCellMessageReceiver(ChatZonesCellMO cellMO) {
             super(cellMO);
@@ -152,6 +160,26 @@ public class ChatZonesCellMO extends CellMO {
             ChatZonesCellMO cellMO = (ChatZonesCellMO)getCell();
 
             ChatZonesCellChangeMessage bsccm = (ChatZonesCellChangeMessage)message;
+
+            switch(bsccm.getAction()) {
+                case LABEL:
+//                    cellMO.updateGroupLabel(bsccm.getLabel());
+                    TextChatConnectionHandler textChat = (TextChatConnectionHandler) WonderlandContext.getCommsManager().getClientHandler(TextChatConnectionType.CLIENT_TYPE);
+
+                    String label = bsccm.getLabel();
+                    
+                    // Tell the text chat system that we're changing the label. 
+                    textChat.setGroupLabel(cellMO.group, label);
+                    
+                    cellMO.group.setLabel(label);
+                    ChatZonesCellChangeMessage msg = new ChatZonesCellChangeMessage(ChatZoneAction.LABEL);
+                    msg.setLabel(label);
+
+                    cellMO.sendCellMessage(clientID, msg);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
