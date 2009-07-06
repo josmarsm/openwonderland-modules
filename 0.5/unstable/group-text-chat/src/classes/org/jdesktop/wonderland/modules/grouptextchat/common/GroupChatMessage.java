@@ -33,13 +33,16 @@ public class GroupChatMessage extends Message {
         WELCOME,
         GOODBYE,
         JOINED,
-        LEFT
+        LEFT,
+        LABEL
     }
 
     private GroupAction action;
     private GroupID gid;
 
     private String name;
+
+    private String label;
 
     public GroupChatMessage(GroupID gid, GroupAction action) {
         this.gid = gid;
@@ -51,7 +54,7 @@ public class GroupChatMessage extends Message {
         this.action = action;
         this.name = name;
     }
-
+    
     /**
      *
      * @return The action this message represents.

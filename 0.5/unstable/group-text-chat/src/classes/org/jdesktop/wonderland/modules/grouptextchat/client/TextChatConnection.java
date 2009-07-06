@@ -120,7 +120,12 @@ public class TextChatConnection extends BaseConnection {
                         listener.userLeftChat(gcm.getGroupID(), gcm.getName());
                     }
                     }
-                    
+                case LABEL:
+                    synchronized (listeners) {
+                    for (TextChatListener listener : listeners) {
+                        listener.groupLabelChanged(gcm.getGroupID());
+                    }
+                    }
                     break;
                 default:
                     logger.warning("Received GroupChatMessage with unknown action: " + gcm.getAction());
@@ -160,6 +165,14 @@ public class TextChatConnection extends BaseConnection {
      * Listener for text chat messages
      */
     public interface TextChatListener {
+
+        /**
+         * The name of a group chat has changed.
+         * 
+         * @param groupID
+         */
+        public void groupLabelChanged(GroupID groupID);
+
         /**
          * A text message has been received by the client, given the user name
          * the message is from and the user name the message is to (empty string

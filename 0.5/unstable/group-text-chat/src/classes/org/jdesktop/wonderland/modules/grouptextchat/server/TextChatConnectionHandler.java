@@ -417,6 +417,26 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
         }
     }
 
+    public void setGroupLabel(GroupID group, String label) {
+        GroupChatsSet groupsContainer = (GroupChatsSet) AppContext.getDataManager().getBinding(GroupChatsSet.ID);
+        AppContext.getDataManager().markForUpdate(groupsContainer);
+
+        if(groupsContainer.groups.containsKey(group)) {
+            logger.log(Level.INFO, "Found the GroupID we're looking to update.");
+
+            Set<WonderlandClientID> wcids = (Set<WonderlandClientID>) groupsContainer.groups.get(group);
+            group.setLabel(label);
+            groupsContainer.groups.put(group, wcids);
+
+            // Now we need to update anyone on that list of their current group name.
+            if(wcids != null && wcids.size() > 0) {
+                WonderlandClientSender sender = WonderlandContext.getCommsManager().getSender(TextChatConnectionType.CLIENT_TYPE);
+                GroupChatMessage msg = new GroupChatMessage(group, GroupAction.LABEL);
+                sender.send(wcids, msg);
+            }
+        }
+    }
+
     private static class ListenersSet implements ManagedObject, Serializable {
         public static final String ID="TEXT_CHAT_LISTENERS_SET";
         public Set<ManagedReference> listeners = new HashSet<ManagedReference>();

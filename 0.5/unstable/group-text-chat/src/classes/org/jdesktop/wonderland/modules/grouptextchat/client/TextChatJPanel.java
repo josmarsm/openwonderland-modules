@@ -164,6 +164,10 @@ public class TextChatJPanel extends javax.swing.JPanel {
         
         if(group.equals(new GroupID(GroupID.GLOBAL_GROUP_ID)))
             return "Global Chat" + messages;
+        else if(group.getLabel() != null && !group.getLabel().equals("")) {
+            logger.warning("getting title, and have non-null group label: " + group.getLabel());
+            return group.getLabel();
+        }
         else
             return "Group Chat " + group.toString() + messages;
     }
@@ -183,6 +187,10 @@ public class TextChatJPanel extends javax.swing.JPanel {
         if(!this.selected && selected)
             this.unreadMessages = 0;
         this.selected = selected;
+    }
+
+    public void setGroup(GroupID group) {
+        this.group = group;
     }
 
     /** This method is called from within the constructor to
