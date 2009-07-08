@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerState;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataMessage;
 import org.jdesktop.wonderland.modules.metadata.server.service.MetadataManager;
 
@@ -63,6 +64,8 @@ public class MetadataComponentMO extends CellComponentMO {
     public MetadataComponentMO(CellMO cell) {
         super(cell);
         mcss = new MetadataComponentServerState();
+        MetadataManager metaService = AppContext.getManager(MetadataManager.class);
+        metaService.addCell(this.cellID);
         logger.log(Level.INFO, "[METADATA COMPONENT] MO created");
     }
     
@@ -170,7 +173,7 @@ public class MetadataComponentMO extends CellComponentMO {
 
     // Metadata functions
 
-    public void add(Metadata meta){
+    public void add(MetadataSPI meta){
         logger.log(Level.INFO, "[METADATA COMPONENT MO] add metadata fn");
         logger.log(Level.INFO, "Author --- " + meta.get("Creator"));
         MetadataComponentServerState state = (MetadataComponentServerState) getServerState(null);
@@ -180,7 +183,7 @@ public class MetadataComponentMO extends CellComponentMO {
         logger.log(Level.INFO, "new # --- " + state.metaCount());
     }
 
-    public void remove(Metadata meta){
+    public void remove(MetadataSPI meta){
         MetadataComponentServerState state = (MetadataComponentServerState) getServerState(null);
         state.addMetadata(meta);
         setServerState(state);

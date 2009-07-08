@@ -35,11 +35,11 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class MetadataComponentServerState extends CellComponentServerState {
 
-    private ArrayList<Metadata> metadata;
+    private ArrayList<MetadataSPI> metadata;
 
     /** Default constructor */
     public MetadataComponentServerState() {
-        metadata = new ArrayList<Metadata>();
+        metadata = new ArrayList<MetadataSPI>();
     }
 
     @Override
@@ -47,11 +47,11 @@ public class MetadataComponentServerState extends CellComponentServerState {
         return "org.jdesktop.wonderland.modules.metadata.server.MetadataComponentMO";
     }
 
-    public void addMetadata(Metadata meta){
+    public void addMetadata(MetadataSPI meta){
         metadata.add(meta);
     }
 
-    public void removeMetadata(Metadata meta) throws OperationNotSupportedException{
+    public void removeMetadata(MetadataSPI meta) throws OperationNotSupportedException{
         throw (new javax.naming.OperationNotSupportedException());
     }
 
@@ -67,7 +67,7 @@ public class MetadataComponentServerState extends CellComponentServerState {
 //        return metadata.elements();
 //    }
 
-    public ArrayList<Metadata> getMetadata(){
+    public ArrayList<MetadataSPI> getMetadata(){
         return metadata;
     }
 

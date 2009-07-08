@@ -20,8 +20,6 @@ package org.jdesktop.wonderland.modules.metadata.server.service;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 import java.util.Hashtable;
 
-
-
 import javax.naming.Context;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
@@ -29,8 +27,8 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.Attribute;
-
-
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
 
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.impl.util.AbstractService.Version;
@@ -42,25 +40,32 @@ import com.sun.sgs.kernel.ComponentRegistry;
 import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
+
 import org.apache.directory.server.core.DirectoryService;
 import org.apache.directory.server.core.jndi.CoreContextFactory;
 import org.apache.directory.shared.ldap.entry.Entry;
 import org.apache.directory.shared.ldap.name.LdapDN;
+
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.SimpleMetadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataType;
 import org.jdesktop.wonderland.server.auth.WonderlandServerIdentity;
 
 
@@ -69,7 +74,7 @@ import org.jdesktop.wonderland.server.auth.WonderlandServerIdentity;
  *
  * @author mabonner
  */
-public class MetadataService extends AbstractService {
+public class MetadataService extends AbstractService{
     /** The name of this class. */
     private static final String NAME = MetadataService.class.getName();
 
@@ -77,7 +82,7 @@ public class MetadataService extends AbstractService {
     private static final String PKG_NAME = "org.jdesktop.wonderland.modules.metadata.server.service";
 
     /** The logger for this class. */
-	private static final LoggerWrapper logger =
+    private static final LoggerWrapper logger =
         new LoggerWrapper(Logger.getLogger(PKG_NAME));
 
     /** The name of the version key. */
@@ -112,37 +117,41 @@ public class MetadataService extends AbstractService {
                            ComponentRegistry registry,
                            TransactionProxy proxy)
     {
-        super(props, registry, proxy, logger);
-        this.registry = registry;
+      super(props, registry, proxy, logger);
+      logger.log(Level.INFO, "creating metadata service");
+      this.registry = registry;
 
-        logger.log(Level.CONFIG, "Creating MetadataService properties: {0}",
-                   props);
-        PropertiesWrapper wrappedProps = new PropertiesWrapper(props);
+      logger.log(Level.CONFIG, "Creating MetadataService properties: {0}",
+                 props);
+      PropertiesWrapper wrappedProps = new PropertiesWrapper(props);
 
-        // create the transaction context factory
-        ctxFactory = new TransactionContextFactoryImpl(proxy);
-        try {
-          // TODO  get this from the scanner in the future
-          ArrayList<Metadata> tmp = new ArrayList<Metadata>();
-          tmp.add(new Metadata(null, null));
-          tmp.add(new SimpleMetadata(null, null));
-          db = new EmbeddedADS(tmp);
-           /*
-	         * Check service version.
- 	         */
-            transactionScheduler.runTask(new KernelRunnable() {
-                public String getBaseTaskType() {
-                    return NAME + ".VersionCheckRunner";
-                }
+      // create the transaction context factory
+      ctxFactory = new TransactionContextFactoryImpl(proxy);
+      try {
+        db = new EmbeddedADS();
+        scanAndRegisterTypes();
+        // TODO  get this from the scanner in the future
+//        ArrayList<MetadataSPI> tmp = new ArrayList<MetadataSPI>();
+//        tmp.add(new Metadata());
+//        tmp.add(new SimpleMetadata());
+        ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
+         /*
+         * Check service version.
+         */
+          transactionScheduler.runTask(new KernelRunnable() {
+              public String getBaseTaskType() {
+                  return NAME + ".VersionCheckRunner";
+              }
 
-                public void run() {
-                    checkServiceVersion(
-                            VERSION_KEY, MAJOR_VERSION, MINOR_VERSION);
-                }
-            }, taskOwner);
-        } catch (Exception ex) {
-            logger.logThrow(Level.SEVERE, ex, "Error reloading cells");
-        }
+              public void run() {
+                  checkServiceVersion(
+                          VERSION_KEY, MAJOR_VERSION, MINOR_VERSION);
+              }
+          }, taskOwner);
+      } catch (Exception ex) {
+          logger.logThrow(Level.SEVERE, ex, "Error reloading cells");
+      }
+      logger.log(Level.INFO, "metadata service completed, embedded db:" + db);
     }
 
     @Override
@@ -167,6 +176,36 @@ public class MetadataService extends AbstractService {
  	            "unable to convert version:" + oldVersion +
 	            " to current version:" + currentVersion);
     }
+
+  /**
+   * Look for and register classes with the MetadataType annotation.
+   *
+   * If called more than once on the same db object, could result in re-registering
+   * metadata types and throwing exceptions.
+   *
+   * @param cl the class loader to check for metadata types
+   * @throws java.lang.Exception
+   */
+  private void scanAndRegisterTypes() throws Exception {
+    ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
+    // search annotations
+    Iterator<MetadataSPI> it = scl.getAll(MetadataType.class, MetadataSPI.class); //CellFactorySPI.class);
+    logger.log(Level.INFO, "[Metadata Service] about to search classloader");
+    while (it.hasNext()) {
+      MetadataSPI metadata = it.next();
+      logger.log(Level.INFO, "[Metadata Service] using system scl, scanned type:" + metadata.simpleName());
+      registerMetadataType(metadata);
+    }
+  }
+//  private void scanAndRegisterTypes(ServerSessionManager manager) throws Exception {
+//    ScannedClassLoader cl = manager.getClassloader();
+//    // search annotations
+//    Iterator<MetadataSPI> it = cl.getAll(MetadataType.class, MetadataSPI.class); //CellFactorySPI.class);
+//    while (it.hasNext()) {
+//      MetadataSPI metadata = it.next();
+//        registerMetadataType(metadata);
+//    }
+//  }
 
     /**
      * Transaction state
@@ -238,46 +277,118 @@ public class MetadataService extends AbstractService {
         }
     }
     
+    
+    
+    //
+    // Metadata Actions
+    //
 
-    public void setCellMetadata(CellID id, ArrayList<Metadata> metadata){
+    public void setCellMetadata(CellID id, ArrayList<MetadataSPI> metadata){
       db.clearCellMetadata(id);
-      for(Metadata m:metadata){
+      for(MetadataSPI m:metadata){
         db.addMetadata(id, m);
       }
     }
 
-    public void eraseCell(CellID id){
-      db.eraseCell(id);
+    /**
+     * adds a new cell to the top level (e.g., has no parent besides the world)
+     * @param cid id of cell to create
+     */
+    void addCell(CellID cid){
+      if(db == null){
+        logger.log(Level.SEVERE, "warning: backend not initialized in addCell!");
+      }
+      db.addCell(cid);
     }
 
     /**
-     * Search the entire server for cells with metadata maching the search
-     * terms. One metadata object my match more than one filter element.
-     *
-     *
-     * @param filters the search terms
-     * @return a map of CellID's to an ArrayList<Integer> of metadata ID's
-     * that matched a search term for that cell.
+     * adds a new cell beneath the passed in cell
+     * @param cid id of cell to create
+     * @param parent id of the parent cell to create under
      */
-    public Map<CellID, ArrayList<Integer> > search(MetadataSearchFilters filters){
-      throw new UnsupportedOperationException("Not yet implemented");
+    void addCell(CellID cid, CellID parent){
+      db.addCell(cid,parent);
+    }
+
+
+    /**
+     * adds the passed metadata object to the cell with cellID cid.
+     * logs errors if the cell does not exist or the
+     * metadata type has not been registered.
+     * @param cid id of cell to add metadata to
+     * @param metadata metadata object to add
+     */
+    void addMetadata(CellID cid, MetadataSPI metadata){
+      db.addMetadata(cid, metadata);
+    }
+
+
+    /**
+     * Remove cell and all metadata. This should be called when a cell is deleted.
+     *
+     * @param cid cellID of the cell to delete
+     */
+    public void eraseCell(CellID cid){
+      db.eraseCell(cid);
     }
 
     /**
-     * Search passed in cell and its children for cells with metadata maching
-     * the search terms. One metadata object my match more than one filter
-     * element.
-     *
-     *
-     * @param scope the cell to scope the search under
-     * @param filters the search term
-     * @return a map of CellID's to an ArrayList<Integer> of metadata ID's
-     * that matched a search term for that cell.
+     * Delete the specified metadata object
+     * @param mid metadata id designating the metadata to remove
      */
-    public ArrayList<Metadata> search(CellID scope, MetadataSearchFilters filters){
-      throw new UnsupportedOperationException("Not yet implemented");
+    public void eraseMetadata(int mid){
+      db.eraseMetadata(mid);
     }
 
+    /**
+     * Remove all metadata from a cell
+     *
+     * @param cid id of cell to remove metadata from
+     */
+    public void clearCellMetadata(CellID cid){
+      db.clearCellMetadata(cid);
+    }
+
+    /**
+     * Take any action necessary to register this metadatatype as an option.
+     * Name collision on class name or attribute name is up to the implementation.
+     *
+     * This implementation uses the full package name to describe a Metadata obj
+     * and its attributes, avoiding collisions.
+     *
+     * TODO will scan class loader take care of duplication checking anyway?
+     * @param m example of the type to register
+     */
+    public void registerMetadataType(MetadataSPI m) throws Exception{
+      db.registerMetadataType(m);
+    }
+
+
+    /**
+     * Search all cells in the world, finding cells with metadata satisfying the
+     * passed in MetadataSearchFilters
+     *
+     * @param filters search criteria
+     * @param cid id of parent cell to scope the search
+     * @return map, mapping cell id's (as Integers) whose metadata that matched the
+     * search, to a set of metadata id's that matched the search for that cell.
+     */
+    public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
+      return db.searchMetadata(filters);
+    }
+
+    /**
+     * Search all cells beneath cid, finding cells with metadata satisfying the
+     * passed in MetadataSearchFilters
+     *
+     * @param filters search criteria
+     * @param cid id of parent cell to scope the search
+     * @return map, mapping cell id's (as Integers) whose metadata that matched the
+     * search, to a set of metadata id's that matched the search for that cell.
+     */
+    public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
+      return db.searchMetadata(filters, cid);
+    }
 
 
     /**

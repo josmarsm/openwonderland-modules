@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertie
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerState;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 import org.jdesktop.wonderland.modules.metadata.common.SimpleMetadata;
 
 /**
@@ -44,7 +45,7 @@ public class MetadataComponentProperties extends JPanel
   private HashMap<String, JTable> metatypeMap = new HashMap<String, JTable>();
   private static Logger logger = Logger.getLogger(MetadataComponent.class.getName());
   // TODO does this need to be synchronized? I don't think so
-  private static ArrayList<Metadata> metaTypes = new ArrayList<Metadata>();
+  private static ArrayList<MetadataSPI> metaTypes = new ArrayList<MetadataSPI>();
 
   // TODO could not add MetadataTypesTable to NetBeans GUI Builder
   // workaround: use customize code to make basicTabs instantiated as
@@ -55,12 +56,13 @@ public class MetadataComponentProperties extends JPanel
    * initialize metadata types list
    */
   static {
-      // eventually this will be initialized via the annotation system
-      // will this still be the appropriate place to init it?
+    // TODO
+    // eventually this will be initialized via the annotation system
+    // will this still be the appropriate place to init it?
 
-      // for now, hard-include types
-      metaTypes.add(new Metadata(null, null));
-      metaTypes.add(new SimpleMetadata(null, null));
+    // for now, hard-include types
+    metaTypes.add(new Metadata());
+    metaTypes.add(new SimpleMetadata());
   }
 
     /** Creates new form MetadataComponentProperties */
@@ -173,7 +175,7 @@ public class MetadataComponentProperties extends JPanel
 }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-      tabs.createNewMetadataOnCurrentTab();
+      tabs.createNewDefaultMetadataOnCurrentTab();
 }//GEN-LAST:event_addButtonActionPerformed
 
 
@@ -230,7 +232,7 @@ public class MetadataComponentProperties extends JPanel
       // convert models back into ServerState
       for(int i = 0; i < tabs.getComponentCount(); i++){
         try {
-          for (Metadata m : tabs.getMetadataFromTab(i)) {
+          for (MetadataSPI m : tabs.getMetadataFromTab(i)) {
             state.addMetadata(m);
           }
         } catch (Exception ex) {
@@ -265,3 +267,6 @@ public class MetadataComponentProperties extends JPanel
   }
 
 }
+
+
+

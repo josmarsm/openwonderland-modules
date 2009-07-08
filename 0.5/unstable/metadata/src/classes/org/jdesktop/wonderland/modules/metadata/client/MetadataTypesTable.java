@@ -22,7 +22,9 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
 
@@ -46,12 +48,14 @@ public class MetadataTypesTable extends JTabbedPane {
   private static Logger logger = Logger.getLogger(MetadataComponent.class.getName());
   private ArrayList<ListSelectionListener> tableSelectionListeners = new ArrayList<ListSelectionListener>();
   private ArrayList<TableModelListener> tableModelListeners = new ArrayList<TableModelListener>();
-  private HashMap<JTable, Metadata> defaultMetadata = new HashMap<JTable, Metadata>();
+//  private HashMap<JTable, Class> defaultMetadata = new HashMap<JTable, Class>();
+
   /**
-   * Fetched from MetadataPlugin. Used to create tabs, and as default instances
-   * of each Metadata type when adding a new piece of blank Metadata.
+   * whether or not to enforce table cell's editability based on Metadata types
+   * turned off, for example, in the search panel to allow user to edit any attribute
+   * in their search query.
    */
-//  private ArrayList<Metadata> metadataTypes;
+  private boolean enforceEditable;
 
   /**
    *
@@ -59,7 +63,12 @@ public class MetadataTypesTable extends JTabbedPane {
    */
   public MetadataTypesTable() {
     // this panel is dynamically populated
+    enforceEditable = true;
     updateTypeTabs();
+  }
+
+  void setEnforceEditable(boolean b) {
+    enforceEditable = b;
   }
 
   
@@ -69,16 +78,24 @@ public class MetadataTypesTable extends JTabbedPane {
    * the client plugin, and rebuild each tab.
    */
   private void updateTypeTabs() {
-//    metadataTypes = MetadataPlugin.getMetadataTypes();
-//    Iterator<Metadata> iterator = metadataTypes.iterator();
-    Iterator<Metadata> iterator = MetadataPlugin.getMetadataTypes().iterator();
+//    Iterator<Class> iterator = MetadataPlugin.getMetadataTypes().iterator();
+    Iterator<MetadataSPI> iterator = MetadataClientUtils.getTypesIterator();
     removeAll();
     metatypeMap.clear();
     while(iterator.hasNext()){
-        Metadata type = iterator.next();
+      MetadataSPI type = iterator.next();
+//      Class clazz = type.getClass();
+//        MetadataSPI type = null;
+//        try {
+//          type = (MetadataSPI) iterator.next().newInstance();
+//        } catch (Exception ex) {
+//          logger.log(Level.SEVERE, "[MTT] unexpected type in metadata plugin:" + ex);
+//        }
+        // tell type to do its client setup
+//        type.initByClient(LoginManager.getPrimary().getPrimarySession().getUserID());
         // create a new table for this type
         JTable typeTable = new JTable(new MetadataTableModel(type));
-        defaultMetadata.put(typeTable, type);
+//        defaultMetadata.put(typeTable, clazz);
 
         // listeners
         for(ListSelectionListener l: tableSelectionListeners){
@@ -119,8 +136,8 @@ public class MetadataTypesTable extends JTabbedPane {
    *
    * @param newMetadata The list of Metadata to add.
    */
-  public void addMetadata(List<Metadata> newMetadata){
-    for(Metadata m : newMetadata)
+  public void addMetadata(List<MetadataSPI> newMetadata){
+    for(MetadataSPI m : newMetadata)
     {
         // match to appropriate model
         JTable table = metatypeMap.get(m.getClass());
@@ -139,21 +156,52 @@ public class MetadataTypesTable extends JTabbedPane {
   }
 
   /**
-   * Add a new (mostly) blank row/Metadata to the currentl selected tab.
+   * helper function, creates blank new metadata object of the same type as the
+   * current tab.
+   * @return
+   */
+  private MetadataSPI createNewMetadata(){
+    JTable tab = getCurrentTable();
+    MetadataTableModel mod = (MetadataTableModel) tab.getModel();
+    MetadataSPI res = null;
+    try {
+      res = (MetadataSPI) mod.getMetadataClass().newInstance();
+    } catch (InstantiationException ex) {
+      Logger.getLogger(MetadataTypesTable.class.getName()).log(Level.SEVERE, null, ex);
+    } catch (IllegalAccessException ex) {
+      Logger.getLogger(MetadataTypesTable.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    return res;
+  }
+  /**
+   * Add a new (mostly) blank row/Metadata to the currently selected tab. Any fields
+   * that have a default value will be filled in. Editable/not editable will be
+   * enforced.
    *
    * Default, non-user editable fields like Creator and Created will be filled.
    *
    */
-  public void createNewMetadataOnCurrentTab(){
-    JTable tab = getCurrentTable();
-    MetadataTableModel mod = (MetadataTableModel) tab.getModel();
-    
-    Date date = new Date();
-    String created = Metadata.dateFormat.format(date);
-    Metadata tmp = defaultMetadata.get(tab);
-    // this will change the Metadata in the defaults map, but that is fine
-    tmp.put("Created", new MetadataValue(created, false, true, Datatype.DATE));
-    mod.addRow(defaultMetadata.get(tab));
+  public void createNewDefaultMetadataOnCurrentTab(){
+    MetadataSPI meta = createNewMetadata();
+    // prepare with defaults
+    meta.initByClient(LoginManager.getPrimary().getPrimarySession().getUserID());
+
+    MetadataTableModel mod = (MetadataTableModel) getCurrentTable().getModel();
+    mod.addRow(meta);
+  }
+
+  /**
+   * Add a new completely blank row/Metadata to the currently selected tab. All columns
+   * will be editable.
+   *
+   * Default, non-user editable fields like Creator and Created will be filled.
+   *
+   */
+  public void createNewBlankMetadataOnCurrentTab(){
+    MetadataSPI meta = createNewMetadata();
+
+    MetadataTableModel mod = (MetadataTableModel) getCurrentTable().getModel();
+    mod.addRow(meta);
   }
 
   /**
@@ -169,7 +217,7 @@ public class MetadataTypesTable extends JTabbedPane {
    * Returns the list of Metadata from the tab at index idx.
    * @param idx
    */
-    public ArrayList<Metadata> getMetadataFromTab(int idx) throws Exception {
+    public ArrayList<MetadataSPI> getMetadataFromTab(int idx) throws Exception {
         // some fun downcasting to get to the table
         JScrollPane sp = (JScrollPane) getComponent(idx);
         JViewport vp =  (JViewport) sp.getViewport();
@@ -205,17 +253,21 @@ public class MetadataTypesTable extends JTabbedPane {
 
  /**
   * Each Metadata type gets its own tab and table, backed by an instance of
-  * this class. MetadataTableModel is also checks which fields should be
+  * this class. MetadataTableModel may also check which fields should be
   * displayed or editable for this Metadata type.
   *
   *
   */
   class MetadataTableModel extends AbstractTableModel{
     private HashMap<Integer, String> columnNames = new HashMap<Integer, String>();
-    private ArrayList<Metadata> metadata = new ArrayList<Metadata>();
+    private ArrayList<MetadataSPI> metadata = new ArrayList<MetadataSPI>();
     private HashMap<Point, Boolean> editable = new HashMap<Point, Boolean>(); // point to represent row/col
+    /**
+     * can be used to get new instances of metadata for this model
+     */
+    private Class metadataClass;
 
-    public MetadataTableModel(Metadata type) {
+    public MetadataTableModel(MetadataSPI type) {
        // TODO this needs to talk to the type registration system
        // to get example blanks of each type
        logger.log(Level.INFO, "MetadataTableModel type: " + type.simpleName());
@@ -237,9 +289,16 @@ public class MetadataTypesTable extends JTabbedPane {
 
        }
 
+
+       metadataClass = type.getClass();
+
     }
 
-    public void addRow(Metadata m) {
+    public Class getMetadataClass(){
+      return metadataClass;
+    }
+
+    public void addRow(MetadataSPI m) {
         logger.log(Level.INFO, "add row in model");
         metadata.add(m);
         int row = metadata.size() - 1;
@@ -291,7 +350,7 @@ public class MetadataTypesTable extends JTabbedPane {
     // TODO will this be called by things like add row? how does inplace editing work?
     @Override
     public void setValueAt(Object aValue, int row, int col){
-        if(editable.get(new Point(row, col))){
+        if(enforceEditable && editable.get(new Point(row, col))){
             String attr = columnNames.get(col);
             // we just verified this value should be editable
             // and it must be visible to have been editted
@@ -308,6 +367,10 @@ public class MetadataTypesTable extends JTabbedPane {
 
     @Override
     public boolean isCellEditable(int row, int col) {
+        if(!enforceEditable){
+          logger.log(Level.INFO, "do not enforce editable");
+          return true;
+        }
         if(editable == null){
           logger.log(Level.INFO, "editable is null.. " + editable);
         }
@@ -336,7 +399,7 @@ public class MetadataTypesTable extends JTabbedPane {
      * Returns the list of Metadata represented by this model.
      * @param state
      */
-    public ArrayList<Metadata> getMetadata() {
+    public ArrayList<MetadataSPI> getMetadata() {
         return metadata;
     }
 

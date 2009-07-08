@@ -21,21 +21,29 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.modules.metadata.client.MetadataClientUtils;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 import org.jdesktop.wonderland.modules.metadata.common.SimpleMetadata;
 
 /**
- * Client-size plugin for metadata module.
- * Stores list of metadata types
+ * Client plugin for metadata module.
  *
- * Provides GUI access to
- * search interface in the form of an extra window.
+ * Provides GUI access to search interface in the form of an extra window.
+ *
+ * In the future, in a client connected to multiple sessions at the same time,
+ * items like this global search will have to make it clear what session/server
+ * they are searching.
+ *
+ * This implementation searches only the primary session/server.
  *
  * @author mabonner
  */
@@ -43,7 +51,7 @@ import org.jdesktop.wonderland.modules.metadata.common.SimpleMetadata;
 public class MetadataPlugin extends BaseClientPlugin
 {
     private static Logger logger = Logger.getLogger(MetadataPlugin.class.getName());
-    private static ArrayList<Metadata> metaTypes = new ArrayList<Metadata>();
+//    private static ArrayList<Class> metaTypes = new ArrayList<Class>();
 
     /* The single instance of the cell palette dialog */
     private WeakReference<MetadataSearchForm> searchFormRef = null;
@@ -55,8 +63,15 @@ public class MetadataPlugin extends BaseClientPlugin
         // TODO
         // request metadata list from annotation registration system
         // for now, fill manually
-        metaTypes.add(new Metadata(null, null));
-        metaTypes.add(new SimpleMetadata(null, null));
+//      Iterator<MetadataSPI> it = MetadataClientUtils.getTypesIterator();
+//      logger.log(Level.INFO, "[Metadata Plugin] grabbed iter from utils");
+//      while (it.hasNext()) {
+//        MetadataSPI metadata = it.next();
+//        logger.log(Level.INFO, "[Metadata Plugin] using utils (system), scanned type:" + metadata.simpleName());
+//      }
+
+//      metaTypes.add(Metadata.class);
+//      metaTypes.add(SimpleMetadata.class);
     }
 
     @Override
@@ -105,9 +120,9 @@ public class MetadataPlugin extends BaseClientPlugin
         super.initialize(loginInfo);
     }
 
-    public static final ArrayList<Metadata> getMetadataTypes(){
-        return metaTypes;
-    }
+//    public static final ArrayList<Class> getMetadataTypes(){
+//        return metaTypes;
+//    }
 
     /**
      * Notification that our server is now the the primary server
