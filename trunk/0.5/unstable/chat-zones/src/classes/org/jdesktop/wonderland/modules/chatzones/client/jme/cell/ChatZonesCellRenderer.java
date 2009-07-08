@@ -33,7 +33,9 @@ import com.jme.scene.state.RenderState.StateType;
 import java.awt.Color;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.processor.RotationProcessor;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
@@ -62,7 +64,7 @@ public class ChatZonesCellRenderer extends BasicRenderer {
 
 //        TriMesh mesh = new Box(cell.getCellID().toString(), new Vector3f(), 4, 4, 4f);
 
-        TriMesh mesh = new Tube(name, 1, 0, 1, 50, 50);
+        TriMesh mesh = new Tube(name, 1, 1, 1.0f, 50, 50);
 
         
 //        float outerRadius = 1.0 + 0.2 *
@@ -106,10 +108,6 @@ public class ChatZonesCellRenderer extends BasicRenderer {
         }
 
         node = new Node();
-
-
-
-
         node.attachChild(mesh);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
@@ -149,11 +147,9 @@ public class ChatZonesCellRenderer extends BasicRenderer {
         node.attachChild(labelNode);
 
 
-//                        RotationProcessor rp = new RotationProcessor("Label Rotator", worldManager,
-//                teapot, (float) (6.0f * Math.PI / 180.0f));
-//        e.addComponent(ProcessorComponent.class, rp);
+        RotationProcessor rp = new RotationProcessor("Label Rotator", ClientContextJME.getWorldManager(),labelNode, (float) (Math.PI / 360.0f));
+        entity.addComponent(ProcessorComponent.class, rp);
     
-
 
         return node;
     }

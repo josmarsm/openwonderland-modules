@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.chatzones.client.jme.cell.ChatZonesCellRenderer;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellChangeMessage;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellChangeMessage.ChatZoneAction;
+import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellClientState;
 
 public class ChatZonesCell extends Cell {
 
@@ -65,6 +66,9 @@ public class ChatZonesCell extends Cell {
     @Override
     public void setClientState(CellClientState state) {
         super.setClientState(state);
+
+        this.numAvatarsInZone = ((ChatZonesCellClientState)state).getNumAvatarsInZone();
+        this.label = ((ChatZonesCellClientState)state).getGroup().getLabel();
     }
 
     @Override

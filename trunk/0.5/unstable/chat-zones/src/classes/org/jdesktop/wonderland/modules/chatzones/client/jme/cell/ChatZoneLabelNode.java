@@ -72,7 +72,11 @@ public class ChatZoneLabelNode extends Node {
     public ChatZoneLabelNode(String text, Color foreground, Color background,
             float height, boolean billboard, Font font) {
         super();
-        this.text = text;
+
+        if(text.equals(""))
+            this.text = " ";
+        else
+            this.text = text;
         this.foreground = foreground;
         this.background = background;
         this.height = height;
@@ -95,7 +99,10 @@ public class ChatZoneLabelNode extends Node {
     }
 
     public void setText(String text, Color foreground, Color background) {
-        this.text = text;
+        if(text.equals(""))
+            this.text = " ";
+        else
+            this.text = text;
         this.foreground = foreground;
         this.background = background;
         Node tmpParent = mesh.getParent();
@@ -224,7 +231,7 @@ public class ChatZoneLabelNode extends Node {
 
 //        TriMesh ret = new Quad("textLabel2d", w * factor, h * factor);
         
-        TriMesh ret = new Tube("textLabelTube", 1.1f, 1.09f, 1.0f);
+        TriMesh ret = new Tube("textLabelTube", 1.05f, 1.05f, 1.0f);
         TextureState ts = DisplaySystem.getDisplaySystem().getRenderer().createTextureState();
         Texture tex = TextureManager.loadTexture(img, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
 
@@ -241,6 +248,8 @@ public class ChatZoneLabelNode extends Node {
 //        ret.updateGeometricState(0, true);
 
 //        tex.setScale(new Vector3f(scales.x, scales.y, 1));
+
+//        tex.setWrap(Texture.WrapMode.Repeat);
         ts.setTexture(tex);
         ts.setEnabled(true);
         ret.setRenderState(ts);
