@@ -27,7 +27,6 @@ import com.jme.renderer.Renderer;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial.LightCombineMode;
 import com.jme.scene.TriMesh;
-import com.jme.scene.shape.Quad;
 import com.jme.scene.shape.Tube;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.BlendState.TestFunction;
@@ -46,6 +45,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.util.Arrays;
+import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.processor.RotationProcessor;
 
 public class ChatZoneLabelNode extends Node {
 
@@ -81,6 +82,7 @@ public class ChatZoneLabelNode extends Node {
         }
         setFont(font);
         attachChild(getQuad());
+
     }
 
     public void setFont(Font font) {

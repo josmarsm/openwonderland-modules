@@ -36,14 +36,12 @@ public class ChatZoneProximityListener implements ProximityListenerSrv, Serializ
 
     private static final Logger logger = Logger.getLogger(ChatZoneProximityListener.class.getName());
 
-    Set<WonderlandClientID> clientsInCell = new HashSet<WonderlandClientID>();
+//    Set<WonderlandClientID> clientsInCell = new HashSet<WonderlandClientID>();
 
     public void viewEnterExit(boolean entered, CellID cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
 
         // We have to do a little dance here to get a WonderlandClientID out of the
-        // ViewCell system. But this works pretty well, although it does depend
-        // on a hacked version of the ViewCellCacheMO and we haven't sent that
-        // upstream yet. 
+        // ViewCell system.
         CellManagerMO cm = WonderlandContext.getCellManager();
         CellMO cellMO = cm.getCell(viewCellID);
 
@@ -72,19 +70,19 @@ public class ChatZoneProximityListener implements ProximityListenerSrv, Serializ
         // every time because it forgets that the person was already there.
         // So we need to track it here, because this object persists across those
         // add/remove operations.
-        
 
+//        logger.finer("HELLO");
         // Send messages back to the parent that we have a user entering the cell.
         if(entered) {
-            if(!clientsInCell.contains(wcid)) {
-                clientsInCell.add(wcid);
+//            if(!clientsInCell.contains(wcid)) {
+//                clientsInCell.add(wcid);
                 chatZone.userEnteredCell(wcid);
-            }
+//            }
         } else {
-            if(clientsInCell.contains(wcid)) {
-                clientsInCell.remove(wcid);
+//            if(clientsInCell.contains(wcid)) {
+//                clientsInCell.remove(wcid);
                 chatZone.userLeftCell(wcid);
-            }
+//            }
         }
 
     }

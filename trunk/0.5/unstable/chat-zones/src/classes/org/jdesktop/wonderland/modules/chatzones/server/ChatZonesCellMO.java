@@ -65,6 +65,7 @@ public class ChatZonesCellMO extends CellMO {
     private ChatZoneProximityListener proxListener;
 
 
+
     public ChatZonesCellMO () {
         super();
 
@@ -121,7 +122,7 @@ public class ChatZonesCellMO extends CellMO {
 
             // Just guessing here...
 //            logger.info("localBounds: " + this.getLocalBounds());
-            BoundingVolume[] bounds = {this.getLocalBounds()};
+            BoundingVolume[] bounds = {this.getLocalBounds().clone(null)};
 
             proxListener =
                 new ChatZoneProximityListener();
@@ -197,7 +198,7 @@ public class ChatZonesCellMO extends CellMO {
 
         logger.info("numAvatarsInZone: " + numAvatarsInZone);
 
-        this.updateScaleTransform();
+//        this.updateScaleTransform();
 
         // Send a message to all clients that the number of avatars in this
         // cell has changed. 
@@ -206,7 +207,7 @@ public class ChatZonesCellMO extends CellMO {
         msg.setNumAvatarInZone(numAvatarsInZone);
         this.sendCellMessage(null, msg);
 
-//        this.updateProximityListenerBounds();
+        this.updateProximityListenerBounds();
     }
 
     /**
@@ -224,7 +225,7 @@ public class ChatZonesCellMO extends CellMO {
         logger.info("numAvatarsInZone: " + numAvatarsInZone);
 
 
-        this.updateScaleTransform();
+//        this.updateScaleTransform();
 
 
         // Send a message to all clients that the number of avatars in this
@@ -234,7 +235,7 @@ public class ChatZonesCellMO extends CellMO {
         msg.setNumAvatarInZone(numAvatarsInZone);
         this.sendCellMessage(null, msg);
 
-//        this.updateProximityListenerBounds();
+        this.updateProximityListenerBounds();
     }
 
     /**
@@ -242,24 +243,23 @@ public class ChatZonesCellMO extends CellMO {
      * updated and we should change the proximity listener appropriately.
      */
     public void updateProximityListenerBounds() {
-        BoundingVolume[] bounds = {this.getLocalBounds()};
+        BoundingVolume[] bounds = {new BoundingCapsule(new Vector3f(), new LineSegment(new Vector3f(0, 0, -10), new Vector3f(0, 0, 10)),(float) (1 + 0.3 * numAvatarsInZone))};
 
         logger.info("Updating proximity bounds: " + bounds);
 
         ProximityComponentMO proxComp = proxRef.getForUpdate();
-        proxComp.removeProximityListener(proxListener);
-        proxComp.addProximityListener(proxListener, bounds);
+        proxComp.setProximityListenerBounds(proxListener, bounds);
     }
 
-    private void updateScaleTransform() {
-        // Decide how big we should be based on the number of avatars in the cell.
-
-        // Start with linear scaling.
-        float scaleFactor = (float) (1 + 0.1 * numAvatarsInZone);
-        CellTransform scale = new CellTransform(new Quaternion(), this.getLocalTransform(null).getTranslation(null), new Vector3f(scaleFactor, 1, scaleFactor));
-
-        MovableComponentMO mc = this.moveRef.getForUpdate();
-        mc.moveRequest(null, scale);
-        logger.info("Just send a scale change request to MoveComponent with scaleFactor: " + scaleFactor);
-    }
+//    private void updateScaleTransform() {
+//        // Decide how big we should be based on the number of avatars in the cell.
+//
+//        // Start with linear scaling.
+//        float scaleFactor = (float) (1 + 2 * numAvatarsInZone);
+//        CellTransform scale = new CellTransform(new Quaternion(), this.getLocalTransform(null).getTranslation(null), scaleFactor);
+//
+//        MovableComponentMO mc = this.moveRef.getForUpdate();
+//        mc.moveRequest(null, scale);
+//        logger.info("Just send a scale change request to MoveComponent with scaleFactor: " + scaleFactor);
+//    }
 }

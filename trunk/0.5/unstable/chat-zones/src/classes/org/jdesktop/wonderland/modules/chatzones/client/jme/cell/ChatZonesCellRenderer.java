@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.chatzones.client.jme.cell;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.renderer.Renderer;
 import com.jme.scene.Node;
@@ -61,7 +62,7 @@ public class ChatZonesCellRenderer extends BasicRenderer {
 
 //        TriMesh mesh = new Box(cell.getCellID().toString(), new Vector3f(), 4, 4, 4f);
 
-        TriMesh mesh = new Tube(name, 1, 0, 3, 50, 50);
+        TriMesh mesh = new Tube(name, 1, 0, 1, 50, 50);
 
         
 //        float outerRadius = 1.0 + 0.2 *
@@ -105,6 +106,10 @@ public class ChatZonesCellRenderer extends BasicRenderer {
         }
 
         node = new Node();
+
+
+
+
         node.attachChild(mesh);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
@@ -138,12 +143,30 @@ public class ChatZonesCellRenderer extends BasicRenderer {
         // Make a label node.
         labelNode = new ChatZoneLabelNode(chatZoneCell.getLabel());
         labelNode.setLocalTranslation(0, 0, 0);
+
+
+
         node.attachChild(labelNode);
+
+
+//                        RotationProcessor rp = new RotationProcessor("Label Rotator", worldManager,
+//                teapot, (float) (6.0f * Math.PI / 180.0f));
+//        e.addComponent(ProcessorComponent.class, rp);
+    
+
 
         return node;
     }
 
     public void updateLabel() {
         this.labelNode.setText(this.chatZoneCell.getLabel(), new Color(1f, 1f, 1f), new Color(0f, 0f, 0f));
+    }
+
+    public void updateSize(int numAvatarsInZone) {
+        float scaleFactor = (float) (1 + 0.3 * numAvatarsInZone);
+        logger.warning("Updating size witih scaleFactor: " + scaleFactor);
+        this.node.setLocalScale(new Vector3f(scaleFactor, 1, scaleFactor));
+        
+        ClientContextJME.getWorldManager().addToUpdateList(node);
     }
 }
