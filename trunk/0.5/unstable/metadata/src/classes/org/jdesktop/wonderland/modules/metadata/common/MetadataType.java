@@ -1,3 +1,5 @@
+package org.jdesktop.wonderland.modules.metadata.common;
+
 /**
  * Project Wonderland
  *
@@ -15,30 +17,17 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.metadata.common.messages;
 
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
- * Metadata Message.
+ * Annotation that indicates this class is a metadata type.  Metadata types must
+ * also either implement the MetadataSPI or extend the base Metadata type.
+ * 
  * @author mabonner
  */
-public class MetadataMessage extends CellMessage {
-
-    public enum Action {ADD, REMOVE, MODIFY};
-    public Action action;
-    public MetadataSPI metadata;
-
-
-    public MetadataMessage(){
-        // a dummy for the test function
-    }
-
-    public MetadataMessage(Action act, MetadataSPI meta){
-        action = act;
-        metadata = meta;
-    }
-
-
+@Target(ElementType.TYPE)
+public @interface MetadataType {
 }
+

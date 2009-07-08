@@ -28,6 +28,7 @@ public class MetadataSearchForm extends javax.swing.JFrame {
         // work-around for NetBeans GUI builder
         // see comment where tabs is declared
         tabs = (MetadataTypesTable) basicTabs;
+        tabs.setEnforceEditable(false);
     }
 
     /** This method is called from within the constructor to
@@ -147,7 +148,7 @@ public class MetadataSearchForm extends javax.swing.JFrame {
 }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-      tabs.createNewMetadataOnCurrentTab();
+      tabs.createNewBlankMetadataOnCurrentTab();
 }//GEN-LAST:event_addButtonActionPerformed
 
     /**

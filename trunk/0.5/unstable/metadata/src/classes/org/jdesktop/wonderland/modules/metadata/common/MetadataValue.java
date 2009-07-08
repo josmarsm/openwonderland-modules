@@ -15,7 +15,15 @@ public class MetadataValue implements Serializable{
     public enum Datatype { DATE, STRING, INTEGER }
     private String val;
     public boolean displayInProperties;
+    /**
+     * whether or not the value may be changed by the user, e.g. in the cell
+     * properties pane
+     */
     public boolean editable;
+    /**
+     * whether or not the value may changed at all
+     */
+    public boolean valIsFinal;
     public final Datatype type;
 
     public MetadataValue(){
@@ -25,11 +33,24 @@ public class MetadataValue implements Serializable{
         type = Datatype.STRING;
     }
 
+    /**
+     * copy constructor
+     * @param v
+     */
+    public MetadataValue(MetadataValue v){
+        val = v.val;
+        editable = v.editable;
+        displayInProperties = v.displayInProperties;
+        type = v.type;
+        valIsFinal = false;
+    }
+
     public MetadataValue(String v){
         val = v;
         editable = true;
         displayInProperties = true;
         type = Datatype.STRING;
+        valIsFinal = false;
     }
 
     public MetadataValue(String v, boolean e){
@@ -37,18 +58,20 @@ public class MetadataValue implements Serializable{
         editable = e;
         displayInProperties = true;
         type = Datatype.STRING;
+        valIsFinal = false;
     }
 
-    public MetadataValue(String v, boolean e, boolean d, Datatype t){
+    public MetadataValue(String v, boolean e, boolean d, boolean vf, Datatype t){
         val = v;
         editable = e;
         displayInProperties = d;
         type = t;
+        valIsFinal = vf;
     }
 
-    public void setVal(String v) throws Exception{
-        if(!editable){
-            throw (new Exception("MetadataValue is not editable!"));
+    public void setVal(String v) throws MetadataException{
+        if(valIsFinal){
+            throw (new MetadataException("MetadataValue is final cannot be changed!!"));
         }
         val = v;
     }
