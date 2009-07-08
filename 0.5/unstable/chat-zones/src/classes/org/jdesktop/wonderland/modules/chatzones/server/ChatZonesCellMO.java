@@ -107,6 +107,7 @@ public class ChatZonesCellMO extends CellMO {
         }
 
         ((ChatZonesCellClientState)cellClientState).setNumAvatarsInZone(this.numAvatarsInZone);
+        ((ChatZonesCellClientState)cellClientState).setGroup(group);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 

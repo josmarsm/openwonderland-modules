@@ -19,10 +19,12 @@
 package org.jdesktop.wonderland.modules.chatzones.common;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
 
 public class ChatZonesCellClientState extends CellClientState {
 
     private int numAvatarsInZone = 0;
+    private GroupID group = null;
     
     public ChatZonesCellClientState() {
         
@@ -35,5 +37,14 @@ public class ChatZonesCellClientState extends CellClientState {
     public void setNumAvatarsInZone(int numAvatarsInZone) {
         this.numAvatarsInZone = numAvatarsInZone;
     }
+
+    public GroupID getGroup() {
+        return group;
+    }
+
+    public void setGroup(GroupID group) {
+        this.group = group;
+    }
+
 
 }
