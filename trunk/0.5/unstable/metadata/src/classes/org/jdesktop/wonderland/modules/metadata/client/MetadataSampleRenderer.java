@@ -17,7 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.metadata.client;
 
-import com.jme.bounding.BoundingBox;
+import org.jdesktop.wonderland.modules.metadata.client.samplecell.MetadataSampleCell;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;

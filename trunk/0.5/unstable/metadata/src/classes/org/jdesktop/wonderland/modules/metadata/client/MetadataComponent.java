@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataMessage;
  * @author Matt Bonner
  */
 public class MetadataComponent extends CellComponent {
-
+    
     private static Logger logger = Logger.getLogger(MetadataComponent.class.getName());
     private String info = null;
     

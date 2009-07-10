@@ -3,10 +3,11 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.metadata.common;
+package org.jdesktop.wonderland.modules.metadata.common.basetypes;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
+import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataContextMenuItem;
+import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
 
 /**
  * Example extension of the default Metadata base class.

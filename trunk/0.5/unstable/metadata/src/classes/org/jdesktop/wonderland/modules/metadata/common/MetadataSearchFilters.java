@@ -5,10 +5,20 @@
 
 package org.jdesktop.wonderland.modules.metadata.common;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+
 /**
  *
- * @author Matt
+ * @author mabonner
  */
-public class MetadataSearchFilters {
+public class MetadataSearchFilters implements Serializable{
+  ArrayList<MetadataSPI> filters = new ArrayList<MetadataSPI>();
+  public void addFilter(MetadataSPI m) {
+    filters.add(m);
+  }
 
+  public int filterCount(){
+    return filters.size();
+  }
 }

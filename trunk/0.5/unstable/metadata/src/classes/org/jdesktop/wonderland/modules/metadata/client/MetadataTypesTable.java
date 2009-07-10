@@ -3,10 +3,7 @@ package org.jdesktop.wonderland.modules.metadata.client;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -18,15 +15,12 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
 
 /**
  *
@@ -51,11 +45,15 @@ public class MetadataTypesTable extends JTabbedPane {
 //  private HashMap<JTable, Class> defaultMetadata = new HashMap<JTable, Class>();
 
   /**
-   * whether or not to enforce table cell's editability based on Metadata types
-   * turned off, for example, in the search panel to allow user to edit any attribute
-   * in their search query.
+   * set the metadata table to allow editing of table cells always, never, or check
+   * if the metadata type the cell is part of allows editing. 
    */
-  private boolean enforceEditable;
+  public enum AllowEdits { ALWAYS, NEVER, CHECK }
+
+  /**
+   * policy for determining whether table cells are user-editable
+   */
+  private AllowEdits enforceEditable;
 
   /**
    *
@@ -63,12 +61,19 @@ public class MetadataTypesTable extends JTabbedPane {
    */
   public MetadataTypesTable() {
     // this panel is dynamically populated
-    enforceEditable = true;
+    enforceEditable = AllowEdits.CHECK;
     updateTypeTabs();
   }
 
-  void setEnforceEditable(boolean b) {
-    enforceEditable = b;
+  /**
+   * set the metadata table to allow editing of table cells always, never, or check
+   * if the metadata type the cell is part of allows editing.
+   *
+   * turned off, for example, in the search panel to allow user to edit any attribute
+   * in their search query.
+   */
+  public void setTableCellsEditable(AllowEdits ae) {
+    enforceEditable = ae;
   }
 
   
@@ -99,9 +104,11 @@ public class MetadataTypesTable extends JTabbedPane {
 
         // listeners
         for(ListSelectionListener l: tableSelectionListeners){
+          logger.log(Level.INFO,"adding selection listener");
           typeTable.getSelectionModel().addListSelectionListener(l);
         }
         for(TableModelListener l: tableModelListeners){
+          logger.log(Level.INFO,"adding model listener");
           typeTable.getModel().addTableModelListener(l);
         }
 
@@ -118,12 +125,41 @@ public class MetadataTypesTable extends JTabbedPane {
    * Erase all entries on each tab.
    */
   public void clearTabs(){
-      for(Component c : getComponents() ){
-            JViewport vp =  (JViewport) ((JScrollPane) c).getViewport();
-            JTable tab = (JTable) vp.getView();
-            MetadataTableModel mod = (MetadataTableModel) getCurrentTable().getModel();
-            mod.removeAllRows();
-      }
+    logger.log(Level.INFO,"[MTT] clearing tabs");
+    int idx = 0;
+    for(Component c : getComponents() ){
+      JViewport vp =  (JViewport) ((JScrollPane) c).getViewport();
+      JTable tab = (JTable) vp.getView();
+      logger.log(Level.INFO,"[MTT]name at idx is" + getTitleAt(idx++));
+      MetadataTableModel mod = (MetadataTableModel) getCurrentTable().getModel();
+      mod.removeAllRows();
+    }
+//    logger.log(Level.INFO,"[MTT]alternative clearing");
+//    for(Entry<Class, JTable> e : metatypeMap.entrySet()){
+//      JTable t = e.getValue();
+//      MetadataTableModel mod = (MetadataTableModel) getCurrentTable().getModel();
+//      mod.removeAllRows();
+//    }
+//    logger.log(Level.INFO,"[MTT]alternative resetting");
+//    for(Entry<Class, JTable> e : metatypeMap.entrySet()){
+//      JTable t = e.getValue();
+//      Class type = ((MetadataTableModel)t.getModel()).getClass();
+//      MetadataTableModel mod = null;
+    logger.log(Level.INFO,"[MTT] clear by resetting");
+    updateTypeTabs();
+//      try {
+    // DIES HERE, complains about newInstance
+//        mod = new MetadataTableModel((MetadataSPI) type.newInstance());
+//      } catch (InstantiationException ex) {
+//        Logger.getLogger(MetadataTypesTable.class.getName()).log(Level.SEVERE, null, ex);
+//      } catch (IllegalAccessException ex) {
+//        Logger.getLogger(MetadataTypesTable.class.getName()).log(Level.SEVERE, null, ex);
+//      }
+//      for(TableModelListener l: tableModelListeners){
+//        mod.addTableModelListener(l);
+//      }
+//      t.setModel(mod);
+//    }
   }
 
   /**
@@ -148,7 +184,7 @@ public class MetadataTypesTable extends JTabbedPane {
         }
 //        logger.log(Level.INFO, "metadata: " + m + " class: " + m.getClass().getName() + " type: " + m.simpleName() + "table: " + t);
         MetadataTableModel mod = (MetadataTableModel) table.getModel();
-        logger.log(Level.INFO, "Model is: " + m);
+        logger.log(Level.INFO, "metadata added is: " + m + " with id " + m.getID());
         
         mod.addRow(m);
     }
@@ -231,7 +267,7 @@ public class MetadataTypesTable extends JTabbedPane {
         return mod.getMetadata();
     }
 
-  void removeCurrentlySelectedRow() {
+  public void removeCurrentlySelectedRow() {
     JTable tab = getCurrentTable();
     int curRow = tab.getSelectedRow();
     MetadataTableModel mod = (MetadataTableModel) tab.getModel();
@@ -246,6 +282,19 @@ public class MetadataTypesTable extends JTabbedPane {
             logger.log(Level.INFO, "Key, Val: " + e.getKey() + ", " + e.getValue());
       }
   }
+
+//  ArrayList<MetadataSPI> getAllMetadata() {
+//    JTable tab = getCurrentTable();
+//    MetadataTableModel mod = (MetadataTableModel) tab.getModel();
+//    MetadataSPI res = null;
+//    try {
+//      res = (MetadataSPI) mod.getMetadataClass().newInstance();
+//    } catch (InstantiationException ex) {
+//      Logger.getLogger(MetadataTypesTable.class.getName()).log(Level.SEVERE, null, ex);
+//    } catch (IllegalAccessException ex) {
+//      Logger.getLogger(MetadataTypesTable.class.getName()).log(Level.SEVERE, null, ex);
+//    }
+//  }
 
 
 
@@ -300,6 +349,7 @@ public class MetadataTypesTable extends JTabbedPane {
 
     public void addRow(MetadataSPI m) {
         logger.log(Level.INFO, "add row in model");
+        logger.log(Level.INFO, "before adding, model size:" + metadata.size());
         metadata.add(m);
         int row = metadata.size() - 1;
         // note which cells are editable
@@ -312,7 +362,7 @@ public class MetadataTypesTable extends JTabbedPane {
                     logger.log(Level.INFO, "entry is editable at r,c" + row + " " + colCount);
                 }
                 else{
-                    editable.put(new Point(row, colCount), true);
+                    editable.put(new Point(row, colCount), false);
                     logger.log(Level.INFO, "entry is NOT editable at r,c" + row + " " + colCount);
                 }
                 colCount+=1;
@@ -320,10 +370,12 @@ public class MetadataTypesTable extends JTabbedPane {
         }
         this.fireTableRowsInserted(metadata.size() - 1,
                                    metadata.size() - 1);
+        logger.log(Level.INFO, "after adding, model size:" + metadata.size());
     }
 
     public void removeAllRows(){
         int tmp = metadata.size();
+        logger.log(Level.INFO, "before removing all rows, model size:" + tmp);
         metadata.clear();
         this.fireTableRowsDeleted(0, tmp);
     }
@@ -350,30 +402,51 @@ public class MetadataTypesTable extends JTabbedPane {
     // TODO will this be called by things like add row? how does inplace editing work?
     @Override
     public void setValueAt(Object aValue, int row, int col){
-        if(enforceEditable && editable.get(new Point(row, col))){
-            String attr = columnNames.get(col);
-            // we just verified this value should be editable
-            // and it must be visible to have been editted
-            MetadataValue mv = metadata.get(row).get(attr);
-            try {
-                mv.setVal((String) aValue);
-            } catch (Exception ex) {
-                throw new IllegalStateException("row, column" + row + ", " +
-                                 col + " not editable.");
-            }
-            fireTableCellUpdated(row, col);
-        }
+      logger.log(Level.INFO, "[MTT] set value at " + row + " " + col);
+
+      switch(enforceEditable){
+        case NEVER:
+          throw new IllegalStateException("table set to disallow all edits");
+        case ALWAYS:
+          // allow to pass out of switch
+          break;
+        case CHECK:
+          if(!editable.get(new Point(row, col))){
+            throw new IllegalStateException("row, column" + row + ", " +
+                               col + " not editable.");
+          }
+          break;
+      }
+
+      // was editable if no exception thrown prior to this
+      // set the value
+      String attr = columnNames.get(col);
+      // we just verified this value should be editable
+      // and it must be visible to have been editted
+      MetadataValue mv = metadata.get(row).get(attr);
+      try {
+        mv.setVal((String) aValue);
+      } catch (Exception ex) {
+        throw new IllegalStateException("row, column" + row + ", " +
+                           col + " not editable.");
+      }
+      fireTableCellUpdated(row, col);
     }
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        if(!enforceEditable){
-          logger.log(Level.INFO, "do not enforce editable");
+        if(enforceEditable == AllowEdits.ALWAYS){
+          logger.log(Level.INFO, "allow all edits");
           return true;
+        }
+        else if(enforceEditable == AllowEdits.NEVER){
+          logger.log(Level.INFO, "disallow all edits");
+          return false;
         }
         if(editable == null){
           logger.log(Level.INFO, "editable is null.. " + editable);
         }
+        logger.log(Level.INFO, "check if editable is allowed");
         logger.log(Level.INFO, "editable contains r,c" + row + ", " + col +
                 " " + editable.containsKey(new Point(row, col)));
         boolean val = editable.get(new Point(row, col));
@@ -473,6 +546,6 @@ public class MetadataTypesTable extends JTabbedPane {
     }
   }
 
-
+  
 
 }
