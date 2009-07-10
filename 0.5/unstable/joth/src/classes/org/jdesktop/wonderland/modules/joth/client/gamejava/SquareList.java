@@ -30,12 +30,6 @@ public class SquareList {
     private LinkedList<Square> list = new LinkedList<Square>();
 
     /**
-     * Construct a new instance of SquareList.
-     */
-    public SquareList () {
-    }
-
-    /**
      * Returns the length of the list
      */
     public int length () {

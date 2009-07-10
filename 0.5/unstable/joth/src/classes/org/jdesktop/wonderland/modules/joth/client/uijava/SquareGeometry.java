@@ -19,14 +19,10 @@
 package org.jdesktop.wonderland.modules.joth.client.uijava;
 
 import com.jme.renderer.ColorRGBA;
-import com.jme.scene.Node;
 import com.jme.scene.shape.Quad;
-import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
-import com.jme.system.DisplaySystem;
-import org.jdesktop.mtgame.RenderUpdater;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import com.jme.bounding.BoundingBox;
+import com.jme.scene.state.MaterialState;
+import org.jdesktop.wonderland.modules.joth.client.ezapi.EZAPIJme;
 
 /******************************************************************
  * SquareGeometry: The geometry for a board square (a square quad).
@@ -42,11 +38,12 @@ public class SquareGeometry extends Quad {
     private static final ColorRGBA LIGHT_COLOR = new ColorRGBA(0.9f, 0.9f, 0.9f, 1.0f);
     private static final ColorRGBA DARK_COLOR = new ColorRGBA(0.0f, 0.9f, 0.0f, 1.0f);
 
-    private Node parentNode;
+    private EZAPIJme ezapi;
+    private MaterialState ms;
 
-    public SquareGeometry (final Node parentNode, int row, int col) {
+    public SquareGeometry (EZAPIJme ezapi, int row, int col) {
         super("Quad for square " + row + "," + col, WIDTH, HEIGHT);
-        this.parentNode = parentNode;
+        this.ezapi = ezapi;
 
         ColorRGBA color;
         if ((row & 0x1) == (col & 0x1)) {
@@ -55,38 +52,19 @@ public class SquareGeometry extends Quad {
             color = DARK_COLOR;
         }
         setColor(color);
-
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
+        
+        ezapi.doJmeOpAndWait(new Runnable() {
+            public void run () {
                 setModelBound(new BoundingBox());
                 updateModelBound();
-                ClientContextJME.getWorldManager().addToUpdateList(parentNode);
             }
-        }, null); 
+        }, null);
     }
 
     public void setColor(final ColorRGBA color) {
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                MaterialState ms = (MaterialState) getRenderState(RenderState.RS_MATERIAL);
-                if (ms == null) {
-                    ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
-                    setRenderState(ms);
-                }
-                ms.setAmbient(new ColorRGBA(color));
-                ms.setDiffuse(new ColorRGBA(color));
-                ClientContextJME.getWorldManager().addToUpdateList(parentNode);
-            }
-        }, null); 
-    }
-
-    public ColorRGBA getColor() {
-        MaterialState ms = null;
-        ms = (MaterialState) getRenderState(RenderState.RS_MATERIAL);
         if (ms == null) {
-            return new ColorRGBA(1f, 1f, 1f, 1f);
-        } else {
-            return ms.getDiffuse();
+            ms = ezapi.spatialCreateMaterialState(this);
         }
+        ezapi.materialStateSetAmbientAndDiffuse(ms, color);
     }
 }

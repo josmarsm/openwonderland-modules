@@ -91,7 +91,6 @@ public class Game {
 
     // The current color's turn is over. Make the current color the opposite color.
     private void flipTurn () {
-        String currentTurn;
         if (currentColor == Board.Color.WHITE) {
             currentColor = Board.Color.BLACK;
             currentTurn = "black";

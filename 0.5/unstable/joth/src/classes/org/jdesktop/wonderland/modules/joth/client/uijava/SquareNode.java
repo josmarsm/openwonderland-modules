@@ -20,10 +20,7 @@ package org.jdesktop.wonderland.modules.joth.client.uijava;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import org.jdesktop.mtgame.CollisionComponent;
-import org.jdesktop.mtgame.JMECollisionSystem;
-import org.jdesktop.mtgame.RenderUpdater;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.joth.client.ezapi.EZAPIJme;
 import org.jdesktop.wonderland.modules.joth.client.gamejava.Board;
 
 /***************************************************************************
@@ -35,25 +32,24 @@ public class SquareNode extends Node {
 
     private static final float Z_OFFSET = 0.05f;
 
+    private EZAPIJme ezapi;
     private int row;
     private int col;
     private Piece displayedPiece;
 
-    public SquareNode (final Node parentNode, JMECollisionSystem colSys, CollisionComponent parentCC,
-                       int row, int col) {
+    public SquareNode (EZAPIJme ezapi, Node parentNode, int row, int col) {
         super("SquareNode for " + row + ", " + col);
+        this.ezapi = ezapi;
         this.row = row;
         this.col = col;
         
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                initTransform();
-                parentNode.attachChild(SquareNode.this);
-                ClientContextJME.getWorldManager().addToUpdateList(SquareNode.this);
-            }
-        } , null);
+        // Init transform
+        float x = SquareGeometry.WIDTH * ((float)row + 0.5f);
+        float y = SquareGeometry.HEIGHT * ((float)col + 0.5f);
+        ezapi.setLocalTranslation(this, new Vector3f(x, y, Z_OFFSET));
 
-        colSys.addReportingNode(this, parentCC);
+        ezapi.setPickable(this, true);
+        ezapi.attachChild(parentNode, this);
     }
 
     public int getRow () {
@@ -62,12 +58,6 @@ public class SquareNode extends Node {
 
     public int getCol () {
         return col;
-    }
-
-    private void initTransform() {
-        float x = SquareGeometry.WIDTH * ((float)row + 0.5f);
-        float y = SquareGeometry.HEIGHT * ((float)col + 0.5f);
-        setLocalTranslation(new Vector3f(x, y, Z_OFFSET));
     }
 
     /**
@@ -88,22 +78,17 @@ public class SquareNode extends Node {
                 return;
             }
         }
-        
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
 
-                // Take down previous piece (if necessary)
-                if (displayedPiece != null && displayedPiece.getColor() != Board.Color.EMPTY) {
-                    detachChild(displayedPiece);
-                    displayedPiece = null;
-                }
+        // Take down previous piece (if necessary)
+        if (displayedPiece != null && displayedPiece.getColor() != Board.Color.EMPTY) {
+            ezapi.detachChild(this, displayedPiece);
+            displayedPiece = null;
+        }
 
-                if (color != Board.Color.EMPTY) {
-                    displayedPiece = new Piece(color);
-                    attachChild(displayedPiece);
-                } 
-                ClientContextJME.getWorldManager().addToUpdateList(SquareNode.this);
-            }
-        } , null);
+        // Put up the new piece (if necessary)
+        if (color != Board.Color.EMPTY) {
+            displayedPiece = new Piece(color, ezapi);
+            ezapi.attachChild(this, displayedPiece);
+        }
     }
 }
