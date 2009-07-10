@@ -18,22 +18,13 @@
 
 package org.jdesktop.wonderland.modules.joth.client.uijava;
 
-import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.awt.event.MouseEvent;
-import org.jdesktop.mtgame.CollisionComponent;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.JMECollisionSystem;
-import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.input.EventListener;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.modules.joth.client.ezapi.EZAPIJme;
 import org.jdesktop.wonderland.modules.joth.client.gamejava.Board;
 import org.jdesktop.wonderland.modules.joth.client.gamejava.Square;
 
@@ -43,24 +34,19 @@ import org.jdesktop.wonderland.modules.joth.client.gamejava.Square;
  */
 public class BoardDisplay {
 
-    /** The cell. */
-    private Cell cell;
     /** The game board. */
     private Board board;
-    /** The entity of the cell. */
-    private Entity cellEntity;
     /** Whether the scene graph is attached to the cell. */
     private boolean visible;
-    /** The root entity of the board display. */
-    private Entity rootEntity;
-    /** The root node of the board display. */
-    private Node rootNode;
     /** The square nodes of the board display. */
     private SquareNode[][] squareGraphs;
-    /** The event listener. */
-    private EventListener eventListener;
+    /** The event handler. */
+    private EZAPIJme.EventClassHandler eventHandler;
     /** The UI which owns this object. */
     private UIWLSimple ui;
+
+    /** Access to simplified the Wonderland API for this cell. */
+    private EZAPIJme ezapi;
 
     /**
      * Create a new instance of BoardDisplay.
@@ -68,51 +54,28 @@ public class BoardDisplay {
      * @param board The game board.
      */
     public BoardDisplay (Cell cell, Board board, UIWLSimple ui) {
-         this.cell = cell;
          this.board = board;
          this.ui = ui;
 
-         cellEntity = 
-             ((BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME)).getEntity();
+         ezapi = new EZAPIJme(cell);
 
-         // Create the entity and nodes of the scene graph
+         // Create the nodes of the scene graph
          createSceneGraph();
 
-         // Create event listener (to be attached when visible).
-         eventListener = new MyMouseListener();
-     }
-
-     /**
-      * Create the entity and nodes of the scene graph.
-      */
-     private void createSceneGraph () {
-         rootEntity = new Entity("BoardDisplay Entity");
-         rootNode = createSceneGraphNodes();
-         RenderComponent rc =
-             ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
-         rootEntity.addComponent(RenderComponent.class, rc);
-
-         // Center the board display in the cell
-         rootNode.setLocalTranslation(new Vector3f(-getWidth()/2f, -getHeight()/2f, 0f));
+         // Create event handler (to be attached when visible).
+         eventHandler = new MyMouseHandler();
      }
 
      /**
       * Create the nodes of the scene graph.
       */
-     private Node createSceneGraphNodes () {
-         rootNode = new Node("BoardDisplay Root Node");
-
-         JMECollisionSystem colSys = 
-             (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().
-             loadCollisionSystem(JMECollisionSystem.class);
-         CollisionComponent cc = colSys.createCollisionComponent(rootNode);
-         rootEntity.addComponent(CollisionComponent.class, cc);
-
+     private Node createSceneGraph () {
+         Node rootNode = ezapi.getRootNode();
          squareGraphs = new SquareNode[board.getNumRows()][];
          for (int r = 0; r < board.getNumRows(); r++) {
              SquareNode[] row = new SquareNode[board.getNumCols()];
              for (int c = 0; c < board.getNumCols(); c++) {
-                 SquareNode sqNode = createSquareGraph(rootNode, colSys, cc, r, c);
+                 SquareNode sqNode = createSquareGraph(r, c);
                  row[c] = sqNode;
              }
              squareGraphs[r] = row;
@@ -137,11 +100,10 @@ public class BoardDisplay {
      /**
       * Create a subgraph for a particular square.
       */
-     private SquareNode createSquareGraph (Node parentNode, JMECollisionSystem colSys,
-                                           CollisionComponent parentCC, int row, int col) {
-         SquareNode sqNode = new SquareNode(parentNode, colSys, parentCC, row, col);
-         SquareGeometry sqGeom = new SquareGeometry(sqNode, row, col);
-         sqNode.attachChild(sqGeom);
+    private SquareNode createSquareGraph (int row, int col) {
+         SquareNode sqNode = new SquareNode(ezapi, ezapi.getRootNode(), row, col);
+         SquareGeometry sqGeom = new SquareGeometry(ezapi, row, col);
+         ezapi.attachChild(sqNode, sqGeom);
          return sqNode;
      }
      
@@ -152,26 +114,14 @@ public class BoardDisplay {
          if (this.visible == visible) return;
          this.visible = visible;
 
+         // Do this before scene graph becomes visible
          if (visible) {
-             // Arrange for board display scene graph to be attached to cell.
-             cellEntity.addEntity(rootEntity);
-             RenderComponent rcCellEntity = (RenderComponent) cellEntity.getComponent(RenderComponent.class);
-             RenderComponent rcRootEntity = (RenderComponent) rootEntity.getComponent(RenderComponent.class);
-             if (rcCellEntity != null && rcCellEntity.getSceneRoot() != null && rcRootEntity != null) {
-                 rcRootEntity.setAttachPoint(rcCellEntity.getSceneRoot());
-             }
-             eventListener.addToEntity(rootEntity);
+             ezapi.addEventClassHandler(eventHandler);
          } else {
-             // Arrange for board display scene graph to be detached from cell.
-             eventListener.removeFromEntity(rootEntity);
-             if (cellEntity != null) {
-                 cellEntity.removeEntity(rootEntity);
-                 RenderComponent rcRootEntity = (RenderComponent) rootEntity.getComponent(RenderComponent.class);
-                 if (rcRootEntity != null) {
-                     rcRootEntity.setAttachPoint(null);
-                 }
-             }
+             ezapi.removeEventHandler(eventHandler);
          }
+
+         ezapi.setVisible(visible);
      }
 
      /**
@@ -196,9 +146,10 @@ public class BoardDisplay {
      }
 
     /**
-     * A mouse event listener. This receives mouse input events from the button box.
+     * A mouse event handler. This receives mouse input events from EZAPI.
+     * Called on a generic thread.
      */
-    private class MyMouseListener extends EventClassListener {
+    private class MyMouseHandler implements EZAPIJme.EventClassHandler {
 
 	/**
 	 * This returns the classes of the Wonderland input events we are interested in receiving.
@@ -209,21 +160,17 @@ public class BoardDisplay {
 	}
 
 	/**
-	 * This will be called when a mouse event occurs over one of the components of the button box.
+	 * This will be called when a mouse event occurs over one of the scene graph nodes.
 	 */
-	public void commitEvent (final Event event) {
+	public void processEvent (Event event) {
 
-	    // Only respond to mouse button click events
+	    // Only respond to mouse left button click events
 	    MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
 	    if (buttonEvent.isClicked() && 
 		buttonEvent.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
                 MouseEvent me = (MouseEvent) buttonEvent.getAwtEvent();
                 if (me.getModifiersEx() == 0) {
-                    SwingUtilities.invokeLater(new Runnable () {
-                        public void run () {
-                            ui.squareClicked(event);
-                        }
-                    });
+                    ui.squareClicked(event);
                 }
 	    }
 	}

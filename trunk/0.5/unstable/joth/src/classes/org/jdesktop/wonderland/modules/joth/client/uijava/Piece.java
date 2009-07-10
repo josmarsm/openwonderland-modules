@@ -24,10 +24,7 @@ import com.jme.scene.shape.Cylinder;
 import com.jme.bounding.BoundingBox;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
-import com.jme.system.DisplaySystem;
-import org.jdesktop.mtgame.RenderUpdater;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.joth.client.ezapi.EZAPIJme;
 import org.jdesktop.wonderland.modules.joth.client.gamejava.Board;
 
 /***************************************************************
@@ -49,25 +46,30 @@ public class Piece extends Node {
     /** The height of a disk. */
     private static final float DISK_HEIGHT = 0.1f;
 
-    /** The cylinder of the piece. */
-    Cylinder cyl;
+    /** The geometry of the piece. */
+    private Cylinder cyl;
 
+    /** The color of this piece. */
     private Board.Color color;
 
-    public Piece (Board.Color color) {
+    private EZAPIJme ezapi;
+    private MaterialState ms;
+
+    public Piece (Board.Color color, EZAPIJme ezapi) {
         super("Node for a " + color + " piece");
         this.color = color;
+        this.ezapi = ezapi;
 
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                setLocalTranslation(new Vector3f(0f, 0f, Z_OFFSET));
+        ezapi.doJmeOpAndWait(new Runnable() {
+            public void run () {
                 cyl = new Cylinder(Piece.this.color + " Cylinder", 20, 20, DISK_RADIUS, DISK_HEIGHT, true);
                 cyl.setModelBound(new BoundingBox());
                 cyl.updateModelBound();
-                attachChild(cyl);
-                ClientContextJME.getWorldManager().addToUpdateList(Piece.this);
             }
-        } , null);
+        }, null);
+
+        ezapi.attachChild(this, cyl);
+        ezapi.setLocalTranslation(this, new Vector3f(0f, 0f, Z_OFFSET));
 
         if (color == Board.Color.WHITE) {
             setColor(WHITE);
@@ -79,19 +81,11 @@ public class Piece extends Node {
     /**
      * {@inheritDoc}
      */
-    public synchronized void setColor(final ColorRGBA color) {
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                MaterialState ms = (MaterialState) cyl.getRenderState(RenderState.RS_MATERIAL);
-                if (ms == null) {
-                    ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
-                    cyl.setRenderState(ms);
-                }
-                ms.setAmbient(new ColorRGBA(color));
-                ms.setDiffuse(new ColorRGBA(color));
-                ClientContextJME.getWorldManager().addToUpdateList(Piece.this);
-            }
-        }, null); 
+    private synchronized void setColor(final ColorRGBA color) {
+        if (ms == null) {;
+            ms = ezapi.spatialCreateMaterialState(cyl);
+        }
+        ezapi.materialStateSetAmbientAndDiffuse(ms, color);
     }
 
     public Board.Color getColor () {
