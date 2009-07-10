@@ -23,12 +23,9 @@ import com.sun.sgs.app.AppContext;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
-import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerState;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataMessage;
@@ -175,7 +172,6 @@ public class MetadataComponentMO extends CellComponentMO {
 
     public void add(MetadataSPI meta){
         logger.log(Level.INFO, "[METADATA COMPONENT MO] add metadata fn");
-        logger.log(Level.INFO, "Author --- " + meta.get("Creator"));
         MetadataComponentServerState state = (MetadataComponentServerState) getServerState(null);
         logger.log(Level.INFO, "current # of metadata in server state --- " + state.metaCount());
         state.addMetadata(meta);

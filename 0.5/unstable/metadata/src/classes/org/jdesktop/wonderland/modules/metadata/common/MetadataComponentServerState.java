@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.metadata.common;
 
 import java.util.ArrayList;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.naming.OperationNotSupportedException;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -34,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @XmlRootElement(name="metadata-cell-component")
 @ServerState
 public class MetadataComponentServerState extends CellComponentServerState {
+    private static Logger logger = Logger.getLogger(MetadataComponentServerState.class.getName());
 
     private ArrayList<MetadataSPI> metadata;
 
@@ -48,7 +51,8 @@ public class MetadataComponentServerState extends CellComponentServerState {
     }
 
     public void addMetadata(MetadataSPI meta){
-        metadata.add(meta);
+      logger.log(Level.INFO, "Added metadata to server state, mid:" + meta.getID() );
+      metadata.add(meta);
     }
 
     public void removeMetadata(MetadataSPI meta) throws OperationNotSupportedException{
@@ -60,6 +64,7 @@ public class MetadataComponentServerState extends CellComponentServerState {
     }
 
     public void removeAllMetadata(){
+      logger.log(Level.INFO, "Removed all metadata from server state");
         metadata.clear();
     }
 

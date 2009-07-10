@@ -1,4 +1,4 @@
-package org.jdesktop.wonderland.modules.metadata.common;
+package org.jdesktop.wonderland.modules.metadata.common.basetypes;
 
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -12,7 +12,13 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataException;
+import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataContextMenuItem;
+import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
+
 
 /**
  * A default base class for the MetadataSystem, and default implementation
@@ -148,7 +154,7 @@ public class Metadata implements Serializable, MetadataSPI {
 
   // this type appears only in the sample metadata cell's context menu
   public boolean contextMenuCheck(Class c) {
-    if(c.getName().equals("org.jdesktop.wonderland.modules.metadata.client.MetadataSampleCell")){
+    if(c.getName().equals("org.jdesktop.wonderland.modules.metadata.client.samplecell.MetadataSampleCell")){
       return true;
     }
     return false;

@@ -5,7 +5,6 @@
 
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
-import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -19,7 +18,6 @@ import java.util.HashSet;
 
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
@@ -28,7 +26,6 @@ import javax.naming.Context;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.OperationNotSupportedException;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.Attribute;
@@ -51,7 +48,7 @@ import org.apache.directory.shared.ldap.exception.LdapInvalidAttributeValueExcep
 import org.apache.directory.shared.ldap.exception.LdapNameNotFoundException;
 import org.apache.directory.shared.ldap.name.LdapDN;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.basetypes.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
@@ -66,8 +63,9 @@ public class EmbeddedADS implements MetadataBackendInterface
   /** The package name. */
   private static final String PKG_NAME = "org.jdesktop.wonderland.modules.metadata.server.service";
   /** the logger for this class */
-  private static final LoggerWrapper logger =
-        new LoggerWrapper(Logger.getLogger(PKG_NAME));
+//  private static final LoggerWrapper logger =
+//        new LoggerWrapper(Logger.getLogger(PKG_NAME));
+  private static Logger logger = Logger.getLogger(EmbeddedADS.class.getName());
 
   /** OID to register new object classes (metadata subtypes) and attributes*/
   final static String SunOID = "1.3.6.1.4.1.42";
@@ -80,10 +78,18 @@ public class EmbeddedADS implements MetadataBackendInterface
   final static String MetaObjClassOID = MetaModOID + ".0";
   final static String MetaAttrOID = MetaModOID + ".1";
 
-  // LDAP syntax constants
+  /**
+   * LDAP syntax constants
+   */
   private final static String integerSyntax = "EQUALITY integerMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE";
   private final static String stringSyntax = "EQUALITY caseIgnoreMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE";
   private final static String dateSyntax = "EQUALITY generalizedTimeMatch ORDERING generalizedTimeOrderingMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE";
+
+  /**
+   * LDAP syntax, used to register new object classes
+   * An instantiated object must have exactly one STRUCTURAL object class.
+   */
+  public enum ObjectClassType { STRUCTURAL, AUXILIARY }
 
   /** used to complete OIDS for new object classes (metadata subtypes). incremented to keep unique. */
   static int ocCount = 0;
@@ -121,6 +127,8 @@ public class EmbeddedADS implements MetadataBackendInterface
    * default object class name - cells will have metadata 'underneath' them in ldap
    */
   private static String CELL_OC = "cell";
+
+  
 
   /**
    * adds the passed metadata object to the cell named id.
@@ -286,7 +294,7 @@ public class EmbeddedADS implements MetadataBackendInterface
             eraseContext(subCtx);
           }
           catch ( LdapNameNotFoundException lnnfe ){
-            System.out.println("severe error...");
+            logger.log(Level.INFO, "severe error...");
           }
 
       }
@@ -353,7 +361,7 @@ public class EmbeddedADS implements MetadataBackendInterface
     } catch (NamingException ex) {
       Logger.getLogger(EmbeddedADS.class.getName()).log(Level.SEVERE, null, ex);
     }
-    logger.log(Level.INFO, "-----------------------------*");
+    logger.log(Level.INFO, "-----------------------------");
   }
 
   /**
@@ -422,7 +430,7 @@ public class EmbeddedADS implements MetadataBackendInterface
     ArrayList<String> mayLdap = new ArrayList<String>();
 
     // finally, register the type
-    registerObjectClass(nameLdap, descLdap, supersLdap, mustLdap, mayLdap);
+    registerObjectClass(nameLdap, descLdap, supersLdap, ObjectClassType.STRUCTURAL, mustLdap, mayLdap);
 
   }
 
@@ -550,11 +558,11 @@ public class EmbeddedADS implements MetadataBackendInterface
    * @param name Name of the new attribute. Multiple values must follow RFC 4512
    * syntax, e.g. pass in "('name1' 'name2')" to add two values
    * @param desc DESC of the new attribute
-   * @param classes items to add to objectClass
+   * @param classes superclasses to add to objectClass
    * @param mustAttrs attributes the class must have
    * @param mayAttrs attributes the class may have
    */
-  private void registerObjectClass(String name, String desc, ArrayList<String> objClasses, ArrayList<String> mustAttrs, ArrayList<String> mayAttrs) throws NamingException {
+  private void registerObjectClass(String name, String desc, ArrayList<String> objClasses, ObjectClassType ocType, ArrayList<String> mustAttrs, ArrayList<String> mayAttrs) throws NamingException {
     
     // if there was only one name, add 's around it
     // otherwise, assume it is already RFC 4512 compliant
@@ -573,7 +581,7 @@ public class EmbeddedADS implements MetadataBackendInterface
     if(!objClasses.isEmpty()){
       oc += " SUP " + buildObjList(objClasses);
     }
-    oc += " STRUCTURAL";
+    oc += " " + ocType;
     if(!mustAttrs.isEmpty()){
       oc += " MUST " + must;
     }
@@ -692,7 +700,7 @@ public class EmbeddedADS implements MetadataBackendInterface
    *            during recursion are complete
    * @throws javax.naming.NamingException
    */
-  private HashMap<Integer, Set<Integer>> search(LinkedList<pairCidAndCtx> cids, ArrayList<String> filters, HashMap<Integer, Set<Integer>> results) throws NamingException {
+  private HashMap<CellID, Set<Integer>> search(LinkedList<pairCidAndCtx> cids, ArrayList<String> filters, HashMap<CellID, Set<Integer>> results) throws NamingException {
     pairCidAndCtx pair = cids.poll();
     if(pair == null){
       // no other cells to search
@@ -739,7 +747,7 @@ public class EmbeddedADS implements MetadataBackendInterface
     }
 
     if(cellHitAllFilters){
-      results.put(pair.cid, matches);
+      results.put(new CellID(pair.cid), matches);
     }
 
 
@@ -757,19 +765,18 @@ public class EmbeddedADS implements MetadataBackendInterface
    * @return map, mapping cell id's (as Integers) whose metadata that matched the
    * search, to a set of metadata id's that matched the search for that cell.
    */
-  public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
+  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
     LinkedList<pairCidAndCtx> cids = new LinkedList<pairCidAndCtx>();
-    HashMap<Integer, Set<Integer> > results = null;
+    HashMap<CellID, Set<Integer> > results = null;
     
     // the only difference between the two search Metadata methods is here
     // this 'all' version gets all cells for searching
     
     getAllCells(rootCtx, wlCtxDN, cids);
-
     ArrayList<String> filterList = convertFiltersToLDAP(filters);
-    logger.log(Level.INFO, "searchMetadata for " + filterList.size() + " filters");
+    logger.log(Level.INFO, "search Metadata for " + filterList.size() + " converted filters");
     try {
-      results = search(cids, filterList, new HashMap<Integer, Set<Integer>>());
+      results = search(cids, filterList, new HashMap<CellID, Set<Integer>>());
     } catch (NamingException ex) {
       logger.log(Level.SEVERE, "[EADS] error searching for metadata " +
                   " with filters: " + filters);
@@ -786,9 +793,9 @@ public class EmbeddedADS implements MetadataBackendInterface
    * @return map, mapping cell id's (as Integers) whose metadata that matched the
    * search, to a set of metadata id's that matched the search for that cell.
    */
-  public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
+  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
     LinkedList<pairCidAndCtx> cids = new LinkedList<pairCidAndCtx>();
-    HashMap<Integer, Set<Integer> > results = null;
+    HashMap<CellID, Set<Integer> > results = null;
 
     // the only difference between the two search Metadata methods is here
     // this 'scoped' version gets only cells below a certain parent for searching
@@ -800,9 +807,9 @@ public class EmbeddedADS implements MetadataBackendInterface
 
       
 
-      logger.log(Level.INFO, "searchMetadata for " + filterList.size() + " filters");
+      logger.log(Level.INFO, "search Metadata for " + filterList.size() + " filters");
     
-      results = search(cids, filterList, new HashMap<Integer, Set<Integer>>());
+      results = search(cids, filterList, new HashMap<CellID, Set<Integer>>());
     } catch (Exception ex) {
       logger.log(Level.SEVERE, "[EADS] error searching for metadata " +
                   " scoped under cellID: " + cid + " with filters: " + filters);
@@ -947,14 +954,14 @@ public class EmbeddedADS implements MetadataBackendInterface
       mustAttrs.add("cID");
       ArrayList<String> mayAttrs = new ArrayList<String>();
 
-      registerObjectClass(CELL_OC, "Represents a cell, will have metadata below it", classes, mustAttrs, mayAttrs);
+      registerObjectClass(CELL_OC, "Represents a cell, will have metadata below it", classes, ObjectClassType.STRUCTURAL, mustAttrs, mayAttrs);
 
       // register metadata object class (added to all metadata objects in addMetadata,
       // forces them to have an mID and acts as a flag that this object is metadata
       mustAttrs.clear();
       mustAttrs.add("mID");
       // classes = top, may attrs is empty
-      registerObjectClass(METADATA_AUX_OC, "auxiliary metadata type adds MID", classes, mustAttrs, mayAttrs);
+      registerObjectClass(METADATA_AUX_OC, "auxiliary metadata type adds MID", classes, ObjectClassType.AUXILIARY, mustAttrs, mayAttrs);
     }
 
 
@@ -1021,24 +1028,24 @@ public class EmbeddedADS implements MetadataBackendInterface
     ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     NamingEnumeration results = ctx.search(scope, filter, ctls);
     if(results == null){
-      System.out.println("no cells!");
+      logger.log(Level.INFO, "no cells!");
     }
 
     // get metadata of each cell, print it too
-    String filter2 = "(&(objectclass=metadata)(metadataid=*))";
+    String filter2 = "(&(objectclass=metadata)(mid=*))";
     ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
     while(results.hasMore()){
       SearchResult si = (SearchResult)results.next();
       String dn = si.getName();
-      System.out.println("cell dn is:"+dn);
+      logger.log(Level.INFO, "cell dn is:"+dn);
       DirContext cellCtx = (DirContext) ctx.lookup(dn);
       NamingEnumeration metaResults = ctx.search(dn, filter2, ctls);
-      System.out.println("print that cell's metadata");
+      logger.log(Level.INFO, "print that cell's metadata");
       while (metaResults.hasMore()) {
         SearchResult meta = (SearchResult)metaResults.next();
-        System.out.println("  " + "metadata name is :" + meta.getName());
+        logger.log(Level.INFO, "  " + "metadata name is :" + meta.getName());
       }
-      System.out.println("done");
+      logger.log(Level.INFO, "done");
     }
   }
 

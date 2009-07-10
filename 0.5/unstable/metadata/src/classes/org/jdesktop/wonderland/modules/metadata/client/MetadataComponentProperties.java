@@ -12,13 +12,9 @@
 package org.jdesktop.wonderland.modules.metadata.client;
 
 import java.awt.GridBagLayout;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -27,10 +23,8 @@ import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
 import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerState;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
-import org.jdesktop.wonderland.modules.metadata.common.SimpleMetadata;
 
 /**
  *
@@ -41,29 +35,12 @@ import org.jdesktop.wonderland.modules.metadata.common.SimpleMetadata;
 public class MetadataComponentProperties extends JPanel
     implements CellComponentPropertiesSPI {
   private CellPropertiesEditor editor = null;
-  // used to map pieces of metadata to their appropriate table
-  private HashMap<String, JTable> metatypeMap = new HashMap<String, JTable>();
   private static Logger logger = Logger.getLogger(MetadataComponent.class.getName());
-  // TODO does this need to be synchronized? I don't think so
-  private static ArrayList<MetadataSPI> metaTypes = new ArrayList<MetadataSPI>();
 
   // TODO could not add MetadataTypesTable to NetBeans GUI Builder
   // workaround: use customize code to make basicTabs instantiated as
   // a MTT. Cast basicTabs to an MTT and use the tabs reference instead.
   private MetadataTypesTable tabs;
-  
-  /**
-   * initialize metadata types list
-   */
-  static {
-    // TODO
-    // eventually this will be initialized via the annotation system
-    // will this still be the appropriate place to init it?
-
-    // for now, hard-include types
-    metaTypes.add(new Metadata());
-    metaTypes.add(new SimpleMetadata());
-  }
 
     /** Creates new form MetadataComponentProperties */
     public MetadataComponentProperties() {
@@ -78,8 +55,6 @@ public class MetadataComponentProperties extends JPanel
         // add listeners
         tabs.registerListSelectionListener(new RemoveButtonSelectionListener());
         tabs.registerTableModelListener(new TableDirtyListener());
-        
-        System.out.println("constructor: size of map: " + metatypeMap.size());
     }
 
     /** This method is called from within the constructor to
@@ -208,6 +183,7 @@ public class MetadataComponentProperties extends JPanel
 
     // currently, this naively clears tabs and repopulates them
     tabs.clearTabs();
+    logger.log(Level.INFO, "size of metadata in state:" + state.getMetadata().size());
     tabs.addMetadata(state.getMetadata());
     
     tabs.repaint();
@@ -225,21 +201,24 @@ public class MetadataComponentProperties extends JPanel
           state = new MetadataComponentServerState();
       }
 
+      logger.log(Level.INFO, "[METADATA COMPO PROPERTIES] previous state count:" + state.getMetadata().size() );
       // TODO
       // naively clear this, in the future we could track which metadata
       // objects have been changed and adjust only them
       state.removeAllMetadata();
       // convert models back into ServerState
+      logger.log(Level.INFO, "[METADATA COMPO PROPERTIES] post removeAll state count:" + state.getMetadata().size() );
       for(int i = 0; i < tabs.getComponentCount(); i++){
         try {
           for (MetadataSPI m : tabs.getMetadataFromTab(i)) {
             state.addMetadata(m);
           }
         } catch (Exception ex) {
-             Logger.getLogger(MetadataComponentProperties.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(MetadataComponentProperties.class.getName()).log(Level.SEVERE, null, ex);
         }
       }
 
+      logger.log(Level.INFO, "[METADATA COMPO PROPERTIES] state to be added count:" + state.getMetadata().size() );
       // TODO
       // this overwrites the old serverstate, which could result in needlessly
       // overwriting unchanged metadata elts
@@ -261,9 +240,11 @@ public class MetadataComponentProperties extends JPanel
     }
 
   class TableDirtyListener implements TableModelListener {
-        public void tableChanged(TableModelEvent tme) {
-            editor.setPanelDirty(MetadataComponentProperties.class, true);
-        }
+
+    public void tableChanged(TableModelEvent tme) {
+      System.out.println("[METADATA COMPO PROPERTIES] table is dirty");
+        editor.setPanelDirty(MetadataComponentProperties.class, true);
+    }
   }
 
 }

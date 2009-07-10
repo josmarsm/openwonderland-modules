@@ -122,7 +122,7 @@ public class MetadataManagerImpl implements MetadataManager {
    * @return map, mapping cell id's (as Integers) whose metadata that matched the
    * search, to a set of metadata id's that matched the search for that cell.
    */
-  public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
+  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
     return this.service.searchMetadata(filters);
   }
 
@@ -135,7 +135,7 @@ public class MetadataManagerImpl implements MetadataManager {
    * @return map, mapping cell id's (as Integers) whose metadata that matched the
    * search, to a set of metadata id's that matched the search for that cell.
    */
-  public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
+  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
     return this.service.searchMetadata(filters, cid);
   }
 

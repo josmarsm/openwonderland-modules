@@ -56,7 +56,7 @@ public class MetadataSampleCellMO extends CellMO {
 
     @Override 
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
-        return "org.jdesktop.wonderland.modules.metadata.client.MetadataSampleCell";
+        return "org.jdesktop.wonderland.modules.metadata.client.samplecell.MetadataSampleCell";
     }
 
     // @Override

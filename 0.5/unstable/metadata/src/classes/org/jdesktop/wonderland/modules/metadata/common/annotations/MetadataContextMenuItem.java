@@ -1,4 +1,4 @@
-package org.jdesktop.wonderland.modules.metadata.common;
+package org.jdesktop.wonderland.modules.metadata.common.annotations;
 
 /**
  * Project Wonderland

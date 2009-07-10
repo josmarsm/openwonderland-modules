@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -62,10 +61,8 @@ import org.apache.directory.shared.ldap.name.LdapDN;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
-import org.jdesktop.wonderland.modules.metadata.common.Metadata;
-import org.jdesktop.wonderland.modules.metadata.common.SimpleMetadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataType;
+import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
 import org.jdesktop.wonderland.server.auth.WonderlandServerIdentity;
 
 
@@ -373,7 +370,9 @@ public class MetadataService extends AbstractService{
      * @return map, mapping cell id's (as Integers) whose metadata that matched the
      * search, to a set of metadata id's that matched the search for that cell.
      */
-    public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
+    public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
+      // pass in a listener to notify, rather than sending directly to a connection
+      logger.log(Level.INFO, "[META SERVICE] global search with " + filters.filterCount() + " filters");
       return db.searchMetadata(filters);
     }
 
@@ -386,7 +385,7 @@ public class MetadataService extends AbstractService{
      * @return map, mapping cell id's (as Integers) whose metadata that matched the
      * search, to a set of metadata id's that matched the search for that cell.
      */
-    public HashMap<Integer, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
+    public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
       return db.searchMetadata(filters, cid);
     }
 

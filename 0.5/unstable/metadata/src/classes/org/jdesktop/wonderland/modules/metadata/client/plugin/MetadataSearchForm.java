@@ -9,26 +9,49 @@
  * Created on Jun 20, 2009, 11:58:44 PM
  */
 
-package org.jdesktop.wonderland.modules.metadata.client;
+package org.jdesktop.wonderland.modules.metadata.client.plugin;
+
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import org.jdesktop.wonderland.modules.metadata.client.MetadataTypesTable;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 
 /**
  *
  * @author Matt
  */
-public class MetadataSearchForm extends javax.swing.JFrame {
+public class MetadataSearchForm extends javax.swing.JFrame implements TableModelListener, ListSelectionListener{
 
     // TODO could not add MetadataTypesTable to NetBeans GUI Builder
     // workaround: use customize code to make basicTabs instantiated as
     // a MTT. Cast basicTabs to an MTT and use the tabs reference instead.
     private MetadataTypesTable tabs;
 
+    private static Logger logger = Logger.getLogger(MetadataSearchForm.class.getName());
+    
     /** Creates new form MetadataSearchForm */
-    public MetadataSearchForm() {
-        initComponents();
-        // work-around for NetBeans GUI builder
-        // see comment where tabs is declared
-        tabs = (MetadataTypesTable) basicTabs;
-        tabs.setEnforceEditable(false);
+    public MetadataSearchForm(ActionListener plugin) {
+      initComponents();
+      // work-around for NetBeans GUI builder
+      // see comment where tabs is declared
+      tabs = (MetadataTypesTable) basicTabs;
+      tabs.setTableCellsEditable(MetadataTypesTable.AllowEdits.ALWAYS);
+
+      // add listeners
+      tabs.registerListSelectionListener(new RemoveButtonSelectionListener());
+      tabs.registerTableModelListener(this);
+
+      // plugin listens to search button
+      searchButton.addActionListener(plugin);
     }
 
     /** This method is called from within the constructor to
@@ -41,7 +64,7 @@ public class MetadataSearchForm extends javax.swing.JFrame {
   private void initComponents() {
 
     jLabel1 = new javax.swing.JLabel();
-    jButton1 = new javax.swing.JButton();
+    searchButton = new javax.swing.JButton();
     basicTabs = new MetadataTypesTable();
     controls = new javax.swing.JPanel();
     removeButton = new javax.swing.JButton();
@@ -51,10 +74,10 @@ public class MetadataSearchForm extends javax.swing.JFrame {
 
     jLabel1.setText("Search Metadata");
 
-    jButton1.setText("Search");
-    jButton1.addActionListener(new java.awt.event.ActionListener() {
+    searchButton.setText("Search");
+    searchButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        jButton1ActionPerformed(evt);
+        searchButtonActionPerformed(evt);
       }
     });
 
@@ -108,7 +131,7 @@ public class MetadataSearchForm extends javax.swing.JFrame {
         .addContainerGap(424, Short.MAX_VALUE))
       .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
         .addContainerGap(447, Short.MAX_VALUE)
-        .addComponent(jButton1))
+        .addComponent(searchButton))
       .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
         .addContainerGap(429, Short.MAX_VALUE)
         .addComponent(controls, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -127,7 +150,7 @@ public class MetadataSearchForm extends javax.swing.JFrame {
         .addGap(16, 16, 16)
         .addComponent(controls, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 179, Short.MAX_VALUE)
-        .addComponent(jButton1)
+        .addComponent(searchButton)
         .addContainerGap())
       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(layout.createSequentialGroup()
@@ -139,9 +162,10 @@ public class MetadataSearchForm extends javax.swing.JFrame {
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+      logger.info("[META SEARCH FORM] search button clicked");
+      
+    }//GEN-LAST:event_searchButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
       tabs.removeCurrentlySelectedRow();
@@ -154,21 +178,69 @@ public class MetadataSearchForm extends javax.swing.JFrame {
     /**
     * @param args the command line arguments
     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new MetadataSearchForm().setVisible(true);
-            }
-        });
-    }
+//    public static void main(String args[]) {
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                new MetadataSearchForm().setVisible(true);
+//            }
+//        });
+//    }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton addButton;
   private javax.swing.JTabbedPane basicTabs;
   private javax.swing.JPanel controls;
-  private javax.swing.JButton jButton1;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JButton removeButton;
+  private javax.swing.JButton searchButton;
   // End of variables declaration//GEN-END:variables
+
+  public MetadataSearchFilters getFilters(){
+    MetadataSearchFilters filters = new MetadataSearchFilters();
+    for(int i = 0; i < tabs.getComponentCount(); i++){
+      try {
+        for (MetadataSPI m : tabs.getMetadataFromTab(i)) {
+          filters.addFilter(m);
+        }
+      } catch (Exception ex) {
+        Logger.getLogger(MetadataSearchForm.class.getName()).log(Level.SEVERE, null, ex);
+      }
+    }
+//    channel.send(new MetadataMessage(MetadataMessage.Action.SEARCH, meta));
+    return filters;
+  }
+
+  public void tableChanged(TableModelEvent tme) {
+     logger.log(Level.INFO, "[search] table changed, repaint");
+     repaint();
+  }
+  
+  public void valueChanged(ListSelectionEvent e) {
+    logger.log(Level.INFO, "[search] item selected in table");
+      boolean enabled = false;
+
+      if (!e.getValueIsAdjusting()) {
+          enabled = (tabs.getCurrentTable().getSelectedRow() >= 0);
+      }
+
+      removeButton.setEnabled(enabled);
+      repaint();
+  }
+
+  class RemoveButtonSelectionListener implements ListSelectionListener {
+        public void valueChanged(ListSelectionEvent e) {
+            boolean enabled = false;
+
+            if (!e.getValueIsAdjusting()) {
+                enabled = (tabs.getCurrentTable().getSelectedRow() >= 0);
+            }
+
+            removeButton.setEnabled(enabled);
+        }
+    }
+
+
+
+
 
 }

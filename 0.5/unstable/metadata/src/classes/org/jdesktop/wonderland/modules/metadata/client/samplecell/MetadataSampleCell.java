@@ -15,8 +15,9 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.metadata.client;
+package org.jdesktop.wonderland.modules.metadata.client.samplecell;
 
+import org.jdesktop.wonderland.modules.metadata.client.*;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -25,8 +26,7 @@ import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
-// import org.jdesktop.wonderland.modules.sample.common.MetadataSampleCellClientState;
+
 
 /**
  * Client-side cell for rendering JME content
