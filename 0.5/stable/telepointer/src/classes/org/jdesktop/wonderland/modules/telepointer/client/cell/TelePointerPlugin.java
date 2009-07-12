@@ -55,7 +55,7 @@ public class TelePointerPlugin extends BaseClientPlugin
 
     @Override
     public void activate() {
-        JmeClientMain.getFrame().addToViewMenu(telepointerMI, 4);
+        JmeClientMain.getFrame().addToViewMenu(telepointerMI, 5);
         ViewManager.getViewManager().addViewManagerListener(this);
     }
 
