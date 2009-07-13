@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataClientUtils;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataConnection;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
+import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 
 /**
  * Client plugin for metadata module.
@@ -72,7 +73,7 @@ public class MetadataPlugin extends BaseClientPlugin
 
     @Override
     public void initialize(final ServerSessionManager loginInfo) {
-      logger.log(Level.INFO, "[META PLUGIN] initialize");
+      logger.info("[META PLUGIN] initialize");
       // Create the metadata search menu The menu will be added when our
       // server becomes primary.
       // also create
@@ -145,7 +146,7 @@ public class MetadataPlugin extends BaseClientPlugin
      */
     @Override
     protected void activate() {
-      logger.log(Level.INFO, "[META PLUGIN] activated");
+      logger.info("[META PLUGIN] activated");
       // add menu item
       JmeClientMain.getFrame().addToWindowMenu(searchMI, -1);
     }
@@ -194,7 +195,7 @@ public class MetadataPlugin extends BaseClientPlugin
        */
       public void actionPerformed(ActionEvent e) {
         // search button was clicked
-        logger.log(Level.INFO, "[META PLUGIN] search button listener");
+        logger.info("[META PLUGIN] search button listener");
 
         // get current filters from form
         MetadataSearchForm searchFrame = searchFormRef.get();
@@ -202,10 +203,10 @@ public class MetadataPlugin extends BaseClientPlugin
 
         // search via connection.. this will block until the search returns
         // from the server. Other objects can still execute searches.
-        logger.log(Level.INFO, "[META PLUGIN] searching for " + filters.filterCount() + " filters");
-        HashMap<CellID, Set<Integer>> results = MetadataConnection.getInstance().search(filters);
+        logger.info("[META PLUGIN] searching for " + filters.filterCount() + " filters");
+        HashMap<CellID, MetadataCellInfo> results = MetadataConnection.getInstance().search(filters);
 
-        logger.log(Level.INFO, "[META PLUGIN] got " + results.size() + " results");
+        logger.info("[META PLUGIN] got " + results.size() + " results");
 
         MetadataSearchResultsForm form;
         if (resultsFormRef == null || resultsFormRef.get() == null) {
@@ -216,10 +217,13 @@ public class MetadataPlugin extends BaseClientPlugin
             form = resultsFormRef.get();
         }
 
-        form.setResults(results, getSessionManager());
+        form.setResults(results);
         if (form.isVisible() == false) {
             form.setVisible(true);
         }
+
+        // set search form to appear in front
+        form.requestFocus();
       }
   }
 

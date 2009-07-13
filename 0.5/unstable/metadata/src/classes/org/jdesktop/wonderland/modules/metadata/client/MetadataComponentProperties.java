@@ -12,6 +12,7 @@
 package org.jdesktop.wonderland.modules.metadata.client;
 
 import java.awt.GridBagLayout;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -20,8 +21,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
+//import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+//import org.jdesktop.wonderland.client.cell.properties.spi.CellComponentPropertiesSPI;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerState;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
@@ -31,11 +34,17 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
  * @author mabonner
  */
 
-@CellComponentProperties
-public class MetadataComponentProperties extends JPanel
-    implements CellComponentPropertiesSPI {
+@PropertiesFactory(MetadataComponentServerState.class)
+public class MetadataComponentProperties extends JPanel implements PropertiesFactorySPI {
   private CellPropertiesEditor editor = null;
-  private static Logger logger = Logger.getLogger(MetadataComponent.class.getName());
+  private static Logger logger = Logger.getLogger(MetadataComponentProperties.class.getName());
+
+  /**
+   * used to store the metadata viewed by the properties pane (in tabs)
+   *
+   * set in open, used in restore
+   */
+  ArrayList<MetadataSPI> originalMetadata = new ArrayList<MetadataSPI>();
 
   // TODO could not add MetadataTypesTable to NetBeans GUI Builder
   // workaround: use customize code to make basicTabs instantiated as
@@ -170,44 +179,72 @@ public class MetadataComponentProperties extends JPanel
     return "Cell Metadata Component";
   }
 
-  public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
+  /**
+   * @inheritDoc()
+   */
+  public void setCellPropertiesEditor(CellPropertiesEditor editor) {
     this.editor = editor;
+  }
+
+  /**
+   * @inheritDoc()
+   */
+  public JPanel getPropertiesJPanel() {
     return this;
   }
 
-  public <T extends CellServerState> void updateGUI(T cellServerState) {
-    MetadataComponentServerState state =  (MetadataComponentServerState)
-                cellServerState.getComponentServerState(MetadataComponentServerState.class);
-    // do whatever you have to do based on server state (fill up our panel)
-    logger.log(Level.INFO, "update GUI");
-
+  /**
+   * @inheritDoc()
+   */
+  public void open() {
+    logger.info("[METADATA COMPO PROPERTIES] open!");
+    MetadataComponentServerState state = getServerState();
     // currently, this naively clears tabs and repopulates them
     tabs.clearTabs();
-    logger.log(Level.INFO, "size of metadata in state:" + state.getMetadata().size());
+    logger.info("size of metadata in open:" + state.getMetadata().size());
     tabs.addMetadata(state.getMetadata());
-    
-    tabs.repaint();
-    repaint();
+    originalMetadata = state.getMetadata();
+    editor.setPanelDirty(MetadataComponentProperties.class, false);
   }
 
-  public <T extends CellServerState> void getCellServerState(T cellServerState) {
-      logger.log(Level.INFO, "[METADATA COMPO PROPERTIES] get cell server state!");
-      // Figure out whether there already exists a server state for the
-      // component.
+  
+  /**
+   * @inheritDoc()
+   */
+  public void close() {
+    // do nothing
+  }
 
-      MetadataComponentServerState state = (MetadataComponentServerState)
-              cellServerState.getComponentServerState(MetadataComponentServerState.class);
+  /**
+   * @inheritDoc()
+   */
+  public void restore() {
+    logger.info("[METADATA COMPO PROPERTIES] get cell server state!");
+    // currently, this naively clears tabs and repopulates them
+    tabs.clearTabs();
+    tabs.addMetadata(originalMetadata);
+    logger.info("size of metadata after restore:" + originalMetadata.size());
+  }
+
+  /**
+   * @inheritDoc()
+   */
+  public void apply() {
+    logger.info("[METADATA COMPO PROPERTIES] apply!");
+    // Figure out whether there already exists a server state for the
+    // component.
+    MetadataComponentServerState state = getServerState();
       if (state == null) {
           state = new MetadataComponentServerState();
       }
 
-      logger.log(Level.INFO, "[METADATA COMPO PROPERTIES] previous state count:" + state.getMetadata().size() );
+      logger.info("[METADATA COMPO PROPERTIES] previous state count:" + state.getMetadata().size() );
       // TODO
       // naively clear this, in the future we could track which metadata
       // objects have been changed and adjust only them
       state.removeAllMetadata();
       // convert models back into ServerState
-      logger.log(Level.INFO, "[METADATA COMPO PROPERTIES] post removeAll state count:" + state.getMetadata().size() );
+      logger.info("[METADATA COMPO PROPERTIES] post removeAll state count:" + state.getMetadata().size() );
       for(int i = 0; i < tabs.getComponentCount(); i++){
         try {
           for (MetadataSPI m : tabs.getMetadataFromTab(i)) {
@@ -218,14 +255,23 @@ public class MetadataComponentProperties extends JPanel
         }
       }
 
-      logger.log(Level.INFO, "[METADATA COMPO PROPERTIES] state to be added count:" + state.getMetadata().size() );
+      logger.info("[METADATA COMPO PROPERTIES] state to be added count:" + state.getMetadata().size() );
       // TODO
       // this overwrites the old serverstate, which could result in needlessly
       // overwriting unchanged metadata elts
       // this is fairly lightweight.. could be improved by tracking what elts
       // (e.g. tabs and rows) were changed, and overwriting only them.
-      cellServerState.addComponentServerState(state);
+      editor.addToUpdateList(state);
   }
+
+  public MetadataComponentServerState getServerState(){
+    logger.info("[METADATA COMPO PROPERTIES] get server state" );
+    CellServerState cellServerState = editor.getCellServerState();
+    MetadataComponentServerState state = (MetadataComponentServerState)
+        cellServerState.getComponentServerState(MetadataComponentServerState.class);
+    return state;
+  }
+
 
   class RemoveButtonSelectionListener implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
@@ -241,9 +287,17 @@ public class MetadataComponentProperties extends JPanel
 
   class TableDirtyListener implements TableModelListener {
 
+//    public void tableChanged(TableModelEvent tme) {
+//      System.out.println("[METADATA COMPO PROPERTIES] table is dirty");
+//        editor.setPanelDirty(MetadataComponentProperties.class, true);
+//    }
+
     public void tableChanged(TableModelEvent tme) {
       System.out.println("[METADATA COMPO PROPERTIES] table is dirty");
-        editor.setPanelDirty(MetadataComponentProperties.class, true);
+      if (editor == null) {
+                return;
+      }
+      editor.setPanelDirty(MetadataComponentProperties.class, true);
     }
   }
 

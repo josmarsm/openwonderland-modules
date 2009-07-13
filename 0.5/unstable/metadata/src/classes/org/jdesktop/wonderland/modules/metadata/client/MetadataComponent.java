@@ -64,7 +64,7 @@ public class MetadataComponent extends CellComponent {
 
     public MetadataComponent(Cell cell) {
         super(cell);
-        logger.log(Level.INFO, "[METADATA COMPONENT] compo created");
+        logger.info("[METADATA COMPONENT] compo created");
     }
 
     // @Override
@@ -86,7 +86,7 @@ public class MetadataComponent extends CellComponent {
           Iterator<MetadataSPI> it = MetadataClientUtils.getTypesIterator();
           while (it.hasNext()) {
             MetadataSPI metadata = it.next();
-            logger.log(Level.INFO, "[METADATA COMPO] using session's loader, scanned type:" + metadata.simpleName());
+            logger.info("[METADATA COMPO] using session's loader, scanned type:" + metadata.simpleName());
             if(metadata.contextMenuCheck(cell.getClass())){
               menuComponent.addContextMenuFactory(new MetadataContextMenuFactory(metadata.simpleName(), metadata.getClass()));
             }
@@ -124,7 +124,7 @@ public class MetadataComponent extends CellComponent {
        * @param t
        */
       MetadataContextMenuFactory(String n, Class t){
-        logger.log(Level.INFO, "[METADATA COMPONENT] context menu elt created for type " + t.getName());
+        logger.info("[METADATA COMPONENT] context menu elt created for type " + t.getName());
         name = n;
         type = t;
       }
@@ -151,7 +151,7 @@ public class MetadataComponent extends CellComponent {
 
       public void actionPerformed(ContextMenuItemEvent event) {
         // create an object
-        logger.log(Level.INFO, "[METADATA COMPONENT] Metadata context menu action performed!");
+        logger.info("[METADATA COMPONENT] Metadata context menu action performed!");
         Date date = new Date();
         try {
           MetadataSPI m = (MetadataSPI) type.newInstance();
@@ -166,7 +166,7 @@ public class MetadataComponent extends CellComponent {
     }
     
     public void test(){
-      logger.log(Level.INFO, "[METADATA COMPO] test!");
+      logger.info("[METADATA COMPO] test!");
       // System.out.println("metadata - do it!!");
       channel.send(new MetadataMessage());
     }
