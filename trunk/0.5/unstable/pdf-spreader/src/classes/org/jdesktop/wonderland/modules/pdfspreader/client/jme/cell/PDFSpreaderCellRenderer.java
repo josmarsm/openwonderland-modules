@@ -30,6 +30,7 @@ import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.RenderState.StateType;
+import com.sun.pdfview.PDFFile;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderManager;
@@ -60,8 +61,15 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 
         TriMesh mesh = new Box(cell.getCellID().toString(), new Vector3f(), 0.1f, 2, 2f);
 
-//        TriMesh mesh = new Tube(name, 1, 1,1, 50, 50);
-       
+        PDFFile pdf = null;
+        String pdfURI = ((PDFSpreaderCell)cell).getSourceURI();
+
+        try {
+            logger.warning("PDF loading: " + pdfURI);
+        } catch (Exception e) {
+            logger.warning("PDF failed to load.");
+        }
+
         if (mesh == null) {
           node = new Node();
           return node;
