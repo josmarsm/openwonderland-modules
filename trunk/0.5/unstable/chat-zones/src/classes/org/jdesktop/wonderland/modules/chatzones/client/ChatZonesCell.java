@@ -127,7 +127,9 @@ public class ChatZonesCell extends Cell {
         }
     }
 
-
+    public int getNumAvatarsInZone() {
+        return this.numAvatarsInZone;
+    }
  
     class ChatZonesCellMessageReceiver implements ComponentMessageReceiver {
         public void messageReceived(CellMessage message) {
@@ -146,6 +148,12 @@ public class ChatZonesCell extends Cell {
                     break;
                 case LEFT:
                     numAvatarsInZone--;
+
+                    if(numAvatarsInZone<=0) {
+                        logger.warning("Received a LEFT message that would make the total avatars in zone less than zero. Clamping to zero.");
+                        numAvatarsInZone = 0;
+                    }
+
                     logger.warning(bsccm.getName() + " left the zone.");
                     if(bsccm.getNumAvatarInZone()!=numAvatarsInZone) {
                         logger.warning("avatar count is out of sync with server, syncing: " +bsccm.getNumAvatarInZone() + " -> " + numAvatarsInZone);
@@ -159,6 +167,7 @@ public class ChatZonesCell extends Cell {
                     renderer.updateLabel();
                     break;
                 default:
+                    logger.warning("Received unknown message type in client: " + bsccm.getAction());
                     break;
             }
 
