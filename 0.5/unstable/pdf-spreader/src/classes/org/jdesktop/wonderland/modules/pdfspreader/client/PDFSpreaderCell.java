@@ -98,6 +98,9 @@ public class PDFSpreaderCell extends Cell {
 
     }
 
+    public String getSourceURI() {
+        return this.pdfURI;
+    }
 
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
