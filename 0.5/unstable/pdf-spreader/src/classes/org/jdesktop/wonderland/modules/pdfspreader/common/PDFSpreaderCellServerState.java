@@ -18,7 +18,9 @@
 
 package org.jdesktop.wonderland.modules.pdfspreader.common;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
@@ -27,18 +29,19 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 public class PDFSpreaderCellServerState extends CellServerState {
 
 
-//    @XmlElement(name="numAvatarsInZone")
-//    private int numAvatarsInZone = 0;
+    @XmlElement(name="pdfURI")
+    private String pdfURI = null;
 
     public PDFSpreaderCellServerState() {
     }
 
-
-//    @XmlTransient public int getNumAvatarsInZone() { return this.numAvatarsInZone; }
-//    public void setNumAvatarsInZone(int numAvatarInZone) { this.numAvatarsInZone = numAvatarsInZone; }
-
     @Override
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.pdfspreader.server.PDFSpreaderCellMO";
+    }
+
+    @XmlTransient public String getSourceURI() { return this.pdfURI; }
+    public void setSourceURI(String uri) {
+        this.pdfURI = uri;
     }
 }
