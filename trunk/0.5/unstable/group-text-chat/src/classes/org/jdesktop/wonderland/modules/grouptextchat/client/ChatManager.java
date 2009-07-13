@@ -183,9 +183,13 @@ public class ChatManager implements TextChatListener {
     public void unregister() {
         // Close down and remove any existing windows, start with the user list
         // window
-        JFrame userListJFrame = userListFrameRef.get();
-        userListJFrame.setVisible(false);
-        userListJFrame.dispose();
+
+        // Commented out for now because I'm not actually using the userListJFrame
+        // right now. I think we'll probably need to just rely on the main one
+        // user list at some point, not the text-chat-provided one. 
+//        JFrame userListJFrame = userListFrameRef.get();
+//        userListJFrame.setVisible(false);
+//        userListJFrame.dispose();
 
         // Close down all of the individual text chat windows
         JTabbedPane tabbedPane = this.tabbedChatPane;
