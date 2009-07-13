@@ -64,8 +64,7 @@ public class ChatZonesCellRenderer extends BasicRenderer {
 
 //        TriMesh mesh = new Box(cell.getCellID().toString(), new Vector3f(), 4, 4, 4f);
 
-        TriMesh mesh = new Tube(name, 1, 1, 1.0f, 50, 50);
-
+        TriMesh mesh = new Tube(name, 1, 1,1, 50, 50);
         
 //        float outerRadius = 1.0 + 0.2 *
 //
@@ -142,14 +141,12 @@ public class ChatZonesCellRenderer extends BasicRenderer {
         labelNode = new ChatZoneLabelNode(chatZoneCell.getLabel());
         labelNode.setLocalTranslation(0, 0, 0);
 
-
-
         node.attachChild(labelNode);
-
 
         RotationProcessor rp = new RotationProcessor("Label Rotator", ClientContextJME.getWorldManager(),labelNode, (float) (Math.PI / 360.0f));
         entity.addComponent(ProcessorComponent.class, rp);
     
+        this.updateSize(((ChatZonesCell) cell).getNumAvatarsInZone());
 
         return node;
     }
