@@ -22,6 +22,7 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.NameNotBoundException;
+import com.sun.sgs.app.ObjectNotFoundException;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -82,7 +83,9 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
         TextChatMessage tcm = (TextChatMessage)message;
 
-        tcm = this.processMessage(tcm, clientID);
+        // This exists for testing purposes only. Turning it off now that
+        // chat-zones can properly add/remove people from groups.
+        //tcm = this.processMessage(tcm, clientID);
 
         // Sending to specific users is turned off for now. That will get
         // folded into the group system later.
@@ -148,7 +151,12 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
 
         // Now send to everyone on our recipients list, minus the person who sent the message.
         recipients.remove(clientID);
-        sender.send(recipients, message);
+
+        recipients = checkForUserExistence(recipients);
+
+        if(recipients.size() > 0)
+            sender.send(recipients, message);
+        
         return;
     }
 
@@ -163,7 +171,8 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
      *         /leave [id] - leave the group with [id]
      *
      * An older version of this would also route messages to channels,
-     * which is why it returns a TCM.
+     * which is why it returns a TCM. This is purely for testing this module,
+     * and isn't intended to be used by end-users.
      *
      * @param tcm
      * @param clientID
@@ -313,16 +322,40 @@ public class TextChatConnectionHandler implements ClientConnectionHandler, Seria
             // We'll send it to the new user too, since it's helpful to see a "you
             // joined" message even if there's no chat recently, to show that
             // it's working.
+
+            // Make sure the users are all there before we try to send to them.
+            s = checkForUserExistence(s);
             if(s.size() > 0) {
                 msg = new GroupChatMessage(gid, GroupAction.JOINED, WonderlandContext.getUserManager().getUser(wcid).getUsername());
                 sender.send(s, msg);
             }
+
+            // Push it back in so that the user is actually removed from the set permently.
+            gcs.groups.put(gid, s);
 
         } else {
             logger.log(Level.WARNING, "Attempted to add user " + wcid + " to unknown text chat group " + gid + " (known groups: " + gcs.groups.keySet() + ")");
         }
     }
 
+
+    private Set<WonderlandClientID> checkForUserExistence(Set<WonderlandClientID> users) {
+        Set<WonderlandClientID> out = new HashSet<WonderlandClientID>();
+        out = new HashSet<WonderlandClientID>(users);
+
+        for(WonderlandClientID wcid : users) {
+
+            try {
+                wcid.getSession();
+            } catch (ObjectNotFoundException e) {
+                // This should trigger if the session is already gone.
+                out.remove(wcid);
+                logger.log(Level.INFO, "removing a user from list because they're dead: " + wcid);
+            }
+        }
+
+        return out;
+    }
     /**
      * Removes the user with ClientID wcid from the ChatGroup with gid.
      *
