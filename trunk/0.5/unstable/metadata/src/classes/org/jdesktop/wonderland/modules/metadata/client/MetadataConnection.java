@@ -6,8 +6,6 @@
 package org.jdesktop.wonderland.modules.metadata.client;
 
 import java.util.HashMap;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -15,6 +13,7 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataConnectionType;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
+import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionMessage;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionResponseMessage;
 
@@ -30,7 +29,7 @@ public class MetadataConnection extends BaseConnection{
 
   @Override
   public void handleMessage(Message message) {
-    logger.log(Level.INFO, "[META CONN] handle message");
+    logger.info("[META CONN] handle message");
     // need to give results to some listener here..
     // per cellcacheconnection, message needs to store pointer to what should be notified?
     // or things attach as listeners to connection..
@@ -58,7 +57,7 @@ public class MetadataConnection extends BaseConnection{
    * @param filters
    * @return
    */
-  public HashMap<CellID, Set<Integer>> search(MetadataSearchFilters filters) {
+  public HashMap<CellID, MetadataCellInfo> search(MetadataSearchFilters filters) {
     MetadataConnectionMessage msg = new MetadataConnectionMessage(filters,
             MetadataConnectionMessage.Action.SEARCH);
     MetadataConnectionResponseMessage res = null;

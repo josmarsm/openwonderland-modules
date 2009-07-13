@@ -9,27 +9,37 @@ package org.jdesktop.wonderland.modules.metadata.common.messages;
  *
  * @author mabonner
  */
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- * Send an update to this client's permissions
- * @author jkaplan
+ * Response to a MetadataConnectionMessage (thus far, only searches)
+ * @author mabonner
  */
 public class MetadataConnectionResponseMessage extends ResponseMessage {
   private static Logger logger = Logger.getLogger(MetadataConnectionResponseMessage.class.getName());
-  private HashMap<CellID, Set<Integer> > results;
+  private HashMap<CellID, MetadataCellInfo> results = new HashMap<CellID, MetadataCellInfo>();
 
-  public MetadataConnectionResponseMessage(MessageID id, HashMap<CellID, Set<Integer> > res) {
+  // cell id to..
+  // server state Set<Integer>
+  // hits
+
+  public MetadataConnectionResponseMessage(MessageID id, ArrayList<MetadataCellInfo> res) {
     super(id);
-    results = res;
+    for(MetadataCellInfo i:res){
+      results.put(i.getCellID(), i);
+    }
   }
 
-  public HashMap<CellID, Set<Integer> > getResults(){
+  public MetadataCellInfo getCellResults(CellID id){
+    return results.get(id);
+  }
+
+  public HashMap<CellID, MetadataCellInfo> getResults(){
     return results;
   }
 

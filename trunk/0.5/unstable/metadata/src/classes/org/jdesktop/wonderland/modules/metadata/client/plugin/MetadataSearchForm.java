@@ -211,12 +211,12 @@ public class MetadataSearchForm extends javax.swing.JFrame implements TableModel
   }
 
   public void tableChanged(TableModelEvent tme) {
-     logger.log(Level.INFO, "[search] table changed, repaint");
+     logger.info("[search] table changed, repaint");
      repaint();
   }
   
   public void valueChanged(ListSelectionEvent e) {
-    logger.log(Level.INFO, "[search] item selected in table");
+    logger.info("[search] item selected in table");
       boolean enabled = false;
 
       if (!e.getValueIsAdjusting()) {

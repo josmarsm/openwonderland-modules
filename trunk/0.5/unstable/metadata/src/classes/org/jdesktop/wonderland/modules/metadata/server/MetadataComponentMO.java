@@ -63,7 +63,7 @@ public class MetadataComponentMO extends CellComponentMO {
         mcss = new MetadataComponentServerState();
         MetadataManager metaService = AppContext.getManager(MetadataManager.class);
         metaService.addCell(this.cellID);
-        logger.log(Level.INFO, "[METADATA COMPONENT] MO created");
+        logger.info("[METADATA COMPONENT] MO created");
     }
     
 
@@ -74,7 +74,7 @@ public class MetadataComponentMO extends CellComponentMO {
     // 
     @Override
     protected void setLive(boolean live) {
-        logger.log(Level.INFO, "[MetadataComponentMO] setLive: " + live);
+        logger.info("[MetadataComponentMO] setLive: " + live);
 
         super.setLive(live);
 
@@ -106,21 +106,21 @@ public class MetadataComponentMO extends CellComponentMO {
                                     WonderlandClientID clientID,
                                     CellMessage message)
         {
-            logger.log(Level.INFO, "[METADATA COMPONENT] message received... ");
+            logger.info("[METADATA COMPONENT] message received... ");
             MetadataMessage msg = (MetadataMessage) message;
 
             if(msg.action != null){
                 switch (msg.action){
                     case ADD:
-                        logger.log(Level.INFO, "[METADATA COMPONENT MO] add metadata ");
+                        logger.info("[METADATA COMPONENT MO] add metadata ");
                         componentRef.get().add(msg.metadata);
                         break;
                     case REMOVE:
-                        logger.log(Level.INFO, "[METADATA COMPONENT MO] remove metadata... ");
+                        logger.info("[METADATA COMPONENT MO] remove metadata... ");
                         componentRef.get().remove(msg.metadata);
                         break;
                     case MODIFY:
-                        logger.log(Level.INFO, "[METADATA COMPONENT MO] mod metadata... ");
+                        logger.info("[METADATA COMPONENT MO] mod metadata... ");
                         break;
                 }
             }
@@ -161,7 +161,7 @@ public class MetadataComponentMO extends CellComponentMO {
        MetadataComponentServerState s = (MetadataComponentServerState) state;
        MetadataComponentServerState s0 = (MetadataComponentServerState) getServerState(null);
        mcss = (MetadataComponentServerState) state;
-       logger.log(Level.INFO, "[METADATA COMPONENT MO] set server state.. count was  " + s0.metaCount() + " and is now " + s.metaCount());
+       logger.info("[METADATA COMPONENT MO] set server state.. count was  " + s0.metaCount() + " and is now " + s.metaCount());
 
        MetadataManager metaService = AppContext.getManager(MetadataManager.class);
 //       metaService.setCellMetadata(cellID, mcss.getMetadata());
@@ -171,12 +171,12 @@ public class MetadataComponentMO extends CellComponentMO {
     // Metadata functions
 
     public void add(MetadataSPI meta){
-        logger.log(Level.INFO, "[METADATA COMPONENT MO] add metadata fn");
+        logger.info("[METADATA COMPONENT MO] add metadata fn");
         MetadataComponentServerState state = (MetadataComponentServerState) getServerState(null);
-        logger.log(Level.INFO, "current # of metadata in server state --- " + state.metaCount());
+        logger.info("current # of metadata in server state --- " + state.metaCount());
         state.addMetadata(meta);
         setServerState(state);
-        logger.log(Level.INFO, "new # --- " + state.metaCount());
+        logger.info("new # --- " + state.metaCount());
     }
 
     public void remove(MetadataSPI meta){

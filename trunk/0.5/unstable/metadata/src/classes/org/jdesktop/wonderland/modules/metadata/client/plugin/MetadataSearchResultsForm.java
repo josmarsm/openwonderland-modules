@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -27,7 +26,10 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.metadata.client.MetadataComponent;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataTypesTable;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 
 /**
  *
@@ -48,14 +50,19 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
    * result here.
    */
   private HashMap<CellID, MetadataTypesTable> metaTablesCache = new HashMap<CellID, MetadataTypesTable>();
-  /**
-   * the cellcache associated with the currently set results
-   */
-  private CellCache cellCache;
 
-  // store all cell ID's not in cache - will have to get their info through
-  // the metadataconnection
-  ArrayList<CellID> outsideCache = new ArrayList<CellID>();
+  /**
+   * maps cells to the results of a search
+   */
+  private HashMap<CellID, MetadataCellInfo> searchResults = new HashMap<CellID, MetadataCellInfo>();
+
+  // Note: querying cell cache will not let us get to the SERVER state, which
+  // is where metadata is actually stored. For now, the metadata is sent over
+  // in the response message and stored here.
+  //
+  // If in the future metadata is stored
+  // on the server as well, then it could be accessed via the cell cache/request
+  // cell outside of cache system, saving sending everything in a message.
 
   /** Creates new form MetadataSearchResultsForm */
   public MetadataSearchResultsForm() {
@@ -72,6 +79,12 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
       resultsTable.getModel().addTableModelListener(this);
   }
 
+  @Override
+  public void repaint(){
+    super.repaint();
+    logger.info("repainting main frame, tabs has " + tabs.getMetadataCount() + " pieces of metadata");
+  }
+
   /** This method is called from within the constructor to
    * initialize the form.
    * WARNING: Do NOT modify this code. The content of this method is
@@ -83,10 +96,11 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
 
     jScrollPane1 = new javax.swing.JScrollPane();
     resultsTable = new javax.swing.JTable();
-    jLabel1 = new javax.swing.JLabel();
+    resultsLabel = new javax.swing.JLabel();
     basicTabs = new MetadataTypesTable();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    setTitle("Metadata Search Results");
 
     resultsTable.setModel(new javax.swing.table.DefaultTableModel(
       new Object [][] {
@@ -116,7 +130,7 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
     });
     jScrollPane1.setViewportView(resultsTable);
 
-    jLabel1.setText("Search Results");
+    resultsLabel.setText("# Results");
 
     basicTabs.setPreferredSize(new java.awt.Dimension(32767, 32767));
 
@@ -125,23 +139,23 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
-        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addComponent(jLabel1))
+          .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+          .addComponent(resultsLabel))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(basicTabs, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addComponent(basicTabs, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(basicTabs, javax.swing.GroupLayout.PREFERRED_SIZE, 313, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(basicTabs, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
           .addGroup(layout.createSequentialGroup()
-            .addComponent(jLabel1)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addComponent(resultsLabel)
+            .addGap(22, 22, 22)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)))
         .addContainerGap())
     );
 
@@ -151,51 +165,36 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
   /**
    * a search was completed, set the results to display, fetch metadata
    * @param results maps cellID's to list of mid hits for that cell
-   * @param mgr the ServerSessionManager from which to get a cell cache
    */
-  void setResults(HashMap<CellID, Set<Integer>> results, ServerSessionManager mgr) {
+  void setResults(HashMap<CellID, MetadataCellInfo> results) {
+    logger.info("[Search Results] set new results there are " + results.size());
     // clear out old values
     tabs.clearTabs();
     metaTablesCache.clear();
-    outsideCache.clear();
-    
-    // get cell cache.. doesn't matter what session from
-    cellCache = ClientContext.getCellCache(mgr.getPrimarySession());
+    searchResults.clear();
+    resultsTable.setModel(new ResultsTableModel());
 
 
-    for(Entry<CellID, Set<Integer>> e : results.entrySet()){
+    // set results counter
+    resultsLabel.setText(results.size() + " cells match search");
+    searchResults = results;
+    for(Entry<CellID, MetadataCellInfo> e : searchResults.entrySet()){
       CellID cid = e.getKey();
-      logger.log(Level.INFO, "[Search Results] cid: " + cid + ", num hits:" + e.getValue().size());
+//      logger.info("[Search Results] cid: " + cid + ", num hits:" + e.getValue().size());
       ResultsTableModel mod = (ResultsTableModel) resultsTable.getModel();
       // get cell and cell id, get name, add row
       String cellName = null;
-      if(!fetchCellName(e.getKey(), cellName)){
-        // need to send a message to server to get the cell name
-        outsideCache.add(cid);
-      }
-      mod.addRow(e.getKey(), cellName);
+      mod.addRow(e.getKey(), e.getValue().getName());
     }
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JTabbedPane basicTabs;
-  private javax.swing.JLabel jLabel1;
   private javax.swing.JScrollPane jScrollPane1;
+  private javax.swing.JLabel resultsLabel;
   private javax.swing.JTable resultsTable;
   // End of variables declaration//GEN-END:variables
 
-  private boolean fetchCellName(CellID cid, String cellName) {
-    Cell c = cellCache.getCell(cid);
-    if(c == null){
-      // cell was out of range, but we know it exists
-      // since it was returned by the metadata search
-      // caller will have to get name on its own
-      cellName = "not in cache - out of range";
-      return false;
-    }
-    cellName = c.getName();
-    return true;
-  }
   // End of variables declaration
 
   class ResultsTableModel extends AbstractTableModel{
@@ -226,14 +225,14 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
     }
 
     void addRow(CellID cid, String name){
-      logger.log(Level.INFO, "add row in search model");
-//      logger.log(Level.INFO, "before adding, model size:" + cids.size());
+      logger.info("add row in search model");
+//      logger.info("before adding, model size:" + cids.size());
       cids.add(cid);
       names.add(name);
       int row = cids.size() - 1;
       this.fireTableRowsInserted(cids.size() - 1,
                                  cids.size() - 1);
-//      logger.log(Level.INFO, "after adding, model size:" + cids.size());
+//      logger.info("after adding, model size:" + cids.size());
     }
 
     /**
@@ -251,34 +250,28 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
   }
 
   public void tableChanged(TableModelEvent e) {
-    logger.log(Level.INFO, "[SEARCH RESULTS] res table changed, repaint");
+    logger.info("[SEARCH RESULTS] res table changed, repaint");
     repaint();
   }
 
   /**
-   * build a cell's MetadataTypesTable, from the cache if possible, or by
-   * querying the server if necessary
+   * build a cell's MetadataTypesTable, using our stored information
    *
    * then cache it
    * 
    * @param cid
    */
   private void buildMTTForCell(CellID cid) {
+    // this table could be connected to a cell, allowing edits and receiving updates
+    // for now, this is effectively a static snapshot of the cell's metadata
+    // from the time of the search
+    logger.info("[SEARCH RESULTS] building MTT");
     MetadataTypesTable mtt = new MetadataTypesTable();
     mtt.setTableCellsEditable(MetadataTypesTable.AllowEdits.NEVER);
-    if(!outsideCache.contains(cid)){
-      logger.log(Level.INFO, "[SEARCH RESULTS] building MTT from cell cache");
-      Cell c = cellCache.getCell(cid);
-//      c.getComponent(MetadataComponent.class);
-      
-    }
-    else{
-      logger.log(Level.INFO, "[SEARCH RESULTS] outside cache, asking connection for info");
-      // TODO add functionality to connection
-      // for now, just leave it blank
+    MetadataCellInfo cellInfo = searchResults.get(cid);
 
-    }
-
+    // load metadata, set which mids to highlight
+    mtt.addMetadata(cellInfo.getMetadata(), cellInfo.getHits());
     metaTablesCache.put(cid, mtt);
   }
 
@@ -302,16 +295,17 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
               " which is cid: " + cid);
 
       // if already in the cache, simply display that table
-      if(metaTablesCache.containsKey(cid)){
-        logger.info("[SEARCH RESULTS] MTT was in cache, displaying");
-        tabs = metaTablesCache.get(cid);
-        MetadataSearchResultsForm.this.repaint();
-        return;
+      if(!metaTablesCache.containsKey(cid)){
+        logger.info("[SEARCH RESULTS] was not in cache, build");
+        buildMTTForCell(cid);
       }
-
-      logger.info("[SEARCH RESULTS] was not in cache, fetch and display");
-      buildMTTForCell(cid);
-      
+      tabs = metaTablesCache.get(cid);
+      basicTabs = metaTablesCache.get(cid);
+      tabs.repaint();
+      basicTabs.repaint();
+      MetadataSearchResultsForm.this.remove(basicTabs);
+      MetadataSearchResultsForm.this.add(basicTabs);
+      MetadataSearchResultsForm.this.repaint();
     }
-   }
+  }
 }

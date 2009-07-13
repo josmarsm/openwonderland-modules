@@ -7,17 +7,24 @@ package org.jdesktop.wonderland.modules.metadata.server;
 
 import com.sun.sgs.app.AppContext;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerState;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataConnectionType;
+import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionMessage;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionResponseMessage;
 import org.jdesktop.wonderland.modules.metadata.server.service.MetadataManager;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -63,8 +70,26 @@ class MetadataConnectionHandler implements ClientConnectionHandler, Serializable
         else{
           results = metaService.searchMetadata(m.getFilters(), m.getCellScope());
         }
+        // for every cell in results entry set,
+        // get metadata from cell server state
+        // build cellInfo object with cid, metadata, and hits
+        ArrayList<MetadataCellInfo> cellInfo = new ArrayList<MetadataCellInfo>();
+        for(Entry<CellID, Set<Integer>> e : results.entrySet()){
+          CellID cid = e.getKey();
+          // CellManager -> CellMO -> ComponentMO -> Metadata info!
+          // CellMO also has the cell name
+          CellMO cell = CellManagerMO.getCell(cid);
+          CellComponentMO compoMO = cell.getComponent(MetadataComponentMO.class);
+          MetadataComponentServerState state =
+                  (MetadataComponentServerState) compoMO.getServerState(null);
+          // build cell info object
+          cellInfo.add(new MetadataCellInfo(cid, state.getMetadata(),
+                  e.getValue(), cell.getName()));
 
-        response = new MetadataConnectionResponseMessage(message.getMessageID(), results);
+        }
+
+        // create a response message
+        response = new MetadataConnectionResponseMessage(message.getMessageID(), cellInfo);
         logger.info("[MCH] results size " + results.size());
         sender.send(clientID, response);
         break;

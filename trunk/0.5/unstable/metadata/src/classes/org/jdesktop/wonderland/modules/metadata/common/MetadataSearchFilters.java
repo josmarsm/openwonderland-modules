@@ -13,12 +13,16 @@ import java.util.ArrayList;
  * @author mabonner
  */
 public class MetadataSearchFilters implements Serializable{
-  ArrayList<MetadataSPI> filters = new ArrayList<MetadataSPI>();
+  private ArrayList<MetadataSPI> filters = new ArrayList<MetadataSPI>();
   public void addFilter(MetadataSPI m) {
     filters.add(m);
   }
 
   public int filterCount(){
     return filters.size();
+  }
+
+  public ArrayList<MetadataSPI> getFilters(){
+    return filters;
   }
 }

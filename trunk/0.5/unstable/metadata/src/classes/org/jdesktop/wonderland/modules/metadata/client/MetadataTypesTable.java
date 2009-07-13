@@ -1,13 +1,16 @@
 package org.jdesktop.wonderland.modules.metadata.client;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JScrollPane;
@@ -17,6 +20,7 @@ import javax.swing.JViewport;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
@@ -39,9 +43,13 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
 public class MetadataTypesTable extends JTabbedPane {
   // used to map pieces of metadata to their appropriate table
   private HashMap<Class, JTable> metatypeMap = new HashMap<Class, JTable>();
-  private static Logger logger = Logger.getLogger(MetadataComponent.class.getName());
+  private static Logger logger = Logger.getLogger(MetadataTypesTable.class.getName());
   private ArrayList<ListSelectionListener> tableSelectionListeners = new ArrayList<ListSelectionListener>();
   private ArrayList<TableModelListener> tableModelListeners = new ArrayList<TableModelListener>();
+  /**
+   * metadata id's to highlight (by default none, set by using addMetadata)
+   */
+  private Set<Integer> highlights = new HashSet<Integer>();
 //  private HashMap<JTable, Class> defaultMetadata = new HashMap<JTable, Class>();
 
   /**
@@ -54,6 +62,15 @@ public class MetadataTypesTable extends JTabbedPane {
    * policy for determining whether table cells are user-editable
    */
   private AllowEdits enforceEditable;
+
+  // colors for table selections
+  // orange-red
+  private static Color highlightColor = new Color(255, 170, 150);
+  // neutral blue
+  private static Color selectedColor = new Color(85, 110, 185);
+
+
+
 
   /**
    *
@@ -94,12 +111,14 @@ public class MetadataTypesTable extends JTabbedPane {
 //        try {
 //          type = (MetadataSPI) iterator.next().newInstance();
 //        } catch (Exception ex) {
-//          logger.log(Level.SEVERE, "[MTT] unexpected type in metadata plugin:" + ex);
+//          logger.severe("[MTT] unexpected type in metadata plugin:" + ex);
 //        }
         // tell type to do its client setup
 //        type.initByClient(LoginManager.getPrimary().getPrimarySession().getUserID());
         // create a new table for this type
         JTable typeTable = new JTable(new MetadataTableModel(type));
+        // set renderer to alternate row colors and highlight hits
+        typeTable.setDefaultRenderer(String.class, new CustomTableCellRenderer());
 //        defaultMetadata.put(typeTable, clazz);
 
         // listeners
@@ -119,6 +138,20 @@ public class MetadataTypesTable extends JTabbedPane {
         logger.log(Level.INFO,"adding tab for type:" + type.getClass().getName());
     }
     repaint();
+  }
+
+  /**
+   * debugging
+   * @return total number of metadata objects in this table
+   */
+  public int getMetadataCount(){
+    int total = 0;
+    for(Component c : getComponents() ){
+      JViewport vp =  (JViewport) ((JScrollPane) c).getViewport();
+      JTable tab = (JTable) vp.getView();
+      total += tab.getRowCount();
+    }
+    return total;
   }
 
   /**
@@ -145,7 +178,7 @@ public class MetadataTypesTable extends JTabbedPane {
 //      JTable t = e.getValue();
 //      Class type = ((MetadataTableModel)t.getModel()).getClass();
 //      MetadataTableModel mod = null;
-    logger.log(Level.INFO,"[MTT] clear by resetting");
+//    logger.log(Level.INFO,"[MTT] clear by resetting");
     updateTypeTabs();
 //      try {
     // DIES HERE, complains about newInstance
@@ -170,6 +203,8 @@ public class MetadataTypesTable extends JTabbedPane {
    * The tabs are not cleared, and no entries are overwriten. The passed in
    * Metadata is simply added.
    *
+   * Clears list of metadata id's to highlight, will highlight none.
+   *
    * @param newMetadata The list of Metadata to add.
    */
   public void addMetadata(List<MetadataSPI> newMetadata){
@@ -178,17 +213,49 @@ public class MetadataTypesTable extends JTabbedPane {
         // match to appropriate model
         JTable table = metatypeMap.get(m.getClass());
         if(table == null){
-            logger.log(Level.SEVERE, "Unrecognized Metadata type \"" +
+            logger.severe("Unrecognized Metadata type \"" +
                                 m.getClass().getName() + "\" " + m.getClass());
             continue;
         }
-//        logger.log(Level.INFO, "metadata: " + m + " class: " + m.getClass().getName() + " type: " + m.simpleName() + "table: " + t);
+//        logger.info("metadata: " + m + " class: " + m.getClass().getName() + " type: " + m.simpleName() + "table: " + t);
         MetadataTableModel mod = (MetadataTableModel) table.getModel();
-        logger.log(Level.INFO, "metadata added is: " + m + " with id " + m.getID());
+        logger.info("metadata added is: " + m + " with id " + m.getID());
         
         mod.addRow(m);
+    }     
+  }
+
+  /**
+   * Add Metadata objects to table. Each object will be mapped to the
+   * appropriate tab. Whether each field is displayed or editable is defined
+   * in the Metadata type.
+   *
+   * The tabs are not cleared, and no entries are overwriten. The passed in
+   * Metadata is simply added.
+   *
+   * Replaces old list of metadata id's to highlight.
+   *
+   * @param newMetadata The list of Metadata to add.
+   * @param highlight set of metadata id's to highlight
+   */
+  public void addMetadata(List<MetadataSPI> newMetadata, Set<Integer> newHighlights){
+    for(MetadataSPI m : newMetadata)
+    {
+        // match to appropriate model
+        JTable table = metatypeMap.get(m.getClass());
+        if(table == null){
+            logger.severe("Unrecognized Metadata type \"" +
+                                m.getClass().getName() + "\" " + m.getClass());
+            continue;
+        }
+//        logger.info("metadata: " + m + " class: " + m.getClass().getName() + " type: " + m.simpleName() + "table: " + t);
+        MetadataTableModel mod = (MetadataTableModel) table.getModel();
+        logger.info("metadata added is: " + m + " with id " + m.getID());
+
+        mod.addRow(m);
     }
-      
+
+    highlights = newHighlights;
   }
 
   /**
@@ -279,7 +346,7 @@ public class MetadataTypesTable extends JTabbedPane {
    */
   private void printMetatypeMap(){
       for(Entry<Class, JTable> e : metatypeMap.entrySet()){
-            logger.log(Level.INFO, "Key, Val: " + e.getKey() + ", " + e.getValue());
+            logger.info("Key, Val: " + e.getKey() + ", " + e.getValue());
       }
   }
 
@@ -317,20 +384,11 @@ public class MetadataTypesTable extends JTabbedPane {
     private Class metadataClass;
 
     public MetadataTableModel(MetadataSPI type) {
-       // TODO this needs to talk to the type registration system
-       // to get example blanks of each type
-       logger.log(Level.INFO, "MetadataTableModel type: " + type.simpleName());
-//       Metadata example;
-//       if(type.simpleName().equals("Metadata")){
-//           example = new Metadata(null, null);
-//       }
-//       else{
-//           example = new SimpleMetadata(null, null);
-//       }
+//       logger.fine("MetadataTableModel type: " + type.simpleName());
 
        int colCount = 0;
        for(Entry<String, MetadataValue> e : type.getAttributes()){
-            logger.log(Level.INFO, "NEW ENTRY: " + e.getKey());
+//            logger.fine("NEW ENTRY: " + e.getKey());
             if(e.getValue().displayInProperties){
                 columnNames.put(colCount, e.getKey());
                 colCount+=1;
@@ -348,34 +406,34 @@ public class MetadataTypesTable extends JTabbedPane {
     }
 
     public void addRow(MetadataSPI m) {
-        logger.log(Level.INFO, "add row in model");
-        logger.log(Level.INFO, "before adding, model size:" + metadata.size());
+        logger.info("add row in model");
+//        logger.info("before adding, model size:" + metadata.size());
         metadata.add(m);
         int row = metadata.size() - 1;
         // note which cells are editable
         int colCount = 0;
         for(Entry<String, MetadataValue> e : m.getAttributes()){
-            logger.log(Level.INFO, "NEW ENTRY:");
+            logger.info("NEW ENTRY:");
             if(e.getValue().displayInProperties){
                 if(e.getValue().editable){
                     editable.put(new Point(row, colCount), true);
-                    logger.log(Level.INFO, "entry is editable at r,c" + row + " " + colCount);
+                    logger.info("entry is editable at r,c" + row + " " + colCount);
                 }
                 else{
                     editable.put(new Point(row, colCount), false);
-                    logger.log(Level.INFO, "entry is NOT editable at r,c" + row + " " + colCount);
+                    logger.info("entry is NOT editable at r,c" + row + " " + colCount);
                 }
                 colCount+=1;
             }
         }
         this.fireTableRowsInserted(metadata.size() - 1,
                                    metadata.size() - 1);
-        logger.log(Level.INFO, "after adding, model size:" + metadata.size());
+        logger.info("after adding, model size:" + metadata.size());
     }
 
     public void removeAllRows(){
         int tmp = metadata.size();
-        logger.log(Level.INFO, "before removing all rows, model size:" + tmp);
+//        logger.info("before removing all rows, model size:" + tmp);
         metadata.clear();
         this.fireTableRowsDeleted(0, tmp);
     }
@@ -394,6 +452,10 @@ public class MetadataTypesTable extends JTabbedPane {
         return columnNames.size();
     }
 
+    public MetadataSPI getMetadataFromRow(int rowIndex) {
+        return metadata.get(rowIndex);
+    }
+
     @Override // TODO is this 'override' needed and correct?
     public Object getValueAt(int rowIndex, int columnIndex) {
         return metadata.get(rowIndex).get(getColumnName(columnIndex)).getVal();
@@ -402,7 +464,7 @@ public class MetadataTypesTable extends JTabbedPane {
     // TODO will this be called by things like add row? how does inplace editing work?
     @Override
     public void setValueAt(Object aValue, int row, int col){
-      logger.log(Level.INFO, "[MTT] set value at " + row + " " + col);
+      logger.info("[MTT] set value at " + row + " " + col);
 
       switch(enforceEditable){
         case NEVER:
@@ -436,21 +498,21 @@ public class MetadataTypesTable extends JTabbedPane {
     @Override
     public boolean isCellEditable(int row, int col) {
         if(enforceEditable == AllowEdits.ALWAYS){
-          logger.log(Level.INFO, "allow all edits");
+          logger.info("allow all edits");
           return true;
         }
         else if(enforceEditable == AllowEdits.NEVER){
-          logger.log(Level.INFO, "disallow all edits");
+          logger.info("disallow all edits");
           return false;
         }
         if(editable == null){
-          logger.log(Level.INFO, "editable is null.. " + editable);
+          logger.info("editable is null.. " + editable);
         }
-        logger.log(Level.INFO, "check if editable is allowed");
-        logger.log(Level.INFO, "editable contains r,c" + row + ", " + col +
+        logger.info("check if editable is allowed");
+        logger.info("editable contains r,c" + row + ", " + col +
                 " " + editable.containsKey(new Point(row, col)));
         boolean val = editable.get(new Point(row, col));
-        logger.log(Level.INFO, "val is: " + val);
+        logger.info("val is: " + val);
         return editable.get(new Point(row, col));
     }
 
@@ -546,6 +608,51 @@ public class MetadataTypesTable extends JTabbedPane {
     }
   }
 
-  
+  /**
+   * a custom renderer to highlight rows and alternate color
+   */
+  private class CustomTableCellRenderer extends DefaultTableCellRenderer
+  {
+    @Override
+    public Component getTableCellRendererComponent
+       (JTable table, Object value, boolean isSelected,
+       boolean hasFocus, int row, int column)
+    {
+        Component cell = super.getTableCellRendererComponent
+           (table, value, isSelected, hasFocus, row, column);
+        MetadataTableModel mod = (MetadataTableModel) table.getModel();
+        mod.getMetadataFromRow(row);
+        int selected = table.getSelectedRow();
+        // selected rows have their own color
+        if(selected == row){
+          // neutral blue, white text
+          cell.setBackground(selectedColor);
+          cell.setForeground(Color.white);
+        }
+        else if(highlights.contains(mod.getMetadataFromRow(row).getID())){
+          // highlight this row
+          // orange-red, black text
+          cell.setBackground(highlightColor);
+          cell.setForeground(Color.BLACK);
+          // You can also customize the Font and Foreground this way
+          // cell.setForeground();
+          // cell.setFont();
+
+        }
+        else if(row%2 == 1){
+          // alternate gray and white for normal rows
+          // black text
+          cell.setBackground(Color.WHITE);
+          cell.setForeground(Color.BLACK);
+        }
+        else{
+          // alternate gray and white for normal rows
+          // black text
+          cell.setBackground(Color.LIGHT_GRAY);
+          cell.setForeground(Color.BLACK);
+        }
+        return cell;
+    }
+  }
 
 }
