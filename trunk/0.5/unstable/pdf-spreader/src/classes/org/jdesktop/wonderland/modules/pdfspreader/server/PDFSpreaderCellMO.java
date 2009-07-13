@@ -39,7 +39,7 @@ public class PDFSpreaderCellMO extends CellMO {
 
     private static final Logger logger = Logger.getLogger(PDFSpreaderCellMO.class.getName());
 
-    private int numAvatarsInZone = 0;
+    private String pdfURI;
 
     public PDFSpreaderCellMO () {
         super();
@@ -56,7 +56,8 @@ public class PDFSpreaderCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState state) {
         super.setServerState(state);
-        
+
+        this.pdfURI = ((PDFSpreaderCellServerState)state).getSourceURI();
 //        this.group = ((ChatZonesCellServerState)state).getChatGroup();
 //        this.numAvatarsInZone = ((ChatZonesCellServerState)state).getNumAvatarsInZone();
     }
@@ -67,8 +68,7 @@ public class PDFSpreaderCellMO extends CellMO {
             state = new PDFSpreaderCellServerState();
         }
 
-//        ((ChatZonesCellServerState)state).setChatGroup(group);
-//        ((ChatZonesCellServerState)state).setNumAvatarsInZone(numAvatarsInZone);
+        ((PDFSpreaderCellServerState)state).setSourceURI(pdfURI);
 
         return super.getServerState(state);
     }
@@ -81,8 +81,8 @@ public class PDFSpreaderCellMO extends CellMO {
 
         }
 
-//        ((ChatZonesCellClientState)cellClientState).setNumAvatarsInZone(this.numAvatarsInZone);
-//        ((ChatZonesCellClientState)cellClientState).setGroup(group);
+        ((PDFSpreaderCellClientState)cellClientState).setPdfURI(pdfURI);
+
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -98,7 +98,6 @@ public class PDFSpreaderCellMO extends CellMO {
         }
         else {
             channel.removeMessageReceiver(PDFSpreaderCellChangeMessage.class);
-//            proxRef.getForUpdate().removeProximityListener(proxListener);
         }
     }
     
@@ -111,9 +110,9 @@ public class PDFSpreaderCellMO extends CellMO {
             // do something.
             PDFSpreaderCellMO cellMO = (PDFSpreaderCellMO)getCell();
 
-            PDFSpreaderCellChangeMessage bsccm = (PDFSpreaderCellChangeMessage)message;
+            PDFSpreaderCellChangeMessage msg = (PDFSpreaderCellChangeMessage)message;
 
-            switch(bsccm.getAction()) {
+            switch(msg.getAction()) {
                 default:
                     break;
             }

@@ -58,7 +58,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 
         String name = cell.getCellID().toString();
 
-        TriMesh mesh = new Box(cell.getCellID().toString(), new Vector3f(), 4, 4, 4f);
+        TriMesh mesh = new Box(cell.getCellID().toString(), new Vector3f(), 0.1f, 2, 2f);
 
 //        TriMesh mesh = new Tube(name, 1, 1,1, 50, 50);
        

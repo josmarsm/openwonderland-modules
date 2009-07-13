@@ -22,19 +22,19 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 public class PDFSpreaderCellClientState extends CellClientState {
 
-//    private int numAvatarsInZone = 0;
+    private String pdfURI;
     
     
     public PDFSpreaderCellClientState() {
         
     }
 
-//    public int getNumAvatarsInZone() {
-//        return numAvatarsInZone;
-//    }
-//
-//    public void setNumAvatarsInZone(int numAvatarsInZone) {
-//        this.numAvatarsInZone = numAvatarsInZone;
-//    }
+    public String getPdfURI() {
+        return pdfURI;
+    }
+
+    public void setPdfURI(String pdfURI) {
+        this.pdfURI = pdfURI;
+    }
 
 }

@@ -32,7 +32,17 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        return (T)new PDFSpreaderCellServerState();
+
+        PDFSpreaderCellServerState state = new PDFSpreaderCellServerState();
+
+        if (props != null) {
+           String uri = props.getProperty("content-uri");
+           if (uri != null) {
+               state.setSourceURI(uri);
+           }
+       }
+
+        return (T)state;
     }
 
     public String getDisplayName() {

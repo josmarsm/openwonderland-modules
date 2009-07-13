@@ -54,6 +54,7 @@ public class PDFSpreaderCell extends Cell {
     // to barf. TODO fix the label node so it can more gracefully handle
     // empty strings as labels. 
     private String label = " ";
+    private String pdfURI;
 
     public PDFSpreaderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -64,6 +65,8 @@ public class PDFSpreaderCell extends Cell {
     public void setClientState(CellClientState state) {
         super.setClientState(state);
 
+        this.pdfURI = ((PDFSpreaderCellClientState)state).getPdfURI();
+        
 //        this.numAvatarsInZone = ((PDFSpreaderCellClientState)state).getNumAvatarsInZone();
     }
 
@@ -80,6 +83,9 @@ public class PDFSpreaderCell extends Cell {
 //            listener.addToEntity(renderer.getEntity());
 
             channel.addMessageReceiver(PDFSpreaderCellChangeMessage.class, new PDFSpreaderCellMessageReceiver());
+
+            logger.warning("Setting PDF SPREADER active, current URI: " + this.pdfURI);
+
         } else if (status==CellStatus.DISK && !increasing) {
 //            listener.removeFromEntity(renderer.getEntity());
 //            listener = null;
