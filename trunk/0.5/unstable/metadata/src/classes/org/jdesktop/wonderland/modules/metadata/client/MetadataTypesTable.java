@@ -21,7 +21,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellComponentProperties;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
@@ -39,7 +38,6 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
  * @author mabonner
  */
 
-@CellComponentProperties
 public class MetadataTypesTable extends JTabbedPane {
   // used to map pieces of metadata to their appropriate table
   private HashMap<Class, JTable> metatypeMap = new HashMap<Class, JTable>();

@@ -11,24 +11,19 @@
 
 package org.jdesktop.wonderland.modules.metadata.client.plugin;
 
+import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Logger;
+import javax.swing.JLabel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
-import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.metadata.client.MetadataComponent;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataTypesTable;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 
 /**
@@ -39,10 +34,11 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
 
   private static Logger logger = Logger.getLogger(MetadataSearchResultsForm.class.getName());
 
-  // TODO could not add MetadataTypesTable to NetBeans GUI Builder
-  // workaround: use customize code to make basicTabs instantiated as
-  // a MTT. Cast basicTabs to an MTT and use the tabs reference instead.
-  private MetadataTypesTable tabs;
+  /**
+   * Displays search results. Changed to point at appropriate MTT for currently
+   * selected cell in search results.
+   */
+  private MetadataTypesTable tabs = new MetadataTypesTable();
 
   /**
    * stores metadata, with hits highlighted, for each cell result.
@@ -56,6 +52,9 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
    */
   private HashMap<CellID, MetadataCellInfo> searchResults = new HashMap<CellID, MetadataCellInfo>();
 
+  private JLabel noResultsLabel = new JLabel("No Search Results - Try Modifying Search");
+  private boolean tabsAdded = false;
+
   // Note: querying cell cache will not let us get to the SERVER state, which
   // is where metadata is actually stored. For now, the metadata is sent over
   // in the response message and stored here.
@@ -68,11 +67,8 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
   public MetadataSearchResultsForm() {
       initComponents();
 
-      // work-around for NetBeans GUI builder
-      // see comment where tabs is declared
-      tabs = (MetadataTypesTable) basicTabs;
-      tabs.setTableCellsEditable(MetadataTypesTable.AllowEdits.NEVER);
       resultsTable.setModel(new ResultsTableModel());
+//      tabDisplay.add(tabs);
 
       // add listeners
       resultsTable.getSelectionModel().addListSelectionListener(new resultsSelectionListener());
@@ -84,6 +80,12 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
     super.repaint();
     logger.info("repainting main frame, tabs has " + tabs.getMetadataCount() + " pieces of metadata");
   }
+
+//  @Override
+//  public void setVisible(boolean b){
+//    super.setVisible(b);
+//    if(searchResults)
+//  }
 
   /** This method is called from within the constructor to
    * initialize the form.
@@ -97,7 +99,7 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
     jScrollPane1 = new javax.swing.JScrollPane();
     resultsTable = new javax.swing.JTable();
     resultsLabel = new javax.swing.JLabel();
-    basicTabs = new MetadataTypesTable();
+    tabDisplay = new javax.swing.JPanel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Metadata Search Results");
@@ -132,7 +134,8 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
 
     resultsLabel.setText("# Results");
 
-    basicTabs.setPreferredSize(new java.awt.Dimension(32767, 32767));
+    tabDisplay.setBackground(new java.awt.Color(153, 153, 153));
+    tabDisplay.setLayout(new java.awt.BorderLayout());
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
@@ -141,17 +144,18 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
-          .addComponent(resultsLabel))
+          .addComponent(resultsLabel)
+          .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(basicTabs, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE))
+        .addComponent(tabDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+        .addContainerGap())
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(basicTabs, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+          .addComponent(tabDisplay, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
           .addGroup(layout.createSequentialGroup()
             .addComponent(resultsLabel)
             .addGap(22, 22, 22)
@@ -186,13 +190,36 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
       String cellName = null;
       mod.addRow(e.getKey(), e.getValue().getName());
     }
+
+    if(searchResults.size() == 0){
+      
+//      tabs.setVisible(false);
+//      noResultsLabel.setVisible(true);
+      if(tabsAdded){
+        logger.info("[Search Results] label added");
+        tabDisplay.remove(tabs);
+        tabsAdded = false;
+        tabDisplay.add(noResultsLabel, BorderLayout.CENTER);
+      }
+      
+    }
+    else{
+      // set first row selected, display that table
+      resultsTable.setRowSelectionInterval(0, 0);
+
+      // will this fire automatically?
+//      tabs.setVisible(true);
+//      noResultsLabel.setVisible(false);
+    }
+//    validate();
+//    repaint();
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JTabbedPane basicTabs;
   private javax.swing.JScrollPane jScrollPane1;
   private javax.swing.JLabel resultsLabel;
   private javax.swing.JTable resultsTable;
+  private javax.swing.JPanel tabDisplay;
   // End of variables declaration//GEN-END:variables
 
   // End of variables declaration
@@ -247,6 +274,17 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
       return false;
     }
 
+    @Override
+    public String getColumnName(int column){
+      if(column == 0){
+        return "Cell ID";
+      }
+      else{
+        return "Cell Name";
+      }
+      
+    }
+
   }
 
   public void tableChanged(TableModelEvent e) {
@@ -299,13 +337,24 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
         logger.info("[SEARCH RESULTS] was not in cache, build");
         buildMTTForCell(cid);
       }
+      if(tabsAdded){
+        // remove old table first
+        tabDisplay.remove(tabs);
+      }
+      else{
+        // remove old 'no results' label
+        tabDisplay.remove(noResultsLabel);
+      }
       tabs = metaTablesCache.get(cid);
-      basicTabs = metaTablesCache.get(cid);
-      tabs.repaint();
-      basicTabs.repaint();
-      MetadataSearchResultsForm.this.remove(basicTabs);
-      MetadataSearchResultsForm.this.add(basicTabs);
-      MetadataSearchResultsForm.this.repaint();
+      
+      logger.info("[Search Results] tabs added");
+      tabDisplay.add(tabs, BorderLayout.CENTER);
+      tabsAdded = true;
+//      tabs.revalidate();
+//      tabDisplay.revalidate();
+//      tabs.repaint();
+//      tabDisplay.repaint();
+//      MetadataSearchResultsForm.this.repaint();
     }
   }
 }
