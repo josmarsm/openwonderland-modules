@@ -263,6 +263,7 @@ public class EmbeddedADS implements MetadataBackendInterface
    * @return the cell's DN
    */
   private String getCellDN(CellID cid){
+    logger.info("get DN for cid " + cid);
     String filter = "(&(objectclass=cell)(cid="+ cid +"))";
     String cellScope = wlCtxDN;
     SearchControls ctls = new SearchControls();
@@ -323,27 +324,44 @@ public class EmbeddedADS implements MetadataBackendInterface
    * @param cid id of cell to remove metadata from
    */
   public void clearCellMetadata(CellID cid) {
-    logger.severe("[EADS] clear cell metadata, cell id: " + cid);
+    logger.info("[EADS] clear cell metadata, cell id: " + cid);
     logger.info("***************************");
     printContents(rootCtx, wlCtxDN);
     logger.info("***************************");
     // get cell context
-    DirContext cellCtx = getCellCtx(cid);
+    // TODO will this be necessary when cell reparenting is added?
+//    DirContext cellCtx = getCellCtx(cid);
     // get all its metadata
-    String filter = "(&(mid=*))";
+    String filter = "(&(mID=*))";
     SearchControls ctls = new SearchControls();
     ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
     NamingEnumeration results = null;
+    NamingEnumeration results2 = null;
+    String cellDN = getCellDN(cid);
+    logger.info("Cell DN to clear is: " + cellDN);
+//    try {
+//      logger.info("Cell ctx is: " + cellCtx.getNameInNamespace());
+//    } catch (NamingException ex) {
+//      logger.severe("error viewing cell ctx name" + ex);
+//    }
     try {
-      results = cellCtx.search(getCellDN(cid), filter, ctls);
-      logger.info("[EADS] clear cell metadata, search " + getCellDN(cid)
+      // TODO this search is failing?
+    logger.info("[EADS] clear cell metadata, search " + getCellDN(cid)
               + " for metadata");
+    results = rootCtx.search(cellDN, filter, ctls);
+    logger.info("[EADS] got results");
+//      results2 = cellCtx.search(cellDN, filter, ctls);
+      
       while(results.hasMore()){
+        logger.info("[EADS] attempting to delete an item");
         SearchResult si = (SearchResult)results.next();
-        cellCtx.destroySubcontext(si.getName());
+        logger.info("[EADS] clearing result: " + si.getName());
+        rootCtx.destroySubcontext(si.getName());
+        logger.info("[EADS] result cleared!");
       }
     } catch (NamingException ex) {
       logger.severe("[EADS] error clearing metadata of cell with id:" + cid);
+      logger.severe("[EADS] exception:" + ex);
     }
     if(results == null){
       logger.info("[EADS] no metadata on this cell!");
