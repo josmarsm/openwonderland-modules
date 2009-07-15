@@ -18,18 +18,27 @@
 
 package org.jdesktop.wonderland.modules.pdfspreader.client;
 
+import com.sun.pdfview.PDFFile;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.util.Date;
+import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
-import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -55,6 +64,8 @@ public class PDFSpreaderCell extends Cell {
     // empty strings as labels. 
     private String label = " ";
     private String pdfURI;
+
+    private PDFFile pdfDocument;
 
     public PDFSpreaderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -83,8 +94,6 @@ public class PDFSpreaderCell extends Cell {
 //            listener.addToEntity(renderer.getEntity());
 
             channel.addMessageReceiver(PDFSpreaderCellChangeMessage.class, new PDFSpreaderCellMessageReceiver());
-
-            logger.warning("Setting PDF SPREADER active, current URI: " + this.pdfURI);
 
         } else if (status==CellStatus.DISK && !increasing) {
 //            listener.removeFromEntity(renderer.getEntity());
@@ -151,5 +160,16 @@ public class PDFSpreaderCell extends Cell {
             }
         }
 
+    }
+
+
+
+
+    public PDFFile getDocument() {
+        return this.pdfDocument;
+    }
+
+    private void setDocument(PDFFile document) {
+        this.pdfDocument = document;
     }
 }
