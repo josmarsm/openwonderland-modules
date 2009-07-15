@@ -22,11 +22,13 @@ import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture;
 import com.jme.image.Texture.MagnificationFilter;
 import com.jme.image.Texture.MinificationFilter;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
+import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
 import com.jme.util.TextureManager;
@@ -46,6 +48,8 @@ import java.util.Date;
 import java.util.Vector;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -62,6 +66,10 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 
     private PDFFile pdf;
 
+    private float spacing = 4.0f;
+    private float scale = 1.0f;
+
+
     public PDFSpreaderCellRenderer(Cell cell) {
         super(cell);
         this.pdfCell = (PDFSpreaderCell) cell;
@@ -70,80 +78,19 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
     @Override
     protected Node createSceneGraph(Entity entity) {
 
-        logger.info("Creating scene graph for entity: " + entity);
-
-        String name = cell.getCellID().toString();
-
-        String pdfURI = ((PDFSpreaderCell)cell).getSourceURI();
-        try {
-                logger.warning("PDF loading: " + pdfURI);
-
-                Date then = new Date();
-                logger.warning("really about to load, date: " + then.getTime());
-                pdf = new PDFFile(getDocumentData(pdfURI));
-                Date now = new Date();
-
-                logger.warning("PDF loaded in: " + (now.getTime() - then.getTime()) + "ms");
-            } catch (Exception e) {
-                logger.warning("PDF failed to load: " + e.getMessage());
-                e.printStackTrace();
-            }
-
-
-
-//        TriMesh mesh = new Box(cell.getCellID().toString(), new Vector3f(), 0.1f, 2, 2f);
-
-
-        // loop through the number of pages we have to render.
-        //
-        Vector3f currentCenter  = new Vector3f();
-
         node = new Node();
 
-        for(int i=0; i<pdf.getNumPages(); i++) {
-            logger.warning("currentCenter: " + currentCenter + " (page " + i + ")");
-            // for each page, we need to:
-            //   1. make a new Box
-            //   2. get the image for this page and make it into a texture
-            //   3. apply the texture to the box
-            //   4. move the position pointer for the next box
-
-
-            BufferedImage pageTexture = this.getPageImage(i);
-
-            logger.warning("pageTexture: " + pageTexture);
-
-            // Load the texture first to get the image size
-            Texture texture = TextureManager.loadTexture(pageTexture, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
-
-//            Texture texture = TextureManager.loadTexture(TextureManager.loadImage(), Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, true)
-            texture.setWrap(Texture.WrapMode.BorderClamp);
-            texture.setTranslation(new Vector3f());
-
-            // Figure out what the size of the texture is, scale it down to something
-            // reasonable.
-            float width = texture.getImage().getWidth() * 0.0025f;
-            float height = texture.getImage().getHeight() * 0.0025f;
-
-            TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + i, currentCenter.clone(), 0.1f, width, height);
-            node.attachChild(currentSlide);
-
-            TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
-            ts.setTexture(texture);
-            ts.setEnabled(true);
-
-            currentSlide.setSolidColor(ColorRGBA.white);
-            
-            currentSlide.setRenderState(ts);
-
-            // move the pointer for the next position
-            currentCenter = currentCenter.add(0, 0, 4);
-        }
+        Thread t = new PageLoadingThread(node);
+        t.start();
 
 //        node.attachChild(mesh);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
 
+        node.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
+        node.setLocalScale(scale);
+
+        node.setModelBound(new BoundingBox());
         return node;
     }
 
@@ -162,8 +109,8 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         try {
             if (isValidPage(p)) {
                 currentPage = pdf.getPage(p, true);
-                double pw = currentPage.getWidth();
-                double ph = currentPage.getHeight();
+                double ph = currentPage.getWidth()*2;
+                double pw = currentPage.getHeight()*2;
 //                double aw = (double) this.getWidth();
 //                double ah = (double) this.getHeight();
 
@@ -272,5 +219,127 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         logger.warning("returning buffer: " + buf + " with length: " + buf.array().length);
 
         return buf;
+    }
+
+    private class PageLoadingThread extends Thread {
+
+        private Node node;
+
+        public PageLoadingThread(Node n) {
+            node = n;
+        }
+
+        public void run() {
+
+            logger.info("Creating scene graph for entity: " + entity);
+
+            String name = cell.getCellID().toString();
+
+            String pdfURI = ((PDFSpreaderCell) cell).getSourceURI();
+            try {
+                logger.warning("PDF loading: " + pdfURI);
+
+                Date then = new Date();
+                logger.warning("really about to load, date: " + then.getTime());
+                pdf = new PDFFile(getDocumentData(pdfURI));
+                Date now = new Date();
+
+                logger.warning("PDF loaded in: " + (now.getTime() - then.getTime()) + "ms");
+            } catch (Exception e) {
+                logger.warning("PDF failed to load: " + e.getMessage());
+                e.printStackTrace();
+            }
+//        TriMesh mesh = new Box(cell.getCellID().toString(), new Vector3f(), 0.1f, 2, 2f);
+
+            // loop through the number of pages we have to render.
+            //
+
+//            float totalArc = (float) Math.PI;
+//            float arcPerStep = totalArc / pdf.getNumPages();
+//            float radius = 10;
+
+            Vector3f currentCenter = new Vector3f();
+
+            // centered around 0,0, calculate starting position.
+            
+            for (int i = 1; i <= pdf.getNumPages(); i++) {
+                logger.warning("currentCenter: " + currentCenter + " (page " + i + ")");
+                // for each page, we need to:
+                //   1. make a new Box
+                //   2. get the image for this page and make it into a texture
+                //   3. apply the texture to the box
+                //   4. move the position pointer for the next box
+
+                BufferedImage pageTexture = getPageImage(i);
+
+                logger.warning("pageTexture: " + pageTexture);
+
+                // Dispatch the JME specific stuff to a thread that we can run inside
+                // the RenderingThread.
+                ClientContextJME.getWorldManager().addRenderUpdater((RenderUpdater)new NewSlideUpdater(node, pageTexture, currentCenter, i + "_"), null);
+
+                // move the pointer for the next position
+                currentCenter = currentCenter.add(0, 0, 4);
+            }
+        }
+    }
+
+
+    private class NewSlideUpdater implements RenderUpdater {
+
+        private Node parent;
+        private BufferedImage page;
+        private Vector3f center;
+        private String name;
+
+        public NewSlideUpdater(Node p, BufferedImage texture, Vector3f c, String n) {
+            parent = p;
+            page = texture;
+            center = c;
+            name = n;
+        }
+
+        public void update(Object arg0) {
+
+
+                logger.warning("In NEW SLIDE UPDATER about to make a new slide object and attach it.");
+                Texture texture = TextureManager.loadTexture(page, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
+
+//              Texture texture = TextureManager.loadTexture(TextureManager.loadImage(), Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, true)
+                texture.setWrap(Texture.WrapMode.BorderClamp);
+                texture.setTranslation(new Vector3f());
+
+                // Figure out what the size of the texture is, scale it down to something
+                // reasonable.
+                float width = texture.getImage().getWidth() * 0.00125f;
+                float height = texture.getImage().getHeight() * 0.00125f;
+
+                TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + name, center.clone(), 0.1f, width, height);
+                node.attachChild(currentSlide);
+                logger.warning("Just attached slide to node, with (" + width + "," + height + ")");
+
+                RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+
+                TextureState ts = (TextureState) rm.createRendererState(RenderState.StateType.Texture);
+                ts.setTexture(texture);
+                ts.setEnabled(true);
+
+                MaterialState ms = (MaterialState) rm.createRendererState(RenderState.StateType.Material);
+                ms.setDiffuse(ColorRGBA.white);
+                ms.setColorMaterial(MaterialState.ColorMaterial.Diffuse);
+                currentSlide.setRenderState(ms);
+
+                currentSlide.setRenderState(ts);
+
+                currentSlide.setSolidColor(ColorRGBA.white);
+
+                // This is not the right place to be doing this - it really only
+                // needs to get done after the last slide. But it's easier than
+                // making sure we run an update only at the end, and it keeps
+                // the bounds constantly up to date as slides get added.
+                node.updateModelBound();
+                node.updateRenderState();
+                ClientContextJME.getWorldManager().addToUpdateList(node);
+        }
     }
 }
