@@ -41,6 +41,7 @@ import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 
 /**
@@ -63,6 +64,11 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
      * For playback I use a fudged id.
      */
     private WonderlandClientID clientID;
+
+    /*The wonderland architecture requires that all messages originate from a wonderlandclientsender
+     * For playback I use a fudged sender.
+     */
+    private WonderlandClientSender clientSender;
     /*
      *the reference fo the event player cell
      */
@@ -76,6 +82,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
     public EventPlayer(EventPlayerCellMO playerCell) {
         playerCellMORef = AppContext.getDataManager().createReference(playerCell);
         clientID = new PlayerClientID();
+        clientSender = new PlayerClientSender();
     }
 
     /**
@@ -103,7 +110,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
             throw new RuntimeException("No channel for " + targetCell);
         }
         try {
-            channel.messageReceived(null, clientID, message);
+            channel.messageReceived(clientSender, clientID, message);
         } catch (Exception e) {
             logger.log(Level.SEVERE, "failed to replay message: " + rMessage.getMessage(), e);
         }
