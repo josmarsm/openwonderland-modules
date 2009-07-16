@@ -30,8 +30,8 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentChangeMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentICEMessage;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentNpcMoveMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentTransformMessage;
-import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -90,7 +90,9 @@ public class ScriptingComponentMO extends CellComponentMO
     public static final int CHAT_EVENT = 20;
     public static final int PRESENCE_EVENT = 21;
 
-    
+    private Vector3f npcPosition;
+
+
      /**
      * Create a ScriptingComponent for the given cell. The cell must already
      * have a ChannelComponent otherwise this method will throw an IllegalStateException
@@ -167,12 +169,14 @@ public class ScriptingComponentMO extends CellComponentMO
             channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentChangeMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
             channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentICEMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
             channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentTransformMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
+            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentNpcMoveMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
             } 
         else 
             {
             channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentChangeMessage.class);
             channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentICEMessage.class);
             channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentTransformMessage.class);
+            channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentNpcMoveMessage.class);
             }
         System.out.println("ScriptingComponentMO : In setLive = live = " + live);
         }
@@ -283,6 +287,15 @@ public class ScriptingComponentMO extends CellComponentMO
                         break;
                         }
                     }
+                chanMO.sendAll(clientID, message);
+                }
+            else if(message instanceof ScriptingComponentNpcMoveMessage)
+                {
+                ScriptingComponentNpcMoveMessage ent = (ScriptingComponentNpcMoveMessage) message;
+                System.out.println("CellMO with npc move message");
+                cellMO.npcPosition = ent.getCellTransform().getTranslation(null);
+                CellMO underlyingCellMO = cellRef.getForUpdate();
+//                underlyingCellMO.setLocalTransform(ent.getCellTransform());
                 chanMO.sendAll(clientID, message);
                 }
             }
