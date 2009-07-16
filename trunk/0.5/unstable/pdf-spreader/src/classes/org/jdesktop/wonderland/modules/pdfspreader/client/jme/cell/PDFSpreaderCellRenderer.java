@@ -26,6 +26,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.MaterialState;
@@ -68,6 +69,16 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 
     private float spacing = 4.0f;
     private float scale = 1.0f;
+
+    private float radius = 10;
+
+    public enum LayoutType {
+        LINEAR,
+        SEMICIRCLE,
+        CIRCLE
+    }
+
+    private LayoutType layout = LayoutType.SEMICIRCLE;
 
 
     public PDFSpreaderCellRenderer(Cell cell) {
@@ -131,7 +142,6 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 } else {
                     logger.warning("PDF viewer failed to get image for page: " + p);
                 }
-
             }
         } catch (Exception e) {
             logger.severe("PDF viewer failed to get page image: " + e);
@@ -254,16 +264,21 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
             // loop through the number of pages we have to render.
             //
 
-//            float totalArc = (float) Math.PI;
-//            float arcPerStep = totalArc / pdf.getNumPages();
-//            float radius = 10;
-
-            Vector3f currentCenter = new Vector3f();
+//            float totalArc, arcPerStep, radius, currentAngle;
+//            if(layout == LayoutType.SEMICIRCLE || layout == LayoutType.CIRCLE) {
+//                totalArc = (float) Math.PI;
+//                arcPerStep = totalArc / pdf.getNumPages();
+//                radius = 10;
+//                currentAngle = (float) (-Math.PI / 2);
+//            }
+//
+//            Vector3f currentCenter = new Vector3f();
+//            Quaternion rot;
 
             // centered around 0,0, calculate starting position.
             
             for (int i = 1; i <= pdf.getNumPages(); i++) {
-                logger.warning("currentCenter: " + currentCenter + " (page " + i + ")");
+//                logger.warning("currentCenter: " + currentCenter + " (page " + i + ")");
                 // for each page, we need to:
                 //   1. make a new Box
                 //   2. get the image for this page and make it into a texture
@@ -273,34 +288,69 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 BufferedImage pageTexture = getPageImage(i);
 
                 logger.warning("pageTexture: " + pageTexture);
-
+                
                 // Dispatch the JME specific stuff to a thread that we can run inside
                 // the RenderingThread.
-                ClientContextJME.getWorldManager().addRenderUpdater((RenderUpdater)new NewSlideUpdater(node, pageTexture, currentCenter, i + "_"), null);
-
-                // move the pointer for the next position
-                currentCenter = currentCenter.add(0, 0, 4);
+                ClientContextJME.getWorldManager().addRenderUpdater((RenderUpdater)new NewSlideUpdater(node, pageTexture, i), null);
             }
         }
     }
 
 
+    /**
+     * Given a layout type, a node, and an index, move/rotate the node
+     * so it's in the right place. This parameterised abstraction makes it
+     * easier to update the postions of things to different layout types on
+     * the fly.
+     * 
+     * @param layout
+     * @param n
+     * @param i
+     */
+    private void setSpatialPosition(Spatial s, int i) {
+        Vector3f pos = null;;
+        Quaternion rot = null;
+
+        float curAngle;
+        switch(layout) {
+            case CIRCLE:
+                curAngle = (float) (i * (2*Math.PI / this.pdf.getNumPages()));
+                rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
+                pos = new Vector3f((float)(this.radius*Math.sin(curAngle)), 0.0f, (float)(this.radius*Math.cos(curAngle)));
+                break;
+
+            case SEMICIRCLE:
+                curAngle = (float) (i * (Math.PI / this.pdf.getNumPages()));
+                pos = new Vector3f((float)(this.radius*Math.sin(curAngle)), 0.0f, (float)(this.radius*Math.cos(curAngle)));
+                rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
+                break;
+                
+            case LINEAR:
+                pos = new Vector3f(0, 0, this.spacing * i);
+                rot = new Quaternion();
+                break;
+
+            default:
+                break;
+        }
+        
+        s.setLocalTranslation(pos);
+        s.setLocalRotation(rot);
+    }
+
     private class NewSlideUpdater implements RenderUpdater {
 
         private Node parent;
         private BufferedImage page;
-        private Vector3f center;
-        private String name;
+        private int index;
 
-        public NewSlideUpdater(Node p, BufferedImage texture, Vector3f c, String n) {
+        public NewSlideUpdater(Node p, BufferedImage texture, int i) {
             parent = p;
             page = texture;
-            center = c;
-            name = n;
+            index = i;
         }
 
         public void update(Object arg0) {
-
 
                 logger.warning("In NEW SLIDE UPDATER about to make a new slide object and attach it.");
                 Texture texture = TextureManager.loadTexture(page, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
@@ -314,7 +364,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 float width = texture.getImage().getWidth() * 0.00125f;
                 float height = texture.getImage().getHeight() * 0.00125f;
 
-                TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + name, center.clone(), 0.1f, width, height);
+                TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + index, new Vector3f(), 0.1f, width, height);
                 node.attachChild(currentSlide);
                 logger.warning("Just attached slide to node, with (" + width + "," + height + ")");
 
@@ -330,8 +380,15 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 currentSlide.setRenderState(ms);
 
                 currentSlide.setRenderState(ts);
-
                 currentSlide.setSolidColor(ColorRGBA.white);
+
+                setSpatialPosition(currentSlide, index);
+
+                currentSlide.setModelBound(new BoundingBox());
+                currentSlide.updateModelBound();
+
+
+                ClientContextJME.getWorldManager().addToUpdateList(currentSlide);
 
                 // This is not the right place to be doing this - it really only
                 // needs to get done after the last slide. But it's easier than
@@ -339,6 +396,9 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 // the bounds constantly up to date as slides get added.
                 node.updateModelBound();
                 node.updateRenderState();
+
+                logger.warning("current parent bounds: " + node.getWorldBound());
+                
                 ClientContextJME.getWorldManager().addToUpdateList(node);
         }
     }
