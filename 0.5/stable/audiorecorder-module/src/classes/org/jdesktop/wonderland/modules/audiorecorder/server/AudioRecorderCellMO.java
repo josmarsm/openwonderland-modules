@@ -46,7 +46,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Origin;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellServerState;
 
 /**
@@ -121,7 +121,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
         // origin after the cell has been created.
         CellComponentServerState state = cellServerState.getComponentServerState(PositionComponentServerState.class);
         if (state != null) {
-            setupRecorder(((PositionComponentServerState) state).getOrigin());
+            setupRecorder(((PositionComponentServerState) state).getTranslation());
         }
     }
 
@@ -208,7 +208,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     }
 
-    private void setupRecorder(Origin origin) {
+    private void setupRecorder(Translation origin) {
 //       Vector3d currentPosition = new Vector3d();
 //       getOriginWorld().get(currentPosition);
 //
