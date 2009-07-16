@@ -90,6 +90,8 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentNpcMoveMessage;
+import org.jdesktop.wonderland.modules.scriptingImager.client.jme.cellrenderer.ScriptingImagerCellRenderer;
 
 /**
  *
@@ -189,9 +191,25 @@ public class ScriptingComponent extends CellComponent
     private   int       ICEEventCode         = 0;
     private   String    ICEEventMessage      = null;
 
-    private   Cell      theCell;
-    private   AvatarImiJME avatarRenderer;
+    private   float     initialRotationX    = 0;
+    private   float     initialRotationY    = 0;
+    private   float     initialRotationZ    = 0;
+    private   float     initialAngle        = 0;
 
+    private   Cell      theCell;
+    private   AvatarImiJME                  avatarRenderer;
+    private   ScriptingImagerCellRenderer   imageRenderer;    
+    
+    private   boolean             firstEntry = false;
+    private   boolean             iceEventInFlight = false;
+
+/*
+    private   Vector3f                      npcPosition;
+    private   GoTo                          myGoTo;
+    private   MovableAvatarComponent        movableAvatar;
+*/
+    private   CellRendererJME ret = null;
+    
     @UsesCellComponent
     protected ChannelComponent channelComp;
     
@@ -205,6 +223,7 @@ public class ScriptingComponent extends CellComponent
     public ScriptingComponent(Cell cell) 
         {
         super(cell);
+        firstEntry = false;
         theCell = cell;
         System.out.println("******************** Cell name = " + cell.getName());
         System.out.println("ScriptingComponent : Cell " + cell + " - id = " + cell.getCellID() + " : Enter ScriptingComponent constructor");
@@ -267,11 +286,72 @@ public class ScriptingComponent extends CellComponent
         eventScriptType[PRESENCE_EVENT] = "javascript";
 */
         }
+/*
+    public void avatarMove(int x, int y, int z)
+        {
+        npcPosition = new Vector3f(x, y, z);
+
+        avatarGoTo(npcPosition);
+
+        CellTransform transform = new CellTransform(null, npcPosition, null);
+        ScriptingComponentNpcMoveMessage msg = new ScriptingComponentNpcMoveMessage(cell.getCellID(), transform);
+        channelComp.send(msg);
+
+        CharacterMotionListener motionListener = new CharacterMotionListener()
+            {
+            public void transformUpdate(Vector3f translation, PMatrix rotation)
+                {
+                //Check if NPC has reached his destination
+                if (!myGoTo.verify())
+                    {
+                    System.out.println("In myGoTo.verify");
+                    CellTransform transform = new CellTransform(avatarRenderer.getAvatarCharacter().getQuaternion(), npcPosition, null);
+                    System.out.println("In there also - movableAvatar = " + movableAvatar);
+                    movableAvatar.localMoveRequest(transform, 0, false, null, null);
+                    }
+                }
+            };
+        avatarRenderer.getAvatarCharacter().getController().addCharacterMotionListener(motionListener);
+        }
+
+    public void avatarGoTo(Vector3f NpcPosition)
+        {
+        GameContext context = avatarRenderer.getAvatarCharacter().getContext();
+        CharacterSteeringHelm helm = context.getSteering();
+        myGoTo = new GoTo(NpcPosition, context);
+        helm.clearTasks();
+        helm.setEnable(true);
+        helm.addTaskToTop(myGoTo);
+        }
+*/
+    public  void    imagerExposeNext()
+        {
+        imageRenderer = (ScriptingImagerCellRenderer)ret;
+        imageRenderer.exposeNext();
+        }
+
+    public  void    imagerExposePrevious()
+        {
+        imageRenderer = (ScriptingImagerCellRenderer)ret;
+        imageRenderer.exposePrevious();
+        }
+
+    public  void    imagerExposeImage(int image)
+        {
+        imageRenderer = (ScriptingImagerCellRenderer)ret;
+        imageRenderer.exposeImage(image);
+        }
 
     public  void    stopAvatarForward()
         {
         System.out.println("stopAvatarForward");
         avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Forward);
+
+        Vector3f npcPosition = new Vector3f(2, 2, 2);
+
+        CellTransform transform = new CellTransform(null, npcPosition, null);
+        ScriptingComponentNpcMoveMessage msg = new ScriptingComponentNpcMoveMessage(cell.getCellID(), transform);
+        channelComp.send(msg);
         }
 
     public  void    startAvatarForward()
@@ -340,11 +420,20 @@ public class ScriptingComponent extends CellComponent
         avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Down);
         }
 
+/*    public  void    setMovableAvatar(MovableAvatarComponent MovableAvatar)
+        {
+        movableAvatar = MovableAvatar;
+        } */
     public  void    setAvatarRenderer(AvatarImiJME AvatarRenderer)
         {
         avatarRenderer = AvatarRenderer;
         }
-
+/*
+    public  void    setImageRenderer(ScriptingImagerCellRenderer ImageRenderer)
+        {
+        imageRenderer = ImageRenderer;
+        }
+*/
 /**
  * contentCreateDir - method for calls from a script to create a directory path in the user area on the content area
  *
@@ -598,26 +687,47 @@ public class ScriptingComponent extends CellComponent
      * @param status CellStatus
      */
     @Override
-    public void setStatus(CellStatus status)
+    public void setStatus(CellStatus status, boolean increasing)
         {
 //        mySleep(1000);
         switch(status)
             {
+            case RENDERING:
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING");
+/* Get local node */
+                if(!firstEntry)
+                    {
+//                    CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+                    ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+
+                    System.out.println("In component setStatus - renderer = " + ret);
+                    Entity mye = ret.getEntity();
+                    RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
+                    localNode = rc.getSceneRoot();
+                    MouseEventListener myListener = new MouseEventListener();
+                    myListener.addToEntity(mye);
+/* Execute the startup script */
+                    executeScript(STARTUP_EVENT, null);
+                    firstEntry = true;
+                    }
+                break;
+                }
             case ACTIVE:
                 {
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE");
 /* Register the intercell listener */
                 ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
 /* Get local node */
-                CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+//                CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
 
-                System.out.println("In component setStatus - renderer = " + ret);
-                Entity mye = ret.getEntity();
-                RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
-                localNode = rc.getSceneRoot();
+//                System.out.println("In component setStatus - renderer = " + ret);
+//                Entity mye = ret.getEntity();
+//                RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
+//                localNode = rc.getSceneRoot();
 /* Register mouse event listener */
-                MouseEventListener myListener = new MouseEventListener();
-                myListener.addToEntity(mye);
+//                MouseEventListener myListener = new MouseEventListener();
+//                myListener.addToEntity(mye);
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus");
 /* Register the change message listener */
                 if (msgReceiver == null) 
@@ -725,15 +835,21 @@ public class ScriptingComponent extends CellComponent
                                     System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
                                     }
                                 }
+                            else if(message instanceof ScriptingComponentNpcMoveMessage)
+                                {
+                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is npc move message");
+
+                                }
                             }
 
                         };
                     channelComp.addMessageReceiver(ScriptingComponentChangeMessage.class, msgReceiver);
                     channelComp.addMessageReceiver(ScriptingComponentICEMessage.class, msgReceiver);
                     channelComp.addMessageReceiver(ScriptingComponentTransformMessage.class, msgReceiver);
+                    channelComp.addMessageReceiver(ScriptingComponentNpcMoveMessage.class, msgReceiver);
                     }
 /* Execute the startup script */
-                executeScript(STARTUP_EVENT, null);
+//                executeScript(STARTUP_EVENT, null);
                 break;
                 }
             default:
@@ -1062,7 +1178,7 @@ public class ScriptingComponent extends CellComponent
     
     public void executeScript(int eventType, Vector3f coorW)
        {
-       System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Start of executeScript - this = " + this + " Frame Rate = " + frameRate);
+//       System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Start of executeScript - this = " + this + " Frame Rate = " + frameRate);
        worldCoor = coorW;
        getInitialPosition();
        
@@ -1073,7 +1189,7 @@ public class ScriptingComponent extends CellComponent
            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script type = " + eventScriptType[eventType]);
            WonderlandSession session = cell.getCellCache().getSession();
            ClassLoader cl = session.getSessionManager().getClassloader();
-           System.out.println("Inside the executeScript - just before engineManager");
+//           System.out.println("Inside the executeScript - just before engineManager");
            ScriptEngineManager engineManager = new ScriptEngineManager(cl);
            ScriptEngine jsEngine = engineManager.getEngineByName(eventScriptType[eventType]);  
            Bindings bindings = jsEngine.createBindings();
@@ -1092,6 +1208,10 @@ public class ScriptingComponent extends CellComponent
            bindings.put("initialX", initialX);
            bindings.put("initialY", initialY);
            bindings.put("initialZ", initialZ);
+           bindings.put("initialRotationX", initialRotationX);
+           bindings.put("initialRotationY", initialRotationY);
+           bindings.put("initialRotationZ", initialRotationZ);
+           bindings.put("initialAngle", initialAngle);
            bindings.put("coorX", coorX);
            bindings.put("coorY", coorY);
            bindings.put("coorZ", coorZ);
@@ -1105,7 +1225,6 @@ public class ScriptingComponent extends CellComponent
            bindings.put("proximityBounds", proximityBounds);
            bindings.put("proximityDir", proximityDir);
            bindings.put("aniFrame", aniFrame);
-           
 
  //          if((jsEngine instanceof Compilable) && !(jsEngine instanceof Invocable))
            if(jsEngine instanceof Compilable)
@@ -1128,7 +1247,7 @@ public class ScriptingComponent extends CellComponent
                }
            else
                {
-               System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : This script is Not compilable - " + eventNames[eventType]);
+//               System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : This script is Not compilable - " + eventNames[eventType]);
                URL myURL = new URL(thePath);
                BufferedReader in = new BufferedReader(new InputStreamReader(myURL.openStream()));
 //               if(jsEngine instanceof Invocable)
@@ -1148,8 +1267,8 @@ public class ScriptingComponent extends CellComponent
 //                        }
 //                    }
                }
-           System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Return from script - Test data - stateString[0] = " + stateString[0] + " name = " + testName + " test int = " + testInt);
-           System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Return from script - eventNames[0] = " + eventNames[0]);
+//           System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Return from script - Test data - stateString[0] = " + stateString[0] + " name = " + testName + " test int = " + testInt);
+//           System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Return from script - eventNames[0] = " + eventNames[0]);
            }
        catch(ScriptException ex)
            {
@@ -1168,7 +1287,22 @@ public class ScriptingComponent extends CellComponent
         String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/scripts/" + theCell.getName() + "/" + theScript;
         return thePath;
         }
-    
+
+    public void getInitialRotation()
+        {
+        Vector3f axis = new Vector3f();
+        float angle;
+
+        Quaternion orig = localNode.getLocalRotation();
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original quat = " + orig);
+        angle = orig.toAngleAxis(axis);
+
+        initialRotationX = axis.x;
+        initialRotationY = axis.y;
+        initialRotationZ = axis.z;
+        initialAngle = angle;
+        }
+
     public void getInitialPosition()
         {
         Vector3f v3f = localNode.getLocalTranslation();
@@ -1211,7 +1345,7 @@ public class ScriptingComponent extends CellComponent
         final Quaternion roll;
         
         Quaternion orig = localNode.getLocalRotation();
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setRotation - Original rotation = " + orig);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setRotation - Original rotation = " + orig);
         roll = new Quaternion();
         roll.fromAngleNormalAxis( w , new Vector3f(x, y, z) );
         SceneWorker.addWorker(new WorkCommit() 
@@ -1729,17 +1863,26 @@ public class ScriptingComponent extends CellComponent
 @Override
         public void commitEvent(Event event) 
             {
-            IntercellEvent ice = (IntercellEvent)event;
-            if(watchMessages.contains(new Float(ice.getCode())))
+            if(!iceEventInFlight)
                 {
-                ICEEventCode = ice.getCode();
-                ICEEventMessage = ice.getPayload();
-                executeScript(INTERCELL_EVENT, null);
-                System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                iceEventInFlight = true;
+                IntercellEvent ice = (IntercellEvent)event;
+                if(watchMessages.contains(new Float(ice.getCode())))
+                    {
+                    ICEEventCode = ice.getCode();
+                    ICEEventMessage = ice.getPayload();
+                    executeScript(INTERCELL_EVENT, null);
+                    System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                    }
+                else
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                    }
+                iceEventInFlight = false;
                 }
             else
                 {
-                System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                System.out.println("ICE event in flight");
                 }
             }
         }
