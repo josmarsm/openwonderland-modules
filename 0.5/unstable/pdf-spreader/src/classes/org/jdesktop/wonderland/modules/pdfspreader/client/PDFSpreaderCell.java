@@ -57,15 +57,25 @@ public class PDFSpreaderCell extends Cell {
     private static final Logger logger =
             Logger.getLogger(PDFSpreaderCell.class.getName());
 
-    private int numAvatarsInZone = 0;
-
-    // It's a single space because an empty string causes the label node
-    // to barf. TODO fix the label node so it can more gracefully handle
-    // empty strings as labels. 
-    private String label = " ";
     private String pdfURI;
 
     private PDFFile pdfDocument;
+
+    private float spacing = 4.0f;
+    private float scale = 1.0f;
+
+    void updateLayout() {
+        renderer.updateLayout();
+    }
+
+    public enum LayoutType {
+        LINEAR,
+        SEMICIRCLE,
+        CIRCLE
+    }
+
+    private LayoutType layout = LayoutType.LINEAR;
+
 
     public PDFSpreaderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -106,6 +116,39 @@ public class PDFSpreaderCell extends Cell {
         }
 
     }
+
+    public LayoutType getLayout() {
+        return layout;
+    }
+
+    public void setLayout(LayoutType layout) {
+        logger.warning("Setting layout to: " + layout);
+        this.layout = layout;
+        renderer.updateLayout();
+    }
+
+    public float getScale() {
+        return scale;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
+        logger.warning("Setting scale to: " + scale);
+        renderer.updateLayout();
+
+    }
+
+    public float getSpacing() {
+        return spacing;
+    }
+
+    public void setSpacing(float spacing) {
+        logger.warning("Setting spacing to: " + spacing);
+        this.spacing = spacing;
+        renderer.updateLayout();
+    }
+
+
 
     public String getSourceURI() {
         return this.pdfURI;
