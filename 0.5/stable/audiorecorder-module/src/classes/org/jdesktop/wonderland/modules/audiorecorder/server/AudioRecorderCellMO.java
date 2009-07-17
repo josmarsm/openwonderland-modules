@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.audiorecorder.server;
 
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -46,7 +47,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState.Translation;
 import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellServerState;
 
 /**
@@ -208,7 +208,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     }
 
-    private void setupRecorder(Translation origin) {
+    private void setupRecorder(Vector3f origin) {
 //       Vector3d currentPosition = new Vector3d();
 //       getOriginWorld().get(currentPosition);
 //
