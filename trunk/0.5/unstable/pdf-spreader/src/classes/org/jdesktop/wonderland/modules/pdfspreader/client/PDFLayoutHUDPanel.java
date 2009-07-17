@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.pdfspreader.client;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.wonderland.modules.pdfspreader.client.PDFSpreaderCell.LayoutType;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 
 /**
  *
@@ -48,6 +48,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel {
                 // scale appropriately here - the slider is 0-100, and we want
                 // scale to be bounded 0->4.0
                 cell.setScale((float) (scaleSlider.getValue() / 100.0 * 4.0));
+                cell.sendCurrentLayoutToServer();
             }
 
         });
@@ -66,6 +67,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel {
                     spacing = (float) (spacingSlider.getValue() / 100.0 * 100.0);
                 }
                 cell.setSpacing(spacing);
+                cell.sendCurrentLayoutToServer();
             }
 
         });

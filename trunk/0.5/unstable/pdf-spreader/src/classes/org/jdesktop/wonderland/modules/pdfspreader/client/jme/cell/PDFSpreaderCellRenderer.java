@@ -57,6 +57,7 @@ import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.modules.pdfspreader.client.PDFSpreaderCell;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 
 public class PDFSpreaderCellRenderer extends BasicRenderer {
     private Node node = null;
@@ -90,8 +91,8 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         node.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
         node.setLocalScale(pdfCell.getScale());
 
-node.setModelBound(new BoundingBox());
-return node;
+        node.setModelBound(new BoundingBox());
+        return node;
 }
 
     public void updateLayout() {
@@ -321,7 +322,8 @@ return node;
         Quaternion rot = null;
 
         float curAngle;
-        switch(this.pdfCell.getLayout()) {
+        LayoutType layout = this.pdfCell.getLayout();
+        switch(layout) {
             case CIRCLE:
                 curAngle = (float) (i * (2*Math.PI / this.pdf.getNumPages()));
                 rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
@@ -335,7 +337,10 @@ return node;
                 break;
                 
             case LINEAR:
-                pos = new Vector3f(0, 0, pdfCell.getSpacing() * i);
+                // i-1 because pages is 1-n, not 0-(n-1)
+                // the other negative bit recenters the line around the middle
+                // of the set of slides, not the start point.
+                pos = new Vector3f(0, 0, (pdfCell.getSpacing() * (i-1) + (pdfCell.getSpacing()*((pdf.getNumPages()-1)/2.0f)*-1)));
                 rot = new Quaternion();
                 break;
 

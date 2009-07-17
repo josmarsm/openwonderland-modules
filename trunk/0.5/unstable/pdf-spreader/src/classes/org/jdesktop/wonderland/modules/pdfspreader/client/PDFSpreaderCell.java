@@ -19,15 +19,6 @@
 package org.jdesktop.wonderland.modules.pdfspreader.client;
 
 import com.sun.pdfview.PDFFile;
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.ByteBuffer;
-import java.util.Date;
-import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -36,7 +27,6 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -46,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.pdfspreader.client.jme.cell.PDFSpreaderCellRenderer;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellClientState;
 
 public class PDFSpreaderCell extends Cell {
@@ -64,14 +55,21 @@ public class PDFSpreaderCell extends Cell {
     private float spacing = 4.0f;
     private float scale = 1.0f;
 
-    void updateLayout() {
+    protected void updateLayout() {
         renderer.updateLayout();
     }
 
-    public enum LayoutType {
-        LINEAR,
-        SEMICIRCLE,
-        CIRCLE
+    protected void sendCurrentLayoutToServer() {
+        // This ONLY gets called by the HUD panel, so when we get this call
+        // we know that a local change has occured that we need to send
+        // to the server.
+        PDFSpreaderCellChangeMessage msg = new PDFSpreaderCellChangeMessage();
+        msg.setLayout(layout);
+        msg.setScale(scale);
+        msg.setSpacing(spacing);
+        this.sendCellMessage(msg);
+
+        logger.warning("JUST SENT CELL MESSAGE TO SERVER: " + msg);
     }
 
     private LayoutType layout = LayoutType.LINEAR;
@@ -164,16 +162,27 @@ public class PDFSpreaderCell extends Cell {
             return super.createCellRenderer(rendererType);
         }
     }
- 
+
+    public void updateServerCell() {
+        // package the current local settings up and send them to the server.
+        // this should only trigger on local changes.
+
+        PDFSpreaderCellChangeMessage msg = new PDFSpreaderCellChangeMessage();
+        msg.setLayout(this.layout);
+        msg.setScale(scale);
+        msg.setSpacing(spacing);
+
+        this.sendCellMessage(msg);
+    }
+
     class PDFSpreaderCellMessageReceiver implements ComponentMessageReceiver {
         public void messageReceived(CellMessage message) {
             PDFSpreaderCellChangeMessage msg = (PDFSpreaderCellChangeMessage)message;
-
-            switch(msg.getAction()) {
-                default:
-                    logger.warning("Received unknown message type in client: " + msg.getAction());
-                    break;
-            }
+            
+            // if we got a message, unpack it and apply the settings as specified.
+            setScale(msg.getScale());
+            setSpacing(msg.getSpacing());
+            setLayout(msg.getLayout());
         }
     }
 

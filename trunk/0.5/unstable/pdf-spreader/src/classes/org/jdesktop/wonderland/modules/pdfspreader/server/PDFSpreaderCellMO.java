@@ -18,20 +18,19 @@
 
 package org.jdesktop.wonderland.modules.pdfspreader.server;
 
-import com.sun.sgs.app.ManagedReference;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellClientState;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellServerState;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
-import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -40,6 +39,10 @@ public class PDFSpreaderCellMO extends CellMO {
     private static final Logger logger = Logger.getLogger(PDFSpreaderCellMO.class.getName());
 
     private String pdfURI;
+
+    private float spacing = 4.0f;
+    private float scale = 1.0f;
+    private LayoutType layout = LayoutType.LINEAR;
 
     public PDFSpreaderCellMO () {
         super();
@@ -58,8 +61,10 @@ public class PDFSpreaderCellMO extends CellMO {
         super.setServerState(state);
 
         this.pdfURI = ((PDFSpreaderCellServerState)state).getSourceURI();
-//        this.group = ((ChatZonesCellServerState)state).getChatGroup();
-//        this.numAvatarsInZone = ((ChatZonesCellServerState)state).getNumAvatarsInZone();
+        this.scale = ((PDFSpreaderCellServerState)state).getScale();
+        this.spacing = ((PDFSpreaderCellServerState)state).getSpacing();
+        this.layout = ((PDFSpreaderCellServerState)state).getLayout();
+
     }
 
     @Override
@@ -69,7 +74,10 @@ public class PDFSpreaderCellMO extends CellMO {
         }
 
         ((PDFSpreaderCellServerState)state).setSourceURI(pdfURI);
-
+        ((PDFSpreaderCellServerState)state).setScale(scale);
+        ((PDFSpreaderCellServerState)state).setSpacing(spacing);
+        ((PDFSpreaderCellServerState)state).setLayout(layout);
+        
         return super.getServerState(state);
     }
 
@@ -82,8 +90,23 @@ public class PDFSpreaderCellMO extends CellMO {
         }
 
         ((PDFSpreaderCellClientState)cellClientState).setPdfURI(pdfURI);
+        ((PDFSpreaderCellClientState)cellClientState).setSpacing(spacing);
+        ((PDFSpreaderCellClientState)cellClientState).setScale(scale);
+        ((PDFSpreaderCellClientState)cellClientState).setLayout(layout);
 
         return super.getClientState(cellClientState, clientID, capabilities);
+    }
+
+    public void setLayout(LayoutType layout) {
+        this.layout = layout;
+    }
+
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
+
+    public void setSpacing(float spacing) {
+        this.spacing = spacing;
     }
 
     @Override
@@ -112,10 +135,17 @@ public class PDFSpreaderCellMO extends CellMO {
 
             PDFSpreaderCellChangeMessage msg = (PDFSpreaderCellChangeMessage)message;
 
-            switch(msg.getAction()) {
-                default:
-                    break;
-            }
+            logger.info("Received PDFSpreader message from client: " + msg.getLayout() + "; " + msg.getScale() + "; " + msg.getSpacing());
+            // when we get a message, change our internal state and send it back to everyone else.
+            cellMO.setSpacing(msg.getSpacing());
+            cellMO.setScale(msg.getScale());
+            cellMO.setLayout(msg.getLayout());
+
+            // Remove the user who sent it from the list of people to send to.
+            Set<WonderlandClientID> clients = sender.getClients();
+            clients.remove(clientID);
+
+            sender.send(clients, message);
         }
     }
 
