@@ -47,6 +47,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -277,7 +278,7 @@ public class EventRecorderCell extends Cell {
             return;
         }
         if (!selectedTape.isFresh()) {
-            int response = JOptionPane.showConfirmDialog(null, "Overwrite Existing recording named " + selectedTape.getTapeName() + "?", "Existing Tape", JOptionPane.YES_NO_OPTION);
+            int response = JOptionPane.showConfirmDialog(ClientContextJME.getClientMain().getFrame().getFrame(), "Overwrite Existing recording named " + selectedTape.getTapeName() + "?", "Existing Tape", JOptionPane.YES_NO_OPTION);
             if (response == JOptionPane.NO_OPTION) {
                 return;
             }
