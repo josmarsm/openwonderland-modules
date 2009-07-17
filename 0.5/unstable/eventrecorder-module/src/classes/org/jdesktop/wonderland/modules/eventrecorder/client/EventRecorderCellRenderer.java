@@ -11,31 +11,34 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
+
 
 package org.jdesktop.wonderland.modules.eventrecorder.client;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
+import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Cylinder;
+import com.jme.scene.shape.Pyramid;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
+import com.jme.scene.state.RenderState;
 import com.jme.scene.state.RenderState.StateType;
 import com.sun.scenario.animation.Animation;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Clip.RepeatBehavior;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
@@ -54,21 +57,39 @@ import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
  */
 public class EventRecorderCellRenderer extends BasicRenderer {
 
-    private static final float WIDTH = 0.6f; //x-extent
-    private static final float HEIGHT = WIDTH /2 ; //y-extent was 0.3f
-    private static final float DEPTH = 0.05f; //z-extent
-    private static final float REEL_RADIUS = HEIGHT * 0.9f;  //was 0.16f
-    private static final float BUTTON_WIDTH = WIDTH / 3; //x
-    private static final float BUTTON_HEIGHT = 0.05f; //y
-    private static final float BUTTON_DEPTH = DEPTH; //y
-    private static final ColorRGBA RECORD_BUTTON_DEFAULT = new ColorRGBA(0.5f, 0, 0, 1f);
+    private static final float WIDTH = 1f; //x-extent
+    private static final float HEIGHT = WIDTH * 3 / 2 ; //y-extent was 0.3f
+    private static final ColorRGBA RECORD_BUTTON_DEFAULT = new ColorRGBA(0.2f, 0, 0, 0.5f);
     private static final ColorRGBA RECORD_BUTTON_SELECTED = ColorRGBA.red.clone();
-    private static final ColorRGBA STOP_BUTTON_DEFAULT = new ColorRGBA(0.2f, 0.2f, 0.2f, 1f);
-    private static final ColorRGBA STOP_BUTTON_SELECTED = ColorRGBA.black.clone();
-    private Node root = null;
-    private Button recordButton;
-    private Button stopButton;
+    private static MaterialState LOWERPYRAMID_MATERIALSTATE;
+    private static MaterialState RECORDBUTTON_DEFAULT_MATERIALSTATE;
+    private static MaterialState RECORDBUTTON_SELECTED_MATERIALSTATE;
+
+    private boolean isRecording = false;
+    private Pyramid buttonPyramid;
     private Set<Animation> animations = new HashSet<Animation>();
+
+    static {
+        LOWERPYRAMID_MATERIALSTATE = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
+        LOWERPYRAMID_MATERIALSTATE.setAmbient(ColorRGBA.blue);
+        LOWERPYRAMID_MATERIALSTATE.setDiffuse(ColorRGBA.blue);
+        LOWERPYRAMID_MATERIALSTATE.setSpecular(ColorRGBA.blue);
+        LOWERPYRAMID_MATERIALSTATE.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 1f));
+
+        RECORDBUTTON_DEFAULT_MATERIALSTATE = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
+        RECORDBUTTON_DEFAULT_MATERIALSTATE.setAmbient(RECORD_BUTTON_DEFAULT);
+        RECORDBUTTON_DEFAULT_MATERIALSTATE.setDiffuse(RECORD_BUTTON_DEFAULT);
+        RECORDBUTTON_DEFAULT_MATERIALSTATE.setSpecular(RECORD_BUTTON_DEFAULT);
+        RECORDBUTTON_DEFAULT_MATERIALSTATE.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 1f));
+
+        RECORDBUTTON_SELECTED_MATERIALSTATE = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
+        RECORDBUTTON_SELECTED_MATERIALSTATE.setAmbient(RECORD_BUTTON_SELECTED);
+        RECORDBUTTON_SELECTED_MATERIALSTATE.setDiffuse(RECORD_BUTTON_SELECTED);
+        RECORDBUTTON_SELECTED_MATERIALSTATE.setSpecular(RECORD_BUTTON_SELECTED);
+        RECORDBUTTON_SELECTED_MATERIALSTATE.setEmissive(new ColorRGBA(0.0f, 0.0f, 0.0f, 1f));
+    }
+    
+
 
     public EventRecorderCellRenderer(Cell cell) {
         super(cell);
@@ -76,134 +97,87 @@ public class EventRecorderCellRenderer extends BasicRenderer {
 
     protected Node createSceneGraph(Entity entity) {
         /* Create the scene graph object*/
-        root = new Node();
+        Node root = new Node();
         attachRecordingDevice(root, entity);
         root.setModelBound(new BoundingBox());
         root.updateModelBound();
-        //Set the name of the buttonRoot node
+        //Set the name of the root node
         root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
-        //Set the state of the buttons
-        boolean isRecording = ((EventRecorderCell)cell).isRecording();
+        //Set the state of the button
+        isRecording = ((EventRecorderCell)cell).isRecording();
         setRecording(isRecording);
-        stopButton.setSelected(!isRecording);
         enableAnimations(isRecording);
         return root;
     }
 
+    private void addPlinth(Node aNode) {
+        float boxWidth = WIDTH /2;
+        //The square of the hypotenuse...
+        boxWidth = (float) Math.sqrt(2 * boxWidth * boxWidth);
+        Box b = new Box("Plinth", new Vector3f(0, 0, 0), boxWidth, HEIGHT /16, boxWidth); //x, y, z
+        b.setModelBound(new BoundingBox());
+        b.updateModelBound();
+        b.setRenderState(LOWERPYRAMID_MATERIALSTATE);
+        aNode.attachChild(b);
+    }
+
     private void attachRecordingDevice(Node device, Entity entity) {
-        addOuterCasing(device);
-        entity.addEntity(createReel(device, new Vector3f(0-REEL_RADIUS, 0, 0.0f)));
-        entity.addEntity(createReel(device, new Vector3f(WIDTH - REEL_RADIUS, 0, 0.0f)));
-        entity.addEntity(createRecordButton(device, new Vector3f(-(WIDTH - (BUTTON_WIDTH)), HEIGHT + BUTTON_HEIGHT, 0f)));
-        entity.addEntity(createStopButton(device, new Vector3f(0, HEIGHT + BUTTON_HEIGHT, 0f)));
+        addLowerPyramid(device);
+        addPlinth(device);
+        addUpperPyramid(device, entity);
     }
 
-    private void addOuterCasing(Node device) {
-        Box casing = new Box("Event Recorder Casing", new Vector3f(0, 0, 0), WIDTH, HEIGHT, DEPTH); //x, y, z
-        casing.setModelBound(new BoundingBox());
-        casing.updateModelBound();
-        ColorRGBA casingColour = new ColorRGBA(0f, 0f, 1f, 0.2f);
-        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
-        matState.setDiffuse(casingColour);
-        casing.setRenderState(matState);
-        //casing.setLightCombineMode(Spatial.LightCombineMode.Off);
-        BlendState as = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Blend);
-        as.setEnabled(true);
-        as.setBlendEnabled(true);
-        as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
-        as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
-        casing.setRenderState(as);
-
-        CullState cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Cull);
-        cs.setEnabled(true);
-        cs.setCullFace(CullState.Face.Back);
-        casing.setRenderState(cs);
-        device.attachChild(casing);
-        
+    private void addLowerPyramid(Node aNode) {
+        Pyramid p = new Pyramid("lower pyramid", WIDTH, HEIGHT);
+        p.setModelBound(new BoundingSphere());
+        p.updateModelBound();
+        p.setRenderState(LOWERPYRAMID_MATERIALSTATE);
+        p.setLocalTranslation(0, 0 - HEIGHT/2, 0);
+        Matrix3f rot = new Matrix3f();
+        rot.fromAngleAxis((float) Math.PI, new Vector3f(1f, 0f, 0f));
+        p.setLocalRotation(rot);
+        aNode.attachChild(p);
     }
 
-    private Entity createReel(Node device, Vector3f position) {
-        Node reelRoot = new Node();
-        Entity reelEntity = new Entity("Reel");
-        Cylinder outerReel = new Cylinder("Outer Reel", 10, 100, REEL_RADIUS, DEPTH * 2f, true);
-        Cylinder innerReel = new Cylinder("Inner Reel", 10, 5, REEL_RADIUS/3, DEPTH * 2.10f, true);
-        reelRoot.attachChild(outerReel);
-        reelRoot.attachChild(innerReel);
-        ColorRGBA outerReelColour = ColorRGBA.brown.clone();
-        outerReel.setSolidColor(outerReelColour);
-        ColorRGBA innerReelColour = ColorRGBA.white.clone();
-        innerReel.setSolidColor(innerReelColour);
-        reelRoot.setLightCombineMode(Spatial.LightCombineMode.Off);
-        reelRoot.setModelBound(new BoundingBox());
-        // Calculate the best bounds for the object you gave it
-        reelRoot.updateModelBound();
-        // Move the box to its position
-        reelRoot.setLocalTranslation(position);
-
-        device.attachChild(reelRoot);
+    private void addUpperPyramid(Node aNode, Entity entity) {
+        Node pyramidRoot = new Node();
+        buttonPyramid = new Pyramid("upper pyramid", WIDTH, HEIGHT);
+        Entity pyramidEntity = new Entity("button");
         
-        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(reelRoot);
-        reelEntity.addComponent(RenderComponent.class, rc);
+        buttonPyramid.setRenderState(RECORDBUTTON_DEFAULT_MATERIALSTATE);
+        buttonPyramid.setLocalTranslation(0, HEIGHT/2, 0);
+        pyramidRoot.attachChild(buttonPyramid);
+        pyramidRoot.setModelBound(new BoundingSphere());
+        pyramidRoot.updateModelBound();
+        aNode.attachChild(pyramidRoot);
+        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(pyramidRoot);
+        pyramidEntity.addComponent(RenderComponent.class, rc);
 
-        RotationAnimationProcessor spinner = new RotationAnimationProcessor(reelEntity, reelRoot, 0f, 360, new Vector3f(0f,0f,1f));
+        RotationAnimationProcessor spinner = new RotationAnimationProcessor(pyramidEntity, pyramidRoot, 0f, 360, new Vector3f(0f,1f,0f));
         Clip clip = Clip.create(1000, Clip.INDEFINITE, spinner);
         clip.setRepeatBehavior(RepeatBehavior.LOOP);
         clip.start();
         animations.add(clip);
-        return reelEntity;
+        makeEntityPickable(pyramidEntity, pyramidRoot);
+        ButtonListener listener = new ButtonListener();
+        listener.addToEntity(pyramidEntity);
+        entity.addEntity(pyramidEntity);
     }
 
-    private Entity createRecordButton(Node device, Vector3f position) {
-        recordButton = addButton(device, "Record", position);
-        recordButton.setColor(RECORD_BUTTON_DEFAULT);
-        recordButton.setSelectedColor(RECORD_BUTTON_SELECTED);
-        recordButton.setDefaultColor(RECORD_BUTTON_DEFAULT);
-        Entity buttonEntity = recordButton.getEntity();
-        //Listen to mouse events
-        ButtonListener listener = new ButtonListener(recordButton) {
-
-            @Override
-            public void performAction(Event event) {
-                ((EventRecorderCell) cell).startRecording();
-            }
-        };
-        listener.addToEntity(buttonEntity);
-        return buttonEntity;
+    private void setRenderState(Pyramid aPyramid, RenderState aRenderState) {
+        aPyramid.setRenderState(aRenderState);
+        ClientContextJME.getWorldManager().addToUpdateList(aPyramid);
     }
 
-    private Entity createStopButton(Node device, Vector3f position) {
-        stopButton = addButton(device, "Stop", position);
-        stopButton.setColor(STOP_BUTTON_DEFAULT);
-        stopButton.setSelectedColor(STOP_BUTTON_SELECTED);
-        stopButton.setDefaultColor(STOP_BUTTON_DEFAULT);
-        Entity buttonEntity = stopButton.getEntity();
-        //Listen to mouse events
-        ButtonListener listener = new ButtonListener(stopButton) {
-
-            @Override
-            public void performAction(Event event) {
-                ((EventRecorderCell) cell).stop();
-            }
-        };
-        listener.addToEntity(buttonEntity);
-        return buttonEntity;
-    }
-
-    private Button addButton(Node device, String name, final Vector3f position) {
-        Button aButton = new Button(name, new Vector3f(0, 0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_DEPTH);
-        
-        // Move the button
-        aButton.getRoot().setLocalTranslation(position);
-
-        device.attachChild(aButton.getRoot());
-        
-        return aButton;
-    }
 
     void setRecording(boolean b) {
-        recordButton.setSelected(b);
-        stopButton.setSelected(!b);
-        enableAnimations(b);
+        isRecording = b;
+        if (isRecording) {
+            setRenderState(buttonPyramid, RECORDBUTTON_SELECTED_MATERIALSTATE);
+        } else {
+            setRenderState(buttonPyramid, RECORDBUTTON_DEFAULT_MATERIALSTATE);
+        }
+        enableAnimations(isRecording);
     }
 
     
@@ -218,97 +192,22 @@ public class EventRecorderCellRenderer extends BasicRenderer {
         }
     }
 
-    // Make this buttonEntity pickable by adding a collision component to it
-        protected void makeEntityPickable(Entity entity, Node node) {
-            JMECollisionSystem collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().
-                    loadCollisionSystem(JMECollisionSystem.class);
+    // Make this pyramidEntity pickable by adding a collision component to it
+    protected void makeEntityPickable(Entity entity, Node node) {
+        JMECollisionSystem collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().
+                loadCollisionSystem(JMECollisionSystem.class);
 
-            CollisionComponent cc = collisionSystem.createCollisionComponent(node);
-            entity.addComponent(CollisionComponent.class, cc);
-        }
-
-    class Button {
-
-        private boolean isSelected;
-        private Box box;
-        private Node buttonRoot;
-        private Entity buttonEntity;
-        private ColorRGBA selectedColor;
-        private ColorRGBA defaultColor;
-
-        private Button(String name, Vector3f vector3f, float f, float BUTTON_WIDTH, float BUTTON_HEIGHT) {
-            box = new Box(name, vector3f, f, BUTTON_WIDTH, BUTTON_HEIGHT);
-            box.setLightCombineMode(Spatial.LightCombineMode.Off);
-            box.setModelBound(new BoundingSphere());
-            // Calculate the best bounds for the object you gave it
-            box.updateModelBound();
-            buttonRoot = new Node();
-            buttonRoot.attachChild(box);
-            buttonEntity = new Entity(name);
-            RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(buttonRoot);
-            buttonEntity.addComponent(RenderComponent.class, rc);
-            // Make the secondary object pickable separately from the primary object
-            makeEntityPickable(buttonEntity, buttonRoot);
-        }
-
-        Node getRoot() {
-            return buttonRoot;
-        }
-
-        Entity getEntity() {
-            return buttonEntity;
-        }
-
-        boolean isSelected() {
-            return isSelected;
-        }
-
-        void setSelected(boolean selected) {
-            //rendererLogger.info("setSelected: " + selected);
-            this.isSelected = selected;
-            updateColor();
-        }
-
-        
-
-        void setSelectedColor(ColorRGBA selectedColor) {
-            this.selectedColor = selectedColor;
-        }
-        
-        void setDefaultColor(ColorRGBA defaultColor) {
-            this.defaultColor = defaultColor;
-        }
-
-        void setColor(ColorRGBA color) {
-            box.setSolidColor(color);
-        }
-
-        public void updateColor() {
-            if (isSelected) {
-                setColor(selectedColor);
-            } else {
-                setColor(defaultColor);
-            }
-            ClientContextJME.getWorldManager().addToUpdateList(box);
-        }
-
-        private void printComponents() {
-            //System.out.println(buttonEntity);
-            //Iterator entityComponents = buttonEntity.getComponents().iterator();
-            //while (entityComponents.hasNext()) {
-            //    System.out.println(entityComponents.next());
-            //}
-        }
+        CollisionComponent cc = collisionSystem.createCollisionComponent(node);
+        entity.addComponent(CollisionComponent.class, cc);
     }
 
-    abstract class ButtonListener extends EventClassListener {
+    
 
-        private Button button;   
+    class ButtonListener extends EventClassListener {
 
-        ButtonListener(Button aButton) {
+        ButtonListener() {
             super();
             setSwingSafe(true);
-            button = aButton;
         }
 
         @Override
@@ -319,23 +218,28 @@ public class EventRecorderCellRenderer extends BasicRenderer {
         // Note: we don't override computeEvent because we don't do any computation in this listener.
         @Override
         public void commitEvent(Event event) {
-            //rendererLogger.info("commit " + event + " for ");
-            //button.printComponents();
+            logger.info("commit " + event + " for " + this);
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
-            if (mbe.isClicked() == false) {
+            if (!mbe.isClicked()) {
                 return;
             }
             //ignore any mouse button that isn't the left one
             if (mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
-            if (!button.isSelected()) {
-                performAction(event);
+            if (!isRecording) {
+                logger.info("startRecording");
+                ((EventRecorderCell)cell).startRecording();
+            } else {
+                logger.info("stop recording");
+                ((EventRecorderCell)cell).stop();
             }
+
+
 
         }
 
-        public abstract void performAction(Event event);
+
     }
 
 }
