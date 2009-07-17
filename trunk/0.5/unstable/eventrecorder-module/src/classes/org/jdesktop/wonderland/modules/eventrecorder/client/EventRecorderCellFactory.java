@@ -20,6 +20,8 @@
 package org.jdesktop.wonderland.modules.eventrecorder.client;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -50,6 +52,7 @@ public class EventRecorderCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        return null;
+        URL url = EventRecorderCellFactory.class.getResource("resources/eventrecorder_preview.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
