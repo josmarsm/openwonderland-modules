@@ -21,50 +21,42 @@ package org.jdesktop.wonderland.modules.pdfspreader.common;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 public class PDFSpreaderCellChangeMessage extends CellMessage {
-    public enum PDFSpreaderAction {
-        JOINED,
-        LEFT,
-        LABEL
+
+    public enum LayoutType {
+        LINEAR,
+        SEMICIRCLE,
+        CIRCLE
     }
 
-    public String name;
+    private float scale;
+    private float spacing;
+    private LayoutType layout;
 
-    public String label;
-
-    public PDFSpreaderAction action;
-
-    public int numAvatarInZone = 0;
-
-    public PDFSpreaderCellChangeMessage(PDFSpreaderAction action) {
-        this.action = action;
-    }
-    
-    public PDFSpreaderAction getAction() {
-        return action;
+    public PDFSpreaderCellChangeMessage() {
+        
     }
 
-    public int getNumAvatarInZone() {
-        return numAvatarInZone;
+    public LayoutType getLayout() {
+        return layout;
     }
 
-    public void setNumAvatarInZone(int numAvatarInZone) {
-        this.numAvatarInZone = numAvatarInZone;
+    public void setLayout(LayoutType layout) {
+        this.layout = layout;
     }
 
-    public String getName() {
-        return name;
+    public float getScale() {
+        return scale;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setScale(float scale) {
+        this.scale = scale;
     }
 
-    public String getLabel() {
-        return label;
+    public float getSpacing() {
+        return spacing;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setSpacing(float spacing) {
+        this.spacing = spacing;
     }
-
 }

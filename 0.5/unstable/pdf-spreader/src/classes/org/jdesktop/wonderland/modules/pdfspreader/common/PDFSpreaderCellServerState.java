@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 
 @XmlRootElement(name="pdf-spreader-cell")
 @ServerState
@@ -31,6 +32,15 @@ public class PDFSpreaderCellServerState extends CellServerState {
 
     @XmlElement(name="pdfURI")
     private String pdfURI = null;
+
+    @XmlElement(name="scale")
+    private float scale;
+
+    @XmlElement(name="spacing")
+    private float spacing;
+
+    @XmlElement(name="layout")
+    private LayoutType layout;
 
     public PDFSpreaderCellServerState() {
     }
@@ -44,4 +54,20 @@ public class PDFSpreaderCellServerState extends CellServerState {
     public void setSourceURI(String uri) {
         this.pdfURI = uri;
     }
+
+    @XmlTransient public float getScale() { return this.scale; }
+    public void setScale (float scale) {
+        this.scale = scale;
+    }
+
+    @XmlTransient public float getSpacing() { return this.spacing; }
+    public void setSpacing(float spacing) {
+        this.spacing = spacing;
+    }
+
+    @XmlTransient public LayoutType getLayout() { return this.layout; }
+    public void setLayout(LayoutType layout) {
+        this.layout = layout;
+    }
+
 }
