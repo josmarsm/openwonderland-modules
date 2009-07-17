@@ -46,6 +46,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.util.Date;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
@@ -67,19 +68,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 
     private PDFFile pdf;
 
-    private float spacing = 4.0f;
-    private float scale = 1.0f;
-
-    private float radius = 10;
-
-    public enum LayoutType {
-        LINEAR,
-        SEMICIRCLE,
-        CIRCLE
-    }
-
-    private LayoutType layout = LayoutType.SEMICIRCLE;
-
+    private List<Spatial> slides = new Vector<Spatial>();
 
     public PDFSpreaderCellRenderer(Cell cell) {
         super(cell);
@@ -99,16 +88,32 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         node.updateModelBound();
 
         node.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
-        node.setLocalScale(scale);
+        node.setLocalScale(pdfCell.getScale());
 
-        node.setModelBound(new BoundingBox());
-        return node;
-    }
+node.setModelBound(new BoundingBox());
+return node;
+}
 
-    /**
-     * Get an image of a specific page
-     *
-     * Taken from PDFViewerApp.java, with some modifications.
+    public void updateLayout() {
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+            public void update(Object arg) {
+                // update scale of root node
+                node.setLocalScale(pdfCell.getScale());
+
+                // redo layout.
+                int i = 0;
+                for (Spatial s : slides) {
+                    setSpatialPosition(s, i);
+                    i++;
+                }
+            }},null);
+}
+/**
+* Get an image of a specific page
+*
+* Taken from PDFViewerApp.java, with some modifications.
      *
      * @param p the page number
      * @return the image of the specified page
@@ -296,6 +301,10 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         }
     }
 
+    private void newSlide(Spatial s) {
+        slides.add(s);
+    }
+
 
     /**
      * Given a layout type, a node, and an index, move/rotate the node
@@ -312,30 +321,32 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         Quaternion rot = null;
 
         float curAngle;
-        switch(layout) {
+        switch(this.pdfCell.getLayout()) {
             case CIRCLE:
                 curAngle = (float) (i * (2*Math.PI / this.pdf.getNumPages()));
                 rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
-                pos = new Vector3f((float)(this.radius*Math.sin(curAngle)), 0.0f, (float)(this.radius*Math.cos(curAngle)));
+                pos = new Vector3f((float)(pdfCell.getSpacing()*Math.sin(curAngle)), 0.0f, (float)(pdfCell.getSpacing()*Math.cos(curAngle)));
                 break;
 
             case SEMICIRCLE:
                 curAngle = (float) (i * (Math.PI / this.pdf.getNumPages()));
-                pos = new Vector3f((float)(this.radius*Math.sin(curAngle)), 0.0f, (float)(this.radius*Math.cos(curAngle)));
+                pos = new Vector3f((float)(pdfCell.getSpacing()*Math.sin(curAngle)), 0.0f, (float)(pdfCell.getSpacing()*Math.cos(curAngle)));
                 rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
                 break;
                 
             case LINEAR:
-                pos = new Vector3f(0, 0, this.spacing * i);
+                pos = new Vector3f(0, 0, pdfCell.getSpacing() * i);
                 rot = new Quaternion();
                 break;
 
             default:
                 break;
         }
-        
+
+        logger.warning("(" + i + ") pos: " + s.getLocalTranslation() + " -> " + pos);
         s.setLocalTranslation(pos);
         s.setLocalRotation(rot);
+        ClientContextJME.getWorldManager().addToUpdateList(s);
     }
 
     private class NewSlideUpdater implements RenderUpdater {
@@ -400,6 +411,8 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 logger.warning("current parent bounds: " + node.getWorldBound());
                 
                 ClientContextJME.getWorldManager().addToUpdateList(node);
+
+                newSlide(currentSlide);
         }
     }
 }

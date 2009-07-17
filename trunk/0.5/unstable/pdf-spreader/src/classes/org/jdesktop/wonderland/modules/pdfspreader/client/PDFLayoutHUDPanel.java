@@ -1,25 +1,83 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * PDFLayoutHUDPanel.java
+/**
+ * Project Wonderland
  *
- * Created on Jul 16, 2009, 5:19:26 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.pdfspreader.client;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.jdesktop.wonderland.modules.pdfspreader.client.PDFSpreaderCell.LayoutType;
+
 /**
  *
- * @author drew
+ * @author Drew Harry <drew_harry@dev.java.net>
  */
 public class PDFLayoutHUDPanel extends javax.swing.JPanel {
 
+//    private PDFLayoutPanel layoutPanel = null;
+//    private static HUDComponent layoutHUD = null;
+
+    private PDFSpreaderCell cell;
+
+
     /** Creates new form PDFLayoutHUDPanel */
-    public PDFLayoutHUDPanel() {
+    public PDFLayoutHUDPanel(PDFSpreaderCell c) {
         initComponents();
+
+        this.cell = c;
+
+        // setup listeners for changes on the sliders.
+        scaleSlider.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+
+                // scale appropriately here - the slider is 0-100, and we want
+                // scale to be bounded 0->4.0
+                cell.setScale((float) (scaleSlider.getValue() / 100.0 * 4.0));
+            }
+
+        });
+
+        spacingSlider.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+
+                // scale appropriately here - the slider is 0-100, and we want
+                // scale to be bounded 0->4.0
+                float spacing = 0.0f;
+                if(layoutType.getSelectedIndex()==0) {
+                    spacing = (float) (spacingSlider.getValue() / 100.0 * 15.0);
+                }
+                else {
+                    spacing = (float) (spacingSlider.getValue() / 100.0 * 100.0);
+                }
+                cell.setSpacing(spacing);
+            }
+
+        });
+
+    }
+
+    /**
+     * Indicates that this HUD panel has been closed
+     */
+    public void closed() {
+        // Also close the Details position HUD panel
+//        positionHUD.setVisible(false);
     }
 
     /** This method is called from within the constructor to
@@ -49,14 +107,19 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 4;
+        gridBagConstraints.ipady = 4;
         add(layoutType, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 2;
+        gridBagConstraints.ipady = 4;
         add(scaleSlider, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 4;
         add(spacingSlider, gridBagConstraints);
 
         jLabel1.setText("Slide Scale");
@@ -73,7 +136,29 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void layoutTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layoutTypeActionPerformed
-        // TODO add your handling code here:
+        LayoutType type;
+
+        switch(this.layoutType.getSelectedIndex()) {
+            case 0:
+                type = LayoutType.LINEAR;
+                break;
+            case 1:
+                type = LayoutType.SEMICIRCLE;
+                break;
+            case 2:
+                type = LayoutType.CIRCLE;
+                break;
+            default:
+                // This will only happen if the number of items
+                // in the list gets changed, and an unexpected number
+                // is selected.
+                type = null;
+                break;
+        }
+        cell.setLayout(type);
+        cell.setScale(scaleSlider.getValue());
+        cell.setSpacing(spacingSlider.getValue());
+        cell.updateLayout();
     }//GEN-LAST:event_layoutTypeActionPerformed
 
 
