@@ -18,48 +18,62 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="blackCountMessage" alignment="0" max="32767" attributes="1"/>
-                  <Component id="whiteCountMessage" alignment="0" max="32767" attributes="1"/>
-                  <Component id="turnMessage" alignment="0" pref="200" max="32767" attributes="1"/>
-                  <Component id="newGameButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="errorMessage" alignment="0" max="32767" attributes="1"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="turnMessage" pref="200" max="32767" attributes="1"/>
+                      <EmptySpace min="-2" pref="188" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="blackCountMessage" alignment="0" max="32767" attributes="1"/>
+                          <Component id="whiteCountMessage" alignment="0" pref="110" max="32767" attributes="1"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="instructionMessage" min="-2" pref="327" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace pref="188" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+              <Component id="instructionMessage" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="turnMessage" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
               <Component id="whiteCountMessage" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="blackCountMessage" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="newGameButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="errorMessage" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="217" max="32767" attributes="0"/>
+              <EmptySpace pref="185" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
     <Component class="javax.swing.JLabel" name="turnMessage">
-    </Component>
-    <Component class="javax.swing.JLabel" name="whiteCountMessage">
-    </Component>
-    <Component class="javax.swing.JLabel" name="blackCountMessage">
-    </Component>
-    <Component class="javax.swing.JButton" name="newGameButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="New Game"/>
+        <Property name="text" type="java.lang.String" value="It is white&apos;s turn"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="errorMessage">
+    <Component class="javax.swing.JLabel" name="whiteCountMessage">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="White Pieces: 0"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="blackCountMessage">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Black Pieces: 0"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="instructionMessage">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Click mouse left on a square to place a piece."/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

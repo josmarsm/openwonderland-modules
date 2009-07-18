@@ -18,6 +18,7 @@ package org.jdesktop.wonderland.modules.joth.client.uijava;
 public class JothControlPanel extends javax.swing.JPanel {
 
     public interface ControlPanelContainer {
+        // TODO: not yet used
         public void newGame();
     }
 
@@ -27,14 +28,6 @@ public class JothControlPanel extends javax.swing.JPanel {
     /** Creates new form JothControlPanel */
     public JothControlPanel() {
         initComponents();
-
-	newGameButton.setToolTipText("Start a new game");
-        newGameButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newGameButtonActionPerformed(evt);
-            }
-        });
-
     }
 
     public void setContainer (ControlPanelContainer container) {
@@ -53,10 +46,15 @@ public class JothControlPanel extends javax.swing.JPanel {
         turnMessage = new javax.swing.JLabel();
         whiteCountMessage = new javax.swing.JLabel();
         blackCountMessage = new javax.swing.JLabel();
-        newGameButton = new javax.swing.JButton();
-        errorMessage = new javax.swing.JLabel();
+        instructionMessage = new javax.swing.JLabel();
 
-        newGameButton.setText("New Game");
+        turnMessage.setText("It is white's turn");
+
+        whiteCountMessage.setText("White Pieces: 0");
+
+        blackCountMessage.setText("Black Pieces: 0");
+
+        instructionMessage.setText("Click mouse left on a square to place a piece.");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -64,46 +62,48 @@ public class JothControlPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(blackCountMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(whiteCountMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(turnMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                    .add(newGameButton)
-                    .add(errorMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(188, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(turnMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                        .add(188, 188, 188))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, blackCountMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, whiteCountMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(instructionMessage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 327, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(16, 16, 16)
+                .add(instructionMessage)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(turnMessage)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(19, 19, 19)
                 .add(whiteCountMessage)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(blackCountMessage)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(newGameButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(errorMessage)
-                .addContainerGap(217, Short.MAX_VALUE))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel blackCountMessage;
-    private javax.swing.JLabel errorMessage;
-    private javax.swing.JButton newGameButton;
+    private javax.swing.JLabel instructionMessage;
     private javax.swing.JLabel turnMessage;
     private javax.swing.JLabel whiteCountMessage;
     // End of variables declaration//GEN-END:variables
 
     public void clearError () {
-        errorMessage.setText("");
+        instructionMessage.setText("Click left on a square to place a piece.");
     }
 
     public void error (String message) {
-        errorMessage.setText("Error: " + message);
+        instructionMessage.setText("Error: " + message);
     }
 
     public void displayCounts (int whiteCount, int blackCount) {
@@ -116,11 +116,7 @@ public class JothControlPanel extends javax.swing.JPanel {
     }
 
     public void notifyGameOver (String msg) {
-        errorMessage.setText(msg);
+        instructionMessage.setText(msg);
         turnMessage.setText("");
-    }
-
-    private void newGameButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        container.newGame();
     }
 }
