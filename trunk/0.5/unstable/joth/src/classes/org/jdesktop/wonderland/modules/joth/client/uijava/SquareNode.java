@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.joth.client.uijava;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import org.jdesktop.wonderland.modules.joth.client.ezapi.EZAPIJme;
+import org.jdesktop.wonderland.modules.joth.client.utiljava.JothUtilJme;
 import org.jdesktop.wonderland.modules.joth.client.gamejava.Board;
 
 /***************************************************************************
@@ -32,24 +32,24 @@ public class SquareNode extends Node {
 
     private static final float Z_OFFSET = 0.05f;
 
-    private EZAPIJme ezapi;
+    private JothUtilJme util;
     private int row;
     private int col;
     private Piece displayedPiece;
 
-    public SquareNode (EZAPIJme ezapi, Node parentNode, int row, int col) {
+    public SquareNode (JothUtilJme util, Node parentNode, int row, int col) {
         super("SquareNode for " + row + ", " + col);
-        this.ezapi = ezapi;
+        this.util = util;
         this.row = row;
         this.col = col;
         
         // Init transform
         float x = SquareGeometry.WIDTH * ((float)row + 0.5f);
         float y = SquareGeometry.HEIGHT * ((float)col + 0.5f);
-        ezapi.setLocalTranslation(this, new Vector3f(x, y, Z_OFFSET));
+        util.setLocalTranslation(this, new Vector3f(x, y, Z_OFFSET));
 
-        ezapi.setPickable(this, true);
-        ezapi.attachChild(parentNode, this);
+        util.setPickable(this, true);
+        util.attachChild(parentNode, this);
     }
 
     public int getRow () {
@@ -81,14 +81,14 @@ public class SquareNode extends Node {
 
         // Take down previous piece (if necessary)
         if (displayedPiece != null && displayedPiece.getColor() != Board.Color.EMPTY) {
-            ezapi.detachChild(this, displayedPiece);
+            util.detachChild(this, displayedPiece);
             displayedPiece = null;
         }
 
         // Put up the new piece (if necessary)
         if (color != Board.Color.EMPTY) {
-            displayedPiece = new Piece(color, ezapi);
-            ezapi.attachChild(this, displayedPiece);
+            displayedPiece = new Piece(color, util);
+            util.attachChild(this, displayedPiece);
         }
     }
 }

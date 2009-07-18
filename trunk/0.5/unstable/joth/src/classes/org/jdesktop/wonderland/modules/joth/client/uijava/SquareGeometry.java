@@ -22,7 +22,7 @@ import com.jme.renderer.ColorRGBA;
 import com.jme.scene.shape.Quad;
 import com.jme.bounding.BoundingBox;
 import com.jme.scene.state.MaterialState;
-import org.jdesktop.wonderland.modules.joth.client.ezapi.EZAPIJme;
+import org.jdesktop.wonderland.modules.joth.client.utiljava.JothUtilJme;
 
 /******************************************************************
  * SquareGeometry: The geometry for a board square (a square quad).
@@ -38,12 +38,12 @@ public class SquareGeometry extends Quad {
     private static final ColorRGBA LIGHT_COLOR = new ColorRGBA(0.9f, 0.9f, 0.9f, 1.0f);
     private static final ColorRGBA DARK_COLOR = new ColorRGBA(0.0f, 0.9f, 0.0f, 1.0f);
 
-    private EZAPIJme ezapi;
+    private JothUtilJme util;
     private MaterialState ms;
 
-    public SquareGeometry (EZAPIJme ezapi, int row, int col) {
+    public SquareGeometry (JothUtilJme util, int row, int col) {
         super("Quad for square " + row + "," + col, WIDTH, HEIGHT);
-        this.ezapi = ezapi;
+        this.util = util;
 
         ColorRGBA color;
         if ((row & 0x1) == (col & 0x1)) {
@@ -53,7 +53,7 @@ public class SquareGeometry extends Quad {
         }
         setColor(color);
         
-        ezapi.doJmeOpAndWait(new Runnable() {
+        util.doJmeOpAndWait(new Runnable() {
             public void run () {
                 setModelBound(new BoundingBox());
                 updateModelBound();
@@ -63,8 +63,8 @@ public class SquareGeometry extends Quad {
 
     public void setColor(final ColorRGBA color) {
         if (ms == null) {
-            ms = ezapi.spatialCreateMaterialState(this);
+            ms = util.spatialCreateMaterialState(this);
         }
-        ezapi.materialStateSetAmbientAndDiffuse(ms, color);
+        util.materialStateSetAmbientAndDiffuse(ms, color);
     }
 }

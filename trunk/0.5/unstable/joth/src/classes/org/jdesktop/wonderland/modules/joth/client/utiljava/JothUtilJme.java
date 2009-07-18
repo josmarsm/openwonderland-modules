@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.joth.client.ezapi;
+package org.jdesktop.wonderland.modules.joth.client.utiljava;
 
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
@@ -42,13 +42,14 @@ import org.jdesktop.wonderland.client.input.EventListenerBaseImpl;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /*************************************************************************************************
- * EZAPI: Simplified access to Wonderland JME APIs for a single cell. Provides developers with 
+ * JothUtil: Provides simplified access to Wonderland JME APIs for a single cell. Provides developers with 
  * easier access to Wonderland programming. The price, however, is that it is not as performant as
- * the basic Wonderland APIs. 
+ * the basic Wonderland APIs. Note: this is only for use within the Joth module. It doesn't expose
+ * the right thread model for general use.
  *
  * @author deronj@dev.java.net
  */
-public class EZAPIJme {
+public class JothUtilJme {
 
     /** The cell. */
     private Cell cell;
@@ -62,10 +63,10 @@ public class EZAPIJme {
     /** The root entity of the scene graph contained in the cell. */
     private Entity rootEntity;
 
-    /** The root node of the EZAPI object. */
+    /** The root node of the JothUtil object. */
     private Node rootNode;
 
-    /** Is the EZAPI object visible in the cell? */
+    /** Is the JothUtil object visible in the cell? */
     private boolean visible;
 
     /** The event listeners currently in use. */
@@ -86,27 +87,27 @@ public class EZAPIJme {
     /** Does this cell need collision handling? */
     private boolean entityCollidable;
 
-    /** An EZAPI event handler. */
+    /** An JothUtil event handler. */
     private interface BaseEventHandler {
         // TODO: doc
         public void processEvent (Event event);
     }
 
-    /** An EZAPI event handler. */
+    /** An JothUtil event handler. */
     public interface EventHandler extends BaseEventHandler{
         // TODO: doc
         public boolean consumesEvent (Event event);
     }
 
-    /** An EZAPI event class handler. */
+    /** An JothUtil event class handler. */
     public interface EventClassHandler extends BaseEventHandler{
         // TODO: doc
 	public Class[] eventClassesToConsume ();
     }
 
-    /** A mapping from EZAPI event handlers to Wonderland event listeners. */
-    private HashMap<EZAPIJme.BaseEventHandler,EventListener> eventHandlerToListener =
-        new HashMap<EZAPIJme.BaseEventHandler,EventListener>();
+    /** A mapping from JothUtil event handlers to Wonderland event listeners. */
+    private HashMap<JothUtilJme.BaseEventHandler,EventListener> eventHandlerToListener =
+        new HashMap<JothUtilJme.BaseEventHandler,EventListener>();
 
     /** The thread which calls the EventHandler processEvent methods. */
     private EventHandlerThread eventHandlerThread = new EventHandlerThread();
@@ -115,7 +116,7 @@ public class EZAPIJme {
      * Create a new instance of EZApi.
      * @param cell The cell on which the EZApi method calls operates.
      */
-    public EZAPIJme (Cell cell) {
+    public JothUtilJme (Cell cell) {
         this.cell = cell;
 
         // Get cell info
@@ -123,8 +124,8 @@ public class EZAPIJme {
         cellEntity = cellRenderer.getEntity();
 
         // Create root entity and node and connect them
-        rootEntity = new Entity("EZAPIJme Root Entity for cell " + cell.getCellID());
-        rootNode = new Node("EZAPIJme Root Node for cell " + cell.getCellID());
+        rootEntity = new Entity("JothUtilJme Root Entity for cell " + cell.getCellID());
+        rootNode = new Node("JothUtilJme Root Node for cell " + cell.getCellID());
         RenderComponent rc =
             ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
         rootEntity.addComponent(RenderComponent.class, rc);
@@ -202,7 +203,7 @@ public class EZAPIJme {
          this.visible = visible;
 
          if (visible) {
-             // Arrange for EZAPI scene graph to be attached to the cell when the cell is visible.
+             // Arrange for JothUtil scene graph to be attached to the cell when the cell is visible.
              cellEntity.addEntity(rootEntity);
              RenderComponent rcCellEntity = (RenderComponent) cellEntity.getComponent(RenderComponent.class);
              RenderComponent rcRootEntity = (RenderComponent) rootEntity.getComponent(RenderComponent.class);
@@ -210,7 +211,7 @@ public class EZAPIJme {
                  rcRootEntity.setAttachPoint(rcCellEntity.getSceneRoot());
              }
          } else {
-             // Arrange for EZAPI root node to be detached from the cell when the cell is no longer visible.
+             // Arrange for JothUtil root node to be detached from the cell when the cell is no longer visible.
              if (cellEntity != null) {
                  cellEntity.removeEntity(rootEntity);
                  RenderComponent rcRootEntity = 
@@ -376,7 +377,7 @@ public class EZAPIJme {
         EventListener eventListener = eventHandlerToListener.get(eventHandler);
         if (eventListener != null) return;
 
-        eventListener = new EZAPIEventListener(eventHandler);
+        eventListener = new JothUtilEventListener(eventHandler);
         eventHandlerToListener.put(eventHandler, eventListener);
         eventListener.addToEntity(rootEntity);
     }
@@ -385,7 +386,7 @@ public class EZAPIJme {
         EventListener eventListener = eventHandlerToListener.get(eventHandler);
         if (eventListener != null) return;
 
-        EventClassListener eventClassListener = new EZAPIEventClassListener(eventHandler);
+        EventClassListener eventClassListener = new JothUtilEventClassListener(eventHandler);
         eventHandlerToListener.put(eventHandler, eventClassListener);
         eventClassListener.addToEntity(rootEntity);
     }
@@ -398,10 +399,10 @@ public class EZAPIJme {
         eventHandlerToListener.remove(eventHandler);
     }
 
-    private class EZAPIEventListener extends EventListenerBaseImpl {
+    private class JothUtilEventListener extends EventListenerBaseImpl {
         private EventHandler eventHandler;
 
-        private EZAPIEventListener (EventHandler eventHandler) {
+        private JothUtilEventListener (EventHandler eventHandler) {
             this.eventHandler = eventHandler;
         }
 
@@ -419,10 +420,10 @@ public class EZAPIJme {
         }
     }
 
-    private class EZAPIEventClassListener extends EventClassListener {
+    private class JothUtilEventClassListener extends EventClassListener {
         private EventClassHandler eventClassHandler;
 
-        private EZAPIEventClassListener (EventClassHandler eventClassHandler) {
+        private JothUtilEventClassListener (EventClassHandler eventClassHandler) {
             this.eventClassHandler = eventClassHandler;
         }
 

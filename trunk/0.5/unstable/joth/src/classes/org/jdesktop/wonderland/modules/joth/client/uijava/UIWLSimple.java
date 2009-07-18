@@ -69,7 +69,7 @@ public class UIWLSimple implements UI {
     /** {@inheritDoc} */
     @Override
     public void error (String message) {
-        controlWindow.error("Error: " + message);
+        controlWindow.error(message);
     }
 
     /** {@inheritDoc} */

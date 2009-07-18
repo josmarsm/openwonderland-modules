@@ -18,13 +18,14 @@
 
 package org.jdesktop.wonderland.modules.joth.client.uijava;
 
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.modules.joth.client.ezapi.EZAPIJme;
+import org.jdesktop.wonderland.modules.joth.client.utiljava.JothUtilJme;
 import org.jdesktop.wonderland.modules.joth.client.gamejava.Board;
 import org.jdesktop.wonderland.modules.joth.client.gamejava.Square;
 
@@ -41,12 +42,12 @@ public class BoardDisplay {
     /** The square nodes of the board display. */
     private SquareNode[][] squareGraphs;
     /** The event handler. */
-    private EZAPIJme.EventClassHandler eventHandler;
+    private JothUtilJme.EventClassHandler eventHandler;
     /** The UI which owns this object. */
     private UIWLSimple ui;
 
     /** Access to simplified the Wonderland API for this cell. */
-    private EZAPIJme ezapi;
+    private JothUtilJme util;
 
     /**
      * Create a new instance of BoardDisplay.
@@ -57,7 +58,7 @@ public class BoardDisplay {
          this.board = board;
          this.ui = ui;
 
-         ezapi = new EZAPIJme(cell);
+         util = new JothUtilJme(cell);
 
          // Create the nodes of the scene graph
          createSceneGraph();
@@ -70,7 +71,7 @@ public class BoardDisplay {
       * Create the nodes of the scene graph.
       */
      private Node createSceneGraph () {
-         Node rootNode = ezapi.getRootNode();
+         Node rootNode = util.getRootNode();
          squareGraphs = new SquareNode[board.getNumRows()][];
          for (int r = 0; r < board.getNumRows(); r++) {
              SquareNode[] row = new SquareNode[board.getNumCols()];
@@ -81,6 +82,7 @@ public class BoardDisplay {
              squareGraphs[r] = row;
          }
 
+         rootNode.setLocalTranslation(new Vector3f(-getWidth()/2f, -getHeight()/2f, 0));
          return rootNode;
      }
 
@@ -101,9 +103,9 @@ public class BoardDisplay {
       * Create a subgraph for a particular square.
       */
     private SquareNode createSquareGraph (int row, int col) {
-         SquareNode sqNode = new SquareNode(ezapi, ezapi.getRootNode(), row, col);
-         SquareGeometry sqGeom = new SquareGeometry(ezapi, row, col);
-         ezapi.attachChild(sqNode, sqGeom);
+         SquareNode sqNode = new SquareNode(util, util.getRootNode(), row, col);
+         SquareGeometry sqGeom = new SquareGeometry(util, row, col);
+         util.attachChild(sqNode, sqGeom);
          return sqNode;
      }
      
@@ -116,12 +118,12 @@ public class BoardDisplay {
 
          // Do this before scene graph becomes visible
          if (visible) {
-             ezapi.addEventClassHandler(eventHandler);
+             util.addEventClassHandler(eventHandler);
          } else {
-             ezapi.removeEventHandler(eventHandler);
+             util.removeEventHandler(eventHandler);
          }
 
-         ezapi.setVisible(visible);
+         util.setVisible(visible);
      }
 
      /**
@@ -146,10 +148,10 @@ public class BoardDisplay {
      }
 
     /**
-     * A mouse event handler. This receives mouse input events from EZAPI.
+     * A mouse event handler. This receives mouse input events from JothUtil.
      * Called on a generic thread.
      */
-    private class MyMouseHandler implements EZAPIJme.EventClassHandler {
+    private class MyMouseHandler implements JothUtilJme.EventClassHandler {
 
 	/**
 	 * This returns the classes of the Wonderland input events we are interested in receiving.

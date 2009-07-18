@@ -24,7 +24,7 @@ import com.jme.scene.shape.Cylinder;
 import com.jme.bounding.BoundingBox;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.state.MaterialState;
-import org.jdesktop.wonderland.modules.joth.client.ezapi.EZAPIJme;
+import org.jdesktop.wonderland.modules.joth.client.utiljava.JothUtilJme;
 import org.jdesktop.wonderland.modules.joth.client.gamejava.Board;
 
 /***************************************************************
@@ -41,7 +41,7 @@ public class Piece extends Node {
     private static final float Z_OFFSET = 0.1f;
 
     /** The radius of a disk. */
-    private static final float DISK_RADIUS = 0.15f;
+    private static final float DISK_RADIUS = 0.12f;
 
     /** The height of a disk. */
     private static final float DISK_HEIGHT = 0.1f;
@@ -52,15 +52,15 @@ public class Piece extends Node {
     /** The color of this piece. */
     private Board.Color color;
 
-    private EZAPIJme ezapi;
+    private JothUtilJme util;
     private MaterialState ms;
 
-    public Piece (Board.Color color, EZAPIJme ezapi) {
+    public Piece (Board.Color color, JothUtilJme util) {
         super("Node for a " + color + " piece");
         this.color = color;
-        this.ezapi = ezapi;
+        this.util = util;
 
-        ezapi.doJmeOpAndWait(new Runnable() {
+        util.doJmeOpAndWait(new Runnable() {
             public void run () {
                 cyl = new Cylinder(Piece.this.color + " Cylinder", 20, 20, DISK_RADIUS, DISK_HEIGHT, true);
                 cyl.setModelBound(new BoundingBox());
@@ -68,8 +68,8 @@ public class Piece extends Node {
             }
         }, null);
 
-        ezapi.attachChild(this, cyl);
-        ezapi.setLocalTranslation(this, new Vector3f(0f, 0f, Z_OFFSET));
+        util.attachChild(this, cyl);
+        util.setLocalTranslation(this, new Vector3f(0f, 0f, Z_OFFSET));
 
         if (color == Board.Color.WHITE) {
             setColor(WHITE);
@@ -83,9 +83,9 @@ public class Piece extends Node {
      */
     private synchronized void setColor(final ColorRGBA color) {
         if (ms == null) {;
-            ms = ezapi.spatialCreateMaterialState(cyl);
+            ms = util.spatialCreateMaterialState(cyl);
         }
-        ezapi.materialStateSetAmbientAndDiffuse(ms, color);
+        util.materialStateSetAmbientAndDiffuse(ms, color);
     }
 
     public Board.Color getColor () {
