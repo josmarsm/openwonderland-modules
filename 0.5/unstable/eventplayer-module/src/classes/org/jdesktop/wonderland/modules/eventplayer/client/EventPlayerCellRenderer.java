@@ -46,6 +46,7 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 
 /**
  * The renderer for the event player cell
@@ -64,11 +65,11 @@ public class EventPlayerCellRenderer extends BasicRenderer {
     private static final float BUTTON_DEPTH = DEPTH; //y
     private static final ColorRGBA PLAY_BUTTON_DEFAULT = new ColorRGBA(0, 0.5f, 0.2f, 1f);
     private static final ColorRGBA PLAY_BUTTON_SELECTED = ColorRGBA.green.clone();
-    //private static final ColorRGBA STOP_BUTTON_DEFAULT = new ColorRGBA(0.2f, 0.2f, 0.2f, 1f);
-    //private static final ColorRGBA STOP_BUTTON_SELECTED = ColorRGBA.black.clone();
+    private static final ColorRGBA STOP_BUTTON_DEFAULT = new ColorRGBA(0.2f, 0.2f, 0.2f, 1f);
+    private static final ColorRGBA STOP_BUTTON_SELECTED = ColorRGBA.black.clone();
     private Node root = null;
     private Button playButton;
-    //private Button stopButton;
+    private Button stopButton;
     private Set<Animation> animations = new HashSet<Animation>();
 
     public EventPlayerCellRenderer(Cell cell) {
@@ -86,7 +87,7 @@ public class EventPlayerCellRenderer extends BasicRenderer {
         //Set the state of the buttons
         boolean isPlaying = ((EventPlayerCell)cell).isPlaying();
         setPlaying(isPlaying);
-        //stopButton.setSelected(!isPlaying);
+        stopButton.setSelected(!isPlaying);
         enableAnimations(isPlaying);
         return root;
     }
@@ -95,7 +96,7 @@ public class EventPlayerCellRenderer extends BasicRenderer {
         addOuterCasing(device);
         entity.addEntity(createReel(device, new Vector3f(0-REEL_RADIUS, 0, 0.0f)));
         entity.addEntity(createReel(device, new Vector3f(WIDTH - REEL_RADIUS, 0, 0.0f)));
-        //entity.addEntity(createStopButton(device, new Vector3f(0, HEIGHT + BUTTON_HEIGHT, 0f)));
+        entity.addEntity(createStopButton(device, new Vector3f(0, HEIGHT + BUTTON_HEIGHT, 0f)));
         entity.addEntity(createPlayButton(device, new Vector3f(WIDTH - BUTTON_WIDTH, HEIGHT + BUTTON_HEIGHT, 0f)));
     }
 
@@ -169,13 +170,13 @@ public class EventPlayerCellRenderer extends BasicRenderer {
         return playButton.getEntity();
     }
 
-   // private Entity createStopButton(Node device, Vector3f position) {
-//        stopButton = addButton(device, "Stop", position);
-//        stopButton.setColor(STOP_BUTTON_DEFAULT);
-//        stopButton.setSelectedColor(STOP_BUTTON_SELECTED);
-//        stopButton.setDefaultColor(STOP_BUTTON_DEFAULT);
-//        return stopButton.getEntity();
-    //}
+    private Entity createStopButton(Node device, Vector3f position) {
+        stopButton = addButton(device, "Stop", position);
+        stopButton.setColor(STOP_BUTTON_DEFAULT);
+        stopButton.setSelectedColor(STOP_BUTTON_SELECTED);
+        stopButton.setDefaultColor(STOP_BUTTON_DEFAULT);
+        return stopButton.getEntity();
+    }
 
     private Button addButton(Node device, String name, final Vector3f position) {
         Button aButton = new Button(name, new Vector3f(0, 0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_DEPTH);
@@ -316,18 +317,21 @@ public class EventPlayerCellRenderer extends BasicRenderer {
             //rendererLogger.info("commit " + event + " for ");
             //button.printComponents();
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
+            if (mbe.getButton() != ButtonId.BUTTON1) {
+                return;
+            }
             if (mbe.isClicked() == false) {
                 return;
             }
 
-            //if (button == stopButton) {
+            if (button == stopButton) {
                 /*
                  * We always handle the stop button.
                  */
-                //((EventPlayerCell) cell).stop();
-                //return;
-            //}
-            //
+                ((EventPlayerCell) cell).stop();
+                return;
+            }
+            
             //Only care about the case when the button isn't already selected'
             if (!button.isSelected()) {
                 if (button == playButton) {
@@ -353,11 +357,14 @@ public class EventPlayerCellRenderer extends BasicRenderer {
         @Override
         public void commitEvent(Event event) {
             //rendererLogger.info("commit " + event + " for ");
+            //ignore any mouse button that isn't the left one
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
+            if (mbe.getButton() != ButtonId.BUTTON1) {
+                return;
+            }
             if (mbe.isClicked()) { // Handle Mouse Clicks
                  ((EventPlayerCell) cell).openReelForm();
-		    }
-                
+		    }                
         }
     }
 }

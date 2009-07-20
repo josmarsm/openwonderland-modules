@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
+import java.util.concurrent.Semaphore;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.eventplayer.server.ChangeReplayer;
 import org.xml.sax.Attributes;
@@ -32,8 +33,8 @@ public class UnloadedCellHandler extends DefaultTagHandler {
     }
     
     @Override
-    public void startTag(Attributes atts) {
-        super.startTag(atts);
+    public void startTag(Attributes atts, Semaphore semaphore) {
+        super.startTag(atts, semaphore);
         //Get the timestamp from the attributes of the XML element
         String timestampString = atts.getValue("timestamp");
         long timestamp = Long.parseLong(timestampString);
@@ -41,7 +42,20 @@ public class UnloadedCellHandler extends DefaultTagHandler {
         String cellIDString = atts.getValue("cellID");
         long cellID = Long.parseLong(cellIDString);
         //Tell the change replayer to unload the cell
-        changeReplayer.unloadCell(new CellID(cellID), timestamp);
+        changeReplayer.unloadCell(new CellID(cellID), timestamp, semaphore);
+    }
+
+    public void characters(char[] ch, int start, int length, Semaphore semaphore) {
+        super.characters(ch, start, length, semaphore);
+        logger.info("releasing semaphore");
+       semaphore.release();
+    }
+
+
+    public void endTag(Semaphore semaphore) {
+       super.endTag(semaphore);
+       logger.info("releasing semaphore");
+       semaphore.release();
     }
     
 }

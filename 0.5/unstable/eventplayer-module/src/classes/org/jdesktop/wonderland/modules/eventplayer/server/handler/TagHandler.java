@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
+import java.util.concurrent.Semaphore;
 import org.xml.sax.Attributes;
 
 /**
@@ -29,7 +30,7 @@ public interface TagHandler {
      * Called by the SAX handler when it has its startElement() method called
      * @param atts the attributes of an XML element
      */
-    public void startTag(Attributes atts);
+    public void startTag(Attributes atts, Semaphore semaphore);
 
     /**
      * Called by the SAX handler when it has its characters() method called
@@ -37,10 +38,10 @@ public interface TagHandler {
      * @param start the start of the array of chars
      * @param length the length of the chars
      */
-    public void characters(char ch[], int start, int length);
+    public void characters(char ch[], int start, int length, Semaphore semaphore);
 
     /**
      * Called by the SAX handler when it has its endElement() method called
      */
-    public void endTag();
+    public void endTag(Semaphore semaphore);
 }

@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
+import java.util.concurrent.Semaphore;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.eventplayer.server.ChangeReplayer;
 import org.xml.sax.Attributes;
 
@@ -27,6 +29,7 @@ import org.xml.sax.Attributes;
  * @author Bernard Horan
  */
 public class DefaultTagHandler implements TagHandler {
+    protected static final Logger logger = Logger.getLogger(DefaultTagHandler.class.getName());
     //keeps the string contents of the XML element
     protected StringBuffer buffer;
     protected ChangeReplayer changeReplayer;
@@ -39,17 +42,17 @@ public class DefaultTagHandler implements TagHandler {
         this.changeReplayer = changeReplayer;
     }
 
-    public void startTag(Attributes atts) {
+    public void startTag(Attributes atts, Semaphore semaphore) {
         //Create a new buffer to hold the string contents of the XML element
         buffer = new StringBuffer();
     }
 
-    public void characters(char[] ch, int start, int length) {
+    public void characters(char[] ch, int start, int length, Semaphore semaphore) {
         //Append the string content of the XML element into the buffer
         buffer.append(ch, start, length);
     }
 
-    public void endTag() {
+    public void endTag(Semaphore semaphore) {
         //No op
     }
 

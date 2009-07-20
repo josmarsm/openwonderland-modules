@@ -23,8 +23,10 @@ import org.jdesktop.wonderland.modules.eventplayer.server.handler.TagHandler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Stack;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.eventplayer.server.handler.NoTagHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -33,7 +35,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * event recorder.
  * @author Bernard Horan
  */
-public class EventHandler extends DefaultHandler {
+public class EventHandler  {
     private ChangeReplayer messageReplayer;
     private Stack<TagHandler> tagHandlerStack = new Stack<TagHandler>();
     
@@ -46,22 +48,19 @@ public class EventHandler extends DefaultHandler {
         this.messageReplayer = messageReplayer;
     }
     
-    @Override
     public void startElement (String uri, String name,
-			      String qName, Attributes atts) {
+			      String qName, Attributes atts, Semaphore semaphore) {
         TagHandler tagHandler= newTagHandler(qName);
         tagHandlerStack.push(tagHandler);
-        tagHandler.startTag(atts);
+        tagHandler.startTag(atts, semaphore);
     }
     
-    @Override
-    public void characters (char ch[], int start, int length) {
-        tagHandlerStack.peek().characters(ch, start, length);
+    public void characters (char ch[], int start, int length, Semaphore semaphore) {
+        tagHandlerStack.peek().characters(ch, start, length, semaphore);
     }
     
-    @Override
-    public void endElement(String uri, String name,String qName) {
-        tagHandlerStack.pop().endTag();
+    public void endElement(String uri, String name,String qName, Semaphore semaphore) {
+        tagHandlerStack.pop().endTag(semaphore);
     }
     
     
@@ -75,7 +74,7 @@ public class EventHandler extends DefaultHandler {
         Class<TagHandler> tagHandlerClass = getTagHandlerClass(tagName);
         TagHandler tagHandler;
         if (tagHandlerClass == null) {
-            tagHandler = new DefaultTagHandler(messageReplayer);
+            tagHandler = new NoTagHandler(messageReplayer);
         } else {
             tagHandler = newTagHandler(tagHandlerClass);
         }

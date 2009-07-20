@@ -202,6 +202,8 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     }
 
     private void setPlaying(boolean p) {
+        logger.info("p: " + p);
+        logger.info("isPlaying: " + serverState.isPlaying());
         if (serverState.isPlaying()) {
             //Already playing
             if (!p) {
@@ -231,12 +233,12 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     }
 
     private void startPlaying() {
-        //eventPlayerLogger.info("Start Playing");
-        playerRef.get().startPlaying(serverState.getSelectedTape().getTapeName());
+        eventPlayerLogger.info("Start Playing");
+        playerRef.get().startPlaying();
     }
 
     private void stopPlaying() {
-        //eventPlayerLogger.info("Stop Playing");
+        eventPlayerLogger.info("Stop Playing");
         playerRef.get().stopPlaying();
     }
 
@@ -248,6 +250,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     }
 
     private void processPlayMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
+        logger.info("isPlaying: " + arcm.isPlaying());
         setPlaying(arcm.isPlaying());
         serverState.setUserName(arcm.getUserName());
 
@@ -293,7 +296,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         }
 
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            //eventRecorderLogger.info("message received: " + message + ", ID: " + clientID);
+            logger.info("message received: " + message + ", ID: " + clientID);
             EventPlayerCellMO cellMO = (EventPlayerCellMO) getCell();
             EventPlayerCellChangeMessage arcm = (EventPlayerCellChangeMessage) message;
             switch (arcm.getAction()) {

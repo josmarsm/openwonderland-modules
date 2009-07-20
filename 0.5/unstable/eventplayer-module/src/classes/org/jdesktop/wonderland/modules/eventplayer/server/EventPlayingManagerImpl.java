@@ -38,6 +38,10 @@ public class EventPlayingManagerImpl implements EventPlayingManager {
         service.replayChanges(tapeName, listener);
     }
 
+    public void pauseChanges(String tapeName, ChangeReplayingListener listener) {
+         service.pauseChanges(tapeName, listener);
+    }
+
     
 
 }
