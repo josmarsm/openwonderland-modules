@@ -39,11 +39,16 @@ import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeM
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellClientState;
 
+
+/**
+ * The client side component of the PDFSpreaderCell. When a user drops a PDF,
+ * this is the client code that manages the process.
+ *
+ * @author Drew Harry <drew_harry@dev.java.net>
+ */
 public class PDFSpreaderCell extends Cell {
 
     private PDFSpreaderCellRenderer renderer = null;
-
-    private MouseEventListener listener = null;
 
     private static final Logger logger =
             Logger.getLogger(PDFSpreaderCell.class.getName());
@@ -54,6 +59,12 @@ public class PDFSpreaderCell extends Cell {
 
     private float spacing = 4.0f;
     private float scale = 1.0f;
+
+
+    public PDFSpreaderCell(CellID cellID, CellCache cellCache) {
+        super(cellID, cellCache);
+
+    }
 
     protected void updateLayout() {
         renderer.updateLayout();
@@ -69,16 +80,12 @@ public class PDFSpreaderCell extends Cell {
         msg.setSpacing(spacing);
         this.sendCellMessage(msg);
 
-        logger.warning("JUST SENT CELL MESSAGE TO SERVER: " + msg);
+        logger.finer("just sent cell message to server: " + msg);
     }
 
     private LayoutType layout = LayoutType.LINEAR;
 
 
-    public PDFSpreaderCell(CellID cellID, CellCache cellCache) {
-        super(cellID, cellCache);
-  
-    }
 
     @Override
     public void setClientState(CellClientState state) {
@@ -98,16 +105,9 @@ public class PDFSpreaderCell extends Cell {
 
 
         if(status==CellStatus.ACTIVE && increasing) {
-
-//            listener = new MouseEventListener(labelDialog);
-//            listener.addToEntity(renderer.getEntity());
-
             channel.addMessageReceiver(PDFSpreaderCellChangeMessage.class, new PDFSpreaderCellMessageReceiver());
-
         } else if (status==CellStatus.DISK && !increasing) {
-//            listener.removeFromEntity(renderer.getEntity());
-//            listener = null;
-            
+            // Leaving here for potential future logic that needs to happen here.
         } else if (status==CellStatus.RENDERING&& !increasing) {
             // As we're falling down the status chain, try removing the listener
             // earlier. It seems to be gone by the time we get to DISK.
@@ -121,7 +121,7 @@ public class PDFSpreaderCell extends Cell {
     }
 
     public void setLayout(LayoutType layout) {
-        logger.warning("Setting layout to: " + layout);
+        logger.finer("Setting layout to: " + layout);
         this.layout = layout;
         renderer.updateLayout();
     }
@@ -132,7 +132,7 @@ public class PDFSpreaderCell extends Cell {
 
     public void setScale(float scale) {
         this.scale = scale;
-        logger.warning("Setting scale to: " + scale);
+        logger.finer("Setting scale to: " + scale);
         renderer.updateLayout();
 
     }
@@ -142,7 +142,7 @@ public class PDFSpreaderCell extends Cell {
     }
 
     public void setSpacing(float spacing) {
-        logger.warning("Setting spacing to: " + spacing);
+        logger.finer("Setting spacing to: " + spacing);
         this.spacing = spacing;
         renderer.updateLayout();
     }
@@ -186,37 +186,6 @@ public class PDFSpreaderCell extends Cell {
             setLayout(msg.getLayout());
         }
     }
-
-    class MouseEventListener extends EventClassListener {
-
-        private JFrame labelDialog;
-
-        public MouseEventListener (JFrame d) {
-            super();
-
-            labelDialog = d;
-            setSwingSafe(true);
-        }
-
-        @Override
-        public Class[] eventClassesToConsume() {
-            return new Class[] { MouseButtonEvent3D.class };
-        }
-
-        @Override
-        public void commitEvent(Event event) {
-            MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
-
-            // Filter out right mouse clicks.
-            if(mbe.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
-                logger.info("Got click! " + event);
-            }
-        }
-
-    }
-
-
-
 
     public PDFFile getDocument() {
         return this.pdfDocument;

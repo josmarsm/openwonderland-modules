@@ -55,6 +55,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
         layoutButtons.add(semicircleButton);
         layoutButtons.add(circleButton);
 
+        // Make sure the HUD has the right intial state. 
         switch(c.getLayout()) {
             case LINEAR:
                 linearButton.setSelected(true);
@@ -69,6 +70,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
                 break;
         }
 
+        // setup button listeners. 
         linearButton.setActionCommand(LINEAR_COMMAND);
         linearButton.addActionListener(this);
         semicircleButton.addActionListener(this);
@@ -100,7 +102,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
                     spacing = (float) (spacingSlider.getValue() / 100.0 * 15.0);
                 }
                 else {
-                    spacing = (float) (spacingSlider.getValue() / 100.0 * 100.0);
+                    spacing = (float) (spacingSlider.getValue() / 100.0 * 75.0);
                 }
 
                 cell.setSpacing(spacing);
@@ -234,15 +236,4 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
 
         cell.sendCurrentLayoutToServer();
     }
-
-//    private LayoutType getCurrentUILayoutType() {
-//        if(linearButton.isSelected()) {
-//            return LayoutType.LINEAR;
-//        } else if(semicircleButton.isSelected()) {
-//            return LayoutType.SEMICIRCLE;
-//        } else if(circleButton.isSelected()) {
-//            return LayoutType.CIRCLE;
-//        }
-//        return null;
-//    }
 }
