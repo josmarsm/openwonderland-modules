@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.eventplayer.server;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.modules.eventplayer.server.handler.EndMessageHandler;
@@ -55,7 +56,7 @@ public abstract class ChangeReplayer {
      * I have reached the end of the changes
      * @param timestamp the timestamp when the changes finished playing
      */
-    public abstract void endChanges(long timestamp);
+    public abstract void endChanges(long timestamp, Semaphore semaphore);
     
 
     /**
@@ -73,28 +74,28 @@ public abstract class ChangeReplayer {
      * @param setupInfo an XML representation of the cellserverstate of a cell
      * @param timestamp the timestamp at which the cell was loaded
      */
-    public abstract void loadCell(String setupInfo, long timestamp);
+    public abstract void loadCell(String setupInfo, long timestamp, Semaphore semaphore);
 
     /**
      * Play a message
      * @param rMessage the message to be played
      * @param timestamp the timestamp at which it is to be played
      */
-    public abstract void playMessage(ReceivedMessage rMessage, long timestamp);
+    public abstract void playMessage(ReceivedMessage rMessage, long timestamp, Semaphore semaphore);
 
     /**
      * Indiates the timestamp at which the changes begin playing<br>
      * Used for computing when to replay later messages
      * @param timestamp a timestamp to indicate the start of the message playback
      */
-    public abstract void startChanges(long timestamp);
+    public abstract void startChanges(long timestamp, Semaphore semaphore);
 
     /**
      * Unload the cell identified by the cellID at the time given by the timestamp
      * @param cellID the id of the cell to be unloaded
      * @param timestamp the timestamnp at which the cell was unloaded
      */
-    public abstract void unloadCell(CellID cellID, long timestamp);
+    public abstract void unloadCell(CellID cellID, long timestamp, Semaphore semaphore);
     
 
     

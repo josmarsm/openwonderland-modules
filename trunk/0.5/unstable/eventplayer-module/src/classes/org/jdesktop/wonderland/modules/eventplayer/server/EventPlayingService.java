@@ -28,19 +28,34 @@ import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Characters;
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -53,6 +68,7 @@ import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
@@ -94,6 +110,10 @@ public class EventPlayingService extends AbstractService {
 
     /** executes the actual remote calls */
     private ExecutorService executor;
+
+    /**Manages the replaying threads*/
+    private Map<String, ReplayChanges> replayers = new HashMap<String, ReplayChanges>();
+
 
 
     public EventPlayingService(Properties props,
@@ -166,20 +186,41 @@ public class EventPlayingService extends AbstractService {
                 " to current version:" + currentVersion);
     }
 
-    void replayChanges(String tapeName, ChangeReplayingListener listener) {
-        //logger.getLogger().info("tapename: " + tapeName);
-        if (!(listener instanceof ManagedObject)) {
-            listener = new ManagedChangesReplayingWrapper(listener);
+    void pauseChanges(String tapeName, ChangeReplayingListener listener) {
+        logger.getLogger().info("tapename: " + tapeName);
+        //Check to see if we've already started replaying these changes
+        ReplayChanges rc = replayers.get(tapeName);
+        if (rc == null) {
+            logger.logThrow(Level.SEVERE, new RuntimeException("No changes of that name being played"), appName);
+        } else {
+            rc.pause();
         }
-        // create a reference to the listener
-        ManagedReference<ChangeReplayingListener> scl =
-                dataService.createReference(listener);
+    }
 
-        // now add the recording request to the transaction.  On commit
-        // this request will be passed on to the executor for long-running
-        // tasks
-        ReplayChanges ec = new ReplayChanges(tapeName, scl.getId());
-        ctxFactory.joinTransaction().add(ec);
+    void replayChanges(String tapeName, ChangeReplayingListener listener) {
+        logger.getLogger().info("tapename: " + tapeName);
+
+        //Check to see if we've already started replaying these changes
+        ReplayChanges rc = replayers.get(tapeName);
+        if (rc != null) {
+            //Just resume replaying
+            rc.resume();
+        } else {
+            //create a new replayChanges instance and set it going
+            if (!(listener instanceof ManagedObject)) {
+                listener = new ManagedChangesReplayingWrapper(listener);
+            }
+            // create a reference to the listener
+            ManagedReference<ChangeReplayingListener> scl =
+                    dataService.createReference(listener);
+
+            // now add the recording request to the transaction.  On commit
+            // this request will be passed on to the executor for long-running
+            // tasks
+            rc = new ReplayChanges(tapeName, scl.getId());
+            ctxFactory.joinTransaction().add(rc);
+            replayers.put(tapeName, rc);
+        }
     }
 
     /**
@@ -196,6 +237,11 @@ public class EventPlayingService extends AbstractService {
      */
         private long recordingStartTime;
         private long playbackStartTime;
+        private XMLEventReader xmlReader;
+        private boolean paused = false;
+
+        /** time elapsed from start to pause */
+        private long timeElapsed = 0l;
 
         private ReplayChanges(String tapeName, BigInteger id) {
             this.tapeName = tapeName;
@@ -205,29 +251,58 @@ public class EventPlayingService extends AbstractService {
         public void run() {
             
             try {
-                InputSource recordingSource = RecordingLoaderUtils.getRecordingInputSource(tapeName);
-                XMLReader xmlReader = XMLReaderFactory.createXMLReader();
-                DefaultHandler handler = new EventHandler(this);
-                xmlReader.setContentHandler(handler);
-                xmlReader.setErrorHandler(handler);
-                xmlReader.parse(recordingSource);
+                Reader recordingReader = RecordingLoaderUtils.getRecordingInputReader(tapeName);
+                XMLInputFactory factory = XMLInputFactory.newInstance();
+                xmlReader = factory.createXMLEventReader(recordingReader);
+                EventHandler handler = new EventHandler(this);
+                StaxEventDispatcher dispatcher = new StaxEventDispatcher(handler);
+                Semaphore semaphore = new Semaphore(1, true);
+                boolean oldPausedState = paused;
+
+                //iterate as long as there are more events on the input
+                while (xmlReader.hasNext()) {
+                    if (oldPausedState != paused) {
+                        logger.getLogger().info("PAUSED STATE CHANGED TO: " + paused);
+                        oldPausedState = paused;
+                    }
+                    if (!paused) {
+                        XMLEvent e = xmlReader.nextEvent();
+                        /*
+                         * This will end up calling one of the ChangeReplayer methods
+                         * on myself, and thus creating a delayed task.
+                         * The semaphore will be released when the task has been completed
+                         */
+                        dispatcher.dispatchEvent(e, semaphore);
+                        logger.getLogger().info("waiting for semaphore");
+                        semaphore.acquire();
+                        logger.getLogger().info("aquired permit from semaphore");
+                    }
+                    
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(EventPlayingService.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (SAXException ex) {
+                logger.getLogger().log(Level.SEVERE, "failed due to SAX exception", ex);
+            } catch (XMLStreamException ex) {
+                logger.getLogger().log(Level.SEVERE, "Failed due to XML Streaming exception", ex);
             } catch (JAXBException ex) {
                 logger.getLogger().log(Level.SEVERE, "failed due to JAXB exception", ex);
             } catch (IOException ex) {
                 logger.getLogger().log(Level.SEVERE, "failed due to IO exception", ex);
-            } catch (SAXException ex) {
-                logger.getLogger().log(Level.SEVERE, "failed due to SAX exception", ex);
             }
-
-            
+            //Remove myself from the map of replayers
+            logger.getLogger().info("Completed run, removing myself");
+            replayers.remove(tapeName);
         }
 
+
+
         @Override
-        public void playMessage(ReceivedMessage rMessage, long timestamp) {
+        public void playMessage(ReceivedMessage rMessage, long timestamp, Semaphore semaphore) {
             long startTime = timestamp - recordingStartTime + playbackStartTime;
             // notify the listener
             NotifyChangesReplayingListener notify =
-                    new NotifyChangesReplayingListener(rMessage, listenerID);
+                    new NotifyChangesReplayingListener(rMessage, listenerID, semaphore);
             try {
                 transactionScheduler.scheduleTask(notify, taskOwner, startTime);
             } catch (Exception ex) {
@@ -236,17 +311,18 @@ public class EventPlayingService extends AbstractService {
         }
 
         @Override
-        public void startChanges(long startTime) {
+        public void startChanges(long startTime, Semaphore semaphore) {
             playbackStartTime = new Date(new java.util.Date().getTime()).getTime();
             recordingStartTime = startTime;
+            logger.getLogger().info("releasing semaphore");
     }
 
         @Override
-        public void endChanges(long timestamp) {
+        public void endChanges(long timestamp, Semaphore semaphore) {
             long startTime = timestamp - recordingStartTime + playbackStartTime;
             // notify the listener
             NotifyChangesReplayingListener notify =
-                    new NotifyChangesReplayingListener(listenerID);
+                    new NotifyChangesReplayingListener(listenerID, semaphore);
             try {
                 transactionScheduler.scheduleTask(notify, taskOwner, startTime);
             } catch (Exception ex) {
@@ -255,7 +331,7 @@ public class EventPlayingService extends AbstractService {
         }
 
         @Override
-        public void loadCell(String setupInfo, long timestamp) {
+        public void loadCell(String setupInfo, long timestamp, Semaphore semaphore) {
             //logger.getLogger().info("loadCell");
             long startTime = timestamp - recordingStartTime + playbackStartTime;
             //Need to remove the first line of the string, the processing instruction
@@ -272,7 +348,7 @@ public class EventPlayingService extends AbstractService {
             }
             // notify the listener
             NotifyChangesReplayingListener notify =
-                    new NotifyChangesReplayingListener(setup, listenerID);
+                    new NotifyChangesReplayingListener(setup, listenerID, semaphore);
             try {
                 transactionScheduler.scheduleTask(notify, taskOwner, startTime);
             } catch (Exception ex) {
@@ -281,17 +357,29 @@ public class EventPlayingService extends AbstractService {
         }
 
         @Override
-        public void unloadCell(CellID cellID, long timestamp) {
+        public void unloadCell(CellID cellID, long timestamp, Semaphore semaphore) {
             //logger.getLogger().info("unloadCell: " + cellID);
             long startTime = timestamp - recordingStartTime + playbackStartTime;
             // notify the listener
             NotifyChangesReplayingListener notify =
-                    new NotifyChangesReplayingListener(cellID, listenerID);
+                    new NotifyChangesReplayingListener(cellID, listenerID, semaphore);
             try {
                 transactionScheduler.scheduleTask(notify, taskOwner, startTime);
             } catch (Exception ex) {
-                logger.logThrow(Level.WARNING, ex, "Error calling listener");
+                logger.logThrow(Level.SEVERE, ex, "Error calling listener");
             }
+        }
+
+        private void resume() {
+            logger.getLogger().info("Resuming playback for: " + tapeName);
+            playbackStartTime = timeElapsed + new Date(new java.util.Date().getTime()).getTime();
+            paused = false;
+        }
+
+        private void pause() {
+            logger.getLogger().info("Pausing playback for: " + tapeName);
+            timeElapsed = playbackStartTime - new Date(new java.util.Date().getTime()).getTime();
+            paused = true;
         }
     }
 
@@ -340,27 +428,32 @@ public class EventPlayingService extends AbstractService {
         private Action actionType;
         private CellServerState setup;
         private CellID cellID;
+        private Semaphore semaphore;
 
-        private NotifyChangesReplayingListener(BigInteger listenerID) {
+        private NotifyChangesReplayingListener(BigInteger listenerID, Semaphore semaphore) {
             this.listenerID = listenerID;
+            this.semaphore = semaphore;
             actionType = Action.COMPLETED;
         }
 
-        private NotifyChangesReplayingListener(ReceivedMessage message, BigInteger listenerID) {
+        private NotifyChangesReplayingListener(ReceivedMessage message, BigInteger listenerID, Semaphore semaphore) {
             this.message = message;
             this.listenerID = listenerID;
+            this.semaphore = semaphore;
             actionType = Action.MESSAGE;
         }
 
-        private NotifyChangesReplayingListener(CellID cellID, BigInteger listenerID) {
+        private NotifyChangesReplayingListener(CellID cellID, BigInteger listenerID, Semaphore semaphore) {
             this.cellID = cellID;
             this.listenerID = listenerID;
+            this.semaphore = semaphore;
             actionType = Action.UNLOAD_CELL;
         }
 
-        private NotifyChangesReplayingListener(CellServerState setup, BigInteger listenerID) {
+        private NotifyChangesReplayingListener(CellServerState setup, BigInteger listenerID, Semaphore semaphore) {
             this.listenerID = listenerID;
             this.setup = setup;
+            this.semaphore = semaphore;
             actionType = Action.LOAD_CELL;
         }
 
@@ -396,6 +489,8 @@ public class EventPlayingService extends AbstractService {
                 if (l instanceof ManagedChangesReplayingWrapper) {
                     dataService.removeObject(l);
                 }
+                logger.getLogger().info("releasing semaphore");
+                semaphore.release();
             }
         }
 
@@ -493,5 +588,98 @@ public class EventPlayingService extends AbstractService {
         protected EventPlayingTransactionContext createContext(Transaction txn) {
             return new EventPlayingTransactionContext(txn);
         }
+    }
+
+    private class StaxEventDispatcher {
+
+        private EventHandler handler;
+
+        public StaxEventDispatcher(EventHandler handler) {
+            this.handler = handler;
+        }
+
+        public void dispatchEvent(XMLEvent event, Semaphore semaphore) throws SAXException {
+            switch (event.getEventType()) {
+                case XMLEvent.START_ELEMENT:
+                    dispatchStartElement(event.asStartElement(), semaphore);
+                    break;
+                case XMLEvent.END_ELEMENT:
+                    dispatchEndElement(event.asEndElement(), semaphore);
+                    break;
+                case XMLEvent.CHARACTERS:
+                    dispatchCharacters(event.asCharacters(), semaphore);
+                    break;
+                default:
+                    //logger.getLogger().warning("Unhandled event type: " + getEventTypeString(event.getEventType()));
+                    logger.getLogger().info("releasing semaphore");
+                    semaphore.release();
+
+            }
+        }
+
+        private void dispatchCharacters(Characters characters, Semaphore semaphore) throws SAXException {
+            //logger.getLogger().info("dispatch characters: " + characters.getData());
+
+            char[] data = characters.getData().toCharArray();
+            if (characters.isIgnorableWhiteSpace()) {
+                //handler.ignorableWhitespace(data, 0, data.length);
+                return;
+            }
+            handler.characters(data, 0, data.length, semaphore);
+        }
+
+        private void dispatchEndElement(EndElement endElement, Semaphore semaphore) throws SAXException {
+            //logger.getLogger().info("dispatch end element: " + endElement.getName());
+
+            QName qName = endElement.getName();
+            handler.endElement(qName.getNamespaceURI(), qName.getLocalPart(), qName.toString(),  semaphore);
+        }
+
+        private void dispatchStartElement(StartElement startElement, Semaphore semaphore) throws SAXException {
+            //logger.getLogger().info("dispatch start element: " + startElement.getName());
+            QName qName = startElement.getName();
+            AttributesImpl attributes = new AttributesImpl();
+            Iterator atttributeIterator = startElement.getAttributes();
+            while (atttributeIterator.hasNext()) {
+                Attribute attribute = (Attribute) atttributeIterator.next();
+                QName attributeQName = attribute.getName();
+                String type = attribute.getDTDType();
+                if (type == null) {
+                    type = "CDATA";
+                }
+                attributes.addAttribute(attributeQName.getNamespaceURI(), attributeQName.getLocalPart(), attributeQName.toString(), type, attribute.getValue());
+            }
+            handler.startElement(qName.getNamespaceURI(), qName.getLocalPart(), qName.toString(), attributes, semaphore);
+        }
+
+        private String getEventTypeString(int eventType) {
+        switch (eventType) {
+            case XMLEvent.START_ELEMENT:
+                return "START_ELEMENT";
+            case XMLEvent.END_ELEMENT:
+                return "END_ELEMENT";
+            case XMLEvent.PROCESSING_INSTRUCTION:
+                return "PROCESSING_INSTRUCTION";
+            case XMLEvent.CHARACTERS:
+                return "CHARACTERS";
+            case XMLEvent.COMMENT:
+                return "COMMENT";
+            case XMLEvent.START_DOCUMENT:
+                return "START_DOCUMENT";
+            case XMLEvent.END_DOCUMENT:
+                return "END_DOCUMENT";
+            case XMLEvent.ENTITY_REFERENCE:
+                return "ENTITY_REFERENCE";
+            case XMLEvent.ATTRIBUTE:
+                return "ATTRIBUTE";
+            case XMLEvent.DTD:
+                return "DTD";
+            case XMLEvent.CDATA:
+                return "CDATA";
+            case XMLEvent.SPACE:
+                return "SPACE";
+        }
+        return "UNKNOWN_EVENT_TYPE " + "," + eventType;
+    }
     }
 }

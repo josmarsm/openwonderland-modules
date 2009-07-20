@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
+import java.util.concurrent.Semaphore;
 import org.jdesktop.wonderland.modules.eventplayer.server.ChangeReplayer;
 import org.xml.sax.Attributes;
 
@@ -31,13 +32,26 @@ public class WonderlandChangesHandler extends DefaultTagHandler {
     }
     
     @Override
-    public void startTag(Attributes atts) {
-        super.startTag(atts);
+    public void startTag(Attributes atts, Semaphore semaphore) {
+        super.startTag(atts, semaphore);
         //Get the timestamp from the attributes of the XML element
         String timestampString = atts.getValue("timestamp");
         long timestamp = Long.parseLong(timestampString);
         //Tell the change replayer the start time of the changes
-        changeReplayer.startChanges(timestamp);
+        changeReplayer.startChanges(timestamp, semaphore);
+    }
+
+    public void characters(char[] ch, int start, int length, Semaphore semaphore) {
+        super.characters(ch, start, length, semaphore);
+        logger.info("releasing semaphore");
+       semaphore.release();
+    }
+
+
+    public void endTag(Semaphore semaphore) {
+       super.endTag(semaphore);
+       logger.info("releasing semaphore");
+       semaphore.release();
     }
     
 }

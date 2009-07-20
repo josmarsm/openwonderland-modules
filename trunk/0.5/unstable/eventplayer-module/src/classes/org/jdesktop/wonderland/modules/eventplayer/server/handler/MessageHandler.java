@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 import org.jdesktop.wonderland.modules.eventplayer.server.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
@@ -45,23 +46,32 @@ public class MessageHandler extends DefaultTagHandler {
     }
     
     @Override
-    public void startTag(Attributes atts) {
-        super.startTag(atts);
+    public void startTag(Attributes atts, Semaphore semaphore) {
+        super.startTag(atts, semaphore);
         //Get the timestamp from the attributes of the XML element
         String timestampString = atts.getValue("timestamp");
         timestamp = Long.parseLong(timestampString);
+        logger.info("releasing semaphore");
+       semaphore.release();
+    
+    }
+
+    public void characters(char[] ch, int start, int length, Semaphore semaphore) {
+        super.characters(ch, start, length, semaphore);
+        logger.info("releasing semaphore");
+       semaphore.release();
     }
     
     @Override
-    public void endTag() {
-        super.endTag();
+    public void endTag(Semaphore semaphore) {
+        super.endTag(semaphore);
         //Decode the string content of the XML element into a bytebuffer
         //Unpack the byte buffer into a message
         //tell the change replayer to play the message
         try {
             ByteBuffer byteBuffer = Base64_Decoder.decodeBufferToByteBuffer(buffer.toString());
             ReceivedMessage rMessage = MessagePacker.unpack(byteBuffer);
-            changeReplayer.playMessage(rMessage, timestamp);
+            changeReplayer.playMessage(rMessage, timestamp, semaphore);
         } catch (PackerException ex) {
             logger.log(Level.SEVERE, "Failed to pack message", ex);
         } catch (IOException ex) {

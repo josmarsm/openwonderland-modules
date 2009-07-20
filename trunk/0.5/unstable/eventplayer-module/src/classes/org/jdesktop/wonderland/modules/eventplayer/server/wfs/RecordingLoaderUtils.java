@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.eventplayer.server.wfs;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.LinkedList;
@@ -202,7 +203,7 @@ public class RecordingLoaderUtils {
      * @throws java.io.IOException
      */
     public static InputSource getRecordingInputSource(String tapeName) throws JAXBException, IOException {
-        WorldRoot recordingRoot = getRecordingRoot(tapeName);
+        //WorldRoot recordingRoot = getRecordingRoot(tapeName);
         //logger.info("recordingRoot: " + recordingRoot);
         String encodedName = URLEncoder.encode(tapeName, "UTF-8");
         URL url = new URL(CellImporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "getrecording/" + encodedName + "/changes");
@@ -211,7 +212,22 @@ public class RecordingLoaderUtils {
         return new InputSource(new InputStreamReader(url.openStream()));
     }
 
+    /**
+     * Get an input source for the changes file of a recording
+     * @param tapeName the name of the recording
+     * @return an input source for use by an XML parser
+     * @throws javax.xml.bind.JAXBException
+     * @throws java.io.IOException
+     */
+    public static Reader getRecordingInputReader(String tapeName) throws JAXBException, IOException {
+        //WorldRoot recordingRoot = getRecordingRoot(tapeName);
+        //logger.info("recordingRoot: " + recordingRoot);
+        String encodedName = URLEncoder.encode(tapeName, "UTF-8");
+        URL url = new URL(CellImporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "getrecording/" + encodedName + "/changes");
+        //logger.info("url: " + url);
 
+        return new InputStreamReader(url.openStream());
+    }
 
 
     /** An entry holding details about a cell to export */

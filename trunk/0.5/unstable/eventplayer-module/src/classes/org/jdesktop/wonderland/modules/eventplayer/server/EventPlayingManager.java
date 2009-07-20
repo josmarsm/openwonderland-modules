@@ -28,6 +28,8 @@ import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
  */
 public interface EventPlayingManager {
 
+    public void pauseChanges(String tapeName, ChangeReplayingListener listener);
+
     /**
      * Replay the changes from a named recording
      * @param tapeName the name of the recording

@@ -136,16 +136,22 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
      * Start recording to the tape given in the parameter
      * @param tapeName the name of the selected tape in the event player
      */
-    void startPlaying(String tapeName) {
-        //logger.info("start playing: " + tapeName);
-        //this.tapeName = tapeName;
-        //Load the cells labelled by tape name
-        //then replay messages
-        replayMessages();
+    void startPlaying() {
+        logger.info("start playing");
+        // get the event playing service
+        EventPlayingManager epm = AppContext.getManager(EventPlayingManager.class);
+        //Call the method on the service
+        //Callbacks to this object via playMessage() and allChangesPlayed()
+        epm.replayChanges(tapeName, this);
     }
 
     public void stopPlaying() {
-        
+        logger.info("stop playing");
+
+        EventPlayingManager epm = AppContext.getManager(EventPlayingManager.class);
+        //Call the method on the service
+        //Callbacks to this object via playMessage() and allChangesPlayed()
+        epm.pauseChanges(tapeName, this);
     }
 
     public void cellRetrievalFailed(String reason, Throwable cause) {
@@ -273,20 +279,8 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         //logger.info("COMPLETE");
     }
 
-    private void replayMessages() {
-        // get the event playing service
-        EventPlayingManager epm = AppContext.getManager(EventPlayingManager.class);
-        //Call the method on the service
-        //Callbacks to this object via playMessage() and allChangesPlayed()
-        epm.replayChanges(tapeName, this);
-    }
-
-    
-
-    
-
     public void allCellsRetrieved() {
-       logger.info("All Cells Retrived");
+       logger.info("All Cells Retrieved");
     }
 
     public void allChangesPlayed() {
