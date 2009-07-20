@@ -85,13 +85,11 @@ public class PDFSpreaderClientPlugin implements ContextMenuFactorySPI {
     private class EditLayoutContextListener implements ContextMenuActionListener {
 
         public void actionPerformed(ContextMenuItemEvent event) {
-            logger.warning("Got ACTION PERFORMED on the context listener.");
             // If our panel exists alreay, reshow it. Otherwise,
             // make a new one first.
 
             // This should always be true, but just making sure.
             assert(event.getCell() instanceof PDFSpreaderCell);
-            logger.warning("Cell is right type.");
 
             if(layoutHUD==null) {
                 createHUD((PDFSpreaderCell)event.getCell());
@@ -99,15 +97,7 @@ public class PDFSpreaderClientPlugin implements ContextMenuFactorySPI {
 
             layoutHUD.setVisible(true);
 
-            logger.warning("HUD should now be visible");
-            // Update the states of the HUD Swing components; we must do this
-            // on the AWT Event Thread.
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {
-//                    layoutPanel.updateGUI();
-//                }
-//        }
-        }
-    
+            logger.info("PDFSpreaderLayoutHUD now visible.");
+        }    
     }
 }
