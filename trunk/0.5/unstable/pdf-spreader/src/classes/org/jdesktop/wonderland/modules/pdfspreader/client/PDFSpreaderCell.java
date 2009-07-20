@@ -85,8 +85,9 @@ public class PDFSpreaderCell extends Cell {
         super.setClientState(state);
 
         this.pdfURI = ((PDFSpreaderCellClientState)state).getPdfURI();
-        
-//        this.numAvatarsInZone = ((PDFSpreaderCellClientState)state).getNumAvatarsInZone();
+        this.spacing = ((PDFSpreaderCellClientState)state).getSpacing();
+        this.layout = ((PDFSpreaderCellClientState)state).getLayout();
+        this.scale = ((PDFSpreaderCellClientState)state).getScale();
     }
 
     @Override
