@@ -18,6 +18,9 @@
 
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +31,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
@@ -43,6 +48,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -220,6 +226,12 @@ public class AudioRecorderCell extends Cell {
 
     void startRecording() {
         logger.info("start recording");
+        if (reelForm.isVisible()) {
+            logger.warning("Can't start recording when the user is selecting a tape");
+            Toolkit.getDefaultToolkit().beep();
+            reelForm.toFront();
+            return;
+        }
         if (!isPlaying) {
             Tape selectedTape = getSelectedTape();
             if (selectedTape == null) {
@@ -251,6 +263,12 @@ public class AudioRecorderCell extends Cell {
 
     void startPlaying() {
         logger.info("start playing");
+        if (reelForm.isVisible()) {
+            logger.warning("Can't start playing when the user is selecting a tape");
+            Toolkit.getDefaultToolkit().beep();
+            reelForm.toFront();
+            return;
+        }
         if (!isRecording) {
             Tape selectedTape = getSelectedTape();
             if (selectedTape == null) {
@@ -276,6 +294,11 @@ public class AudioRecorderCell extends Cell {
 
     void stop() {
         logger.info("stop");
+        if (reelForm.isVisible()) {
+            logger.warning("Can't stop when the user is selecting a tape");
+            Toolkit.getDefaultToolkit().beep();
+            reelForm.toFront();
+        }
         if (userName != null && userName.equals(getCurrentUserName())) {
             AudioRecorderCellChangeMessage msg = null;
             if (isRecording) {
@@ -330,6 +353,17 @@ public class AudioRecorderCell extends Cell {
 
     void setReelFormVisible(boolean aBoolean) {
         logger.info("set visible: " + aBoolean);
+        JFrame parentFrame = ClientContextJME.getClientMain().getFrame().getFrame();
+        if (isRecording || isPlaying) {
+            logger.warning("Can't select a tape when the user is already playing/recording");
+            Toolkit.getDefaultToolkit().beep();
+            JOptionPane.showMessageDialog(parentFrame, "Can't select a tape when the audio recorder is in use");
+            return;
+        }
+        reelForm.pack();
+        Rectangle parentBounds = parentFrame.getBounds();
+        Rectangle formBounds = reelForm.getBounds();
+        reelForm.setLocation(parentBounds.width/2 - formBounds.width/2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
         reelForm.setVisible(aBoolean);
     }
     
