@@ -89,6 +89,8 @@ public class PDFSpreaderCellMO extends CellMO {
 
         }
 
+        logger.info("client state requested, sending spacing: " + spacing + "; scale: " + scale + "; layout: " + layout);
+
         ((PDFSpreaderCellClientState)cellClientState).setPdfURI(pdfURI);
         ((PDFSpreaderCellClientState)cellClientState).setSpacing(spacing);
         ((PDFSpreaderCellClientState)cellClientState).setScale(scale);

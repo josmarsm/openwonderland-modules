@@ -410,6 +410,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 // needs to get done after the last slide. But it's easier than
                 // making sure we run an update only at the end, and it keeps
                 // the bounds constantly up to date as slides get added.
+                node.setLocalScale(pdfCell.getScale());
                 node.updateModelBound();
                 node.updateRenderState();
 

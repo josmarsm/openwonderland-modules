@@ -18,6 +18,10 @@
 
 package org.jdesktop.wonderland.modules.pdfspreader.client;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.logging.Logger;
+import javax.swing.ButtonGroup;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
@@ -26,19 +30,51 @@ import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeM
  *
  * @author Drew Harry <drew_harry@dev.java.net>
  */
-public class PDFLayoutHUDPanel extends javax.swing.JPanel {
+public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListener {
 
-//    private PDFLayoutPanel layoutPanel = null;
-//    private static HUDComponent layoutHUD = null;
+    private static final Logger logger =
+        Logger.getLogger(PDFLayoutHUDPanel.class.getName());
+
 
     private PDFSpreaderCell cell;
 
+    private ButtonGroup layoutButtons;
+
+    private final static String LINEAR_COMMAND = "linear";
+    private final static String SEMICIRCLE_COMMAND = "semicircle";
+    private final static String CIRCLE_COMMAND = "cicle";
 
     /** Creates new form PDFLayoutHUDPanel */
     public PDFLayoutHUDPanel(PDFSpreaderCell c) {
         initComponents();
 
         this.cell = c;
+
+        layoutButtons = new ButtonGroup();
+        layoutButtons.add(linearButton);
+        layoutButtons.add(semicircleButton);
+        layoutButtons.add(circleButton);
+
+        switch(c.getLayout()) {
+            case LINEAR:
+                linearButton.setSelected(true);
+                break;
+            case SEMICIRCLE:
+                semicircleButton.setSelected(true);
+                break;
+            case CIRCLE:
+                circleButton.setSelected(true);
+                break;
+            default:
+                break;
+        }
+
+        linearButton.setActionCommand(LINEAR_COMMAND);
+        linearButton.addActionListener(this);
+        semicircleButton.addActionListener(this);
+        semicircleButton.setActionCommand(SEMICIRCLE_COMMAND);
+        circleButton.addActionListener(this);
+        circleButton.setActionCommand(CIRCLE_COMMAND);
 
         // setup listeners for changes on the sliders.
         scaleSlider.addChangeListener(new ChangeListener() {
@@ -60,12 +96,13 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel {
                 // scale appropriately here - the slider is 0-100, and we want
                 // scale to be bounded 0->4.0
                 float spacing = 0.0f;
-                if(layoutType.getSelectedIndex()==0) {
+                if(cell.getLayout()==LayoutType.LINEAR) {
                     spacing = (float) (spacingSlider.getValue() / 100.0 * 15.0);
                 }
                 else {
                     spacing = (float) (spacingSlider.getValue() / 100.0 * 100.0);
                 }
+
                 cell.setSpacing(spacing);
                 cell.sendCurrentLayoutToServer();
             }
@@ -92,26 +129,19 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        layoutType = new javax.swing.JComboBox();
+        jRadioButton2 = new javax.swing.JRadioButton();
         scaleSlider = new javax.swing.JSlider();
         spacingSlider = new javax.swing.JSlider();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        linearButton = new javax.swing.JRadioButton();
+        semicircleButton = new javax.swing.JRadioButton();
+        circleButton = new javax.swing.JRadioButton();
+
+        jRadioButton2.setText("jRadioButton2");
 
         setLayout(new java.awt.GridBagLayout());
-
-        layoutType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Linear", "Semi-circle", "Circle" }));
-        layoutType.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                layoutTypeActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.ipadx = 4;
-        gridBagConstraints.ipady = 4;
-        add(layoutType, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -135,41 +165,84 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         add(jLabel2, gridBagConstraints);
+
+        linearButton.setText("Linear");
+        linearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                linearButtonActionPerformed(evt);
+            }
+        });
+
+        semicircleButton.setText("Semicircle");
+
+        circleButton.setText("Circle");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(2, 2, 2)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(semicircleButton)
+                    .addComponent(circleButton)
+                    .addComponent(linearButton)))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(linearButton)
+                .addGap(5, 5, 5)
+                .addComponent(semicircleButton)
+                .addGap(5, 5, 5)
+                .addComponent(circleButton))
+        );
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void layoutTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layoutTypeActionPerformed
-        LayoutType type;
-
-        switch(this.layoutType.getSelectedIndex()) {
-            case 0:
-                type = LayoutType.LINEAR;
-                break;
-            case 1:
-                type = LayoutType.SEMICIRCLE;
-                break;
-            case 2:
-                type = LayoutType.CIRCLE;
-                break;
-            default:
-                // This will only happen if the number of items
-                // in the list gets changed, and an unexpected number
-                // is selected.
-                type = null;
-                break;
-        }
-        cell.setLayout(type);
-        cell.setScale(scaleSlider.getValue());
-        cell.setSpacing(spacingSlider.getValue());
-        cell.updateLayout();
-    }//GEN-LAST:event_layoutTypeActionPerformed
+    private void linearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linearButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_linearButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton circleButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JComboBox layoutType;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JRadioButton jRadioButton2;
+    private javax.swing.JRadioButton linearButton;
     private javax.swing.JSlider scaleSlider;
+    private javax.swing.JRadioButton semicircleButton;
     private javax.swing.JSlider spacingSlider;
     // End of variables declaration//GEN-END:variables
 
+    public void actionPerformed(ActionEvent arg0) {
+        if(arg0.getActionCommand().equals(LINEAR_COMMAND)) {
+           cell.setLayout(LayoutType.LINEAR);
+        } else if(arg0.getActionCommand().equals(SEMICIRCLE_COMMAND)) {
+            cell.setLayout(LayoutType.SEMICIRCLE);
+        } else if(arg0.getActionCommand().equals(CIRCLE_COMMAND)) {
+            cell.setLayout(LayoutType.CIRCLE);
+        }
+
+        cell.sendCurrentLayoutToServer();
+    }
+
+//    private LayoutType getCurrentUILayoutType() {
+//        if(linearButton.isSelected()) {
+//            return LayoutType.LINEAR;
+//        } else if(semicircleButton.isSelected()) {
+//            return LayoutType.SEMICIRCLE;
+//        } else if(circleButton.isSelected()) {
+//            return LayoutType.CIRCLE;
+//        }
+//        return null;
+//    }
 }
