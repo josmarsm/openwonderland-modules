@@ -99,6 +99,10 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
         logger.warning("VIEW ENTERING CELL");
     }
+
+    void createThought(String text, boolean selected) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
  
     class ThoughtBubblesCellMessageReceiver implements ComponentMessageReceiver {
         public void messageReceived(CellMessage message) {
