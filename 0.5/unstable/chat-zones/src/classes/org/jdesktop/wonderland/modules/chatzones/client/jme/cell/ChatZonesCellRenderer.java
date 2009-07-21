@@ -117,8 +117,7 @@ public class ChatZonesCellRenderer extends BasicRenderer {
         ColorRGBA color = new ColorRGBA(0.0f, 0.3f, 0.7f, 0.5f);
 
         mesh.setSolidColor(color);
-        MaterialState matState3 = (MaterialState)
-        rm.createRendererState(RenderState.StateType.Material);
+        MaterialState matState3 = (MaterialState)rm.createRendererState(RenderState.StateType.Material);
         matState3.setDiffuse(color);
         mesh.setRenderState(matState3);
 
@@ -157,7 +156,7 @@ public class ChatZonesCellRenderer extends BasicRenderer {
 
     public void updateSize(int numAvatarsInZone) {
         float scaleFactor = (float) (1 + 0.3 * numAvatarsInZone);
-        logger.warning("Updating size witih scaleFactor: " + scaleFactor);
+        logger.warning("Updating size with scaleFactor: " + scaleFactor);
         this.node.setLocalScale(new Vector3f(scaleFactor, 1, scaleFactor));
         
         ClientContextJME.getWorldManager().addToUpdateList(node);

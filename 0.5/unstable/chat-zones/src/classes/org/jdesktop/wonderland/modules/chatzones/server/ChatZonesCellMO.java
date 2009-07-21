@@ -165,6 +165,11 @@ public class ChatZonesCellMO extends CellMO {
 
             switch(bsccm.getAction()) {
                 case LABEL:
+                    // I think there's a bug here where if you log out while in the cell,
+                    // then someone else changes the label, the cell will hang. But since
+                    // the logging out problem is going to get fixed in the near future,
+                    // I don't want to fix it right now.
+                    
 //                    cellMO.updateGroupLabel(bsccm.getLabel());
                     TextChatConnectionHandler textChat = (TextChatConnectionHandler) WonderlandContext.getCommsManager().getClientHandler(TextChatConnectionType.CLIENT_TYPE);
 
