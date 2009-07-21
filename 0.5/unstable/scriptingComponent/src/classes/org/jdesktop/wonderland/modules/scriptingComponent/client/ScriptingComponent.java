@@ -25,6 +25,7 @@ import com.jme.scene.Node;
 import imi.character.avatar.AvatarContext.TriggerNames;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.net.URL;
@@ -90,8 +91,10 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentNpcMoveMessage;
 import org.jdesktop.wonderland.modules.scriptingImager.client.jme.cellrenderer.ScriptingImagerCellRenderer;
+import org.pushingpixels.trident.Timeline;
 
 /**
  *
@@ -102,7 +105,7 @@ import org.jdesktop.wonderland.modules.scriptingImager.client.jme.cellrenderer.S
 @ExperimentalAPI
 public class ScriptingComponent extends CellComponent
     {
-    private Node localNode;
+    private Node localNode = null;
     public String stateString[] = {null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null};
     public int stateInt[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     public boolean stateBoolean[] = {false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false};
@@ -148,6 +151,11 @@ public class ScriptingComponent extends CellComponent
 
     public static final int YES_NOTIFY = 0;
     public static final int NO_NOTIFY = 1;
+
+    public static final int CONTENT_USER = 0;
+    public static final int CONTENT_ROOT = 1;
+    public static final int CONTENT_SYSTEM = 2;
+
 /*
     private String[] eventNames;
     private String[] eventScriptType;
@@ -195,6 +203,7 @@ public class ScriptingComponent extends CellComponent
     private   float     initialRotationY    = 0;
     private   float     initialRotationZ    = 0;
     private   float     initialAngle        = 0;
+    private   String[]    contentRead;
 
     private   Cell      theCell;
     private   AvatarImiJME                  avatarRenderer;
@@ -203,6 +212,9 @@ public class ScriptingComponent extends CellComponent
     private   boolean             firstEntry = false;
     private   boolean             iceEventInFlight = false;
 
+    private   String cellName;
+    private   String userName;
+    
 /*
     private   Vector3f                      npcPosition;
     private   GoTo                          myGoTo;
@@ -227,6 +239,9 @@ public class ScriptingComponent extends CellComponent
         theCell = cell;
         System.out.println("******************** Cell name = " + cell.getName());
         System.out.println("ScriptingComponent : Cell " + cell + " - id = " + cell.getCellID() + " : Enter ScriptingComponent constructor");
+        this.cellName = cell.getName();
+        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        this.userName = session.getUserID().getUsername();
 
         wm = ClientContextJME.getWorldManager();
         wm.getRenderManager().setFrameRateListener(new FrameRateListener()
@@ -238,53 +253,6 @@ public class ScriptingComponent extends CellComponent
             
             }, 100);
         repo = ContentRepositoryRegistry.getInstance().getRepository(cell.getCellCache().getSession().getSessionManager());
-/*
-        eventNames[MOUSE1_EVENT] = "mouse1.js";
-        eventNames[MOUSE2_EVENT] = "mouse2.js";
-        eventNames[MOUSE3_EVENT] = "mouse3.js";
-        eventNames[MOUSE1S_EVENT] = "mouse1s.js";
-        eventNames[MOUSE2S_EVENT] = "mouse2s.js";
-        eventNames[MOUSE3S_EVENT] = "mouse3s.js";
-        eventNames[MOUSE1C_EVENT] = "mouse1c.js";
-        eventNames[MOUSE2C_EVENT] = "mouse2c.js";
-        eventNames[MOUSE3C_EVENT] = "mouse3c.java";
-        eventNames[MOUSE1A_EVENT] = "mouse1a.js";
-        eventNames[MOUSE2A_EVENT] = "mouse2a.js";
-        eventNames[MOUSE3A_EVENT] = "mouse3a.js";
-        eventNames[TIMER_EVENT] = "timer.js";
-        eventNames[STARTUP_EVENT] = "startup.js";
-        eventNames[PROXIMITY_EVENT] = "prox.js";
-        eventNames[MESSAGE1_EVENT] = "message1.js";
-        eventNames[MESSAGE2_EVENT] = "message2.js";
-        eventNames[MESSAGE3_EVENT] = "message3.js";
-        eventNames[MESSAGE4_EVENT] = "message4.js";
-        eventNames[INTERCELL_EVENT] = "ice.js";
-        eventNames[CHAT_EVENT] = "chat.js";
-        eventNames[PRESENCE_EVENT] = "presence.js";
-
-        eventScriptType[MOUSE1_EVENT] = "javascript";
-        eventScriptType[MOUSE2_EVENT] = "javascript";
-        eventScriptType[MOUSE3_EVENT] = "javascript";
-        eventScriptType[MOUSE1S_EVENT] = "javascript";
-        eventScriptType[MOUSE2S_EVENT] = "javascript";
-        eventScriptType[MOUSE3S_EVENT] = "javascript";
-        eventScriptType[MOUSE1C_EVENT] = "javascript";
-        eventScriptType[MOUSE2C_EVENT] = "javascript";
-        eventScriptType[MOUSE3C_EVENT] = "java";
-        eventScriptType[MOUSE1A_EVENT] = "javascript";
-        eventScriptType[MOUSE2A_EVENT] = "javascript";
-        eventScriptType[MOUSE3A_EVENT] = "javascript";
-        eventScriptType[TIMER_EVENT] = "javascript";
-        eventScriptType[STARTUP_EVENT] = "javascript";
-        eventScriptType[PROXIMITY_EVENT] = "javascript";
-        eventScriptType[MESSAGE1_EVENT] = "javascript";
-        eventScriptType[MESSAGE2_EVENT] = "javascript";
-        eventScriptType[MESSAGE3_EVENT] = "javascript";
-        eventScriptType[MESSAGE4_EVENT] = "javascript";
-        eventScriptType[INTERCELL_EVENT] = "javascript";
-        eventScriptType[CHAT_EVENT] = "javascript";
-        eventScriptType[PRESENCE_EVENT] = "javascript";
-*/
         }
 /*
     public void avatarMove(int x, int y, int z)
@@ -435,23 +403,208 @@ public class ScriptingComponent extends CellComponent
         }
 */
 /**
+ * contentCreateFile - method for calls from a script to create a directory path in the user area on the content area
+ *
+ * @param theDir String contains the directory path to create
+ * @param theFile String contains the filename to create
+ * @return
+ */
+    public int contentReadFile(String thePath, int repository)
+        {
+        ContentResource current = null;
+        ContentCollection ccr = null;
+        String strLine;
+        String[] tempBuf = null;
+
+        int     i;
+
+//        StringBuffer sb = new StringBuffer();
+
+        try {
+            switch(repository)
+                {
+                case CONTENT_USER:
+                    {
+                    ccr = repo.getUserRoot();
+                    System.out.println("The user root node = " + ccr.getName());
+                    break;
+                    }
+                case CONTENT_ROOT:
+                    {
+                    ccr = repo.getRoot();
+                    System.out.println("The content root node = " + ccr.getName());
+                    break;
+                    }
+                case CONTENT_SYSTEM:
+                    {
+                    ccr = repo.getSystemRoot();
+                    System.out.println("The system root node = " + ccr.getName());
+                    break;
+                    }
+                default:
+                    {
+                    break;
+                    }
+                }
+            current = (ContentResource)ccr.getChild(thePath);
+            BufferedReader br = new BufferedReader(new InputStreamReader(current.getInputStream()));
+            try
+                {
+                i = 0;
+                while ((strLine = br.readLine()) != null)
+                    {
+                    tempBuf[i] = new String(strLine);
+//                    contentRead[i] = strLine;
+                    i++;
+                    System.out.println("Line from content file" + strLine);
+                    }
+                contentRead = tempBuf;
+                }
+            catch (IOException ex)
+                {
+                System.out.println("Exception in content readline - " + ex);
+                return -1;
+                }
+            return 0;
+            }
+        catch (ContentRepositoryException ex)
+            {
+            System.err.println("Exception in contentReadFile - " + ex);
+            return -1;
+            }
+        }
+
+/**
+ * contentCreateFile - method for calls from a script to create a directory path in the user area on the content area
+ *
+ * @param theDir String contains the directory path to create
+ * @param theFile String contains the filename to create
+ * @return
+ */
+    public int contentWriteFile(String theDir, String theFile, String theData, int repository)
+        {
+        int     i = -1;
+        int     j = 0;
+
+        List<ContentNode> children = null;
+        ContentCollection current = null;
+        ContentCollection whereFileGoes = null;
+        ContentCollection ccr = null;
+
+        try {
+            switch(repository)
+                {
+                case CONTENT_USER:
+                    {
+                    ccr = repo.getUserRoot();
+                    System.out.println("The user root node = " + ccr.getName());
+                    break;
+                    }
+                case CONTENT_ROOT:
+                    {
+                    ccr = repo.getRoot();
+                    System.out.println("The content root node = " + ccr.getName());
+                    break;
+                    }
+                case CONTENT_SYSTEM:
+                    {
+                    ccr = repo.getSystemRoot();
+                    System.out.println("The system root node = " + ccr.getName());
+                    break;
+                    }
+                default:
+                    {
+                    break;
+                    }
+                }
+
+            current = ccr;
+
+            String[] result = theDir.split("/");
+            for (i = 0; i < result.length; i++)
+                {
+                int size = current.getChildren().size();
+                children = current.getChildren();
+
+                for(j = 0; j < size; j++)
+                    {
+                    String name = children.get(j).getName();
+                    System.out.println("Checking node = " + name);
+                    if(name.equals(result[i]))
+                        {
+                        System.out.println("Don't need to create node - " + result[i] + " - get it instead");
+                        current = (ContentCollection) current.getChild(result[i]);
+                        System.out.println("Current = " + current.getName());
+                        whereFileGoes = current;
+                        break;
+                        }
+                    }
+                 System.out.println("Exit for loop with " + j);
+                 if(j == size)
+                    {
+                    System.out.println("Creating the node - " + result[i]);
+                    current.createChild(result[i], Type.COLLECTION);
+                    current = (ContentCollection) current.getChild(result[i]);
+                    System.out.println("Current = " + current.getName());
+                    whereFileGoes = current;
+                    }
+                }
+            System.out.println("whereFileGoes = " + whereFileGoes.getName());
+            ContentResource tf = (ContentResource) whereFileGoes.createChild(theFile, Type.RESOURCE);
+            byte some_data[] = new byte[10];
+            some_data = new String("This is a test").getBytes();
+            tf.put(some_data);
+            return 0;
+            }
+        catch (ContentRepositoryException ex)
+            {
+            System.err.println("Exception in contentCreateFile - " + ex);
+            return i;
+            }
+        }
+
+/**
  * contentCreateDir - method for calls from a script to create a directory path in the user area on the content area
  *
  * @param theDir String contains the directory path to create
  * @return
  */
-    public int contentCreateDir(String theDir)
+    public int contentCreateDir(String theDir, int repository)
         {
         int     i = -1;
         int     j = 0;
         
         List<ContentNode> children = null;
         ContentCollection current = null;
-        
-        try {
+        ContentCollection ccr = null;
 
-            ContentCollection ccr = repo.getUserRoot();
-            System.out.println("The root node = " + ccr.getName());
+        try {
+            switch(repository)
+                {
+                case CONTENT_USER:
+                    {
+                    ccr = repo.getUserRoot();
+                    System.out.println("The user root node = " + ccr.getName());
+                    break;
+                    }
+                case CONTENT_ROOT:
+                    {
+                    ccr = repo.getRoot();
+                    System.out.println("The content root node = " + ccr.getName());
+                    break;
+                    }
+                case CONTENT_SYSTEM:
+                    {
+                    ccr = repo.getSystemRoot();
+                    System.out.println("The system root node = " + ccr.getName());
+                    break;
+                    }
+                default:
+                    {
+                    break;
+                    }
+                }
+
             current = ccr;
             
             String[] result = theDir.split("/");
@@ -492,7 +645,8 @@ public class ScriptingComponent extends CellComponent
         {
         List<ContentNode> children;
         
-        try {
+        try
+            {
             ContentCollection cc = repo.getUserRoot();
 //            cc.createChild("child1", Type.COLLECTION);
             System.out.println("The user root node = " + cc.getName());
@@ -510,11 +664,11 @@ public class ScriptingComponent extends CellComponent
                 }
             ContentCollection ccsr = repo.getSystemRoot();
             System.out.println("The system root node = " + ccsr.getName());
-
-            
-        } catch (ContentRepositoryException ex) {
+            }
+        catch (ContentRepositoryException ex)
+            {
             Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
-        }
+            }
         }
    /**
     * sendChat - send a chat message through the WL text chat interface
@@ -698,15 +852,21 @@ public class ScriptingComponent extends CellComponent
 /* Get local node */
                 if(!firstEntry)
                     {
-//                    CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
                     ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
 
                     System.out.println("In component setStatus - renderer = " + ret);
-                    Entity mye = ret.getEntity();
-                    RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
-                    localNode = rc.getSceneRoot();
-                    MouseEventListener myListener = new MouseEventListener();
-                    myListener.addToEntity(mye);
+//                    if(ret instanceof AvatarImiJME)
+//                        {
+//                        System.out.println("Avatar renderer");
+//                        }
+//                    else
+//                        {
+                        Entity mye = ret.getEntity();
+                        RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
+                        localNode = rc.getSceneRoot();
+                        MouseEventListener myListener = new MouseEventListener();
+                        myListener.addToEntity(mye);
+//                        }
 /* Execute the startup script */
                     executeScript(STARTUP_EVENT, null);
                     firstEntry = true;
@@ -1181,7 +1341,7 @@ public class ScriptingComponent extends CellComponent
 //       System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Start of executeScript - this = " + this + " Frame Rate = " + frameRate);
        worldCoor = coorW;
        getInitialPosition();
-       
+
        try
            {
            String thePath = buildScriptPath(eventNames[eventType]);
@@ -1225,7 +1385,10 @@ public class ScriptingComponent extends CellComponent
            bindings.put("proximityBounds", proximityBounds);
            bindings.put("proximityDir", proximityDir);
            bindings.put("aniFrame", aniFrame);
-
+           bindings.put("contentRead", contentRead);
+           bindings.put("cellName", cellName);
+           bindings.put("userName", userName);
+           
  //          if((jsEngine instanceof Compilable) && !(jsEngine instanceof Invocable))
            if(jsEngine instanceof Compilable)
                {
@@ -1305,11 +1468,18 @@ public class ScriptingComponent extends CellComponent
 
     public void getInitialPosition()
         {
-        Vector3f v3f = localNode.getLocalTranslation();
-        initialX = v3f.x;
-        initialY = v3f.y;
-        initialZ = v3f.z;
-        System.out.append("Initial pos in getInitialPosition = " + initialX + ", " + initialY + ", " + initialZ);
+ //       if(localNode != null)
+ //           {
+            Vector3f v3f = localNode.getLocalTranslation();
+            initialX = v3f.x;
+            initialY = v3f.y;
+            initialZ = v3f.z;
+            System.out.append("Initial pos in getInitialPosition = " + initialX + ", " + initialY + ", " + initialZ);
+ //           }
+ //       else
+ //           {
+ //           System.out.println("localNode is null in getInitialPosition");
+ //           }
         }
 
     public void getWorldCoor()
@@ -1724,6 +1894,13 @@ public class ScriptingComponent extends CellComponent
 //        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
         }
 
+    public void callTridentTest()
+        {
+        System.out.println("Enter callTridentTest()");
+        TridentAnimations helloWorld = new TridentAnimations();
+        helloWorld.go();
+        }
+    
     class MouseEventListener extends EventClassListener
         {
         @Override
@@ -1852,6 +2029,7 @@ public class ScriptingComponent extends CellComponent
                 }
            }
         }
+
     class IntercellListener extends EventClassListener 
         {
 @Override
