@@ -318,7 +318,6 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
 
         ButtonListener(Button aButton) {
             super();
-            setSwingSafe(true);
             button = aButton;
         }
 
