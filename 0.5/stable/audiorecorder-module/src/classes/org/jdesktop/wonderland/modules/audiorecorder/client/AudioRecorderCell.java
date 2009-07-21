@@ -35,6 +35,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -351,20 +352,33 @@ public class AudioRecorderCell extends Cell {
         return getCellCache().getSession().getUserID().getUsername();
     }
 
-    void setReelFormVisible(boolean aBoolean) {
+    void setReelFormVisible(final boolean aBoolean) {
         logger.info("set visible: " + aBoolean);
-        JFrame parentFrame = ClientContextJME.getClientMain().getFrame().getFrame();
+        final JFrame parentFrame = ClientContextJME.getClientMain().getFrame().getFrame();
         if (isRecording || isPlaying) {
             logger.warning("Can't select a tape when the user is already playing/recording");
-            Toolkit.getDefaultToolkit().beep();
-            JOptionPane.showMessageDialog(parentFrame, "Can't select a tape when the audio recorder is in use");
+            //See Deron's forum post
+            //http://forums.java.net/jive/thread.jspa?messageID=356627
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    Toolkit.getDefaultToolkit().beep();
+                    JOptionPane.showMessageDialog(parentFrame, "Can't select a tape when the audio recorder is in use");
+                }
+            });
             return;
         }
         reelForm.pack();
         Rectangle parentBounds = parentFrame.getBounds();
         Rectangle formBounds = reelForm.getBounds();
         reelForm.setLocation(parentBounds.width/2 - formBounds.width/2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
-        reelForm.setVisible(aBoolean);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                reelForm.setVisible(aBoolean);
+            }
+        });
+
     }
     
 
