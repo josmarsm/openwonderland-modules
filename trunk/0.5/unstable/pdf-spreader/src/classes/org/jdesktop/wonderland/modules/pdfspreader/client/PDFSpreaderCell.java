@@ -57,6 +57,8 @@ public class PDFSpreaderCell extends Cell {
 
     private PDFFile pdfDocument;
 
+    private LayoutType layout = LayoutType.LINEAR;
+
     private float spacing = 4.0f;
     private float scale = 1.0f;
 
@@ -83,7 +85,6 @@ public class PDFSpreaderCell extends Cell {
         logger.finer("just sent cell message to server: " + msg);
     }
 
-    private LayoutType layout = LayoutType.LINEAR;
 
 
 

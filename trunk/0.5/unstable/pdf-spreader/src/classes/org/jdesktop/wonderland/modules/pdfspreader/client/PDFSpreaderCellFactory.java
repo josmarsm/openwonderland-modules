@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellServerState;
 
 @CellFactory
@@ -34,6 +35,11 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
 
         PDFSpreaderCellServerState state = new PDFSpreaderCellServerState();
+
+        // set reasonable defaults here. 
+        state.setLayout(LayoutType.LINEAR);
+        state.setScale(1.0f);
+        state.setSpacing(4.0f);
 
         if (props != null) {
            String uri = props.getProperty("content-uri");

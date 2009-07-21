@@ -64,7 +64,6 @@ public class PDFSpreaderCellMO extends CellMO {
         this.scale = ((PDFSpreaderCellServerState)state).getScale();
         this.spacing = ((PDFSpreaderCellServerState)state).getSpacing();
         this.layout = ((PDFSpreaderCellServerState)state).getLayout();
-
     }
 
     @Override
@@ -100,6 +99,7 @@ public class PDFSpreaderCellMO extends CellMO {
     }
 
     public void setLayout(LayoutType layout) {
+        logger.warning("Setting layout to: " + layout);
         this.layout = layout;
     }
 
