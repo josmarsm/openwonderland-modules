@@ -1,0 +1,70 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
+ */
+
+package org.jdesktop.wonderland.modules.thoughtbubbles.common;
+
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+
+public class ThoughtBubblesComponentChangeMessage extends CellMessage {
+    public enum ThoughtBubblesAction {
+        JOINED,
+        LEFT,
+        LABEL
+    }
+
+    public String name;
+
+    public String label;
+
+    public ThoughtBubblesAction action;
+
+    public int numAvatarInZone = 0;
+
+    public ThoughtBubblesComponentChangeMessage(ThoughtBubblesAction action) {
+        this.action = action;
+    }
+    
+    public ThoughtBubblesAction getAction() {
+        return action;
+    }
+
+    public int getNumAvatarInZone() {
+        return numAvatarInZone;
+    }
+
+    public void setNumAvatarInZone(int numAvatarInZone) {
+        this.numAvatarInZone = numAvatarInZone;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+}

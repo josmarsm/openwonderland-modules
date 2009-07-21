@@ -26,6 +26,7 @@ import com.jme.math.Vector2f;
 import com.jme.renderer.Renderer;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial.LightCombineMode;
+import com.jme.scene.TexCoords;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Tube;
 import com.jme.scene.state.BlendState;
@@ -34,6 +35,7 @@ import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.TextureState;
 import com.jme.system.DisplaySystem;
 import com.jme.util.TextureManager;
+import com.jme.util.geom.BufferUtils;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -45,8 +47,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.util.Arrays;
-import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.processor.RotationProcessor;
 
 public class ChatZoneLabelNode extends Node {
 
