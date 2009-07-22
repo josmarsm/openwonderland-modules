@@ -19,7 +19,10 @@
 package org.jdesktop.wonderland.modules.thoughtbubbles.client;
 
 import com.jme.bounding.BoundingVolume;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
@@ -35,9 +38,12 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.modules.presentationbase.client.PresentationManager;
+import org.jdesktop.wonderland.modules.presentationbase.client.PresentationToolbarButtonProvider;
+import org.jdesktop.wonderland.modules.presentationbase.client.PresentationToolbarButtonSPI;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentChangeMessage;
 
-public class ThoughtBubblesCellComponent extends CellComponent implements ProximityListener {
+public class ThoughtBubblesCellComponent extends CellComponent implements ProximityListener, ActionListener {
 
     private MouseEventListener listener = null;
 
@@ -50,15 +56,17 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
     @UsesCellComponent
     private ProximityComponent prox;
 
+    private static final String NEW_THOUGHT_ACTION = "new_thought";
 
-
-    // It's a single space because an empty string causes the label node
-    // to barf. TODO fix the label node so it can more gracefully handle
-    // empty strings as labels. 
-    private String label = " ";
+    private static JButton createThoughtButton = null;
 
     public ThoughtBubblesCellComponent(Cell cell) {
         super(cell);
+
+        createThoughtButton = new JButton();
+        createThoughtButton.setText("Add New Thought");
+        createThoughtButton.setActionCommand(NEW_THOUGHT_ACTION);
+        createThoughtButton.addActionListener(this);
     }
 
     @Override
@@ -96,12 +104,39 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
 
     }
 
+    /**
+     * Called by the proximity listener.
+     * 
+     * @param entered
+     * @param cell
+     * @param viewCellID
+     * @param proximityVolume
+     * @param proximityIndex
+     */
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
-        logger.warning("VIEW ENTERING CELL");
+        
+        // Check to see if the avatar entering/exiting is the local one.
+        if(cell.getCellCache().getViewCell().getCellID() == viewCellID) {
+            if(entered) {
+                // turn on the toolbar
+                logger.warning("Adding toolbar button.");
+                PresentationManager.getManager().addToolbarButton(createThoughtButton);
+            } else {
+                logger.warning("Removing toolbar button.");
+                PresentationManager.getManager().removeToolbarButton(createThoughtButton);
+            }
+        }
     }
 
     void createThought(String text, boolean selected) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public void actionPerformed(ActionEvent ae) {
+        if(ae.getActionCommand().equals(NEW_THOUGHT_ACTION)) {
+            // trigger something
+            logger.warning("got a button press from the new thought button on the toolbar");
+        }
     }
  
     class ThoughtBubblesCellMessageReceiver implements ComponentMessageReceiver {

@@ -15,13 +15,21 @@
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
                                                 -module-compile-client"/>
-    
+
+    <pathconvert property="module-client.classpath">
+        <path location="${current.dir}/../presentation-base/build/client/presentation-base-client.jar"/>
+    </pathconvert>
+
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
-        
+
         <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 description="${module.description}" builddir="${build.dir}">
-                    
+
+            <!-- Depends on the presentation-base module to provide some interface bits. -->
+            <requires name="presentation-base" version="1"/>
+
+
 	    <client>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
