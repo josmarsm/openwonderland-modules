@@ -78,6 +78,10 @@ public class CMUCellMO extends CellMO {
         cmuURI = uri;
     }
 
+    /**
+     * Current rate of playback.
+     * @return Current playback speed
+     */
     public float getPlaybackSpeed() {
         return playbackSpeed;
     }
