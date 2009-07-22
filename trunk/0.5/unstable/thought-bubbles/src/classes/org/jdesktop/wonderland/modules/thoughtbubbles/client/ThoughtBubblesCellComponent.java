@@ -31,6 +31,10 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageRece
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -39,8 +43,6 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.presentationbase.client.PresentationManager;
-import org.jdesktop.wonderland.modules.presentationbase.client.PresentationToolbarButtonProvider;
-import org.jdesktop.wonderland.modules.presentationbase.client.PresentationToolbarButtonSPI;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentChangeMessage;
 
 public class ThoughtBubblesCellComponent extends CellComponent implements ProximityListener, ActionListener {
@@ -128,14 +130,21 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
         }
     }
 
-    void createThought(String text, boolean selected) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    void createThought(String text, boolean isQuestion) {
+        logger.warning("Got callback to create thought: " + text + " question? " + isQuestion);
     }
 
     public void actionPerformed(ActionEvent ae) {
         if(ae.getActionCommand().equals(NEW_THOUGHT_ACTION)) {
-            // trigger something
-            logger.warning("got a button press from the new thought button on the toolbar");
+            // Throw up the submit thought dialog box.
+            SubmitThoughtDialog d = new SubmitThoughtDialog(this);
+
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+            HUDComponent thoughtDialog = mainHUD.createComponent(d);
+            thoughtDialog.setPreferredLocation(Layout.CENTER);
+            mainHUD.addComponent(thoughtDialog);
+            thoughtDialog.setVisible(true);
         }
     }
  

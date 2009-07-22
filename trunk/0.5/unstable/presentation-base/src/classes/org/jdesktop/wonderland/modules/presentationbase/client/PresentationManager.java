@@ -72,12 +72,14 @@ public class PresentationManager {
 
     private void setToolbarVisibility(boolean visibility) {
 
+        logger.warning("setting toolbar visibility: " + visibility);
         if(mainHUD==null) {
             logger.warning("Doing initial toolbar visibility setup work.");
             mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
             toolbarHUD = mainHUD.createComponent(panel);
             toolbarHUD.setPreferredLocation(Layout.NORTHWEST);
+            mainHUD.addComponent(toolbarHUD);
 
             // saving this code here in case I need close-listeners later
             // and want to remember how to do it.
@@ -95,12 +97,10 @@ public class PresentationManager {
         }
 
         if(visibility) {
-            mainHUD.addComponent(toolbarHUD);
             toolbarHUD.setVisible(true);
             logger.warning("Set toolbar visible!");
         }
         else {
-            mainHUD.removeComponent(toolbarHUD);
             toolbarHUD.setVisible(false);
             logger.warning("Removed toolbar!");
         }
