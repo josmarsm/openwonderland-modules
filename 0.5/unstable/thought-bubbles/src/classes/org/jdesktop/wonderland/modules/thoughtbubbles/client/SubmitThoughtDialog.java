@@ -97,6 +97,7 @@ public class SubmitThoughtDialog extends javax.swing.JPanel {
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         cell.createThought(thoughtText.getText(), isQuestionCheckbox.isSelected());
+        this.setVisible(false);
     }//GEN-LAST:event_submitButtonActionPerformed
 
 
