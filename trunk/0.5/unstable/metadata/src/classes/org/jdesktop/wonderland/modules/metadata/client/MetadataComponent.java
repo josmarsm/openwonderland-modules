@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.metadata.client;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -27,6 +28,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 
+import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -37,9 +39,13 @@ import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.modules.metadata.client.cache.CacheEventListener;
+import org.jdesktop.wonderland.modules.metadata.client.cache.MetadataCache;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
-import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataMessage;
-// import org.jdesktop.wonderland.modules.sample.common.SampleCellComponentClientState;
+import org.jdesktop.wonderland.modules.metadata.common.basetypes.SimpleMetadata;
+import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataModMessage;
+import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataModResponseMessage;
 
 /**
  * Client-side metadata cell component
@@ -55,16 +61,22 @@ public class MetadataComponent extends CellComponent {
      * The channel to listen for messages over
      */
     @UsesCellComponent private ChannelComponent channel;
+
     /**
      * Add items to the right click menu - test, then simple tag and annotate
      */
     @UsesCellComponent ContextMenuComponent menuComponent;
-    
-    
+
+    private MetadataCache metadataCache = null;
 
     public MetadataComponent(Cell cell) {
         super(cell);
+        metadataCache = new MetadataCache(this);
         logger.info("[METADATA COMPONENT] compo created");
+    }
+
+    public ChannelComponent getChannel() {
+      return channel;
     }
 
     // @Override
@@ -80,16 +92,30 @@ public class MetadataComponent extends CellComponent {
         // cell will only hit inactive when it is first created, so this only happens once
         // populate context menu
         if(status == CellStatus.INACTIVE){
-          //menuComponent.addContextMenuFactory(new SampleContextMenuFactory());
-          // gather metadata types that may want to appear in this cell's context menu
-//          Iterator<MetadataSPI> it = cl.getAll(MetadataContextMenuItem.class, MetadataSPI.class); //CellFactorySPI.class);
-          Iterator<MetadataSPI> it = MetadataClientUtils.getTypesIterator();
-          while (it.hasNext()) {
-            MetadataSPI metadata = it.next();
-            logger.info("[METADATA COMPO] using session's loader, scanned type:" + metadata.simpleName());
-            if(metadata.contextMenuCheck(cell.getClass())){
-              menuComponent.addContextMenuFactory(new MetadataContextMenuFactory(metadata.simpleName(), metadata.getClass()));
+          if(increasing){
+            //menuComponent.addContextMenuFactory(new SampleContextMenuFactory());
+            // gather metadata types that may want to appear in this cell's context menu
+  //          Iterator<MetadataSPI> it = cl.getAll(MetadataContextMenuItem.class, MetadataSPI.class); //CellFactorySPI.class);
+            Iterator<MetadataSPI> it = MetadataClientUtils.getTypesIterator();
+            while (it.hasNext()) {
+              MetadataSPI m = it.next();
+              logger.info("[METADATA COMPO] using session's loader, scanned type:" + m.simpleName());
+              if(m.contextMenuCheck(cell.getClass())){
+                menuComponent.addContextMenuFactory(new MetadataContextMenuFactory(m.simpleName(), m.getClass()));
+              }
             }
+
+            logger.info("[METADATA COMPO] adding receiver");
+            // receive responses to metadata cache requests
+            channel.addMessageReceiver(MetadataModResponseMessage.class, new ModResponseMessageReceiver());
+
+
+            // TODO add test context items
+            menuComponent.addContextMenuFactory(new TestContextMenuFactory(0));
+            menuComponent.addContextMenuFactory(new TestContextMenuFactory(1));
+          }
+          else{
+//            channel.removeMessageReceiver(MetadataCacheResponse.class);
           }
         }
 
@@ -110,7 +136,11 @@ public class MetadataComponent extends CellComponent {
         //         break;
         // }
     }
+
     
+
+
+
     /**
      * Context menu factory for the metadata menu items
      */
@@ -164,20 +194,140 @@ public class MetadataComponent extends CellComponent {
         } 
       }
     }
+
+    /**
+     * Context menu factory for activating test functions
+     */
+    class TestContextMenuFactory implements ContextMenuFactorySPI {
+      int type;
+
+      TestContextMenuFactory(int t){
+        logger.info("[METADATA COMPONENT] context menu test ");
+        type = t;
+      }
+      public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+        if(type == 0){
+          return new ContextMenuItem[] {
+                      new SimpleContextMenuItem("get all meta", null, new TestContextMenuListener1())
+          };
+        }
+        return new ContextMenuItem[] {
+                      new SimpleContextMenuItem("get simple meta", null, new TestContextMenuListener2())
+          };
+      }
+    }
+
+    /**
+     * Listener for test context menu item - get all metadata
+     */
+    class TestContextMenuListener1 implements ContextMenuActionListener {
+
+      public void actionPerformed(ContextMenuItemEvent event) {
+        // create an object
+        logger.info("[METADATA COMPONENT] test context menu get all");
+        ArrayList<MetadataSPI> meta = getAllMetadata();
+        if(meta == null){
+          logger.info("EMPTY!");
+          return;
+        }
+        for(MetadataSPI m:meta){
+          logger.info("Piece:" + m);
+        }
+        
+      }
+    }
+
+    /**
+     * Listener for test context menu item - get metadata
+     */
+    class TestContextMenuListener2 implements ContextMenuActionListener {
+
+      public void actionPerformed(ContextMenuItemEvent event) {
+        // create an object
+        logger.info("[METADATA COMPONENT] test context get class: simple");
+        ArrayList<SimpleMetadata> meta = getMetadataOfType(SimpleMetadata.class);
+        if(meta == null){
+          logger.info("EMPTY!");
+          return;
+        }
+        for(MetadataSPI m:meta){
+          logger.info("Piece:" + m);
+        }
+
+      }
+    }
     
     public void test(){
       logger.info("[METADATA COMPO] test!");
       // System.out.println("metadata - do it!!");
-      channel.send(new MetadataMessage());
+      channel.send(new MetadataModMessage());
     }
 
     public void addMetadata(MetadataSPI meta){
-        logger.warning("[METADATA COMPO] add metadata!");
-        channel.send(new MetadataMessage(MetadataMessage.Action.ADD, meta));
+        logger.info("[METADATA COMPO] add metadata!");
+        channel.send(new MetadataModMessage(MetadataModMessage.Action.ADD, meta));
     }
 
     public void removeMetadata(MetadataSPI meta){
-        logger.warning("[METADATA COMPO] remove metadata!");
-        channel.send(new MetadataMessage(MetadataMessage.Action.REMOVE, meta));
+        logger.info("[METADATA COMPO] remove metadata!");
+        channel.send(new MetadataModMessage(MetadataModMessage.Action.REMOVE, meta));
+    }
+    
+    public void modifyMetadata(MetadataSPI meta){
+        logger.info("[METADATA COMPO] modify metadata!");
+        channel.send(new MetadataModMessage(MetadataModMessage.Action.MODIFY, meta));
+    }
+
+
+    /**
+     * Requests all of a cell's metadata from the cache
+     * @return
+     */
+    public ArrayList<MetadataSPI> getAllMetadata(){
+      return metadataCache.getAllMetadata();
+    }
+
+    /**
+     * Requests a specific piece of metadata from the cache.
+     * @param mid metadata id of metadata piece to fetch
+     * @return
+     */
+    public MetadataSPI getMetadata(Integer mid){
+      return metadataCache.getMetadataByID(mid);
+    }
+
+    /**
+     * Requests all of a cell's metadata of a certain type from the cache
+     * @param c class of metadata to fetch
+     * @return array list of matching metadata, null if none of this class has been added
+     */
+    public <T extends MetadataSPI> ArrayList<T> getMetadataOfType(Class<T> c){
+      return metadataCache.getMetadataByClass(c);
+    }
+
+
+    /**
+     * recieves the MO's responses to cache requests and changes
+     * from the properties pane (invalidates cache)
+     */
+    class ModResponseMessageReceiver implements ComponentMessageReceiver {
+     public void messageReceived(CellMessage message) {
+        // if cache is valid or non-null, then something has requested the metadata from
+        // this compo. Keep the caches updated once they have been created.
+        if (message instanceof MetadataModResponseMessage) {
+          logger.info("[META COMPO] received update message ");
+          MetadataModResponseMessage msg = (MetadataModResponseMessage) message;
+          metadataCache.cacheModified(msg);
+        }
+      }
+    }
+
+    
+
+    /**
+     * add a cache listener.. will cause cell to validate cache
+     */
+    public void addCacheListener(CacheEventListener l){
+      metadataCache.addListener(l);
     }
 }

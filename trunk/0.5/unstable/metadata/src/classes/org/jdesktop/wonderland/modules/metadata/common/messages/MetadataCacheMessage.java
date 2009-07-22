@@ -18,27 +18,14 @@
 package org.jdesktop.wonderland.modules.metadata.common.messages;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
 
 /**
- * Metadata Message.
+ * Requests the cell cache be sent back.
+ * TODO: In the future, this may request specific pieces of metadata.
  * @author mabonner
  */
-public class MetadataMessage extends CellMessage {
-
-    public enum Action {ADD, REMOVE, MODIFY};
-    public Action action;
-    public MetadataSPI metadata;
-
-
-    public MetadataMessage(){
-        // a dummy for the test function
-    }
-
-    public MetadataMessage(Action act, MetadataSPI meta){
-        action = act;
-        metadata = meta;
-    }
-
-
+public class MetadataCacheMessage extends CellMessage {
+  // no information beyond the message's class is needed
+//  public enum Action {, REMOVE, MODIFY};
+//    public Action action;
 }

@@ -41,6 +41,16 @@ public class SimpleMetadata extends Metadata{
     return true;
   }
 
+  // simple getter/setter for text
+  public String getText(){
+    return get(TEXT_ATTR).getVal();
+  }
+
+  // simple getter/setter for text
+  public void setText(String s){
+    put(TEXT_ATTR, new MetadataValue(s));
+  }
+
 //  @Override
 //  public boolean contextMenuCheck(Cell c) {
 //    return true;

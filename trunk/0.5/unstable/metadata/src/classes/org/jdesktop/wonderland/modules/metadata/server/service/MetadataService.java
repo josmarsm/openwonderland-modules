@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
+import org.jdesktop.wonderland.modules.metadata.server.service.eads.EmbeddedADS;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 import java.util.Hashtable;
 
@@ -333,8 +334,8 @@ public class MetadataService extends AbstractService{
      * Delete the specified metadata object
      * @param mid metadata id designating the metadata to remove
      */
-    public void eraseMetadata(int mid){
-      db.eraseMetadata(mid);
+    public void removeMetadata(int mid){
+      db.removeMetadata(mid);
     }
 
     /**

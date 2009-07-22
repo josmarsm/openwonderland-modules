@@ -85,8 +85,8 @@ public class MetadataManagerImpl implements MetadataManager {
    * Delete the specified metadata object
    * @param mid metadata id designating the metadata to remove
    */
-  public void eraseMetadata(int mid){
-    this.service.eraseMetadata(mid);
+  public void removeMetadata(int mid){
+    this.service.removeMetadata(mid);
   }
 
   /**

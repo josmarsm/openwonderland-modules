@@ -1,11 +1,25 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
-package org.jdesktop.wonderland.modules.metadata.server.service;
+package org.jdesktop.wonderland.modules.metadata.server.service.eads;
 
 
+import org.jdesktop.wonderland.modules.metadata.server.service.*;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -44,6 +58,10 @@ import org.apache.directory.server.core.jndi.CoreContextFactory;
 import org.apache.directory.server.core.partition.Partition;
 import org.apache.directory.server.core.partition.impl.btree.jdbm.JdbmIndex;
 import org.apache.directory.server.core.partition.impl.btree.jdbm.JdbmPartition;
+import org.apache.directory.server.core.schema.SchemaService;
+import org.apache.directory.server.schema.registries.AttributeTypeRegistry;
+import org.apache.directory.server.schema.registries.ObjectClassRegistry;
+import org.apache.directory.server.schema.registries.Registries;
 import org.apache.directory.server.xdbm.Index;
 import org.apache.directory.shared.ldap.exception.LdapInvalidAttributeValueException;
 import org.apache.directory.shared.ldap.exception.LdapNameNotFoundException;
@@ -61,44 +79,27 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
  */
 public class EmbeddedADS implements MetadataBackendInterface
 {
-  /** The package name. */
-  private static final String PKG_NAME = "org.jdesktop.wonderland.modules.metadata.server.service";
-  /** the logger for this class */
-//  private static final LoggerWrapper logger =
-//        new LoggerWrapper(Logger.getLogger(PKG_NAME));
   private static Logger logger = Logger.getLogger(EmbeddedADS.class.getName());
 
-  /** OID to register new object classes (metadata subtypes) and attributes*/
-  final static String SunOID = "1.3.6.1.4.1.42";
-  // note: all remaining OID's are invented
-  // pick a longish random number for sunlabs
-  final static String SunLabsOID = SunOID + ".12341234";
-  final static String WonderlandOID = SunLabsOID + ".0";
-  final static String WonderlandModOID = WonderlandOID + ".1";
-  final static String MetaModOID = WonderlandModOID + ".0";
-  final static String MetaObjClassOID = MetaModOID + ".0";
-  final static String MetaAttrOID = MetaModOID + ".1";
+  /**
+   * registry from embedded ApacheDS server, used to check whether an attribute
+   * has already been registered
+   */
+  private AttributeTypeRegistry attributeTypes;
 
   /**
-   * LDAP syntax constants
+   * registry from embedded ApacheDS server, used to check whether an object class
+   * has already been registered
    */
-  private final static String integerSyntax = "EQUALITY integerMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE";
-  private final static String stringSyntax = "EQUALITY caseIgnoreMatch SUBSTR caseIgnoreSubstringsMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 SINGLE-VALUE";
-  private final static String dateSyntax = "EQUALITY generalizedTimeMatch ORDERING generalizedTimeOrderingMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.24 SINGLE-VALUE";
+  private ObjectClassRegistry objectClasses;
+
+//  private final static String dateSyntaxOID = "1.3.6.1.4.1.1466.115.121.1.24";
 
   /**
    * LDAP syntax, used to register new object classes
    * An instantiated object must have exactly one STRUCTURAL object class.
    */
   public enum ObjectClassType { STRUCTURAL, AUXILIARY }
-
-  /** used to complete OIDS for new object classes (metadata subtypes). incremented to keep unique. */
-  static int ocCount = 0;
-  /** used to complete OIDS for new attributes. incremented to keep unique. */
-  static int attrCount = 0;
-  /** used to complete OIDS for each metadata instance. incremented to keep unique. */
-  // this is handled in the Metadata class now
-  //  static int metaCount = 0;
 
   // contexts used as bases to add new metadata, attributes, etc
   /** the very top context, containing all others, including schemas and various
@@ -112,22 +113,61 @@ public class EmbeddedADS implements MetadataBackendInterface
   /** immediately below root, contains all cells and metadata */
   static DirContext wlCtx;
 
-  static final DateFormat ldapDateFormat = new SimpleDateFormat("yyyyMMddhhmmssZ");
+  
 
   /**
    * stores attribute names that have already been registered
    */
   private HashMap<String, Datatype> attrNames = new HashMap<String, Datatype>();
 
-  /**
-   * auxiliary object class name - added to each metadata object in addMetadata
-   */
-  private static String METADATA_AUX_OC = "metadata";
+
 
   /**
-   * default object class name - cells will have metadata 'underneath' them in ldap
+   * used to store a cellID attribute and the context it can be located in,
+   * saving re-looking it up.
    */
-  private static String CELL_OC = "cell";
+  class pairCidAndCtx{
+
+    public DirContext ctx;
+    public Integer cid;
+    public pairCidAndCtx(DirContext x, Integer cellId) {
+      ctx = x;
+      cid = cellId;
+    }
+  }
+
+
+  
+  /**
+   * Creates a new instance of EmbeddedADS. It initializes the directory service.
+   *
+   * @throws Exception If something went wrong
+   */
+  public EmbeddedADS() throws Exception
+  {
+    logger.log(Level.CONFIG, "[EADS] creating EADS");
+    initLDAPServer();
+    logger.log(Level.CONFIG, "[EADS] created");
+  }
+
+  /**
+   * Creates a new instance of EmbeddedADS. It initializes the directory service.
+   *
+   * Convenience method to initialize with some set types.
+   *
+   * @throws Exception If something went wrong
+   */
+  public EmbeddedADS(ArrayList<MetadataSPI> metadata) throws Exception
+  {
+    logger.log(Level.CONFIG, "[EADS] creating EADS");
+    initLDAPServer();
+    logger.log(Level.CONFIG, "[EADS] register metadata types..");
+    for(MetadataSPI m:metadata){
+      registerMetadataType(m);
+    }
+    logger.log(Level.CONFIG, "[EADS] created");
+  }
+
 
 
 
@@ -158,16 +198,19 @@ public class EmbeddedADS implements MetadataBackendInterface
 
     // object class
     BasicAttribute metaOC = new BasicAttribute("objectclass");
-    String nameLdap = classnameToLDAP(metadata.getClass().getName());
+    String nameLdap = EADSUtils.classToLDAPName(metadata.getClass());
     metaOC.add(nameLdap);
-    metaOC.add(METADATA_AUX_OC);
+    metaOC.add(EADSUtils.METADATA_AUX_OC);
     attrs.put(metaOC);
     logger.info("[EADS] adding metadata of type " + nameLdap +
             " to cell " + cid);
 
     // this class's attributes
     for(Entry<String, MetadataValue> e : metadata.getAttributes()){
-      String attrName = attrnameToLDAP(e.getKey());
+      // make name ldap friendly
+      String attrName = EADSUtils.attrnameToLDAP(e.getKey());
+      // make name server-unique
+      attrName = EADSUtils.getUniqueName(attrName, metadata.getClass());
       MetadataValue mv = e.getValue();
       String val = mv.getVal();
       logger.info("[EADS] attribute " + attrName + " with raw value '" +
@@ -178,7 +221,7 @@ public class EmbeddedADS implements MetadataBackendInterface
       switch (mv.type){
         case DATE:
           // can't be a null value
-          if(nullAttrCheck(mv)){
+          if(EADSUtils.nullAttrCheck(mv)){
             Date d = new Date(0);
             val = Metadata.dateFormat.format(d);
             break;
@@ -186,7 +229,7 @@ public class EmbeddedADS implements MetadataBackendInterface
           // else, convert to ldap date
           try {
             Date d = Metadata.dateFormat.parse(val);
-            val = ldapDateFormat.format(d);
+            val = EADSUtils.ldapDateFormat.format(d);
           } catch (ParseException ex) {
             logger.severe("[EADS] invalid date syntax adding metadata" +
                     " to cell id: " + cid + ", string:" + val);
@@ -194,13 +237,13 @@ public class EmbeddedADS implements MetadataBackendInterface
           break;
         case INTEGER:
           // can't be a null value
-          if(nullAttrCheck(mv)){
+          if(EADSUtils.nullAttrCheck(mv)){
             val = "0";
           }
           break;
         case STRING:
           // can't be a null value
-          if(nullAttrCheck(mv)){
+          if(EADSUtils.nullAttrCheck(mv)){
             val = " ";
           }
       }
@@ -211,7 +254,7 @@ public class EmbeddedADS implements MetadataBackendInterface
     }
     try {
       // finally, add the new entry
-      cellCtx.createSubcontext("mID=" + metadata.getID(), attrs);
+      cellCtx.createSubcontext(EADSUtils.METADATA_ID_ATTR + "=" + metadata.getID(), attrs);
     } catch (NamingException ex) {
       logger.info("[EADS] error adding metadata of type " + nameLdap +
             " to cell " + cid + ", ex:\n" + ex);
@@ -219,9 +262,9 @@ public class EmbeddedADS implements MetadataBackendInterface
 
     logger.info("[EADS] AFTER ADDING METADATA, CONTENTS:");
     logger.info("[EADS] ================ldap contents of cell ================:");
-    printContents(rootCtx, wlCtxDN);
+    EADSUtils.printContents(rootCtx, wlCtxDN);
     logger.info("[EADS] ================verbose ldap contents of cell ================:");
-    printContentsVerbose(rootCtx, cellCtx, 0);
+    EADSUtils.printContentsVerbose(rootCtx, cellCtx, 0);
   }
 
 
@@ -247,13 +290,14 @@ public class EmbeddedADS implements MetadataBackendInterface
     logger.info("[EADS] adding cell");
     BasicAttributes attrs = new BasicAttributes(true); // case-ignore
     BasicAttribute objclass = new BasicAttribute("objectclass");
-    objclass.add("cell");
+    objclass.add(EADSUtils.CELL_OC);
     attrs.put(objclass);
     try {
       // Create the context
-      parentCtx.createSubcontext("cID=" + cid, attrs);
+      parentCtx.createSubcontext(EADSUtils.CELL_ID_ATTR + "=" + cid, attrs);
     } catch (NamingException ex) {
       logger.severe("[EADS] error adding cell id: " + cid + ", ex:" + ex);
+      logger.severe("[EADS] looked like:" + EADSUtils.CELL_ID_ATTR + "=" + cid);
     }
   }
 
@@ -264,7 +308,7 @@ public class EmbeddedADS implements MetadataBackendInterface
    */
   private String getCellDN(CellID cid){
     logger.info("get DN for cid " + cid);
-    String filter = "(&(objectclass=cell)(cid="+ cid +"))";
+    String filter = "(&(objectclass=" + EADSUtils.CELL_OC + ")(" + EADSUtils.CELL_ID_ATTR + "="+ cid +"))";
     String cellScope = wlCtxDN;
     SearchControls ctls = new SearchControls();
     ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -303,9 +347,9 @@ public class EmbeddedADS implements MetadataBackendInterface
 
 
 
-  public void eraseMetadata(int mid){
+  public void removeMetadata(int mid){
     // find the metadata cell
-    String filter = "(&(mid="+ mid + "))";
+    String filter = "(&(" + EADSUtils.METADATA_ID_ATTR + "="+ mid + "))";
     SearchControls ctls = new SearchControls();
     ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     NamingEnumeration results = null;
@@ -326,13 +370,13 @@ public class EmbeddedADS implements MetadataBackendInterface
   public void clearCellMetadata(CellID cid) {
     logger.info("[EADS] clear cell metadata, cell id: " + cid);
     logger.info("***************************");
-    printContents(rootCtx, wlCtxDN);
+    EADSUtils.printContents(rootCtx, wlCtxDN);
     logger.info("***************************");
     // get cell context
     // TODO will this be necessary when cell reparenting is added?
 //    DirContext cellCtx = getCellCtx(cid);
     // get all its metadata
-    String filter = "(&(mID=*))";
+    String filter = "(&(" + EADSUtils.METADATA_ID_ATTR + "=*))";
     SearchControls ctls = new SearchControls();
     ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
     NamingEnumeration results = null;
@@ -367,7 +411,7 @@ public class EmbeddedADS implements MetadataBackendInterface
       logger.info("[EADS] no metadata on this cell!");
     }
     logger.info("----------------------------");
-    printContents(rootCtx, wlCtxDN);
+    EADSUtils.printContents(rootCtx, wlCtxDN);
     logger.info("-----------------------------");
   }
 
@@ -386,7 +430,7 @@ public class EmbeddedADS implements MetadataBackendInterface
     logger.info("[EADS] registering new metadata type");
     // NAME our unique class name
     // convert to ldap friendly name
-    String nameLdap = classnameToLDAP(m.getClass().getName());
+    String nameLdap = EADSUtils.classToLDAPName(m.getClass());
     logger.info("[EADS] type name: " + nameLdap);
 
     // SUP super classes
@@ -411,16 +455,18 @@ public class EmbeddedADS implements MetadataBackendInterface
     // register all these attributes as we assemble our MUST list
     ArrayList<String> mustLdap = new ArrayList<String>();
     // all attributes must have a metadata id
-    mustLdap.add("metadataID");
+    mustLdap.add(EADSUtils.getUniqueName(EADSUtils.METADATA_ID_STR, this.getClass()));
     String attrName = "";
     for(Entry<String, MetadataValue> e : m.getAttributes()){
       try{
       // make LDAP friendly
-        attrName = attrnameToLDAP(e.getKey());
+        attrName = EADSUtils.attrnameToLDAP(e.getKey());
   //      logger.info("Key, Val: " + e.getKey() + ", " + e.getValue());
         MetadataValue mv = e.getValue();
-        registerAttribute("('" + attrName + "')" , "registered attribute #" + attrCount, e.getValue().type);
-        mustLdap.add(attrName);
+        ArrayList<String> attrNameArray = new ArrayList<String>();
+        attrNameArray.add(attrName);
+        registerAttribute(attrNameArray, attrName, e.getValue().type, m.getClass());
+        mustLdap.add(EADSUtils.getUniqueName(attrName, m.getClass()));
       }
       catch(LdapInvalidAttributeValueException ex){
         logger.severe("[EADS] Attribute " + attrName + " for type "
@@ -441,26 +487,7 @@ public class EmbeddedADS implements MetadataBackendInterface
 
   }
 
-  /**
-   * Takes in array of object classes or attribute types, builds an RFC 4512
-   * compliant grouping of them, e.g. "( 'val' $ 'val2' $ 'val3' )"
-   * @param classes
-   * @return
-   */
-  private String buildObjList(ArrayList<String> ids) {
-    // prepare classes
-    String res = "( ";
-    int count = 0;
-    for(String s:ids){
-      res += s;
-      count += 1;
-      if(count < ids.size()){
-        res += " $ ";
-      }
-    }
-    res += " )";
-    return res;
-  }
+  
 
   /**
    * If this cell id exists, return a context to it. If not, return null.
@@ -482,73 +509,103 @@ public class EmbeddedADS implements MetadataBackendInterface
     return cellCtx;
   }
 
-  private boolean nullAttrCheck(MetadataValue mv) {
-//    logger.fine("[EADS] null attr check");
-    if(mv == null){
-      logger.severe("[EADS] null attr check.. mv itself is null! bad!");
-    }
-    if(mv.getVal() == null || mv.getVal().equals("")){
-      return true;
-    }
-    return false;
-  }
+  
 
   /** register a new attribute with the embedded LDAP server
    * builds an RFC 4512 syntax string out of parameters
    *
-   * @param name Name of the new attribute. Multiple values must follow RFC 4512
-   * syntax, e.g. pass in "('name1' 'name2')" to add two values
+   * OIDs are created for attributes by hashing the parent class and attribute name.
+   * Thus, every uniquely named attribute in a unique object class (metadata subtype) will
+   * have a unique and constant OID.
+   *
+   * Attribute OID's will thus have the form...
+   * metadataAttributesOID.classHash.nameHash
+   *
+   * @param name list of names for new attribute
    * @param desc DESC of the new attribute
    * @param type determines the syntax and comparison rules that will be used
+   * @param parentClass full name of parent class this attribute is associated with, used to build OID hash for this attribute type
    */
-  private void registerAttribute(String name, String desc, Datatype type) throws NamingException {
-    // check if this name is already in use..
-    if(attrNames.containsKey(name)){
-      // if it is already in use for the same type of data, don't recreate it
-      if(attrNames.get(name) == type){
-        logger.info("[EADS] re-using attribute " + name + " with type "
-                + type);
-        return;
-      }
-      else{
-        // this is an unrecoverable collision
-        // TODO
-        // in the future, could uniqueify names the same way metadata types are
-        // given unique names
-        logger.severe("[EADS]Could not register attribute name "+
-                name + " of type " + type + ", already in use for type " +
-                attrNames.get(name));
-        throw(new NamingException("attribute name collision"));
-      }
+  private void registerAttribute(ArrayList<String> names, String desc, Datatype type, Class parentClass) throws NamingException {
+    // build OID - this attribute's unique identifier
+    // create by hashing parent class' and this attribute's name
+    int classHash = parentClass.getName().hashCode();
+    if (classHash < 0){
+      classHash = classHash * -1;
     }
+
+    int nameHash = names.get(0).hashCode();
+    if (nameHash < 0){
+      nameHash = nameHash * -1;
+    }
+    String OID = EADSUtils.MetaAttrOID + "." + classHash + "." + nameHash;
+    // check if this attribute has already been added
+    logger.info("checking if contains attribute with oid:" + OID);
+    if(attributeTypes.hasAttributeType(OID)){
+      logger.info("[EADS] register attribute - already registered!!");
+      return;
+    }
+            
     desc = "'" + desc + "'";
-    // if there was only one name, add 's around it
-    // otherwise, assume it is already RFC 4512 compliant
-    if(name.indexOf("(") == -1){
-      name = "'" + name + "'";
+    // convert list of names to be RFC 4512 compliant
+    // also convert them to be server-side unique by appending their full class name
+    String name = "(";
+    for(String s:names){
+      name += "'" + EADSUtils.getUniqueName(EADSUtils.attrnameToLDAP(s), parentClass) + "' ";
     }
-    String attr = "( " + MetaAttrOID + "." + attrCount + " NAME " + name + " DESC " + desc + " ";
+    name += ")";
+
     String syntax = "";
     switch (type){
       case INTEGER:
-        syntax = integerSyntax;
+        syntax = EADSUtils.integerSyntax;
         break;
       case STRING:
-        syntax = stringSyntax;
+        syntax = EADSUtils.stringSyntax;
         break;
       case DATE:
-        syntax = dateSyntax;
+        syntax = EADSUtils.dateSyntax;
         break;
-
     }
 
-    attr += syntax + ")";
+    String attr = "( " + OID + " NAME " + name + " DESC " + desc + " " + syntax + ")";
     Attributes newAttribute = new BasicAttributes(true);
     newAttribute.put("attributeTypes", attr);
-    logger.info("[EADS] registering new attribute: " + name + " with type " + type);
+
+    logger.info("[EADS] registering new attribute: " + OID + " "+ name + " with type " + type);
     logger.fine("[EADS] full info: " + newAttribute);
+    boolean tryAgain = true;
+    int count = 0;
+    Attributes as = rootCtx.getAttributes("cn=schema");
     rootCtx.modifyAttributes("cn=schema", DirContext.ADD_ATTRIBUTE, newAttribute);
-    attrCount += 1;
+//    logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%TRYING");
+//    while(tryAgain && count < 10){
+//      try{
+//        logger.info("try again");
+//        tryAgain = false;
+//        attrCount += 1;
+//        count++;
+//        attr = "( " + MetaAttrOID + "." + attrCount + " NAME " + name + " DESC " + desc + " " + syntax + ")";
+//        newAttribute = new BasicAttributes(true);
+//        newAttribute.put("attributeTypes", attr);
+//        rootCtx.modifyAttributes("cn=schema", DirContext.ADD_ATTRIBUTE, newAttribute);
+//      }
+//      catch(NamingException e){
+//        logger.info("EXCEPTION IS: " + e);
+//        logger.info("EXCEPTION class: " + e.getClass().getName());
+//        String oid = MetaAttrOID + "." + (attrCount -1);
+//        Attribute ar = as.get(oid);
+//        if(ar == null){
+//          logger.info("get oid was null");
+//        }
+//        else{
+//          logger.info((String) ar.get());
+//        }
+//        tryAgain = true;
+//      }
+//    }
+//
+//    logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%DONE TRYING");
     // at this point, the type has been successfully added
     // note the name/type pair to avoid collisions
     attrNames.put(name, type);
@@ -562,14 +619,28 @@ public class EmbeddedADS implements MetadataBackendInterface
    * Make sure to add any attributes the class needs first, or this will throw
    * an exception.
    *
-   * @param name Name of the new attribute. Multiple values must follow RFC 4512
-   * syntax, e.g. pass in "('name1' 'name2')" to add two values
+   * @param name name of new object class - assumes name has been converted to LDAP and joined with class name
    * @param desc DESC of the new attribute
    * @param classes superclasses to add to objectClass
    * @param mustAttrs attributes the class must have
    * @param mayAttrs attributes the class may have
+   * @param className
    */
   private void registerObjectClass(String name, String desc, ArrayList<String> objClasses, ObjectClassType ocType, ArrayList<String> mustAttrs, ArrayList<String> mayAttrs) throws NamingException {
+    // build OID - this attribute's unique identifier
+    // create by hashing parent class' and this attribute's name
+    int x = name.hashCode();
+    if (x < 0){
+      x = x * -1;
+    }
+    String OID = EADSUtils.MetaObjClassOID + "." + x;
+    // check if this attribute has already been added
+    logger.info("checking if contains attribute with oid:" + OID);
+    if(objectClasses.hasObjectClass(OID)){
+      logger.info("[EADS] register object class - already registered!!");
+      return;
+    }
+
 
     // if there was only one name, add 's around it
     // otherwise, assume it is already RFC 4512 compliant
@@ -577,48 +648,28 @@ public class EmbeddedADS implements MetadataBackendInterface
       name = "'" + name + "'";
     }
 
-    String must = buildObjList(mustAttrs);
+    String must = EADSUtils.buildObjList(mustAttrs);
 
     Attributes ocAttrs = new BasicAttributes(true);
-    String oc = "( " + MetaObjClassOID + "." + (ocCount++) + " NAME " + name;
+    String oc = "( " + OID + " NAME " + name;
     if(desc != null){
       desc = "'" + desc + "'";
       oc += " DESC " + desc;
     }
     if(!objClasses.isEmpty()){
-      oc += " SUP " + buildObjList(objClasses);
+      oc += " SUP " + EADSUtils.buildObjList(objClasses);
     }
     oc += " " + ocType;
     if(!mustAttrs.isEmpty()){
       oc += " MUST " + must;
     }
     if(!mayAttrs.isEmpty()){
-      oc += " MAY " + buildObjList(mayAttrs);
+      oc += " MAY " + EADSUtils.buildObjList(mayAttrs);
     }
     oc += " )";
     ocAttrs.put("objectClasses", oc);
     logger.info("[EADS] registering object class:\n" + oc);
     rootCtx.modifyAttributes("cn=schema", DirContext.ADD_ATTRIBUTE, ocAttrs);
-  }
-
-  /**
-   * convert a full classname like org.site.module.class to an ldap friendly
-   * version by replacing all "." with "-", e.g. returns "org-site-module-class"
-   * @param str the name to convert
-   * @return
-   */
-  private String classnameToLDAP(String str) {
-    return str.replaceAll("\\.", "-");
-  }
-
-  /**
-   * convert an attribute name like "date created" to an ldap friendly
-   * version by replacing all " " with "-", e.g. returns "date-created"
-   * @param str the attribute to convert
-   * @return
-   */
-  private String attrnameToLDAP(String str) {
-    return str.replaceAll(" ", "-");
   }
 
   public void addCell(CellID cid) {
@@ -631,28 +682,7 @@ public class EmbeddedADS implements MetadataBackendInterface
     addCellHelper(cid, getCellCtx(parent));
   }
 
-  /**
-   * used to store a cellID attribute and the context it can be located in,
-   * saving re-looking it up.
-   */
-  class pairCidAndCtx{
-
-    public DirContext ctx;
-    public Integer cid;
-    public pairCidAndCtx(DirContext x, Integer cellId) {
-      ctx = x;
-      cid = cellId;
-    }
-
-  }
-
-
-
-  private static void printResults(HashMap<Integer, Set<Integer>> results) {
-    for(Entry<Integer, Set<Integer> > e : results.entrySet()){
-            logger.info("Key, Val: " + e.getKey() + ", " + e.getValue());
-    }
-  }
+  
 
   /**
    * Searches for all cells present at ctx, adds them to cids.
@@ -663,9 +693,9 @@ public class EmbeddedADS implements MetadataBackendInterface
    */
   private void getAllCells(DirContext ctx, String scope, LinkedList<pairCidAndCtx> cids) {
     // get all cells
-    String f1 = "(&(objectclass=cell)(cid=*))";
+    String f1 = "(&(objectclass=" + EADSUtils.CELL_OC + ")(" + EADSUtils.CELL_ID_ATTR + "=*))";
     // will store their cID's
-    String[] attrIDs = {"cid"};
+    String[] attrIDs = {EADSUtils.CELL_ID_ATTR};
     SearchControls ctls = new SearchControls();
     ctls.setReturningAttributes(attrIDs);
     NamingEnumeration answer;
@@ -692,7 +722,7 @@ public class EmbeddedADS implements MetadataBackendInterface
 
   /**
    * Tail-recursive function will search entire tree from ctx down for cells
-   * (objectclass=cell), and search these cells for metadata matching each
+   * (objectclass='EADSUtils.CELL_OC'), and search these cells for metadata matching each
    * filter string in filters
    * @param cids list of cells and their contexts remaining to search, built up
    *        during recursion
@@ -714,15 +744,15 @@ public class EmbeddedADS implements MetadataBackendInterface
       return results;
     }
     logger.info("current scope: at cid:" + pair.cid);
-    String cellScope = "cid="+pair.cid;
-    //    DirContext cellCtx = (DirContext) pair.ctx.lookup("cid="+pair.cid);
+    String cellScope = EADSUtils.CELL_ID_ATTR + "=" + pair.cid;
+    //    DirContext cellCtx = (DirContext) pair.ctx.lookup(EADSUtils.CELL_ID_ATTR + "="+pair.cid);
     // get any sub-cells, add to list for later recursions
     getAllCells(pair.ctx, cellScope, cids);
 
     // prepare to search this cell for metadata that matches filters
     SearchControls ctls = new SearchControls();
     // will store the metadata ids
-    String[] returnIds = {"mid"};
+    String[] returnIds = {EADSUtils.METADATA_ID_ATTR};
     ctls.setReturningAttributes(returnIds);
     Set<Integer> matches = new HashSet<Integer>();
 
@@ -780,10 +810,10 @@ public class EmbeddedADS implements MetadataBackendInterface
     // this 'all' version gets all cells for searching
 
     getAllCells(rootCtx, wlCtxDN, cids);
-    ArrayList<String> filterList = convertFiltersToLDAP(filters);
+    ArrayList<String> filterList = EADSUtils.convertFiltersToLDAP(filters);
     logger.info("search Metadata for " + filterList.size() + " converted filters");
     logger.fine("[EADS] ================verbose ldap contents ================:");
-    printContentsVerbose(rootCtx, wlCtx, 0);
+    EADSUtils.printContentsVerbose(rootCtx, wlCtx, 0);
     try {
       results = search(cids, filterList, new HashMap<CellID, Set<Integer>>());
     } catch (NamingException ex) {
@@ -812,7 +842,7 @@ public class EmbeddedADS implements MetadataBackendInterface
     // the only difference between the two search Metadata methods is here
     // this 'scoped' version gets only cells below a certain parent for searching
     String dn = getCellDN(cid);
-    ArrayList<String> filterList = convertFiltersToLDAP(filters);
+    ArrayList<String> filterList = EADSUtils.convertFiltersToLDAP(filters);
     try {
       getAllCells(rootCtx, dn, cids);    
       logger.info("search Metadata for " + filterList.size() + " filters");
@@ -829,72 +859,8 @@ public class EmbeddedADS implements MetadataBackendInterface
     return results;
   }
 
-  /**
-   * Convert a MetadataSearchFilters object into an LDAP search filters string
-   *
-   * @return the list of filters, in RFC 2254 format
-   */
-  private ArrayList<String> convertFiltersToLDAP(MetadataSearchFilters filters){
-    ArrayList<String> result = new ArrayList<String>();
-    // example filter
-    // (&(objectclass=org-jdesktop-wonderland-modules-metadata-common-Metadata)(someAttr=hello hello));
-    for(MetadataSPI m:filters.getFilters()){
-      String newFilter = "(&(objectclass=";
-      // add the object class
-      String nameLdap = classnameToLDAP(m.getClass().getName());
-      newFilter += nameLdap + ")";
-      logger.fine("[EADS] oc filter in LDAP is: " + nameLdap);
-      // add attributes
-      newFilter += attributesToFilterString(m.getAttributes());
-      newFilter += ")";
-      logger.fine("[EADS] final filter: " + newFilter);
-      result.add(newFilter);
-    }
-    return result;
-  }
-
-  private String attributesToFilterString(Set<Map.Entry<String, MetadataValue>> attrs){
-    String res = "";
-    for(Entry<String, MetadataValue> e: attrs){
-      String attrName = attrnameToLDAP(e.getKey());
-      logger.info("[EADS] making attr from Key, Val: " + e.getKey() + ", " + e.getValue());
-      MetadataValue mv = e.getValue();
-      String val = mv.getVal();
-      switch (mv.type){
-        case DATE:
-          // can't be a null value
-          if(nullAttrCheck(mv)){
-            logger.fine("[EADS] wildcard date");
-            val = "*";
-            break;
-          }
-          // convert to ldap date
-          try {
-            Date d = Metadata.dateFormat.parse(val);
-            val = ldapDateFormat.format(d);
-          } catch (ParseException ex) {
-            logger.severe("[EADS] invalid date syntax creating filter!");
-          }
-          break;
-        case INTEGER:
-          // can't be a null value
-          if(nullAttrCheck(mv)){
-            logger.fine("[EADS] wildcard int");
-            val = "*";
-          }
-          break;
-        case STRING:
-          // can't be a null value
-          if(nullAttrCheck(mv)){
-            logger.fine("[EADS] wildcard string");
-            val = "*";
-          }
-      }
-      res += "(" + attrName + "=" + val + ")";
-    }
-    logger.fine("[EADS] resulting attrs filter:" + res);
-    return res;
-  }
+  
+  
 
 
 
@@ -927,13 +893,11 @@ public class EmbeddedADS implements MetadataBackendInterface
    * @param partition The partition on which we want to add index
    * @param attrs The list of attributes to index
    */
-  private void addIndex( Partition partition, String... attrs )
-  {
+  private void addIndex( Partition partition, String... attrs ){
       // Index some attributes on the apache partition
       HashSet<Index<?, ServerEntry>> indexedAttributes = new HashSet<Index<?, ServerEntry>>();
 
-      for ( String attribute:attrs )
-      {
+      for ( String attribute:attrs ){
           indexedAttributes.add( new JdbmIndex<String,ServerEntry>( attribute ) );
       }
 
@@ -947,8 +911,7 @@ public class EmbeddedADS implements MetadataBackendInterface
    *
    * @throws Exception if there were some problems why initializing the system
    */
-  private void initLDAPServer() throws Exception
-  {
+  private void initLDAPServer() throws Exception{
     // Initialize the LDAP service
     // bash any old jdbm files
     // TODO
@@ -957,12 +920,13 @@ public class EmbeddedADS implements MetadataBackendInterface
     // left to its own devices, the directory service would choose something
     // like :.wonderland-server/0.5-dev/run/darkstar_server/run/core/data/sgs/server-work
     File jdbmFolder = new File("../../../../../metadata-module-db");
-    deleteDir(jdbmFolder);
+    //    logger.info("erase any old jbdm files");
+//    EADSUtils.deleteDir(jdbmFolder);
     logger.info("create dir service");
     service = new DefaultDirectoryService();
 //      logger.info("Val of working diretory:" + service.getWorkingDirectory());
 //      logger.info("abs path of working diretory:" + service.getWorkingDirectory().getAbsolutePath());
-    logger.info("erase any old jbdm files");
+
     // set jdbm working directory
     logger.info("ORIGINAL abs path of working diretory:" + service.getWorkingDirectory().getAbsolutePath());
     logger.info("ORIGINAL can path of working diretory:" + service.getWorkingDirectory().getCanonicalPath());
@@ -974,14 +938,21 @@ public class EmbeddedADS implements MetadataBackendInterface
     service.getChangeLog().setEnabled( false );
     service.setDenormalizeOpAttrsEnabled( true );
 
+    logger.info("create default partitions");
     // TODO make this name the name of the WL server
     Partition worldPartition = addPartition( "world", wlCtxDN);
 
-    // Index some attributes on the apache partition
+    // Index some attributes on the world partition
     addIndex( worldPartition, "objectClass", "ou", "uid" );
 
     // And start the service
     service.startup();
+
+    // get registries for checking whether attributes/object classes have been registered
+    SchemaService ss = service.getSchemaService();
+    Registries r = ss.getRegistries();
+    attributeTypes = r.getAttributeTypeRegistry();
+    objectClasses = r.getObjectClassRegistry();
 
 
     // Inject the world root entry if it does not already exist
@@ -1012,146 +983,41 @@ public class EmbeddedADS implements MetadataBackendInterface
     rootCtx = new InitialDirContext(env);
     wlCtx = (DirContext) rootCtx.lookup(wlCtxDN);
     logger.info("[EADS] initial contexts prepared");
+
     // register interior attributes
-    registerAttribute("('cellID' 'cID')", "cellID from darkstar", Datatype.INTEGER);
-    registerAttribute("('metadataID' 'mID')" , "ID assigned to metadata obj", Datatype.INTEGER);
+    logger.info("[EADS] register default attributes");
+    // prepare attribute names
+    ArrayList<String> cidNames = new ArrayList<String>();
+    cidNames.add(EADSUtils.CELL_ID_STR);
+    ArrayList<String> midNames = new ArrayList<String>();
+    midNames.add(EADSUtils.METADATA_ID_STR);
+    try{
+
+      registerAttribute(cidNames, "cellID from darkstar", Datatype.INTEGER, this.getClass());
+      registerAttribute(midNames, "ID assigned to metadata obj", Datatype.INTEGER, this.getClass());
+    }
+    catch(NamingException e){
+      logger.info("[EADS] default attributes already registered, exception:" + e);
+    }
 
     // register cell object class
     ArrayList<String> classes = new ArrayList<String>();
     classes.add("top");
     ArrayList<String> mustAttrs = new ArrayList<String>();
-    mustAttrs.add("cID");
+    mustAttrs.add(EADSUtils.CELL_ID_ATTR);
     ArrayList<String> mayAttrs = new ArrayList<String>();
-
-    registerObjectClass(CELL_OC, "Represents a cell, will have metadata below it", classes, ObjectClassType.STRUCTURAL, mustAttrs, mayAttrs);
-
-    // register metadata object class (added to all metadata objects in addMetadata,
-    // forces them to have an mID and acts as a flag that this object is metadata
-    mustAttrs.clear();
-    mustAttrs.add("mID");
-    // classes = top, may attrs is empty
-    registerObjectClass(METADATA_AUX_OC, "auxiliary metadata type adds MID", classes, ObjectClassType.AUXILIARY, mustAttrs, mayAttrs);
-  }
-
-
-  /**
-   * Creates a new instance of EmbeddedADS. It initializes the directory service.
-   *
-   * @throws Exception If something went wrong
-   */
-  public EmbeddedADS() throws Exception
-  {
-    logger.log(Level.CONFIG, "[EADS] creating EADS");
-    initLDAPServer();
-    logger.log(Level.CONFIG, "[EADS] created");
-  }
-
-  /**
-   * Creates a new instance of EmbeddedADS. It initializes the directory service.
-   *
-   * Convenience method to initialize with some set types.
-   *
-   * @throws Exception If something went wrong
-   */
-  public EmbeddedADS(ArrayList<MetadataSPI> metadata) throws Exception
-  {
-    logger.log(Level.CONFIG, "[EADS] creating EADS");
-    initLDAPServer();
-    logger.log(Level.CONFIG, "[EADS] register metadata types..");
-    for(MetadataSPI m:metadata){
-      registerMetadataType(m);
+    try{
+      registerObjectClass(EADSUtils.CELL_OC, "Represents a cell, will have metadata below it", classes, ObjectClassType.STRUCTURAL, mustAttrs, mayAttrs);
+      // register metadata object class (added to all metadata objects in addMetadata,
+      // forces them to have an mID and acts as a flag that this object is metadata
+      mustAttrs.clear();
+      mustAttrs.add(EADSUtils.METADATA_ID_ATTR);
+      // classes = top, may attrs is empty
+      registerObjectClass(EADSUtils.METADATA_AUX_OC, "auxiliary metadata type adds MID", classes, ObjectClassType.AUXILIARY, mustAttrs, mayAttrs);
     }
-    logger.log(Level.CONFIG, "[EADS] created");
+    catch(NamingException e){
+      logger.info("[EADS] exception:" + e);
+    }  
   }
-
-
-
-  // Deletes all files and subdirectories under dir.
-  // Returns true if all deletions were successful.
-  // If a deletion fails, the method stops attempting to delete and returns false.
-  private static boolean deleteDir(File dir) {
-    if (dir.isDirectory()) {
-    String[] children = dir.list();
-    for (int i=0; i<children.length; i++) {
-     boolean success = deleteDir(new File(dir, children[i]));
-      if (!success) {
-        return false;
-      }
-    }
-   }
-
-    // The directory is now empty so delete it
-    return dir.delete();
-  }
-
-  /**
-   *
-   * prints out contents of ctx under scope, prints out only the DN's, no other
-   * attributes are printed. To print attributes, use printContentsVerbose
-   * 
-   * @param ctx context to begin search in
-   * @param scope bound name in ctx to search in
-   * @throws javax.naming.NamingException
-   */
-  private void printContents(DirContext ctx, String scope) {
-    try {
-      // get all cells
-      String filter = "(&(objectclass=cell)(cid=*))";
-      SearchControls ctls = new SearchControls();
-      ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-      NamingEnumeration results = ctx.search(scope, filter, ctls);
-      if (results == null) {
-        logger.fine("no cells!");
-      }
-      // get metadata of each cell, print it too
-      String filter2 = "(&(objectclass=metadata)(mid=*))";
-      ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-      while (results.hasMore()) {
-        SearchResult si = (SearchResult) results.next();
-        String dn = si.getName();
-        logger.fine("cell dn is:" + dn);
-        DirContext cellCtx = (DirContext) ctx.lookup(dn);
-        NamingEnumeration metaResults = ctx.search(dn, filter2, ctls);
-        logger.fine("print that cell's metadata");
-        while (metaResults.hasMore()) {
-          SearchResult meta = (SearchResult) metaResults.next();
-          logger.fine("  " + "metadata name is :" + meta.getName());
-        }
-        logger.fine("done");
-      }
-    } catch (NamingException ex) {
-      logger.severe("[EADS] error printing contents, ex:" + ex);
-    }
-  }
-
-  /**
-   * debugging method, prints out all LDAP contents int topCtx under ctx
-   * @param topCtx top/root context in which names (like those bound in ctx) may be looked up
-   * @param ctx context to begin listing bound names in
-   * @param level used to put spaces in front of print statements based on recursion level
-   * @throws javax.naming.NamingException
-   */
-  private static void printContentsVerbose(DirContext topCtx, DirContext ctx, int level) {
-    try {
-      NamingEnumeration list = ctx.listBindings("");
-      String spacer = "";
-      for (int i = 0; i < level; i++) {
-        spacer += " ";
-      }
-      while (list.hasMore()) {
-        NameClassPair nc = (NameClassPair) list.next();
-        logger.fine(spacer + nc);
-        logger.fine(spacer + "name is :" + nc.getName());
-        try {
-          DirContext subCtx = (DirContext) topCtx.lookup(nc.getName());
-          printContentsVerbose(topCtx, subCtx, level + 4);
-        } catch (LdapNameNotFoundException lnnfe) {
-          logger.fine("end of line");
-        }
-      }
-      Attributes attrs = ctx.getAttributes("");
-    } catch (NamingException ex) {
-      logger.severe("[EADS] error printing verbose contents, ex:" + ex);
-    }
-  }
+  
 }

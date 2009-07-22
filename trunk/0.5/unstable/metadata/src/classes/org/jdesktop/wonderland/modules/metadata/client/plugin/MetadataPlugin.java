@@ -93,6 +93,7 @@ public class MetadataPlugin extends BaseClientPlugin
               if (searchFrame.isVisible() == false) {
                   searchFrame.setVisible(true);
               }
+              searchFrame.toFront();
           }
       });
 
@@ -154,7 +155,7 @@ public class MetadataPlugin extends BaseClientPlugin
     @Override
     protected void deactivate() {
       // deactivate
-      JmeClientMain.getFrame().removeFromInsertMenu(searchMI);
+      JmeClientMain.getFrame().removeFromWindowMenu(searchMI);
     }
 
   
@@ -223,7 +224,7 @@ public class MetadataPlugin extends BaseClientPlugin
         }
 
         // set search form to appear in front
-        form.requestFocus();
+        form.toFront();
       }
   }
 

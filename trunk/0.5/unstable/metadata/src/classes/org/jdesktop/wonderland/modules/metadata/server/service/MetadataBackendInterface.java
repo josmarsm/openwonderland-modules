@@ -54,7 +54,7 @@ public interface MetadataBackendInterface {
    * Delete the specified metadata object
    * @param mid metadata id designating the metadata to remove
    */
-  public void eraseMetadata(int mid);
+  public void removeMetadata(int mid);
 
   /**
    * Remove all metadata from a cell
