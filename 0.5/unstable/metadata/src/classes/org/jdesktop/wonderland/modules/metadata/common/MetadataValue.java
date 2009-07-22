@@ -79,4 +79,38 @@ public class MetadataValue implements Serializable{
     public String getVal(){
         return val;
     }
+
+  /**
+   * depends only on value and datatype, does not check boolean settings like
+   * editable etc.
+   * @param obj
+   * @return
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final MetadataValue other = (MetadataValue) obj;
+    if ((this.val == null) ? (other.val != null) : !this.val.equals(other.val)) {
+      return false;
+    }
+    if (this.type != other.type) {
+      return false;
+    }
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 11 * hash + (this.val != null ? this.val.hashCode() : 0);
+    hash = 11 * hash + this.type.hashCode();
+    return hash;
+  }
+
+
 }

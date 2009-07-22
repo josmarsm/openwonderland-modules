@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.metadata.common;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import javax.naming.OperationNotSupportedException;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
@@ -52,17 +51,23 @@ public class MetadataComponentServerState extends CellComponentServerState {
       metadata.add(meta);
     }
 
-    public void removeMetadata(MetadataSPI meta) throws OperationNotSupportedException{
-        throw (new javax.naming.OperationNotSupportedException());
+    public void removeMetadata(MetadataSPI meta){
+      metadata.remove(meta);
     }
 
-    public void removeMetadata(int idx) throws OperationNotSupportedException{
-        throw (new javax.naming.OperationNotSupportedException());
+    public void removeMetadata(int idx){
+      int count = 0;
+      for(MetadataSPI m : metadata){
+        if(m.getID() == idx){
+          metadata.remove(count);
+        }
+        count += 1;
+      }
     }
 
     public void removeAllMetadata(){
       logger.info("Removed all metadata from server state");
-        metadata.clear();
+      metadata.clear();
     }
 
 //    public Enumeration getAllMetadata(){
@@ -70,11 +75,24 @@ public class MetadataComponentServerState extends CellComponentServerState {
 //    }
 
     public ArrayList<MetadataSPI> getMetadata(){
-        return metadata;
+      return metadata;
     }
 
     public int metaCount(){
-        return metadata.size();
+      return metadata.size();
+    }
+
+    public boolean contains(MetadataSPI m){
+      return metadata.contains(m);
+    }
+
+    public boolean contains(int mid){
+      for(MetadataSPI m:metadata){
+        if(m.getID() == mid){
+          return true;
+        }
+      }
+      return false;
     }
     // public String getInfo() {
     //     return info;

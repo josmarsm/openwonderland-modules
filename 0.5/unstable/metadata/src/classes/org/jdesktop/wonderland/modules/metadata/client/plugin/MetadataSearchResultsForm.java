@@ -81,12 +81,6 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
     logger.info("repainting main frame, tabs has " + tabs.getMetadataCount() + " pieces of metadata");
   }
 
-//  @Override
-//  public void setVisible(boolean b){
-//    super.setVisible(b);
-//    if(searchResults)
-//  }
-
   /** This method is called from within the constructor to
    * initialize the form.
    * WARNING: Do NOT modify this code. The content of this method is
@@ -178,7 +172,6 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
     searchResults.clear();
     resultsTable.setModel(new ResultsTableModel());
 
-
     // set results counter
     resultsLabel.setText(results.size() + " cells match search");
     searchResults = results;
@@ -193,10 +186,10 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
 
     if(searchResults.size() == 0){
       
-//      tabs.setVisible(false);
-//      noResultsLabel.setVisible(true);
+      tabs.setVisible(false);
+      noResultsLabel.setVisible(true);
       if(tabsAdded){
-        logger.info("[Search Results] label added");
+        logger.info("[Search Results] remove tabs");
         tabDisplay.remove(tabs);
         tabsAdded = false;
         tabDisplay.add(noResultsLabel, BorderLayout.CENTER);
@@ -204,12 +197,17 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
       
     }
     else{
+      tabDisplay.remove(noResultsLabel);
       // set first row selected, display that table
-      resultsTable.setRowSelectionInterval(0, 0);
-
+      logger.info("[Search Results] set selection");
+      resultsTable.setRowSelectionInterval(1, 1);
+      logger.info("[Search Results] selection set");
+//      if(!tabsAdded){
+//        tabDisplay.add(tabs);
+//      }
       // will this fire automatically?
-//      tabs.setVisible(true);
-//      noResultsLabel.setVisible(false);
+      tabs.setVisible(true);
+      
     }
 //    validate();
 //    repaint();
@@ -325,7 +323,7 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
           valid = true;
       }
       if(!valid){
-        logger.info("[SEARCH RESULTS] invalid selection!");
+        logger.info("[SEARCH RESULTS] selection in progress!");
         return;
       }
       CellID cid = (CellID) resultsTable.getValueAt(selectedIdx, 0);
@@ -337,23 +335,27 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
         logger.info("[SEARCH RESULTS] was not in cache, build");
         buildMTTForCell(cid);
       }
-      if(tabsAdded){
+//      if(tabsAdded){
         // remove old table first
+        logger.info("[SEARCH RESULTS] remove old table");
         tabDisplay.remove(tabs);
-      }
-      else{
+//      }
+//      else{
+//        noResultsLabel.setVisible(false);
         // remove old 'no results' label
-        tabDisplay.remove(noResultsLabel);
-      }
+//        tabDisplay.remove(noResultsLabel);
+//      }
+      logger.info("old # tabs:" + tabs.getTabCount() + " # metadata:" + tabs.getMetadataCount());
       tabs = metaTablesCache.get(cid);
-      
+      logger.info("NEWWW # tabs:" + tabs.getTabCount() + " # metadata:" + tabs.getMetadataCount());
       logger.info("[Search Results] tabs added");
       tabDisplay.add(tabs, BorderLayout.CENTER);
-      tabsAdded = true;
+      tabs.setVisible(true);
+//      tabsAdded = true;
 //      tabs.revalidate();
 //      tabDisplay.revalidate();
 //      tabs.repaint();
-//      tabDisplay.repaint();
+      tabDisplay.revalidate();
 //      MetadataSearchResultsForm.this.repaint();
     }
   }

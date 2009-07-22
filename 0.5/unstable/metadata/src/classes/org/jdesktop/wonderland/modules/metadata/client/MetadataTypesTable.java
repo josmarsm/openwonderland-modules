@@ -104,15 +104,6 @@ public class MetadataTypesTable extends JTabbedPane {
     metatypeMap.clear();
     while(iterator.hasNext()){
       MetadataSPI type = iterator.next();
-//      Class clazz = type.getClass();
-//        MetadataSPI type = null;
-//        try {
-//          type = (MetadataSPI) iterator.next().newInstance();
-//        } catch (Exception ex) {
-//          logger.severe("[MTT] unexpected type in metadata plugin:" + ex);
-//        }
-        // tell type to do its client setup
-//        type.initByClient(LoginManager.getPrimary().getPrimarySession().getUserID());
         // create a new table for this type
         JTable typeTable = new JTable(new MetadataTableModel(type));
         // set renderer to alternate row colors and highlight hits
@@ -151,6 +142,8 @@ public class MetadataTypesTable extends JTabbedPane {
     }
     return total;
   }
+
+
 
   /**
    * Erase all entries on each tab.

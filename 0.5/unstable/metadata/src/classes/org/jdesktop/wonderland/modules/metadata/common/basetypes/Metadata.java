@@ -30,7 +30,6 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
 @MetadataContextMenuItem
 public class Metadata implements Serializable, MetadataSPI {
     private CellID parentCell;
-    String type; // should this be a string? is it even necessary?
     public final int id; // unique id
     // TODO does this need to be synchronized in some way?
     // cellregistry didn't seem to sync on cellid's...
@@ -46,6 +45,8 @@ public class Metadata implements Serializable, MetadataSPI {
     public static final String CREATED_ATTR = "Created";
     public static final String MODIFIER_ATTR = "Modifier";
     public static final String MODIFIED_ATTR = "Modified";
+
+    
 
     private HashMap<String, MetadataValue> attributes;
 //    private String author, modAuthor, creationDate, modDate;
@@ -160,5 +161,50 @@ public class Metadata implements Serializable, MetadataSPI {
     return false;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Metadata other = (Metadata) obj;
+    if (this.parentCell != other.parentCell && (this.parentCell == null || !this.parentCell.equals(other.parentCell))) {
+      return false;
+    }
+    if (this.id != other.id) {
+      return false;
+    }
+    if (this.attributes != other.attributes && (this.attributes == null || !this.attributes.equals(other.attributes))) {
+      return false;
+    }
+    return true;
+  }
 
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 31 * hash + (this.parentCell != null ? this.parentCell.hashCode() : 0);
+    hash = 31 * hash + this.id;
+    hash = 31 * hash + (this.attributes != null ? this.attributes.hashCode() : 0);
+    return hash;
+  }
+
+  // some simple access functions to get at each attribute
+  public String getCreator(){
+    return attributes.get(CREATOR_ATTR).getVal();
+  }
+
+  public String getCreated(){
+    return attributes.get(CREATED_ATTR).getVal();
+  }
+
+  public String getModifier(){
+    return attributes.get(MODIFIER_ATTR).getVal();
+  }
+
+  public String getModified(){
+    return attributes.get(MODIFIED_ATTR).getVal();
+  }
 }

@@ -115,14 +115,23 @@ public interface MetadataSPI {
 
     /**
      * Will be called if cell is annotated with the MetadataContextMenuItem
-     * annotation. Examine the cell and determine if this metadatatype should be
+     * annotation. Examine the cell's class and determine if this metadatatype should be
      * addable via the cell's context menu.
      *
-     * If the cell will not be annoated in this way, simply leave this operation
+     * If the cell will not be annotated in this way, simply leave this operation
      * unsupported.
      *
-     * @param c class object of the cell
-     * @return true if this metadata type should appear in cell c's context menu
+     * @param c class of cell in question
+     * @return true if this metadata type should appear in cell with class c's context menu
      */
-     public boolean contextMenuCheck(Class c);
+    public boolean contextMenuCheck(Class c);
+
+     /**
+      * Metadata objects should override the equals method and compare attributes.
+      * The Metadata base type's implementation should be fine for most users.
+      * @param o
+      * @return
+      */
+     @Override
+     public boolean equals(Object o);
 }
