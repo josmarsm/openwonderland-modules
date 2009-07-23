@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
 import java.awt.Color;
-import org.jdesktop.wonderland.client.hud.HUDComponent.DisplayMode;
+import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
 
 /**
  * Class to manage the selected tool
