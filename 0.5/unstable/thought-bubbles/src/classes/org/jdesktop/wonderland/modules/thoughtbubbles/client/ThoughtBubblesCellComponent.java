@@ -20,14 +20,18 @@ package org.jdesktop.wonderland.modules.thoughtbubbles.client;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import com.jme.scene.Node;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Date;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
@@ -40,12 +44,15 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.presentationbase.client.PresentationManager;
+import org.jdesktop.wonderland.modules.thoughtbubbles.client.jme.cell.ThoughtBubbleNode;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentChangeMessage;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentChangeMessage.ThoughtBubblesAction;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentClientState;
@@ -68,7 +75,7 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
 
     private static JButton createThoughtButton = null;
 
-    private Set<ThoughtRecord> thoughts;
+    private Map<ThoughtRecord, ThoughtBubbleNode> thoughts = new HashMap<ThoughtRecord, ThoughtBubbleNode>();
 
     private String localUsername;
 
@@ -91,8 +98,34 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
     public void setClientState(CellComponentClientState state) {
         super.setClientState(state);
 
-        this.thoughts = ((ThoughtBubblesComponentClientState)state).getThoughts();
+//        this.thoughts = ((ThoughtBubblesComponentClientState)state).getThoughts();
+        // Initialize the Map with all the ThoughtRecorsd from the client state.
+        for(ThoughtRecord rec : ((ThoughtBubblesComponentClientState)state).getThoughts()) {
+            thoughts.put(rec, createNewThoughtBubbleNode(rec));
+        }
+        
     }
+
+    private ThoughtBubbleNode createNewThoughtBubbleNode(ThoughtRecord rec) {
+        ThoughtBubbleNode n = new ThoughtBubbleNode(rec);
+
+        // Add the node to the scenegraph.
+        getSceneGraphRoot().attachChild(n);
+        
+        return n;
+    }
+
+    /**
+     * Returns the scene root for the Cell's scene graph
+     */
+    protected Node getSceneGraphRoot() {
+        CellRendererJME renderer = (CellRendererJME)
+                cell.getCellRenderer(RendererType.RENDERER_JME);
+        RenderComponent cellRC = (RenderComponent)
+                renderer.getEntity().getComponent(RenderComponent.class);
+        return cellRC.getSceneRoot();
+    }
+
 
     @Override
     public void setStatus(CellStatus status, boolean increasing) {
@@ -149,10 +182,13 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
         }
     }
 
-    void createThought(String text, boolean isQuestion) {
+    public void createThought(String text, boolean isQuestion) {
         logger.warning("Got callback to create thought: " + text + " question? " + isQuestion);
 
-        ThoughtRecord thought = new ThoughtRecord(text, isQuestion, localUsername, new Date());
+        // get the local view cell so we can figure out where to put this thing.
+        CellTransform localAvatarTransform = cell.getCellCache().getViewCell().getLocalTransform();
+
+        ThoughtRecord thought = new ThoughtRecord(text, isQuestion, localUsername, new Date(), localAvatarTransform.getTranslation(Vector3f.ZERO));
 
         ThoughtBubblesComponentChangeMessage msg = new ThoughtBubblesComponentChangeMessage(ThoughtBubblesAction.NEW_THOUGHT);
         msg.setThought(thought);
@@ -160,8 +196,13 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
         this.channel.send(msg);
         logger.warning("Message sent to server!");
 
+        // Now add it to the local representation.
+        this.thoughts.put(thought, createNewThoughtBubbleNode(thought));
+
         mainHUD.removeComponent(thoughtDialog);
     }
+
+
 
     public void actionPerformed(ActionEvent ae) {
         if(ae.getActionCommand().equals(NEW_THOUGHT_ACTION)) {
@@ -183,7 +224,7 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
 
             switch(msg.getAction()) {
                 case NEW_THOUGHT:
-                    thoughts.add(msg.getThought());
+                    thoughts.put(msg.getThought(), createNewThoughtBubbleNode(msg.getThought()));
                     logger.warning("Got a new thought from another client!");
                     break;
             }
