@@ -45,7 +45,7 @@ import  org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
-import org.jdesktop.wonderland.modules.avatarbase.client.AvatarConfigManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarConfigManager;
 import org.jdesktop.wonderland.modules.wonderOSC.client.*;
 
 /**
@@ -75,7 +75,7 @@ public class wonderOSCPlugin extends BaseClientPlugin implements ViewManagerList
         } else {
             wonderOSCPanelRef.get().setAvatarCharactar(avatar.getAvatarCharacter());
         }
-        AvatarConfigManager.getAvatarConfigManager().setViewCell(newViewCell);
+      //  ImiAvatarConfigManager.getImiAvatarConfigManager().setViewCell(newViewCell);
         
         JmeClientMain.getFrame().addToWindowMenu(ExtCtrlFrameMI, 2);
     }
@@ -122,7 +122,9 @@ public class wonderOSCPlugin extends BaseClientPlugin implements ViewManagerList
 
             public void primarySession(WonderlandSession session) {
                 // We need a primary session, so wait for it
-                AvatarConfigManager.getAvatarConfigManager().addServer(wonderOSCPlugin.this.loginManager);
+                try{
+                ImiAvatarConfigManager.getImiAvatarConfigManager().addServerAndSync(wonderOSCPlugin.this.loginManager);
+                }catch(Exception e){}
             }
         };
 //        loginManager.addLifecycleListener(lifecycleListener);
