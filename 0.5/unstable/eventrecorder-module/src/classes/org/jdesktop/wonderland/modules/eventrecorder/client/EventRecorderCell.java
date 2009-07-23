@@ -19,6 +19,8 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.client;
 
+import java.awt.Rectangle;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,9 +33,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -271,25 +275,37 @@ public class EventRecorderCell extends Cell {
      */
     void startRecording() {
         eventRecorderLogger.info("start recording");
-        
-        Tape selectedTape = getSelectedTape();
+
+        final Tape selectedTape = getSelectedTape();
         if (selectedTape == null) {
             eventRecorderLogger.warning("Can't record when there's no selected tape");
             return;
         }
-        if (!selectedTape.isFresh()) {
-            int response = JOptionPane.showConfirmDialog(ClientContextJME.getClientMain().getFrame().getFrame(), "Overwrite Existing recording named " + selectedTape.getTapeName() + "?", "Existing Tape", JOptionPane.YES_NO_OPTION);
-            if (response == JOptionPane.NO_OPTION) {
-                return;
-            }
-            eventRecorderLogger.warning("Overwriting existing recording");
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
 
+                public void run() {
+                    if (!selectedTape.isFresh()) {
+                        int response = JOptionPane.showConfirmDialog(getParentFrame(), "Overwrite Existing recording named " + selectedTape.getTapeName() + "?", "Existing Tape", JOptionPane.YES_NO_OPTION);
+                        if (response == JOptionPane.NO_OPTION) {
+                            return;
+                        }
+                        eventRecorderLogger.warning("Overwriting existing recording");
+
+                    }
+                    userName = getCurrentUserName();
+
+                    EventRecorderCellChangeMessage msg = EventRecorderCellChangeMessage.recordingMessage(getCellID(), true, userName);
+                    getChannel().send(msg);
+                }
+            });
+        } catch (InterruptedException ex) {
+            eventRecorderLogger.log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            eventRecorderLogger.log(Level.SEVERE, null, ex);
         }
-        userName = getCurrentUserName();
 
-        EventRecorderCellChangeMessage msg = EventRecorderCellChangeMessage.recordingMessage(getCellID(), true, userName);
-        getChannel().send(msg);
-        
+
     }
 
     void stop() {
@@ -337,15 +353,29 @@ public class EventRecorderCell extends Cell {
         return getCellCache().getSession().getUserID().getUsername();
     }
 
+    private JFrame getParentFrame() {
+        return ClientContextJME.getClientMain().getFrame().getFrame();
+    }
+
     void openReelForm() {
         //Let the server know I'm selecting a tape and wait to get a message back (processTapeStateMessage())
         EventRecorderCellChangeMessage msg = EventRecorderCellChangeMessage.selectingTape(getCellID());
         try {
-            TapeStateMessageResponse response = (TapeStateMessageResponse) getChannel().sendAndWait(msg);
+            final TapeStateMessageResponse response = (TapeStateMessageResponse) getChannel().sendAndWait(msg);
             if (response.getAction() == TapeStateMessageResponse.TapeStateAction.TAPE_STATE) {
-                //Need to open the form BEFORE updating models, otherwise ignored
-                reelForm.setVisible(true);
-                updateTapeModels(response.getTapes(), response.getSelectedTape());               
+                Rectangle parentBounds = getParentFrame().getBounds();
+                Rectangle formBounds = reelForm.getBounds();
+                reelForm.setLocation(parentBounds.width/2 - formBounds.width/2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
+
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        //Need to open the form BEFORE updating models, otherwise ignored
+                    reelForm.setVisible(true);
+                    updateTapeModels(response.getTapes(), response.getSelectedTape());
+                    }
+                });
+                               
             } else {
                 eventRecorderLogger.severe("Failed response from server");
             }
