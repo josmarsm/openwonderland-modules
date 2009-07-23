@@ -102,26 +102,33 @@ public class PresentationManager {
         }
         else {
             toolbarHUD.setVisible(false);
-            logger.warning("Removed toolbar!");
+            logger.warning("hiding toolbarHUD");
         }
     }
 
     public void addToolbarButton(JButton b) {
         logger.warning("adding button: " + b);
+
+        if(!toolbarButtons.contains(b)) {
             toolbarButtons.add(b);
             toolbar.add(b);
 
             if(toolbarButtons.size()==1)
                 setToolbarVisibility(true);
+        }
     }
 
     public void removeToolbarButton(JButton b) {
         logger.warning("removing button: " + b);
 
+        if(toolbarButtons.contains(b)) {
         toolbarButtons.remove(b);
         toolbar.remove(b);
 
+        logger.warning("done removing, about to check and see if we should hide toolbar");
+
         if(toolbarButtons.size()==0)
             setToolbarVisibility(false);
+        }
     }
 }
