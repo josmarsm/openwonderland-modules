@@ -315,11 +315,15 @@ public class AudioRecorderCell extends Cell {
 
 
     void stop() {
-        logger.info("stop");
+        if (!isPlaying && !isRecording) {
+            //logger.warning("no reason to stop, not playing or recording");
+            return;
+        }
         if (reelForm.isVisible()) {
             logger.warning("Can't stop when the user is selecting a tape");
             Toolkit.getDefaultToolkit().beep();
             reelForm.toFront();
+            return;
         }
         if (userName != null && userName.equals(getCurrentUserName())) {
             AudioRecorderCellChangeMessage msg = null;
@@ -336,7 +340,7 @@ public class AudioRecorderCell extends Cell {
             setPlaying(false);
             userName = null;
         } else {
-            logger.warning("Attempt to stop by non-initiating user");
+            logger.warning("Attempt to stop by non-initiating user: " + userName);
             SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
