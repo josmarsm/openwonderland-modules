@@ -337,6 +337,13 @@ public class AudioRecorderCell extends Cell {
             userName = null;
         } else {
             logger.warning("Attempt to stop by non-initiating user");
+            SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        Toolkit.getDefaultToolkit().beep();
+                        JOptionPane.showMessageDialog(getParentFrame(), "You can't stop a tape that's being used by another user");
+                    }
+                });
         }
     }
 
