@@ -65,7 +65,7 @@ public class RecordMessageResource {
         WFSRecordingWriter recorder = new WFSRecordingWriter() {
 
             public void recordChange(PrintWriter writer) {
-                writer.println("<Message timestamp=\"" + messageDescriptor.getTimestamp() + "\">");
+                writer.println("<Message messageID=\"" + messageDescriptor.getMessageID() + "\" timestamp=\"" + messageDescriptor.getTimestamp() + "\">");
                 writer.println(messageDescriptor.getEncodedMessage());
                 writer.println("</Message>");
             }
