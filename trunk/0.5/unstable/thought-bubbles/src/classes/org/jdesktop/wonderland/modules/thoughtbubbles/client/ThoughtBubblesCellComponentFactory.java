@@ -34,7 +34,6 @@ public class ThoughtBubblesCellComponentFactory implements CellComponentFactoryS
     }
 
     public String getDisplayName() {
-        logger.warning("IN DISPLAY NAME");
         return "Thought Bubbles";
     }
 
