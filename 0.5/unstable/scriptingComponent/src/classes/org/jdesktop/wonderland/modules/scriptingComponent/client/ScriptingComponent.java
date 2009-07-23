@@ -23,6 +23,7 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import imi.character.avatar.AvatarContext.TriggerNames;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -60,9 +61,11 @@ import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -94,7 +97,6 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentNpcMoveMessage;
 import org.jdesktop.wonderland.modules.scriptingImager.client.jme.cellrenderer.ScriptingImagerCellRenderer;
-import org.pushingpixels.trident.Timeline;
 
 /**
  *
@@ -866,6 +868,8 @@ public class ScriptingComponent extends CellComponent
                         localNode = rc.getSceneRoot();
                         MouseEventListener myListener = new MouseEventListener();
                         myListener.addToEntity(mye);
+                        KeyEventListener myKeyListener = new KeyEventListener();
+                        myKeyListener.addToEntity(mye);
 //                        }
 /* Execute the startup script */
                     executeScript(STARTUP_EVENT, null);
@@ -1898,9 +1902,30 @@ public class ScriptingComponent extends CellComponent
         {
         System.out.println("Enter callTridentTest()");
         TridentAnimations helloWorld = new TridentAnimations();
-        helloWorld.go();
+        helloWorld.go1(this);
+//        helloWorld.ani1(this);
         }
-    
+
+    class KeyEventListener extends EventClassListener
+        {
+        @Override
+        public Class[] eventClassesToConsume()
+            {
+            return new Class[]{KeyEvent3D.class};
+            }
+        @Override
+        public void computeEvent(Event event)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In computeEvent for key event");
+            }
+        @Override
+        public void commitEvent(Event event)
+            {
+            KeyEvent key = (KeyEvent) ((KeyEvent3D)event).getAwtEvent();
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In commitEvent for key event - key = " + key.getKeyChar());
+           
+            }
+        }
     class MouseEventListener extends EventClassListener
         {
         @Override
