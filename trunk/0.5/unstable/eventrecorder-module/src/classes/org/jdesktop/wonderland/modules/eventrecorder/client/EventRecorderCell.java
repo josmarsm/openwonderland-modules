@@ -20,6 +20,7 @@
 package org.jdesktop.wonderland.modules.eventrecorder.client;
 
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -321,6 +322,13 @@ public class EventRecorderCell extends Cell {
             setRecording(false);
         } else {
             eventRecorderLogger.warning("Attempt to stop by non-initiating user");
+            SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        Toolkit.getDefaultToolkit().beep();
+                        JOptionPane.showMessageDialog(getParentFrame(), "You can't stop a recording started by another user");
+                    }
+                });
         }
     }
 
