@@ -237,6 +237,13 @@ public class AudioRecorderCell extends Cell {
             Tape selectedTape = getSelectedTape();
             if (selectedTape == null) {
                 logger.warning("Can't record when there's no selected tape");
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        Toolkit.getDefaultToolkit().beep();
+                        JOptionPane.showMessageDialog(getParentFrame(), "Please select a Tape");
+                    }
+                });
                 return;
             }
             if (!selectedTape.isFresh()) {
@@ -274,10 +281,24 @@ public class AudioRecorderCell extends Cell {
             Tape selectedTape = getSelectedTape();
             if (selectedTape == null) {
                 logger.warning("Can't playback when there's no selected tape");
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        Toolkit.getDefaultToolkit().beep();
+                        JOptionPane.showMessageDialog(getParentFrame(), "Please select a Tape");
+                    }
+                });
                 return;
             }
             if (selectedTape.isFresh()) {
                 logger.warning("Can't playback a tape that's not ben recorded");
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        Toolkit.getDefaultToolkit().beep();
+                        JOptionPane.showMessageDialog(getParentFrame(), "Can't playback a tape that's not ben recorded");
+                    }
+                });
                 return;
             }
             if (userName != null) {
@@ -352,9 +373,12 @@ public class AudioRecorderCell extends Cell {
         return getCellCache().getSession().getUserID().getUsername();
     }
 
+    private JFrame getParentFrame() {
+        return ClientContextJME.getClientMain().getFrame().getFrame();
+    }
+
     void setReelFormVisible(final boolean aBoolean) {
         logger.info("set visible: " + aBoolean);
-        final JFrame parentFrame = ClientContextJME.getClientMain().getFrame().getFrame();
         if (isRecording || isPlaying) {
             logger.warning("Can't select a tape when the user is already playing/recording");
             //See Deron's forum post
@@ -363,13 +387,13 @@ public class AudioRecorderCell extends Cell {
 
                 public void run() {
                     Toolkit.getDefaultToolkit().beep();
-                    JOptionPane.showMessageDialog(parentFrame, "Can't select a tape when the audio recorder is in use");
+                    JOptionPane.showMessageDialog(getParentFrame(), "Can't select a tape when the audio recorder is in use");
                 }
             });
             return;
         }
         reelForm.pack();
-        Rectangle parentBounds = parentFrame.getBounds();
+        Rectangle parentBounds = getParentFrame().getBounds();
         Rectangle formBounds = reelForm.getBounds();
         reelForm.setLocation(parentBounds.width/2 - formBounds.width/2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
         SwingUtilities.invokeLater(new Runnable() {
