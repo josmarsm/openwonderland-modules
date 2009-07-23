@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.thoughtbubbles.client;
 
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -26,11 +27,14 @@ import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesCompo
 @CellComponentFactory
 public class ThoughtBubblesCellComponentFactory implements CellComponentFactorySPI{
 
+    private static final Logger logger = Logger.getLogger(ThoughtBubblesCellComponentFactory.class.getName());
+
     public String[] getExtensions() {
         return null;
     }
 
     public String getDisplayName() {
+        logger.warning("IN DISPLAY NAME");
         return "Thought Bubbles";
     }
 

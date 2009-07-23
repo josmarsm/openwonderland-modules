@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.thoughtbubbles.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -28,6 +29,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentChangeMessage;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentClientState;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentServerState;
+import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtRecord;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -49,6 +51,7 @@ public class ThoughtBubblesCellComponentMO extends CellComponentMO {
     @UsesCellComponentMO(ChannelComponentMO.class)
     private ManagedReference<ChannelComponentMO> channelRef;
 
+    private Set<ThoughtRecord> thoughts;
 
     public ThoughtBubblesCellComponentMO(CellMO cell) {
         super(cell);
@@ -61,6 +64,8 @@ public class ThoughtBubblesCellComponentMO extends CellComponentMO {
     @Override
     public void setServerState(CellComponentServerState state) {
         super.setServerState(state);
+
+        this.thoughts = ((ThoughtBubblesComponentServerState)state).getThoughts();
     }
 
     @Override
@@ -69,6 +74,7 @@ public class ThoughtBubblesCellComponentMO extends CellComponentMO {
             state = new ThoughtBubblesComponentServerState();
         }
 
+        ((ThoughtBubblesComponentServerState)state).setThoughts(this.thoughts);
         return super.getServerState(state);
     }
 
@@ -78,11 +84,17 @@ public class ThoughtBubblesCellComponentMO extends CellComponentMO {
         if (CellComponentClientState == null) {
             CellComponentClientState = new ThoughtBubblesComponentClientState();
         }
-
+        ((ThoughtBubblesComponentClientState)CellComponentClientState).setThoughts(thoughts);
+        
         return super.getClientState(CellComponentClientState, clientID, capabilities);
     }
 
 
+    private void addThought(ThoughtRecord thought) {
+        this.thoughts.add(thought);
+        logger.info("Added a thought: " + thought + " (total of " + this.thoughts.size() + " thoughts now)");
+    }
+    
     @Override
     protected void setLive(boolean live) {
         super.setLive(live);
@@ -94,7 +106,6 @@ public class ThoughtBubblesCellComponentMO extends CellComponentMO {
         }
         else {
             channelRef.getForUpdate().removeMessageReceiver(ThoughtBubblesComponentChangeMessage.class);
-//            proxRef.getForUpdate().removeProximityListener(proxListener);
         }
     }
     
@@ -113,7 +124,14 @@ public class ThoughtBubblesCellComponentMO extends CellComponentMO {
             ThoughtBubblesComponentChangeMessage bsccm = (ThoughtBubblesComponentChangeMessage)message;
 
             switch(bsccm.getAction()) {
-                default:
+                case NEW_THOUGHT:
+                    compMORef.getForUpdate().addThought(bsccm.getThought());
+
+                    // Now send the message on to all other clients.
+                    Set<WonderlandClientID> clients = sender.getClients();
+                    clients.remove(clientID);
+
+                    sender.send(clients, bsccm);
                     break;
             }
         }
