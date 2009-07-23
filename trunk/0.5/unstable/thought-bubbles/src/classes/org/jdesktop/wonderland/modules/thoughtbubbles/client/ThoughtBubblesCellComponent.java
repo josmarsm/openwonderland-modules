@@ -19,8 +19,11 @@
 package org.jdesktop.wonderland.modules.thoughtbubbles.client;
 
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Date;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -44,6 +47,9 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.presentationbase.client.PresentationManager;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentChangeMessage;
+import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentChangeMessage.ThoughtBubblesAction;
+import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentClientState;
+import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtRecord;
 
 public class ThoughtBubblesCellComponent extends CellComponent implements ProximityListener, ActionListener {
 
@@ -62,6 +68,13 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
 
     private static JButton createThoughtButton = null;
 
+    private Set<ThoughtRecord> thoughts;
+
+    private String localUsername;
+
+    private HUD mainHUD;
+    private HUDComponent thoughtDialog;
+
     public ThoughtBubblesCellComponent(Cell cell) {
         super(cell);
 
@@ -69,11 +82,16 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
         createThoughtButton.setText("Add New Thought");
         createThoughtButton.setActionCommand(NEW_THOUGHT_ACTION);
         createThoughtButton.addActionListener(this);
+
+        localUsername = cell.getCellCache().getViewCell().getIdentity().getUsername();
+        logger.warning("LocalUsername: " + localUsername);
     }
 
     @Override
     public void setClientState(CellComponentClientState state) {
         super.setClientState(state);
+
+        this.thoughts = ((ThoughtBubblesComponentClientState)state).getThoughts();
     }
 
     @Override
@@ -103,7 +121,6 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
             channel.removeMessageReceiver(ThoughtBubblesComponentChangeMessage.class);
             prox.removeProximityListener(this);
         }
-
     }
 
     /**
@@ -116,7 +133,9 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
      * @param proximityIndex
      */
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
-        
+
+        logger.warning(viewCellID + " entered? " + entered);
+
         // Check to see if the avatar entering/exiting is the local one.
         if(cell.getCellCache().getViewCell().getCellID() == viewCellID) {
             if(entered) {
@@ -132,6 +151,16 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
 
     void createThought(String text, boolean isQuestion) {
         logger.warning("Got callback to create thought: " + text + " question? " + isQuestion);
+
+        ThoughtRecord thought = new ThoughtRecord(text, isQuestion, localUsername, new Date());
+
+        ThoughtBubblesComponentChangeMessage msg = new ThoughtBubblesComponentChangeMessage(ThoughtBubblesAction.NEW_THOUGHT);
+        msg.setThought(thought);
+
+        this.channel.send(msg);
+        logger.warning("Message sent to server!");
+
+        mainHUD.removeComponent(thoughtDialog);
     }
 
     public void actionPerformed(ActionEvent ae) {
@@ -139,9 +168,9 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
             // Throw up the submit thought dialog box.
             SubmitThoughtDialog d = new SubmitThoughtDialog(this);
 
-            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+            mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-            HUDComponent thoughtDialog = mainHUD.createComponent(d);
+            thoughtDialog = mainHUD.createComponent(d);
             thoughtDialog.setPreferredLocation(Layout.CENTER);
             mainHUD.addComponent(thoughtDialog);
             thoughtDialog.setVisible(true);
@@ -153,8 +182,9 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
             ThoughtBubblesComponentChangeMessage msg = (ThoughtBubblesComponentChangeMessage)message;
 
             switch(msg.getAction()) {
-                default:
-                    logger.warning("Received unknown message type in client: " + msg.getAction());
+                case NEW_THOUGHT:
+                    thoughts.add(msg.getThought());
+                    logger.warning("Got a new thought from another client!");
                     break;
             }
         }

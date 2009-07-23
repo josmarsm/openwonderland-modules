@@ -18,23 +18,22 @@
 
 package org.jdesktop.wonderland.modules.thoughtbubbles.common;
 
+import java.util.Set;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 
 public class ThoughtBubblesComponentClientState extends CellComponentClientState {
+    
+    private Set<ThoughtRecord> thoughts;
 
-//    private int numAvatarsInZone = 0;
-    
-    
     public ThoughtBubblesComponentClientState() {
         
     }
 
-//    public int getNumAvatarsInZone() {
-//        return numAvatarsInZone;
-//    }
-//
-//    public void setNumAvatarsInZone(int numAvatarsInZone) {
-//        this.numAvatarsInZone = numAvatarsInZone;
-//    }
+    public Set<ThoughtRecord> getThoughts() {
+        return thoughts;
+    }
 
+    public void setThoughts(Set<ThoughtRecord> thoughts) {
+        this.thoughts = thoughts;
+    }
 }

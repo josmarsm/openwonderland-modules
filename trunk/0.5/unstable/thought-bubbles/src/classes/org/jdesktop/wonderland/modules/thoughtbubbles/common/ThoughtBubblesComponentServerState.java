@@ -18,9 +18,12 @@
 
 package org.jdesktop.wonderland.modules.thoughtbubbles.common;
 
+import java.util.HashSet;
+import java.util.Set;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 @XmlRootElement(name="pdf-spreader-cell")
@@ -28,12 +31,20 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 public class ThoughtBubblesComponentServerState extends CellComponentServerState {
 
 
+    @XmlElement(name="thoughts")
+    private Set<ThoughtRecord> thoughts = new HashSet<ThoughtRecord>();
+
     public ThoughtBubblesComponentServerState() {
     }
-
 
     @Override
     public String getServerComponentClassName() {
         return "org.jdesktop.wonderland.modules.thoughtbubbles.server.ThoughtBubblesCellComponentMO";
+    }
+
+    @XmlTransient
+    public Set<ThoughtRecord> getThoughts() { return this.thoughts; }
+    public void setThoughts(Set<ThoughtRecord> thoughts) {
+        this.thoughts = thoughts;
     }
 }

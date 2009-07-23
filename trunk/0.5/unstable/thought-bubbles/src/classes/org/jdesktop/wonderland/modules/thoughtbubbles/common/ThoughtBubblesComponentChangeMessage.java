@@ -18,22 +18,19 @@
 
 package org.jdesktop.wonderland.modules.thoughtbubbles.common;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 public class ThoughtBubblesComponentChangeMessage extends CellMessage {
+
+    private final ThoughtBubblesAction action;
+
     public enum ThoughtBubblesAction {
-        JOINED,
-        LEFT,
-        LABEL
+        NEW_THOUGHT, 
     }
 
-    public String name;
-
-    public String label;
-
-    public ThoughtBubblesAction action;
-
-    public int numAvatarInZone = 0;
+    private ThoughtRecord thought;
 
     public ThoughtBubblesComponentChangeMessage(ThoughtBubblesAction action) {
         this.action = action;
@@ -43,28 +40,11 @@ public class ThoughtBubblesComponentChangeMessage extends CellMessage {
         return action;
     }
 
-    public int getNumAvatarInZone() {
-        return numAvatarInZone;
+    public void setThought(ThoughtRecord thought) {
+        this.thought = thought;
     }
 
-    public void setNumAvatarInZone(int numAvatarInZone) {
-        this.numAvatarInZone = numAvatarInZone;
+    public ThoughtRecord getThought() {
+        return this.thought;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
 }
