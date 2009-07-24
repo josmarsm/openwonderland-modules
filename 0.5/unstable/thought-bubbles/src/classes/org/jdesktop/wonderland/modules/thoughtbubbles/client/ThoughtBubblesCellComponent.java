@@ -213,6 +213,7 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
 
             thoughtDialog = mainHUD.createComponent(d);
             thoughtDialog.setPreferredLocation(Layout.CENTER);
+            thoughtDialog.setName("New Thought");
             mainHUD.addComponent(thoughtDialog);
             thoughtDialog.setVisible(true);
         }

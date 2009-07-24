@@ -79,10 +79,12 @@ public class PresentationManager {
 
             toolbarHUD = mainHUD.createComponent(panel);
             toolbarHUD.setPreferredLocation(Layout.NORTHWEST);
+            toolbarHUD.setName("Presentation Tools");
             mainHUD.addComponent(toolbarHUD);
 
             // saving this code here in case I need close-listeners later
-            // and want to remember how to do it.
+            // and want to remember how to do it. (this is the old version,
+            // pre HUD event API changes)
 //                    layoutHUD.addComponentListener(new HUDComponentListener() {
 //            public void HUDComponentChanged(HUDComponentEvent event) {
 //                if (event.getEventType() == ComponentEventType.DISAPPEARED) {
