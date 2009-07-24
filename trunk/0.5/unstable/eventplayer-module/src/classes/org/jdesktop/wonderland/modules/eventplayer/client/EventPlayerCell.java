@@ -365,6 +365,11 @@ public class EventPlayerCell extends Cell {
                         break;
                     case PLAYBACK_DONE:
                         setPlaying(false);
+                        playbackDone();
+                        userName = null;
+                        break;
+                    case ALL_CELLS_RETRIEVED:
+                        setCellsRetrieved();
                         userName = null;
                         break;
                     default:
@@ -372,6 +377,14 @@ public class EventPlayerCell extends Cell {
 
                 }
             }
+        }
+
+        private void playbackDone() {
+            renderer.playbackDone();
+        }
+
+        private void setCellsRetrieved() {
+            renderer.allCellsRetrieved();
         }
     }
 

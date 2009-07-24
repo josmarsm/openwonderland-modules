@@ -51,6 +51,9 @@ public class EventPlayerCellServerState extends CellServerState implements Seria
     @XmlAttribute(required=true)
     private boolean isPlaying;
 
+    @XmlAttribute(required=true)
+    private boolean allCellsRetrieved;
+
 
     /**
      * Add a tape to the collection of tapes

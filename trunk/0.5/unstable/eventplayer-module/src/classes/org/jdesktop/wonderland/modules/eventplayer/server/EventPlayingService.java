@@ -256,7 +256,7 @@ public class EventPlayingService extends AbstractService {
                 xmlReader = factory.createXMLEventReader(recordingReader);
                 EventHandler handler = new EventHandler(this);
                 StaxEventDispatcher dispatcher = new StaxEventDispatcher(handler);
-                Semaphore semaphore = new Semaphore(1, true);
+                Semaphore semaphore = new Semaphore(0, true);
                 boolean oldPausedState = paused;
 
                 //iterate as long as there are more events on the input
@@ -265,18 +265,24 @@ public class EventPlayingService extends AbstractService {
                         logger.getLogger().info("PAUSED STATE CHANGED TO: " + paused);
                         oldPausedState = paused;
                     }
-                    if (!paused) {
-                        XMLEvent e = xmlReader.nextEvent();
-                        /*
-                         * This will end up calling one of the ChangeReplayer methods
-                         * on myself, and thus creating a delayed task.
-                         * The semaphore will be released when the task has been completed
-                         */
-                        dispatcher.dispatchEvent(e, semaphore);
-                        logger.getLogger().info("waiting for semaphore");
-                        semaphore.acquire();
-                        logger.getLogger().info("aquired permit from semaphore");
+                    
+                    // Check if should wait
+                    synchronized (this) {
+                        while (paused) {                           
+                            wait();
+                        }
                     }
+
+                    XMLEvent e = xmlReader.nextEvent();
+                    /*
+                     * This will end up calling one of the ChangeReplayer methods
+                     * on myself, and thus creating a delayed task.
+                     * The semaphore will be released when the task has been completed
+                     */
+                    dispatcher.dispatchEvent(e, semaphore);
+                    logger.getLogger().info("waiting for semaphore");
+                    semaphore.acquire();
+                    
                     
                 }
             } catch (InterruptedException ex) {
@@ -315,6 +321,7 @@ public class EventPlayingService extends AbstractService {
             playbackStartTime = new Date(new java.util.Date().getTime()).getTime();
             recordingStartTime = startTime;
             logger.getLogger().info("releasing semaphore");
+            semaphore.release();
     }
 
         @Override
@@ -373,13 +380,18 @@ public class EventPlayingService extends AbstractService {
         private void resume() {
             logger.getLogger().info("Resuming playback for: " + tapeName);
             playbackStartTime = timeElapsed + new Date(new java.util.Date().getTime()).getTime();
-            paused = false;
+            synchronized (this) {
+                paused = false;
+                this.notify();
+            }
         }
 
         private void pause() {
             logger.getLogger().info("Pausing playback for: " + tapeName);
             timeElapsed = playbackStartTime - new Date(new java.util.Date().getTime()).getTime();
-            paused = true;
+            synchronized (this) {
+                paused = true;
+            }
         }
     }
 
@@ -528,13 +540,13 @@ public class EventPlayingService extends AbstractService {
                 logger.getLogger().log(Level.SEVERE, "A cell cannot have multiple parents", ex);
             }
             String idString = setup.getMetaData().get("CellID");
-            //logger.getLogger().info("Old cellID value: " + idString);
+            logger.getLogger().info("Old cellID value: " + idString);
             long id = Long.valueOf(idString);
-            //logger.getLogger().info("Old cellID id: " + id);
+            logger.getLogger().info("Old cellID id: " + id);
             CellID oldCellID = new CellID(id);
-            //logger.getLogger().info("Old cellID: " + oldCellID);
+            logger.getLogger().info("Old cellID: " + oldCellID);
             CellID newCellID = cellMO.getCellID();
-            //logger.getLogger().info("New cellID: " + newCellID);
+            logger.getLogger().info("New cellID: " + newCellID);
             listener.loadedCell(oldCellID, newCellID);
         }
     }
@@ -599,6 +611,7 @@ public class EventPlayingService extends AbstractService {
         }
 
         public void dispatchEvent(XMLEvent event, Semaphore semaphore) throws SAXException {
+            //logger.getLogger().info("event: " + getEventString(event));
             switch (event.getEventType()) {
                 case XMLEvent.START_ELEMENT:
                     dispatchStartElement(event.asStartElement(), semaphore);
@@ -610,8 +623,7 @@ public class EventPlayingService extends AbstractService {
                     dispatchCharacters(event.asCharacters(), semaphore);
                     break;
                 default:
-                    //logger.getLogger().warning("Unhandled event type: " + getEventTypeString(event.getEventType()));
-                    logger.getLogger().info("releasing semaphore");
+                    logger.getLogger().warning("Unhandled event: " + getEventString(event) + " so releasing semaphore");
                     semaphore.release();
 
             }
@@ -652,12 +664,12 @@ public class EventPlayingService extends AbstractService {
             handler.startElement(qName.getNamespaceURI(), qName.getLocalPart(), qName.toString(), attributes, semaphore);
         }
 
-        private String getEventTypeString(int eventType) {
-        switch (eventType) {
+        private String getEventString(XMLEvent event) {
+        switch (event.getEventType()) {
             case XMLEvent.START_ELEMENT:
-                return "START_ELEMENT";
+                return "START_ELEMENT" + event.asStartElement().getName();
             case XMLEvent.END_ELEMENT:
-                return "END_ELEMENT";
+                return "END_ELEMENT" + event.asEndElement().getName();
             case XMLEvent.PROCESSING_INSTRUCTION:
                 return "PROCESSING_INSTRUCTION";
             case XMLEvent.CHARACTERS:
@@ -679,7 +691,7 @@ public class EventPlayingService extends AbstractService {
             case XMLEvent.SPACE:
                 return "SPACE";
         }
-        return "UNKNOWN_EVENT_TYPE " + "," + eventType;
+        return "UNKNOWN_EVENT_TYPE " + "," + event.getEventType();
     }
     }
 }

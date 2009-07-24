@@ -27,14 +27,13 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 
 public class EventPlayerCellChangeMessage extends CellMessage {
-
     
     public enum EventPlayerAction {
         LOAD,
         PLAY,
         REQUEST_TAPE_STATE,
-        PLAYBACK_DONE
-    };
+        PLAYBACK_DONE,
+        ALL_CELLS_RETRIEVED};
 
     private EventPlayerAction action;
     private boolean isPlaying;
@@ -45,10 +44,6 @@ public class EventPlayerCellChangeMessage extends CellMessage {
     private EventPlayerCellChangeMessage(CellID cellID) {
         super(cellID);
     }
-
-    
-
-    
 
     public EventPlayerAction getAction() {
         return action;
@@ -115,6 +110,12 @@ public class EventPlayerCellChangeMessage extends CellMessage {
     public static EventPlayerCellChangeMessage playbackDoneMessage(CellID cellID) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
         msg.action = EventPlayerAction.PLAYBACK_DONE;
+        return msg;
+    }
+
+    public static EventPlayerCellChangeMessage allCellsRetrievedMessage(CellID cellID) {
+        EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
+        msg.action = EventPlayerAction.ALL_CELLS_RETRIEVED;
         return msg;
     }
     
