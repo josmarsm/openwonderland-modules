@@ -6,7 +6,6 @@
 package org.jdesktop.wonderland.modules.annotations.client;
 
 import java.awt.Canvas;
-import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
@@ -19,12 +18,11 @@ import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDFactory;
+import org.jdesktop.wonderland.client.hud.HUDManager;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
-import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationPane;
-import org.jdesktop.wonderland.modules.annotations.client.display.PanelConfig;
 import org.jdesktop.wonderland.modules.hud.client.HUDCompassLayoutManager;
 import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDComponentManager;
 
@@ -53,10 +51,13 @@ public class AnnotationPlugin extends BaseClientPlugin
     private static HUD myHud = null;
     public static final String ANNOTATION_HUD = "annotations";
 
+
+    private static boolean displayState;
+
     /**
      * Sets up plugin. Adds plugin as a listener to its own 'view annotations'
      * menu item, so it can in turn notify annotation components. This indirection
-     * is necessary to create a static 'addViewMIListener' method, reachable from
+     * is necessary to create a static 'addDisplayItemListener' method, reachable from
      * components.
      *
      * Also sets up a HUD for viewing the components.
@@ -72,11 +73,12 @@ public class AnnotationPlugin extends BaseClientPlugin
       viewMI = new JCheckBoxMenuItem("Display Annotations", false);
       viewMI.addItemListener(new ItemListener() {
           public void itemStateChanged(ItemEvent e) {
+            hudCheck();
             if(viewMI.getState()){
-              myHud.show();
+              HUDManagerFactory.getHUDManager().setVisible(myHud, true);
             }
             else{
-              myHud.hide();
+              HUDManagerFactory.getHUDManager().setVisible(myHud, false);
             }
 
             notifyViewMIItemListeners(e);
@@ -270,8 +272,9 @@ public class AnnotationPlugin extends BaseClientPlugin
      * static so that annotation components can add themselves as necessary
      * @param l
      */
-    static void addDisplayItemListener(ItemListener l){
+    static boolean addDisplayItemListener(ItemListener l){
       viewMIListeners.add(l);
+      return displayState;
     }
 
     /**
@@ -288,8 +291,8 @@ public class AnnotationPlugin extends BaseClientPlugin
      * notify all listeners that viewMI has changed
      */
     private void notifyViewMIItemListeners(ItemEvent e){
+      displayState = viewMI.getState();
       logger.info("[ANNO PLUGIN] notify listeners");
-      myHud.show();
 //      logger.info("[ANNO PLUGIN] main hud vis:" + mainHUD.isShowing() + " my hud: " + myHud.isShowing());
 //              mainHUD.show();            
 //              logger.info("[ANNO PLUGIN] main hud vis:" + mainHUD.isShowing() + " my hud: " + myHud.isShowing());
@@ -308,6 +311,7 @@ public class AnnotationPlugin extends BaseClientPlugin
      */
     static HUDComponent createHUDComponent(JComponent compo, Cell cell) {
       hudCheck();
+      logger.info("[ANNO PLUGIN] create hud compo for cell " + cell.getCellID());
       return myHud.createComponent(compo, cell);
     }
 
@@ -317,6 +321,7 @@ public class AnnotationPlugin extends BaseClientPlugin
      */
     static void removeHUDComponent(HUDComponent c) {
       hudCheck();
+      logger.info("[ANNO PLUGIN] remove hud compo..");
       myHud.removeComponent(c);
 //      mainHUD.removeComponent(c);
     }
@@ -327,6 +332,7 @@ public class AnnotationPlugin extends BaseClientPlugin
      */
     static void addHUDComponent(HUDComponent c) {
       hudCheck();
+      logger.info("[ANNO PLUGIN] add hud compo..");
       myHud.addComponent(c);
 //      mainHUD.addComponent(c);
     }
@@ -342,7 +348,7 @@ public class AnnotationPlugin extends BaseClientPlugin
               " at " + canvas.getX() + ", " + canvas.getY());
 
     // create hud, set name
-    myHud = HUDFactory.createHUD(canvas.getX(), canvas.getY(), canvas.getWidth(), canvas.getHeight());
+    myHud = HUDFactory.createHUD(canvas.getSize(), 0.25f, 0.25f, 0.50f, 0.50f);
     myHud.setName(ANNOTATION_HUD);
 
     // add to main manager
@@ -352,11 +358,10 @@ public class AnnotationPlugin extends BaseClientPlugin
     HUDComponentManager compManager = new WonderlandHUDComponentManager();
 
     // define the layout of HUD components
-    compManager.setLayoutManager(new HUDCompassLayoutManager(canvas.getWidth(), canvas.getHeight()));
+    compManager.setLayoutManager(new HUDCompassLayoutManager(myHud));
 
     // manage the components in annotations hud, show hud
     myHud.setComponentManager(compManager);
-    myHud.show();
 
     
 

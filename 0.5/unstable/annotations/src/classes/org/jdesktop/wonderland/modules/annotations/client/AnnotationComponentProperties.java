@@ -70,7 +70,7 @@ public class AnnotationComponentProperties extends JPanel implements PropertiesF
   }
 
   public void close() {
-    logger.info("[anno compo properties] open!");
+    logger.info("[anno compo properties] close!");
   }
 
 /**
