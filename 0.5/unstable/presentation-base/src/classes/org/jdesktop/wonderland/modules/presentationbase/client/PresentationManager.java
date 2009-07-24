@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -80,52 +81,62 @@ public class PresentationManager {
             toolbarHUD = mainHUD.createComponent(panel);
             toolbarHUD.setPreferredLocation(Layout.NORTHWEST);
             toolbarHUD.setName("Presentation Tools");
-            mainHUD.addComponent(toolbarHUD);
-
-            // saving this code here in case I need close-listeners later
-            // and want to remember how to do it. (this is the old version,
-            // pre HUD event API changes)
-//                    layoutHUD.addComponentListener(new HUDComponentListener() {
-//            public void HUDComponentChanged(HUDComponentEvent event) {
-//                if (event.getEventType() == ComponentEventType.DISAPPEARED) {
-//                    // Tell all of the affordances to remove themselves by posting
-//                    // an event to the input system as such. Also tell the
-//                    // affordance panel it has closed
-//                    layoutPanel.closed();
-//                }
-//            }
-//        });
-            
+            mainHUD.addComponent(toolbarHUD);            
         }
 
         if(visibility) {
-            toolbarHUD.setVisible(true);
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    toolbarHUD.setVisible(true);
+                }
+
+            });
             logger.warning("Set toolbar visible!");
         }
         else {
-            toolbarHUD.setVisible(false);
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    toolbarHUD.setVisible(false);
+                }
+
+            });
             logger.warning("hiding toolbarHUD");
         }
     }
 
-    public void addToolbarButton(JButton b) {
+    public void addToolbarButton(final JButton b) {
         logger.warning("adding button: " + b);
 
         if(!toolbarButtons.contains(b)) {
             toolbarButtons.add(b);
-            toolbar.add(b);
+         SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    toolbar.add(b);
+                }
+
+            });
 
             if(toolbarButtons.size()==1)
                 setToolbarVisibility(true);
         }
     }
 
-    public void removeToolbarButton(JButton b) {
+    public void removeToolbarButton(final JButton b) {
         logger.warning("removing button: " + b);
 
         if(toolbarButtons.contains(b)) {
         toolbarButtons.remove(b);
-        toolbar.remove(b);
+
+         SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    toolbar.remove(b);
+                }
+
+            });
 
         logger.warning("done removing, about to check and see if we should hide toolbar");
 
