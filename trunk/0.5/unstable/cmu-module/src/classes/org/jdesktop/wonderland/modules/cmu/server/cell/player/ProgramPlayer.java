@@ -15,14 +15,12 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client.cell;
+package org.jdesktop.wonderland.modules.cmu.server.cell.player;
 
 import java.io.File;
-import org.jdesktop.wonderland.modules.cmu.client.cell.jme.cellrenderer.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.alice.apis.moveandturn.Program;
-import org.jdesktop.wonderland.modules.cmu.common.cell.PlaybackDefaults;
 
 /**
  * A standard CMU program which provides access to its scene graph
@@ -30,22 +28,22 @@ import org.jdesktop.wonderland.modules.cmu.common.cell.PlaybackDefaults;
  *
  * @author kevin
  */
-public class CMUProgram extends Program {
+public class ProgramPlayer extends Program {
 
     private static final long DEFAULT_ADVANCE_DURATION = 10000;
     private edu.cmu.cs.dennisc.alice.virtualmachine.VirtualMachine vm;
     private edu.cmu.cs.dennisc.alice.ast.AbstractType sceneType;
     private Object scene;
-    private CMUScene cmuScene;
+    private SceneWrapper cmuScene;
     private boolean started = false;        // True once the program has begun to execute.
     private float elapsed = 0;              // The total amount of "time" this program has been executing.
     private float playbackSpeed = 0;        // The current playback speed.
     private long timeOfLastSpeedChange;     // System time at the last speed change (in milliseconds).
     private final Object speedChangeLock = new Object();    // Used to prevent multiple threads from changing the program speed.
 
-    public CMUProgram() {
+    public ProgramPlayer() {
         super();
-        this.cmuScene = new CMUScene();
+        this.cmuScene = new SceneWrapper();
         this.timeOfLastSpeedChange = System.currentTimeMillis();
     }
 
@@ -65,7 +63,7 @@ public class CMUProgram extends Program {
         return elapsed + ((System.currentTimeMillis() - this.timeOfLastSpeedChange) * this.getPlaybackSpeed());
     }
 
-    public CMUScene getCmuScene() {
+    public SceneWrapper getCmuScene() {
         return cmuScene;
     }
 
@@ -109,19 +107,19 @@ public class CMUProgram extends Program {
         new Thread(new Runnable() {
 
             public void run() {
-                synchronized (CMUProgram.this.speedChangeLock) {
+                synchronized (ProgramPlayer.this.speedChangeLock) {
                     try {
                         //CMUProgram.this.setStarted();
-                        float timeToAdvance = time - CMUProgram.this.getElapsedTime();
-                        float prevPlaybackSpeed = CMUProgram.this.getPlaybackSpeed();
+                        float timeToAdvance = time - ProgramPlayer.this.getElapsedTime();
+                        float prevPlaybackSpeed = ProgramPlayer.this.getPlaybackSpeed();
                         if (timeToAdvance > 0) {
                             float speed = timeToAdvance / (float) duration;
-                            CMUProgram.this.setPlaybackSpeed(speed);
+                            ProgramPlayer.this.setPlaybackSpeed(speed);
                             Thread.sleep(duration);
-                            CMUProgram.this.setPlaybackSpeed(prevPlaybackSpeed);
+                            ProgramPlayer.this.setPlaybackSpeed(prevPlaybackSpeed);
                         }
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(CMUProgram.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
@@ -212,7 +210,7 @@ public class CMUProgram extends Program {
         try {
             Thread.sleep(100);
         } catch (InterruptedException ex) {
-            Logger.getLogger(CMUProgram.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.setPlaybackSpeed(this.getPlaybackSpeed());
     }
@@ -233,5 +231,10 @@ public class CMUProgram extends Program {
     public void setScene(org.alice.apis.moveandturn.Scene sc) {
         super.setScene(sc);
         cmuScene.setScene(sc);
+    }
+
+    static public void main(String[] args) {
+        ProgramPlayer p = new ProgramPlayer();
+        p.setFile(new File("/home/kevin/Documents/Employment/Sun/src/alice-module/alice-files/girl-house.a3p"));
     }
 }

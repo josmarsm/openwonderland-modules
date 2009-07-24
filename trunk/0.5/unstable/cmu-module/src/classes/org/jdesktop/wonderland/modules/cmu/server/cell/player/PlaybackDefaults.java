@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.cmu.common.cell;
+package org.jdesktop.wonderland.modules.cmu.server.cell.player;
 
 /**
  *
