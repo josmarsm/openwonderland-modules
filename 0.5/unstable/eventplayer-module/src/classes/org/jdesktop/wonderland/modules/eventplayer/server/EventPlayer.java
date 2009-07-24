@@ -281,6 +281,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
 
     public void allCellsRetrieved() {
        logger.info("All Cells Retrieved");
+       playerCellMORef.get().allCellsRetrieved();
     }
 
     public void allChangesPlayed() {
@@ -294,7 +295,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         }
         
         cellMap.put(oldCellID, newCellID);
-        //logger.info("new cellID from map: " + cellMap.get(oldCellID));
+        logger.info("new cellID from map: " + cellMap.get(oldCellID));
 
     }
 
@@ -308,6 +309,8 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
             return;
         }
         CellManagerMO.getCellManager().removeCellFromWorld(targetCell);
+        //remove the unloaded cell from the map
+        cellMap.remove(oldCellID);
     }
 
     
