@@ -26,9 +26,11 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationPane;
 import org.jdesktop.wonderland.modules.annotations.client.display.PanelConfig;
 import org.jdesktop.wonderland.modules.annotations.common.Annotation;
+import org.jdesktop.wonderland.modules.hud.client.HUDComponent2D;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataComponent;
 import org.jdesktop.wonderland.modules.metadata.client.cache.CacheEvent;
 import org.jdesktop.wonderland.modules.metadata.client.cache.CacheEventListener;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.ModifyCacheAction;
 
 /**
@@ -41,7 +43,9 @@ public class AnnotationComponent extends CellComponent
   /**
    * reference to parent cell's metadata component
    */
-  @UsesCellComponent private MetadataComponent metaCompo;
+  @UsesCellComponent
+  private MetadataComponent metaCompo;
+  
   /**
    * look for annotationpanes of this component
    */
@@ -51,8 +55,8 @@ public class AnnotationComponent extends CellComponent
    * maps annotations (from associated MetadataComponent) to hud components
    * displayed in world
    */
-  HashMap<Annotation, HUDComponent> annotations = new HashMap<Annotation, HUDComponent>();
-
+  HashMap<MetadataID, HUDComponent> annotations = new HashMap<MetadataID, HUDComponent>();
+  
   /**
    * global display annotations setting, from plugin
    */
@@ -72,7 +76,7 @@ public class AnnotationComponent extends CellComponent
    * count of annotation components, used to assign different colors to component's panes
    * @param cell
    */
-  private static int panelConfigCount = 0;
+  private static int panelConfigCount = 1;
 
   // TODO temp test
   //  private AnnotationPane p;
@@ -93,12 +97,16 @@ public class AnnotationComponent extends CellComponent
     BoundingVolume vol = cell.getWorldBounds();
     Vector3f cellCenter = cell.getWorldBounds().getCenter();
     baseAnnoLocation = new Vector3f(cellCenter);
+//    baseAnnoLocation = new Vector3f(2.0f,2.0f,2.0f);
     // TODO obviously this is not the logic we want in the end
     logger.info("cell center is: "+ cellCenter);
+    logger.info("cell vol is: "+ vol);
+    // TODO this should be working...
     while(vol.contains(baseAnnoLocation)){
+      logger.info("[ANNO COMPO] moving base locations");
       baseAnnoLocation = baseAnnoLocation.add(1.0f, 3.0f, 1.0f);
     }
-    logger.info("base location is: "+ cellCenter);
+    logger.info("base location is: "+ baseAnnoLocation);
 //
 //    myHudCompo = AnnotationPlugin.createHUDComponent(p, cell);
 //    myHudCompo.setWorldLocation(startingAnnoLoc);
@@ -107,25 +115,8 @@ public class AnnotationComponent extends CellComponent
     // listen to changes in associated metadata compo's metadata cache
     metaCompo.addCacheListener(this);
 
-
-    // fetch annotations
-    // do this in a separate thread: when a component is added via the the properties
-    // pane, it will result in the component being constructed in the clientside
-    // darkstar message receiver thread.
-    //
-    // getAnnotations could result in a sendAndWait call to the server. That
-    // results in the darkstarReceiver thread blocking and waiting, since that is
-    // the thread running this constructor. If the receiver itself blocks, no
-    // messages can be received and the sendAndWait will hang forever.
-    //
-    // by spinning a new thread here, that new thread will (potentially) block
-    // instead of the message receiver.
-    new Thread(new Runnable(){
-
-      public void run() {
-        getAnnotations();
-      }
-    }).start();
+    // prepare annotations
+    rebuildAnnotations();
     
   }
 
@@ -138,16 +129,16 @@ public class AnnotationComponent extends CellComponent
     globalDisplay = true;
 
     // TODO temp testing
-    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+//    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     HUD myHud = HUDManagerFactory.getHUDManager().getHUD(AnnotationPlugin.ANNOTATION_HUD);
-    java.util.Iterator<HUDComponent> itr = mainHUD.getComponents();
+//    java.util.Iterator<HUDComponent> itr = mainHUD.getComponents();
     HUDComponent hc;
-    logger.info("[ANNO COMPO] hc's inside main hud:");
-    while(itr.hasNext()){
-      hc = itr.next();
-      logger.info("compo: class name:" + hc.getClass().getName());
-    }
-    itr = myHud.getComponents();
+//    logger.info("[ANNO COMPO] hc's inside main hud:");
+//    while(itr.hasNext()){
+//      hc = itr.next();
+//      logger.info("compo: class name:" + hc.getClass().getName());
+//    }
+    java.util.Iterator<HUDComponent> itr = myHud.getComponents();
     logger.info("[ANNO COMPO] hc's inside my hud:");
     while(itr.hasNext()){
       hc = itr.next();
@@ -185,8 +176,9 @@ public class AnnotationComponent extends CellComponent
   protected void setStatus(CellStatus status, boolean increasing){
     super.setStatus(status, increasing);
     if(status == CellStatus.RENDERING && increasing){
-      logger.info("[ANNO COMPO] add self as listener!");
-      AnnotationPlugin.addDisplayItemListener(this);
+      
+      globalDisplay = AnnotationPlugin.addDisplayItemListener(this);
+      logger.info("[ANNO COMPO] add self as listener! global display val is: " + globalDisplay);
     }
     else if(status == CellStatus.ACTIVE && !increasing){
       logger.info("[ANNO COMPO] remove self as listener!");
@@ -221,9 +213,10 @@ public class AnnotationComponent extends CellComponent
     // or if the entire cache was invalidated (which could affect any type of
     // metadata)
     Annotation a = null;
-    if(e.getMetadata() == null){
-      logger.severe("[ANNO COMPO] cache event: metadata was null!!!");
-    }
+    logger.info("[ANNO COMPO] cache event occurred");
+//    if(e.getMetadata() == null){
+//      logger.info("[ANNO COMPO] cache event: metadata was null!!!");
+//    }
     if(e.getMetadata() != null && e.getMetadata() instanceof Annotation){
       a = (Annotation) e.getMetadata();
     }
@@ -241,7 +234,7 @@ public class AnnotationComponent extends CellComponent
             modifyAnnotation(a);
             break;
         case INVALIDATE:
-            getAnnotations();
+            rebuildAnnotations();
             break;
     }
   }
@@ -255,27 +248,46 @@ public class AnnotationComponent extends CellComponent
    * @param a
    */
   private void addAnnotation(Annotation a) {
-    logger.info("[ANNO COMPO] add ");
+    logger.info("[ANNO COMPO] adding annotation to cell " + cell.getCellID());
+    if(annotations.get(a.getID()) != null){
+      logger.info("[ANNO COMPO] annotation already registered and has non-null hud compo!");
+      logger.info("[ANNO COMPO] its hud compo is visible in the world:" + annotations.get(a.getID()));
+      return;
+    }
+
+    logger.info("[ANNO COMPO]" + a);
+
     // create the panel that will represent this annotation
     AnnotationPane p = new AnnotationPane(panelConfig, a, cell);
     p.addSaveButtonListener(new AnnotationSaveListener(a, p));
     p.addViewOnHudButtonListener(new AnnotationViewOnHudListener(a));
+
     // create hud component, show in world if necessary
     HUDComponent myHudCompo = AnnotationPlugin.createHUDComponent(p, cell);
+    myHudCompo.setTransparency(0.7f);
     myHudCompo.setWorldLocation(baseAnnoLocation);
-    annotations.put(a, myHudCompo);
+    logger.info("[ANNO COMPO] base location is:" + baseAnnoLocation);
+    annotations.put(a.getID(), myHudCompo);
 
     // add new compo to hud BEFORE you set it visible
     AnnotationPlugin.addHUDComponent(myHudCompo);
     // display if global AND this cell are both set to display
-    myHudCompo.setWorldVisible((globalDisplay && display));
+    if((globalDisplay && display)){
+      logger.info("[ANNO COMPO] SETTING WORLD VISIBLE");
+      myHudCompo.setWorldVisible((globalDisplay && display));
+    }
+    else{
+      logger.info("[ANNO COMPO] not WORLD VISIBLE.. global is" + globalDisplay + " " + " and local is " + display);
+    }
+    
 
     // TODO temporary until edit controls are created!
     // move default location
     float x = baseAnnoLocation.getX();
     float y = baseAnnoLocation.getY();
     float z = baseAnnoLocation.getZ();
-    baseAnnoLocation = baseAnnoLocation.add(3.0f, 3.0f, 3.0f);
+    baseAnnoLocation = baseAnnoLocation.add(2.0f, 2.0f, 0.5f);
+    logger.info("[ANNO COMPO] adjusted base location is:" + baseAnnoLocation);
     
     
 
@@ -283,33 +295,45 @@ public class AnnotationComponent extends CellComponent
 
 
   /**
-   * remove an annotation
+   * remove an annotation, also removing its hud component
    * @param a
    */
-  private void removeAnnotation(Annotation a) {
-    logger.info("[ANNO COMPO] remove ");
-    HUDComponent hc = annotations.get(a);
+  private void removeAnnotation(MetadataID annoID) {
+    logger.info("[ANNO COMPO] remove annotation with id " + annoID);
+    if(!annotations.containsKey(annoID)){
+      logger.info("[ANNO COMPO] remove annotation note: trying to remove non-registered annotation with id " + annoID);
+      return;
+    }
+    HUDComponent hc = annotations.get(annoID);
     if(hc == null){
-      logger.info("[ANNO COMPO] note: trying to remove a non existent annotation" +
-              " with id" + a.getID());
+      logger.info("[ANNO COMPO] remove annotation note: hc was null for annotation with id " + annoID);
       return;
     }
     
     // remove hud component
     AnnotationPlugin.removeHUDComponent(hc);
-    annotations.remove(a);
+    annotations.remove(annoID);
     hc.setWorldVisible(false);
     hc.setVisible(false);
     hc = null;
   }
 
   /**
-   * remove all annotations
+   * convenience overload
+   * remove an annotation, also removing its hud component
+   * @param a
+   */
+  private void removeAnnotation(Annotation a) {
+    removeAnnotation(a.getID());
+  }
+
+  /**
+   * remove all annotations, eliminating their hud components as well
    * @param a
    */
   private void removeAllAnnotations() {
-    logger.info("[ANNO COMPO] remove ");
-    for(Annotation a:annotations.keySet()){
+    logger.info("[ANNO COMPO] remove all anotations");
+    for(MetadataID a:annotations.keySet()){
       removeAnnotation(a);
     }
   }
@@ -320,24 +344,35 @@ public class AnnotationComponent extends CellComponent
    * @param a modified annotation
    */
   private void modifyAnnotation(Annotation a) {
-    logger.info("[ANNO COMPO] mod ");
-    HUDComponent hc = annotations.get(a);
+    logger.info("[ANNO COMPO] mod annotation, passed in:" + "\n" + a);
+    HUDComponent hc = annotations.get(a.getID());
     if(hc == null){
       logger.severe("[ANNO COMPO] error: trying to modify a non existent annotation" +
               " with id" + a.getID());
       return;
     }
-    Vector3f oldLoc = hc.getWorldLocation();
-    removeAnnotation(a);
-    addAnnotation(a);
-    // reset to old location
-    hc = annotations.get(a);
-    hc.setWorldLocation(oldLoc);
+
+    // cast to HC's implementation class to get backing JComponent out
+    HUDComponent2D hc2d = (HUDComponent2D) hc;
+    // cast component back to an AnnotationPane
+    AnnotationPane ap = (AnnotationPane) hc2d.getComponent();
+    // now we can reset all of its fields to match passed annotation
+    ap.setAuthor(a.getCreator());
+    ap.setText(a.getText());
+    ap.setDate(a.getModified());
+    
+
+//    Vector3f oldLoc = hc.getWorldLocation();
+//    removeAnnotation(a);
+//    addAnnotation(a);
+//    // reset to old location
+//    hc = annotations.get(a.getID());
+//    hc.setWorldLocation(oldLoc);
   }
 
-  // these functions are called after an annotation is updated within the component (e.g., an
+  // These functions are called after an annotation is updated within the component (e.g., an
   // annotation pane has been edited).
-  // Keeps Metadata informed of the change
+  // Informs associated Metadata component of the change.
   /**
    * Inform Metadata component of an annotation (e.g., a piece of Metadata) removal
    * @param a
@@ -356,17 +391,45 @@ public class AnnotationComponent extends CellComponent
     metaCompo.modifyMetadata(a);
   }
 
-  private void getAnnotations() {
-    logger.info("[ANNO COMPO] get annotations (new compo, or cache was invalidated)");
-    ArrayList<Annotation> annos = metaCompo.getMetadataOfType(Annotation.class);
-    if(annos == null){
-      logger.info("[ANNO COMPO] annos was null!");
-      return;
-    }
-    logger.info("[ANNO COMPO] adding " + annos.size() + " annotations");
-    for(Annotation a:annos){
-      addAnnotation(a);
-    }
+  /**
+   * Clear out all current annotations and hud components, then
+   * get all annotations from the associated metadata component and
+   * add them here, creating their hud components
+   *
+   * Creates a new thread to request the annotations.
+   *
+   * will clear out
+   */
+  private void rebuildAnnotations() {
+    logger.info("[ANNO COMPO] rebuild annotations (new compo, or cache was invalidated)");
+    removeAllAnnotations();
+
+    // fetch annotations from metadata component
+    // do this in a separate thread: when a component is added via the the properties
+    // pane, it can result in the component being constructed in the clientside
+    // darkstar message receiver thread.
+    //
+    // Then, the send and wait here results
+    // in the darkstarReceiver thread blocking and waiting, since that is
+    // the thread running this constructor. If the receiver itself blocks, no
+    // messages can be received and the sendAndWait will hang forever.
+    //
+    // by spinning a new thread here, that new thread will (potentially) block
+    // instead of the message receiver.
+    new Thread(new Runnable(){
+
+      public void run() {
+        ArrayList<Annotation> annos = metaCompo.getMetadataOfType(Annotation.class);
+        if(annos == null){
+          logger.info("[ANNO COMPO] annos was null!");
+          return;
+        }
+        logger.info("[ANNO COMPO] adding " + annos.size() + " annotations");
+        for(Annotation a:annos){
+          addAnnotation(a);
+        }
+      }
+    }).start();
   }
   
   /**
@@ -375,13 +438,17 @@ public class AnnotationComponent extends CellComponent
    * @param b show or hide annotation
    */
   public void setAnnotationHudVisible(Annotation a, boolean b){
-    HUDComponent hc = annotations.get(a);
+    HUDComponent hc = annotations.get(a.getID());
     if(hc == null){
       logger.severe("[ANNO COMPO] error: trying to setAnnotationHudVisible a non-exisiting annotation" +
               "component with id " + a.getID());
     }
     hc.setVisible(b);
-    logger.info("hc is now:" + hc);
+    if(b == true){
+      logger.info("stay visible in world!");
+      hc.setWorldVisible(true);
+    }
+    logger.info("[ANNO COMPO] setting visible hc is now:" + hc);
   }
 
   /**
@@ -391,6 +458,7 @@ public class AnnotationComponent extends CellComponent
    * @return
    */
   private PanelConfig getPanelConfig() {
+    logger.info("[ANNO COMPO] get pc... count is" + panelConfigCount);
     PanelConfig pc = null;
     switch(panelConfigCount){
       case 0:
@@ -446,9 +514,11 @@ public class AnnotationComponent extends CellComponent
     }
 
     public void actionPerformed(ActionEvent e) {
-//      anno.setText(pane.getText());
-      // don't make any changes here... the metadata component will register
       // changes, then send them back here
+      AnnotationComponent.logger.info("[ANNO COMPONENT] save button for anno with ID " + anno.getID() + " clicked");
+      AnnotationComponent.logger.info("[ANNO COMPONENT] should change text from " + anno.getText() );
+      AnnotationComponent.logger.info("[ANNO COMPONENT] should change text to " + pane.getEditableText() );
+      anno.setText(pane.getEditableText());
       modifyAnnotationInMetadata(anno);
     }
   }

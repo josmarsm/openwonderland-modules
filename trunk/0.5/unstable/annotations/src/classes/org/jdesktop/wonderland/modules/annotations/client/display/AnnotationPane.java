@@ -21,6 +21,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionListener;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.modules.annotations.common.Annotation;
 
 /**
@@ -35,7 +36,7 @@ public class AnnotationPane extends javax.swing.JPanel {
     private PanelConfig config;
 
     private static final String userName = LoginManager.getPrimary().getPrimarySession().getUserID().getUsername();
-
+//    private static final WonderlandIdentity userID = LoginManager.getPrimary().getPrimarySession().getUserID();
 
     /** Creates new form AnnotationPane 
      * @param pc configuration (fonts, colors) for this pane
@@ -45,21 +46,23 @@ public class AnnotationPane extends javax.swing.JPanel {
     public AnnotationPane(PanelConfig pc, Annotation a, Cell c) {
       config = pc;
       initComponents();
+      setBackground(pc.getBackgroundColor());
+      setForeground(pc.getFontColor());
       // set author/editted to be italic
-       Font italicFont =new Font(pc.getFont().getName(),Font.ITALIC,pc.getFont().getSize());
-       author.setFont(italicFont);
-       date.setFont(italicFont);
-       setPreferredSize(new Dimension(400, 350));
-       
-       // editing buttons not visible until editing begun
-       showEdits(false);
+      Font italicFont =new Font(pc.getFont().getName(),Font.ITALIC,pc.getFont().getSize());
+      author.setFont(italicFont);
+      date.setFont(italicFont);
+      setPreferredSize(new Dimension(350, 300));
 
-       // set text to reflect annotation
-       author.setText(a.getCreator());
-       date.setText(a.getModified());
-       cellID.setText(c.getCellID().toString());
-       cellName.setText(c.getName());
-       message.setText(a.getText());
+      // editing buttons not visible until editing begun
+      showEdits(false);
+
+      // set text to reflect annotation
+      author.setText(a.getCreator());
+      date.setText(a.getModified());
+      cellID.setText(c.getCellID().toString());
+      cellName.setText(c.getName());
+      message.setText(a.getText());
     }
 
     /**
@@ -250,7 +253,9 @@ public class AnnotationPane extends javax.swing.JPanel {
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
       // component is added as listener, handles actual saving
       // here, just hide the save button
+//      message.setText(editableMessage.getText());
       saveButton.setEnabled(false);
+      showEdits(false);
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void editableMessageKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_editableMessageKeyTyped
@@ -292,6 +297,57 @@ public class AnnotationPane extends javax.swing.JPanel {
   public String getText(){
     return message.getText();
   }
+
+  /**
+   * set current text of panel
+   */
+  public void setText(String s){
+    message.setText(s);
+  }
+
+  /**
+   * get current text of panel
+   */
+  public String getEditableText(){
+    return editableMessage.getText();
+  }
+
+  /**
+   * set current text of panel
+   */
+  public void setEditableText(String s){
+    editableMessage.setText(s);
+  }
+  
+  /**
+   * get current Author of panel
+   */
+  public String getAuthor(){
+    return author.getText();
+  }
+
+  /**
+   * set current Author of panel
+   */
+  public void setAuthor(String s){
+    author.setText(s);
+  }
+  
+  /**
+   * get current date of panel
+   */
+  public String getDate(){
+    return date.getText();
+  }
+
+  /**
+   * set current date of panel
+   */
+  public void setDate(String s){
+    date.setText(s);
+  }
+
+
 
   /**
    * switch between editing mode and none editing mode.
