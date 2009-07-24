@@ -17,32 +17,34 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.cell;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
 import com.jme.scene.Node;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.ObjectInputStream;
+import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.assetmgr.Asset;
-import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
-import org.jdesktop.wonderland.common.ContentURI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.cmu.client.cell.jme.cellrenderer.CMUCellRenderer;
+import org.jdesktop.wonderland.modules.cmu.client.cell.jme.cellrenderer.TransformableParent;
+import org.jdesktop.wonderland.modules.cmu.client.cell.jme.cellrenderer.VisualNode;
 import org.jdesktop.wonderland.modules.cmu.common.cell.CMUCellChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.cell.CMUCellClientState;
+import org.jdesktop.wonderland.modules.cmu.common.cell.player.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.cell.player.VisualMessage;
+import wonderland.MirrorWindow;
 
 /**
  * Cell to display and interact with a CMU scene.
@@ -50,13 +52,14 @@ import org.jdesktop.wonderland.modules.cmu.common.cell.CMUCellClientState;
  */
 public class CMUCell extends Cell {
 
-    private CMUProgram program = null;
     private CMUCellRenderer renderer;
     private MouseEventListener listener;
     private boolean messageReceiverAdded = false;
     private String cmuURI = null;
+    private final TransformableParent sceneRoot = new TransformableParent();
+    private final MirrorWindow mirrorWindow = new MirrorWindow();
 
-    class MouseEventListener extends EventClassListener {
+    private class MouseEventListener extends EventClassListener {
 
         @Override
         public Class[] eventClassesToConsume() {
@@ -69,9 +72,10 @@ public class CMUCell extends Cell {
             if (mbe.isClicked() == false || mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
-
+/*
             CMUCellChangeMessage msg = new CMUCellChangeMessage(getCellID(), getPlaybackSpeed());
             sendCellMessage(msg);
+ */
         }
 
         @Override
@@ -80,45 +84,66 @@ public class CMUCell extends Cell {
             if (mbe.isClicked() == false || mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
-
+/*
             if (program.isPlaying()) {
                 program.pause();
             } else {
                 program.play();
             }
+ * */
         }
     }
 
-    class CMUCellMessageReceiver implements ComponentMessageReceiver {
+    private class CMUCellMessageReceiver implements ComponentMessageReceiver {
 
         public void messageReceived(CellMessage message) {
             CMUCellChangeMessage change = (CMUCellChangeMessage) message;
             if (!change.getSenderID().equals(getCellCache().getSession().getID())) {
-                program.setPlaybackSpeed(change.getPlaybackSpeed());
+                //program.setPlaybackSpeed(change.getPlaybackSpeed());
+            }
+        }
+    }
+
+    private class VisualChangeReceiver extends Thread {
+        @Override
+        public void run() {
+            try {
+                ObjectInputStream inputStream;
+                Socket connection = new Socket("localhost", 5555);
+                inputStream = new ObjectInputStream(connection.getInputStream());
+                while (true) {
+                    Object received = inputStream.readObject();
+                    if (received.getClass().isAssignableFrom(TransformationMessage.class)) {
+                        sceneRoot.applyTransformationToChild((TransformationMessage)received);
+                    }
+                    if (received.getClass().isAssignableFrom(VisualMessage.class)) {
+                        VisualNode newNode = ((VisualMessage)received).createNode();
+                        synchronized(sceneRoot) {
+                            sceneRoot.attachChild(newNode);
+                            mirrorWindow.addModel(newNode);
+                        }
+                    }
+                }
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(CMUCell.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnknownHostException ex) {
+                Logger.getLogger(CMUCell.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(CMUCell.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
 
     /**
-     * Create an instance of a CMU cell.
-     *
-     * @param cellID The ID of the cell.
-     * @param cellCache The cell cache which instantiated, and owns, this cell.
+     * Standard constructor.
      */
     public CMUCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-    }
-
-    public float getPlaybackSpeed() {
-        return program.getPlaybackSpeed();
-    }
-
-    public float getElapsedTime() {
-        return program.getElapsedTime();
+        new VisualChangeReceiver().start();
     }
 
     public Node getSceneRoot() {
-        return program.getCmuScene();
+        return this.sceneRoot;
     }
 
     /**
@@ -131,9 +156,9 @@ public class CMUCell extends Cell {
 
         CMUCellClientState cmuClientState = (CMUCellClientState) clientState;
         if (cmuURI == null || !(cmuURI.equals(cmuClientState.getCmuURI()))) {
-            program = new CMUProgram();
             cmuURI = cmuClientState.getCmuURI();
 
+            /*
             // Load local cache file, and send it to the program.
             try {
                 URL url = AssetUtils.getAssetURL(cmuURI);
@@ -144,13 +169,14 @@ public class CMUCell extends Cell {
                     System.out.println("Couldn't load asset: " + a);
                 }
             } catch (MalformedURLException ex) {
-                Logger.getLogger(CMUProgram.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
             } catch (URISyntaxException ex) {
-                Logger.getLogger(CMUProgram.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
             }
 
             program.setPlaybackSpeed(cmuClientState.getPlaybackSpeed());
             program.advanceToTime(cmuClientState.getElapsed());
+             * */
         }
     }
 
@@ -208,6 +234,7 @@ public class CMUCell extends Cell {
         }
     }
 
+    // TODO: Show HUD
     protected void showHUD() {
     }
 
