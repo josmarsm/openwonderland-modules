@@ -28,9 +28,9 @@ import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent;
-import org.jdesktop.wonderland.client.hud.HUDComponentEvent.ComponentEventType;
-import org.jdesktop.wonderland.client.hud.HUDComponentListener;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 
@@ -59,9 +59,10 @@ public class PDFSpreaderClientPlugin implements ContextMenuFactorySPI {
 
         layoutHUD = mainHUD.createComponent(layoutPanel);
         layoutHUD.setPreferredLocation(Layout.SOUTH);
-        layoutHUD.addComponentListener(new HUDComponentListener() {
-            public void HUDComponentChanged(HUDComponentEvent event) {
-                if (event.getEventType() == ComponentEventType.DISAPPEARED) {
+        layoutHUD.setName("PDF Layout Attributes");
+        layoutHUD.addEventListener(new HUDEventListener() {
+            public void HUDObjectChanged(HUDEvent event) {
+                if (event.getEventType() == HUDEventType.DISAPPEARED) {
                     // Tell all of the affordances to remove themselves by posting
                     // an event to the input system as such. Also tell the
                     // affordance panel it has closed
