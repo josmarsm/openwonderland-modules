@@ -24,7 +24,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.cmu.common.cell.CMUCellChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.cell.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.cell.CMUCellServerState;
-import org.jdesktop.wonderland.modules.cmu.server.cell.player.PlaybackDefaults;
+import org.jdesktop.wonderland.modules.cmu.player.PlaybackDefaults;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;

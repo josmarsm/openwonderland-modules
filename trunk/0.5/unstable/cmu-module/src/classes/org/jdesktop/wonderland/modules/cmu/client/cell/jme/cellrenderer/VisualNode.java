@@ -18,7 +18,7 @@
 
 package org.jdesktop.wonderland.modules.cmu.client.cell.jme.cellrenderer;
 
-import org.jdesktop.wonderland.modules.cmu.common.cell.player.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.client.cell.TransformationMessage;
 
 /**
  *

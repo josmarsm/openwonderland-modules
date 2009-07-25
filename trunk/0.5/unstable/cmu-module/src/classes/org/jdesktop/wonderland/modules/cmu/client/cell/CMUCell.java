@@ -42,8 +42,6 @@ import org.jdesktop.wonderland.modules.cmu.client.cell.jme.cellrenderer.Transfor
 import org.jdesktop.wonderland.modules.cmu.client.cell.jme.cellrenderer.VisualNode;
 import org.jdesktop.wonderland.modules.cmu.common.cell.CMUCellChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.cell.CMUCellClientState;
-import org.jdesktop.wonderland.modules.cmu.common.cell.player.TransformationMessage;
-import org.jdesktop.wonderland.modules.cmu.common.cell.player.VisualMessage;
 import wonderland.MirrorWindow;
 
 /**
@@ -109,10 +107,11 @@ public class CMUCell extends Cell {
         public void run() {
             try {
                 ObjectInputStream inputStream;
-                Socket connection = new Socket("localhost", 5555);
+                Socket connection = new Socket("127.0.0.1", 5557);
                 inputStream = new ObjectInputStream(connection.getInputStream());
                 while (true) {
                     Object received = inputStream.readObject();
+                    System.out.println("Received object: " + received);
                     if (received.getClass().isAssignableFrom(TransformationMessage.class)) {
                         sceneRoot.applyTransformationToChild((TransformationMessage)received);
                     }
@@ -234,7 +233,7 @@ public class CMUCell extends Cell {
         }
     }
 
-    // TODO: Show HUD
+    //TODO: Show HUD
     protected void showHUD() {
     }
 
