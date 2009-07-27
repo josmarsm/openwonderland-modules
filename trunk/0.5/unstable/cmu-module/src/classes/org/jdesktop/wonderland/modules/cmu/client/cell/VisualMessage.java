@@ -5,7 +5,6 @@
 package org.jdesktop.wonderland.modules.cmu.client.cell;
 //TODO: Move this to a different package?
 
-import com.jme.scene.Node;
 import com.jme.scene.TexCoords;
 import com.jme.scene.TriMesh;
 import com.jme.util.geom.BufferUtils;
@@ -72,26 +71,12 @@ public class VisualMessage implements Serializable {
         }
 
         // Apply texture.
-        applyTextureToNode(node);
+        //node.applyTexture(this.getTexture());
 
         // Apply transformation.
-        this.getTransformation().applyToNode(node);
+        node.applyTransformation(this.getTransformation());
 
         return node;
-    }
-
-    /**
-     * Extract the texture image for this message, and wrap it around the given node.
-     * @param node The node to receive the texture
-     */
-    protected void applyTextureToNode(Node node) {
-/*        TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
-        Texture t = null;
-        t = TextureManager.loadTexture(this.getTexture(), Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
-        t.setWrap(Texture.WrapMode.Repeat);
-        ts.setTexture(t);
-        ts.setEnabled(true);
-        node.setRenderState(ts);*/
     }
 
     /**

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import com.jme.scene.Node;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,16 +107,16 @@ public class CMUCell extends Cell {
         @Override
         public void run() {
             try {
-                ObjectInputStream inputStream;
+                ObjectInputStream fromServer;
                 Socket connection = new Socket("127.0.0.1", 5557);
-                inputStream = new ObjectInputStream(connection.getInputStream());
+                fromServer = new ObjectInputStream(connection.getInputStream());
                 while (true) {
-                    Object received = inputStream.readObject();
+                    Object received = fromServer.readObject();
                     System.out.println("Received object: " + received);
-                    if (received.getClass().isAssignableFrom(TransformationMessage.class)) {
+                    if (TransformationMessage.class.isAssignableFrom(received.getClass())) {
                         sceneRoot.applyTransformationToChild((TransformationMessage)received);
                     }
-                    if (received.getClass().isAssignableFrom(VisualMessage.class)) {
+                    if (VisualMessage.class.isAssignableFrom(received.getClass())) {
                         VisualNode newNode = ((VisualMessage)received).createNode();
                         synchronized(sceneRoot) {
                             sceneRoot.attachChild(newNode);

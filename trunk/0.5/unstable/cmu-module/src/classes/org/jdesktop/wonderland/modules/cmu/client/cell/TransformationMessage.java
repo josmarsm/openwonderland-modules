@@ -70,23 +70,4 @@ public class TransformationMessage implements Serializable {
     public synchronized Matrix3f getRotation() {
         return this.rotation;
     }
-
-    public synchronized void applyToMatchingNode(VisualNode node) {
-        if (this.getNodeID() == node.getNodeID()) {
-            this.applyToNode(node);
-        }
-    }
-    public synchronized void applyToNode(VisualNode node) {
-        for (Spatial mesh : node.getChildren()) {
-            this.applyToMesh(mesh);
-        }
-    }
-
-    public synchronized void applyToMesh(Spatial mesh) {
-        mesh.setLocalScale(this.scale);
-        if (this.getTranslation() != null) 
-            mesh.setLocalTranslation(this.getTranslation());
-        if (this.getRotation() != null)
-            mesh.setLocalRotation(this.getRotation());
-    }
 }
