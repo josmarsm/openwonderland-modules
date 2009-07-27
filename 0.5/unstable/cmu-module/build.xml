@@ -11,16 +11,33 @@
     
     <!-- classpath modifications -->
     <pathconvert property="module-client.classpath">
-      <path location="${current.dir}/lib/alice-module.jar"/>
+        <path location="${current.dir}/lib/alice-module.jar"/>
+    </pathconvert>
+    <pathconvert property="module-common.classpath">
+        <path location="${current.dir}/lib/alice-module.jar"/>
+    </pathconvert>
+    <pathconvert property="cmu-player.classpath">
+        <path location="${current.dir}/lib/alice-module.jar"/>
     </pathconvert>
 
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
-    <target name="build" depends="-module-init, -module-compile-common, 
+    <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
-                                                -module-compile-client"/>
-    
+                                                -module-compile-client,
+                                                -cmu-compile-player"/>
+    <target name="-cmu-compile-player" depends="-module-init, -module-compile-client, -module-compile-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/player/**"/>
+            </compile-classes>
+            <compile-classpath>
+                <pathelement path="${cmu-player.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         
@@ -33,8 +50,8 @@
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
-                </clientjar> 
-    	    </client>
+                </clientjar>
+            </client>
                 
             <server>
                 
@@ -44,8 +61,21 @@
                 </serverjar>
             </server>
         </module>
-    </target>                                  
-                                           
+    </target>     
+
+    <!-- test for the stream from CMU to mtgame -->
+    <target name="test-stream" depends="dist">
+        <java classname="org.jdesktop.wonderland.modules.cmu.client.cell.StreamTest">
+            <classpath>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+                <pathelement path="${module-common.classpath}"/>
+                <pathelement path="${cmu-player.classpath}"/>
+                <pathelement path="${build.classes.dir}"/>
+            </classpath>
+            <jvmarg value="-Djava.library.path=/home/kevin/Documents/Employment/Sun/bin/Alice3Beta/ext/jogl/lib/linux-amd64"/>
+        </java>
+    </target>
     <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>
 </project>
