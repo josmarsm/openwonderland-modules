@@ -18,10 +18,12 @@
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 
 
@@ -38,11 +40,7 @@ public class MetadataManagerImpl implements MetadataManager {
         // service.test();
     }
 
-    public void test() {
-        service.test();
-    }
-
-      /**
+  /**
    * adds a new cell to the top level (e.g., has no parent besides the world)
    * @param cid id of cell to create
    */
@@ -67,7 +65,7 @@ public class MetadataManagerImpl implements MetadataManager {
    * @param cid id of cell to add metadata to
    * @param metadata metadata object to add
    */
-  public void addMetadata(CellID cid, MetadataSPI metadata){
+  public void addMetadata(CellID cid, Metadata metadata){
     this.service.addMetadata(cid, metadata);
   }
 
@@ -83,9 +81,9 @@ public class MetadataManagerImpl implements MetadataManager {
 
   /**
    * Delete the specified metadata object
-   * @param mid metadata id designating the metadata to remove
+   * @param mid MetadataID designating the metadata to remove
    */
-  public void removeMetadata(int mid){
+  public void removeMetadata(MetadataID mid){
     this.service.removeMetadata(mid);
   }
 
@@ -108,7 +106,7 @@ public class MetadataManagerImpl implements MetadataManager {
    * TODO will scan class loader take care of duplication checking anyway?
    * @param m example of the type to register
    */
-  public void registerMetadataType(MetadataSPI m) throws Exception{
+  public void registerMetadataType(Metadata m) throws Exception{
     this.service.registerMetadataType(m);
   }
 
@@ -119,10 +117,10 @@ public class MetadataManagerImpl implements MetadataManager {
    *
    * @param filters search criteria
    * @param cid id of parent cell to scope the search
-   * @return map, mapping cell id's (as Integers) whose metadata that matched the
-   * search, to a set of metadata id's that matched the search for that cell.
+   * @return map, mapping CellID's whose metadata that matched the
+   * search, to a set of MetadataID's that matched the search for that cell.
    */
-  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
+  public HashMap<CellID, Set<MetadataID> > searchMetadata(MetadataSearchFilters filters){
     return this.service.searchMetadata(filters);
   }
 
@@ -132,10 +130,10 @@ public class MetadataManagerImpl implements MetadataManager {
    *
    * @param filters search criteria
    * @param cid id of parent cell to scope the search
-   * @return map, mapping cell id's (as Integers) whose metadata that matched the
-   * search, to a set of metadata id's that matched the search for that cell.
+   * @return map, mapping CellID's whose metadata that matched the
+   * search, to a set of MetadataID's that matched the search for that cell.
    */
-  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
+  public HashMap<CellID, Set<MetadataID> > searchMetadata(MetadataSearchFilters filters, CellID cid){
     return this.service.searchMetadata(filters, cid);
   }
 
@@ -145,7 +143,7 @@ public class MetadataManagerImpl implements MetadataManager {
    * @param cid ID of the cell to reset
    * @param metadata list of metadata to add to cell
    */
-  public void setCellMetadata(CellID cid, ArrayList<MetadataSPI> metadata){
+  public void setCellMetadata(CellID cid, Collection<Metadata> metadata){
     this.service.setCellMetadata(cid, metadata);
   }
 }

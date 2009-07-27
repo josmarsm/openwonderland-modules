@@ -1,3 +1,21 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
+ */
+
 package org.jdesktop.wonderland.modules.metadata.common.basetypes;
 
 import java.io.Serializable;
@@ -6,31 +24,32 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JPanel;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataException;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataContextMenuItem;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
 
 
 /**
  * A default base class for the MetadataSystem, and default implementation
- * of the MetadataSPI.
+ * of the Metadata interface.
  *
  * @author mabonner
  */
 @MetadataType
 @MetadataContextMenuItem
-public class Metadata implements Serializable, MetadataSPI {
+public class BaseMetadata implements Serializable, Metadata {
     private CellID parentCell;
-    public final int id; // unique id
+    public final MetadataID id; // unique id
     // TODO does this need to be synchronized in some way?
     // cellregistry didn't seem to sync on cellid's...
     private static int count;
@@ -63,25 +82,25 @@ public class Metadata implements Serializable, MetadataSPI {
      *
      * @return
      */
-    public Metadata(){
+    public BaseMetadata(){
         attributes = new HashMap<String, MetadataValue>();
         // defaults
         put(CREATOR_ATTR, new MetadataValue(null, false, true, false, Datatype.STRING));
         put(CREATED_ATTR, new MetadataValue(null, false, true, false, Datatype.DATE));
         put(MODIFIER_ATTR, new MetadataValue(null, false, true, false, Datatype.STRING));
         put(MODIFIED_ATTR, new MetadataValue(null, false, true, false, Datatype.DATE));
-        id = count++  ;
+        id = new MetadataID(count++);
         return;
     }
 
-    public Metadata(String c, String cd, String m, String md){
+    public BaseMetadata(String c, String cd, String m, String md){
         attributes = new HashMap<String, MetadataValue>();
         // defaults
         put(CREATOR_ATTR, new MetadataValue(c, false, true, false, Datatype.STRING));
         put(CREATED_ATTR, new MetadataValue(cd, false, true, false, Datatype.DATE));
         put(MODIFIER_ATTR, new MetadataValue(m, false, true, false, Datatype.STRING));
         put(MODIFIED_ATTR, new MetadataValue(md, false, true, false, Datatype.DATE));
-        id = count++  ;
+        id = new MetadataID(count++);
         return;
     }
 
@@ -120,7 +139,7 @@ public class Metadata implements Serializable, MetadataSPI {
       try {
         oldVal.setVal(val);
       } catch (Exception ex) {
-        Logger.getLogger(Metadata.class.getName()).log(Level.SEVERE, null, ex);
+        Logger.getLogger(BaseMetadata.class.getName()).log(Level.SEVERE, null, ex);
       }
       attributes.put(attr, oldVal);
     }
@@ -144,12 +163,21 @@ public class Metadata implements Serializable, MetadataSPI {
         put(MODIFIER_ATTR, id.getUsername());
         put(MODIFIED_ATTR, created);
       } catch (MetadataException ex) {
-        Logger.getLogger(Metadata.class.getName()).log(Level.SEVERE, null, "error creating new" +
+        Logger.getLogger(BaseMetadata.class.getName()).log(Level.SEVERE, null, "error creating new" +
                 " metadata object via initByClient. Exception:" + ex);
       }
     }
 
-  public int getID() {
+  @Override
+  public String toString(){
+    String s = "-- ID:" + getID() + " -- " + this.getClass().getName() + " --\n";
+    for(Entry<String, MetadataValue> e:getAttributes()){
+      s += e.getKey() + ": " + e.getValue().getVal() + "\n";
+    }
+    return s;
+  }
+
+  public MetadataID getID() {
     return id;
   }
 
@@ -169,7 +197,7 @@ public class Metadata implements Serializable, MetadataSPI {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    final Metadata other = (Metadata) obj;
+    final BaseMetadata other = (BaseMetadata) obj;
     if (this.parentCell != other.parentCell && (this.parentCell == null || !this.parentCell.equals(other.parentCell))) {
       return false;
     }
@@ -186,7 +214,7 @@ public class Metadata implements Serializable, MetadataSPI {
   public int hashCode() {
     int hash = 7;
     hash = 31 * hash + (this.parentCell != null ? this.parentCell.hashCode() : 0);
-    hash = 31 * hash + this.id;
+    hash = 31 * hash + this.id.hashCode();
     hash = 31 * hash + (this.attributes != null ? this.attributes.hashCode() : 0);
     return hash;
   }

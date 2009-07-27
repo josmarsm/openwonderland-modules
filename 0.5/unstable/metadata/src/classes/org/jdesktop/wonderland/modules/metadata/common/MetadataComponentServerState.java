@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.metadata.common;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -34,11 +35,11 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 public class MetadataComponentServerState extends CellComponentServerState {
     private static Logger logger = Logger.getLogger(MetadataComponentServerState.class.getName());
 
-    private ArrayList<MetadataSPI> metadata;
+    private LinkedHashMap<MetadataID, Metadata> metadata;
 
     /** Default constructor */
     public MetadataComponentServerState() {
-        metadata = new ArrayList<MetadataSPI>();
+        metadata = new LinkedHashMap<MetadataID, Metadata>();
     }
 
     @Override
@@ -46,25 +47,35 @@ public class MetadataComponentServerState extends CellComponentServerState {
         return "org.jdesktop.wonderland.modules.metadata.server.MetadataComponentMO";
     }
 
-    public void addMetadata(MetadataSPI meta){
-      logger.info("Added metadata to server state, mid:" + meta.getID() );
-      metadata.add(meta);
+    /**
+     * Add a piece of metadata to the server state
+     * @param meta
+     */
+    public void addMetadata(Metadata meta){
+      logger.info("Adding metadata to server state:\n" + meta);
+      metadata.put(meta.getID(), meta);
     }
 
-    public void removeMetadata(MetadataSPI meta){
-      metadata.remove(meta);
+    /**
+     * Remove a piece of metadata from the server state
+     * @param id MetadataID of piece to remove
+     */
+    public void removeMetadata(MetadataID id){
+      logger.info("removing metadata with id " + id + " from server state");
+      metadata.remove(id);
     }
 
-    public void removeMetadata(int idx){
-      int count = 0;
-      for(MetadataSPI m : metadata){
-        if(m.getID() == idx){
-          metadata.remove(count);
-        }
-        count += 1;
-      }
+    /**
+     * Convenience overload
+     * @param meta
+     */
+    public void removeMetadata(Metadata meta){
+      metadata.remove(meta.getID());
     }
 
+    /**
+     * Remove every piece of metadata from the server state
+     */
     public void removeAllMetadata(){
       logger.info("Removed all metadata from server state");
       metadata.clear();
@@ -74,26 +85,51 @@ public class MetadataComponentServerState extends CellComponentServerState {
 //        return metadata.elements();
 //    }
 
-    public ArrayList<MetadataSPI> getMetadata(){
+    /**
+     * Get LinkedHashMap backing metadata - useful if client will
+     * eventually be looking up metadata by ID.
+     * @return
+     */
+    public LinkedHashMap<MetadataID, Metadata> getAllMetadataMap(){
       return metadata;
+    }
+
+    /**
+     * Get all metadata in the server state. Will be ordered by addition. If
+     * client will eventually be looking up metadata by ID, use getAllMetadataMap
+     * instead
+     * @return
+     */
+    public ArrayList<Metadata> getAllMetadata(){
+      ArrayList<Metadata> l = new ArrayList<Metadata>(metadata.values());
+      return l;
     }
 
     public int metaCount(){
       return metadata.size();
     }
 
-    public boolean contains(MetadataSPI m){
-      return metadata.contains(m);
+    /**
+     * Returns true if the a piece of metadata with an id equal to mid is
+     * present in this server state
+     * @param mid
+     * @return
+     */
+    public boolean contains(MetadataID mid){
+      return metadata.containsKey(mid);
     }
 
-    public boolean contains(int mid){
-      for(MetadataSPI m:metadata){
-        if(m.getID() == mid){
-          return true;
-        }
-      }
-      return false;
+    /**
+     * Returns true if the a piece of metadata with an id equal to mid is
+     * present in this server state. Convenience overload.
+     * @param m
+     * @return
+     */
+    public boolean contains(Metadata m){
+      return metadata.containsKey(m.getID());
     }
+
+    
     // public String getInfo() {
     //     return info;
     // }

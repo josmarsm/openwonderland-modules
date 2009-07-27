@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.metadata.server.service;
@@ -8,7 +21,8 @@ package org.jdesktop.wonderland.modules.metadata.server.service;
 import java.util.HashMap;
 import java.util.Set;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 
 /**
@@ -40,7 +54,7 @@ public interface MetadataBackendInterface {
    * @param cid id of cell to add metadata to
    * @param metadata metadata object to add
    */
-  void addMetadata(CellID cid, MetadataSPI metadata);
+  void addMetadata(CellID cid, Metadata metadata);
 
 
   /**
@@ -52,9 +66,9 @@ public interface MetadataBackendInterface {
 
   /**
    * Delete the specified metadata object
-   * @param mid metadata id designating the metadata to remove
+   * @param mid MetadataID designating the metadata to remove
    */
-  public void removeMetadata(int mid);
+  public void removeMetadata(MetadataID mid);
 
   /**
    * Remove all metadata from a cell
@@ -83,7 +97,7 @@ public interface MetadataBackendInterface {
    * TODO will scan class loader take care of duplication checking anyway?
    * @param m example of the type to register
    */
-  public void registerMetadataType(MetadataSPI m) throws Exception;
+  public void registerMetadataType(Metadata m) throws Exception;
 
 
   /**
@@ -92,10 +106,10 @@ public interface MetadataBackendInterface {
    *
    * @param filters search criteria
    * @param cid id of parent cell to scope the search
-   * @return map, mapping cell id's (as Integers) whose metadata that matched the
-   * search, to a set of metadata id's that matched the search for that cell.
+   * @return map, mapping CellID's whose metadata that matched the
+   * search, to a set of MetadataID's that matched the search for that cell.
    */
-  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters);
+  public HashMap<CellID, Set<MetadataID> > searchMetadata(MetadataSearchFilters filters);
 
   /**
    * Search all cells beneath cid, finding cells with metadata satisfying the
@@ -103,8 +117,8 @@ public interface MetadataBackendInterface {
    *
    * @param filters search criteria
    * @param cid id of parent cell to scope the search
-   * @return map, mapping cell id's (as Integers) whose metadata that matched the
-   * search, to a set of metadata id's that matched the search for that cell.
+   * @return map, mapping CellID's whose metadata that matched the
+   * search, to a set of MetadataID's that matched the search for that cell.
    */
-  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid);
+  public HashMap<CellID, Set<MetadataID> > searchMetadata(MetadataSearchFilters filters, CellID cid);
 }

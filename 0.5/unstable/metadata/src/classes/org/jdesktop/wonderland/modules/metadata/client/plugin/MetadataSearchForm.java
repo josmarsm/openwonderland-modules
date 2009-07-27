@@ -1,20 +1,24 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * MetadataSearchForm.java
+/**
+ * Project Wonderland
  *
- * Created on Jun 20, 2009, 11:58:44 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.metadata.client.plugin;
 
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ListSelectionEvent;
@@ -22,12 +26,16 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataTypesTable;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 
 /**
+ * Uses MetadataTypesTable for users to enter Metadata. Entered Metadata then
+ * translated into search filters. 
+ * 
+ * Wildcards like * are allowed.
  *
- * @author Matt
+ * @author mabonner
  */
 public class MetadataSearchForm extends javax.swing.JFrame implements TableModelListener, ListSelectionListener{
 
@@ -175,16 +183,6 @@ public class MetadataSearchForm extends javax.swing.JFrame implements TableModel
       tabs.createNewBlankMetadataOnCurrentTab();
 }//GEN-LAST:event_addButtonActionPerformed
 
-    /**
-    * @param args the command line arguments
-    */
-//    public static void main(String args[]) {
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//            public void run() {
-//                new MetadataSearchForm().setVisible(true);
-//            }
-//        });
-//    }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton addButton;
@@ -199,7 +197,7 @@ public class MetadataSearchForm extends javax.swing.JFrame implements TableModel
     MetadataSearchFilters filters = new MetadataSearchFilters();
     for(int i = 0; i < tabs.getComponentCount(); i++){
       try {
-        for (MetadataSPI m : tabs.getMetadataFromTab(i)) {
+        for (Metadata m : tabs.getMetadataFromTab(i)) {
           filters.addFilter(m);
         }
       } catch (Exception ex) {

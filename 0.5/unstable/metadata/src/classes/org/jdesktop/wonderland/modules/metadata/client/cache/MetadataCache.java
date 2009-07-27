@@ -1,18 +1,34 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.metadata.client.cache;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataComponent;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCacheMessage;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCacheResponseMessage;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataModResponseMessage;
@@ -45,20 +61,14 @@ public class MetadataCache {
   private MetadataComponent component;
 
   /**
-   * cache, used to get all metadata.
+   * main cache, used to access all metadata or metadata by ID
    */
-  private ArrayList<MetadataSPI> fullCache;
-
-
-  /**
-   * cache, access any piece of metadata on this cell by id.
-   */
-  private HashMap<Integer, MetadataSPI> idCache = null;
+  LinkedHashMap<MetadataID, Metadata> cache;
 
   /**
    * cache, access any piece of metadata on this cell by class and then id.
    */
-  private HashMap<Class, HashMap<Integer, MetadataSPI>> classCache = null;
+  private HashMap<Class, HashMap<MetadataID, Metadata>> classCache = null;
 
   
   /**
@@ -105,15 +115,15 @@ public class MetadataCache {
     }
     switch (msg.action){
         case ADD:
-            logger.info("[META CACHE] add metadata ");
+            logger.info("[META CACHE] add metadata:\n" + msg.metadata);
             addToCache(msg.metadata);
             break;
         case REMOVE:
-            logger.info("[META CACHE] remove metadata... ");
+            logger.info("[META CACHE] remove metadata:\n" + msg.metadata);
             removeFromCache(msg.metadata);
             break;
         case MODIFY:
-            logger.info("[META CACHE] mod metadata... ");
+            logger.info("[META CACHE] mod metadata:\n" + msg.metadata);
             modifyInCache(msg.metadata);
             break;
         case INVALIDATE:
@@ -122,7 +132,7 @@ public class MetadataCache {
             break;
     }
 
-    // if the cache IS active, dont notify until AFTER it has been modified!
+    // dont notify until AFTER cache has been modified!
     notifyCacheListeners(msg);
   }
 
@@ -130,11 +140,10 @@ public class MetadataCache {
    * completely rebuild cache and access maps
    * @param metadata initial metadata for cache
    */
-  private void setCache(ArrayList<MetadataSPI> metadata) {
-    fullCache = new ArrayList<MetadataSPI>();
-    idCache = new HashMap<Integer, MetadataSPI>();
-    classCache = new HashMap<Class, HashMap<Integer, MetadataSPI>>();
-    for(MetadataSPI m:metadata){
+  private void setCache(LinkedHashMap<MetadataID, Metadata> metadata) {
+    cache = new LinkedHashMap<MetadataID, Metadata>();
+    classCache = new HashMap<Class, HashMap<MetadataID, Metadata>>();
+    for(Metadata m:metadata.values()){
       cacheMetadata(m);
     }
   }
@@ -145,16 +154,15 @@ public class MetadataCache {
    *
    * @param m piece of metadata to cache
    */
-  private void cacheMetadata(MetadataSPI m) {
+  private void cacheMetadata(Metadata m) {
     // all pieces of metadata accessible from the main and ID caches
-    fullCache.add(m);
-    idCache.put(m.getID(), m);
+    cache.put(m.getID(), m);
 
     // also keep class-specific caches
     Class mClass = m.getClass();
     if(!classCache.containsKey(mClass)){
       // create maps for new classes
-      classCache.put(mClass, new HashMap<Integer, MetadataSPI>());
+      classCache.put(mClass, new HashMap<MetadataID, Metadata>());
     }
     // add to appropriate class cache
     classCache.get(mClass).put(m.getID(), m);
@@ -165,25 +173,25 @@ public class MetadataCache {
    * Requests all of the cell's metadata. Validates Cache.
    * @return the full, main cache
    */
-  public ArrayList<MetadataSPI> getAllMetadata(){
+  public Collection<Metadata> getAllMetadata(){
     logger.info("[META CACHE] get all  ");
     // actively maintain cache until an invalidate message
     active = true;
     validateCache();
-    return fullCache;
+    return cache.values();
   }
 
   /**
    * Requests a specific piece of metadata. Validates cache.
-   * @param mid metadata id of metadata piece to fetch
+   * @param mid MetadataID of metadata piece to fetch
    * @return
    */
-  public MetadataSPI getMetadataByID(Integer mid){
+  public Metadata getMetadataByID(MetadataID mid){
     logger.info("[META CACHE] get id: " + mid);
     // actively maintain cache until an invalidate message
     active = true;
     validateCache();
-    return idCache.get(mid);
+    return cache.get(mid);
   }
 
   /**
@@ -191,20 +199,20 @@ public class MetadataCache {
    * @param c class of metadata to fetch
    * @return array list of matching metadata, null if none of this class has been added
    */
-  public <T extends MetadataSPI> ArrayList<T> getMetadataByClass(Class<T> c){
+  public <T extends Metadata> ArrayList<T> getMetadataByClass(Class<T> c){
     logger.info("[META CACHE] get for type: " + c.getName());
     // actively maintain cache until an invalidate message
     active = true;
     validateCache();
 //    c.
-    HashMap<Integer, MetadataSPI> cache = classCache.get(c);
+    HashMap<MetadataID, Metadata> thisClassCache = classCache.get(c);
     ArrayList<T> res = new ArrayList<T>();
-    if(cache == null || cache.isEmpty()){
+    if(thisClassCache == null || thisClassCache.isEmpty()){
       return res;
     }
     
-    for(Entry<Integer, MetadataSPI> e:cache.entrySet()){
-      res.add((T) e.getValue());
+    for(Metadata m:thisClassCache.values()){
+      res.add((T) m);
     }
     logger.info("[META CACHE] returning " + res.size() + " pieces");
     return res;
@@ -253,7 +261,7 @@ public class MetadataCache {
    * Revalidate the cache by adding this piece of metadata
    * @param metadata piece of metadata to add
    */
-  private void addToCache(MetadataSPI m) {
+  private void addToCache(Metadata m) {
     logger.info("[META CACHE] add to cache");
     cacheMetadata(m);
     valid = true;
@@ -263,11 +271,10 @@ public class MetadataCache {
    * Revalidate the cache by removing this piece of metadata
    * @param metadata piece of metadata to remove
    */
-  private void removeFromCache(MetadataSPI m) {
+  private void removeFromCache(Metadata m) {
     logger.info("[META CACHE] remove from cache");
-    fullCache.remove(m);
-    idCache.remove(m.getID());
-    HashMap<Integer, MetadataSPI> theClassCache = classCache.get(m.getClass());
+    cache.remove(m.getID());
+    HashMap<MetadataID, Metadata> theClassCache = classCache.get(m.getClass());
     if(theClassCache != null){
       theClassCache.remove(m.getID());
     }
@@ -278,7 +285,7 @@ public class MetadataCache {
    * Revalidate the cache by modifying this piece of metadata
    * @param metadata piece of metadata to add
    */
-  private void modifyInCache(MetadataSPI m) {
+  private void modifyInCache(Metadata m) {
     logger.info("[META CACHE] mod in cache");
     // this will simply overwrite the old value
     cacheMetadata(m);

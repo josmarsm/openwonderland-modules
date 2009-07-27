@@ -30,9 +30,10 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSampleCellServerState;
 
 /**
- * The cell factory for the sample cell.
+ * The cell factory for the sample cell. Adjusted to test Metadata.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author mabonner
  */
 @CellFactory
 public class MetadataSampleCellFactory implements CellFactorySPI {

@@ -1,9 +1,3 @@
-package org.jdesktop.wonderland.modules.metadata.common;
-
-import java.util.Map;
-import java.util.Set;
-import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
-
 /**
  * Project Wonderland
  *
@@ -22,6 +16,13 @@ import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
  * this code.
  */
 
+package org.jdesktop.wonderland.modules.metadata.common;
+
+import java.util.Map;
+import java.util.Set;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+
+
 /**
  * To create a new metadata type, users are expected to extend the base Metadata
  * type and annotate their class with "@MetadataType". See Metadata and
@@ -30,12 +31,12 @@ import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
  * Metadata subtypes should provide at least a constructor that takes no arguments,
  * in addition to any other constructors.
  * 
- * This SPI is provided in case someone wants to create their own base class.
- * Examine the provided base class, Metadata, before doing this.
+ * This interface is provided in case someone wants to create their own base class.
+ * Examine the provided base class, BaseMetadata, before doing this.
  *
  * @author mabonner
  */
-public interface MetadataSPI {
+public interface Metadata {
 
     /**
      * Provide a human-readable type name.
@@ -44,6 +45,14 @@ public interface MetadataSPI {
      * @return
      */
     public String simpleName();
+
+    /**
+     * Provides a human-readable string that displays the Metadata's content
+     * Base metadata's implementation should be fine for most users.
+     * @return
+     */
+    @Override
+    public String toString();
 
     /**
      * Called when a new Metadata object is created by a client (generaly, from
@@ -67,7 +76,7 @@ public interface MetadataSPI {
      *
      * @return metadata's id
      */
-    public int getID();
+    public MetadataID getID();
 
     /**
      * Bind a new MetadataValue an attribute name. Will replace old value

@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.metadata.client;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -42,7 +43,8 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.metadata.client.cache.CacheEventListener;
 import org.jdesktop.wonderland.modules.metadata.client.cache.MetadataCache;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.basetypes.SimpleMetadata;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataModMessage;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataModResponseMessage;
@@ -79,12 +81,6 @@ public class MetadataComponent extends CellComponent {
       return channel;
     }
 
-    // @Override
-    // public void setClientState(CellComponentClientState clientState) {
-    //     super.setClientState(clientState);
-    //     info = ((SampleCellComponentClientState)clientState).getInfo();
-    // }
-
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
@@ -95,10 +91,10 @@ public class MetadataComponent extends CellComponent {
           if(increasing){
             //menuComponent.addContextMenuFactory(new SampleContextMenuFactory());
             // gather metadata types that may want to appear in this cell's context menu
-  //          Iterator<MetadataSPI> it = cl.getAll(MetadataContextMenuItem.class, MetadataSPI.class); //CellFactorySPI.class);
-            Iterator<MetadataSPI> it = MetadataClientUtils.getTypesIterator();
+  //          Iterator<Metadata> it = cl.getAll(MetadataContextMenuItem.class, Metadata.class); //CellFactorySPI.class);
+            Iterator<Metadata> it = MetadataClientUtils.getTypesIterator();
             while (it.hasNext()) {
-              MetadataSPI m = it.next();
+              Metadata m = it.next();
               logger.info("[METADATA COMPO] using session's loader, scanned type:" + m.simpleName());
               if(m.contextMenuCheck(cell.getClass())){
                 menuComponent.addContextMenuFactory(new MetadataContextMenuFactory(m.simpleName(), m.getClass()));
@@ -184,7 +180,7 @@ public class MetadataComponent extends CellComponent {
         logger.info("[METADATA COMPONENT] Metadata context menu action performed!");
         Date date = new Date();
         try {
-          MetadataSPI m = (MetadataSPI) type.newInstance();
+          Metadata m = (Metadata) type.newInstance();
           m.initByClient(LoginManager.getPrimary().getPrimarySession().getUserID());
           addMetadata(m);
         } catch (InstantiationException ex) {
@@ -225,12 +221,12 @@ public class MetadataComponent extends CellComponent {
       public void actionPerformed(ContextMenuItemEvent event) {
         // create an object
         logger.info("[METADATA COMPONENT] test context menu get all");
-        ArrayList<MetadataSPI> meta = getAllMetadata();
+        Collection<Metadata> meta = getAllMetadata();
         if(meta == null){
           logger.info("EMPTY!");
           return;
         }
-        for(MetadataSPI m:meta){
+        for(Metadata m:meta){
           logger.info("Piece:" + m);
         }
         
@@ -250,7 +246,7 @@ public class MetadataComponent extends CellComponent {
           logger.info("EMPTY!");
           return;
         }
-        for(MetadataSPI m:meta){
+        for(Metadata m:meta){
           logger.info("Piece:" + m);
         }
 
@@ -263,18 +259,19 @@ public class MetadataComponent extends CellComponent {
       channel.send(new MetadataModMessage());
     }
 
-    public void addMetadata(MetadataSPI meta){
+    public void addMetadata(Metadata meta){
         logger.info("[METADATA COMPO] add metadata!");
         channel.send(new MetadataModMessage(MetadataModMessage.Action.ADD, meta));
     }
 
-    public void removeMetadata(MetadataSPI meta){
+    public void removeMetadata(Metadata meta){
         logger.info("[METADATA COMPO] remove metadata!");
         channel.send(new MetadataModMessage(MetadataModMessage.Action.REMOVE, meta));
     }
     
-    public void modifyMetadata(MetadataSPI meta){
+    public void modifyMetadata(Metadata meta){
         logger.info("[METADATA COMPO] modify metadata!");
+        logger.info("new metadata will be: " + meta);
         channel.send(new MetadataModMessage(MetadataModMessage.Action.MODIFY, meta));
     }
 
@@ -283,16 +280,16 @@ public class MetadataComponent extends CellComponent {
      * Requests all of a cell's metadata from the cache
      * @return
      */
-    public ArrayList<MetadataSPI> getAllMetadata(){
+    public Collection<Metadata> getAllMetadata(){
       return metadataCache.getAllMetadata();
     }
 
     /**
      * Requests a specific piece of metadata from the cache.
-     * @param mid metadata id of metadata piece to fetch
+     * @param mid MetadataID of metadata piece to fetch
      * @return
      */
-    public MetadataSPI getMetadata(Integer mid){
+    public Metadata getMetadata(MetadataID mid){
       return metadataCache.getMetadataByID(mid);
     }
 
@@ -301,7 +298,7 @@ public class MetadataComponent extends CellComponent {
      * @param c class of metadata to fetch
      * @return array list of matching metadata, null if none of this class has been added
      */
-    public <T extends MetadataSPI> ArrayList<T> getMetadataOfType(Class<T> c){
+    public <T extends Metadata> ArrayList<T> getMetadataOfType(Class<T> c){
       return metadataCache.getMetadataByClass(c);
     }
 

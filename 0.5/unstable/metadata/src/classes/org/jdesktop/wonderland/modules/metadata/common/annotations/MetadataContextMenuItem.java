@@ -1,5 +1,3 @@
-package org.jdesktop.wonderland.modules.metadata.common.annotations;
-
 /**
  * Project Wonderland
  *
@@ -17,6 +15,8 @@ package org.jdesktop.wonderland.modules.metadata.common.annotations;
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+
+package org.jdesktop.wonderland.modules.metadata.common.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;

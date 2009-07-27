@@ -1,18 +1,32 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.metadata.client;
 
 import java.util.Iterator;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
 
 /**
+ * Utility functions for the client - at the moment, this consists only of an
+ * iterator through registered Metadata types.
  *
  * @author mabonner
  */
@@ -29,7 +43,7 @@ public class MetadataClientUtils {
   private static final Object lock = new Object();
 
 
-  public static Iterator<MetadataSPI> getTypesIterator() {
+  public static Iterator<Metadata> getTypesIterator() {
     logger.info("GOT FROM CLIENT UTILS");
     // search annotations
     // note: for now, this only gets types from the primary server
@@ -40,10 +54,10 @@ public class MetadataClientUtils {
       logger.info("METATYPE NULL");
     }
 
-    if(MetadataSPI.class == null){
-      logger.info("METADATA SPI NULL");
+    if(Metadata.class == null){
+      logger.info("METADATA NULL");
     }
-    Iterator<MetadataSPI> it = scl.getAll(MetadataType.class, MetadataSPI.class);
+    Iterator<Metadata> it = scl.getAll(MetadataType.class, Metadata.class);
     if(it == null){
       logger.severe("ITR IS NULL");
     }

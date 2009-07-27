@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.metadata.common.messages;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 
 /**
  * Tell the server to add, remove or modify a piece of metadata. Includes the
@@ -29,14 +29,14 @@ public class MetadataModMessage extends CellMessage {
 
     public enum Action {ADD, REMOVE, MODIFY};
     public Action action;
-    public MetadataSPI metadata;
+    public Metadata metadata;
 
 
     public MetadataModMessage(){
         // a dummy for the test function
     }
 
-    public MetadataModMessage(Action act, MetadataSPI meta){
+    public MetadataModMessage(Action act, Metadata meta){
         action = act;
         metadata = meta;
     }

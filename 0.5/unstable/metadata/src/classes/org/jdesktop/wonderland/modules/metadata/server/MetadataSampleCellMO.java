@@ -21,21 +21,20 @@ import com.sun.sgs.app.ManagedReference;
 
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-// import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSampleCellServerState;
-// import org.jdesktop.wonderland.modules.metadata.server.MetadataComponentMO;
 
 
 
 /**
- * A sample cell
+ * A sample cell, modified (removed some functionality, add MetadataComponent
+ * by default) to test Metadata.
  * @author jkaplan
+ * @author mabonner
  */
 @ExperimentalAPI
 public class MetadataSampleCellMO extends CellMO { 
@@ -49,31 +48,11 @@ public class MetadataSampleCellMO extends CellMO {
     public MetadataSampleCellMO() {
     }
 
-    // @Override
-    // protected void setLive(boolean live) {
-    //     super.setLive(live);
-    // }
-
     @Override 
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.metadata.client.samplecell.MetadataSampleCell";
     }
 
-    // @Override
-    // public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
-    //     if (cellClientState == null) {
-    //       cellClientState = new SampleCellClientState();
-    //     }
-    //     ((SampleCellClientState)cellClientState).setShapeType(shapeType);
-    //     return super.getClientState(cellClientState, clientID, capabilities);
-    // }
-    // 
-    // @Override
-    // public void setServerState(CellServerState serverState) {
-    //     shapeType = ((SampleCellServerState)serverState).getShapeType();
-    //     super.setServerState(serverState);
-    // }
-    // 
     @Override
     public CellServerState getServerState(CellServerState cellServerState) {
         if (cellServerState == null) {

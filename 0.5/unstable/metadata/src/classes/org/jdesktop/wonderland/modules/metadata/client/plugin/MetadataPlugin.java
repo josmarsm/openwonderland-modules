@@ -115,32 +115,8 @@ public class MetadataPlugin extends BaseClientPlugin
       };
       loginInfo.addLifecycleListener(sessionListener);
 
-      // Add the Palette menu and the Cell submenu and dialog that lets users
-      // create new cells.
-//        moduleMI = new JMenuItem("Module Art Palette");
-//        moduleMI.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                ModulePalette modulePaletteFrame;
-//                if (modulePaletteFrameRef == null || modulePaletteFrameRef.get() == null) {
-//                    modulePaletteFrame = new ModulePalette();
-//                    modulePaletteFrameRef = new WeakReference(modulePaletteFrame);
-//                }
-//                else {
-//                    modulePaletteFrame = modulePaletteFrameRef.get();
-//                }
-//
-//                if (modulePaletteFrame.isVisible() == false) {
-//                    modulePaletteFrame.setVisible(true);
-//                }
-//            }
-//        });
-
       super.initialize(loginInfo);
     }
-
-//    public static final ArrayList<Class> getMetadataTypes(){
-//        return metaTypes;
-//    }
 
     /**
      * Notification that our server is now the the primary server
