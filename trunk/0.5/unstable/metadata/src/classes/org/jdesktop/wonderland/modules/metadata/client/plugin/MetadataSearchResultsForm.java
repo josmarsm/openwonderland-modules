@@ -1,12 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * MetadataSearchResultsForm.java
+/**
+ * Project Wonderland
  *
- * Created on Jul 8, 2009, 5:45:14 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.metadata.client.plugin;
@@ -27,8 +34,9 @@ import org.jdesktop.wonderland.modules.metadata.client.MetadataTypesTable;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 
 /**
+ * Displays the results of a metadata search. Shown by MetadataPlugin.
  *
- * @author Matt
+ * @author mabonner
  */
 public class MetadataSearchResultsForm extends javax.swing.JFrame implements TableModelListener{
 
@@ -200,7 +208,7 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
       tabDisplay.remove(noResultsLabel);
       // set first row selected, display that table
       logger.info("[Search Results] set selection");
-      resultsTable.setRowSelectionInterval(1, 1);
+      resultsTable.setRowSelectionInterval(0, 0);
       logger.info("[Search Results] selection set");
 //      if(!tabsAdded){
 //        tabDisplay.add(tabs);

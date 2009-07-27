@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.metadata.server;
@@ -18,6 +31,7 @@ import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerState;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataConnectionType;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionMessage;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionResponseMessage;
@@ -58,7 +72,7 @@ class MetadataConnectionHandler implements ClientConnectionHandler, Serializable
     // for now, the only message type is to search, tell service to search based on contents
     MetadataManager metaService = AppContext.getManager(MetadataManager.class);
     MetadataConnectionResponseMessage response;
-    HashMap<CellID, Set<Integer> > results;
+    HashMap<CellID, Set<MetadataID> > results;
     switch(m.getAction()){
       case SEARCH:
         // do search
@@ -74,16 +88,23 @@ class MetadataConnectionHandler implements ClientConnectionHandler, Serializable
         // get metadata from cell server state
         // build cellInfo object with cid, metadata, and hits
         ArrayList<MetadataCellInfo> cellInfo = new ArrayList<MetadataCellInfo>();
-        for(Entry<CellID, Set<Integer>> e : results.entrySet()){
+        for(Entry<CellID, Set<MetadataID>> e : results.entrySet()){
           CellID cid = e.getKey();
           // CellManager -> CellMO -> ComponentMO -> Metadata info!
           // CellMO also has the cell name
           CellMO cell = CellManagerMO.getCell(cid);
+          if(cell == null){
+            logger.severe("cell is null!!!");
+          }
+          if(MetadataComponentMO.class == null){
+            logger.severe("compo class is null!?");
+          }
           CellComponentMO compoMO = cell.getComponent(MetadataComponentMO.class);
+          logger.info("made it");
           MetadataComponentServerState state =
                   (MetadataComponentServerState) compoMO.getServerState(null);
           // build cell info object
-          cellInfo.add(new MetadataCellInfo(cid, state.getMetadata(),
+          cellInfo.add(new MetadataCellInfo(cid, state.getAllMetadata(),
                   e.getValue(), cell.getName()));
 
         }

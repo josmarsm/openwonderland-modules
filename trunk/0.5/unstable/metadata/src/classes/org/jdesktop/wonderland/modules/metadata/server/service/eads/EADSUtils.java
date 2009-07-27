@@ -37,10 +37,10 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import org.apache.directory.shared.ldap.exception.LdapNameNotFoundException;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
-import org.jdesktop.wonderland.modules.metadata.common.basetypes.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.basetypes.BaseMetadata;
 
 /**
  * Constants and utility functions for EmbeddedADS
@@ -275,7 +275,7 @@ public class EADSUtils {
     ArrayList<String> result = new ArrayList<String>();
     // example filter
     // (&(objectclass=org-jdesktop-wonderland-modules-metadata-common-Metadata)(someAttr=hello hello));
-    for(MetadataSPI m:filters.getFilters()){
+    for(Metadata m:filters.getFilters()){
       String newFilter = "(&(objectclass=";
       // add the object class
       String nameLdap = EADSUtils.classToLDAPName(m.getClass());
@@ -314,7 +314,7 @@ public class EADSUtils {
           }
           // convert to ldap date
           try {
-            Date d = Metadata.dateFormat.parse(val);
+            Date d = BaseMetadata.dateFormat.parse(val);
             val = EADSUtils.ldapDateFormat.format(d);
           } catch (ParseException ex) {
             logger.severe("[EADS Utils] invalid date syntax creating filter!");

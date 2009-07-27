@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,18 +11,20 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 
 /**
@@ -30,7 +32,6 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
  * @author mabonner
  */
 public interface MetadataManager {
-  public void test();
   
   /**
    * adds a new cell to the top level (e.g., has no parent besides the world)
@@ -52,7 +53,7 @@ public interface MetadataManager {
    * @param cid id of cell to add metadata to
    * @param metadata metadata object to add
    */
-  void addMetadata(CellID cid, MetadataSPI metadata);
+  void addMetadata(CellID cid, Metadata metadata);
 
 
   /**
@@ -64,9 +65,9 @@ public interface MetadataManager {
 
   /**
    * Delete the specified metadata object
-   * @param mid metadata id designating the metadata to remove
+   * @param mid MetadataID designating the metadata to remove
    */
-  public void removeMetadata(int mid);
+  public void removeMetadata(MetadataID mid);
 
   /**
    * Remove all metadata from a cell
@@ -85,7 +86,7 @@ public interface MetadataManager {
    * TODO will scan class loader take care of duplication checking anyway?
    * @param m example of the type to register
    */
-  public void registerMetadataType(MetadataSPI m) throws Exception;
+  public void registerMetadataType(Metadata m) throws Exception;
 
 
   /**
@@ -94,10 +95,10 @@ public interface MetadataManager {
    *
    * @param filters search criteria
    * @param cid id of parent cell to scope the search
-   * @return map, mapping cell id's (as Integers) whose metadata that matched the
-   * search, to a set of metadata id's that matched the search for that cell.
+   * @return map, mapping CellID's whose metadata that matched the
+   * search, to a set of MetadataID's that matched the search for that cell.
    */
-  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters);
+  public HashMap<CellID, Set<MetadataID> > searchMetadata(MetadataSearchFilters filters);
 
   /**
    * Search all cells beneath cid, finding cells with metadata satisfying the
@@ -105,10 +106,10 @@ public interface MetadataManager {
    *
    * @param filters search criteria
    * @param cid id of parent cell to scope the search
-   * @return map, mapping cell id's (as Integers) whose metadata that matched the
-   * search, to a set of metadata id's that matched the search for that cell.
+   * @return map, mapping CellID's whose metadata that matched the
+   * search, to a set of MetadataID's that matched the search for that cell.
    */
-  public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid);
+  public HashMap<CellID, Set<MetadataID> > searchMetadata(MetadataSearchFilters filters, CellID cid);
 
   /**
    * Convenience method (NOT in the Backend Interface)
@@ -116,5 +117,5 @@ public interface MetadataManager {
    * @param cid ID of the cell to reset
    * @param metadata list of metadata to add to cell
    */
-  public void setCellMetadata(CellID cid, ArrayList<MetadataSPI> metadata);
+  public void setCellMetadata(CellID cid, Collection<Metadata> metadata);
 }

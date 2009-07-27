@@ -20,14 +20,15 @@ package org.jdesktop.wonderland.modules.metadata.server;
 
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.AppContext;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerState;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.ModifyCacheAction;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCacheMessage;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCacheResponseMessage;
@@ -134,11 +135,12 @@ public class MetadataComponentMO extends CellComponentMO {
                       break;
                   case MODIFY:
                       logger.info("[METADATA COMPONENT MO] mod metadata... ");
+                      componentRef.get().modify(msg.metadata);
                       break;
               }
               channelComponentRef.getForUpdate().sendAll(clientID, response);
             }
-            MetadataManager metaService = AppContext.getManager(MetadataManager.class);
+//            MetadataManager metaService = AppContext.getManager(MetadataManager.class);
             // metaService.test();
             // componentRef.get().sendUserPermissions(sender, clientID,
             //                                                    message.getMessageID());
@@ -174,10 +176,10 @@ public class MetadataComponentMO extends CellComponentMO {
           // create a response message
           MetadataComponentServerState mcss =
                   (MetadataComponentServerState) componentRef.get().getServerState(null);
-          ArrayList<MetadataSPI> metadata = mcss.getMetadata();
+          LinkedHashMap<MetadataID, Metadata> metadata = mcss.getAllMetadataMap();
           MetadataCacheResponseMessage response = 
                   new MetadataCacheResponseMessage(message.getMessageID(), metadata);
-          logger.info("[MCH] returning " + metadata.size() + " pieces of metadata");
+          logger.info("[MCH] returning " + metadata.values().size() + " pieces of metadata");
           sender.send(clientID, response);
           logger.info("[MCH] sent!");
         }
@@ -226,7 +228,7 @@ public class MetadataComponentMO extends CellComponentMO {
 
       // notify service to re-populate cell
       MetadataManager metaService = AppContext.getManager(MetadataManager.class);
-      metaService.setCellMetadata(this.cellID, mcss.getMetadata());
+      metaService.setCellMetadata(this.cellID, mcss.getAllMetadata());
 
       // notify components to invalidate caches
       // first argument null = sent from server
@@ -240,9 +242,9 @@ public class MetadataComponentMO extends CellComponentMO {
      * communicate the change to the metadata service.
      * @param meta
      */
-    public void add(MetadataSPI meta){
+    public void add(Metadata meta){
       // add component to server state
-      logger.info("[METADATA COMPONENT MO] add metadata fn");
+      logger.info("[METADATA COMPONENT MO] add metadata, passed in metadata is:\n" + meta);
       MetadataComponentServerState state = (MetadataComponentServerState) getServerState(null);
       logger.info("current # of metadata in server state --- " + state.metaCount());
       state.addMetadata(meta);
@@ -260,9 +262,9 @@ public class MetadataComponentMO extends CellComponentMO {
      * communicate the change to the metadata service.
      * @param meta
      */
-    public void remove(MetadataSPI meta){
+    public void remove(Metadata meta){
       // remove component from server state
-      logger.info("[METADATA COMPONENT MO] remove metadata fn");
+      logger.info("[METADATA COMPONENT MO] remove metadata, passed in metadata is:\n" + meta);
       MetadataComponentServerState state = (MetadataComponentServerState) getServerState(null);
       logger.info("current # of metadata in server state --- " + state.metaCount());
       state.removeMetadata(meta);
@@ -281,8 +283,8 @@ public class MetadataComponentMO extends CellComponentMO {
      * actually works by removing the old cell and adding the new cell.
      * @param meta the modified piece of metadata
      */
-    public void modify(MetadataSPI meta){
-      logger.info("[METADATA COMPONENT MO] modify metadata fn");
+    public void modify(Metadata meta){
+      logger.info("[METADATA COMPONENT MO] modify metadata, passed in metadata is:\n" + meta);
       // check if this piece of metadata is contained
       if(!mcss.contains(meta.getID())){
         logger.severe("[METADATA COMPO MO] Error: attempting to modify metadata with" +
@@ -290,16 +292,16 @@ public class MetadataComponentMO extends CellComponentMO {
       }
 
       // if so, remove the old one from compo state and service
-      MetadataComponentServerState state = (MetadataComponentServerState) getServerState(null);
+//      MetadataComponentServerState state = (MetadataComponentServerState) getServerState(null);
       MetadataManager metaService = AppContext.getManager(MetadataManager.class);
-      logger.info("current # of metadata in server state --- " + state.metaCount());
-      state.removeMetadata(meta.getID());
+      logger.info("current # of metadata in server state --- " + mcss.metaCount());
+      mcss.removeMetadata(meta.getID());
       metaService.removeMetadata(meta.getID());
 
       // and add the new
-      state.addMetadata(meta);
-      mcss = state;
-      logger.info("new # --- " + state.metaCount());
+      mcss.addMetadata(meta);
+//      mcss = state;
+      logger.info("new # --- " + mcss.metaCount());
       metaService.addMetadata(cellID, meta);
     }
 }

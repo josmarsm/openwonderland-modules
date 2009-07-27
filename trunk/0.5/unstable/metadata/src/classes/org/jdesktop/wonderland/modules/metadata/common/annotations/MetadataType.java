@@ -1,5 +1,3 @@
-package org.jdesktop.wonderland.modules.metadata.common.annotations;
-
 /**
  * Project Wonderland
  *
@@ -18,12 +16,14 @@ package org.jdesktop.wonderland.modules.metadata.common.annotations;
  * this code.
  */
 
+package org.jdesktop.wonderland.modules.metadata.common.annotations;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
  * Annotation that indicates this class is a metadata type.  Metadata types must
- * also either implement the MetadataSPI or extend the base Metadata type.
+ * also either implement the Metadata interface or extend the base type, BaseMetadata
  * 
  * @author mabonner
  */

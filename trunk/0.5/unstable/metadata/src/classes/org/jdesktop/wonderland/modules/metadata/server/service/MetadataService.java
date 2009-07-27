@@ -19,17 +19,8 @@ package org.jdesktop.wonderland.modules.metadata.server.service;
 
 import org.jdesktop.wonderland.modules.metadata.server.service.eads.EmbeddedADS;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
-import java.util.Hashtable;
 
-import javax.naming.Context;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
 import javax.naming.directory.InitialDirContext;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
 
 import com.sun.sgs.impl.util.AbstractService;
 import com.sun.sgs.impl.util.AbstractService.Version;
@@ -43,7 +34,7 @@ import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -56,19 +47,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.directory.server.core.DirectoryService;
-import org.apache.directory.server.core.jndi.CoreContextFactory;
-import org.apache.directory.shared.ldap.entry.Entry;
-import org.apache.directory.shared.ldap.name.LdapDN;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
 import org.jdesktop.wonderland.server.auth.WonderlandServerIdentity;
 
 
 
 /**
+ * The MetadataService scans and registers Metadata types at startup. Since the
+ * only method of creating a new Metadata type is creating a new module,
+ * the server must be restarted and thus the types rescanned for every new type.
+ *
+ * Also keeps backend synchronized with world, and provides search access to
+ * that backend.
  *
  * @author mabonner
  */
@@ -129,7 +124,7 @@ public class MetadataService extends AbstractService{
         db = new EmbeddedADS();
         scanAndRegisterTypes();
         // TODO  get this from the scanner in the future
-//        ArrayList<MetadataSPI> tmp = new ArrayList<MetadataSPI>();
+//        ArrayList<Metadata> tmp = new ArrayList<Metadata>();
 //        tmp.add(new Metadata());
 //        tmp.add(new SimpleMetadata());
         ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
@@ -187,23 +182,14 @@ public class MetadataService extends AbstractService{
   private void scanAndRegisterTypes() throws Exception {
     ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
     // search annotations
-    Iterator<MetadataSPI> it = scl.getAll(MetadataType.class, MetadataSPI.class); //CellFactorySPI.class);
+    Iterator<Metadata> it = scl.getAll(MetadataType.class, Metadata.class); //CellFactorySPI.class);
     logger.log(Level.INFO, "[Metadata Service] about to search classloader");
     while (it.hasNext()) {
-      MetadataSPI metadata = it.next();
+      Metadata metadata = it.next();
       logger.log(Level.INFO, "[Metadata Service] using system scl, scanned type:" + metadata.simpleName());
       registerMetadataType(metadata);
     }
   }
-//  private void scanAndRegisterTypes(ServerSessionManager manager) throws Exception {
-//    ScannedClassLoader cl = manager.getClassloader();
-//    // search annotations
-//    Iterator<MetadataSPI> it = cl.getAll(MetadataType.class, MetadataSPI.class); //CellFactorySPI.class);
-//    while (it.hasNext()) {
-//      MetadataSPI metadata = it.next();
-//        registerMetadataType(metadata);
-//    }
-//  }
 
     /**
      * Transaction state
@@ -281,9 +267,10 @@ public class MetadataService extends AbstractService{
     // Metadata Actions
     //
 
-    public void setCellMetadata(CellID id, ArrayList<MetadataSPI> metadata){
+    public void setCellMetadata(CellID id, Collection<Metadata> metadata){
       db.clearCellMetadata(id);
-      for(MetadataSPI m:metadata){
+//      Iterator<LinkedHashMap<MetadataID, Metadata>> itr = metadata.iterator();
+      for(Metadata m:metadata){
         db.addMetadata(id, m);
       }
     }
@@ -316,7 +303,7 @@ public class MetadataService extends AbstractService{
      * @param cid id of cell to add metadata to
      * @param metadata metadata object to add
      */
-    void addMetadata(CellID cid, MetadataSPI metadata){
+    void addMetadata(CellID cid, Metadata metadata){
       db.addMetadata(cid, metadata);
     }
 
@@ -332,9 +319,9 @@ public class MetadataService extends AbstractService{
 
     /**
      * Delete the specified metadata object
-     * @param mid metadata id designating the metadata to remove
+     * @param mid MetadataID designating the metadata to remove
      */
-    public void removeMetadata(int mid){
+    public void removeMetadata(MetadataID mid){
       db.removeMetadata(mid);
     }
 
@@ -357,7 +344,7 @@ public class MetadataService extends AbstractService{
      * TODO will scan class loader take care of duplication checking anyway?
      * @param m example of the type to register
      */
-    public void registerMetadataType(MetadataSPI m) throws Exception{
+    public void registerMetadataType(Metadata m) throws Exception{
       db.registerMetadataType(m);
     }
 
@@ -368,10 +355,10 @@ public class MetadataService extends AbstractService{
      *
      * @param filters search criteria
      * @param cid id of parent cell to scope the search
-     * @return map, mapping cell id's (as Integers) whose metadata that matched the
-     * search, to a set of metadata id's that matched the search for that cell.
+     * @return map, mapping CellID's whose metadata that matched the
+     * search, to a set of MetadataID's that matched the search for that cell.
      */
-    public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters){
+    public HashMap<CellID, Set<MetadataID> > searchMetadata(MetadataSearchFilters filters){
       // pass in a listener to notify, rather than sending directly to a connection
       logger.log(Level.INFO, "[META SERVICE] global search with " + filters.filterCount() + " filters");
       return db.searchMetadata(filters);
@@ -383,213 +370,11 @@ public class MetadataService extends AbstractService{
      *
      * @param filters search criteria
      * @param cid id of parent cell to scope the search
-     * @return map, mapping cell id's (as Integers) whose metadata that matched the
-     * search, to a set of metadata id's that matched the search for that cell.
+     * @return map, mapping CellID's whose metadata that matched the
+     * search, to a set of MetadataID's that matched the search for that cell.
      */
-    public HashMap<CellID, Set<Integer> > searchMetadata(MetadataSearchFilters filters, CellID cid){
+    public HashMap<CellID, Set<MetadataID> > searchMetadata(MetadataSearchFilters filters, CellID cid){
       return db.searchMetadata(filters, cid);
-    }
-
-
-    /**
-     * We just do a lookup on the server to check that it's available.
-     */
-    public void test() //throws Exception
-    {
-
-        try
-        {
-            // Read an entry
-            Entry result = this.dirService.getAdminSession().lookup( new LdapDN( "dc=apache,dc=org" ) );
-
-            // And print it if available
-            logger.log(Level.INFO, "[METADATA EADS] Found entry : " + result );
-
-            Hashtable<Object, Object> env = new Hashtable<Object, Object>();
-            env.put(DirectoryService.JNDI_KEY, this.dirService);
-            env.put(Context.PROVIDER_URL, "");
-            env.put(Context.INITIAL_CONTEXT_FACTORY, CoreContextFactory.class.getName());
-            env.put(Context.SECURITY_PRINCIPAL, "uid=admin,ou=system");
-            env.put(Context.SECURITY_CREDENTIALS, "secret");
-            env.put(Context.SECURITY_AUTHENTICATION, "simple");
-
-
-            DirContext ctx = new InitialDirContext(env);
-            logger.log(Level.INFO, "[METADATA EADS] root context");
-            logger.log(Level.INFO, "[METADATA EADS] root dn: " + ctx.getNameInNamespace());
-            Attributes rootAttrs = ctx.getAttributes("");
-            logger.log(Level.INFO, "[METADATA EADS] root attributes");
-            for (NamingEnumeration re = rootAttrs.getAll(); re.hasMore();) {
-                Attribute attr = (Attribute)re.next();
-                logger.log(Level.INFO, "[METADATA EADS] attribute: " + attr.getID());
-                /* Print each value */
-                for (NamingEnumeration e = attr.getAll(); e.hasMore();){
-                  logger.log(Level.INFO, "[METADATA EADS] value: " + e.next());
-                }
-            }
-
-
-
-
-            logger.log(Level.INFO, "[METADATA EADS] *******************");
-            logger.log(Level.INFO, "[METADATA EADS] apache context");
-            DirContext apacheCtx = (DirContext) ctx.lookup("dc=apache,dc=org");
-            logger.log(Level.INFO, "[METADATA EADS] apche dn: " + apacheCtx.getNameInNamespace());
-            logger.log(Level.INFO, "[METADATA EADS] apache bound names");
-            NamingEnumeration list2 = apacheCtx.list("");
-            while (list2.hasMore()) {
-                NameClassPair nc = (NameClassPair)list2.next();
-                System.out.println(nc);
-            }
-            Attributes apacheAttrs = ctx.getAttributes("");
-
-            logger.log(Level.INFO, "[METADATA EADS] apache attributes");
-            for (NamingEnumeration ae = apacheAttrs.getAll(); ae.hasMore();) {
-                Attribute attr = (Attribute)ae.next();
-                logger.log(Level.INFO, "[METADATA EADS] attribute: " + attr.getID());
-                /* Print each value */
-                for (NamingEnumeration e = attr.getAll(); e.hasMore();){
-                  logger.log(Level.INFO, "[METADATA EADS] value: " + e.next());
-                }
-            }
-
-
-
-
-            // Create attributes to be associated with the new context
-            Attributes attrs = new BasicAttributes(true); // case-ignore
-            Attribute objclass = new BasicAttribute("objectclass");
-            objclass.add("extensibleObject");
-            objclass.add("domain");
-            objclass.add("top");
-//            objclass.add("organizationalUnit");
-            attrs.put(objclass);
-
-            // Create the context
-            DirContext newCtx = apacheCtx.createSubcontext("dc=New", attrs);
-
-
-
-            logger.log(Level.INFO, "[METADATA EADS] *******************");
-            logger.log(Level.INFO, "[METADATA EADS] new context was created");
-            logger.log(Level.INFO, "[METADATA EADS] apache bound names");
-            list2 = apacheCtx.list("");
-            while (list2.hasMore()) {
-                NameClassPair nc = (NameClassPair)list2.next();
-                System.out.println(nc);
-            }
-            apacheAttrs = ctx.getAttributes("");
-
-            logger.log(Level.INFO, "[METADATA EADS] apache attributes");
-            for (NamingEnumeration ae = apacheAttrs.getAll(); ae.hasMore();) {
-                Attribute attr = (Attribute)ae.next();
-                logger.log(Level.INFO, "[METADATA EADS] attribute: " + attr.getID());
-                /* Print each value */
-                for (NamingEnumeration e = attr.getAll(); e.hasMore();){
-                  logger.log(Level.INFO, "[METADATA EADS] value: " + e.next());
-                }
-            }
-
-
-
-
-
-
-            logger.log(Level.INFO, "[METADATA EADS] *******************");
-            logger.log(Level.INFO, "[METADATA EADS] new context");
-            logger.log(Level.INFO, "[METADATA EADS] new context dn: " + newCtx.getNameInNamespace());
-            logger.log(Level.INFO, "[METADATA EADS] newctx bound names");
-            NamingEnumeration newList = newCtx.list("");
-            while (newList.hasMore()) {
-                NameClassPair nc = (NameClassPair)newList.next();
-                System.out.println(nc);
-            }
-            Attributes newAttrs = newCtx.getAttributes("");
-
-            logger.log(Level.INFO, "[METADATA EADS] newctx attributes");
-            for (NamingEnumeration e = newAttrs.getAll(); e.hasMore();) {
-                Attribute attr = (Attribute)e.next();
-                logger.log(Level.INFO, "[METADATA EADS] attribute: " + attr.getID());
-                /* Print each value */
-                for (NamingEnumeration ne = attr.getAll(); ne.hasMore();){
-                  logger.log(Level.INFO, "[METADATA EADS] value: " + ne.next());
-                }
-            }
-
-            logger.log(Level.INFO, "[METADATA EADS] *******************");
-
-
-            Attributes atAttrs = new BasicAttributes(true);
-            atAttrs.put("attributeTypes", "( 1.3.6.1.4.1.18060.0.4.3.2.1 NAME 'numberOfGuns' DESC 'Number of guns of a ship' EQUALITY integerMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )");
-            ctx.modifyAttributes("cn=schema", DirContext.ADD_ATTRIBUTE, atAttrs);
-
-            Attributes ocAttrs = new BasicAttributes(true);
-            ocAttrs.put("objectClasses", "( 1.3.6.1.4.1.18060.0.4.3.3.1 NAME 'ship' DESC 'An entry which represents a ship' SUP top STRUCTURAL MUST cn MAY ( numberOfGuns $ description ) )");
-            ctx.modifyAttributes("cn=schema", DirContext.ADD_ATTRIBUTE, ocAttrs);
-
-
-             // Create attributes to be associated with the new context
-            attrs = new BasicAttributes(true); // case-ignore
-            objclass = new BasicAttribute("objectclass");
-//            objclass.add("extensibleObject");
-            objclass.add("ship");
-            objclass.add("top");
-            attrs.put(objclass);
-            BasicAttribute guns = new BasicAttribute("numberOfGuns");
-            guns.add("152");
-            attrs.put(guns);
-
-            // Create the context
-            DirContext shipCtx = apacheCtx.createSubcontext("cn=HMS Victory", attrs);
-
-
-
-            logger.log(Level.INFO, "[METADATA EADS] *******************");
-            logger.log(Level.INFO, "[METADATA EADS] ship context was created");
-            logger.log(Level.INFO, "[METADATA EADS] apache bound names");
-            list2 = apacheCtx.list("");
-            while (list2.hasMore()) {
-                NameClassPair nc = (NameClassPair)list2.next();
-                System.out.println(nc);
-            }
-            apacheAttrs = ctx.getAttributes("");
-
-            logger.log(Level.INFO, "[METADATA EADS] apache attributes");
-            for (NamingEnumeration ae = apacheAttrs.getAll(); ae.hasMore();) {
-                Attribute attr = (Attribute)ae.next();
-                logger.log(Level.INFO, "[METADATA EADS] attribute: " + attr.getID());
-                /* Print each value */
-                for (NamingEnumeration e = attr.getAll(); e.hasMore();){
-                  logger.log(Level.INFO, "[METADATA EADS] value: " + e.next());
-                }
-            }
-
-            logger.log(Level.INFO, "[METADATA EADS] *******************");
-            logger.log(Level.INFO, "[METADATA EADS] ship context");
-            logger.log(Level.INFO, "[METADATA EADS] new context dn: " + shipCtx.getNameInNamespace());
-            logger.log(Level.INFO, "[METADATA EADS] shipCtx bound names");
-            newList = shipCtx.list("");
-            while (newList.hasMore()) {
-                NameClassPair nc = (NameClassPair)newList.next();
-                System.out.println(nc);
-            }
-            newAttrs = shipCtx.getAttributes("");
-
-            logger.log(Level.INFO, "[METADATA EADS] shipCtx attributes");
-            for (NamingEnumeration e = newAttrs.getAll(); e.hasMore();) {
-                Attribute attr = (Attribute)e.next();
-                logger.log(Level.INFO, "[METADATA EADS] attribute: " + attr.getID());
-                /* Print each value */
-                for (NamingEnumeration ne = attr.getAll(); ne.hasMore();){
-                  logger.log(Level.INFO, "[METADATA EADS] value: " + ne.next());
-                }
-            }
-        }
-        catch ( Exception e )
-        {
-            // Ok, we have something wrong going on ...
-            // e.printStackTrace();
-        }
     }
 
 }

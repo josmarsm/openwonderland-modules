@@ -1,18 +1,26 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * MetadataComponentProperties.java
+/**
+ * Project Wonderland
  *
- * Created on Jun 10, 2009, 4:02:05 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.metadata.client;
 
 import java.awt.GridBagLayout;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
@@ -25,7 +33,7 @@ import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFacto
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerState;
-import org.jdesktop.wonderland.modules.metadata.common.MetadataSPI;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 
 /**
  *
@@ -42,7 +50,7 @@ public class MetadataComponentProperties extends JPanel implements PropertiesFac
    *
    * set in open, used in restore
    */
-  ArrayList<MetadataSPI> originalMetadata = new ArrayList<MetadataSPI>();
+  Collection<Metadata> originalMetadata = new ArrayList<Metadata>();
 
   // TODO could not add MetadataTypesTable to NetBeans GUI Builder
   // workaround: use customize code to make basicTabs instantiated as
@@ -199,9 +207,9 @@ public class MetadataComponentProperties extends JPanel implements PropertiesFac
     MetadataComponentServerState state = getServerState();
     // currently, this naively clears tabs and repopulates them
     tabs.clearTabs();
-    logger.info("size of metadata in open:" + state.getMetadata().size());
-    tabs.addMetadata(state.getMetadata());
-    originalMetadata = state.getMetadata();
+    logger.info("size of metadata in open:" + state.getAllMetadata().size());
+    tabs.addMetadata(state.getAllMetadata());
+    originalMetadata = state.getAllMetadata();
     editor.setPanelDirty(MetadataComponentProperties.class, false);
   }
 
@@ -236,16 +244,16 @@ public class MetadataComponentProperties extends JPanel implements PropertiesFac
           state = new MetadataComponentServerState();
       }
 
-      logger.info("[METADATA COMPO PROPERTIES] previous state count:" + state.getMetadata().size() );
+      logger.info("[METADATA COMPO PROPERTIES] previous state count:" + state.getAllMetadata().size() );
       // TODO
       // naively clear this, in the future we could track which metadata
       // objects have been changed and adjust only them
       state.removeAllMetadata();
       // convert models back into ServerState
-      logger.info("[METADATA COMPO PROPERTIES] post removeAll state count:" + state.getMetadata().size() );
+      logger.info("[METADATA COMPO PROPERTIES] post removeAll state count:" + state.getAllMetadata().size() );
       for(int i = 0; i < tabs.getComponentCount(); i++){
         try {
-          for (MetadataSPI m : tabs.getMetadataFromTab(i)) {
+          for (Metadata m : tabs.getMetadataFromTab(i)) {
             state.addMetadata(m);
           }
         } catch (Exception ex) {
@@ -253,7 +261,7 @@ public class MetadataComponentProperties extends JPanel implements PropertiesFac
         }
       }
 
-      logger.info("[METADATA COMPO PROPERTIES] state to be added count:" + state.getMetadata().size() );
+      logger.info("[METADATA COMPO PROPERTIES] state to be added count:" + state.getAllMetadata().size() );
       // TODO
       // this overwrites the old serverstate, which could result in needlessly
       // overwriting unchanged metadata elts

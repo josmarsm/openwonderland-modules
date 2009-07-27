@@ -9,12 +9,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- *
+ * A simple container for search filters.
  * @author mabonner
  */
 public class MetadataSearchFilters implements Serializable{
-  private ArrayList<MetadataSPI> filters = new ArrayList<MetadataSPI>();
-  public void addFilter(MetadataSPI m) {
+  private ArrayList<Metadata> filters = new ArrayList<Metadata>();
+  public void addFilter(Metadata m) {
     filters.add(m);
   }
 
@@ -22,7 +22,7 @@ public class MetadataSearchFilters implements Serializable{
     return filters.size();
   }
 
-  public ArrayList<MetadataSPI> getFilters(){
+  public ArrayList<Metadata> getFilters(){
     return filters;
   }
 }

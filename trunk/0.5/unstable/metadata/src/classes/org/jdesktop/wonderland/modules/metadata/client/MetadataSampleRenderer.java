@@ -30,9 +30,11 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 
 /**
- * An example of a cell renderer
+ * Renderer for MetadataSampleCell. Copied from SampleCell's Renderer since
+ * MetadataSampleCell is just SampleCell with the Metadata component attached.
  * 
  * @author jkaplan
+ * @author mabonner
  */
 public class MetadataSampleRenderer extends BasicRenderer {
     private Node node = null;

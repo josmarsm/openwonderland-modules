@@ -1,12 +1,26 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.metadata.common.messages;
 
 /**
- *
+ * MetadataService's response to a client on the MetadataConnection. Currently
+ * used to return search results.
  * @author mabonner
  */
 import java.util.ArrayList;
@@ -24,10 +38,6 @@ public class MetadataConnectionResponseMessage extends ResponseMessage {
   private static Logger logger = Logger.getLogger(MetadataConnectionResponseMessage.class.getName());
   private HashMap<CellID, MetadataCellInfo> results = new HashMap<CellID, MetadataCellInfo>();
 
-  // cell id to..
-  // server state Set<Integer>
-  // hits
-
   public MetadataConnectionResponseMessage(MessageID id, ArrayList<MetadataCellInfo> res) {
     super(id);
     for(MetadataCellInfo i:res){
@@ -35,10 +45,19 @@ public class MetadataConnectionResponseMessage extends ResponseMessage {
     }
   }
 
+  /**
+   * Return results for cell with CellID id
+   * @param id
+   * @return
+   */
   public MetadataCellInfo getCellResults(CellID id){
     return results.get(id);
   }
 
+  /**
+   * Return all results
+   * @return
+   */
   public HashMap<CellID, MetadataCellInfo> getResults(){
     return results;
   }
