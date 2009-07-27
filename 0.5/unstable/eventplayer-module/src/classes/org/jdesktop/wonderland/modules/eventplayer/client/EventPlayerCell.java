@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.client;
 
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +32,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -45,6 +50,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -285,6 +291,13 @@ public class EventPlayerCell extends Cell {
             setPlaying(false);
         } else {
             eventPlayerLogger.warning("Attempt to stop by non-initiating user");
+            SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        Toolkit.getDefaultToolkit().beep();
+                        JOptionPane.showMessageDialog(getParentFrame(), "You can't stop a playback started by another user");
+                    }
+                });
         }
     }
 
@@ -323,15 +336,29 @@ public class EventPlayerCell extends Cell {
         return getCellCache().getSession().getUserID().getUsername();
     }
 
+    private JFrame getParentFrame() {
+        return ClientContextJME.getClientMain().getFrame().getFrame();
+    }
+
     void openReelForm() {
         //Let the server know I'm selecting a tape and wait to get a message back (processTapeStateMessage())
         EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.selectingTape(getCellID());
         try {
-            TapeStateMessageResponse response = (TapeStateMessageResponse) getChannel().sendAndWait(msg);
+            final TapeStateMessageResponse response = (TapeStateMessageResponse) getChannel().sendAndWait(msg);
             if (response.getAction() == TapeStateMessageResponse.TapeStateAction.TAPE_STATE) {
-                //Need to open the form BEFORE updating models, otherwise ignored
-                reelForm.setVisible(true);
-                updateTapeModels(response.getTapes(), response.getSelectedTape());
+                Rectangle parentBounds = getParentFrame().getBounds();
+                Rectangle formBounds = reelForm.getBounds();
+                reelForm.setLocation(parentBounds.width/2 - formBounds.width/2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
+
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        //Need to open the form BEFORE updating models, otherwise ignored
+                    reelForm.setVisible(true);
+                    updateTapeModels(response.getTapes(), response.getSelectedTape());
+                    }
+                });
+
             } else {
                 eventPlayerLogger.severe("Failed response from server");
             }
