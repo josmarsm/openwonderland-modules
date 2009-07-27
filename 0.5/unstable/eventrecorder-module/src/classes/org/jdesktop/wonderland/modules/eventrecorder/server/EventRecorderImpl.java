@@ -11,10 +11,11 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
+
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import com.sun.sgs.app.AppContext;
@@ -32,7 +33,7 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.LoadedCellRecordingListener;
-import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingResult;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangeRecordingResult;
 import org.jdesktop.wonderland.server.eventrecorder.EventRecorder;
 import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -40,6 +41,7 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingListener;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MetadataRecordingListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.UnloadedCellsRecordingListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportListener;
@@ -52,7 +54,7 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.RecordingCr
  * @author Bernard Horan
  */
 public class EventRecorderImpl implements ManagedObject, EventRecorder, RecordingCreationListener,
-        CellExportListener, ChangesFileCloseListener, MessageRecordingListener, LoadedCellRecordingListener, UnloadedCellsRecordingListener,Serializable {
+        CellExportListener, ChangesFileCloseListener, MessageRecordingListener, MetadataRecordingListener, LoadedCellRecordingListener, UnloadedCellsRecordingListener, Serializable {
 
     private static final Logger logger = Logger.getLogger(EventRecorderImpl.class.getName());
     /*The reference to the cell that is the event recorder in the world */
@@ -123,6 +125,27 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
         mgr.recordMessage(tapeName, clientID, message, this);
     }
+
+    public void recordMetadata(CellMessage message, String metadata) {
+        //logger.info("metadata: " + metadata);
+        CellID cellID = message.getCellID();
+        //TODO: check if cellID is a cell that's within the bounds of the recorder's recording volume
+        if (getFailedCells().contains(cellID)) {
+            //logger.warning("Ignoring message for cell: " + CellManagerMO.getCell(cellID) + ", id: " + cellID);
+            return;
+        }
+        if (cellID.equals(eventRecorderCellID)) {
+            logger.warning("Ignoring message for the event recorder cell");
+            return;
+        }
+        EventRecorderCellMO cellMO = (EventRecorderCellMO) CellManagerMO.getCell(eventRecorderCellID);
+        if (!cellMO.getLoadedCells().contains(cellID)) {
+            logger.warning("Ignoring message for cell that is not within my range: " + CellManagerMO.getCell(cellID));
+            return;
+        }
+        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
+        mgr.recordMetadata(tapeName, message.getMessageID(), metadata, this);
+    }
     
     void recordLoadedCell(CellID cellID) {
         
@@ -131,10 +154,16 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
             logger.warning("Not recording the load of the event recorder cell");
             return;
         }
-        logger.info("cell: " + CellManagerMO.getCell(cellID) + ", id: " + cellID);
+        //logger.info("cell: " + CellManagerMO.getCell(cellID) + ", id: " + cellID);
+        CellID parentID = null;
+        CellMO parentCell = CellManagerMO.getCell(cellID).getParent();
+        if (parentCell != null) {
+            parentID = parentCell.getCellID();
+            logger.info("cell parent: " + CellManagerMO.getCell(parentID) + ", id: " + parentID);
+        }
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
         //Callback is via recordLoadedCellResult()
-        mgr.recordLoadedCell(tapeName, cellID, this);
+        mgr.recordLoadedCell(tapeName, cellID, parentID, this);
         
     }
 
@@ -280,11 +309,22 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         return super.toString() + " name: " + getName();
     }
 
-    public void messageRecordingResult(MessageRecordingResult result) {
+    public void messageRecordingResult(ChangeRecordingResult result) {
         //message has been written, or not
         MessageID id = result.getMessageID();
         if (!result.isSuccess()) {
             logger.log(Level.WARNING, "Error writing message " + id + ": " +
+                           result.getFailureReason(), result.getFailureCause());
+        } else {
+            //logger.info("Success writing message " + id);
+        }
+    }
+
+    public void metadataRecordingResult(ChangeRecordingResult result) {
+        //message has been written, or not
+        MessageID id = result.getMessageID();
+        if (!result.isSuccess()) {
+            logger.log(Level.WARNING, "Error writing metadata for message " + id + ": " +
                            result.getFailureReason(), result.getFailureCause());
         } else {
             //logger.info("Success writing message " + id);

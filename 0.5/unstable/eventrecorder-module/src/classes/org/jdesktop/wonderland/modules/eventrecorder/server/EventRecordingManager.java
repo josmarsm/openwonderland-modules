@@ -11,10 +11,11 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
+
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
@@ -48,7 +49,8 @@ public interface EventRecordingManager {
      * @param cellID the id of the cell that has been loaded
      * @param listener a loaded cell recording listener that will be notified of the result of this call
      */
-    public void recordLoadedCell(String tapeName, CellID cellID, LoadedCellRecordingListener listener);
+    public void recordLoadedCell(String tapeName, CellID cellID, CellID parentID, LoadedCellRecordingListener listener);
+
     
     /**
      * Record the details of an unloaded cell onto the changes file.
@@ -69,6 +71,19 @@ public interface EventRecordingManager {
      * @param listener a message recording listener that will be notified of the result of this call
      */
     public void recordMessage(String tapeName, WonderlandClientID clientID, CellMessage message, MessageRecordingListener listener);
+
+    /**
+     * Write a message to the changes file.  This method will use a web service to
+     * wrap up the parameters into a message and then use another web service to write the
+     * encoded message to the changes file.  Finally, the listener will be
+     * notified with the results of the call.
+     * @param tapeName the name of the recording for which the message is to be recorded
+     * @param messageID the id of the message
+     * @param metadata the actual metadata, can be any string
+     * @param listener a message recording listener that will be notified of the result of this call
+     */
+    public void recordMetadata(String tapeName, MessageID messageID, String metadata, MetadataRecordingListener listener);
+
 
     /**
      * Close the file that is used to record changes. This method contacts a web service
@@ -128,13 +143,26 @@ public interface EventRecordingManager {
          * Notification of the result of recording a message
          * @param result the result of recording a message
          */
-        public void messageRecordingResult(MessageRecordingResult result);
+        public void messageRecordingResult(ChangeRecordingResult result);
     }
 
     /**
-     * The result of recording a message
+     * A listener that will be notified of the result of recording metadata
+     * to a changes file.  Implementations of MetadataRecordingListener must
+     * be either a ManagedObject or Serializable
      */
-    public interface MessageRecordingResult {
+    public interface MetadataRecordingListener {
+        /**
+         * Notification of the result of recording a message
+         * @param result the result of recording a message
+         */
+        public void metadataRecordingResult(ChangeRecordingResult result);
+    }
+
+    /**
+     * The result of recording a message or metadata to a changes file
+     */
+    public interface ChangeRecordingResult {
         /**
          * Whether or not the recording was successful
          * @return true if the recording was successful, or false if not

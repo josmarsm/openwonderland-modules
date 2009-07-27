@@ -31,21 +31,19 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.messages.MessageID;
 
 /**
- * Describes a message recorded by the event recording mechanism
+ * Describes some metadata recorded by the event recording mechanism
  * 
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Bernard Horan
  */
-@XmlRootElement(name="message-descriptor")
-public class MessageDescriptor {
+@XmlRootElement(name="metadata-descriptor")
+public class MetadataDescriptor {
     /* the name of the tape (recording) for which this change is directed */
     @XmlElement(name="tape-name") private String tapeName = null;
     /* the message from darkstar encoded into text */
-    @XmlElement(name="encoded-message") private String encodedMessage = null;
-    /* the id of the message */
-    @XmlElement(name="message-id") private long id = 0l;
-    /* the timestamp of the message */
-    @XmlElement(name="timestamp") private long timestamp = 0l;
+    @XmlElement(name="messageID") private long messageID = 0l;
+    /* the metadata of the message */
+    @XmlElement(name="metadata") private String metadata = null;
 
     /* The XML marshaller and unmarshaller for later use */
     private static Marshaller marshaller = null;
@@ -54,27 +52,26 @@ public class MessageDescriptor {
     /* Create the XML marshaller and unmarshaller once for all ModuleInfos */
     static {
         try {
-            JAXBContext jc = JAXBContext.newInstance(MessageDescriptor.class);
-            MessageDescriptor.unmarshaller = jc.createUnmarshaller();
-            MessageDescriptor.marshaller = jc.createMarshaller();
-            MessageDescriptor.marshaller.setProperty("jaxb.formatted.output", true);
+            JAXBContext jc = JAXBContext.newInstance(MetadataDescriptor.class);
+            MetadataDescriptor.unmarshaller = jc.createUnmarshaller();
+            MetadataDescriptor.marshaller = jc.createMarshaller();
+            MetadataDescriptor.marshaller.setProperty("jaxb.formatted.output", true);
         } catch (javax.xml.bind.JAXBException excp) {
-            Logger.getLogger(MessageDescriptor.class.getName()).log(Level.WARNING,
+            Logger.getLogger(MetadataDescriptor.class.getName()).log(Level.WARNING,
                     "[WFS] Unable to create JAXBContext", excp);
         }
     }
     
     /** Default constructor */
-    public MessageDescriptor() {
+    public MetadataDescriptor() {
     }
     
     /** Constructor, takes all the class fields as parameters
      */
-    public MessageDescriptor(String tapeName, long timestamp, MessageID messageID, String encodedMessage) {
+    MetadataDescriptor(String tapeName, MessageID messageID, String metadata) {
         this.tapeName = tapeName;
-        this.timestamp = timestamp;
-        this.encodedMessage = encodedMessage;
-        this.id = messageID.getID();
+        this.messageID = messageID.getID();
+        this.metadata = metadata;
     }
 
     @XmlTransient
@@ -83,18 +80,13 @@ public class MessageDescriptor {
     }
 
     @XmlTransient
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    @XmlTransient
-    public String getEncodedMessage() {
-        return encodedMessage;
-    }
-
-    @XmlTransient
     public long getMessageID() {
-        return id;
+        return messageID;
+    }
+
+    @XmlTransient
+    public String getMetadata() {
+        return metadata;
     }
     
     /**
@@ -104,8 +96,8 @@ public class MessageDescriptor {
      * @throw ClassCastException If the input file does not map to this class
      * @throw JAXBException Upon error reading the XML stream
      */
-    public static MessageDescriptor decode(Reader r) throws JAXBException {
-        return (MessageDescriptor)MessageDescriptor.unmarshaller.unmarshal(r);
+    public static MetadataDescriptor decode(Reader r) throws JAXBException {
+        return (MetadataDescriptor)MetadataDescriptor.unmarshaller.unmarshal(r);
     }
     
     /**
@@ -115,6 +107,6 @@ public class MessageDescriptor {
      * @throws JAXBException Upon error writing the XML file
      */
     public void encode(Writer w) throws JAXBException {
-        MessageDescriptor.marshaller.marshal(this, w);
+        MetadataDescriptor.marshaller.marshal(this, w);
     }
 }
