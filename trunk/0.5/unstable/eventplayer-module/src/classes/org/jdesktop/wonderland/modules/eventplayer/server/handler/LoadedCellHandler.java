@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.eventplayer.server.handler;
 
 import java.util.concurrent.Semaphore;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.eventplayer.server.ChangeReplayer;
 import org.xml.sax.Attributes;
 
@@ -30,6 +31,7 @@ import org.xml.sax.Attributes;
  */
 public class LoadedCellHandler extends DefaultTagHandler {
     private long timestamp;
+    private CellID parentID;
     
     public LoadedCellHandler(ChangeReplayer changeReplayer) {
         super(changeReplayer);
@@ -41,6 +43,15 @@ public class LoadedCellHandler extends DefaultTagHandler {
         //Get the timestamp from the attributes of the XML element
         String timestampString = atts.getValue("timestamp");
         timestamp = Long.parseLong(timestampString);
+        //Get the parentID from the attributes of the XML element
+        String parentIDString = atts.getValue("parentID");
+        parentID = null;
+        try {
+            long id = Long.parseLong(parentIDString);
+            parentID = new CellID(id);
+        } catch (NumberFormatException e) {
+            //failed to parse. This is OK, since the parentID is sometimes null
+        }
         logger.info("releasing semaphore");
        semaphore.release();
     }
@@ -55,7 +66,7 @@ public class LoadedCellHandler extends DefaultTagHandler {
     public void endTag(Semaphore semaphore) {
         super.endTag(semaphore);
         //The buffer contains the setupInfo
-        changeReplayer.loadCell(buffer.toString(), timestamp, semaphore);
+        changeReplayer.loadCell(buffer.toString(), timestamp, parentID, semaphore);
 
         
     }

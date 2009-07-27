@@ -21,7 +21,9 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -193,7 +195,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
             }
 
             /* Set the cell name */
-            cellMO.setName(entry.getName());
+            //cellMO.setName(entry.getName());
             //logger.info("set name: " + entry.getName());
 
             /** XXX TODO: add an import details cell component XXX */
@@ -210,30 +212,32 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
 
             /*
              * Add the child to the cell hierarchy. If the cell has no parent,
-             * then we insert it directly into the world
+             * then we insert it directly into the event recorder cell
              */
             try {
                 if (parentID == null) {
-                    //logger.info("parentRef == null");
-                    /*
-                    if (cellRef != null) {
-                        CellMO parent = cellRef.get();
+                    logger.info("parentID == null");
+                    
+                    if (playerCellMORef != null) {
+                        CellMO parent = playerCellMORef.get();
                         logger.info("parent: " + parent);
                         parent.addChild(cellMO);
-                        logger.info("WFSLoader: Parent Cell ID=" + cellMO.getParent().getCellID().toString());
+                        logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
                         Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
                         Iterator<ManagedReference<CellMO>> it = refs.iterator();
                         while (it.hasNext() == true) {
-                            logger.info("WFSLoader: Child Cell=" + it.next().get().getCellID().toString());
+                            logger.info("[EventPlayer] Child Cell=" + it.next().get().getCellID().toString());
                         }
-                        logger.info("WFSLoader: Cell Live: " + cellMO.isLive());
-                    } else {*/
+                        logger.info("[EventPlayer] Cell Live: " + cellMO.isLive());
+                    } else {
+                        logger.severe("There shouldn't be a null ref to the player cell)");
+                        
                         WonderlandContext.getCellManager().insertCellInWorld(cellMO);
-                    //}
+                    }
                 }
                 else {
                     CellMO parentCellMO = CellManagerMO.getCell(parentID);
-                    logger.info("EventPlayerImpl: Adding child " + cellMO.getName() + " (ID=" + cellMO.getCellID().toString() +
+                    logger.info("EventPlayer: Adding child " + cellMO.getName() + " (ID=" + cellMO.getCellID().toString() +
                             ") to parent " + parentCellMO.getName() + " (ID=" + parentID.toString() + ")");
                     
                     parentCellMO.addChild(cellMO);
@@ -289,15 +293,81 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         playerCellMORef.get().playbackDone();
     }
 
-    public void loadedCell(CellID oldCellID, CellID newCellID) {
-        if (cellMap.get(oldCellID) != null) {
-            throw new RuntimeException("Failed trying to add new cellId to cellmap where cellID already exists");
-        }
-        
-        cellMap.put(oldCellID, newCellID);
-        logger.info("new cellID from map: " + cellMap.get(oldCellID));
+    public void loadCell(CellServerState setup, CellID parentID) {
+            /*
+             * Create the cell and pass it the setup information
+             */
+            String className = setup.getServerClassName();
+            //logger.getLogger().info("className: " + className);
+            CellMO cellMO = null;
+            try {
+                cellMO = CellMOFactory.loadCellMO(className);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed to load cell: " + className, e);
+                return;
+            }
+            //logger.getLogger().info("created cellMO: " + cellMO);
+            if (cellMO == null) {
+                /* Log a warning and move onto the next cell */
+                logger.severe("Unable to load cell MO: " + className);
+                return;
+            }
+            /* Call the cell's setup method */
+            try {
+                cellMO.setServerState(setup);
+            } catch (ClassCastException cce) {
+                logger.log(Level.WARNING, "Error setting up new cell " +
+                        cellMO.getName() + " of type " +
+                        cellMO.getClass(), cce);
+                return;
+            }
+            try {
+                if (parentID != null) {
+                    //Need to add the cellMO to the right parent
+                    CellMO parent = CellManagerMO.getCell(parentID);
+                    logger.info("parent: " + parent);
+                    parent.addChild(cellMO);
+                    logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
+                    Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
+                    Iterator<ManagedReference<CellMO>> it = refs.iterator();
+                    while (it.hasNext() == true) {
+                        logger.info("[EventPlayer] Child Cell=" + it.next().get().getCellID().toString());
+                    }
+                    logger.info("[EventPlayer] Cell Live: " + cellMO.isLive());
 
-    }
+                } else {
+                    //Add it to the player's cell
+                    CellMO parent = playerCellMORef.get();
+                    logger.info("parent: " + parent);
+                    parent.addChild(cellMO);
+                    logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
+                    Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
+                    Iterator<ManagedReference<CellMO>> it = refs.iterator();
+                    while (it.hasNext() == true) {
+                        logger.info("[EventPlayer] Child Cell=" + it.next().get().getCellID().toString());
+                    }
+                    logger.info("[EventPlayer] Cell Live: " + cellMO.isLive());
+                }
+            } catch (MultipleParentException ex) {
+                logger.log(Level.SEVERE, "A cell cannot have multiple parents", ex);
+            }
+            String idString = setup.getMetaData().get("CellID");
+            logger.info("Old cellID value: " + idString);
+            long id = Long.valueOf(idString);
+            logger.info("Old cellID id: " + id);
+            CellID oldCellID = new CellID(id);
+            logger.info("Old cellID: " + oldCellID);
+            CellID newCellID = cellMO.getCellID();
+            logger.info("New cellID: " + newCellID);
+            if (cellMap.get(oldCellID) != null) {
+            throw new RuntimeException("Failed trying to add new cellId to cellmap where cellID already exists");
+            }
+
+            cellMap.put(oldCellID, newCellID);
+            logger.info("new cellID from map: " + cellMap.get(oldCellID));
+        }
+
+    
 
     public void unloadCell(CellID oldCellID) {
         //logger.info("oldCellID: " + oldCellID);

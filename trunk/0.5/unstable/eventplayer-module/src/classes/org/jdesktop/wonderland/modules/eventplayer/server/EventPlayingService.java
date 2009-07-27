@@ -338,7 +338,7 @@ public class EventPlayingService extends AbstractService {
         }
 
         @Override
-        public void loadCell(String setupInfo, long timestamp, Semaphore semaphore) {
+        public void loadCell(String setupInfo, long timestamp, CellID parentID, Semaphore semaphore) {
             //logger.getLogger().info("loadCell");
             long startTime = timestamp - recordingStartTime + playbackStartTime;
             //Need to remove the first line of the string, the processing instruction
@@ -355,7 +355,7 @@ public class EventPlayingService extends AbstractService {
             }
             // notify the listener
             NotifyChangesReplayingListener notify =
-                    new NotifyChangesReplayingListener(setup, listenerID, semaphore);
+                    new NotifyChangesReplayingListener(setup, parentID, listenerID, semaphore);
             try {
                 transactionScheduler.scheduleTask(notify, taskOwner, startTime);
             } catch (Exception ex) {
@@ -424,8 +424,8 @@ public class EventPlayingService extends AbstractService {
             wrapped.unloadCell(cellID);
         }
 
-        public void loadedCell(CellID oldCellID, CellID newCellID) {
-            wrapped.loadedCell(oldCellID, newCellID);
+        public void loadCell(CellServerState setup, CellID parentID) {
+            wrapped.loadCell(setup, parentID);
         }
 
         
@@ -440,6 +440,7 @@ public class EventPlayingService extends AbstractService {
         private Action actionType;
         private CellServerState setup;
         private CellID cellID;
+        private CellID parentID;
         private Semaphore semaphore;
 
         private NotifyChangesReplayingListener(BigInteger listenerID, Semaphore semaphore) {
@@ -462,10 +463,11 @@ public class EventPlayingService extends AbstractService {
             actionType = Action.UNLOAD_CELL;
         }
 
-        private NotifyChangesReplayingListener(CellServerState setup, BigInteger listenerID, Semaphore semaphore) {
+        private NotifyChangesReplayingListener(CellServerState setup, CellID parentID, BigInteger listenerID, Semaphore semaphore) {
             this.listenerID = listenerID;
             this.setup = setup;
             this.semaphore = semaphore;
+            this.parentID = parentID;
             actionType = Action.LOAD_CELL;
         }
 
@@ -488,7 +490,7 @@ public class EventPlayingService extends AbstractService {
                         l.playMessage(message);
                         break;
                     case LOAD_CELL:
-                        loadCell(l);
+                        l.loadCell(setup, parentID);
                         break;
                     case UNLOAD_CELL:
                         l.unloadCell(cellID);
@@ -506,49 +508,7 @@ public class EventPlayingService extends AbstractService {
             }
         }
 
-        private void loadCell(ChangeReplayingListener listener) {
-            /*
-             * Create the cell and pass it the setup information
-             */
-            String className = setup.getServerClassName();
-            //logger.getLogger().info("className: " + className);
-            CellMO cellMO = null;
-            try {
-                cellMO = CellMOFactory.loadCellMO(className);
-            } catch (Exception e) {
-                logger.getLogger().log(Level.SEVERE, "Failed to load cell: " + className, e);
-                return;
-            }
-            //logger.getLogger().info("created cellMO: " + cellMO);
-            if (cellMO == null) {
-                /* Log a warning and move onto the next cell */
-                logger.getLogger().severe("Unable to load cell MO: " + className);
-                return;
-            }
-            /* Call the cell's setup method */
-            try {
-                cellMO.setServerState(setup);
-            } catch (ClassCastException cce) {
-                logger.getLogger().log(Level.WARNING, "Error setting up new cell " +
-                        cellMO.getName() + " of type " +
-                        cellMO.getClass(), cce);
-                return;
-            }
-            try {
-                WonderlandContext.getCellManager().insertCellInWorld(cellMO);
-            } catch (MultipleParentException ex) {
-                logger.getLogger().log(Level.SEVERE, "A cell cannot have multiple parents", ex);
-            }
-            String idString = setup.getMetaData().get("CellID");
-            logger.getLogger().info("Old cellID value: " + idString);
-            long id = Long.valueOf(idString);
-            logger.getLogger().info("Old cellID id: " + id);
-            CellID oldCellID = new CellID(id);
-            logger.getLogger().info("Old cellID: " + oldCellID);
-            CellID newCellID = cellMO.getCellID();
-            logger.getLogger().info("New cellID: " + newCellID);
-            listener.loadedCell(oldCellID, newCellID);
-        }
+        
     }
 
     

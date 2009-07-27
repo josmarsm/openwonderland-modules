@@ -73,8 +73,9 @@ public abstract class ChangeReplayer {
      * Load the cell described by the setupInfo at the time given by the timestamp
      * @param setupInfo an XML representation of the cellserverstate of a cell
      * @param timestamp the timestamp at which the cell was loaded
+     * @param parentID the CellID of the parent of the cell to be loaded, can be null
      */
-    public abstract void loadCell(String setupInfo, long timestamp, Semaphore semaphore);
+    public abstract void loadCell(String setupInfo, long timestamp, CellID parentID, Semaphore semaphore);
 
     /**
      * Play a message
