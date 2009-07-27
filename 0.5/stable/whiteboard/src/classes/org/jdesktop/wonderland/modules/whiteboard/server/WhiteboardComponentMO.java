@@ -28,9 +28,12 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage;
+import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 
 /**
  * The server side of the communication component that provides communication between the whiteboard client and server.
@@ -98,6 +101,12 @@ public class WhiteboardComponentMO extends CellComponentMO {
             ((WhiteboardCellMO) getCell()).receivedMessage(sender, clientID, cmsg);
         }
 
-        
+        @Override
+        protected void postRecordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            WhiteboardCellMessage cmsg = (WhiteboardCellMessage) message;
+            RecorderManager.getDefaultManager().recordMetadata(cmsg,  cmsg.getXMLString());
+            UserMO user = UserManager.getUserManager().getUser(clientID);
+            RecorderManager.getDefaultManager().recordMetadata(cmsg,  "Created by " + user.getUsername() + "[" + user.getIdentity().getFullName() + "]");
+        }
     }
 }
