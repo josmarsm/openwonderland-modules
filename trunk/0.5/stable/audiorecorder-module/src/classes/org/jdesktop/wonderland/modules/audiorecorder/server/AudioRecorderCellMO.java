@@ -48,6 +48,9 @@ import java.io.FilenameFilter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellServerState;
+import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.UserManager;
+import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 
 /**
  *
@@ -380,6 +383,13 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
                 cellMO.processNewTapeMessage(clientID, arcm);
                 break;
             }
+        }
+
+        @Override
+        protected void postRecordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            AudioRecorderCellChangeMessage arcm = (AudioRecorderCellChangeMessage) message;
+            UserMO user = UserManager.getUserManager().getUser(clientID);
+            RecorderManager.getDefaultManager().recordMetadata(message,  arcm.getDescription() + " initiated by " + user.getUsername() + "[" + user.getIdentity().getFullName() + "]");
         }
     }
 
