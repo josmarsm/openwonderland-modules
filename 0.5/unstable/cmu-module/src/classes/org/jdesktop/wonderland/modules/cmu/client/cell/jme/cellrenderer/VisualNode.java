@@ -15,9 +15,18 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.client.cell.jme.cellrenderer;
 
+import com.jme.image.Texture;
+import com.jme.math.Matrix3f;
+import com.jme.math.Vector3f;
+import com.jme.scene.Spatial;
+import com.jme.scene.state.RenderState;
+import com.jme.scene.state.TextureState;
+import com.jme.util.TextureManager;
+import java.awt.Image;
+import org.jdesktop.mtgame.RenderUpdater;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.client.cell.TransformationMessage;
 
 /**
@@ -31,6 +40,7 @@ public class VisualNode extends TransformableParent {
     public VisualNode(int nodeID) {
         super();
         this.nodeID = nodeID;
+        System.out.println("Created visual node with id: " + nodeID);
     }
 
     public int getNodeID() {
@@ -39,7 +49,39 @@ public class VisualNode extends TransformableParent {
 
     @Override
     public synchronized void applyTransformationToChild(TransformationMessage transformation) {
-        transformation.applyToMatchingNode(this);
+        if (transformation.getNodeID() == this.getNodeID()) {
+            this.applyTransformation(transformation);
+        }
         super.applyTransformationToChild(transformation);
+    }
+
+    public void applyTransformation(TransformationMessage transformation) {
+        final float scale = transformation.getScale();
+        final Vector3f translation = transformation.getTranslation();
+        final Matrix3f rotation = transformation.getRotation();
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+            public void update(Object arg0) {
+                for (Spatial mesh : VisualNode.this.getChildren()) {
+                    // Apply transformations.
+                    mesh.setLocalScale(scale);
+                    mesh.setLocalTranslation(translation);
+                    mesh.setLocalRotation(rotation);
+                }
+            }
+        }, null);
+        ClientContextJME.getWorldManager().addToUpdateList(this);
+    }
+
+    public void applyTexture(Image texture) {
+        TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
+        Texture t = null;
+        t = TextureManager.loadTexture(texture, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
+        t.setWrap(Texture.WrapMode.Repeat);
+        ts.setTexture(t);
+        ts.setEnabled(true);
+        this.setRenderState(ts);
+
     }
 }

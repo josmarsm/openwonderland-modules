@@ -16,7 +16,7 @@ public class TransformableParent extends Node {
 
     public synchronized void applyTransformationToChild(TransformationMessage transformation) {
         for (Spatial child : this.getChildren()) {
-            if (child.getClass().isAssignableFrom(TransformableParent.class)) {
+            if (TransformableParent.class.isAssignableFrom(child.getClass())) {
                 ((TransformableParent)child).applyTransformationToChild(transformation);
             }
         }
