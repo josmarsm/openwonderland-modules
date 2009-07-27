@@ -96,7 +96,7 @@ public class EventRecorderUtils {
 
     /**
      * Record a change onto a changes file
-     * @param messageDescriptor a description of the message, including the name of the recording
+     * @param metadataDescriptor a description of the message, including the name of the recording
      * @throws java.io.IOException
      * @throws javax.xml.bind.JAXBException
      */
@@ -127,7 +127,40 @@ public class EventRecorderUtils {
     }
 
     /**
-     * Create a change descriptor that wraps the paramaters
+     * Record a metadata onto a changes file
+     * @param metadataDescriptor a description of the metadata, including the name of the recording
+     * @throws java.io.IOException
+     * @throws javax.xml.bind.JAXBException
+     */
+    static void recordMetadata(MetadataDescriptor metadataDescriptor) throws IOException, JAXBException {
+        logger.info("metadata: " + metadataDescriptor.getMetadata());
+        // Open an output connection to the URL, pass along any exceptions
+        URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "recordMetadata/changesFile");
+
+        URLConnection connection = url.openConnection();
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        connection.setUseCaches(false);
+        connection.setRequestProperty("Content-Type", "application/xml");
+        OutputStreamWriter w = new OutputStreamWriter(connection.getOutputStream());
+
+        // Write out the class as an XML stream to the output connection
+        metadataDescriptor.encode(w);
+        w.close();
+
+        // For some reason, we need to read in the input for the HTTP POST to
+        // work
+        BufferedReader rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String line;
+        while ((line = rd.readLine()) != null) {
+            System.out.println(line);
+        }
+        rd.close();
+
+    }
+
+    /**
+     * Create a message descriptor that wraps the paramaters
      * @param tapeName the name of the recording
      * @param clientID the id of the client that sent the message
      * @param message the message received from the client that is to be recorded
@@ -138,7 +171,7 @@ public class EventRecorderUtils {
     static MessageDescriptor getMessageDescriptor(String tapeName, WonderlandClientID clientID, CellMessage message, long timestamp) throws PackerException {
         ByteBuffer byteBuffer = MessagePacker.pack(message, clientID.getID().shortValue());
         String encodedMessage = BASE_64_ENCODER.encode(byteBuffer);
-        return new MessageDescriptor(tapeName, timestamp, encodedMessage);
+        return new MessageDescriptor(tapeName, timestamp, message.getMessageID(), encodedMessage);
     }
 
     /**
@@ -150,7 +183,7 @@ public class EventRecorderUtils {
      * @throws IOException
      * @throws JAXBException
      */
-    public static LoadedCellDescriptor getLoadedCellDescriptor(String tapeName, CellMO cellMO, long timestamp)
+    public static LoadedCellDescriptor getLoadedCellDescriptor(String tapeName, CellMO cellMO, CellID parentID, long timestamp)
         throws IOException, JAXBException
     {
         // Create the cell on the server, fetch the setup information from the
@@ -173,7 +206,7 @@ public class EventRecorderUtils {
         // Create the descriptor for the cell using the tape name, the timestamp
         // and setup information we obtained from the
         // cell
-        return new LoadedCellDescriptor(tapeName, setupStr, timestamp);
+        return new LoadedCellDescriptor(tapeName, setupStr, parentID, timestamp);
     }
 
     /**

@@ -26,6 +26,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.cell.CellID;
 
 /**
  * Describes a cell that has been loaded so that it may be recorded.
@@ -40,6 +41,7 @@ public class LoadedCellDescriptor {
     @XmlElement(name="xml-setup-info") private String setupInfo = null;
     /* the timestamp of the change */
     @XmlElement(name="timestamp") private long timestamp = 0l;
+    @XmlElement(name="parentID") private String parentID = null;
 
     private static JAXBContext jaxbContext = null;
     static {
@@ -55,10 +57,17 @@ public class LoadedCellDescriptor {
     }
     
     /** Constructor, takes all of the class attributes */
-    public LoadedCellDescriptor(String tapeName, String setupInfo, long timestamp) {
+    public LoadedCellDescriptor(String tapeName, String setupInfo, CellID parentID, long timestamp) {
         this.tapeName = tapeName;
         this.setupInfo = setupInfo;
         this.timestamp = timestamp;
+        if (parentID != null) {
+            this.parentID = parentID.toString();
+        }
+    }
+
+    public String getParentID() {
+        return parentID;
     }
 
     @XmlTransient

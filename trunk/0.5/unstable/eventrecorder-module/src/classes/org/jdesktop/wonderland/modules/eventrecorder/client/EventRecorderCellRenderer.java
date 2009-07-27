@@ -207,7 +207,6 @@ public class EventRecorderCellRenderer extends BasicRenderer {
 
         ButtonListener() {
             super();
-            setSwingSafe(true);
         }
 
         @Override

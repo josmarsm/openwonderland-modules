@@ -256,7 +256,7 @@ public class EventRecorderCell extends Cell {
     }
 
     private void setTapeUsed(String tapeName) {
-        eventRecorderLogger.info("setTapeUsed: " + tapeName);
+        //eventRecorderLogger.info("setTapeUsed: " + tapeName);
         Enumeration tapes = tapeListModel.elements();
         while (tapes.hasMoreElements()) {
             Tape aTape = (Tape) tapes.nextElement();
@@ -275,7 +275,7 @@ public class EventRecorderCell extends Cell {
      * See method setRecording()
      */
     void startRecording() {
-        eventRecorderLogger.info("start recording");
+        //eventRecorderLogger.info("start recording");
 
         final Tape selectedTape = getSelectedTape();
         if (selectedTape == null) {
@@ -310,7 +310,7 @@ public class EventRecorderCell extends Cell {
     }
 
     void stop() {
-        eventRecorderLogger.info("stop");
+        //eventRecorderLogger.info("stop");
         if (userName.equals(getCurrentUserName())) {
             EventRecorderCellChangeMessage msg = null;
             if (isRecording) {
@@ -333,7 +333,7 @@ public class EventRecorderCell extends Cell {
     }
 
     private void setRecording(boolean b) {
-        eventRecorderLogger.info("setRecording: " + b);
+        //eventRecorderLogger.info("setRecording: " + b);
         //If the recording has started the selected tape is no longer fresh
         if (b) {
             getSelectedTape().setUsed();

@@ -11,15 +11,17 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
+
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -46,12 +48,16 @@ public class EventRecordingManagerImpl implements EventRecordingManager {
         service.closeChangesFile(tapeName, listener);
     }
 
-    public void recordLoadedCell(String tapeName, CellID cellID, LoadedCellRecordingListener listener) {
-        service.recordLoadedCell(tapeName, cellID, listener);
+    public void recordLoadedCell(String tapeName, CellID cellID, CellID parentID, LoadedCellRecordingListener listener) {
+        service.recordLoadedCell(tapeName, cellID, parentID, listener);
     }
 
     public void recordUnloadedCell(String tapeName, CellID cellID, UnloadedCellsRecordingListener listener) {
         service.recordUnloadedCell(tapeName, cellID, listener);
+    }
+
+    public void recordMetadata(String tapeName, MessageID messageID, String metadata, MetadataRecordingListener listener) {
+        service.recordMetadata(tapeName, messageID, metadata, listener);
     }
 
 }

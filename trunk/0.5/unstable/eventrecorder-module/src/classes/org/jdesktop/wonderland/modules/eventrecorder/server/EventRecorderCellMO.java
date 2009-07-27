@@ -11,10 +11,11 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
+
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
@@ -45,9 +47,9 @@ import org.jdesktop.wonderland.modules.eventrecorder.common.Tape;
 import org.jdesktop.wonderland.modules.eventrecorder.common.TapeStateMessageResponse;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCreationListener;
 import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
-import org.jdesktop.wonderland.server.UserMO;
-import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 import org.jdesktop.wonderland.server.cell.ViewCellCacheMO;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
@@ -70,9 +72,6 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     private String recorderName;
     private ManagedReference<EventRecorderImpl> recorderRef;
     private ManagedReference<EventRecorderCellCacheMO> eventRecorderCellCacheRef;
-    private ManagedReference<UserMO> userRef;
-
-
     
     public EventRecorderCellMO() {
         super();
@@ -82,6 +81,7 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         recorderName = "Recorder" + instanceNumber;
         createTapes();
         serverState.setRecording(false);
+        addTransformChangeListener(new TransformChangeListener());
     }
 
     /**
@@ -101,8 +101,14 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
             //Add the message receiver to the channel
             channel.addMessageReceiver(EventRecorderCellChangeMessage.class,
                 new EventRecorderCellMOMessageReceiver(this));
+            
+
         } else {
             getChannel().removeMessageReceiver(EventRecorderCellChangeMessage.class);
+            //Logout from the cell cache and unset the ref
+            eventRecorderCellCacheRef.get().logout();
+            logger.info("setting cellCacheRef to null");
+            eventRecorderCellCacheRef = null;
         }
     }
 
@@ -169,33 +175,12 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         //eventRecorderLogger.fine("Getting client cell class name");
         return "org.jdesktop.wonderland.modules.eventrecorder.client.EventRecorderCell";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public ViewCellCacheMO getCellCache() {
-        return eventRecorderCellCacheRef.getForUpdate();
-    }
+    }  
 
     Set<CellID> getLoadedCells() {
         return eventRecorderCellCacheRef.get().getLoadedCells();
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    public UserMO getUser() {
-        return userRef.get();
-    }
-
-    private void createCellCache() {
-        if (eventRecorderCellCacheRef==null) {
-            EventRecorderCellCacheMO cache = new EventRecorderCellCacheMO(this, recorderRef);
-            eventRecorderCellCacheRef = AppContext.getDataManager().createReference(cache);
-        }
-    }
-
+    
     boolean isRecording() {
         return serverState.isRecording();
     }
@@ -226,6 +211,19 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         }
     }
 
+    private ManagedReference<EventRecorderCellCacheMO> getEventRecorderCellCacheRef() {
+        return eventRecorderCellCacheRef;
+    }
+
+    private ManagedReference<EventRecorderImpl> getRecorderRef() {
+        return recorderRef;
+    }
+
+    private void setCellCache(EventRecorderCellCacheMO cache) {
+        eventRecorderCellCacheRef = AppContext.getDataManager().createReference(cache);
+        cache.login();
+    }
+
     private void updateTapes(String[] tapeNames) {
         //tapeNames are the names of the recordings as known to the web service
         //If there's no tapes, do nothing
@@ -251,30 +249,30 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     }
 
     private void processTapeStateMessage(WonderlandClientID clientID, WonderlandClientSender sender, EventRecorderCellChangeMessage arcm) {
-        eventRecorderLogger.info("clientID: " + clientID + ", sender: " + sender);
+        //eventRecorderLogger.info("clientID: " + clientID + ", sender: " + sender);
         MessageID messageID  = arcm.getMessageID();
-        eventRecorderLogger.info("messageID: " + messageID);
+        //eventRecorderLogger.info("messageID: " + messageID);
         CellExportManager mgr = AppContext.getManager(CellExportManager.class);
-        eventRecorderLogger.info("asynchronously requesting recordings");
+        //eventRecorderLogger.info("asynchronously requesting recordings");
         //If successful, async method call to reocordingsListed()
         //If not successful, async call to recordingsListfailed()
         mgr.listRecordings(messageID, sender, clientID, this);
     }
 
-    private void setRecording(WonderlandClientSender sender, WonderlandClientID clientID, boolean r) {
+    private void setRecording(boolean r) {
         //eventRecorderLogger.info("setRecording: " + r);
         //eventRecorderLogger.info("isRecording: " + isRecording);
         if (isRecording()) {
             //Already recording
             if (!r) {
                 //Stop recording
-                stopRecording(clientID);
+                stopRecording();
             }
         } else {
             //Not recording
             if (r) {
                 //Start recording
-                startRecording(sender, clientID);
+                startRecording();
             }
         }
         serverState.setRecording(r);
@@ -288,34 +286,27 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     }
 
 
-    private void startRecording(WonderlandClientSender sender, WonderlandClientID clientID) {
+    private void startRecording() {
         //eventRecorderLogger.info("Start Recording");
-        UserMO user = WonderlandContext.getUserManager().getUser(clientID);
-        userRef = AppContext.getDataManager().createReference(user);
-        createCellCache();
-        eventRecorderCellCacheRef.get().login(sender, clientID);
+        //logger.info("cellCacheRef for " + recorderName + ": " + eventRecorderCellCacheRef);
         recorderRef.get().startRecording(serverState.getSelectedTape().getTapeName(), eventRecorderCellCacheRef.get().getLoadedCells());
     }
 
 
-    private void stopRecording( WonderlandClientID clientID) {
+    private void stopRecording() {
         //eventRecorderLogger.info("Stop Recording");
-        eventRecorderCellCacheRef.get().logout(clientID);
-        eventRecorderCellCacheRef = null;
-        userRef = null;
         recorderRef.get().stopRecording();
     }
 
     
 
-    private void processRecordMessage(WonderlandClientSender sender, WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
+    private void processRecordMessage(WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
         //eventRecorderLogger.info("isRecording: " + arcm.isRecording());
-        
-        setRecording(sender, clientID, arcm.isRecording());
+        setRecording(arcm.isRecording());
         serverState.setUserName(arcm.getUserName());
 
         // send a message to all clients
-        //getChannel().sendAll(clientID, arcm);
+        getChannel().sendAll(clientID, arcm);
     }
 
     private void processTapeSelectedMessage(WonderlandClientID clientID, EventRecorderCellChangeMessage arcm) {
@@ -364,11 +355,11 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     }
 
     public void listRecordingsResult(MessageID messageID, WonderlandClientSender sender, WonderlandClientID clientID, WFSRecordingList recordings) {
-        eventRecorderLogger.info("received recordings: " + recordings.getRecordings());
+        //eventRecorderLogger.info("received recordings: " + recordings.getRecordings());
         updateTapes(recordings.getRecordings());
-        eventRecorderLogger.info("serverState: " + serverState);
+        //eventRecorderLogger.info("serverState: " + serverState);
         TapeStateMessageResponse tsmr = TapeStateMessageResponse.tapeStateMessage(messageID, serverState);
-        eventRecorderLogger.info("responding to original synchronous request");
+        //eventRecorderLogger.info("responding to original synchronous request");
         sender.send(clientID, tsmr);
     }
 
@@ -376,7 +367,12 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         eventRecorderLogger.log(Level.SEVERE, message, ex);
         TapeStateMessageResponse tsmr = TapeStateMessageResponse.tapeStateFailedMessage(messageID);
         sender.send(clientID, tsmr);
-    }
+    }    
+
+    @Override
+    public ViewCellCacheMO getCellCache() {
+        return eventRecorderCellCacheRef.get();
+    }   
 
     private static class EventRecorderCellMOMessageReceiver extends AbstractComponentMessageReceiver {
 
@@ -390,7 +386,7 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
             EventRecorderCellChangeMessage arcm = (EventRecorderCellChangeMessage) message;
             switch (arcm.getAction()) {
                 case RECORD:
-                    cellMO.processRecordMessage(sender, clientID, arcm);
+                    cellMO.processRecordMessage(clientID, arcm);
                     break;
                 case TAPE_SELECTED:
                     cellMO.processTapeSelectedMessage(clientID, arcm);
@@ -409,6 +405,23 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         
     }
 
-    
+    private static class TransformChangeListener implements TransformChangeListenerSrv {
+
+        public void transformChanged(ManagedReference<CellMO> cellRef, CellTransform localTransform, CellTransform worldTransform) {
+        //It's at this stage that we know we're in the world and located at a certain position
+        //logger.info("worldTransform: " + getWorldTransform(null));
+        //Create the cell cache and set it up
+        EventRecorderCellMO cellMO = (EventRecorderCellMO) cellRef.get();
+        if (cellMO.getEventRecorderCellCacheRef() == null) {
+            cellMO.setCellCache(new EventRecorderCellCacheMO(cellMO, cellMO.getRecorderRef()));
+            //We don't need to listen any longer
+            cellMO.removeTransformChangeListener(this);
+        } else {
+            //we shouldn't have reached here
+            logger.severe("Failed to remove change listener");
+        }
+    }
+
+    }
 
 }
