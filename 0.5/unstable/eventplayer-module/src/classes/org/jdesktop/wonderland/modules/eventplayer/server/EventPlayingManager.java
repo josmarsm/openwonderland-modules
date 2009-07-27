@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.eventplayer.server;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 
 /**
@@ -49,12 +50,9 @@ public interface EventPlayingManager {
          */
         public void allChangesPlayed();
 
-        /**
-         * A cell has been loaded
-         * @param oldCellID the old id of the cell, when recorded
-         * @param newCellID the new id of the cell as it exists in wonderland
-         */
-        public void loadedCell(CellID oldCellID, CellID newCellID);
+        public void loadCell(CellServerState setup, CellID parentID);
+
+        
 
         /**
          * Replay a message
