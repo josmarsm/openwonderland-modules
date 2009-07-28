@@ -101,6 +101,6 @@ public class ThoughtRecord implements Serializable {
     }
 
     public String toString() {
-        return fromUser + ": " + this.text + " (" + timestamp + ")";
+        return "ThoughtRecord: " + fromUser + ": " + this.text + " (" + timestamp + ")";
     }
 }

@@ -84,6 +84,8 @@ public class ThoughtBubblesCellComponentMO extends CellComponentMO {
         if (CellComponentClientState == null) {
             CellComponentClientState = new ThoughtBubblesComponentClientState();
         }
+
+        logger.warning("Getting client state!");
         ((ThoughtBubblesComponentClientState)CellComponentClientState).setThoughts(thoughts);
         
         return super.getClientState(CellComponentClientState, clientID, capabilities);

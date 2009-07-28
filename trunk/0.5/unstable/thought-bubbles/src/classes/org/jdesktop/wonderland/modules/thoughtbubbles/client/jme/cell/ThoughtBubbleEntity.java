@@ -35,6 +35,7 @@ import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.thoughtbubbles.client.ViewThoughtDialog;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtRecord;
@@ -107,7 +108,7 @@ public class ThoughtBubbleEntity extends Entity {
         entity.addComponent(CollisionComponent.class, cc);
     }
 
-    public void showThoughtDialog(final HUD mainHUD) {
+    public void showThoughtDialog() {
 
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -116,6 +117,7 @@ public class ThoughtBubbleEntity extends Entity {
             if(viewDialog==null) {
             logger.warning("Making new viewthoughtdialog");
             viewDialog = new ViewThoughtDialog();
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             viewDialogHUD = mainHUD.createComponent(viewDialog);
             viewDialogHUD.setPreferredLocation(Layout.CENTER);
             viewDialogHUD.setName("View Thought");

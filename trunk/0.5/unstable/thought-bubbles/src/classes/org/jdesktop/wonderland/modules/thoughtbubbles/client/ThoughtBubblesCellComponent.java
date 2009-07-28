@@ -82,28 +82,34 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
     public ThoughtBubblesCellComponent(Cell cell) {
         super(cell);
 
+        logger.warning("Constructing ThoughtBubblesCellComponent");
         createThoughtButton = new JButton();
         createThoughtButton.setText("Add New Thought");
         createThoughtButton.setActionCommand(NEW_THOUGHT_ACTION);
         createThoughtButton.addActionListener(this);
-
-        localUsername = cell.getCellCache().getViewCell().getIdentity().getUsername();
-        logger.warning("LocalUsername: " + localUsername);
     }
+
+//    public ThoughtBubblesCellComponent() {
+//        logger.warning("Got a call to the no arg constructor of ThoughtBubblesCellComponent.");
+//    }
 
     @Override
     public void setClientState(CellComponentClientState state) {
         super.setClientState(state);
 
-//        this.thoughts = ((ThoughtBubblesComponentClientState)state).getThoughts();
         // Initialize the Map with all the ThoughtRecorsd from the client state.
+        // This is a little problematic, because we can't create the entities for
+        // each of these yet because the rendering systems aren't ready. So for now,
+        // just put a null into the map, and do a pass through the map for null
+        // entries and intialize them during setStatus
         for (ThoughtRecord rec : ((ThoughtBubblesComponentClientState) state).getThoughts()) {
-            thoughts.put(rec, createNewThoughtBubbleNode(rec));
+            logger.warning("Got thought from server, adding: " + rec);
+            thoughts.put(rec, null);
         }
 
     }
 
-    private ThoughtBubbleEntity createNewThoughtBubbleNode(ThoughtRecord rec) {
+    private ThoughtBubbleEntity createNewThoughtBubbleEntity(ThoughtRecord rec) {
         CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
 
         final ThoughtBubbleEntity entity = new ThoughtBubbleEntity(rec, renderer.getEntity());
@@ -125,7 +131,10 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
 
 //            }
 //        }, null);
-        
+
+        mouseListener.addToEntity(entity);
+        this.thoughts.put(rec, entity);
+
         return entity;
     }
 
@@ -154,6 +163,24 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
             prox.addProximityListener(this, bounds);
             if(mouseListener==null)
                 mouseListener = new MouseEventListener();
+
+            // Do this here - if it happens before the avatar stuff is done, it will fail.
+            localUsername = cell.getCellCache().getViewCell().getIdentity().getUsername();
+            logger.warning("LocalUsername: " + localUsername);
+        } else if (status == CellStatus.RENDERING && increasing) {
+            // Initialize any items in the thoughts map that have null entities.
+            // Avoid concurrent mod exceptions by cloning.
+            // This needs to happen in rendering because in ACTIVE, the renderer
+            // objects don't exist yet, so we can't get their entities. 
+            Map<ThoughtRecord, ThoughtBubbleEntity> thoughtsClone = new HashMap(this.thoughts);
+            for(ThoughtRecord rec : thoughtsClone.keySet()) {
+                if(thoughtsClone.get(rec)==null) {
+                    // if it's null, construct a new entity and replace
+                    // the listing in the original map.
+                    this.thoughts.put(rec, createNewThoughtBubbleEntity(rec));
+                }
+            }
+
         } else if (status == CellStatus.DISK && !increasing) {
             // remove the listeners from all known entities before going to DISK
 
@@ -232,9 +259,7 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
         logger.warning("Message sent to server!");
 
         // Now add it to the local representation.
-        ThoughtBubbleEntity thoughtBubble = createNewThoughtBubbleNode(thought);
-        mouseListener.addToEntity((Entity)thoughtBubble);
-        this.thoughts.put(thought, thoughtBubble);
+        ThoughtBubbleEntity thoughtBubble = createNewThoughtBubbleEntity(thought);
 
 
         mainHUD.removeComponent(thoughtDialog);
@@ -269,7 +294,7 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
 
             switch (msg.getAction()) {
                 case NEW_THOUGHT:
-                    thoughts.put(msg.getThought(), createNewThoughtBubbleNode(msg.getThought()));
+                    thoughts.put(msg.getThought(), createNewThoughtBubbleEntity(msg.getThought()));
                     logger.warning("Got a new thought from another client!");
                     break;
             }
@@ -293,7 +318,7 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
                 if(mbe.getEntity() instanceof ThoughtBubbleEntity) {
                     logger.warning("found thought bubble entity");
                     ThoughtBubbleEntity e = (ThoughtBubbleEntity)mbe.getEntity();
-                    e.showThoughtDialog(mainHUD);
+                    e.showThoughtDialog();
                 }
             }
         }
