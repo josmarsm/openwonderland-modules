@@ -312,6 +312,10 @@ public class EventPlayerCell extends Cell {
         return isPlaying;
     }
 
+    boolean isRecordingLoaded() {
+        return getSelectedTape() != null;
+    }
+
     private Tape getSelectedTape() {
        int selectionIndex = tapeSelectionModel.getMaxSelectionIndex();
        if (selectionIndex == -1) {
@@ -407,11 +411,11 @@ public class EventPlayerCell extends Cell {
         }
 
         private void playbackDone() {
-            renderer.playbackDone();
+            renderer.reduceButtonPyramid();
         }
 
         private void setCellsRetrieved() {
-            renderer.allCellsRetrieved();
+            renderer.enlargeButtonPyramid();
         }
     }
 
