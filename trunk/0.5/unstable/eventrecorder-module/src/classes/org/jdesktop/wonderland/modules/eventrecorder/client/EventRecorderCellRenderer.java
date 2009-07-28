@@ -25,12 +25,8 @@ import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
-import com.jme.scene.shape.Cylinder;
 import com.jme.scene.shape.Pyramid;
-import com.jme.scene.state.BlendState;
-import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.RenderState.StateType;
@@ -106,7 +102,6 @@ public class EventRecorderCellRenderer extends BasicRenderer {
         //Set the state of the button
         isRecording = ((EventRecorderCell)cell).isRecording();
         setRecording(isRecording);
-        enableAnimations(isRecording);
         return root;
     }
 
