@@ -291,7 +291,7 @@ public class EventRecorderCell extends Cell {
                         if (response == JOptionPane.NO_OPTION) {
                             return;
                         }
-                        eventRecorderLogger.warning("Overwriting existing recording");
+                        eventRecorderLogger.warning("Overwriting existing recording named " + selectedTape.getTapeName());
 
                     }
                     userName = getCurrentUserName();
