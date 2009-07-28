@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.thoughtbubbles.client;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import com.jme.scene.Node;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Date;
@@ -30,7 +31,6 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
-import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
@@ -45,7 +45,6 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -77,6 +76,8 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
     private String localUsername;
     private HUD mainHUD;
     private HUDComponent thoughtDialog;
+
+    private MouseEventListener mouseListener;
 
     public ThoughtBubblesCellComponent(Cell cell) {
         super(cell);
@@ -112,8 +113,7 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
 //            public void update(Object arg0) {
                getSceneGraphRootEntity().addEntity(entity);
 
-               
-
+            
 //               RenderComponent parentRC = cell.getCellRenderer(RendererType.RENDERER_JME).
 
 
@@ -150,13 +150,15 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
         };
 
         if (status == CellStatus.ACTIVE && increasing) {
-
-//            listener = new MouseEventListener(labelDialog);
-//            listener.addToEntity(renderer.getEntity());
-
             channel.addMessageReceiver(ThoughtBubblesComponentChangeMessage.class, new ThoughtBubblesCellMessageReceiver());
             prox.addProximityListener(this, bounds);
+            if(mouseListener==null)
+                mouseListener = new MouseEventListener();
         } else if (status == CellStatus.DISK && !increasing) {
+            // remove the listeners from all known entities before going to DISK
+
+            mouseListener = null;
+
 //            listener.removeFromEntity(renderer.getEntity());
 //            listener = null;
         } else if (status == CellStatus.RENDERING && !increasing) {
@@ -230,9 +232,13 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
         logger.warning("Message sent to server!");
 
         // Now add it to the local representation.
-        this.thoughts.put(thought, createNewThoughtBubbleNode(thought));
+        ThoughtBubbleEntity thoughtBubble = createNewThoughtBubbleNode(thought);
+        mouseListener.addToEntity((Entity)thoughtBubble);
+        this.thoughts.put(thought, thoughtBubble);
+
 
         mainHUD.removeComponent(thoughtDialog);
+
     }
 
     public void actionPerformed(ActionEvent ae) {
@@ -271,29 +277,18 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
     }
 
     class MouseEventListener extends EventClassListener {
-
-        private JFrame labelDialog;
-
-        public MouseEventListener(JFrame d) {
-            super();
-
-            labelDialog = d;
-            setSwingSafe(true);
-        }
-
         @Override
         public Class[] eventClassesToConsume() {
-            return new Class[]{MouseButtonEvent3D.class};
+            return new Class[] { MouseButtonEvent3D.class };
         }
+
+        // Note: we don't override computeEvent because we don't do any computation in this listener.
 
         @Override
         public void commitEvent(Event event) {
-            MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
-
-            // Filter out right mouse clicks.
-            if (mbe.getButton() == MouseButtonEvent3D.ButtonId.BUTTON1) {
-                logger.info("Got click! " + event);
-            }
+            MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
+            logger.warning("Got a mouse click!");
         }
     }
+
 }
