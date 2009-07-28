@@ -66,7 +66,6 @@ public class EventPlayerCellRenderer extends BasicRenderer {
     private static MaterialState PLAYBUTTON_SELECTED_MATERIALSTATE;
     private static final float MINIMUM_SCALE = 0.1f;
 
-    private boolean isPlaying = false;
     private Pyramid buttonPyramid;
     private Set<Animation> animations = new HashSet<Animation>();
 
@@ -104,14 +103,19 @@ public class EventPlayerCellRenderer extends BasicRenderer {
         root.updateModelBound();
         //Set the name of the root node
         root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
+        //Get the state of the recording
+        boolean isLoaded = ((EventPlayerCell)cell).isRecordingLoaded();
+        if (isLoaded) {
+            enlargeButtonPyramid();
+        }
         //Set the state of the button
         boolean isPlaying = ((EventPlayerCell)cell).isPlaying();
         setPlaying(isPlaying);
-        enableAnimations(isPlaying);
+        //enableAnimations(isPlaying);
         return root;
     }
 
-    void allCellsRetrieved() {
+    void enlargeButtonPyramid() {
         ScaleAnimationProcessor enlarger = new ScaleAnimationProcessor(pyramidEntity, pyramidRoot, MINIMUM_SCALE, 1.0f);
         Clip enlargingClip = Clip.create(1000, 1, enlarger);
         //reducingClip = Clip.create(1000, Clip.INDEFINITE, reducer);
@@ -127,7 +131,7 @@ public class EventPlayerCellRenderer extends BasicRenderer {
         //translatorClip.resume();
     }
 
-    void playbackDone() {
+    void reduceButtonPyramid() {
         ScaleAnimationProcessor reducer = new ScaleAnimationProcessor(pyramidEntity, pyramidRoot, 1.0f, MINIMUM_SCALE);
         Clip reducingClip = Clip.create(1000, 1, reducer);
         //reducingClip = Clip.create(1000, Clip.INDEFINITE, reducer);
@@ -165,13 +169,12 @@ public class EventPlayerCellRenderer extends BasicRenderer {
     }
 
     void setPlaying(boolean b) {
-        isPlaying = b;
-        if (isPlaying) {
+        if (b) {
             setRenderState(buttonPyramid, PLAYBUTTON_SELECTED_MATERIALSTATE);
         } else {
             setRenderState(buttonPyramid, PLAYBUTTON_DEFAULT_MATERIALSTATE);
         }
-        enableAnimations(isPlaying);
+        enableAnimations(b);
     }
 
     private void addLowerPyramid(Node aNode) {
@@ -260,13 +263,17 @@ public class EventPlayerCellRenderer extends BasicRenderer {
                 return;
             }
 
-            if (!isPlaying) {
-                logger.info("startRecording");
+            if (!isPlaying()) {
+                logger.info("start playing");
                 ((EventPlayerCell)cell).startPlaying();
             } else {
-                logger.info("stop recording");
+                logger.info("stop playing");
                 ((EventPlayerCell)cell).stop();
             }
+        }
+
+        private boolean isPlaying() {
+            return ((EventPlayerCell)cell).isPlaying();
         }
     }
 
