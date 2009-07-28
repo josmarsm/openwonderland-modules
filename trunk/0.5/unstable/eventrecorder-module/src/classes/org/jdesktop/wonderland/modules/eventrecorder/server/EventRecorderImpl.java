@@ -169,6 +169,10 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
 
     void recordUnloadedCell(CellID cellID) {
         //TODO What to do if we unload the cell that's recording??!!
+        if (getFailedCells().contains(cellID)) {
+            //logger.warning("Ignoring message for cell: " + CellManagerMO.getCell(cellID) + ", id: " + cellID);
+            return;
+        }
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
         //Callback is via recordUnloadedCellResult()
         mgr.recordUnloadedCell(tapeName, cellID, this);
