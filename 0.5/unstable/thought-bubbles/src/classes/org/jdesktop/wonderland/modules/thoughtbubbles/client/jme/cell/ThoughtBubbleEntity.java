@@ -26,12 +26,17 @@ import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ZBufferState;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.thoughtbubbles.client.ViewThoughtDialog;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtRecord;
 
 /**
@@ -48,6 +53,10 @@ public class ThoughtBubbleEntity extends Entity {
     private ThoughtRecord record;
 
     private Node rootNode;
+
+    private ViewThoughtDialog viewDialog;
+    private HUDComponent viewDialogHUD;
+
 
     protected static ZBufferState zbuf = null;
     static {
@@ -98,5 +107,29 @@ public class ThoughtBubbleEntity extends Entity {
         entity.addComponent(CollisionComponent.class, cc);
     }
 
+    public void showThoughtDialog(final HUD mainHUD) {
 
+        SwingUtilities.invokeLater(new Runnable() {
+
+        public void run() {
+
+            if(viewDialog==null) {
+            logger.warning("Making new viewthoughtdialog");
+            viewDialog = new ViewThoughtDialog();
+            viewDialogHUD = mainHUD.createComponent(viewDialog);
+            viewDialogHUD.setPreferredLocation(Layout.CENTER);
+            viewDialogHUD.setName("View Thought");
+            mainHUD.addComponent(viewDialogHUD);
+            }
+
+                
+                viewDialog.setText(record.getText());
+                viewDialog.setFrom(record.getFromUser());
+                viewDialog.setTime(record.getTimestamp());
+                logger.warning("about to set visibility");
+                viewDialogHUD.setVisible(true);
+                logger.warning("done setting visibility");
+            }
+        });
+    }
 }

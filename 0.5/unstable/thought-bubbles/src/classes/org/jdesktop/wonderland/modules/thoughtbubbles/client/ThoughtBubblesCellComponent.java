@@ -287,7 +287,15 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
         @Override
         public void commitEvent(Event event) {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
-            logger.warning("Got a mouse click!");
+            logger.warning("got event! " + mbe.getEntity() + "; " + mbe.getWhen());
+            if(mbe.isClicked()) {
+                logger.warning("got click!");
+                if(mbe.getEntity() instanceof ThoughtBubbleEntity) {
+                    logger.warning("found thought bubble entity");
+                    ThoughtBubbleEntity e = (ThoughtBubbleEntity)mbe.getEntity();
+                    e.showThoughtDialog(mainHUD);
+                }
+            }
         }
     }
 
