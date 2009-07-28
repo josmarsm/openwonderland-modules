@@ -333,7 +333,8 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
 
     public void recordLoadedCellResult(CellID cellID, Exception exception) {
         if (exception != null) {
-            logger.log(Level.SEVERE, "Failed to record loaded cell " + CellManagerMO.getCell(cellID) + " id: " + cellID, exception);
+            logger.severe("Failed to record loaded cell " + CellManagerMO.getCell(cellID) + " id: " + cellID);
+            //logger.log(Level.SEVERE, "Failed to record loaded cell " + CellManagerMO.getCell(cellID) + " id: " + cellID, exception);
             getFailedCells().add(cellID);
         } else {
             //logger.info("recorded loadCell: " + cellID);
