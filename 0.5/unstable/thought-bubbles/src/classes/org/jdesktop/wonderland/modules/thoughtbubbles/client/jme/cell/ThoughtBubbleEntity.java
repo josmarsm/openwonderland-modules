@@ -18,10 +18,11 @@
 
 package org.jdesktop.wonderland.modules.thoughtbubbles.client.jme.cell;
 
+import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
-import com.jme.scene.shape.Box;
+import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ZBufferState;
 import java.util.logging.Logger;
@@ -71,15 +72,17 @@ public class ThoughtBubbleEntity extends Entity {
 
         rc.setAttachPoint(parent.getComponent(RenderComponent.class).getSceneRoot());
         // Now setup our rendering here.
-//        TriMesh bubble = new Sphere("thought_bubble_sphere",Vector3f.ZERO, 10, 10, 0.5f);
-        TriMesh bubble = new Box("thought_bubble_box", Vector3f.ZERO,0.5f, 40.0f, 0.5f);
+        TriMesh bubble = new Sphere("thought_bubble_sphere",Vector3f.ZERO, 20, 20, 0.15f);
+//        TriMesh bubble = new Box("thought_bubble_box", Vector3f.ZERO,0.5f, 40.0f, 0.5f);
 
         rc.getSceneRoot().attachChild(bubble);
-        rc.getSceneRoot().setLocalTranslation(record.getX(), record.getY() + 10.0f, record.getZ());
+        rc.getSceneRoot().setLocalTranslation(record.getX(), record.getY() + 3.0f, record.getZ());
 
         rootNode.setRenderState(zbuf);
+        rootNode.setModelBound(new BoundingSphere());
+        rootNode.updateModelBound();
 
-        makeEntityPickable(parent, parent.getComponent(RenderComponent.class).getSceneRoot());
+        makeEntityPickable(this, rootNode);
 
     }
 
