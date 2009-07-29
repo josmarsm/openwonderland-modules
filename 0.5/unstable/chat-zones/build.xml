@@ -12,6 +12,10 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
+    <pathconvert property="module-client.classpath">
+        <path location="${current.dir}/../presentation-base/build/client/presentation-base-client.jar"/>
+    </pathconvert>
+
     <pathconvert property="module-server.classpath">
         <path location="${current.dir}/../group-text-chat/build/server/group-text-chat-server.jar"/>
     </pathconvert>
@@ -33,7 +37,10 @@
         
         <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 description="${module.description}" builddir="${build.dir}">
-                    
+
+            <!-- Depends on the presentation-base module to provide some interface bits. -->
+            <requires name="presentation-base" version="1"/>
+            
 	    <client>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>

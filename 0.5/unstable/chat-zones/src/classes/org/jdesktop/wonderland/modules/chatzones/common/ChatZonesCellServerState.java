@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.chatzones.common;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlElement;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.modules.grouptextchat.common.GroupID;
@@ -35,6 +36,9 @@ public class ChatZonesCellServerState extends CellServerState {
     @XmlElement(name="numAvatarsInZone")
     private int numAvatarsInZone = 0;
 
+    @XmlElement(name="transform")
+    private CellTransform transform;
+
     public ChatZonesCellServerState() {
     }
 
@@ -43,6 +47,9 @@ public class ChatZonesCellServerState extends CellServerState {
 
     @XmlTransient public int getNumAvatarsInZone() { return this.numAvatarsInZone; }
     public void setNumAvatarsInZone(int numAvatarInZone) { this.numAvatarsInZone = numAvatarsInZone; }
+
+    @XmlTransient public CellTransform getInitialTransform() { return this.transform; }
+    public void setInitialCellTransform(CellTransform transform) { this.transform = transform; }
 
     @Override
     public String getServerClassName() {
