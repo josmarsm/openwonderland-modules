@@ -16,29 +16,32 @@ public class PanelConfig {
   // Default Colors
   public static Color DEFAULT_BACKGROUND_COLOR = Color.DARK_GRAY;
   public static Color DEFAULT_FONT_COLOR = Color.WHITE;
+  public static Color DEFAULT_SHADOW_COLOR = Color.BLACK;
   // Default alpha
   public static int DEFAULT_ALPHA = 200;
   
-  private Color bgColor;
-  private Color fontColor;
-  private Font font;
+  private Color bgColor = DEFAULT_BACKGROUND_COLOR;
+  private Color fontColor = DEFAULT_FONT_COLOR;
+  private Color shadowColor = DEFAULT_SHADOW_COLOR;
 
-  public PanelConfig(Color bgc, Color fc, Font f){
+  private Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+
+  public PanelConfig(Color bgc, Color fc, Color sc, Font f){
     bgColor = bgc;
     fontColor = fc;
+    shadowColor = sc;
     font = f;
   }
 
-  public PanelConfig(Color bgc, Color fc){
+  public PanelConfig(Color bgc, Color fc, Color sc){
     bgColor = bgc;
     fontColor = fc;
-    font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+    shadowColor = sc;
+
   }
 
   public PanelConfig(){
-    bgColor = Color.WHITE;
-    fontColor = Color.BLACK;
-    font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+    
   }
 
   public void setBackgroundColor(Color c){
@@ -63,6 +66,14 @@ public class PanelConfig {
 
   public Font getFont(){
     return font;
+  }
+
+  public Color getShadowColor() {
+    return shadowColor;
+  }
+
+  public void setShadowColor(Color shadowColor) {
+    this.shadowColor = shadowColor;
   }
   
 }
