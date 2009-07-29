@@ -19,13 +19,12 @@
 package org.jdesktop.wonderland.modules.chatzones.server;
 
 import com.jme.bounding.BoundingCapsule;
+import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.LineSegment;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -70,7 +69,14 @@ public class ChatZonesCellMO extends CellMO {
         super();
 
         // Need to do this before the Cell goes live.
-        this.setLocalBounds(new BoundingCapsule(new Vector3f(), new LineSegment(new Vector3f(0, 0, -10), new Vector3f(0, 0, 10)), 1));
+        // For some reason BoundingCapsule doesn't work anymore?
+        // got this error:
+        //   java.lang.RuntimeException: Bounds not supported com.jme.bounding.BoundingCapsule
+        //
+        // So switching to spheres which aren't quite right, but will have to do.
+        
+     //        this.setLocalBounds(new BoundingCapsule(new Vector3f(), new LineSegment(new Vector3f(0, 0, -10), new Vector3f(0, 0, 10)), 1));
+        this.setLocalBounds(new BoundingSphere(1, Vector3f.ZERO));
     }
 
     @Override
@@ -84,6 +90,12 @@ public class ChatZonesCellMO extends CellMO {
         
         this.group = ((ChatZonesCellServerState)state).getChatGroup();
         this.numAvatarsInZone = ((ChatZonesCellServerState)state).getNumAvatarsInZone();
+
+        // Get the initial position from the state, if it's set. It shoudld
+        // be set in situations where the client is requesting a chatcell created
+        // at their current position, not via insert-component menu item.
+        if(((ChatZonesCellServerState)state).getInitialTransform()!=null)
+            this.setLocalTransform(((ChatZonesCellServerState)state).getInitialTransform());
     }
 
     @Override
@@ -94,7 +106,8 @@ public class ChatZonesCellMO extends CellMO {
 
         ((ChatZonesCellServerState)state).setChatGroup(group);
         ((ChatZonesCellServerState)state).setNumAvatarsInZone(numAvatarsInZone);
-
+        ((ChatZonesCellServerState)state).setInitialCellTransform(this.getLocalTransform(null));
+        
         return super.getServerState(state);
     }
 

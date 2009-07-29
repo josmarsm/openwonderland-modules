@@ -20,8 +20,6 @@ package org.jdesktop.wonderland.modules.chatzones.server;
 
 import com.jme.bounding.BoundingVolume;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -29,6 +27,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 import org.jdesktop.wonderland.server.cell.ViewCellCacheMO;
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -45,15 +44,17 @@ public class ChatZoneProximityListener implements ProximityListenerSrv, Serializ
         CellManagerMO cm = WonderlandContext.getCellManager();
         CellMO cellMO = cm.getCell(viewCellID);
 
+//        cellMO.
+
         WonderlandClientID wcid = null;
 
-        if(cellMO instanceof ViewCellMO) {
-            ViewCellMO viewCell = (ViewCellMO)cellMO;
-            ViewCellCacheMO viewCellCache = viewCell.getCellCache();
-            wcid = viewCellCache.getClientID();
+        if(cellMO instanceof AvatarCellMO) {
+//            ViewCellMO viewCell = (ViewCellMO)cellMO;
+//            ViewCellCacheMO viewCellCache = viewCell.getCellCache();
+            wcid = ((AvatarCellMO)cellMO).getClientID();
         }
         else {
-            logger.info("Got a cell that wasn't a ViewCellMO.");
+            logger.info("Got a cell that wasn't an AvatarCellMO: " + cellMO);
             return;
         }
 
