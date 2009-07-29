@@ -101,8 +101,8 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         RecorderManager.getDefaultManager().unregister(this);
     }
 
-    private ScalableHashSet getFailedCells() {
-        return (ScalableHashSet) AppContext.getDataManager().getBinding(FAILED_CELLS_BINDING);
+    private ScalableHashSet<CellID> getFailedCells() {
+        return (ScalableHashSet<CellID>) AppContext.getDataManager().getBinding(FAILED_CELLS_BINDING);
     }
 
     public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {

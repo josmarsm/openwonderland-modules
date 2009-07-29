@@ -242,7 +242,7 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         //Check to see if the currently selected tape still exists
         //If not, set it to be the first one
         if (!serverState.getTapes().contains(serverState.getSelectedTape())) {
-            List<Tape> sortedTapes = new ArrayList(serverState.getTapes());
+            List<Tape> sortedTapes = new ArrayList<Tape>(serverState.getTapes());
             Collections.sort(sortedTapes);
             serverState.setSelectedTape(sortedTapes.get(0));
         }
