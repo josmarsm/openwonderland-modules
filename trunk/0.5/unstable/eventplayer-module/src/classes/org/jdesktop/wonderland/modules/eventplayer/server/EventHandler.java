@@ -71,7 +71,7 @@ public class EventHandler  {
      * @return an instance of a implementation of TagHandler
      */
     protected TagHandler newTagHandler(String tagName) {
-        Class<TagHandler> tagHandlerClass = getTagHandlerClass(tagName);
+        Class<? extends TagHandler> tagHandlerClass = getTagHandlerClass(tagName);
         TagHandler tagHandler;
         if (tagHandlerClass == null) {
             tagHandler = new NoTagHandler(messageReplayer);
@@ -86,7 +86,7 @@ public class EventHandler  {
      * @param elementName the name of the XML element
      * @return a class that should be a implementation of TagHandler
      */
-    protected Class<TagHandler> getTagHandlerClass(String elementName) {
+    protected Class<? extends TagHandler> getTagHandlerClass(String elementName) {
         return messageReplayer.getTagHandlerClass(elementName);
     }
     
@@ -95,9 +95,9 @@ public class EventHandler  {
      * @param handlerClass an implementation of TagHandler
      * @return an instance of a TagHandler class
      */
-    protected TagHandler newTagHandler(Class<TagHandler> handlerClass) {
+    protected TagHandler newTagHandler(Class<? extends TagHandler> handlerClass) {
         try {
-            Constructor<TagHandler> con = handlerClass.getConstructor(new Class[]{ChangeReplayer.class});
+            Constructor<? extends TagHandler> con = handlerClass.getConstructor(new Class[]{ChangeReplayer.class});
             return con.newInstance(messageReplayer);
         } catch (InstantiationException ex) {
             Logger.getLogger(EventHandler.class.getName()).log(Level.SEVERE, null, ex);

@@ -210,7 +210,7 @@ public class CellImportService extends AbstractService implements CellImportMana
                 if (count % MAP_SIZE == 0) {
                     // notify the listener
                     NotifyCellRetrievalListener notify =
-                            new NotifyCellRetrievalListener(listenerID, (CellMap) subMap.clone(), cellPathMap, ex);
+                            new NotifyCellRetrievalListener(listenerID, (CellMap<CellImportEntry>) subMap.clone(), cellPathMap, ex);
                     try {
                         transactionScheduler.runTask(notify, taskOwner);
                     } catch (Exception ex2) {

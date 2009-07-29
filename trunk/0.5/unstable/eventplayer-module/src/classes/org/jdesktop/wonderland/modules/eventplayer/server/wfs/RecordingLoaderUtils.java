@@ -95,7 +95,7 @@ public class RecordingLoaderUtils {
             //logger.info("WFSLoader: processing children in " + childdir.getRelativePath());
 
             /* Recursively load the cells for this child */
-            CellMap map = loadCellMap(recordingName, childdir, children);
+            CellMap<CellImportEntry> map = loadCellMap(recordingName, childdir, children);
             cellMOMap.putAll(map);
         }
          return cellMOMap;
@@ -113,7 +113,7 @@ public class RecordingLoaderUtils {
      */
     public static CellMap<CellImportEntry> loadCellMap(String root, CellList dir, LinkedList<CellList> children) {
         /* Conatins a map of canonical cell names in WFS to cell objects */
-        CellMap<CellImportEntry> cellMOMap = new CellMap();
+        CellMap<CellImportEntry> cellMOMap = new CellMap<CellImportEntry>();
         /*
          * Fetch an array of the names of the child cells. Check this is not
          * null, although this getChildren() should return an empty array

@@ -56,7 +56,7 @@ public class EventPlayerClientState extends CellClientState {
      * Access the collection of tapes
      * @return the set of tapes
      */
-    public Set getTapes() {
+    public Set<Tape> getTapes() {
         return tapes;
     }
 

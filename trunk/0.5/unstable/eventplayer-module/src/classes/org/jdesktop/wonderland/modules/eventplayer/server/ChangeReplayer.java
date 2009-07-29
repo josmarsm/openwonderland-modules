@@ -39,7 +39,7 @@ public abstract class ChangeReplayer {
      * for handling each element tag
      */
 
-    private static final Map<String, Class> handlerMap = new HashMap<String, Class>();
+    private static final Map<String, Class<? extends TagHandler>> handlerMap = new HashMap<String, Class<? extends TagHandler>>();
     /* create the map of handlers
      */
 
@@ -65,7 +65,7 @@ public abstract class ChangeReplayer {
      * @param elementName the name of the XML element for which a handler is required
      * @return an implementation of TagHandler
      */
-    public Class<TagHandler> getTagHandlerClass(String elementName) {
+    public Class<? extends TagHandler> getTagHandlerClass(String elementName) {
         return handlerMap.get(elementName);
     }
 
