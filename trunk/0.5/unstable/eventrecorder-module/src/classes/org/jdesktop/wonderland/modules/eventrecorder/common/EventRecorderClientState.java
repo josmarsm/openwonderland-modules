@@ -45,7 +45,7 @@ public class EventRecorderClientState extends CellClientState {
         this.userName = userName;
     }
 
-    public Set getTapes() {
+    public Set<Tape> getTapes() {
         return tapes;
     }
 
