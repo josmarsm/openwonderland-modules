@@ -24,20 +24,31 @@ import org.jdesktop.wonderland.modules.metadata.common.basetypes.SimpleMetadata;
 @MetadataContextMenuItem
 public class Annotation extends SimpleMetadata{
   public static final String REPLY_ATTR = "Reply To";
+  public static final String SUBJ_ATTR = "Subject";
 
   public Annotation(){
     super();
     put(TEXT_ATTR, new MetadataValue(""));
+    put(SUBJ_ATTR, new MetadataValue(""));
   }
 
-  public Annotation(String t){
-      super();
-//      put(TEXT_ATTR, new MetadataValue(t));
+  public Annotation(String t, String s){
+    super();
+    put(TEXT_ATTR, new MetadataValue(t));
+    put(SUBJ_ATTR, new MetadataValue(s));
   }
 
   @Override
   public String simpleName(){
       return "Annotation Metadata";
+  }
+
+  public String getSubject(){
+    return get(SUBJ_ATTR).getVal();
+  }
+
+  public void setSubject(String s){
+    put(SUBJ_ATTR, new MetadataValue(s));
   }
 
   /**

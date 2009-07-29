@@ -18,7 +18,6 @@ import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
 import org.jdesktop.wonderland.client.hud.HUDFactory;
-import org.jdesktop.wonderland.client.hud.HUDManager;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -348,7 +347,7 @@ public class AnnotationPlugin extends BaseClientPlugin
               " at " + canvas.getX() + ", " + canvas.getY());
 
     // create hud, set name
-    myHud = HUDFactory.createHUD(canvas.getSize(), 0.25f, 0.25f, 0.50f, 0.50f);
+    myHud = HUDFactory.createHUD(canvas.getSize());
     myHud.setName(ANNOTATION_HUD);
 
     // add to main manager
