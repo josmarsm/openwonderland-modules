@@ -5,6 +5,7 @@
 package org.jdesktop.wonderland.modules.cmu.client.cell;
 //TODO: Move this to a different package?
 
+import org.jdesktop.wonderland.modules.cmu.common.cell.TransformationMessage;
 import com.jme.scene.TexCoords;
 import com.jme.scene.TriMesh;
 import com.jme.util.geom.BufferUtils;
