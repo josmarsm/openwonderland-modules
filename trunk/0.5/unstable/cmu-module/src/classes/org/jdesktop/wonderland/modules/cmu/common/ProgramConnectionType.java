@@ -16,14 +16,22 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.cmu.player;
+package org.jdesktop.wonderland.modules.cmu.common;
 
-import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
+import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 /**
  *
  * @author kevin
  */
-public interface TransformationMessageListener {
-    public void transformationMessageChanged(TransformationMessage message);
+public class ProgramConnectionType extends ConnectionType {
+
+    private static final String NAME = "__CMUProgramConnection";
+    public static final ProgramConnectionType TYPE =
+            new ProgramConnectionType();
+
+    public ProgramConnectionType() {
+        super(NAME);
+    }
+
 }

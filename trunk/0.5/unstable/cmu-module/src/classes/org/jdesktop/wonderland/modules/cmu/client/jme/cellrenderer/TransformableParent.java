@@ -15,15 +15,23 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 
-package org.jdesktop.wonderland.modules.cmu.player;
-
+import com.jme.scene.Node;
+import com.jme.scene.Spatial;
 import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
 
 /**
  *
  * @author kevin
  */
-public interface TransformationMessageListener {
-    public void transformationMessageChanged(TransformationMessage message);
+public class TransformableParent extends Node {
+
+    public synchronized void applyTransformationToChild(TransformationMessage transformation) {
+        for (Spatial child : this.getChildren()) {
+            if (TransformableParent.class.isAssignableFrom(child.getClass())) {
+                ((TransformableParent)child).applyTransformationToChild(transformation);
+            }
+        }
+    }
 }
