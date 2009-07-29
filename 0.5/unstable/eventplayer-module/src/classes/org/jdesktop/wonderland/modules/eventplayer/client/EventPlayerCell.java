@@ -236,7 +236,7 @@ public class EventPlayerCell extends Cell {
         tapeSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
     }
     private void updateTapeModels(Set<Tape> tapes, Tape selectedTape) {
-        List sortedTapes = new ArrayList(tapes);
+        List<Tape> sortedTapes = new ArrayList<Tape>(tapes);
         Collections.sort(sortedTapes);
         tapeListModel.clear();
         tapeSelectionModel.clearSelection();
