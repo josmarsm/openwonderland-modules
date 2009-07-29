@@ -7,11 +7,9 @@ package org.jdesktop.wonderland.modules.cmu.client.cell;
 
 import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
-import com.jme.scene.Spatial;
 import edu.cmu.cs.dennisc.math.OrthogonalMatrix3x3;
 import edu.cmu.cs.dennisc.math.Point3;
 import java.io.Serializable;
-import org.jdesktop.wonderland.modules.cmu.client.cell.jme.cellrenderer.VisualNode;
 
 /**
  *

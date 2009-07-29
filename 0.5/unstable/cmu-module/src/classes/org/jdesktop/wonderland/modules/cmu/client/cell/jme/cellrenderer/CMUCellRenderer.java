@@ -23,7 +23,7 @@ import java.util.Collection;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.modules.cmu.client.cell.CMUCell;
+import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 
 /**
  *

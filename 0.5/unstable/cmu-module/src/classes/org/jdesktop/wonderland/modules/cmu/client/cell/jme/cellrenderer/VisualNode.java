@@ -27,7 +27,7 @@ import com.jme.util.TextureManager;
 import java.awt.Image;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.modules.cmu.client.cell.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.cell.TransformationMessage;
 
 /**
  *

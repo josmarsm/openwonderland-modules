@@ -17,11 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.cell;
 
+import org.jdesktop.wonderland.modules.cmu.common.cell.VisualMessage;
+import org.jdesktop.wonderland.modules.cmu.common.cell.TransformationMessage;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import com.jme.scene.Node;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -155,29 +156,7 @@ public class CMUCell extends Cell {
         super.setClientState(clientState);
 
         CMUCellClientState cmuClientState = (CMUCellClientState) clientState;
-        if (cmuURI == null || !(cmuURI.equals(cmuClientState.getCmuURI()))) {
-            cmuURI = cmuClientState.getCmuURI();
 
-            /*
-            // Load local cache file, and send it to the program.
-            try {
-                URL url = AssetUtils.getAssetURL(cmuURI);
-                Asset a = AssetManager.getAssetManager().getAsset(new ContentURI(url.toString()));
-                if (AssetManager.getAssetManager().waitForAsset(a)) {
-                    program.setFile(a.getLocalCacheFile());
-                } else {
-                    System.out.println("Couldn't load asset: " + a);
-                }
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (URISyntaxException ex) {
-                Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            program.setPlaybackSpeed(cmuClientState.getPlaybackSpeed());
-            program.advanceToTime(cmuClientState.getElapsed());
-             * */
-        }
     }
 
     /**
