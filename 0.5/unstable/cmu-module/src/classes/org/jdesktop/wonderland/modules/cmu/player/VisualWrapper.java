@@ -17,8 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player;
 
-import org.jdesktop.wonderland.modules.cmu.client.cell.TransformationMessage;
-import org.jdesktop.wonderland.modules.cmu.client.cell.VisualMessage;
+import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.VisualMessage;
 import edu.cmu.cs.dennisc.scenegraph.Appearance;
 import edu.cmu.cs.dennisc.scenegraph.Geometry;
 import edu.cmu.cs.dennisc.scenegraph.Visual;
@@ -115,22 +115,6 @@ public class VisualWrapper implements AbsoluteTransformationListener {
             transformation.setTranslation(cmuVisual.getTranslation(cmuVisual.getRoot()));
             transformation.setRotation(cmuVisual.getTransformation(cmuVisual.getRoot()).orientation);
         }
-
-    /*
-    ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-
-    public void update(Object arg0) {
-    Composite sg = cmuVisual.getRoot();
-
-    // Translation, rotation, scaling.
-    Point3 translation = cmuVisual.getTranslation(cmuVisual.getRoot());
-    OrthogonalMatrix3x3 rotation = new OrthogonalMatrix3x3(cmuVisual.getTransformation(sg).orientation);
-    Matrix3x3 scale = cmuVisual.scale.getCopy(cmuVisual);
-    }
-    },
-    null);
-    ClientContextJME.getWorldManager().addToUpdateList(this);
-     */
     }
 
     /**

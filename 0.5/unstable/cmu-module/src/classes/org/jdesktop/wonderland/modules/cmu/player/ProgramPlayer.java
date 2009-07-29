@@ -34,17 +34,18 @@ public class ProgramPlayer extends Program {
     private edu.cmu.cs.dennisc.alice.virtualmachine.VirtualMachine vm;
     private edu.cmu.cs.dennisc.alice.ast.AbstractType sceneType;
     private Object scene;
-    private SceneConnectionHandler cmuScene;
+    private final SceneConnectionHandler cmuScene;
     private boolean started = false;        // True once the program has begun to execute.
     private float elapsed = 0;              // The total amount of "time" this program has been executing.
     private float playbackSpeed = 0;        // The current playback speed.
     private long timeOfLastSpeedChange;     // System time at the last speed change (in milliseconds).
     private final Object speedChangeLock = new Object();    // Used to prevent multiple threads from changing the program speed.
 
-    public ProgramPlayer() {
+    public ProgramPlayer(File sceneFile) {
         super();
         this.cmuScene = new SceneConnectionHandler();
         this.timeOfLastSpeedChange = System.currentTimeMillis();
+        this.setFile(sceneFile);
     }
 
     /**
@@ -67,11 +68,19 @@ public class ProgramPlayer extends Program {
         return cmuScene;
     }
 
+    public int getPort() {
+        return this.cmuScene.getPort();
+    }
+
+    public String getServer() {
+        return this.cmuScene.getServer();
+    }
+
     /**
      * Load the given CMU file (.a3p extension).
      * @param cmuFile The file to load
      */
-    public void setFile(File cmuFile) {
+    protected void setFile(File cmuFile) {
         edu.cmu.cs.dennisc.alice.Project project = edu.cmu.cs.dennisc.alice.io.FileUtilities.readProject(cmuFile);
         edu.cmu.cs.dennisc.alice.ast.AbstractType programType = project.getProgramType();
 
@@ -110,7 +119,6 @@ public class ProgramPlayer extends Program {
             public void run() {
                 synchronized (ProgramPlayer.this.speedChangeLock) {
                     try {
-                        //CMUProgram.this.setStarted();
                         float timeToAdvance = time - ProgramPlayer.this.getElapsedTime();
                         float prevPlaybackSpeed = ProgramPlayer.this.getPlaybackSpeed();
                         if (timeToAdvance > 0) {
@@ -203,17 +211,8 @@ public class ProgramPlayer extends Program {
      * used instead of start().
      */
     public void setStarted() {
-        //System.out.println("PROGRAM STARTING! with URI: " + this.cmuURI);
-
         started = true;
         this.start();
-        //TODO: figure out how to actually do this.
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        this.setPlaybackSpeed(this.getPlaybackSpeed());
     }
 
     /**

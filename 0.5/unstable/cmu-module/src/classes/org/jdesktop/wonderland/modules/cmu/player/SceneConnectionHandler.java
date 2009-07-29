@@ -32,7 +32,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.alice.apis.moveandturn.Scene;
-import org.jdesktop.wonderland.modules.cmu.client.cell.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
 
 /**
  * Wraps a CMU Scene object to extract transformation/geometry information
@@ -47,18 +47,30 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     private final Collection<Socket> connections = new Vector<Socket>();
     private final Collection<ObjectOutputStream> streams = new Vector<ObjectOutputStream>();
     private final Collection<VisualWrapper> visuals = new Vector<VisualWrapper>();
+    private final ConnectionHandlerThread handlerThread;
 
     private class ConnectionHandlerThread extends Thread {
 
-        private ServerSocket socketListener;
+        private ServerSocket socketListener = null;
+        private final Object socketListenerLock = new Object();
+
+        public ConnectionHandlerThread() {
+            super();
+
+            // Initialize connection listener.
+            synchronized (socketListenerLock) {
+                try {
+                    socketListener = new ServerSocket();
+                    socketListener.bind(null);
+                } catch (IOException ex) {
+                    Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
 
         @Override
         public void run() {
             try {
-                // Create listener for connections.
-                socketListener = new ServerSocket(5557);
-                System.out.println("Started server socket");
-
                 Socket incomingConnection = null;
                 while (true) {
                     // Accept client connections and add them.
@@ -70,15 +82,38 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        public int getPort() {
+            synchronized (socketListenerLock) {
+                assert socketListener != null;
+                return socketListener.getLocalPort();
+            }
+        }
+
+        public String getServer() {
+            synchronized (socketListenerLock) {
+                assert socketListener != null;
+                return socketListener.getInetAddress().getHostAddress();
+            }
+        }
     }
 
     public SceneConnectionHandler() {
-        new ConnectionHandlerThread().start();
+        handlerThread = new ConnectionHandlerThread();
+        handlerThread.start();
     }
 
     public SceneConnectionHandler(Scene sc) {
         this();
         this.setScene(sc);
+    }
+
+    public int getPort() {
+        return this.handlerThread.getPort();
+    }
+
+    public String getServer() {
+        return this.handlerThread.getServer();
     }
 
     /**
@@ -175,8 +210,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     }
 
     public void transformationMessageChanged(TransformationMessage message) {
-        //TODO: Fix this.
-
         synchronized (connections) {
 
             for (ObjectOutputStream stream : this.streams) {
@@ -188,7 +221,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 }
             }
         }
-
     }
 
     //TODO: Listen for scene graph changes.

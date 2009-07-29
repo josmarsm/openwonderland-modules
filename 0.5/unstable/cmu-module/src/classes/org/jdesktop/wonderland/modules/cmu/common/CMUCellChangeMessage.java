@@ -16,14 +16,29 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.cmu.player;
+package org.jdesktop.wonderland.modules.cmu.common;
 
-import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- *
+ * 
  * @author kevin
  */
-public interface TransformationMessageListener {
-    public void transformationMessageChanged(TransformationMessage message);
+public class CMUCellChangeMessage extends CellMessage {
+
+    private float playbackSpeed;
+
+    public CMUCellChangeMessage(CellID cellID, float speed) {
+        super(cellID);
+        this.setPlaybackSpeed(speed);
+    }
+
+    public float getPlaybackSpeed() {
+        return playbackSpeed;
+    }
+
+    public void setPlaybackSpeed(float speed) {
+        this.playbackSpeed = speed;
+    }
 }
