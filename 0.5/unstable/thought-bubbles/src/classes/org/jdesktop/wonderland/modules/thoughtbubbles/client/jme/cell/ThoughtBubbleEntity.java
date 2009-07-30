@@ -19,10 +19,7 @@
 package org.jdesktop.wonderland.modules.thoughtbubbles.client.jme.cell;
 
 import com.jme.bounding.BoundingSphere;
-import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import com.jme.scene.TriMesh;
-import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ZBufferState;
 import java.util.logging.Logger;
@@ -32,11 +29,13 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 import org.jdesktop.wonderland.modules.thoughtbubbles.client.ViewThoughtDialog;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtRecord;
 
@@ -68,7 +67,7 @@ public class ThoughtBubbleEntity extends Entity {
     }
 
 
-    public ThoughtBubbleEntity(ThoughtRecord record, Entity parent) {
+    public ThoughtBubbleEntity(final ThoughtRecord record, Entity parent) {
         super("thought_bubble_entity");
         this.record = record;
 
@@ -82,15 +81,27 @@ public class ThoughtBubbleEntity extends Entity {
 
         rc.setAttachPoint(parent.getComponent(RenderComponent.class).getSceneRoot());
         // Now setup our rendering here.
-        TriMesh bubble = new Sphere("thought_bubble_sphere",Vector3f.ZERO, 20, 20, 0.15f);
+//        TriMesh bubble = new Sphere("thought_bubble_sphere",Vector3f.ZERO, 20, 20, 0.15f);
 //        TriMesh bubble = new Box("thought_bubble_box", Vector3f.ZERO,0.5f, 40.0f, 0.5f);
 
-        rc.getSceneRoot().attachChild(bubble);
-        rc.getSceneRoot().setLocalTranslation(record.getX(), record.getY() + 3.0f, record.getZ());
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
-        rootNode.setRenderState(zbuf);
-        rootNode.setModelBound(new BoundingSphere());
-        rootNode.updateModelBound();
+           public void update(Object thoughtRecord) {
+
+                ThoughtRecord rec = (ThoughtRecord)thoughtRecord;
+                ThoughtBubbleTextNode textNode = new ThoughtBubbleTextNode(rec.getText());
+
+        //        rc.getSceneRoot().attachChild(bubble);
+        //        rc.getSceneRoot().setLocalTranslation(record.getX(), record.getY() + 3.0f, record.getZ());
+
+                rootNode.attachChild(textNode);
+                textNode.setLocalTranslation(rec.getX(), rec.getY() + 3.0f, rec.getZ());
+                rootNode.setRenderState(zbuf);
+                rootNode.setModelBound(new BoundingSphere());
+                rootNode.updateModelBound();
+           }
+        }, record);
+
 
         makeEntityPickable(this, rootNode);
 
@@ -124,7 +135,8 @@ public class ThoughtBubbleEntity extends Entity {
             mainHUD.addComponent(viewDialogHUD);
             }
 
-                
+
+            
                 viewDialog.setText(record.getText());
                 viewDialog.setFrom(record.getFromUser());
                 viewDialog.setTime(record.getTimestamp());
