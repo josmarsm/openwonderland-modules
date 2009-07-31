@@ -63,7 +63,6 @@ public class CMUCellMO extends CellMO {
     /** Default constructor. */
     public CMUCellMO() {
         super();
-        System.out.println("Created a CMUCellMO");
     }
 
     /**
@@ -128,13 +127,10 @@ public class CMUCellMO extends CellMO {
      */
     @Override
     public void setServerState(CellServerState serverState) {
-        System.out.println("Setting CMU server state");
-
         super.setServerState(serverState);
 
         CMUCellServerState setup = (CMUCellServerState) serverState;
         setCmuURI(setup.getCmuURI());
-        System.out.println("CellMO creating program with uri: " + this.getCmuURI());
         ProgramConnectionHandlerMO.createProgram(this.getCellID(), this.getCmuURI());
         this.setPlaybackSpeed(PlaybackDefaults.DEFAULT_START_SPEED);
     }

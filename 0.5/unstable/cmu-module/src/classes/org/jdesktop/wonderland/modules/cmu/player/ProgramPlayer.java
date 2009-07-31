@@ -170,8 +170,6 @@ public class ProgramPlayer extends Program {
      * @param speed The speed at which to play
      */
     public void setPlaybackSpeed(float speed) {
-        System.out.println("SETTING PLAYBACK SPEED: " + speed);
-
         long currTime = System.currentTimeMillis();
         this.elapsed += this.playbackSpeed * (currTime - this.timeOfLastSpeedChange);
         this.timeOfLastSpeedChange = currTime;
@@ -229,9 +227,7 @@ public class ProgramPlayer extends Program {
      */
     @Override
     public void run() {
-        System.out.println("Running");
         this.vm.invokeEntryPoint(this.sceneType.getDeclaredMethod("run"), this.scene);
-        System.out.println("done");
     }
 
     /**

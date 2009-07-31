@@ -32,7 +32,6 @@ public class CreateProgramMessage extends Message {
 
     public CreateProgramMessage(CellID cellID, String programURI) {
         super();
-        System.out.println("CreateProgramMessage created!");
         this.setCellID(cellID);
         this.setProgramURI(programURI);
     }

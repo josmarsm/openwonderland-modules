@@ -42,7 +42,6 @@ public class VisualNode extends TransformableParent {
     public VisualNode(int nodeID) {
         super();
         this.nodeID = nodeID;
-        System.out.println("Created visual node with id: " + nodeID);
     }
 
     public VisualNode(VisualMessage message) {
@@ -72,19 +71,15 @@ public class VisualNode extends TransformableParent {
         super.applyTransformationToChild(transformation);
     }
 
-    protected void applyTransformation(TransformationMessage transformation) {
-        final float scale = transformation.getScale();
-        final Vector3f translation = transformation.getTranslation();
-        final Matrix3f rotation = transformation.getRotation();
+    protected void applyTransformation(final TransformationMessage transformation) {
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
             public void update(Object arg0) {
                 for (Spatial mesh : VisualNode.this.getChildren()) {
-                    // Apply transformations.
-                    mesh.setLocalScale(scale);
-                    mesh.setLocalTranslation(translation);
-                    mesh.setLocalRotation(rotation);
+                    mesh.setLocalScale(transformation.getScale());
+                    mesh.setLocalTranslation(transformation.getTranslation());
+                    mesh.setLocalRotation(transformation.getRotation());
                 }
             }
         }, null);

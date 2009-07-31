@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Collection;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -43,11 +44,21 @@ import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
  */
 public class SceneConnectionHandler implements ChildrenListener, TransformationMessageListener {
 
-    private Scene sc;       // The scene to wrap.
+    private Scene sc = null;       // The scene to wrap.
     private final Collection<Socket> connections = new Vector<Socket>();
     private final Collection<ObjectOutputStream> streams = new Vector<ObjectOutputStream>();
     private final Collection<VisualWrapper> visuals = new Vector<VisualWrapper>();
     private final ConnectionHandlerThread handlerThread;
+
+    private class Connection {
+        protected Socket socket;
+        protected ObjectOutputStream outputStream;
+
+        public Connection(Socket socket, ObjectOutputStream outputStream) {
+            this.socket = socket;
+            this.outputStream = outputStream;
+        }
+    }
 
     private class ConnectionHandlerThread extends Thread {
 
@@ -129,7 +140,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      * @param sc The scene to wrap
      */
     public synchronized void setScene(Scene sc) {
-        //TODO: Cleanup
+        this.unloadScene();
         this.sc = sc;
         this.processNode(sc.getSGComposite());
     }
@@ -148,7 +159,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
             // not allowing new connections to be added while this is happening.
             synchronized (connections) {
                 addVisual((Visual) c);
-                System.out.println("Added: " + c);
             }
         }
 
@@ -176,9 +186,12 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
 
                     // Broadcast setup data to this connection.
                     for (VisualWrapper visual : this.visuals) {
-                        System.out.println("Writing object from added connection : " + visual.getVisualMessage());
-                        newStream.writeObject(visual.getVisualMessage());
-                        newStream.flush();
+                        try {
+                            newStream.writeObject(visual.getVisualMessage());
+                            newStream.flush();
+                        } catch (SocketException ex) {
+                            
+                        }
                     }
                 }
             }
@@ -191,17 +204,16 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         synchronized (visuals) {
             synchronized (connections) {
                 // Create and store a wrapper for this Visual.
-                VisualWrapper wrapper = new VisualWrapper(visual);
-                this.visuals.add(wrapper);
-                wrapper.addTransformationMessageListener(this);
+                VisualWrapper visualWrapper = new VisualWrapper(visual);
+                this.visuals.add(visualWrapper);
+                visualWrapper.addTransformationMessageListener(this);
 
                 // Broadcast it to each connected client.  Don't allow new
                 // connections to be created during this process; this
                 // would have this visual sent twice to these connections.
                 for (ObjectOutputStream stream : this.streams) {
                     try {
-                        System.out.println("Writing object from added visual: " + wrapper.getVisualMessage());
-                        stream.writeObject(wrapper.getVisualMessage());
+                        stream.writeObject(visualWrapper.getVisualMessage());
                         stream.flush();
                     } catch (IOException ex) {
                         Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -215,12 +227,18 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         synchronized (connections) {
             for (ObjectOutputStream stream : this.streams) {
                 try {
-                    stream.writeObject(message);
+                    stream.writeObject(message.getCopy());
                     stream.flush();
                 } catch (IOException ex) {
                     Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+        }
+    }
+
+    public void unloadScene() {
+        //TODO: cleanup
+        if (this.getScene() != null) {
         }
     }
 
@@ -237,6 +255,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     }
 
     private void printChildWarning() {
-        System.out.println("\nChild added or removed\n");
+        System.out.println("Child added or removed");
     }
 }
