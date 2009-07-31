@@ -15,28 +15,23 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common;
+package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
 
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.common.messages.Message;
 
 /**
  *
  * @author kevin
  */
-public class CreateProgramResponseMessage extends ResponseMessage {
-
+public class ProgramPlaybackSpeedChangeMessage extends Message {
     private static final long serialVersionUID = 1L;
-    private String server;
-    private int port;
+    private float playbackSpeed;
     private CellID cellID;
 
-    public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String server, int port) {
-        super(messageID);
-        this.setCellID(cellID);
-        this.setPort(port);
-        this.setServer(server);
+    public ProgramPlaybackSpeedChangeMessage(CellID cellID, float playbackSpeed) {
+        setCellID(cellID);
+        setPlaybackSpeed(playbackSpeed);
     }
 
     public CellID getCellID() {
@@ -47,24 +42,16 @@ public class CreateProgramResponseMessage extends ResponseMessage {
         this.cellID = cellID;
     }
 
-    public int getPort() {
-        return port;
+    public float getPlaybackSpeed() {
+        return playbackSpeed;
     }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public String getServer() {
-        return server;
-    }
-
-    public void setServer(String server) {
-        this.server = server;
+    public void setPlaybackSpeed(float playbackSpeed) {
+        this.playbackSpeed = playbackSpeed;
     }
 
     @Override
     public String toString() {
-        return "Program created [Cell:"+ cellID + "] [Server:" + server + "] [Port:" + port + "]";
+        return "Change program playback speed[Cell ID: " + getCellID() + "][Speed: " + getPlaybackSpeed() + "]";
     }
 }

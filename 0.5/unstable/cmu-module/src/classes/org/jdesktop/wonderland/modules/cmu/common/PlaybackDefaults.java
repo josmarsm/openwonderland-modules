@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.cmu.player;
+package org.jdesktop.wonderland.modules.cmu.common;
 
 /**
  *

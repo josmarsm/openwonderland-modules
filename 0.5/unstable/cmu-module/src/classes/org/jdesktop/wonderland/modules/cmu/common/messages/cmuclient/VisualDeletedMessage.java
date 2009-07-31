@@ -15,29 +15,33 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common;
+package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import java.io.Serializable;
 
 /**
- * 
+ *
  * @author kevin
  */
-public class PlaybackSpeedChangeMessage extends CellMessage {
+public class VisualDeletedMessage implements Serializable {
 
-    private float playbackSpeed;
+    private final static long serialVersionUID = 1L;
+    private int nodeID;
 
-    public PlaybackSpeedChangeMessage(CellID cellID, float speed) {
-        super(cellID);
-        this.setPlaybackSpeed(speed);
+    public VisualDeletedMessage() {
+        
     }
 
-    public float getPlaybackSpeed() {
-        return playbackSpeed;
+    public VisualDeletedMessage(int nodeID) {
+        this();
+        this.setNodeID(nodeID);
     }
 
-    public void setPlaybackSpeed(float speed) {
-        this.playbackSpeed = speed;
+    public int getNodeID() {
+        return nodeID;
+    }
+
+    public void setNodeID(int nodeID) {
+        this.nodeID = nodeID;
     }
 }

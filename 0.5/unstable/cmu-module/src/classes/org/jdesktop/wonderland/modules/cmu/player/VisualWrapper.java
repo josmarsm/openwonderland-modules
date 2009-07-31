@@ -17,8 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player;
 
-import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
-import org.jdesktop.wonderland.modules.cmu.common.VisualMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 import edu.cmu.cs.dennisc.scenegraph.Appearance;
 import edu.cmu.cs.dennisc.scenegraph.Geometry;
 import edu.cmu.cs.dennisc.scenegraph.Visual;
@@ -160,9 +160,8 @@ public class VisualWrapper implements AbsoluteTransformationListener {
     private void fireTransformationMessageChanged() {
         synchronized(this.transformationListeners) {
             for (TransformationMessageListener listener : this.transformationListeners) {
-                //TODO: Send a copy of the message?
                 synchronized(this.getTransformationMessage()) {
-                    listener.transformationMessageChanged(this.getTransformationMessage());
+                    listener.transformationMessageChanged(this.getTransformationMessage().getCopy());
                 }
             }
             

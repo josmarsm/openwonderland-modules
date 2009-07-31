@@ -21,8 +21,9 @@ import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
-import org.jdesktop.wonderland.modules.cmu.common.CreateProgramMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 
 /**
  * Used to connect CMU as clients to the Wonderland server.  Interfaces with
@@ -32,8 +33,12 @@ import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
  */
 public class ProgramConnection extends BaseConnection {
 
-    protected ProgramManager programManager;
+    protected final ProgramManager programManager;
 
+    /**
+     * Standard constructor.
+     * @param programManager The program manager to interact with
+     */
     public ProgramConnection(ProgramManager programManager) {
         super();
         assert programManager != null;
@@ -42,16 +47,24 @@ public class ProgramConnection extends BaseConnection {
     }
 
     /**
-     *
-     * @param message
+     * Pass the given message on to the program manager in an appropriate way,
+     * depending on the message class.
+     * @param message The message to pass on
      */
     @Override
     public void handleMessage(Message message) {
         System.out.println("Message received: " + message);
+
+        // Create program
         if (CreateProgramMessage.class.isAssignableFrom(message.getClass())) {
-            ResponseMessage response = handleCreateProgram((CreateProgramMessage)message);
+            ResponseMessage response = handleCreateProgram((CreateProgramMessage) message);
             System.out.println("Sending response: " + response);
             this.send(response);
+        }
+
+        // Change program playback speed
+        if (ProgramPlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
+            handlePlaybackSpeedChange((ProgramPlaybackSpeedChangeMessage) message);
         }
     }
 
@@ -64,11 +77,19 @@ public class ProgramConnection extends BaseConnection {
     }
 
     /**
-     * 
-     * @param message
-     * @return
+     * Tell the program manager to create the program with uri specified by the message.
+     * @param message The sent message
+     * @return The program manager's response, containing socket information
      */
     protected ResponseMessage handleCreateProgram(CreateProgramMessage message) {
         return programManager.createProgram(message.getMessageID(), message.getCellID(), message.getProgramURI());
+    }
+
+    /**
+     * Tell the program manager to change the playback speed of a particular program.
+     * @param message The message containing speed change information and identification
+     */
+    protected void handlePlaybackSpeedChange(ProgramPlaybackSpeedChangeMessage message) {
+        programManager.setPlaybackSpeed(message.getCellID(), message.getPlaybackSpeed());
     }
 }

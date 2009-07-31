@@ -17,9 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture;
-import com.jme.math.Matrix3f;
-import com.jme.math.Vector3f;
+import com.jme.math.Triangle;
 import com.jme.scene.Spatial;
 import com.jme.scene.TriMesh;
 import com.jme.scene.state.RenderState;
@@ -28,8 +28,8 @@ import com.jme.util.TextureManager;
 import java.awt.Image;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
-import org.jdesktop.wonderland.modules.cmu.common.VisualMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 
 /**
  *
@@ -47,18 +47,38 @@ public class VisualNode extends TransformableParent {
     public VisualNode(VisualMessage message) {
         this(message.getNodeID());
 
-        // Apply geometries.
+        // Apply geometries, compute bounding box
+        BoundingBox bound = null;
         for (TriMesh mesh : message.getMeshes()) {
             this.attachChild(mesh);
+
+            // Merge this bounding box with the cumulative bound
+            Triangle[] tris = new Triangle[mesh.getTriangleCount()];
+
+            BoundingBox currentBound = new BoundingBox();
+            currentBound.computeFromTris(mesh.getMeshAsTriangles(tris), 0, tris.length);
+
+            if (bound == null) {
+                bound = currentBound;
+            } else {
+                bound.mergeLocal(currentBound);
+            }
+        }
+        if (bound != null) {
+            this.setModelBound(bound);
         }
 
-        // Apply texture.
+        // Apply texture
         this.applyTexture(message.getTexture());
 
-        // Apply transformation.
+        // Apply transformation
         this.applyTransformation(message.getTransformation());
     }
 
+    /**
+     * Get the unique node ID for this visual.
+     * @return This visual's node ID
+     */
     public int getNodeID() {
         return this.nodeID;
     }

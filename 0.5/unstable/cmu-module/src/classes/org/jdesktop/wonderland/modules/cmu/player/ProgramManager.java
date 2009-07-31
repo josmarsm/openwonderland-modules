@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.client.login.ProgrammaticLogin;
 import org.jdesktop.wonderland.common.ContentURI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.modules.cmu.common.CreateProgramResponseMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
 
 /**
  * Processes messages sent to control CMU programs; for now, just creates them.
@@ -91,7 +91,7 @@ public class ProgramManager {
             Asset a = AssetManager.getAssetManager().getAsset(new ContentURI(url.toString()));
             if (AssetManager.getAssetManager().waitForAsset(a)) {
                 newProgram = new ProgramPlayer(a.getLocalCacheFile());
-                programs.put(cellID, newProgram);
+                addProgram(cellID, newProgram);
             } else {
                 System.out.println("Couldn't load asset: " + a);
             }
@@ -103,6 +103,42 @@ public class ProgramManager {
 
         // Create and send response message.
         return new CreateProgramResponseMessage(messageID, cellID, newProgram.getServer(), newProgram.getPort());
+    }
+
+    /**
+     * Set the playback speed for a particular program.  Notification of
+     * Wonderland clients viewing the cell should be handled by the server,
+     * not here.
+     * @param cellID The Wonderland cell ID associated with the program
+     * @param playbackSpeed The speed to set
+     */
+    public void setPlaybackSpeed(CellID cellID, float playbackSpeed) {
+        ProgramPlayer program = getProgram(cellID);
+        if (program != null) {
+            program.setPlaybackSpeed(playbackSpeed);
+        }
+    }
+
+    /**
+     * Synchronously adds a program to our map.
+     * @param key The Wonderland cell ID associated with the program
+     * @param program The program instance
+     */
+    private void addProgram(CellID key, ProgramPlayer program) {
+        synchronized(programs) {
+            programs.put(key, program);
+        }
+    }
+
+    /**
+     * Synchronously retrieves a program from our map.
+     * @param key The Wonderland cell ID associated with the program
+     * @return The program instance, or null if none is found
+     */
+    private ProgramPlayer getProgram(CellID key) {
+        synchronized(programs) {
+            return programs.get(key);
+        }
     }
 
     /**

@@ -19,12 +19,13 @@ package org.jdesktop.wonderland.modules.cmu.server;
 
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
-import org.jdesktop.wonderland.common.cell.CellID;
+import java.util.Vector;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
-import org.jdesktop.wonderland.modules.cmu.common.CreateProgramMessage;
-import org.jdesktop.wonderland.modules.cmu.common.CreateProgramResponseMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
@@ -37,7 +38,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class ProgramConnectionHandler implements ClientConnectionHandler, Serializable {
 
-    private WonderlandClientSender clientSender = null;
+    private WonderlandClientSender clientSender;
+    private final List<Message> messageQueue = new Vector<Message>();   // Ordered message queue
 
     public ConnectionType getConnectionType() {
         return ProgramConnectionType.TYPE;
@@ -48,15 +50,23 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
     }
 
     public void clientConnected(WonderlandClientSender sender, WonderlandClientID clientID, Properties properties) {
-        // No action.
+        // Send any messages that were in queue.
+        synchronized(messageQueue) {
+            Iterator<Message> iterator = messageQueue.iterator();
+            while (iterator.hasNext()) {
+                clientSender.send(iterator.next());
+                iterator.remove();
+            }
+        }
     }
 
     public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, Message message) {
-
-        // Hand to appropriate cell.
+        // Create new program instance
         if (CreateProgramResponseMessage.class.isAssignableFrom(message.getClass())) {
             handleCreatedResponseMessage((CreateProgramResponseMessage) message);
         }
+
+        // Change playback speed
     }
 
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
@@ -72,10 +82,15 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
         cmuCellMO.setServerAndPort(message.getServer(), message.getPort());
     }
 
-    public void createProgram(CellID cellID, String uri) {
-        final CreateProgramMessage message = new CreateProgramMessage(cellID, uri);
-        this.clientSender.send(message);
+    public void sendMessage(Message message) {
+        if (this.clientSender.getClients().isEmpty()) {
+            // Queue messages until at least one client connects (we shouldn't ever have more than one)
+            synchronized(messageQueue) {
+                messageQueue.add(message);
+            }
+        }
+        else {
+            this.clientSender.send(message);
+        }
     }
-
-    //TODO: Queue messages before clients connected.
 }

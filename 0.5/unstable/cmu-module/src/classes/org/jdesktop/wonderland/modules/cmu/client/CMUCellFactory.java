@@ -26,16 +26,25 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellServerState;
 
 /**
- *
+ * Factory for CMU cells; cells can be created by dropping .a3p files
+ * onto the Wonderland window.
  * @author kevin
  */
 @CellFactory
 public class CMUCellFactory implements CellFactorySPI {
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String[] getExtensions() {
         return new String[] {"a3p"};
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         CMUCellServerState state = new CMUCellServerState();
 
@@ -47,10 +56,19 @@ public class CMUCellFactory implements CellFactorySPI {
         return (T)state;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String getDisplayName() {
+        // Cells can't be created without an associated .a3p file
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public Image getPreviewImage() {
         return null;
    }
