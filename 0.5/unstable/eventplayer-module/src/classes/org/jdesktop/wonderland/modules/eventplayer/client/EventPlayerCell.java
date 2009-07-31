@@ -80,7 +80,7 @@ public class EventPlayerCell extends Cell {
     private DefaultListModel tapeListModel;
     private DefaultListSelectionModel tapeSelectionModel;
     private ReelForm reelForm;
-    private Set<CellID> replayedChildren;
+    private int replayedChildren;
 
     /**
      * Constructor, give
@@ -91,7 +91,7 @@ public class EventPlayerCell extends Cell {
         super(cellID, cellCache);
         isPlaying = false;
         isPaused = false;
-        replayedChildren = new HashSet<CellID>();
+        replayedChildren = 0;
         createTapeModels();
         reelForm = new ReelForm(this);
     }
@@ -369,7 +369,7 @@ public class EventPlayerCell extends Cell {
             eventPlayerLogger.warning("Can't load a new reel when one is already playing");
             return;
         }
-        if (!replayedChildren.isEmpty()) {
+        if (replayedChildren > 0) {
             //Still showing child cells that are being replayed
             logger.warning("can't load a new tape when there's cells from an earlier replay replayed");
             //Ask the user if s/he wishes to remove the existing cells
@@ -379,7 +379,7 @@ public class EventPlayerCell extends Cell {
             } else {
                 //Delete the existing cells
                 logger.warning("Deleting existing cells");
-                replayedChildren.clear();
+                replayedChildren = 0;
             }
         }
         //Let the server know I'm selecting a tape and wait to get a message back (processTapeStateMessage())
@@ -427,14 +427,14 @@ public class EventPlayerCell extends Cell {
         isPaused = false;
     }
 
-    private void addReplayedChild(CellID cellID) {
-        eventPlayerLogger.info("adding child: " + cellID);
-        replayedChildren.add(cellID);
+    private void addReplayedChild() {
+        eventPlayerLogger.info("adding child");
+        replayedChildren++;
     }
 
-    private void removeReplayedChild(CellID cellID) {
-        eventPlayerLogger.info("removing child: " + cellID);
-        replayedChildren.remove(cellID);
+    private void removeReplayedChild() {
+        eventPlayerLogger.info("removing child");
+        replayedChildren--;
     }
 
     
@@ -468,10 +468,10 @@ public class EventPlayerCell extends Cell {
                         userName = null;
                         break;
                     case ADD_REPLAYED_CHILD:
-                        addReplayedChild(sccm.getChildCellID());
+                        addReplayedChild();
                         break;
                     case REMOVE_REPLAYED_CHILD:
-                        removeReplayedChild(sccm.getChildCellID());
+                        removeReplayedChild();
                         break;
                     default:
                         eventPlayerLogger.severe("Unknown action type: " + sccm.getAction());

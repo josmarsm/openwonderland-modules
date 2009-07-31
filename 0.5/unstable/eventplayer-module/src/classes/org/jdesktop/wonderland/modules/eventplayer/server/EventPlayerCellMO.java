@@ -162,14 +162,14 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         logger.info("adding replayed child: " + cellMO);
         loadedCellsRef.getForUpdate().add(childCellID);
         addChild(cellMO);
-        EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.addReplayedChild(getCellID(), childCellID);
+        EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.addReplayedChild(getCellID());
         getChannel().sendAll(null, epccm);
         
     }
 
     void removeReplayedChild(CellID childCellID) {
         loadedCellsRef.getForUpdate().remove(childCellID);
-        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.removeReplayedChild(getCellID(), childCellID);
+        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.removeReplayedChild(getCellID());
         getChannel().sendAll(null, msg);
     }
 
