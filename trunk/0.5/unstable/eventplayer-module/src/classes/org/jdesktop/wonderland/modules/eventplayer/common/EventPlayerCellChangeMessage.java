@@ -47,7 +47,6 @@ public class EventPlayerCellChangeMessage extends CellMessage {
     private String userName;
     private double volume;
     private String tapeName;
-    private CellID childCellID;
 
     private EventPlayerCellChangeMessage(CellID cellID) {
         super(cellID);
@@ -73,9 +72,7 @@ public class EventPlayerCellChangeMessage extends CellMessage {
         return tapeName;
     }
 
-    public CellID getChildCellID() {
-        return childCellID;
-    }
+    
 
     public static EventPlayerCellChangeMessage loadRecording(CellID cellID, String tapeName) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
@@ -131,17 +128,15 @@ public class EventPlayerCellChangeMessage extends CellMessage {
         return msg;
     }
 
-    public static EventPlayerCellChangeMessage addReplayedChild(CellID cellID, CellID childCellID) {
+    public static EventPlayerCellChangeMessage addReplayedChild(CellID cellID) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
         msg.action = EventPlayerAction.ADD_REPLAYED_CHILD;
-        msg.childCellID = childCellID;
         return msg;
     }
 
-    public static EventPlayerCellChangeMessage removeReplayedChild(CellID cellID, CellID childCellID) {
+    public static EventPlayerCellChangeMessage removeReplayedChild(CellID cellID) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
         msg.action = EventPlayerAction.REMOVE_REPLAYED_CHILD;
-        msg.childCellID = childCellID;
         return msg;
     }
     
