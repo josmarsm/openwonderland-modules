@@ -23,9 +23,10 @@ import java.util.logging.Logger;
 import org.alice.apis.moveandturn.Program;
 
 /**
- * A standard CMU program which provides access to its scene graph
- * as a collection of JME Nodes.
- *
+ * A standard CMU program which can access its scene graph via a
+ * SceneConnectionHandler, which in turn forwards scene graph changes
+ * to anyone who cares to listen.  Also handles playback speed changes
+ * gracefully, and keeps track of its total running time.
  * @author kevin
  */
 public class ProgramPlayer extends Program {
@@ -41,6 +42,10 @@ public class ProgramPlayer extends Program {
     private long timeOfLastSpeedChange;     // System time at the last speed change (in milliseconds).
     private final Object speedChangeLock = new Object();    // Used to prevent multiple threads from changing the program speed.
 
+    /**
+     * Standard constructor.
+     * @param sceneFile A .a3p file representing the scene to load.
+     */
     public ProgramPlayer(File sceneFile) {
         super();
         this.cmuScene = new SceneConnectionHandler();
@@ -64,7 +69,11 @@ public class ProgramPlayer extends Program {
         return elapsed + ((System.currentTimeMillis() - this.timeOfLastSpeedChange) * this.getPlaybackSpeed());
     }
 
-    public SceneConnectionHandler getCmuScene() {
+    /**
+     * 
+     * @return
+     */
+    public SceneConnectionHandler getSceneConnectionHandler() {
         return cmuScene;
     }
 

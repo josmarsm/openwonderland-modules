@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.player;
 
 import java.io.File;
@@ -41,25 +40,49 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.cmu.common.CreateProgramResponseMessage;
 
 /**
- *
+ * Processes messages sent to control CMU programs; for now, just creates them.
  * @author kevin
  */
+//TODO: Should forward mouse clicks, etc.
 public class ProgramManager {
 
     private final Map<CellID, ProgramPlayer> programs = new HashMap<CellID, ProgramPlayer>();
-    private ProgrammaticLogin<WonderlandSession> login;
+    private final ProgrammaticLogin<WonderlandSession> login;
 
+    /**
+     * Standard constructor.
+     * @param serverURL Wonderland server URL
+     * @param username Login username
+     * @param passwordFile Login password file
+     * @throws org.jdesktop.wonderland.client.comms.ConnectionFailureException
+     * @throws java.lang.InterruptedException
+     */
     public ProgramManager(String serverURL, String username,
             File passwordFile) throws ConnectionFailureException,
             InterruptedException {
-        // initialize the login object
+
+        // Initialize the login object
         login = new ProgrammaticLogin<WonderlandSession>(serverURL);
 
-        // log in to the server
+        // Log in to the server
+        System.out.println("Logging in to " + serverURL + " as " + username);
         WonderlandSession session = login.login(username, passwordFile);
+
+        // Initialize the connection
+        System.out.println("Initiating program connection");
         session.connect(new ProgramConnection(this));
     }
 
+    /**
+     * Create a program from the .a3p file given by the asset, and respond
+     * with information about the socket which that program created for other
+     * clients.
+     * @param messageID ID of the message sent from the CMUCellMO
+     * @param cellID ID of the cell which will host this program
+     * @param assetURI The asset pointing to the .a3p file
+     * @return A response message containing socket information for the
+     * created program.
+     */
     public CreateProgramResponseMessage createProgram(MessageID messageID, CellID cellID, String assetURI) {
         // Load local cache file, and send it to the program.
         ProgramPlayer newProgram = null;
@@ -78,9 +101,15 @@ public class ProgramManager {
             Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        // Create and send response message.
         return new CreateProgramResponseMessage(messageID, cellID, newProgram.getServer(), newProgram.getPort());
     }
 
+    /**
+     * Create a new ProgramManager instance to establish a connection
+     * with the Wonderland server.
+     * @param args server URL, username, [password]
+     */
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
             System.out.println("Usage: ConnectionClientMain serverURL" +
@@ -108,13 +137,13 @@ public class ProgramManager {
             } catch (IOException ex) {
                 Logger.getLogger(ProgramManager.class.getName()).log(Level.SEVERE, null, ex);
             }
-            try {
-                new ProgramManager(serverURL, username, passwordFile);
-            } catch (ConnectionFailureException ex) {
-                Logger.getLogger(ProgramManager.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ProgramManager.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        }
+        try {
+            new ProgramManager(serverURL, username, passwordFile);
+        } catch (ConnectionFailureException ex) {
+            Logger.getLogger(ProgramManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ProgramManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

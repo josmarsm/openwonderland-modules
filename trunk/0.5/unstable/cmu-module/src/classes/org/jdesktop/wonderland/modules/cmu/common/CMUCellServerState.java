@@ -47,7 +47,7 @@ public class CMUCellServerState extends CellServerState {
      * {@inheritDoc}
      */
     public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.cmu.server.cell.CMUCellMO";
+        return "org.jdesktop.wonderland.modules.cmu.server.CMUCellMO";
     }
 
     /**

@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.common;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -25,11 +24,11 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  * 
  * @author kevin
  */
-public class CMUCellChangeMessage extends CellMessage {
+public class PlaybackSpeedChangeMessage extends CellMessage {
 
     private float playbackSpeed;
 
-    public CMUCellChangeMessage(CellID cellID, float speed) {
+    public PlaybackSpeedChangeMessage(CellID cellID, float speed) {
         super(cellID);
         this.setPlaybackSpeed(speed);
     }

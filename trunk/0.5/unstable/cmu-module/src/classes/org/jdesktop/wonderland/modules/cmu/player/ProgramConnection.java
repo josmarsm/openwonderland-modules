@@ -25,7 +25,9 @@ import org.jdesktop.wonderland.modules.cmu.common.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 
 /**
- *
+ * Used to connect CMU as clients to the Wonderland server.  Interfaces with
+ * a ProgramManager, which passes messages from the server on to individual
+ * CMU programs.
  * @author kevin
  */
 public class ProgramConnection extends BaseConnection {
@@ -36,21 +38,36 @@ public class ProgramConnection extends BaseConnection {
         super();
         assert programManager != null;
         this.programManager = programManager;
+        System.out.println("ProgramConnection created.");
     }
 
+    /**
+     *
+     * @param message
+     */
     @Override
     public void handleMessage(Message message) {
+        System.out.println("Message received: " + message);
         if (CreateProgramMessage.class.isAssignableFrom(message.getClass())) {
             ResponseMessage response = handleCreateProgram((CreateProgramMessage)message);
+            System.out.println("Sending response: " + response);
             this.send(response);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ConnectionType getConnectionType() {
         return ProgramConnectionType.TYPE;
     }
 
+    /**
+     * 
+     * @param message
+     * @return
+     */
     protected ResponseMessage handleCreateProgram(CreateProgramMessage message) {
         return programManager.createProgram(message.getMessageID(), message.getCellID(), message.getProgramURI());
     }

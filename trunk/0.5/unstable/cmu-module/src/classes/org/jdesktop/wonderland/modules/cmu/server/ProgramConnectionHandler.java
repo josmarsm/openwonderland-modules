@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.server;
 
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
@@ -53,9 +52,11 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
     }
 
     public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, Message message) {
+        System.out.println("Received response: " + message);
+
         // Hand to appropriate cell.
         if (CreateProgramResponseMessage.class.isAssignableFrom(message.getClass())) {
-            handleCreatedResponseMessage((CreateProgramResponseMessage)message);
+            handleCreatedResponseMessage((CreateProgramResponseMessage) message);
         }
     }
 
@@ -68,13 +69,15 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
         CellMO cellMO = CellManagerMO.getCell(message.getCellID());
         assert (cellMO != null) && CMUCellMO.class.isAssignableFrom(cellMO.getClass());
 
-        CMUCellMO cmuCellMO = (CMUCellMO)cellMO;
-        cmuCellMO.setPort(message.getPort());
-        cmuCellMO.setServer(message.getServer());
+        CMUCellMO cmuCellMO = (CMUCellMO) cellMO;
+        cmuCellMO.setServerAndPort(message.getServer(), message.getPort());
     }
 
     public void createProgram(CellID cellID, String uri) {
-        this.clientSender.send(new CreateProgramMessage(cellID, uri));
+        System.out.println("ConnectionHandler creating program");
+        final CreateProgramMessage message = new CreateProgramMessage(cellID, uri);
+        this.clientSender.send(message);
+        System.out.println("Sent message.");
     }
 
     //TODO: Queue messages before clients connected.

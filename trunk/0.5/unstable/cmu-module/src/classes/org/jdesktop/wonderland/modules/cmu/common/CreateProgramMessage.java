@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.common;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -27,11 +26,13 @@ import org.jdesktop.wonderland.common.messages.Message;
  */
 public class CreateProgramMessage extends Message {
 
+    private static final long serialVersionUID = 1L;
     private String programURI;
     private CellID cellID;
 
     public CreateProgramMessage(CellID cellID, String programURI) {
         super();
+        System.out.println("CreateProgramMessage created!");
         this.setCellID(cellID);
         this.setProgramURI(programURI);
     }
@@ -52,4 +53,8 @@ public class CreateProgramMessage extends Message {
         this.programURI = programURI;
     }
 
+    @Override
+    public String toString() {
+        return "Create program [Cell:" + getCellID() + "] [Asset:" + getProgramURI() + "]";
+    }
 }

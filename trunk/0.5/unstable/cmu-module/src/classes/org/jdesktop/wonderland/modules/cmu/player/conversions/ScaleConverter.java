@@ -15,30 +15,23 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+package org.jdesktop.wonderland.modules.cmu.player.conversions;
 
-package org.jdesktop.wonderland.modules.cmu.common;
-
-import org.jdesktop.wonderland.common.comms.ConnectionType;
+import edu.cmu.cs.dennisc.math.Matrix3x3;
 
 /**
- * ConnectionType for the ProgramConnection that handles CMU files.
+ *
  * @author kevin
  */
-public class ProgramConnectionType extends ConnectionType {
+public class ScaleConverter {
 
-    private static final String NAME = "__CMUProgramConnection";
+    final float scale;
 
-    /**
-     * Singleton instance of this type.
-     */
-    public static final ProgramConnectionType TYPE =
-            new ProgramConnectionType();
-
-    /**
-     * Standard constructor.
-     */
-    public ProgramConnectionType() {
-        super(NAME);
+    public ScaleConverter(Matrix3x3 scale) {
+        this.scale = (float)scale.right.x;
     }
 
+    public float getScale() {
+        return this.scale;
+    }
 }

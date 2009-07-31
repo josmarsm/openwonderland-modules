@@ -42,8 +42,9 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.CMUCellRenderer;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.TransformableParent;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode;
-import org.jdesktop.wonderland.modules.cmu.common.CMUCellChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
+import org.jdesktop.wonderland.modules.cmu.common.ConnectionChangeMessage;
 
 /**
  * Cell to display and interact with a CMU scene.
@@ -53,9 +54,12 @@ public class CMUCell extends Cell {
 
     private CMUCellRenderer renderer;
     private MouseEventListener listener;
-    private boolean messageReceiverAdded = false;
-    private String cmuURI = null;
+    private boolean playbackMessageReceiverAdded = false;
+    private boolean connectionMessageReceiverAdded = false;
     private final TransformableParent sceneRoot = new TransformableParent();
+    private VisualChangeReceiver cmuConnectionThread = null;
+    private final CMUCellMessageReceiver messageReceiver = new CMUCellMessageReceiver();
+
     private class MouseEventListener extends EventClassListener {
 
         @Override
@@ -69,10 +73,10 @@ public class CMUCell extends Cell {
             if (mbe.isClicked() == false || mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
-/*
-            CMUCellChangeMessage msg = new CMUCellChangeMessage(getCellID(), getPlaybackSpeed());
-            sendCellMessage(msg);
- */
+        /*
+        CMUCellChangeMessage msg = new CMUCellChangeMessage(getCellID(), getPlaybackSpeed());
+        sendCellMessage(msg);
+         */
         }
 
         @Override
@@ -81,44 +85,94 @@ public class CMUCell extends Cell {
             if (mbe.isClicked() == false || mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
-/*
-            if (program.isPlaying()) {
-                program.pause();
-            } else {
-                program.play();
-            }
- * */
+        /*
+        if (program.isPlaying()) {
+        program.pause();
+        } else {
+        program.play();
+        }
+         * */
         }
     }
 
     private class CMUCellMessageReceiver implements ComponentMessageReceiver {
 
+        /**
+         * Process messages sent by the managed object on the server;
+         * these messages can update connection information for this cell
+         * (ConnectionChangeMessage), or change the displayed playback speed
+         * (PlaybackSpeedChangeMessage).
+         * @param message Message sent by server
+         */
         public void messageReceived(CellMessage message) {
-            CMUCellChangeMessage change = (CMUCellChangeMessage) message;
-            if (!change.getSenderID().equals(getCellCache().getSession().getID())) {
-                //program.setPlaybackSpeed(change.getPlaybackSpeed());
+
+            System.out.println("Client-side message received: " + message);
+
+            // Socket information message
+            if (ConnectionChangeMessage.class.isAssignableFrom(message.getClass())) {
+                ConnectionChangeMessage changeMessage = (ConnectionChangeMessage) message;
+                CMUCell.this.setServerAndPort(changeMessage.getServer(), changeMessage.getPort());
+            }
+
+            // Playback speed message
+            if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
+                PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
+            //TODO: process playback speed changes.
             }
         }
     }
 
+    /**
+     * Thread to process incoming scene graph changes from a CMU instance.
+     * Establishes a connection with the instance, and forwards messages
+     * sent by the instance to the cell's scene graph.
+     */
     private class VisualChangeReceiver extends Thread {
+
+        private final String server;
+        private final int port;
+
+        /**
+         * Standard constructor.
+         * @param server The server on which the CMU instance is running.
+         * @param port The port on which the CMU instance is running.
+         */
+        public VisualChangeReceiver(String server, int port) {
+            super();
+            this.server = server;
+            this.port = port;
+        }
+
+        /**
+         * Create a connection to the CMU instance, and wait for incoming
+         * messages; these can be either transformation updates, or information
+         * about new nodes.
+         */
         @Override
         public void run() {
             try {
+                System.out.println("Connecting cell....");
+
                 ObjectInputStream fromServer;
-                Socket connection = new Socket("127.0.0.1", 5557);
+                Socket connection = new Socket(server, port);
+
+                System.out.println("Cell connected: " + server + ":" + port);
+
                 fromServer = new ObjectInputStream(connection.getInputStream());
                 while (true) {
                     Object received = fromServer.readObject();
                     System.out.println("Received object: " + received);
+
+                    // Transformation for existing visual
                     if (TransformationMessage.class.isAssignableFrom(received.getClass())) {
-                        sceneRoot.applyTransformationToChild((TransformationMessage)received);
+                        sceneRoot.applyTransformationToChild((TransformationMessage) received);
                     }
+
+                    // New visual
                     if (VisualMessage.class.isAssignableFrom(received.getClass())) {
-                        VisualNode newNode = new VisualNode((VisualMessage)received);
-                        synchronized(sceneRoot) {
+                        VisualNode newNode = new VisualNode((VisualMessage) received);
+                        synchronized (sceneRoot) {
                             sceneRoot.attachChild(newNode);
-                            //mirrorWindow.addModel(newNode);
                         }
                     }
                 }
@@ -137,23 +191,48 @@ public class CMUCell extends Cell {
      */
     public CMUCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        new VisualChangeReceiver().start();
     }
 
+    /**
+     * Get the root of the CMU scene represented by this node.
+     * @return The root of the CMU scene as a jME node.
+     */
     public Node getSceneRoot() {
         return this.sceneRoot;
     }
 
     /**
-     * If a URI has been provided, load the given CMU scene.
-     * @param configData the config data to initialize the cell with
+     * Use the client state data to extract port/server information;
+     * if none has been set (i.e. if the CMU instance on the server
+     * has not yet been initialized), we don't do anything, and instead
+     * wait for the CMUCellMO associated with this cell to inform
+     * us explicitly of the socket information.
+     * @param {@inheritDoc}
      */
     @Override
     public void setClientState(CellClientState clientState) {
         super.setClientState(clientState);
 
+        assert clientState instanceof CMUCellClientState;
         CMUCellClientState cmuClientState = (CMUCellClientState) clientState;
+        if (cmuClientState.isServerAndPortInitialized()) {
+            this.setServerAndPort(cmuClientState.getServer(), cmuClientState.getPort());
+        }
+    }
 
+    /**
+     * Set the server and port that will be used to connect to a CMU instance.
+     * This method should be called only once per cell.
+     * @param server
+     * @param port
+     */
+    public void setServerAndPort(String server, int port) {
+        // Don't let the socket information be changed after it has been initialized.
+        if (cmuConnectionThread == null) {
+            System.out.println("Setting server and port on CMUCell");
+            cmuConnectionThread = new VisualChangeReceiver(server, port);
+            cmuConnectionThread.start();
+        }
     }
 
     /**
@@ -176,18 +255,29 @@ public class CMUCell extends Cell {
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
+        System.out.println("\n\n\n\nSETTING STATUS: " + status + ", " + increasing + "\n\n\n\n");
         ChannelComponent channel = getComponent(ChannelComponent.class);
+
+        //TODO: We always want to listen for connection changes; find out how to do this before setStatus is called.
+        if (!this.connectionMessageReceiverAdded) {
+            connectionMessageReceiverAdded = true;
+            channel.addMessageReceiver(ConnectionChangeMessage.class, messageReceiver);
+        }
+
         switch (status) {
             case DISK:
                 if (listener != null) {
                     listener.removeFromEntity(renderer.getEntity());
                     listener = null;
                 }
-                if (messageReceiverAdded) {
+
+                // Don't care about playback speed changes at this point.
+                //TODO: Eliminate need for the boolean.
+                if (playbackMessageReceiverAdded) {
                     if (channel != null) {
-                        channel.removeMessageReceiver(CMUCellChangeMessage.class);
+                        channel.removeMessageReceiver(PlaybackSpeedChangeMessage.class);
                     }
-                    messageReceiverAdded = false;
+                    playbackMessageReceiverAdded = false;
                 }
                 break;
 
@@ -197,11 +287,11 @@ public class CMUCell extends Cell {
                     listener = new MouseEventListener();
                     listener.addToEntity(renderer.getEntity());
                 }
-                if (!messageReceiverAdded) {
+                if (!playbackMessageReceiverAdded) {
                     if (channel != null) {
-                        channel.addMessageReceiver(CMUCellChangeMessage.class, new CMUCellMessageReceiver());
+                        channel.addMessageReceiver(PlaybackSpeedChangeMessage.class, messageReceiver);
                     }
-                    messageReceiverAdded = true;
+                    playbackMessageReceiverAdded = true;
                 }
                 break;
 
