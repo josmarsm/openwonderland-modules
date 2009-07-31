@@ -30,7 +30,9 @@ public class EventPlayerClientState extends CellClientState {
     private Set<Tape> tapes;
     private Tape selectedTape;
     private boolean isPlaying;
+    private boolean isPaused;
     private String userName;
+    private int replayedChildren;
 
     /** Default constructor */
     public EventPlayerClientState() {
@@ -44,12 +46,14 @@ public class EventPlayerClientState extends CellClientState {
      * @param isPlaying the initial state of the isPlaying boolean field
      * @param userName the initial state of the userName field
      */
-    public EventPlayerClientState(Set<Tape> tapes, Tape selectedTape, boolean isPlaying, String userName) {
+    public EventPlayerClientState(Set<Tape> tapes, Tape selectedTape, boolean isPlaying, boolean isPaused, String userName, int replayedChildren) {
         this();
         this.tapes = tapes;
         this.selectedTape = selectedTape;
         this.isPlaying = isPlaying;
+        this.isPaused = isPaused;
         this.userName = userName;
+        this.replayedChildren = replayedChildren;
     }
 
     /**
@@ -76,12 +80,20 @@ public class EventPlayerClientState extends CellClientState {
         return isPlaying;
     }
 
+    public boolean isPaused() {
+        return isPaused;
+    }
+
     /**
      * Access the userName field
      * @return the user name
      */
     public String getUserName() {
         return userName;
+    }
+
+    public int getReplayedChildren() {
+        return replayedChildren;
     }
 
     @Override

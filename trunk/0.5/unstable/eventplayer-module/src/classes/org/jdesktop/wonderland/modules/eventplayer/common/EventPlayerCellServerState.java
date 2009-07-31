@@ -52,7 +52,7 @@ public class EventPlayerCellServerState extends CellServerState implements Seria
     private boolean isPlaying;
 
     @XmlAttribute(required=true)
-    private boolean allCellsRetrieved;
+    private boolean isPaused;
 
 
     /**
@@ -80,6 +80,14 @@ public class EventPlayerCellServerState extends CellServerState implements Seria
      */
     public boolean isPlaying() {
         return isPlaying;
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void setPaused(boolean b) {
+        isPaused = b;
     }
 
     /**
