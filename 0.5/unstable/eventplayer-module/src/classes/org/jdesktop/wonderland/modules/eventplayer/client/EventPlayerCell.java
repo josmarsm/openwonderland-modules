@@ -74,11 +74,13 @@ public class EventPlayerCell extends Cell {
     private ContextMenuFactorySPI menuFactory = null;
 
     private boolean isPlaying;
+    private boolean isPaused;
     private String userName;
     private EventPlayerCellRenderer renderer;
     private DefaultListModel tapeListModel;
     private DefaultListSelectionModel tapeSelectionModel;
     private ReelForm reelForm;
+    private Set<CellID> replayedChildren;
 
     /**
      * Constructor, give
@@ -88,6 +90,8 @@ public class EventPlayerCell extends Cell {
     public EventPlayerCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         isPlaying = false;
+        isPaused = false;
+        replayedChildren = new HashSet<CellID>();
         createTapeModels();
         reelForm = new ReelForm(this);
     }
@@ -217,9 +221,13 @@ public class EventPlayerCell extends Cell {
         return tapeSelectionModel;
     }
 
-    void selectedTapeChanged() {
+    /**
+     * Only managed to change the tape if we weren't playing (and not paused)
+     * AND there were no cells from earlier replays
+     */
+    public void selectedTapeChanged() {
         //the selected tape has changed
-        //eventPlayerLogger.info("selectedTape changed");
+        eventPlayerLogger.info("selectedTape changed");
         int index = tapeSelectionModel.getMaxSelectionIndex();
         if (index >= 0) {
             //if there's a selected tape let the server know that the selected tape has changed
@@ -247,48 +255,70 @@ public class EventPlayerCell extends Cell {
     }
 
     private void loadRecording(String tapeName) {
-        //eventPlayerLogger.info("load recording: " + tapeName);
+        eventPlayerLogger.info("load recording: " + tapeName);
         Enumeration tapes = tapeListModel.elements();
         while (tapes.hasMoreElements()) {
             Tape aTape = (Tape) tapes.nextElement();
             if (aTape.getTapeName().equals(tapeName)) {
                 reelForm.selectTape(aTape);
+                isPlaying = false;
+                isPaused = false;
             }
         }
     }
 
+
+    void togglePlaying() {
+        eventPlayerLogger.info("togglePlaying");
+        if (!isPlaying) {
+                //not yet started, 
+                startPlaying();          
+        } else {
+            //already started
+            if (isPaused) {
+                //Paused
+                resume();
+            } else {
+                //Not paused
+                pause();
+            }
+        }
+    }
     
 
-    void startPlaying() {
-        //logger.info("start playing");
+    private void startPlaying() {
+        eventPlayerLogger.info("start playing");
 
         Tape selectedTape = getSelectedTape();
         if (selectedTape == null) {
             eventPlayerLogger.warning("Can't playback when there's no selected tape");
             return;
         }
+        resume();
+    }
+
+    void resume() {
+        eventPlayerLogger.info("resume");
         if (userName != null) {
             eventPlayerLogger.warning("userName should be null");
         }
+        isPlaying = true;
+        isPaused = false;
         userName = getCurrentUserName();
-        setPlaying(true);
-        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.playRecording(getCellID(), isPlaying, userName);
+        renderer.setPlaying(true);
+        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.playRecording(getCellID(), true, userName);
         getChannel().send(msg);
-
     }
 
 
-    void stop() {
-        //eventPlayerLogger.info("stop");
+    void pause() {
+        eventPlayerLogger.info("pause");
         if (userName.equals(getCurrentUserName())) {
-            EventPlayerCellChangeMessage msg = null;
-            if (isPlaying) {
-                msg = EventPlayerCellChangeMessage.playRecording(getCellID(), false, userName);
-            }
-            if (msg != null) {
-                getChannel().send(msg);
-            }
-            setPlaying(false);
+            isPlaying = true;
+            isPaused = true;
+            renderer.setPlaying(false);
+            EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.playRecording(getCellID(), false, userName);
+            getChannel().send(msg);
         } else {
             eventPlayerLogger.warning("Attempt to stop by non-initiating user");
             SwingUtilities.invokeLater(new Runnable() {
@@ -301,15 +331,11 @@ public class EventPlayerCell extends Cell {
         }
     }
 
-    private void setPlaying(boolean b) {
-        //eventPlayerLogger.info("setPlaying: " + b);
-        renderer.setPlaying(b);
-        isPlaying = b;
-    }
+    
 
 
-    boolean isPlaying() {
-        return isPlaying;
+    boolean isPlayingTape() {
+        return isPlaying  && !isPaused;
     }
 
     boolean isRecordingLoaded() {
@@ -325,16 +351,6 @@ public class EventPlayerCell extends Cell {
        }
    }
 
-     private void selectTape(String tapeName) {
-        //eventPlayerLogger.info("select tape: " + tapeName);
-        Enumeration tapes = tapeListModel.elements();
-        while (tapes.hasMoreElements()) {
-            Tape aTape = (Tape) tapes.nextElement();
-            if (aTape.getTapeName().equals(tapeName)) {
-                reelForm.selectTape(aTape);
-            }
-        }
-    }
 
     private String getCurrentUserName() {
         return getCellCache().getSession().getUserID().getUsername();
@@ -344,7 +360,28 @@ public class EventPlayerCell extends Cell {
         return ClientContextJME.getClientMain().getFrame().getFrame();
     }
 
+    /**
+     * Open the form to select a recording
+     * Can only open the reel if we are not playing (and not paused) AND if there are no children from previous replays
+     */
     void openReelForm() {
+        if (isPlayingTape()) {
+            eventPlayerLogger.warning("Can't load a new reel when one is already playing");
+            return;
+        }
+        if (!replayedChildren.isEmpty()) {
+            //Still showing child cells that are being replayed
+            logger.warning("can't load a new tape when there's cells from an earlier replay replayed");
+            //Ask the user if s/he wishes to remove the existing cells
+            int response = JOptionPane.showConfirmDialog(getParentFrame(), "Delete cells from replaying " + getSelectedTape().getTapeName() + "?", "Existing Cells", JOptionPane.YES_NO_OPTION);
+            if (response == JOptionPane.NO_OPTION) {
+                return;
+            } else {
+                //Delete the existing cells
+                logger.warning("Deleting existing cells");
+                replayedChildren.clear();
+            }
+        }
         //Let the server know I'm selecting a tape and wait to get a message back (processTapeStateMessage())
         EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.selectingTape(getCellID());
         try {
@@ -352,14 +389,14 @@ public class EventPlayerCell extends Cell {
             if (response.getAction() == TapeStateMessageResponse.TapeStateAction.TAPE_STATE) {
                 Rectangle parentBounds = getParentFrame().getBounds();
                 Rectangle formBounds = reelForm.getBounds();
-                reelForm.setLocation(parentBounds.width/2 - formBounds.width/2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
+                reelForm.setLocation(parentBounds.width / 2 - formBounds.width / 2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
 
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
                         //Need to open the form BEFORE updating models, otherwise ignored
-                    reelForm.setVisible(true);
-                    updateTapeModels(response.getTapes(), response.getSelectedTape());
+                        reelForm.setVisible(true);
+                        updateTapeModels(response.getTapes(), response.getSelectedTape());
                     }
                 });
 
@@ -372,13 +409,40 @@ public class EventPlayerCell extends Cell {
     }
     
 
-    
+    private void playbackDone() {
+        eventPlayerLogger.info("playback done");
+        //stop the renderer's playback animation
+        renderer.setPlaying(false);
+        //remove the button so that no user can click play
+        renderer.reduceButtonPyramid();
+        isPlaying = false;
+        isPaused = false;
+        eventPlayerLogger.info("remaining children: " + replayedChildren);
+    }
+
+    private void setCellsRetrieved() {
+        //Add the button so that the user can click it
+        renderer.enlargeButtonPyramid();
+        isPlaying = false;
+        isPaused = false;
+    }
+
+    private void addReplayedChild(CellID cellID) {
+        eventPlayerLogger.info("adding child: " + cellID);
+        replayedChildren.add(cellID);
+    }
+
+    private void removeReplayedChild(CellID cellID) {
+        eventPlayerLogger.info("removing child: " + cellID);
+        replayedChildren.remove(cellID);
+    }
 
     
 
     class EventPlayerCellMessageReceiver implements ComponentMessageReceiver {
 
         public void messageReceived(CellMessage message) {
+            //eventPlayerLogger.info("Message Received: " + message);
             EventPlayerCellChangeMessage sccm = (EventPlayerCellChangeMessage) message;
             BigInteger senderID = sccm.getSenderID();
             if (senderID == null) {
@@ -388,20 +452,26 @@ public class EventPlayerCell extends Cell {
             if (!senderID.equals(getCellCache().getSession().getID())) {
                 switch (sccm.getAction()) {
                     case PLAY:
-                        setPlaying(sccm.isPlaying());
+                        eventPlayerLogger.info("PLAY: " + sccm.isPlaying());
+                        //setPlaying(sccm.isPlaying());
                         userName = sccm.getUserName();
                         break;
                     case LOAD:
                         loadRecording(sccm.getTapeName());
                         break;
                     case PLAYBACK_DONE:
-                        setPlaying(false);
                         playbackDone();
                         userName = null;
                         break;
                     case ALL_CELLS_RETRIEVED:
                         setCellsRetrieved();
                         userName = null;
+                        break;
+                    case ADD_REPLAYED_CHILD:
+                        addReplayedChild(sccm.getChildCellID());
+                        break;
+                    case REMOVE_REPLAYED_CHILD:
+                        removeReplayedChild(sccm.getChildCellID());
                         break;
                     default:
                         eventPlayerLogger.severe("Unknown action type: " + sccm.getAction());
@@ -410,13 +480,9 @@ public class EventPlayerCell extends Cell {
             }
         }
 
-        private void playbackDone() {
-            renderer.reduceButtonPyramid();
-        }
 
-        private void setCellsRetrieved() {
-            renderer.enlargeButtonPyramid();
-        }
+
+        
     }
 
 }

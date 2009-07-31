@@ -28,7 +28,6 @@ import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -40,8 +39,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -57,20 +58,12 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.ChangeReplayingListener;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils;
-import org.jdesktop.wonderland.server.WonderlandContext;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.CellMOFactory;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * A service to support the event player.
@@ -113,6 +106,9 @@ public class EventPlayingService extends AbstractService {
 
     /**Manages the replaying threads*/
     private Map<String, ReplayChanges> replayers = new HashMap<String, ReplayChanges>();
+
+    /**Manages the replaying executions*/
+    private WeakHashMap<Runnable, Future> futureMap = new WeakHashMap<Runnable, Future>();
 
 
 
@@ -224,6 +220,20 @@ public class EventPlayingService extends AbstractService {
     }
 
     /**
+     * 
+     * @param tapeName
+     */
+    public void unloadRecording(String tapeName) {
+        logger.getLogger().info("unload recording: " + tapeName);
+        ReplayChanges rc = replayers.get(tapeName);
+        if (rc != null) {
+            logger.getLogger().info("aborting: " + rc);
+            ctxFactory.joinTransaction().abortRunnable(rc);
+            replayers.remove(tapeName);
+        }
+    }
+
+    /**
      * A task that replays a stream of changes
      * The results are then passed to a
      * NotifyChangesReplayingListener identified by managed reference.
@@ -286,7 +296,7 @@ public class EventPlayingService extends AbstractService {
                     
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(EventPlayingService.class.getName()).log(Level.SEVERE, null, ex);
+                logger.getLogger().log(Level.SEVERE, "Interrupted the thread", ex);
             } catch (SAXException ex) {
                 logger.getLogger().log(Level.SEVERE, "failed due to SAX exception", ex);
             } catch (XMLStreamException ex) {
@@ -299,6 +309,8 @@ public class EventPlayingService extends AbstractService {
             //Remove myself from the map of replayers
             logger.getLogger().info("Completed run, removing myself");
             replayers.remove(tapeName);
+            //This shouldn't really be necessary as we're managing the futures with weak refs
+            ctxFactory.joinTransaction().abortRunnable(this);
         }
 
 
@@ -517,11 +529,11 @@ public class EventPlayingService extends AbstractService {
      * Transaction state
      */
     private class EventPlayingTransactionContext extends TransactionContext {
-        List<Runnable> changes;
+        private List<Runnable> changes;
 
         public EventPlayingTransactionContext(Transaction txn) {
             super (txn);
-
+            logger.getLogger().info("CONSTRUCTING CONTEXT");
             changes = new LinkedList<Runnable>();
         }
 
@@ -537,12 +549,27 @@ public class EventPlayingService extends AbstractService {
 
         @Override
         public void commit() {
+            logger.getLogger().info("committing");
             for (Runnable r : changes) {
-                executor.submit(r);
+                logger.getLogger().info("committing runnable: " + r);
+                Future f = executor.submit(r);
+                logger.getLogger().info("caching future: " + f);
+                futureMap.put(r, f);
             }
 
             changes.clear();
             isCommitted = true;
+        }
+
+        void abortRunnable(Runnable change) {
+            Future f = futureMap.get(change);
+            logger.getLogger().info("Future: " + f);
+            if (f != null) {
+                logger.getLogger().info("The end is nigh for the future: " + f);
+                f.cancel(true);
+                futureMap.remove(change);
+            }
+            
         }
     }
 
@@ -558,6 +585,7 @@ public class EventPlayingService extends AbstractService {
 
         /** {@inheritDoc} */
         protected EventPlayingTransactionContext createContext(Transaction txn) {
+            logger.getLogger().info("CREATING CONTEXT");
             return new EventPlayingTransactionContext(txn);
         }
     }

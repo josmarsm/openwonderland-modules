@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 //disambiguate from any other XML type of the same name
 @XmlType( namespace="eventplayer" )
-public class Tape implements Serializable, Comparable {
+public class Tape implements Serializable, Comparable<Tape> {
 
     private String tapeName;
 
@@ -66,8 +66,8 @@ public class Tape implements Serializable, Comparable {
      * @param o the object against which to compare this object
      * @return an int indicating if this object sorts before, after or same as the argument
      */
-    public int compareTo(Object o) {
-        Tape t = (Tape) o;
+    public int compareTo(Tape t) {
+        //Tape t = (Tape) o;
         return tapeName.compareToIgnoreCase(t.tapeName);
     }
     

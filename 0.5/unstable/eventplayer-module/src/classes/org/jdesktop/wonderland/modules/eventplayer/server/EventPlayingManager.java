@@ -68,5 +68,7 @@ public interface EventPlayingManager {
 
     }
 
+    public void unloadRecording(String tapeName);
+
 
 }

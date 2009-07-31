@@ -27,19 +27,27 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 
 public class EventPlayerCellChangeMessage extends CellMessage {
+
+    
+    
+
+
+
+    
     
     public enum EventPlayerAction {
         LOAD,
         PLAY,
         REQUEST_TAPE_STATE,
         PLAYBACK_DONE,
-        ALL_CELLS_RETRIEVED};
+        ALL_CELLS_RETRIEVED, ADD_REPLAYED_CHILD, REMOVE_REPLAYED_CHILD};
 
     private EventPlayerAction action;
     private boolean isPlaying;
     private String userName;
     private double volume;
     private String tapeName;
+    private CellID childCellID;
 
     private EventPlayerCellChangeMessage(CellID cellID) {
         super(cellID);
@@ -63,6 +71,10 @@ public class EventPlayerCellChangeMessage extends CellMessage {
 
     public String getTapeName() {
         return tapeName;
+    }
+
+    public CellID getChildCellID() {
+        return childCellID;
     }
 
     public static EventPlayerCellChangeMessage loadRecording(CellID cellID, String tapeName) {
@@ -107,15 +119,29 @@ public class EventPlayerCellChangeMessage extends CellMessage {
      * @param cellID The id of the cell for which this message is created
      * @return a message with appropriate state and action
      */
-    public static EventPlayerCellChangeMessage playbackDoneMessage(CellID cellID) {
+    public static EventPlayerCellChangeMessage playbackDone(CellID cellID) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
         msg.action = EventPlayerAction.PLAYBACK_DONE;
         return msg;
     }
 
-    public static EventPlayerCellChangeMessage allCellsRetrievedMessage(CellID cellID) {
+    public static EventPlayerCellChangeMessage allCellsRetrieved(CellID cellID) {
         EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
         msg.action = EventPlayerAction.ALL_CELLS_RETRIEVED;
+        return msg;
+    }
+
+    public static EventPlayerCellChangeMessage addReplayedChild(CellID cellID, CellID childCellID) {
+        EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
+        msg.action = EventPlayerAction.ADD_REPLAYED_CHILD;
+        msg.childCellID = childCellID;
+        return msg;
+    }
+
+    public static EventPlayerCellChangeMessage removeReplayedChild(CellID cellID, CellID childCellID) {
+        EventPlayerCellChangeMessage msg = new EventPlayerCellChangeMessage(cellID);
+        msg.action = EventPlayerAction.REMOVE_REPLAYED_CHILD;
+        msg.childCellID = childCellID;
         return msg;
     }
     

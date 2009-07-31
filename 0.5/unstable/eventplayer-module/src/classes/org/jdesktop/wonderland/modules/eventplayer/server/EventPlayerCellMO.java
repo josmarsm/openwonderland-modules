@@ -20,10 +20,12 @@ package org.jdesktop.wonderland.modules.eventplayer.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -31,6 +33,7 @@ import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import java.util.logging.Level;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
@@ -40,6 +43,7 @@ import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerCellServerS
 import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerClientState;
 import org.jdesktop.wonderland.modules.eventplayer.common.Tape;
 import org.jdesktop.wonderland.modules.eventplayer.common.TapeStateMessageResponse;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.ListRecordingsListener;
@@ -56,16 +60,17 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 public class EventPlayerCellMO extends CellMO implements ListRecordingsListener {
     
     private static final Logger eventPlayerLogger = Logger.getLogger(EventPlayerCellMO.class.getName());
-    private static int INSTANCE_COUNT = 0;
     private EventPlayerCellServerState serverState;
     private ManagedReference<EventPlayer> playerRef;
+    private ManagedReference<ScalableHashSet<CellID>> loadedCellsRef;
 
 
     public EventPlayerCellMO() {
         super();
         addComponent(new MovableComponentMO(this));
-        int instanceNumber = ++INSTANCE_COUNT;
         serverState = new EventPlayerCellServerState();
+        ScalableHashSet<CellID> loadedCells = new ScalableHashSet<CellID>();
+        loadedCellsRef = AppContext.getDataManager().createReference(loadedCells);
         createTapes();
     }
 
@@ -152,6 +157,22 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         return "org.jdesktop.wonderland.modules.eventplayer.client.EventPlayerCell";
     }
 
+    void addReplayedChild(CellMO cellMO) throws MultipleParentException {
+        CellID childCellID = cellMO.getCellID();
+        logger.info("adding replayed child: " + cellMO);
+        loadedCellsRef.getForUpdate().add(childCellID);
+        addChild(cellMO);
+        EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.addReplayedChild(getCellID(), childCellID);
+        getChannel().sendAll(null, epccm);
+        
+    }
+
+    void removeReplayedChild(CellID childCellID) {
+        loadedCellsRef.getForUpdate().remove(childCellID);
+        EventPlayerCellChangeMessage msg = EventPlayerCellChangeMessage.removeReplayedChild(getCellID(), childCellID);
+        getChannel().sendAll(null, msg);
+    }
+
     private void createTapes() {
         WFSRecordingList recordingList = null;
         try {
@@ -226,9 +247,23 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         }
     }
 
+    private void unloadRecording() {
+        Tape selectedTape = serverState.getSelectedTape();
+        if (selectedTape != null) {
+            logger.info("selected tape: " + selectedTape);
+            ScalableHashSet<CellID> loadedCells = loadedCellsRef.getForUpdate();
+            for (CellID childCellID : loadedCells) {
+                CellMO cell = CellManagerMO.getCell(childCellID);
+                logger.info("removing cell: " + cell);
+                CellManagerMO.getCellManager().removeCellFromWorld(cell);
+            }
+            loadedCells.clear();
+            playerRef.get().unloadRecording(selectedTape.getTapeName());
+        }
+    }
 
     private void loadRecording() {
-        //eventPlayerLogger.info("Load recording");
+        eventPlayerLogger.info("Load recording");
         playerRef.get().loadRecording(serverState.getSelectedTape().getTapeName());
     }
 
@@ -244,16 +279,14 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
 
     void playbackDone() {
         serverState.setPlaying(false);
-        ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
-        EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.playbackDoneMessage(getCellID());
-        channel.sendAll(null, epccm);
+        EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.playbackDone(getCellID());
+        getChannel().sendAll(null, epccm);
     }
 
     void allCellsRetrieved() {
         logger.info("All cells retrieved");
-        ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
-        EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.allCellsRetrievedMessage(getCellID());
-        channel.sendAll(null, epccm);
+        EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.allCellsRetrieved(getCellID());
+        getChannel().sendAll(null, epccm);
     }
 
     private void processPlayMessage(WonderlandClientID clientID, EventPlayerCellChangeMessage arcm) {
@@ -269,6 +302,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         String tapeName = arcm.getTapeName();
         for (Tape aTape : serverState.getTapes()) {
             if(aTape.getTapeName().equals(tapeName)) {
+                unloadRecording();
                 serverState.setSelectedTape(aTape);
                 // send a message to all clients
                 getChannel().sendAll(clientID, arcm);
