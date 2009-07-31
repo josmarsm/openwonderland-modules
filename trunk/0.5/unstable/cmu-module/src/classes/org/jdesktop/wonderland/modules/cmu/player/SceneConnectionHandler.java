@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.alice.apis.moveandturn.Scene;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 
 /**
  * Wraps a CMU Scene object to extract transformation/geometry information
@@ -50,6 +51,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     private final Collection<VisualWrapper> visuals = new Vector<VisualWrapper>();
     private final ConnectionHandlerThread handlerThread;
 
+    /**
+     * A Socket/ObjectOutputStream pair, just used to store these two things
+     * together.
+     */
     protected class Connection {
 
         protected Socket socket;
@@ -65,11 +70,18 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         }
     }
 
+    /**
+     * Thread to set up a ServerSocket and listen for incoming connections
+     * from clients, and then handle them appropriately.
+     */
     private class ConnectionHandlerThread extends Thread {
 
         private ServerSocket socketListener = null;
         private final Object socketListenerLock = new Object();
 
+        /**
+         * Standard constructor.
+         */
         public ConnectionHandlerThread() {
             super();
 
@@ -84,6 +96,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
             }
         }
 
+        /**
+         * Listen for incoming connections and add them to the connection
+         * list as they arrive.
+         */
         @Override
         public void run() {
             try {
@@ -99,6 +115,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
             }
         }
 
+        /**
+         * Get the port set up by this thread's ServerSocket.
+         * @return The port used to connect to this thread
+         */
         public int getPort() {
             synchronized (socketListenerLock) {
                 assert socketListener != null;
@@ -106,6 +126,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
             }
         }
 
+        /**
+         * Get the server set up by this thread's ServerSocket.
+         * @return The server used to connect to this thread
+         */
         public String getServer() {
             synchronized (socketListenerLock) {
                 assert socketListener != null;
@@ -114,20 +138,35 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         }
     }
 
+    /**
+     * Basic constructor; creates a ConnectionHandlerThread immediately.
+     */
     public SceneConnectionHandler() {
         handlerThread = new ConnectionHandlerThread();
         handlerThread.start();
     }
 
+    /**
+     * Creates a ConnectionHandlerThread, and wraps/parses the given scene.
+     * @param sc The scene to wrap
+     */
     public SceneConnectionHandler(Scene sc) {
         this();
         this.setScene(sc);
     }
 
+    /**
+     * Get the port used to connect to this scene.
+     * @return The port on which this scene is listening for connections
+     */
     public int getPort() {
         return this.handlerThread.getPort();
     }
 
+    /**
+     * Get the address used to connect to this scene.
+     * @return The address on which this scene is listening for connections
+     */
     public String getServer() {
         return this.handlerThread.getServer();
     }
@@ -142,6 +181,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
 
     /**
      * Set the wrapped scene, and parse it to extract the JME nodes.
+     * Also clean up data from any existing scene.
      * @param sc The scene to wrap
      */
     public synchronized void setScene(Scene sc) {
@@ -176,6 +216,11 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         }
     }
 
+    /**
+     * Add the given Socket as a Connection, and use it to send the current
+     * state of the scene.
+     * @param connection The connection to add
+     */
     protected void addConnection(Socket connection) {
         try {
             // Don't add any new visuals until after this connection has been added
@@ -204,18 +249,34 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         }
     }
 
+    /**
+     * Synchronously remove the given connection from our collection,
+     * and perform any necessary cleanup.
+     * @param connection The connection to remove
+     */
     protected void removeConnection(Connection connection) {
         synchronized (connections) {
             connections.remove(connection);
         }
     }
 
+    /**
+     * Synchronously remove the last Connection which the iterator pointed
+     * to, and perform any necessary cleanup.  Provided as a convenience
+     * for removing connections while iterating over them.
+     * @param iterator
+     */
     protected void removeConnection(Iterator<Connection> iterator) {
         synchronized (connections) {
             iterator.remove();
         }
     }
 
+    /**
+     * Create a wrapper for the given CMU visual, and broadcast its addition
+     * to any connected clients.
+     * @param visual The CMU visual to add
+     */
     protected void addVisual(Visual visual) {
         synchronized (visuals) {
             synchronized (connections) {
@@ -243,6 +304,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void transformationMessageChanged(TransformationMessage message) {
         synchronized (connections) {
             Iterator<Connection> iterator = connections.iterator();
@@ -260,9 +325,36 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         }
     }
 
+    /**
+     * Unload the current scene, and inform all connected clients that this
+     * is happening.
+     */
     public void unloadScene() {
-        //TODO: cleanup
         if (this.getScene() != null) {
+            synchronized (visuals) {
+                synchronized (connections) {
+                    for (VisualWrapper visual : visuals) {
+                        // Clean up visuals individually
+                        visual.unload();
+                        visual.removeTransformationMessageListener(this);
+
+                        Iterator<Connection> iterator = connections.iterator();
+                        while (iterator.hasNext()) {
+                            Connection connection = iterator.next();
+                            try {
+                                connection.outputStream.writeObject(new VisualDeletedMessage(visual.getNodeID()));
+                                connection.outputStream.flush();
+                            } catch (SocketException ex) {
+                                removeConnection(iterator);
+                            } catch (IOException ex) {
+                                Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                    }
+                    // Remove visuals collectively
+                    visuals.clear();
+                }
+            }
         }
     }
 

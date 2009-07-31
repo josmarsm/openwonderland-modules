@@ -28,6 +28,10 @@ public class OrthogonalMatrix3x3Converter {
 
     private Matrix3f matrix;
 
+    /**
+     * Stantdard constructor.
+     * @param rotation The matrix to translate
+     */
     public OrthogonalMatrix3x3Converter(OrthogonalMatrix3x3 rotation) {
         matrix = new Matrix3f(
                 (float) rotation.right.x, (float) rotation.up.x, (float) rotation.backward.x,
@@ -35,6 +39,10 @@ public class OrthogonalMatrix3x3Converter {
                 (float) rotation.right.z, (float) rotation.up.z, (float) rotation.backward.z);
     }
 
+    /**
+     * Get the jME-compatible equivalent matrix.
+     * @return The jME matrix equivalent to the provided CMU matrix
+     */
     public Matrix3f getMatrix3f() {
         return matrix;
     }

@@ -20,7 +20,8 @@ package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 import java.io.Serializable;
 
 /**
- *
+ * Serializable message to inform that a particular visual should be
+ * removed.
  * @author kevin
  */
 public class VisualDeletedMessage implements Serializable {
@@ -28,19 +29,34 @@ public class VisualDeletedMessage implements Serializable {
     private final static long serialVersionUID = 1L;
     private int nodeID;
 
+    /**
+     * Basic constructor.
+     */
     public VisualDeletedMessage() {
         
     }
 
+    /**
+     * Constructor with ID.
+     * @param nodeID ID of the visual to delete
+     */
     public VisualDeletedMessage(int nodeID) {
         this();
         this.setNodeID(nodeID);
     }
 
+    /**
+     * Get the ID of the visual to delete.
+     * @return Current ID
+     */
     public int getNodeID() {
         return nodeID;
     }
 
+    /**
+     * Set the ID of the visual to delete.
+     * @param nodeID New ID
+     */
     public void setNodeID(int nodeID) {
         this.nodeID = nodeID;
     }

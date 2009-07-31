@@ -25,13 +25,15 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 
 /**
- *
+ * Very simple renderer; actual rendering updates happen from within
+ * the nodes themselves, so this just fetches the scene graph root
+ * from the cell and lets updates happen on their own.
  * @author kevin
  */
 public class CMUCellRenderer extends BasicRenderer {
 
     /**
-     * Create an instance of the CMU cell renderer.
+     * Standard constructor.
      * @param cell The associated CMU cell.
      */
     public CMUCellRenderer(Cell cell) {
@@ -52,7 +54,6 @@ public class CMUCellRenderer extends BasicRenderer {
 
     /**
      * {@inheritDoc}
-     * @return {@inheritDoc}
      */
     @Override
     public CMUCell getCell() {

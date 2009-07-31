@@ -17,41 +17,43 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- * Message containing information about a change in playback speed for a
- * CMU scene.
+ * Message to forward mouse button events to a CMUCellMO, which can then
+ * pass them on to the relevant CMU program.
  * @author kevin
  */
-public class PlaybackSpeedChangeMessage extends CellMessage {
+public class MouseButtonEventMessage extends CellMessage {
 
-    private float playbackSpeed;
+    private final static long serialVersionUID = 1L;
+    private MouseButtonEvent3D mouseEvent;
 
     /**
      * Standard constructor.
      * @param cellID ID of the relevant cell
-     * @param speed
+     * @param mouseEvent The mouse button event to forward
      */
-    public PlaybackSpeedChangeMessage(CellID cellID, float speed) {
-        super(cellID);
-        this.setPlaybackSpeed(speed);
+    public MouseButtonEventMessage(CellID cellID, MouseButtonEvent3D mouseEvent) {
+        setMouseEvent(mouseEvent);
     }
 
     /**
-     * Get the playback speed.
-     * @return Current playback speed
+     * Get the mouse event.
+     * @return Mouse event
      */
-    public float getPlaybackSpeed() {
-        return playbackSpeed;
+    public MouseButtonEvent3D getMouseEvent() {
+        return mouseEvent;
     }
 
     /**
-     * Set the playback speed.
-     * @param speed New playback speed
+     * Set the mouse event.
+     * @param mouseEvent Mouse event
      */
-    public void setPlaybackSpeed(float speed) {
-        this.playbackSpeed = speed;
+    public void setMouseEvent(MouseButtonEvent3D mouseEvent) {
+        this.mouseEvent = mouseEvent;
     }
+    
 }

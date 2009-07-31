@@ -35,6 +35,10 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
     private static final String HANDLER_MO_NAME = "__CMU_PROGRAM_CONNECTION_HANDLER";
     private final ProgramConnectionHandler connectionHandler;
 
+    /**
+     * Get the relevant connection handler.
+     * This class should never be externally instantiated.
+     */
     private ProgramConnectionHandlerMO() {
         //TODO: Decide which of these methods is better.
 
@@ -47,6 +51,10 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
         assert connectionHandler != null;
     }
 
+    /**
+     * Get the singleton instance of this class.
+     * @return Singleton instance
+     */
     static public ProgramConnectionHandlerMO getInstance() {
         try {
             return (ProgramConnectionHandlerMO) AppContext.getDataManager().getBinding(HANDLER_MO_NAME);
@@ -58,6 +66,10 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
         }
     }
 
+    /**
+     * Send the given message using the singleton instance of the class.
+     * @param message Message to send
+     */
     static public void sendMessage(Message message) {
         getInstance().connectionHandler.sendMessage(message);
     }

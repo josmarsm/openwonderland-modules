@@ -21,9 +21,13 @@ package org.jdesktop.wonderland.modules.cmu.player;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 
 /**
- *
+ * Interface to listen for transformation changes.
  * @author kevin
  */
 public interface TransformationMessageListener {
+    /**
+     * Called when a listened-to transformation has been updated.
+     * @param message The updated transformation
+     */
     public void transformationMessageChanged(TransformationMessage message);
 }

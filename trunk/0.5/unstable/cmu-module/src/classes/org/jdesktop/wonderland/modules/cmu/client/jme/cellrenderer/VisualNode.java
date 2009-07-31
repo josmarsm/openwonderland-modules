@@ -29,24 +29,44 @@ import java.awt.Image;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 
 /**
- *
+ * Node encapsulating a visual element of the CMU scene.  These nodes are
+ * assigned unique IDs so that transformation updates can be sent by the CMU
+ * program player.
  * @author kevin
  */
-public class VisualNode extends TransformableParent {
+public class VisualNode extends VisualParent {
 
-    protected final int nodeID;
+    protected final int nodeID;     // Unique ID for this node
 
+    /**
+     * Basic constructor, generally not used.
+     * @param nodeID Unique ID for this node
+     */
     public VisualNode(int nodeID) {
         super();
         this.nodeID = nodeID;
     }
 
+    /**
+     * Constructs this visual with the properties
+     * contained in the given VisualMessage.
+     * @param message The message to be used in creating this node
+     */
     public VisualNode(VisualMessage message) {
         this(message.getNodeID());
+        applyVisual(message);
+    }
 
+    /**
+     * Apply the properties contained in this VisualMessage (i.e.
+     * geometries, textures, etc.) to this node.
+     * @param message The message to apply
+     */
+    protected void applyVisual(VisualMessage message) {
         // Apply geometries, compute bounding box
         BoundingBox bound = null;
         for (TriMesh mesh : message.getMeshes()) {
@@ -83,6 +103,11 @@ public class VisualNode extends TransformableParent {
         return this.nodeID;
     }
 
+    /**
+     * Apply the given transformation to this node if it matches this node's
+     * ID.  Call this function recursively on this node's children.
+     * @param transformation {@inheritDoc}
+     */
     @Override
     public synchronized void applyTransformationToChild(TransformationMessage transformation) {
         if (transformation.getNodeID() == this.getNodeID()) {
@@ -91,6 +116,23 @@ public class VisualNode extends TransformableParent {
         super.applyTransformationToChild(transformation);
     }
 
+    /**
+     * Recursively remove the node with ID given by the VisualDeletedMessage.
+     * @param deleted Message specifying the node to remove.
+     */
+    @Override
+    public synchronized void removeChild(VisualDeletedMessage deleted) {
+        super.removeChild(deleted);
+        if (deleted.getNodeID() == this.getNodeID()) {
+            this.removeFromParent();
+        }
+    }
+
+    /**
+     * Schedule the transformation to be applied in a RenderUpdater to this
+     * node.
+     * @param transformation The transformation to be applied
+     */
     protected void applyTransformation(final TransformationMessage transformation) {
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
@@ -106,6 +148,10 @@ public class VisualNode extends TransformableParent {
         ClientContextJME.getWorldManager().addToUpdateList(this);
     }
 
+    /**
+     * Apply the given texture to this node.
+     * @param texture The texture to apply, as a standard Image
+     */
     protected void applyTexture(Image texture) {
         TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
         Texture t = null;
@@ -114,6 +160,5 @@ public class VisualNode extends TransformableParent {
         ts.setTexture(t);
         ts.setEnabled(true);
         this.setRenderState(ts);
-
     }
 }

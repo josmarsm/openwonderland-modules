@@ -33,7 +33,8 @@ import org.jdesktop.wonderland.modules.cmu.player.conversions.Point3Converter;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.ScaleConverter;
 
 /**
- * Treats a CMU Visual instance as a jME node, listens for transformation changes.
+ * Wraps/serializes a CMU visual node, and listens for transformation updates,
+ * then passes them on to anyone who is listening.
  * @author kevin
  */
 public class VisualWrapper implements AbsoluteTransformationListener {
@@ -151,30 +152,46 @@ public class VisualWrapper implements AbsoluteTransformationListener {
         }
     }
 
+    /**
+     * Disassociate this wrapper with its visual.
+     */
+    public void unload() {
+        cmuVisual.removeAbsoluteTransformationListener(this);
+    }
+
+    /**
+     * Add a listener for changes in the transformation of the
+     * associated visual.
+     * @param listener The listener to add
+     */
     public void addTransformationMessageListener(TransformationMessageListener listener) {
         synchronized(this.transformationListeners) {
             this.transformationListeners.add(listener);
         }
     }
 
+    /**
+     * Remove a listener for changes in the transformation of the
+     * associated visual
+     * @param listener The listener to remove
+     */
+    public void removeTransformationMessageListener(TransformationMessageListener listener) {
+        synchronized(this.transformationListeners) {
+            this.transformationListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Notify listeners that the transformation has changed.
+     */
     private void fireTransformationMessageChanged() {
         synchronized(this.transformationListeners) {
             for (TransformationMessageListener listener : this.transformationListeners) {
                 synchronized(this.getTransformationMessage()) {
-                    listener.transformationMessageChanged(this.getTransformationMessage().getCopy());
+                    listener.transformationMessageChanged(new TransformationMessage(this.getTransformationMessage()));
                 }
             }
             
         }
     }
-
-    /*        // Bounding box and translation.
-    Triangle[] tris = new Triangle[mesh.getTriangleCount()];
-
-    BoundingBox bbox = new BoundingBox();
-    bbox.computeFromTris(mesh.getMeshAsTriangles(tris), 0, tris.length);
-
-    this.setLocalTranslation(0, 0, 0);
-    this.setModelBound(bbox);
-     */
 }

@@ -32,7 +32,7 @@ import org.alice.apis.moveandturn.Program;
  */
 public class ProgramPlayer extends Program {
 
-    private static final long DEFAULT_ADVANCE_DURATION = 10000;
+    private static final long DEFAULT_ADVANCE_DURATION = 2000;
     private edu.cmu.cs.dennisc.alice.virtualmachine.VirtualMachine vm;
     private edu.cmu.cs.dennisc.alice.ast.AbstractType sceneType;
     private Object scene;
@@ -71,17 +71,17 @@ public class ProgramPlayer extends Program {
     }
 
     /**
-     * 
-     * @return
+     * Get the port designated by the SceneConnectionHandler for this program.
+     * @return The port used to connect to this program
      */
-    public SceneConnectionHandler getSceneConnectionHandler() {
-        return cmuScene;
-    }
-
     public int getPort() {
         return this.cmuScene.getPort();
     }
 
+    /**
+     * Get the server designated by the SceneConnectionHandler for this program.
+     * @return The server used to connect to this program
+     */
     public String getServer() {
         return this.cmuScene.getServer();
     }
@@ -104,7 +104,6 @@ public class ProgramPlayer extends Program {
         this.setScene((org.alice.apis.moveandturn.Scene) o);
 
         this.init();
-        this.play();
     }
 
     /**
@@ -119,7 +118,9 @@ public class ProgramPlayer extends Program {
 
     /**
      * If this program's elapsed time is shorter than time, "fast-forward"
-     * to reach the specified time.
+     * to reach the specified time.  Note that this method is not thread-safe,
+     * in the sense that program speed can still be freely changed during the
+     * "fast-forward" period.
      * @param time The time (in milliseconds) we should fast-forward to
      * @param duration The length of time (in milliseconds) which the fast-forward should last
      */
@@ -171,11 +172,13 @@ public class ProgramPlayer extends Program {
      * @param speed The speed at which to play
      */
     public void setPlaybackSpeed(float speed) {
-        long currTime = System.currentTimeMillis();
-        this.elapsed += this.playbackSpeed * (currTime - this.timeOfLastSpeedChange);
-        this.timeOfLastSpeedChange = currTime;
-        this.playbackSpeed = speed;
-        this.handleSpeedChange((double) speed);
+        synchronized (speedChangeLock) {
+            long currTime = System.currentTimeMillis();
+            this.elapsed += this.playbackSpeed * (currTime - this.timeOfLastSpeedChange);
+            this.timeOfLastSpeedChange = currTime;
+            this.playbackSpeed = speed;
+            this.handleSpeedChange((double) speed);
+        }
     }
 
     /**
