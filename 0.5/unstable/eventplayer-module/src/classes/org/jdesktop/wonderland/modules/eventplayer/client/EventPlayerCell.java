@@ -170,6 +170,7 @@ public class EventPlayerCell extends Cell {
         updateTapeModels(tapes, selectedTape);
 
         isPlaying = ((EventPlayerClientState)setupData).isPlaying();
+        isPaused = ((EventPlayerClientState)setupData).isPaused();
         userName = ((EventPlayerClientState)setupData).getUserName();
         if(isPlaying) {
             if (userName == null) {
@@ -181,6 +182,7 @@ public class EventPlayerCell extends Cell {
                 eventPlayerLogger.warning("userName should be null");
             }
         }
+        replayedChildren = ((EventPlayerClientState)setupData).getReplayedChildren();
     }
 
     /**

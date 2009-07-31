@@ -107,7 +107,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
             ClientCapabilities capabilities) {
         
         if (cellClientState == null) {
-            cellClientState = new EventPlayerClientState(serverState.getTapes(), serverState.getSelectedTape(), serverState.isPlaying(), serverState.getUserName());
+            cellClientState = new EventPlayerClientState(serverState.getTapes(), serverState.getSelectedTape(), serverState.isPlaying(), serverState.isPaused(), serverState.getUserName(), loadedCellsRef.get().size());
         }
         //eventPlayerLogger.fine("cellClientState: " + cellClientState);
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -229,15 +229,19 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
             //Already playing
             if (!p) {
                 stopPlaying();
+                serverState.setPlaying(true);
+                serverState.setPaused(true);
             }
         } else {
             //Not playing
             if (p) {
                 //Start playing
                 startPlaying();
+                serverState.setPlaying(true);
+                serverState.setPaused(false);
             }
         }
-        serverState.setPlaying(p);
+        
     }
 
     private void createEventPlayer() {
