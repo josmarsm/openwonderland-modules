@@ -20,17 +20,26 @@ package org.jdesktop.wonderland.modules.cmu.player.conversions;
 import edu.cmu.cs.dennisc.math.Matrix3x3;
 
 /**
- *
+ * Simple converter from a CMU scale matrix to a scalar for use in
+ * jME scaling.
  * @author kevin
  */
 public class ScaleConverter {
 
     final float scale;
 
+    /**
+     * Standard constructor.
+     * @param scale The matrix to translate
+     */
     public ScaleConverter(Matrix3x3 scale) {
         this.scale = (float)scale.right.x;
     }
 
+    /**
+     * Get the scalar scale represented by the provided matrix.
+     * @return Scale represented by the matrix
+     */
     public float getScale() {
         return this.scale;
     }

@@ -21,7 +21,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- *
+ * Message sent by a CMUCellMO to a CMU program manager, informing it to
+ * create a program from the given asset uri.
  * @author kevin
  */
 public class CreateProgramMessage extends Message {
@@ -30,24 +31,45 @@ public class CreateProgramMessage extends Message {
     private String programURI;
     private CellID cellID;
 
+    /**
+     * Standard constructor.
+     * @param cellID The ID of the cell for which the program is being created
+     * @param programURI The URI of the asset representing the program file
+     */
     public CreateProgramMessage(CellID cellID, String programURI) {
         super();
         this.setCellID(cellID);
         this.setProgramURI(programURI);
     }
 
+    /**
+     * Get ID of the relevant cell.
+     * @return Current cell ID
+     */
     public CellID getCellID() {
         return cellID;
     }
 
+    /**
+     * Set ID of the relevant cell.
+     * @param cellID New cell ID
+     */
     public void setCellID(CellID cellID) {
         this.cellID = cellID;
     }
 
+    /**
+     * Get URI of the relevant asset.
+     * @return Current asset URI
+     */
     public String getProgramURI() {
         return programURI;
     }
 
+    /**
+     * Set URI of the relevant asset.
+     * @param programURI New asset URI
+     */
     public void setProgramURI(String programURI) {
         this.programURI = programURI;
     }

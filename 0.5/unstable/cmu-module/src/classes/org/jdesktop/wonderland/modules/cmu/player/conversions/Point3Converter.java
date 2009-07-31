@@ -22,17 +22,25 @@ import edu.cmu.cs.dennisc.math.Point3;
 
 
 /**
- *
+ * Simple converter from a CMU Point3 object to a jME vector.
  * @author kevin
  */
 public class Point3Converter {
 
     private Vector3f point;
 
+    /**
+     * Standard constructor.
+     * @param point The point to translate
+     */
     public Point3Converter(Point3 point) {
         this.point = new Vector3f((float)point.x, (float)point.y, (float)point.z);
     }
 
+    /**
+     * Get the jME vector equivalent to the point provided.
+     * @return The equivalent jME vector
+     */
     public Vector3f getVector3f() {
         return this.point;
     }

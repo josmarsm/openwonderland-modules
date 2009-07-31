@@ -24,17 +24,20 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 
 /**
- *
+ * Server plugin to register a program connection handler with the Wonderland
+ * comms manager.
  * @author kevin
  */
 @Plugin
 public class ProgramConnectionServerPlugin implements ServerPlugin {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void initialize() {
-        // register with the comms manager
+        // Register with the comms manager
         CommsManager cm = WonderlandContext.getCommsManager();
         cm.registerClientHandler(new ProgramConnectionHandler());
     }
-
 }

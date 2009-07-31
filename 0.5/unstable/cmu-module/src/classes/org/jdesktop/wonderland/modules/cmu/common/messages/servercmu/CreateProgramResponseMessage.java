@@ -22,7 +22,10 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 
 /**
- *
+ * Response message sent by a CMU program manager to a CMUCellMO after a
+ * requested program has been created, containing information about how
+ * to connect to the created program (or, if the connection was not
+ * successfully set up, tells us so).
  * @author kevin
  */
 public class CreateProgramResponseMessage extends ResponseMessage {
@@ -30,37 +33,87 @@ public class CreateProgramResponseMessage extends ResponseMessage {
     private static final long serialVersionUID = 1L;
     private String server;
     private int port;
+    private boolean creationSuccessful = false;
     private CellID cellID;
 
-    public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String server, int port) {
+    /**
+     * Basic constructor.  Initializes the message as representing unsuccessful
+     * program creation.
+     * @param messageID The message ID of the CreateProgramMessage that this is in response to
+     * @param cellID The relevant cell ID
+     */
+    public CreateProgramResponseMessage(MessageID messageID, CellID cellID) {
         super(messageID);
         this.setCellID(cellID);
-        this.setPort(port);
-        this.setServer(server);
     }
 
+    /**
+     * Constructor with connection information.  Initializes the message as
+     * representing successful program creation.
+     * @param messageID The message ID of the CreateProgramMessage that this is in response to
+     * @param cellID The relevant cell ID
+     * @param server The host address to connect to
+     * @param port The port to connect to
+     */
+    public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String server, int port) {
+        this(messageID, cellID);
+        this.setServerAndPort(server, port);
+    }
+
+    /**
+     * Get the ID of the relevant cell.
+     * @return Current cell ID
+     */
     public CellID getCellID() {
         return cellID;
     }
 
+    /**
+     * Set the ID of the relevant cell.
+     * @param cellID New cell ID
+     */
     public void setCellID(CellID cellID) {
         this.cellID = cellID;
     }
 
+    /**
+     * Get the port to connect to.
+     * @return Current port
+     */
     public int getPort() {
+        assert this.isCreationSuccessful();
         return port;
     }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
-
+    /**
+     * Get the host address to connect to.
+     * @return Current host address
+     */
     public String getServer() {
+        assert this.isCreationSuccessful();
         return server;
     }
 
-    public void setServer(String server) {
+    /**
+     * Set the server and port to connect to.  Marks the message as one of
+     * successful program creation.
+     * @param server New host address
+     * @param port New port
+     */
+    public void setServerAndPort(String server, int port) {
         this.server = server;
+        this.port = port;
+        this.creationSuccessful = true;
+    }
+
+    /**
+     * Tells us whether this message represents successful program creation.
+     * Server/port information in this message can only be treated as valid
+     * if this returns true.
+     * @return
+     */
+    public boolean isCreationSuccessful() {
+        return this.creationSuccessful;
     }
 
     @Override

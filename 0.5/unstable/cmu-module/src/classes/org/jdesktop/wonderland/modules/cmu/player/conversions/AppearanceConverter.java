@@ -23,7 +23,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 /**
- *
+ * Extracts jME-compatible properties from a CMU Appearance object.
  * @author kevin
  */
 public class AppearanceConverter {
@@ -33,6 +33,10 @@ public class AppearanceConverter {
 
     final private BufferedImage texture;
 
+    /**
+     * Standard constructor.
+     * @param app The Appearance object to translate
+     */
     public AppearanceConverter(Appearance app) {
         // Set texture properties.
         edu.cmu.cs.dennisc.texture.Texture cmuText = (edu.cmu.cs.dennisc.texture.Texture) (app.getPropertyNamed(TEXTURE_PROPERTY).getValue(app));
@@ -54,14 +58,26 @@ public class AppearanceConverter {
         //}
     }
 
+    /**
+     * Get the texture represented by the Appearance.
+     * @return Appearance texture
+     */
     public Image getTexture() {
         return texture;
     }
 
+    /**
+     * Get the height of the texture represented by the Appearance.
+     * @return Texture height
+     */
     public int getTextureHeight() {
         return texture.getHeight();
     }
 
+    /**
+     * Get the width of the texture represented by the Appearance.
+     * @return Texture width
+     */
     public int getTextureWidth() {
         return texture.getWidth();
     }

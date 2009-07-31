@@ -15,15 +15,21 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.common;
 
 /**
- *
+ * Defines default values for scene playback speed.
  * @author kevin
  */
-public class PlaybackDefaults {
+public final class PlaybackDefaults {
+
     public static final float DEFAULT_PLAYBACK_SPEED = 1.0f;
     public static final float PAUSE_SPEED = 0.0f;
     public static final float DEFAULT_START_SPEED = PAUSE_SPEED;
+
+    /**
+     * Class should never be instantiated.
+     */
+    private PlaybackDefaults() {
+    }
 }

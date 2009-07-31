@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.cmu.common.CMUCellServerState;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -67,14 +68,28 @@ public class CMUCellMO extends CellMO {
         }
 
         /**
-         * {@inheritDoc}
+         * Process messages from CMU client cells; currently playback
+         * speed changes and mouse clicks are received.
+         * @param sender {@inheritDoc}
+         * @param clientID {@inheritDoc}
+         * @param message {@inheritDoc}
          */
         @Override
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             CMUCellMO cellMO = (CMUCellMO) getCell();
-            PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
-            cellMO.setPlaybackSpeed(change.getPlaybackSpeed());
-            cellMO.sendCellMessage(clientID, message);
+
+            // Playback speed change
+            if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
+                PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
+                cellMO.setPlaybackSpeed(change.getPlaybackSpeed());
+                cellMO.sendCellMessage(clientID, message);
+            }
+
+            // Mouse button event
+            if (MouseButtonEventMessage.class.isAssignableFrom(message.getClass())) {
+                MouseButtonEventMessage mouseMessage = (MouseButtonEventMessage) message;
+                //TODO: forward mouse clicks
+            }
         }
     }
 

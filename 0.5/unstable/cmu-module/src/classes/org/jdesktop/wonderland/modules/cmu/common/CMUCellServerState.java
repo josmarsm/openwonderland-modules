@@ -25,8 +25,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
- * 
- *
+ * Server state for the CMU cell; doesn't store much.
  * @author kevin
  */
 
@@ -38,11 +37,6 @@ public class CMUCellServerState extends CellServerState {
     @XmlElement(name="cmu-uri")
     private String cmuURI = null;
 
-    /** Default constructor. */
-    public CMUCellServerState() {
-        super();
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -51,14 +45,16 @@ public class CMUCellServerState extends CellServerState {
     }
 
     /**
-     * @return The URI of the loaded CMU file.
+     * Get the URI to load.
+     * @return The URI of the loaded CMU file
      */
     @XmlTransient public String getCmuURI() {
         return cmuURI;
     }
 
     /**
-     * @param uri Points to a CMU file to load.
+     * Set the URI to load.
+     * @param uri Points to a CMU file to load
      */
     public void setCmuURI(String uri) {
         cmuURI = uri;

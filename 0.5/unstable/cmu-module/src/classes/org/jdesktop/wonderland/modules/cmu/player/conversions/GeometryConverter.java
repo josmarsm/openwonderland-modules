@@ -28,7 +28,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 /**
- *
+ * Extracts a jME-compatible mesh from a CMU Geometry object.
  * @author kevin
  */
 public class GeometryConverter {
@@ -40,6 +40,10 @@ public class GeometryConverter {
 
     final private TriMesh mesh;
 
+    /**
+     * Standard constructor.
+     * @param g The Geometry to translate
+     */
     public GeometryConverter(Geometry g) {
 
         // Get vertex data.
@@ -67,6 +71,10 @@ public class GeometryConverter {
         mesh.reconstruct(fVertexBuf, null, null, new TexCoords(fTexBuf, PER_TEX_COORD), IntBuffer.wrap(indices));
     }
 
+    /**
+     * Get the mesh described by this Geometry.
+     * @return The Geometry's mesh
+     */
     public TriMesh getMesh() {
         return mesh;
     }
