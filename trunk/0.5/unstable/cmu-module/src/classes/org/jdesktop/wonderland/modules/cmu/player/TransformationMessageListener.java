@@ -18,7 +18,7 @@
 
 package org.jdesktop.wonderland.modules.cmu.player;
 
-import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 
 /**
  *

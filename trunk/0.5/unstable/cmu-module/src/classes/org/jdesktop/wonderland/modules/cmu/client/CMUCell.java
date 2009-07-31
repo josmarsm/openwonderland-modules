@@ -17,8 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
-import org.jdesktop.wonderland.modules.cmu.common.VisualMessage;
-import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import com.jme.scene.Node;
@@ -42,9 +42,10 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.CMUCellRenderer;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.TransformableParent;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode;
-import org.jdesktop.wonderland.modules.cmu.common.PlaybackSpeedChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
-import org.jdesktop.wonderland.modules.cmu.common.ConnectionChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 
 /**
  * Cell to display and interact with a CMU scene.
@@ -54,47 +55,64 @@ public class CMUCell extends Cell {
 
     private CMUCellRenderer renderer;
     private MouseEventListener listener;
+    private float playbackSpeed;
+    private final Object playbackSpeedLock = new Object();
     private boolean playbackMessageReceiverAdded = false;
     private boolean connectionMessageReceiverAdded = false;
     private final TransformableParent sceneRoot = new TransformableParent();
-    private VisualChangeReceiver cmuConnectionThread = null;
+    private VisualChangeReceiverThread cmuConnectionThread = null;
     private final CMUCellMessageReceiver messageReceiver = new CMUCellMessageReceiver();
 
+    /**
+     * Listener to process mouse click events.
+     */
     private class MouseEventListener extends EventClassListener {
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Class[] eventClassesToConsume() {
             return new Class[]{MouseButtonEvent3D.class};
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public void commitEvent(Event event) {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
             if (mbe.isClicked() == false || mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
-        /*
-        CMUCellChangeMessage msg = new CMUCellChangeMessage(getCellID(), getPlaybackSpeed());
-        sendCellMessage(msg);
-         */
+            sendCellMessage(new PlaybackSpeedChangeMessage(getCellID(), getPlaybackSpeed()));
         }
 
+        /**
+         * Toggle play/pause on left click.
+         * @param event {@inheritDoc}
+         */
         @Override
         public void computeEvent(Event event) {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
             if (mbe.isClicked() == false || mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
-        /*
-        if (program.isPlaying()) {
-        program.pause();
-        } else {
-        program.play();
-        }
-         * */
+
+            //TODO: More complete playback speed functionality.
+            // Toggle play/pause on click.
+            if (isPlaying()) {
+                pause();
+            } else {
+                play();
+            }
         }
     }
 
+    /**
+     * Message receiver to receive socket information and playback speed
+     * change messages.
+     */
     private class CMUCellMessageReceiver implements ComponentMessageReceiver {
 
         /**
@@ -102,10 +120,10 @@ public class CMUCell extends Cell {
          * these messages can update connection information for this cell
          * (ConnectionChangeMessage), or change the displayed playback speed
          * (PlaybackSpeedChangeMessage).
-         * @param message Message sent by server
+         * @param message {@inheritDoc}
          */
+        @Override
         public void messageReceived(CellMessage message) {
-
             // Socket information message
             if (ConnectionChangeMessage.class.isAssignableFrom(message.getClass())) {
                 ConnectionChangeMessage changeMessage = (ConnectionChangeMessage) message;
@@ -113,9 +131,10 @@ public class CMUCell extends Cell {
             }
 
             // Playback speed message
-            if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
+            if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())
+                    && !(message.getCellID().equals(CMUCell.this.getCellID()))) {
                 PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
-            //TODO: process playback speed changes.
+                setPlaybackSpeed(change.getPlaybackSpeed());
             }
         }
     }
@@ -125,7 +144,7 @@ public class CMUCell extends Cell {
      * Establishes a connection with the instance, and forwards messages
      * sent by the instance to the cell's scene graph.
      */
-    private class VisualChangeReceiver extends Thread {
+    private class VisualChangeReceiverThread extends Thread {
 
         private final String server;
         private final int port;
@@ -135,7 +154,7 @@ public class CMUCell extends Cell {
          * @param server The server on which the CMU instance is running.
          * @param port The port on which the CMU instance is running.
          */
-        public VisualChangeReceiver(String server, int port) {
+        public VisualChangeReceiverThread(String server, int port) {
             super();
             this.server = server;
             this.port = port;
@@ -152,8 +171,10 @@ public class CMUCell extends Cell {
                 ObjectInputStream fromServer;
                 Socket connection = new Socket(server, port);
 
+                // Get incoming stream from server
                 fromServer = new ObjectInputStream(connection.getInputStream());
                 while (true) {
+                    // Read messages as long as they're being sent
                     Object received = fromServer.readObject();
 
                     // Transformation for existing visual
@@ -187,8 +208,50 @@ public class CMUCell extends Cell {
     }
 
     /**
+     * Get playback speed.
+     * @return The speed at which the associated CMU scene is playing.
+     */
+    public float getPlaybackSpeed() {
+        synchronized (playbackSpeedLock) {
+            return this.playbackSpeed;
+        }
+    }
+
+    /**
+     * Set playback speed.
+     * @param playbackSpeed The speed at which the associated CMU scene is playing.
+     */
+    public void setPlaybackSpeed(float playbackSpeed) {
+        synchronized (playbackSpeedLock) {
+            this.playbackSpeed = playbackSpeed;
+        }
+    }
+
+    /**
+     * True if the program is playing at any speed, i.e. not paused.
+     * @return True if the program is playing at any speed
+     */
+    public boolean isPlaying() {
+        return (getPlaybackSpeed() != PlaybackDefaults.PAUSE_SPEED);
+    }
+
+    /**
+     * Just set the playback speed to the standard playback speed.
+     */
+    public void play() {
+        this.setPlaybackSpeed(PlaybackDefaults.DEFAULT_PLAYBACK_SPEED);
+    }
+
+    /**
+     * Just set the playback speed to the standard paused speed.
+     */
+    public void pause() {
+        this.setPlaybackSpeed(PlaybackDefaults.PAUSE_SPEED);
+    }
+
+    /**
      * Get the root of the CMU scene represented by this node.
-     * @return The root of the CMU scene as a jME node.
+     * @return The root of the CMU scene as a jME node
      */
     public Node getSceneRoot() {
         return this.sceneRoot;
@@ -222,7 +285,7 @@ public class CMUCell extends Cell {
     public void setServerAndPort(String server, int port) {
         // Don't let the socket information be changed after it has been initialized.
         if (cmuConnectionThread == null) {
-            cmuConnectionThread = new VisualChangeReceiver(server, port);
+            cmuConnectionThread = new VisualChangeReceiverThread(server, port);
             cmuConnectionThread.start();
         }
     }
@@ -249,40 +312,50 @@ public class CMUCell extends Cell {
 
         ChannelComponent channel = getComponent(ChannelComponent.class);
 
-        //TODO: We always want to listen for connection changes; find out how to do this before setStatus is called.
-        if (!this.connectionMessageReceiverAdded) {
-            connectionMessageReceiverAdded = true;
-            channel.addMessageReceiver(ConnectionChangeMessage.class, messageReceiver);
-        }
-
         switch (status) {
             case DISK:
+                // Remove mouse listener.
                 if (listener != null) {
                     listener.removeFromEntity(renderer.getEntity());
                     listener = null;
                 }
 
-                // Don't care about playback speed changes at this point.
-                //TODO: Eliminate need for the boolean.
-                if (playbackMessageReceiverAdded) {
+                // Stop receiving connection changes.
+                if (!increasing) {
+                    if (channel != null) {
+                        channel.removeMessageReceiver(ConnectionChangeMessage.class);
+                    }
+                }
+                break;
+
+            case INACTIVE:
+                //TODO: We always want to listen for connection changes; find out how to do this before setStatus is called?
+                if (increasing) {
+                    if (channel != null) {
+                        channel.addMessageReceiver(ConnectionChangeMessage.class, messageReceiver);
+                    }
+                }
+
+                // Stop receiving playback speed changes.
+                if (!increasing) {
                     if (channel != null) {
                         channel.removeMessageReceiver(PlaybackSpeedChangeMessage.class);
                     }
-                    playbackMessageReceiverAdded = false;
                 }
                 break;
 
             case ACTIVE:
-
+                // Add mouse listener.
                 if (listener == null) {
                     listener = new MouseEventListener();
                     listener.addToEntity(renderer.getEntity());
                 }
-                if (!playbackMessageReceiverAdded) {
+
+                // Start receiving playback speed changes.
+                if (increasing) {
                     if (channel != null) {
                         channel.addMessageReceiver(PlaybackSpeedChangeMessage.class, messageReceiver);
                     }
-                    playbackMessageReceiverAdded = true;
                 }
                 break;
 

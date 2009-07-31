@@ -22,7 +22,7 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.NameNotBoundException;
 import java.io.Serializable;
-import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import org.jdesktop.wonderland.server.WonderlandContext;
 
@@ -30,12 +30,12 @@ import org.jdesktop.wonderland.server.WonderlandContext;
  *
  * @author kevin
  */
-public class ProgramConnectionHandlerMO implements ManagedObject, Serializable {
+public final class ProgramConnectionHandlerMO implements ManagedObject, Serializable {
 
     private static final String HANDLER_MO_NAME = "__CMU_PROGRAM_CONNECTION_HANDLER";
     private final ProgramConnectionHandler connectionHandler;
 
-    public ProgramConnectionHandlerMO() {
+    private ProgramConnectionHandlerMO() {
         //TODO: Decide which of these methods is better.
 
         /*
@@ -58,8 +58,8 @@ public class ProgramConnectionHandlerMO implements ManagedObject, Serializable {
         }
     }
 
-    static public void createProgram(CellID cellID, String uri) {
-        getInstance().connectionHandler.createProgram(cellID, uri);
+    static public void sendMessage(Message message) {
+        getInstance().connectionHandler.sendMessage(message);
     }
 
 }

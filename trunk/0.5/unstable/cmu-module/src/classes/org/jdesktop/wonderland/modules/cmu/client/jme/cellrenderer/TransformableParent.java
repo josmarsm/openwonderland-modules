@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
-import org.jdesktop.wonderland.modules.cmu.common.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 
 /**
  *

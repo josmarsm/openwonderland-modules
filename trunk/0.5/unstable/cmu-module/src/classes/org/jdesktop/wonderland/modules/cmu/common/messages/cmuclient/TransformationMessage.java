@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common;
+package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
 import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
@@ -82,7 +82,7 @@ public class TransformationMessage implements Serializable {
         return retVal;
     }
 
-    public TransformationMessage getCopy() {
+    public synchronized TransformationMessage getCopy() {
         TransformationMessage retVal = new TransformationMessage(this.getNodeID());
         retVal.setScale(this.getScale());
         retVal.setTranslation(this.getTranslation());
