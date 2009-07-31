@@ -18,12 +18,15 @@
 
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellServerState;
 
@@ -40,10 +43,19 @@ public class AudioRecorderCellFactory implements CellFactorySPI {
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        return (T)new AudioRecorderCellServerState();
-    }
+        CellServerState state = new AudioRecorderCellServerState();
 
-    
+        // Set a bounding hint based upon the width x height x depth of the
+        // audio recorder
+        BoundingBox box = new BoundingBox(Vector3f.ZERO,
+                AudioRecorderCellRenderer.WIDTH,
+                AudioRecorderCellRenderer.HEIGHT,
+                AudioRecorderCellRenderer.DEPTH);
+        BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
+        state.setBoundingVolumeHint(hint);
+
+        return (T)state;
+    }
 
     public String getDisplayName() {
         return "Audio Recorder";

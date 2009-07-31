@@ -61,9 +61,9 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
 
     private static final Logger rendererLogger = Logger.getLogger(AudioRecorderCellRenderer.class.getName());
 
-    private static final float WIDTH = 0.6f; //x-extent
-    private static final float HEIGHT = WIDTH /2 ; //y-extent was 0.3f
-    private static final float DEPTH = 0.05f; //z-extent
+    public static final float WIDTH = 0.6f; //x-extent
+    public static final float HEIGHT = WIDTH /2 ; //y-extent was 0.3f
+    public static final float DEPTH = 0.05f; //z-extent
     private static final float REEL_RADIUS = HEIGHT * 0.9f;  //was 0.16f
     private static final float BUTTON_WIDTH = WIDTH / 3; //x
     private static final float BUTTON_HEIGHT = 0.05f; //y
