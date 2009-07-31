@@ -18,8 +18,9 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.client;
 
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -30,8 +31,6 @@ import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 
 /**
  * Singleton that manages inter-presentation-module communication.
@@ -59,6 +58,8 @@ public class PresentationManager {
 
     private HUD mainHUD;
     private HUDComponent toolbarHUD;
+
+    private Set<MovingPlatformCell> platformCells = new HashSet<MovingPlatformCell>();
 
     private PresentationManager() {
 
@@ -143,5 +144,15 @@ public class PresentationManager {
         if(toolbarButtons.size()==0)
             setToolbarVisibility(false);
         }
+    }
+
+    public void addPlatform(MovingPlatformCell cell) {
+        logger.warning("Presentation manager is now aware of a new platform!");
+        this.platformCells.add(cell);
+    }
+
+    public void removePlatform(MovingPlatformCell cell) {
+        logger.warning("Presentation mananger is sad to see a cell leave.");
+        this.platformCells.remove(cell);
     }
 }
