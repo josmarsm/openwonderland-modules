@@ -1,17 +1,32 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.annotations.client;
 
 import java.awt.Canvas;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import javax.swing.JCheckBoxMenuItem;
+import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JRadioButtonMenuItem;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -22,12 +37,15 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationEntity.DisplayMode;
 import org.jdesktop.wonderland.modules.hud.client.HUDCompassLayoutManager;
 import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDComponentManager;
 
 /**
- * Provides a means of turning annotations on and off, creates an 'annotations'
- * stub in the cell properties pane of each cell.
+ * Provides a menu to globally change annotation display mode, creates an
+ * 'annotations' stub in the cell properties pane of each cell.
+ *
+ * Controls annotation HUD.
  *
  * In the future, could provide a way to filter annotations
  * @author mabonner
@@ -42,16 +60,19 @@ public class AnnotationPlugin extends BaseClientPlugin
 
 //    private static ArrayList<Class> metaTypes = new ArrayList<Class>();
 
-    /* The menu item for turning on/off annotations globally to add to the menu */
-    private JCheckBoxMenuItem viewMI;
+    // global annotation display mode menu items
+    /** menu item to hide all annotations */
+    JMenu displayMenu;
 
-    private static ArrayList<ItemListener> viewMIListeners = new ArrayList<ItemListener>();
+    /** global display setting of annotations */
+    private static DisplayMode globalDisplayMode = DisplayMode.HIDDEN;
+
+    private static ArrayList<AnnotationComponent> displayModeListeners = new ArrayList<AnnotationComponent>();
 
     private static HUD myHud = null;
     public static final String ANNOTATION_HUD = "annotations";
 
 
-    private static boolean displayState;
 
     /**
      * Sets up plugin. Adds plugin as a listener to its own 'view annotations'
@@ -66,188 +87,50 @@ public class AnnotationPlugin extends BaseClientPlugin
     public void initialize(final ServerSessionManager loginInfo) {
       logger.info("[ANNO PLUGIN] initialize");
 
-      // Create the metadata search menu The menu will be added when our
-      // server becomes primary.
-      // also create
-      viewMI = new JCheckBoxMenuItem("Display Annotations", false);
-      viewMI.addItemListener(new ItemListener() {
-          public void itemStateChanged(ItemEvent e) {
-            hudCheck();
-            if(viewMI.getState()){
-              HUDManagerFactory.getHUDManager().setVisible(myHud, true);
+      // Create the 'global set annotation view mode' menu
+      displayMenu = new JMenu("Annotations");
+      JRadioButtonMenuItem button;
+      
+      // add menu items for every possible display mode
+      ButtonGroup group = new ButtonGroup();
+      for(DisplayMode dm:DisplayMode.values()){
+        // build a button
+        button = new JRadioButtonMenuItem(dm.toString(), false);
+        button.setName(dm.toString());
+        // if this is the "hidden" button, set it to selected
+        if(button.getName().equals(DisplayMode.HIDDEN.toString())){
+          button.setSelected(true);
+        }
+        group.add(button);
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+              JRadioButtonMenuItem button = (JRadioButtonMenuItem) e.getSource();
+              hudCheck();
+              // set the hud hidden if this is the hidden button
+              if(button.getName().equals(DisplayMode.HIDDEN.toString())){
+                HUDManagerFactory.getHUDManager().setVisible(myHud, false);
+              }
+              else{
+                HUDManagerFactory.getHUDManager().setVisible(myHud, true);
+              }
+
+              // get the corresponding DisplayMode for this button
+              globalDisplayMode = DisplayMode.stringToRawValue(button.getName());
+              logger.info("[anno plug] b name is: " + button.getName() + " dm is:" + globalDisplayMode);
+              notifyComponentsDisplayChanged(globalDisplayMode);
             }
-            else{
-              HUDManagerFactory.getHUDManager().setVisible(myHud, false);
-            }
+        });
 
-            notifyViewMIItemListeners(e);
-            // TODO in the future, after HUD code is updated,
-            // will not need to tell components to show/hide their annotations
-            // can simply show/hide the whole hud here
-            // myHud.setVisible(viewMI.getState());
-            
-//            // TODO testing
-//            PanelConfig pc = new PanelConfig();
-//
-//              // TODO temp test
-//            logger.info("[ANNO PLUGIN] test - adding hud compo");
-//            AnnotationPane pa = new AnnotationPane(pc);
-//            CellCache cache = ClientContext.getCellCache(getSessionManager().getPrimarySession());
-//            Cell c = cache.getCell(new CellID(2));
-//            if(c == null){
-//              logger.info("[ANNO PLUGIN]couldn't add demo hud compo - cell was null");
-//            }
-//            else{
-//              logger.info("[ANNO PLUGIN]adding demo cell compo");
-//              HUDComponent myHudCompo = createHUDComponent(pa, c);
-//              HUDComponent mainHudCompo = mainHUD.createComponent(pa, c);
-//              Vector3f loc = new Vector3f(1.0f, 1.0f, 1.0f);
-//              myHudCompo.setWorldLocation(loc);
-//              mainHudCompo.setWorldLocation(loc);
-//              addHUDComponent(myHudCompo);
-//              myHudCompo.setPreferredLocation(Layout.SOUTHEAST);
-//              mainHudCompo.setPreferredLocation(Layout.SOUTHEAST);
-//              mainHUD.addComponent(mainHudCompo);
-//
-//              myHudCompo.setVisible(true);
-//              myHudCompo.setWorldVisible(true);
-//              mainHudCompo.setVisible(true);
-//              mainHudCompo.setWorldVisible(true);
-//
-//              logger.info("[ANNO PLUGIN]demo compo x:" + myHudCompo.getX() + " y:" + myHudCompo.getY());
-//              logger.info("[ANNO PLUGIN]demo compo height:" + myHudCompo.getHeight() + " y:" + myHudCompo.getWidth());
-//              logger.info("[ANNO PLUGIN]demo world vis:" + myHudCompo.isWorldVisible() + " vis:" + myHudCompo.isVisible());
-//              logger.info("====================== and main hud comp=======================");
-//              logger.info("[ANNO PLUGIN]demo compo x:" + mainHudCompo.getX() + " y:" + mainHudCompo.getY());
-//              logger.info("[ANNO PLUGIN]demo compo height:" + mainHudCompo.getHeight() + " y:" + mainHudCompo.getWidth());
-//              logger.info("[ANNO PLUGIN]demo world vis:" + mainHudCompo.isWorldVisible() + " vis:" + mainHudCompo.isVisible());
-//              logger.info("[ANNO PLUGIN] main hud vis:" + mainHUD.isShowing() + " my hud: " + myHud.isShowing());
-//              mainHUD.show();
-//              myHud.show();
-//              logger.info("[ANNO PLUGIN] main hud vis now:" + mainHUD.isShowing());
-//            }
-//            logger.info("[ANNO PLUGIN]added");
-//            logger.info("[ANNO PLUGIN]compos in mine:");
-//            java.util.Iterator<HUDComponent> itr = myHud.getComponents();
-//            HUDComponent hc;
-//            while(itr.hasNext()){
-//              hc = itr.next();
-//              logger.info("compo: class name:" + hc.getClass().getName());
-//            }
-//            logger.info("[ANNO PLUGIN]compos in main:");
-//            itr = mainHUD.getComponents();
-//            while(itr.hasNext()){
-//              hc = itr.next();
-//              logger.info("compo: class name:" + hc.getClass().getName());
-//            }
+        // add the button to the display menu
+        displayMenu.add(button);
+      }
 
+      
 
-
-                // create fps Swing control
-//                Chart chart = new Chart("main:");
-//                chart.setSampleSize(200);
-//                chart.setMaxValue(30);
-//                chart.setPreferredSize(new Dimension(200, 34));
-//
-//                // create HUD control panel
-//                HUDComponent fpsComponent = mainHUD.createComponent(chart);
-//                fpsComponent.setDecoratable(false);
-//                fpsComponent.setPreferredLocation(Layout.NORTHWEST);
-//                fpsComponent.setVisible(true);
-//                // add HUD control panel to HUD
-//                mainHUD.addComponent(fpsComponent);
-//
-//                chart = new Chart("mine:");
-//                chart.setSampleSize(200);
-//                chart.setMaxValue(30);
-//                chart.setPreferredSize(new Dimension(200, 34));
-//
-//                // create HUD control panel
-//                fpsComponent = myHud.createComponent(chart);
-//                fpsComponent.setDecoratable(false);
-//                fpsComponent.setPreferredLocation(Layout.NORTHEAST);
-//                fpsComponent.setVisible(true);
-//                // add HUD control panel to HUD
-//                myHud.addComponent(fpsComponent);
-
-
-
-          }
-      });
-
-      // will this be necessary?
-      // create a component manager for the HUD components in this HUD
-//        HUDComponentManager compManager = new WonderlandHUDComponentManager();
-
-        // define the layout of HUD components in the Wonderland main HUD
-//        compManager.setLayoutManager(new HUDCompassLayoutManager(canvas.getWidth(), canvas.getHeight()));
-
-        // manage the components in the main HUD
-//        wonderlandHUD.setComponentManager(compManager);
 
       super.initialize(loginInfo);
-
-
-
-                  // TODO testing
-//            PanelConfig pc = new PanelConfig();
-//
-//              // TODO temp test
-//            logger.info("[ANNO PLUGIN] test - adding hud compo");
-//            AnnotationPane pa = new AnnotationPane(pc);
-//            CellCache cache = ClientContext.getCellCache(getSessionManager().getPrimarySession());
-//            Cell c = cache.getCell(new CellID(2));
-//            if(c == null){
-//              logger.info("[ANNO PLUGIN]couldn't add demo hud compo - cell was null");
-//            }
-//            else{
-//              logger.info("[ANNO PLUGIN]adding demo cell compo");
-//              HUDComponent myHudCompo = createHUDComponent(pa, c);
-//              HUDComponent mainHudCompo = mainHUD.createComponent(pa, c);
-//              Vector3f loc = new Vector3f(1.0f, 1.0f, 1.0f);
-//              myHudCompo.setWorldLocation(loc);
-//              mainHudCompo.setWorldLocation(loc);
-//              addHUDComponent(myHudCompo);
-//              myHudCompo.setPreferredLocation(Layout.SOUTHEAST);
-//              mainHudCompo.setPreferredLocation(Layout.SOUTHEAST);
-//              mainHUD.addComponent(mainHudCompo);
-//
-//              myHudCompo.setVisible(true);
-//              myHudCompo.setWorldVisible(true);
-//              mainHudCompo.setVisible(true);
-//              mainHudCompo.setWorldVisible(true);
-//
-//              logger.info("[ANNO PLUGIN]demo compo x:" + myHudCompo.getX() + " y:" + myHudCompo.getY());
-//              logger.info("[ANNO PLUGIN]demo compo height:" + myHudCompo.getHeight() + " y:" + myHudCompo.getWidth());
-//              logger.info("[ANNO PLUGIN]demo world vis:" + myHudCompo.isWorldVisible() + " vis:" + myHudCompo.isVisible());
-//              logger.info("====================== and main hud comp=======================");
-//              logger.info("[ANNO PLUGIN]demo compo x:" + mainHudCompo.getX() + " y:" + mainHudCompo.getY());
-//              logger.info("[ANNO PLUGIN]demo compo height:" + mainHudCompo.getHeight() + " y:" + mainHudCompo.getWidth());
-//              logger.info("[ANNO PLUGIN]demo world vis:" + mainHudCompo.isWorldVisible() + " vis:" + mainHudCompo.isVisible());
-//              logger.info("[ANNO PLUGIN] main hud vis:" + mainHUD.isShowing() + " my hud: " + myHud.isShowing());
-//              mainHUD.show();
-//              myHud.show();
-//              logger.info("[ANNO PLUGIN] main hud vis now:" + mainHUD.isShowing());
-//            }
-//            logger.info("[ANNO PLUGIN]added");
-//            logger.info("[ANNO PLUGIN]compos in mine:");
-//            java.util.Iterator<HUDComponent> itr = myHud.getComponents();
-//            HUDComponent hc;
-//            while(itr.hasNext()){
-//              hc = itr.next();
-//              logger.info("compo: class name:" + hc.getClass().getName());
-//            }
-//            logger.info("[ANNO PLUGIN]compos in main:");
-//            itr = mainHUD.getComponents();
-//            while(itr.hasNext()){
-//              hc = itr.next();
-//              logger.info("compo: class name:" + hc.getClass().getName());
-//            }
     }
 
-//    public static final ArrayList<Class> getMetadataTypes(){
-//        return metaTypes;
-//    }
 
     /**
      * Notification that our server is now the the primary server
@@ -255,49 +138,48 @@ public class AnnotationPlugin extends BaseClientPlugin
     @Override
     protected void activate() {
       logger.info("[ANNO PLUGIN] activated");
-      // add menu item
-      JmeClientMain.getFrame().addToViewMenu(viewMI, -1);
+      // add the display menu item
+      JmeClientMain.getFrame().addToViewMenu(displayMenu, -1);
     }
 
     @Override
     protected void deactivate() {
       // deactivate
-      JmeClientMain.getFrame().removeFromViewMenu(viewMI);
+      // remove the display menu item
+      JmeClientMain.getFrame().removeFromViewMenu(displayMenu);
     }
 
     /**
-     * cell component adds listeners here to be notified on changes
+     * AnnotationComponents listen for new global display modes here.
      *
      * static so that annotation components can add themselves as necessary
      * @param l
      */
-    static boolean addDisplayItemListener(ItemListener l){
-      viewMIListeners.add(l);
-      return displayState;
+    static DisplayMode addDisplayListener(AnnotationComponent ac){
+      displayModeListeners.add(ac);
+      return globalDisplayMode;
     }
 
     /**
-     * cell component adds listeners here to be notified on changes
+     * Unregister an AnnotationComponent from being notified of new global
+     * display mode changes
      *
      * static so that annotation components can remove themselves as necessary
      * @param l
      */
-    static void removeDisplayItemListener(ItemListener l){
-      viewMIListeners.add(l);
+    static void removeDisplayListener(AnnotationComponent ac){
+      displayModeListeners.remove(ac);
     }
 
     /**
-     * notify all listeners that viewMI has changed
+     * notify all components of the new global display policy
+     * @param newMode the new display mode setting
      */
-    private void notifyViewMIItemListeners(ItemEvent e){
-      displayState = viewMI.getState();
-      logger.info("[ANNO PLUGIN] notify listeners");
-//      logger.info("[ANNO PLUGIN] main hud vis:" + mainHUD.isShowing() + " my hud: " + myHud.isShowing());
-//              mainHUD.show();            
-//              logger.info("[ANNO PLUGIN] main hud vis:" + mainHUD.isShowing() + " my hud: " + myHud.isShowing());
-      for(ItemListener l: viewMIListeners){
+    private void notifyComponentsDisplayChanged(DisplayMode newMode){
+      logger.info("[ANNO PLUGIN] notify listeners of display change, new state is: " + newMode );
+      for(AnnotationComponent ac: displayModeListeners){
         logger.info("[ANNO PLUGIN] notifying..");
-        l.itemStateChanged(e);
+        ac.setLocalDisplayMode(newMode);
       }
     }
 
@@ -337,7 +219,10 @@ public class AnnotationPlugin extends BaseClientPlugin
     }
 
 
-    // TODO temporary
+  // TODO temporary
+  /**
+   * Check that the annotation HUD is prepared, create it if not
+   */
   private static void hudCheck() {
     if(myHud != null){
       return;
@@ -354,45 +239,13 @@ public class AnnotationPlugin extends BaseClientPlugin
     HUDManagerFactory.getHUDManager().addHUD(myHud);
 
     // create a component manager for the HUD components in this HUD
-    HUDComponentManager compManager = new WonderlandHUDComponentManager();
+    HUDComponentManager compManager = new WonderlandHUDComponentManager(myHud);
 
     // define the layout of HUD components
     compManager.setLayoutManager(new HUDCompassLayoutManager(myHud));
 
     // manage the components in annotations hud, show hud
     myHud.setComponentManager(compManager);
-
-    
-
-    // TODO test
-//    mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-//    if(mainHUD == null){
-//      logger.severe("MAIN HUD WAS NULL");
-//    }
-//    else{
-//      logger.info("MAIN HUD WAS OK");
-//      Rectangle bounds = mainHUD.getBounds();
-//      int h = mainHUD.getHeight();
-//      int w = mainHUD.getWidth();
-//      logger.info("Main hud h/w: " + h + "/" + w);
-//      logger.info("Main hud bounds x/y: " + bounds.getX() + "/" + bounds.getY());
-//      logger.info("Main hud bounds h/w: " + bounds.getHeight() + "/" + bounds.getWidth());
-//    }
-//
-//    HUD tmp = HUDManagerFactory.getHUDManager().getHUD(ANNOTATION_HUD);
-//    if(tmp == null){
-//      logger.severe("MY HUD WAS NULL");
-//    }
-//    else{
-//      logger.info("MY HUD WAS OK");
-//      Rectangle bounds = myHud.getBounds();
-//      int h = myHud.getHeight();
-//      int w = myHud.getWidth();
-//      logger.info("my hud h/w: " + h + "/" + w);
-//      logger.info("my hud bounds x/y: " + bounds.getX() + "/" + bounds.getY());
-//      logger.info("my hud bounds h/w: " + bounds.getHeight() + "/" + bounds.getWidth());
-//    }
-
   }
 
 

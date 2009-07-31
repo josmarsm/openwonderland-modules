@@ -20,8 +20,8 @@
     <!-- assumes it is a sibling of the anno module in the file system -->
     <pathconvert property="module-client.classpath">
         <path location="${current.dir}/../metadata/build/client/metadata-module-client.jar"/>
-        <!-- <path location="${current.dir}/../trunk/wonderland-trunk/modules/foundation/hud/build/client/hud-client.jar"/> -->
-        <path location="/Users/Matt/trunk/wonderland-trunk/modules/foundation/hud/build/client/hud-client.jar"/>
+         <path location="${wonderland.dir}/modules/foundation/hud/build/client/hud-client.jar"/>
+        <!--<path location="/Users/Matt/trunk/wonderland-trunk/modules/foundation/hud/build/client/hud-client.jar"/>-->
     </pathconvert>
     <pathconvert property="module-common.classpath">
         <path location="${current.dir}/../metadata/build/client/metadata-module-client.jar"/>
