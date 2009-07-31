@@ -42,6 +42,10 @@ public class EventPlayingManagerImpl implements EventPlayingManager {
          service.pauseChanges(tapeName, listener);
     }
 
+    public void unloadRecording(String tapeName) {
+        service.unloadRecording(tapeName);
+    }
+
     
 
 }

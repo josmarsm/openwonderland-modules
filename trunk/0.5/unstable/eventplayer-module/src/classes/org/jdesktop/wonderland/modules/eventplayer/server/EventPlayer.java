@@ -118,8 +118,26 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         }
     }
 
+
     /**
-     * Start recording to the tape given in the parameter
+     * unload the recording given in the parameter
+     * stop the playback of a recording if it's already running
+     * @param tapeName the name of the selected tape in the event player
+     */
+    void unloadRecording(String tapeName) {
+        logger.info("unload recording");
+        //clear the cellMap
+        cellMap.clear();
+        // get the event playing service
+        EventPlayingManager epm = AppContext.getManager(EventPlayingManager.class);
+        //Call the method on the service
+        epm.unloadRecording(tapeName);
+    }
+
+
+
+    /**
+     * Load the recording given in the parameter
      * @param tapeName the name of the selected tape in the event player
      */
     void loadRecording(String tapeName) {
@@ -219,9 +237,9 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
                     logger.info("parentID == null");
                     
                     if (playerCellMORef != null) {
-                        CellMO parent = playerCellMORef.get();
+                        EventPlayerCellMO parent = playerCellMORef.get();
                         logger.info("parent: " + parent);
-                        parent.addChild(cellMO);
+                        parent.addReplayedChild(cellMO);
                         logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
                         Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
                         Iterator<ManagedReference<CellMO>> it = refs.iterator();
@@ -337,9 +355,9 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
 
                 } else {
                     //Add it to the player's cell
-                    CellMO parent = playerCellMORef.get();
+                    EventPlayerCellMO parent = playerCellMORef.get();
                     logger.info("parent: " + parent);
-                    parent.addChild(cellMO);
+                    parent.addReplayedChild(cellMO);
                     logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
                     Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
                     Iterator<ManagedReference<CellMO>> it = refs.iterator();
@@ -377,6 +395,9 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         if (targetCell == null) {
             logger.severe("Could not find cell for ID: " + newCellID);
             return;
+        }
+        if (targetCell.getParent() == playerCellMORef.get()) {
+            playerCellMORef.get().removeReplayedChild(newCellID);
         }
         CellManagerMO.getCellManager().removeCellFromWorld(targetCell);
         //remove the unloaded cell from the map

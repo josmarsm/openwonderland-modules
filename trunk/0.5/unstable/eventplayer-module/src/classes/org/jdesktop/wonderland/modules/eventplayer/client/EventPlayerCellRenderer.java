@@ -24,12 +24,8 @@ import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
-import com.jme.scene.shape.Cylinder;
 import com.jme.scene.shape.Pyramid;
-import com.jme.scene.state.BlendState;
-import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.RenderState.StateType;
@@ -38,7 +34,6 @@ import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Clip.RepeatBehavior;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
@@ -109,9 +104,9 @@ public class EventPlayerCellRenderer extends BasicRenderer {
             enlargeButtonPyramid();
         }
         //Set the state of the button
-        boolean isPlaying = ((EventPlayerCell)cell).isPlaying();
+        boolean isPlaying = ((EventPlayerCell)cell).isPlayingTape();
         setPlaying(isPlaying);
-        //enableAnimations(isPlaying);
+        //enableAnimations(isPlayingTape);
         return root;
     }
 
@@ -263,18 +258,12 @@ public class EventPlayerCellRenderer extends BasicRenderer {
                 return;
             }
 
-            if (!isPlaying()) {
-                logger.info("start playing");
-                ((EventPlayerCell)cell).startPlaying();
-            } else {
-                logger.info("stop playing");
-                ((EventPlayerCell)cell).stop();
-            }
+            logger.info("toggle playing");
+            ((EventPlayerCell)cell).togglePlaying();
+            
         }
 
-        private boolean isPlaying() {
-            return ((EventPlayerCell)cell).isPlaying();
-        }
+        
     }
 
     
