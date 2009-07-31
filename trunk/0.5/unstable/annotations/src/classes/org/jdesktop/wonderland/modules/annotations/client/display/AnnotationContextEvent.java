@@ -1,6 +1,3 @@
-package org.jdesktop.wonderland.modules.annotations.client.display;
-
-
 /*
  * Project Wonderland
  *
@@ -18,6 +15,9 @@ package org.jdesktop.wonderland.modules.annotations.client.display;
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+
+package org.jdesktop.wonderland.modules.annotations.client.display;
+
 import org.jdesktop.mtgame.Entity;
 import java.awt.event.MouseEvent;
 import java.util.List;

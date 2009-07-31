@@ -1,6 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.annotations.client;
@@ -11,8 +24,6 @@ import com.jme.scene.Node;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -30,14 +41,13 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager.ContextMenu
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
-import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationEntity;
+import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationEntity.DisplayMode;
 import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationPane;
 import org.jdesktop.wonderland.modules.annotations.client.display.PanelConfig;
 import org.jdesktop.wonderland.modules.annotations.common.Annotation;
@@ -53,7 +63,7 @@ import org.jdesktop.wonderland.modules.metadata.common.ModifyCacheAction;
  * @author mabonner
  */
 public class AnnotationComponent extends CellComponent 
-        implements ItemListener, CacheEventListener{
+        implements CacheEventListener{
   private static Logger logger = Logger.getLogger(AnnotationComponent.class.getName());
   /**
    * reference to parent cell's metadata component
@@ -82,14 +92,10 @@ public class AnnotationComponent extends CellComponent
   HashMap<MetadataID, AnnotationEntity> nodes = new HashMap<MetadataID, AnnotationEntity>();
   
   /**
-   * global display annotations setting, from plugin
+   * local (component) display mode setting.. will be overwritten by the global
+   * every time the global is changed
    */
-  boolean globalDisplay = false;
-
-  /**
-   * this cell's setting
-   */
-  boolean display = true;
+  DisplayMode localDisplay = DisplayMode.HIDDEN;
 
   /**
    * where to place new annotations initially
@@ -101,10 +107,6 @@ public class AnnotationComponent extends CellComponent
    * @param cell
    */
   private static int panelConfigCount = 1;
-
-  // TODO temp test
-  //  private AnnotationPane p;
-  //  private HUDComponent myHudCompo;
 
   /**
    * The root of this component's parent cell, used to add AnnotationNodes
@@ -136,79 +138,32 @@ public class AnnotationComponent extends CellComponent
    */
   public AnnotationComponent(Cell cell) {
     super(cell);
-
-
-    
-
-
     panelConfig = getPanelConfig();
-    // TODO temp test
-//    p = new AnnotationPane(panelConfig);
-
     logger.info("[ANNO COMPO] compo created");
-
-    
-    
   }
 
   public void setPanelConfig(PanelConfig pc){
     panelConfig = pc;
   }
 
-  public void displayAnnotations(){
-    logger.info("[ANNO COMPO] display annotations!");
-    globalDisplay = true;
-
-    // TODO temp testing
-//    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-    HUD myHud = HUDManagerFactory.getHUDManager().getHUD(AnnotationPlugin.ANNOTATION_HUD);
-//    java.util.Iterator<HUDComponent> itr = mainHUD.getComponents();
-    HUDComponent hc;
-    // debugging
-//    logger.info("[ANNO COMPO] hc's inside main hud:");
-//    while(itr.hasNext()){
-//      hc = itr.next();
-//      logger.info("compo: class name:" + hc.getClass().getName());
-//    }
-    // debugging
-    java.util.Iterator<HUDComponent> itr = myHud.getComponents();
-    logger.info("[ANNO COMPO] hc's inside my hud:");
-    while(itr.hasNext()){
-      hc = itr.next();
-      logger.info("compo: class name:" + hc.getClass().getName());
+  /**
+   * set a new component-wide display policy
+   * @param newMode the new display mode setting
+   */
+  public void setLocalDisplayMode(DisplayMode newMode){
+    logger.info("[ANNO COMPO] set display mode: " + newMode);
+    localDisplay = newMode;
+    for(AnnotationEntity ent:nodes.values()){
+      setAnnotationDisplayMode(ent, newMode);
     }
-
-    // tell all annotations to show themselves if local display = true
-    if(display){
-      for(MetadataID mid:hudComponents.keySet()){
-        displayAnnotationInWorld(mid);
-      }
-    }
-    
-  }
-
-//  dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.2f));
-//                dialog.setVisible(false);
-//                dialog.setWorldVisible(true);
-
-  public void hideAnnotations(){
-    logger.info("[ANNO COMPO] hide annotations!");
-    globalDisplay = false;
-    // tell all annotations to hide themselves
-    for(MetadataID mid:hudComponents.keySet()){
-      hideAnnotation(mid);
-    }
-//    myHudCompo.setVisible(false);
-//    myHudCompo.setWorldVisible(false);
-//    AnnotationPlugin.removeHUDComponent(myHudCompo);
   }
 
   @Override
   protected void setStatus(CellStatus status, boolean increasing){
     super.setStatus(status, increasing);
     if(status == CellStatus.RENDERING && increasing){
-      globalDisplay = AnnotationPlugin.addDisplayItemListener(this);
-      logger.info("[ANNO COMPO] add self as listener! global display val is: " + globalDisplay);
+      localDisplay = AnnotationPlugin.addDisplayListener(this);
+      logger.info("[ANNO COMPO] add self as listener! local display val is now: " + localDisplay);
       // build annotations
       rebuildAnnotations();
       // listen to ctx menu events
@@ -244,10 +199,6 @@ public class AnnotationComponent extends CellComponent
 
       baseAnnoLocation = baseAnnoLocation.add(1.0f, 1.0f, 1.0f);
       logger.info("base location is: "+ baseAnnoLocation);
-  //
-  //    myHudCompo = AnnotationPlugin.createHUDComponent(p, cell);
-  //    myHudCompo.setWorldLocation(startingAnnoLoc);
-  //    AnnotationPlugin.addHUDComponent(myHudCompo);
 
       // listen to changes in associated metadata compo's metadata cache
       metaCompo.addCacheListener(this);
@@ -257,7 +208,7 @@ public class AnnotationComponent extends CellComponent
     }
     else if(status == CellStatus.ACTIVE && !increasing){
       logger.info("[ANNO COMPO] remove self as listener!");
-      AnnotationPlugin.removeDisplayItemListener(this);
+      AnnotationPlugin.removeDisplayListener(this);
     }
     else if(status == CellStatus.DISK && !increasing){
       logger.info("[ANNO COMPO] clean up annotations");
@@ -275,21 +226,6 @@ public class AnnotationComponent extends CellComponent
       ContextMenuManager.getContextMenuManager().removeContextMenuListener(ctxListener);
     }
 
-  }
-
-  /**
-   * adds self as listener to AnnotationPlugin, notified to display or hide annotations
-   * @param e
-   */
-  public void itemStateChanged(ItemEvent e) {
-    if(e.getStateChange() == ItemEvent.SELECTED){
-      // TODO in the future, this will also check if it matches the
-      // currently set filters
-      displayAnnotations();
-    }
-    else{
-      hideAnnotations();
-    }
   }
 
   /**
@@ -355,40 +291,21 @@ public class AnnotationComponent extends CellComponent
     // create hud component, show in world if necessary
     HUDComponent myHudCompo = AnnotationPlugin.createHUDComponent(p, cell);
     myHudCompo.setTransparency(0.3f);
+    myHudCompo.setHeight(p.getMinimumSize().height);
     myHudCompo.setWorldLocation(baseAnnoLocation);
     logger.info("[ANNO COMPO] base location is:" + baseAnnoLocation);
     hudComponents.put(a.getID(), myHudCompo);
 
     // add new compo to hud BEFORE you set it visible
     AnnotationPlugin.addHUDComponent(myHudCompo);
-    // display if global AND this cell are both set to display
-//    if((globalDisplay && display)){
-//      logger.info("[ANNO COMPO] SETTING WORLD VISIBLE");
-//      myHudCompo.setWorldVisible((globalDisplay && display));
-//    }
-//    else{
-//      logger.info("[ANNO COMPO] not WORLD VISIBLE.. global is" + globalDisplay + " " + " and local is " + display);
-//    }
-    
-
-    // TODO temporary until edit controls are created!
-    // move default location
-//    float x = baseAnnoLocation.getX();
-//    float y = baseAnnoLocation.getY();
-//    float z = baseAnnoLocation.getZ();
-//    baseAnnoLocation = baseAnnoLocation.add(2.0f, 2.0f, 0.5f);
-//    logger.info("[ANNO COMPO] adjusted base location is:" + baseAnnoLocation);
     
     // create the node to display in world
-    AnnotationEntity an = new AnnotationEntity(a, panelConfig, sceneRoot, cell);
+    logger.info("add anno, and local display is:" + localDisplay);
+    AnnotationEntity an = new AnnotationEntity(a, panelConfig, cell, localDisplay);
+    logger.info("about to set local translation from in compo");
     an.setLocalTranslation(baseAnnoLocation);
     baseAnnoLocation = baseAnnoLocation.add(0.5f, 0.5f, 0.5f);
     nodes.put(a.getID(), an);
-
-    // display the node if necessary
-    if((globalDisplay && display)){
-      displayAnnotationInWorld(a.getID());
-    }
 
     logger.info("new entity is:" + an + " name is " + an.getName());
     
@@ -468,18 +385,18 @@ public class AnnotationComponent extends CellComponent
     ap.setText(a.getText());
     ap.setDate(a.getModified());
 
+
     // adjust in-world entity
     AnnotationEntity n = nodes.get(a.getID());
+    DisplayMode currentDisplay = n.getDisplayMode();
     nodes.remove(a.getID());
     PanelConfig pc = n.getPanelConfig();
     Vector3f loc = n.getNode().getLocalTranslation();
     n.dispose();
-    n = new AnnotationEntity(a, pc, sceneRoot, cell);
+    n = new AnnotationEntity(a, pc, cell, localDisplay);
     n.setLocalTranslation(loc);
     nodes.put(a.getID(), n);
-    if(display && globalDisplay){
-      n.setVisible(true);
-    }
+    n.setDisplayMode(currentDisplay);
   }
 
   // These functions are called after an annotation is updated within the component (e.g., an
@@ -556,10 +473,10 @@ public class AnnotationComponent extends CellComponent
               "component with id " + a.getID());
     }
     hc.setVisible(b);
-    if(b == true){
-      logger.info("stay visible in world!");
-      hc.setWorldVisible(true);
-    }
+//    if(b == true){
+//      logger.info("stay visible in world!");
+//      hc.setWorldVisible(true);
+//    }
     logger.info("[ANNO COMPO] setting visible hc is now:" + hc);
   }
 
@@ -574,7 +491,7 @@ public class AnnotationComponent extends CellComponent
     PanelConfig pc = null;
     switch(panelConfigCount){
       case 0:
-        // default
+        // default - dark gray and white
         logger.info("default pc");
         pc = new PanelConfig();
         break;
@@ -594,6 +511,7 @@ public class AnnotationComponent extends CellComponent
         pc = new PanelConfig(new Color(145, 20, 20), Color.white, Color.lightGray);
         break;
       case 4:
+        logger.info("default pc 3");
         pc = new PanelConfig(new Color(250, 250, 165), Color.black, Color.lightGray);
         break;
       default:
@@ -606,24 +524,35 @@ public class AnnotationComponent extends CellComponent
   }
 
   /**
-   * Show an already-added annotation in the world
-   * @param id
+   * Change an annotation's display mode. To hide an annotation set it to
+   * DisplayMode.HIDDEN
+   * @param id id of annotation to adjust
+   * @param mode new display mode for that annotation
    */
-  public void displayAnnotationInWorld(MetadataID id) {
+  public void setAnnotationDisplayMode(MetadataID id, DisplayMode mode) {
     AnnotationEntity an = nodes.get(id);
-    an.setVisible(true);
+    if(an == null){
+      logger.severe("[ANNO COMPO] trying to set display mode of annotation " +
+              id + " which is not attached to cell " + cell.getCellID());
+    }
+    setAnnotationDisplayMode(an, mode);
+    
   }
 
   /**
-   * Hide an annotation in the world and on the HUD
-   * @param id
+   * helper function, some routines can call this directly. This saves looking
+   * up an annotation entity multiple times.
+   * @param ent
+   * @param mode
    */
-  public void hideAnnotation(MetadataID id) {
-    AnnotationEntity an = nodes.get(id);
-    an.setVisible(false);
-    HUDComponent hc = hudComponents.get(id);
-    hc.setVisible(false);
-    hc.setWorldVisible(false);
+  private void setAnnotationDisplayMode(AnnotationEntity ent, DisplayMode mode){
+    ent.setDisplayMode(mode);
+    // hide the corresponding hud component if necessary
+    if(mode == DisplayMode.HIDDEN){
+      HUDComponent hc = hudComponents.get(ent.getAnnoID());
+      hc.setVisible(false);
+      hc.setWorldVisible(false);
+    }
   }
 
   /**
@@ -631,10 +560,27 @@ public class AnnotationComponent extends CellComponent
    * @param id
    */
   public void displayAnnotationOnHUD(MetadataID id) {
-    hudComponents.get(id).setVisible(true);
+    // get annotation
+    Annotation a = (Annotation) metaCompo.getMetadata(id);
+
+    // get hud component
+    HUDComponent hc = hudComponents.get(id);
+    // cast to HC's implementation class to get backing JComponent out
+    HUDComponent2D hc2d = (HUDComponent2D) hc;
+    // cast component back to an AnnotationPane
+    AnnotationPane ap = (AnnotationPane) hc2d.getComponent();
+
+    // now we can reset all of its fields to match the annotation
+    AnnotationEntity ae = nodes.get(id);
+    logger.info("setting ap subject to " + a.getSubject());
+    ap.setSubject(a.getSubject());
+    ap.setText(a.getText());
+    ap.setEditableSubject(a.getSubject());
+    ap.setEditableText(a.getText());
+    ap.setDate(a.getModified());
+
+    hc.setVisible(true);
   }
-
-
 
   /**
    * listens for save button presses in an AnnotationPane, updates the associated
@@ -840,7 +786,7 @@ public class AnnotationComponent extends CellComponent
 
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
         return new ContextMenuItem[] {
-            new SimpleContextMenuItem("Move Annotation", null, new DeleteAnnotationContextMenuListener(annoID))
+            new SimpleContextMenuItem("Delete Annotation", null, new DeleteAnnotationContextMenuListener(annoID))
         };
     }
   }

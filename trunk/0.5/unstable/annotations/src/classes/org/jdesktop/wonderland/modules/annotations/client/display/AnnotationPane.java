@@ -143,10 +143,11 @@ public class AnnotationPane extends javax.swing.JPanel {
     cellName = new javax.swing.JLabel();
     jSeparator1 = new javax.swing.JSeparator();
     subject = new javax.swing.JLabel();
-    editableSubjectScrollPane = new javax.swing.JScrollPane();
-    editableSubject = new javax.swing.JTextArea();
+    editableSubject = new javax.swing.JTextField();
 
     setBackground(new java.awt.Color(51, 51, 51));
+    setMinimumSize(new java.awt.Dimension(350, 350));
+    setPreferredSize(new java.awt.Dimension(350, 350));
     addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseClicked(java.awt.event.MouseEvent evt) {
         formMouseClicked(evt);
@@ -203,15 +204,17 @@ public class AnnotationPane extends javax.swing.JPanel {
 
     subject.setText("Subject");
 
-    editableSubject.setColumns(20);
-    editableSubject.setRows(1);
     editableSubject.setText("subject");
+    editableSubject.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        editableSubjectActionPerformed(evt);
+      }
+    });
     editableSubject.addKeyListener(new java.awt.event.KeyAdapter() {
       public void keyTyped(java.awt.event.KeyEvent evt) {
         editableSubjectKeyTyped(evt);
       }
     });
-    editableSubjectScrollPane.setViewportView(editableSubject);
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
@@ -227,12 +230,7 @@ public class AnnotationPane extends javax.swing.JPanel {
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(date)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 183, Short.MAX_VALUE)
-            .addComponent(viewOnHud)
-            .addContainerGap())
-          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addComponent(cancelButton)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(saveButton))
+            .addComponent(viewOnHud))
           .addGroup(layout.createSequentialGroup()
             .addGap(8, 8, 8)
             .addComponent(cellIDLabel)
@@ -241,21 +239,21 @@ public class AnnotationPane extends javax.swing.JPanel {
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jLabel1)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(cellName)
-            .addContainerGap(255, Short.MAX_VALUE))
-          .addGroup(layout.createSequentialGroup()
-            .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-            .addContainerGap())
-          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addComponent(message)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(editableMessageScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
-            .addContainerGap())
+            .addComponent(cellName))
+          .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
           .addGroup(layout.createSequentialGroup()
             .addComponent(subject)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(editableSubjectScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
-            .addContainerGap())))
+            .addComponent(editableSubject, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
+          .addGroup(layout.createSequentialGroup()
+            .addComponent(message)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(editableMessageScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE))
+          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addComponent(cancelButton)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(saveButton)))
+        .addContainerGap())
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -274,23 +272,20 @@ public class AnnotationPane extends javax.swing.JPanel {
           .addComponent(cellName))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addGroup(layout.createSequentialGroup()
-            .addGap(10, 10, 10)
-            .addComponent(subject))
-          .addGroup(layout.createSequentialGroup()
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(editableSubjectScrollPane, 0, 0, Short.MAX_VALUE)))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGap(10, 10, 10)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(subject)
+          .addComponent(editableSubject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addGap(18, 18, 18)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addGroup(layout.createSequentialGroup()
             .addComponent(editableMessageScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 93, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addComponent(saveButton)
               .addComponent(cancelButton)))
           .addComponent(message))
-        .addContainerGap())
+        .addGap(26, 26, 26))
     );
   }// </editor-fold>//GEN-END:initComponents
 
@@ -299,11 +294,12 @@ public class AnnotationPane extends javax.swing.JPanel {
     }//GEN-LAST:event_viewOnHudActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-      // component is added as listener, handles actual saving
-      // here, just hide the save button
-//      message.setText(editableMessage.getText());
+      message.setText(editableMessage.getText());
+      subject.setText(editableSubject.getText());
       saveButton.setEnabled(false);
-      showEdits(false);
+      // if the annotation pane is ever used to simply display items as well, it
+      // should showEdits(false) as well
+//      showEdits(false);
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void editableMessageKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_editableMessageKeyTyped
@@ -326,11 +322,15 @@ public class AnnotationPane extends javax.swing.JPanel {
       editableMessage.setText(fromHTML(message.getText()));
       editableMessageScrollPane.setVisible(true);
       editableSubject.setText(fromHTML(subject.getText()));
-      editableSubjectScrollPane.setVisible(true);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void editableSubjectKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_editableSubjectKeyTyped
+    private void editableSubjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editableSubjectActionPerformed
       // TODO add your handling code here:
+    }//GEN-LAST:event_editableSubjectActionPerformed
+
+    private void editableSubjectKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_editableSubjectKeyTyped
+      // keys have been typed, activate save button
+      saveButton.setEnabled(true);
     }//GEN-LAST:event_editableSubjectKeyTyped
 
 
@@ -344,8 +344,7 @@ public class AnnotationPane extends javax.swing.JPanel {
   private javax.swing.JLabel dateLabel;
   private javax.swing.JTextArea editableMessage;
   private javax.swing.JScrollPane editableMessageScrollPane;
-  private javax.swing.JTextArea editableSubject;
-  private javax.swing.JScrollPane editableSubjectScrollPane;
+  private javax.swing.JTextField editableSubject;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JSeparator jSeparator1;
   private javax.swing.JLabel message;
@@ -418,6 +417,27 @@ public class AnnotationPane extends javax.swing.JPanel {
     date.setText(s);
   }
 
+  /**
+   * get current subject of panel
+   */
+  public String getSubject(){
+    return subject.getText();
+  }
+
+  /**
+   * set current subject of panel
+   */
+  public void setSubject(String s){
+    subject.setText(s);
+  }
+
+  /**
+   * set current editable subject of panel
+   */
+  public void setEditableSubject(String s){
+    editableSubject.setText(s);
+  }
+
 
 
   /**
@@ -439,14 +459,14 @@ public class AnnotationPane extends javax.swing.JPanel {
       message.setVisible(false);
 
       editableSubject.setText(fromHTML(subject.getText()));
-      editableSubjectScrollPane.setVisible(true);
+      editableSubject.setVisible(true);
       subject.setVisible(false);
     }
     else{
       editableMessageScrollPane.setVisible(false);
       message.setVisible(true);
-      editableSubjectScrollPane.setVisible(false);
-      editableSubject.setVisible(true);
+      editableSubject.setVisible(false);
+      subject.setVisible(true);
     }
   }
 
