@@ -59,7 +59,6 @@ public class ProgramConnectionHandlerMO implements ManagedObject, Serializable {
     }
 
     static public void createProgram(CellID cellID, String uri) {
-        System.out.println("ConnectionHandlerMO creating program");
         getInstance().connectionHandler.createProgram(cellID, uri);
     }
 

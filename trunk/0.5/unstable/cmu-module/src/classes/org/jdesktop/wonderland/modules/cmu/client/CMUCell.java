@@ -106,8 +106,6 @@ public class CMUCell extends Cell {
          */
         public void messageReceived(CellMessage message) {
 
-            System.out.println("Client-side message received: " + message);
-
             // Socket information message
             if (ConnectionChangeMessage.class.isAssignableFrom(message.getClass())) {
                 ConnectionChangeMessage changeMessage = (ConnectionChangeMessage) message;
@@ -151,17 +149,12 @@ public class CMUCell extends Cell {
         @Override
         public void run() {
             try {
-                System.out.println("Connecting cell....");
-
                 ObjectInputStream fromServer;
                 Socket connection = new Socket(server, port);
-
-                System.out.println("Cell connected: " + server + ":" + port);
 
                 fromServer = new ObjectInputStream(connection.getInputStream());
                 while (true) {
                     Object received = fromServer.readObject();
-                    System.out.println("Received object: " + received);
 
                     // Transformation for existing visual
                     if (TransformationMessage.class.isAssignableFrom(received.getClass())) {
@@ -229,7 +222,6 @@ public class CMUCell extends Cell {
     public void setServerAndPort(String server, int port) {
         // Don't let the socket information be changed after it has been initialized.
         if (cmuConnectionThread == null) {
-            System.out.println("Setting server and port on CMUCell");
             cmuConnectionThread = new VisualChangeReceiver(server, port);
             cmuConnectionThread.start();
         }
@@ -255,7 +247,6 @@ public class CMUCell extends Cell {
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
-        System.out.println("\n\n\n\nSETTING STATUS: " + status + ", " + increasing + "\n\n\n\n");
         ChannelComponent channel = getComponent(ChannelComponent.class);
 
         //TODO: We always want to listen for connection changes; find out how to do this before setStatus is called.

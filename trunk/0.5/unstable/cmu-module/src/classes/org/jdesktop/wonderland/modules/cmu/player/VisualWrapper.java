@@ -112,7 +112,7 @@ public class VisualWrapper implements AbsoluteTransformationListener {
      * at once.
      */
     protected void updateTransformation() {
-        TransformationMessage transformation = this.visualMessage.getTransformation();
+        TransformationMessage transformation = this.getTransformationMessage();
         synchronized (transformation) {
             transformation.setScale(new ScaleConverter(cmuVisual.scale.getCopy(cmuVisual)).getScale());
             transformation.setTranslation(new Point3Converter(cmuVisual.getTranslation(cmuVisual.getRoot())).getVector3f());

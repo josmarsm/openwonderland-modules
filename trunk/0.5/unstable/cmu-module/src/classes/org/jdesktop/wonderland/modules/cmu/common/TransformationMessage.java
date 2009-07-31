@@ -29,9 +29,9 @@ public class TransformationMessage implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private int nodeID;
-    private float scale = 1;
-    private Vector3f translation = null;
-    private Matrix3f rotation = null;
+    private float scale;
+    private Vector3f translation;
+    private Matrix3f rotation;
 
     public TransformationMessage() {
     }
@@ -75,6 +75,18 @@ public class TransformationMessage implements Serializable {
 
     @Override
     public synchronized String toString() {
-        return "Transformation message [NodeID:" + getNodeID() + "]";
+        String retVal = "Transformation message\n[NodeID:" + getNodeID() + "]\n";
+        retVal += "[Scale:" + getScale() + "]\n";
+        retVal += "[Translation:" + getTranslation() + "]\n";
+        retVal += "[Rotation:" + getRotation() + "]\n";
+        return retVal;
+    }
+
+    public TransformationMessage getCopy() {
+        TransformationMessage retVal = new TransformationMessage(this.getNodeID());
+        retVal.setScale(this.getScale());
+        retVal.setTranslation(this.getTranslation());
+        retVal.setRotation(this.getRotation());
+        return retVal;
     }
 }

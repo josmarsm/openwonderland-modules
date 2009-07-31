@@ -52,7 +52,6 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
     }
 
     public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, Message message) {
-        System.out.println("Received response: " + message);
 
         // Hand to appropriate cell.
         if (CreateProgramResponseMessage.class.isAssignableFrom(message.getClass())) {
@@ -74,10 +73,8 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
     }
 
     public void createProgram(CellID cellID, String uri) {
-        System.out.println("ConnectionHandler creating program");
         final CreateProgramMessage message = new CreateProgramMessage(cellID, uri);
         this.clientSender.send(message);
-        System.out.println("Sent message.");
     }
 
     //TODO: Queue messages before clients connected.
