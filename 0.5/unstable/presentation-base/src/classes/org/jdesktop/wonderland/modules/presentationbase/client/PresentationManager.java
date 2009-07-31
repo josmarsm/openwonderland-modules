@@ -80,7 +80,6 @@ public class PresentationManager {
 
             toolbarHUD = mainHUD.createComponent(panel);
             toolbarHUD.setPreferredLocation(Layout.NORTHWEST);
-            toolbarHUD.setName("Presentation Tools");
             mainHUD.addComponent(toolbarHUD);            
         }
 
@@ -88,6 +87,7 @@ public class PresentationManager {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
+                    toolbarHUD.setName("Presentation Tools");
                     toolbarHUD.setVisible(true);
                 }
 
