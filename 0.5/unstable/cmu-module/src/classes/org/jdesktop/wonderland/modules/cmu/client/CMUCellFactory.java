@@ -39,10 +39,14 @@ public class CMUCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         CMUCellServerState state = new CMUCellServerState();
 
+        System.out.println("Getting default cell server state");
+
         if (props != null) {
             String uri = props.getProperty("content-uri");
             state.setCmuURI(uri);
         }
+
+        System.out.println("CellMO class is: " + state.getServerClassName());
 
         return (T)state;
     }

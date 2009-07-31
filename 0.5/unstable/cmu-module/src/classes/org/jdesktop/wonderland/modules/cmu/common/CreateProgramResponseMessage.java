@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.common;
 
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -28,6 +27,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  */
 public class CreateProgramResponseMessage extends ResponseMessage {
 
+    private static final long serialVersionUID = 1L;
     private String server;
     private int port;
     private CellID cellID;
@@ -63,4 +63,8 @@ public class CreateProgramResponseMessage extends ResponseMessage {
         this.server = server;
     }
 
+    @Override
+    public String toString() {
+        return "Program created [Cell:"+ cellID + "] [Server:" + server + "] [Port:" + port + "]";
+    }
 }

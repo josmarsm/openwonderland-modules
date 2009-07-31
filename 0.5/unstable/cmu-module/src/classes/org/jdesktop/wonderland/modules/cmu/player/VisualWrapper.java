@@ -24,10 +24,13 @@ import edu.cmu.cs.dennisc.scenegraph.Geometry;
 import edu.cmu.cs.dennisc.scenegraph.Visual;
 import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationListener;
-import edu.cmu.cs.dennisc.texture.BufferedImageTexture;
-import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.Vector;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.AppearanceConverter;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.GeometryConverter;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.OrthogonalMatrix3x3Converter;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.Point3Converter;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.ScaleConverter;
 
 /**
  * Treats a CMU Visual instance as a jME node, listens for transformation changes.
@@ -111,9 +114,9 @@ public class VisualWrapper implements AbsoluteTransformationListener {
     protected void updateTransformation() {
         TransformationMessage transformation = this.visualMessage.getTransformation();
         synchronized (transformation) {
-            transformation.setScale((float) cmuVisual.scale.getCopy(cmuVisual).right.x);
-            transformation.setTranslation(cmuVisual.getTranslation(cmuVisual.getRoot()));
-            transformation.setRotation(cmuVisual.getTransformation(cmuVisual.getRoot()).orientation);
+            transformation.setScale(new ScaleConverter(cmuVisual.scale.getCopy(cmuVisual)).getScale());
+            transformation.setTranslation(new Point3Converter(cmuVisual.getTranslation(cmuVisual.getRoot())).getVector3f());
+            transformation.setRotation(new OrthogonalMatrix3x3Converter(cmuVisual.getTransformation(cmuVisual.getRoot()).orientation).getMatrix3f());
         }
     }
 
@@ -130,28 +133,18 @@ public class VisualWrapper implements AbsoluteTransformationListener {
         synchronized (this.visualMessage) {
             // Get meshes.
             for (Geometry g : v.geometries.getValue()) {
-                visualMessage.addGeometry(g);
+                visualMessage.addMesh(new GeometryConverter(g).getMesh());
             }
 
             // Get appearance properties.
             Appearance app = v.frontFacingAppearance.getValue();
 
-            // Set texture properties.
-            edu.cmu.cs.dennisc.texture.Texture cmuText = (edu.cmu.cs.dennisc.texture.Texture) (app.getPropertyNamed("bumpTexture").getValue(app));
-            if (cmuText == null) {
-                cmuText = (edu.cmu.cs.dennisc.texture.Texture) (app.getPropertyNamed("diffuseColorTexture").getValue(app));
+            AppearanceConverter appConverter = new AppearanceConverter(app);
+            if (appConverter.getTexture() != null) {
+                visualMessage.setTexture(appConverter.getTexture(), appConverter.getTextureWidth(), appConverter.getTextureHeight());
             }
 
-            if (cmuText != null && BufferedImageTexture.class.isAssignableFrom(cmuText.getClass())) {
-                BufferedImage image = ((BufferedImageTexture) cmuText).getBufferedImage();
-                visualMessage.setTexture(image, image.getWidth(), image.getHeight());
-            }
-
-            //TODO: Handle other appearance properties.
-            //for (Property p : app.getProperties()) {
-            //    System.out.println("APPEARANCE PROPERTY: " + p);
-            //    System.out.println(p.getValue(app));
-            //}
+            //TODO: Process other appearance properties.
 
             cmuVisual.addAbsoluteTransformationListener(this);
             updateTransformation();

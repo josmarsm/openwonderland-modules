@@ -176,6 +176,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
 
                     // Broadcast setup data to this connection.
                     for (VisualWrapper visual : this.visuals) {
+                        System.out.println("Writing object from added connection : " + visual.getVisualMessage());
                         newStream.writeObject(visual.getVisualMessage());
                         newStream.flush();
                     }
@@ -199,6 +200,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 // would have this visual sent twice to these connections.
                 for (ObjectOutputStream stream : this.streams) {
                     try {
+                        System.out.println("Writing object from added visual: " + wrapper.getVisualMessage());
                         stream.writeObject(wrapper.getVisualMessage());
                         stream.flush();
                     } catch (IOException ex) {
@@ -211,7 +213,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
 
     public void transformationMessageChanged(TransformationMessage message) {
         synchronized (connections) {
-
             for (ObjectOutputStream stream : this.streams) {
                 try {
                     stream.writeObject(message);

@@ -17,21 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common;
 
-import com.jme.scene.TexCoords;
+import com.jme.math.Matrix3f;
+import com.jme.math.Vector3f;
 import com.jme.scene.TriMesh;
-import com.jme.util.geom.BufferUtils;
-import edu.cmu.cs.dennisc.math.OrthogonalMatrix3x3;
-import edu.cmu.cs.dennisc.math.Point3;
-import edu.cmu.cs.dennisc.scenegraph.Geometry;
-import edu.cmu.cs.dennisc.scenegraph.Vertex;
-import edu.cmu.cs.dennisc.texture.TextureCoordinate2f;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
 import java.io.Serializable;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.Collection;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -45,6 +38,7 @@ import java.util.logging.Logger;
  */
 public class VisualMessage implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private final Collection<TriMesh> meshes = new Vector<TriMesh>();
     private final TransformationMessage transformation;
     private int[] texturePixels;
@@ -71,14 +65,16 @@ public class VisualMessage implements Serializable {
     }
 
     public Collection<TriMesh> getMeshes() {
-        return this.meshes;
+        synchronized(this.meshes) {
+            return this.meshes;
+        }
     }
 
     /**
      * Extract the TriMesh for a given CMU geometry, and add it to
      * the collection of meshes.
      * @param g The CMU geometry to parse
-     */
+     
     public void addGeometry(Geometry g) {
         // Get vertex data.
         Vertex[] vertices = (Vertex[]) g.getPropertyNamed("vertices").getValue(g);
@@ -109,6 +105,12 @@ public class VisualMessage implements Serializable {
 
         // Store mesh.
         this.meshes.add(mesh);
+    }*/
+
+    public void addMesh(TriMesh mesh) {
+        synchronized(this.meshes) {
+            this.meshes.add(mesh);
+        }
     }
 
     public void setTexture(Image texture, int width, int height) {
@@ -136,11 +138,16 @@ public class VisualMessage implements Serializable {
         this.transformation.setScale(scale);
     }
 
-    public void setTranslation(Point3 translation) {
+    public void setTranslation(Vector3f translation) {
         this.transformation.setTranslation(translation);
     }
 
-    public void setRotation(OrthogonalMatrix3x3 rotation) {
+    public void setRotation(Matrix3f rotation) {
         this.transformation.setRotation(rotation);
+    }
+
+    @Override
+    public String toString() {
+        return "Visual message: [NodeID:" + getNodeID() + "]";
     }
 }

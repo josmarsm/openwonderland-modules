@@ -15,30 +15,25 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+package org.jdesktop.wonderland.modules.cmu.player.conversions;
 
-package org.jdesktop.wonderland.modules.cmu.common;
+import com.jme.math.Vector3f;
+import edu.cmu.cs.dennisc.math.Point3;
 
-import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 /**
- * ConnectionType for the ProgramConnection that handles CMU files.
+ *
  * @author kevin
  */
-public class ProgramConnectionType extends ConnectionType {
+public class Point3Converter {
 
-    private static final String NAME = "__CMUProgramConnection";
+    private Vector3f point;
 
-    /**
-     * Singleton instance of this type.
-     */
-    public static final ProgramConnectionType TYPE =
-            new ProgramConnectionType();
-
-    /**
-     * Standard constructor.
-     */
-    public ProgramConnectionType() {
-        super(NAME);
+    public Point3Converter(Point3 point) {
+        this.point = new Vector3f((float)point.x, (float)point.y, (float)point.z);
     }
 
+    public Vector3f getVector3f() {
+        return this.point;
+    }
 }

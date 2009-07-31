@@ -25,31 +25,34 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  */
 public class CMUCellClientState extends CellClientState {
 
+    private boolean serverAndPortInitialized = false;
     private float playbackSpeed;
     private String server;
     private int port;
 
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
+    public synchronized void setServerAndPort(String server, int port) {
+        this.serverAndPortInitialized = true;
+        this.server = server;
         this.port = port;
     }
 
-    public String getServer() {
+    public synchronized String getServer() {
         return server;
     }
 
-    public void setServer(String server) {
-        this.server = server;
+    public synchronized int getPort() {
+        return port;
     }
 
-    public float getPlaybackSpeed() {
+    public synchronized float getPlaybackSpeed() {
         return playbackSpeed;
     }
 
-    public void setPlaybackSpeed(float playbackSpeed) {
+    public synchronized void setPlaybackSpeed(float playbackSpeed) {
         this.playbackSpeed = playbackSpeed;
+    }
+
+    public synchronized boolean isServerAndPortInitialized() {
+        return serverAndPortInitialized;
     }
 }

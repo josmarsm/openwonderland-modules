@@ -16,29 +16,25 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.cmu.common;
+package org.jdesktop.wonderland.modules.cmu.server;
 
-import org.jdesktop.wonderland.common.comms.ConnectionType;
+import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.server.ServerPlugin;
+import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.comms.CommsManager;
 
 /**
- * ConnectionType for the ProgramConnection that handles CMU files.
+ *
  * @author kevin
  */
-public class ProgramConnectionType extends ConnectionType {
+@Plugin
+public class ProgramConnectionServerPlugin implements ServerPlugin {
 
-    private static final String NAME = "__CMUProgramConnection";
-
-    /**
-     * Singleton instance of this type.
-     */
-    public static final ProgramConnectionType TYPE =
-            new ProgramConnectionType();
-
-    /**
-     * Standard constructor.
-     */
-    public ProgramConnectionType() {
-        super(NAME);
+    @Override
+    public void initialize() {
+        // register with the comms manager
+        CommsManager cm = WonderlandContext.getCommsManager();
+        cm.registerClientHandler(new ProgramConnectionHandler());
     }
 
 }

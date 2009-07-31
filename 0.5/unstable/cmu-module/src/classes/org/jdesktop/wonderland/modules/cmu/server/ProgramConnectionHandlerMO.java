@@ -21,21 +21,30 @@ package org.jdesktop.wonderland.modules.cmu.server;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.NameNotBoundException;
+import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import org.jdesktop.wonderland.server.WonderlandContext;
 
 /**
  *
  * @author kevin
  */
-public class ProgramConnectionHandlerMO implements ManagedObject {
+public class ProgramConnectionHandlerMO implements ManagedObject, Serializable {
 
     private static final String HANDLER_MO_NAME = "__CMU_PROGRAM_CONNECTION_HANDLER";
     private final ProgramConnectionHandler connectionHandler;
 
     public ProgramConnectionHandlerMO() {
+        //TODO: Decide which of these methods is better.
+
+        /*
         connectionHandler = new ProgramConnectionHandler();
         WonderlandContext.getCommsManager().registerClientHandler(connectionHandler);
+         * */
+
+        connectionHandler = (ProgramConnectionHandler) WonderlandContext.getCommsManager().getClientHandler(ProgramConnectionType.TYPE);
+        assert connectionHandler != null;
     }
 
     static public ProgramConnectionHandlerMO getInstance() {
@@ -50,6 +59,7 @@ public class ProgramConnectionHandlerMO implements ManagedObject {
     }
 
     static public void createProgram(CellID cellID, String uri) {
+        System.out.println("ConnectionHandlerMO creating program");
         getInstance().connectionHandler.createProgram(cellID, uri);
     }
 
