@@ -18,7 +18,9 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.client;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -48,7 +50,6 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
     public MovingPlatformCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
-        // Register yourself with the presentation manager.
     }
 
     @Override
@@ -60,9 +61,11 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
         if(status==CellStatus.ACTIVE && increasing) {
             PresentationManager.getManager().addPlatform(this);
 
+            this.setLocalBounds(new BoundingBox(Vector3f.ZERO, 10.0f, 20.0f, 10.0f));
+
             BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds()};
             prox.addProximityListener(this, bounds);
-
+            logger.warning("Added proximity listener.");
 
         } else if (status==CellStatus.DISK && !increasing) {
             PresentationManager.getManager().removePlatform(this);
@@ -82,6 +85,8 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
 
+        logger.warning("view enter/exit. entered: " + entered);
+        
         // Check to see if the avatar entering/exiting is the local one.
         if (cell.getCellCache().getViewCell().getCellID() == viewCellID) {
             if (entered) {
