@@ -22,17 +22,19 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
  *
- * @author Drew Harry <drew_harry@dev.java.net
+ * @author Drew Harry <drew_harry@dev.java.>
  */
 
 @Plugin
-public class PresentationBaseClientPlugin extends BaseClientPlugin {
+public class PresentationBaseClientPlugin extends BaseClientPlugin implements ViewManager.ViewManagerListener{
 
         private static final Logger logger =
             Logger.getLogger(PresentationBaseClientPlugin.class.getName());
@@ -41,18 +43,15 @@ public class PresentationBaseClientPlugin extends BaseClientPlugin {
 
         @Override
         public void initialize(ServerSessionManager loginInfo) {
-
+            logger.warning("Initializing ClientPlugin for Presentation-base.");
             session = loginInfo;
+            super.initialize(loginInfo);
         }
 
         @Override
         public void activate() {
-            
-            // Get the local avatar and install the movement-watching-component.
-            CellCache cache = ClientContextJME.getCellCache(session.getPrimarySession());
-            AvatarCell avatar = (AvatarCell) cache.getViewCell();
-            avatar.addComponent(new MovingPlatformAvatarComponent(avatar));
 
+            ViewManager.getViewManager().addViewManagerListener(this);
         }
 
         @Override
@@ -63,5 +62,12 @@ public class PresentationBaseClientPlugin extends BaseClientPlugin {
             // The javadoc on this method says TEST ME, so I'm not sure
             // this will actually work.
             avatar.removeComponent(MovingPlatformAvatarComponent.class);
+            logger.warning("Removing MPAC from local avatar.");
         }
+
+    public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
+
+            newViewCell.addComponent(new MovingPlatformAvatarComponent(newViewCell));
+            logger.warning("Just added a MPAC to the local avatar.");
+    }
 }

@@ -44,7 +44,8 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
         TriMesh platform = new Box("platform", Vector3f.ZERO, 10.0f, 0.25f, 10.0f);
 
         root.attachChild(platform);
-        root.setModelBound(new BoundingBox());
+
+        root.setModelBound(new BoundingBox(Vector3f.ZERO, 10.0f, 0.25f, 10.0f));
         root.updateModelBound();
 
         return root;
