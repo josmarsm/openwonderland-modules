@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.client;
 
 import java.awt.Image;
@@ -38,7 +37,7 @@ public class CMUCellFactory implements CellFactorySPI {
      */
     @Override
     public String[] getExtensions() {
-        return new String[] {"a3p"};
+        return new String[]{"a3p"};
     }
 
     /**
@@ -53,7 +52,7 @@ public class CMUCellFactory implements CellFactorySPI {
             state.setCmuURI(uri);
         }
 
-        return (T)state;
+        return (T) state;
     }
 
     /**
@@ -71,5 +70,5 @@ public class CMUCellFactory implements CellFactorySPI {
     @Override
     public Image getPreviewImage() {
         return null;
-   }
+    }
 }

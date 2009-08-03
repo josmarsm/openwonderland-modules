@@ -43,7 +43,7 @@ public class VisualWrapper implements AbsoluteTransformationListener {
     private final Visual cmuVisual;         // The wrapped visual.
     private final VisualMessage visualMessage;     // The serializable data for this visual.
     private final Collection<TransformationMessageListener> transformationListeners = new Vector<TransformationMessageListener>();
-    protected final int nodeID;             // Unique ID for thid visual.
+    protected final int nodeID;             // Unique ID for this visual.
 
 
     {
@@ -55,8 +55,7 @@ public class VisualWrapper implements AbsoluteTransformationListener {
     }
 
     /**
-     * Constructor; use the default Node constructor, and attach this node
-     * to a CMU Visual.
+     * Constructor; attach this node to a CMU Visual.
      * @param v The CMU visual to attach
      */
     public VisualWrapper(Visual v) {
@@ -127,11 +126,15 @@ public class VisualWrapper implements AbsoluteTransformationListener {
      * halfway through being updated.
      * @param v The CMU visual to mirror
      */
-    public void loadVisual() {
+    protected void loadVisual() {
         assert cmuVisual != null;
         Visual v = cmuVisual;
 
         synchronized (this.visualMessage) {
+            // Set name.
+            System.out.println("Visual named: " + v.getName());
+            visualMessage.setName(v.getName());
+
             // Get meshes.
             for (Geometry g : v.geometries.getValue()) {
                 visualMessage.addMesh(new GeometryConverter(g).getMesh());

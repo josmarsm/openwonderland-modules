@@ -19,9 +19,10 @@
         <path location="${current.dir}/lib/cmu-module.jar"/>
     </pathconvert>
 
+    <!--
     <pathconvert property="module-common.classpath">
         <path location="${current.dir}/lib/cmu-module.jar"/>
-    </pathconvert>
+    </pathconvert>-->
 
     <pathconvert property="cmu-player.classpath">
         <path location="${current.dir}/lib/cmu-module.jar"/>
