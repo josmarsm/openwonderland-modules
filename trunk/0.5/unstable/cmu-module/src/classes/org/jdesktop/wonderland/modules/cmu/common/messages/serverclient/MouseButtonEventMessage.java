@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
-import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
@@ -26,34 +25,36 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  * pass them on to the relevant CMU program.
  * @author kevin
  */
+//TODO: Figure out how best to serialize these events
 public class MouseButtonEventMessage extends CellMessage {
 
     private final static long serialVersionUID = 1L;
-    private MouseButtonEvent3D mouseEvent;
+    //private MouseButtonEvent3D mouseEvent;
 
     /**
      * Standard constructor.
      * @param cellID ID of the relevant cell
      * @param mouseEvent The mouse button event to forward
      */
-    public MouseButtonEventMessage(CellID cellID, MouseButtonEvent3D mouseEvent) {
-        setMouseEvent(mouseEvent);
+    public MouseButtonEventMessage(CellID cellID) {//, MouseButtonEvent3D mouseEvent) {
+        super(cellID);
+        //setMouseEvent(mouseEvent);
     }
 
     /**
      * Get the mouse event.
      * @return Mouse event
-     */
+     *
     public MouseButtonEvent3D getMouseEvent() {
         return mouseEvent;
-    }
+    }*/
 
     /**
      * Set the mouse event.
      * @param mouseEvent Mouse event
-     */
+     *
     public void setMouseEvent(MouseButtonEvent3D mouseEvent) {
         this.mouseEvent = mouseEvent;
-    }
+    }*/
     
 }

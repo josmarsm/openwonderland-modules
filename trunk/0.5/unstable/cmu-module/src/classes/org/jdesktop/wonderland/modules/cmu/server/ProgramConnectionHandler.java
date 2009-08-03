@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.cmu.server;
 
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
@@ -66,7 +65,10 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
      * @param properties {@inheritDoc}
      */
     public void clientConnected(WonderlandClientSender sender, WonderlandClientID clientID, Properties properties) {
+        ProgramConnectionHandlerMO.reconnect();
         // Send any messages that were in queue.
+
+        /*
         synchronized(messageQueue) {
             Iterator<Message> iterator = messageQueue.iterator();
             while (iterator.hasNext()) {
@@ -75,7 +77,7 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
                 //clientSender.send(message);
                 iterator.remove();
             }
-        }
+        }*/
     }
 
     /**

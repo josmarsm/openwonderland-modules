@@ -26,10 +26,8 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Playback
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellServerState;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -53,7 +51,6 @@ public class CMUCellMO extends CellMO {
     private boolean socketInitialized = false;  // False until a CMU instance informs us with valid socket information.
     private final Serializable socketLock = new String();
 
-    //TODO: expand this for different message types.
     /**
      * Receives and processes messages about playback speed change.
      */
@@ -134,7 +131,7 @@ public class CMUCellMO extends CellMO {
             this.playbackSpeed = playbackSpeed;
 
             // Inform the associated program of the change
-            ProgramConnectionHandlerMO.sendMessage(new ProgramPlaybackSpeedChangeMessage(getCellID(), playbackSpeed));
+            ProgramConnectionHandlerMO.changePlaybackSpeed(getCellID(), playbackSpeed);
         }
     }
 
@@ -177,7 +174,7 @@ public class CMUCellMO extends CellMO {
         setCmuURI(setup.getCmuURI());
 
         // Create CMU instance
-        ProgramConnectionHandlerMO.sendMessage(new CreateProgramMessage(getCellID(), getCmuURI()));
+        ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
 
         this.setPlaybackSpeed(PlaybackDefaults.DEFAULT_START_SPEED);
     }

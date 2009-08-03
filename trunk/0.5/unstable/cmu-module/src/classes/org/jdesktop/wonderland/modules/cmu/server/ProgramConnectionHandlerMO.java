@@ -15,25 +15,32 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.server;
 
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.NameNotBoundException;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Vector;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
 
 /**
- *
+ * Managed object with singleton instance to interface between cells and
+ * the ProgramConnectionHandler.  Gracefully handles failure cases such
+ * as disconnects on behalf of the program manager.
  * @author kevin
  */
 public final class ProgramConnectionHandlerMO implements ManagedObject, Serializable {
 
     private static final String HANDLER_MO_NAME = "__CMU_PROGRAM_CONNECTION_HANDLER";
     private final ProgramConnectionHandler connectionHandler;
+    private final Collection<CreateProgramMessage> programsCreated = new Vector<CreateProgramMessage>();
 
     /**
      * Get the relevant connection handler.
@@ -45,7 +52,7 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
         /*
         connectionHandler = new ProgramConnectionHandler();
         WonderlandContext.getCommsManager().registerClientHandler(connectionHandler);
-         * */
+         */
 
         connectionHandler = (ProgramConnectionHandler) WonderlandContext.getCommsManager().getClientHandler(ProgramConnectionType.TYPE);
         assert connectionHandler != null;
@@ -67,11 +74,57 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
     }
 
     /**
-     * Send the given message using the singleton instance of the class.
+     * Send the given message using this instance of the class.
      * @param message Message to send
      */
-    static public void sendMessage(Message message) {
-        getInstance().connectionHandler.sendMessage(message);
+    private void sendMessage(Message message) {
+        connectionHandler.sendMessage(message);
     }
 
+    /**
+     * Store information about the program to create so that it can
+     * be retrieved later in the case of a disconnect.
+     * @param message The program being created
+     */
+    private void registerProgram(CreateProgramMessage message) {
+        synchronized (this.programsCreated) {
+            programsCreated.add(message);
+        }
+    //TODO: clean up when cells disconnect
+    }
+
+    /**
+     * Create a program from the given asset; program manager should send
+     * a response with socket information.
+     * @param cellID The cell wishing to create the program instance
+     * @param assetURI The URI of the program file
+     */
+    static public void createProgram(CellID cellID, String assetURI) {
+        ProgramConnectionHandlerMO instance = getInstance();
+        CreateProgramMessage message = new CreateProgramMessage(cellID, assetURI);
+
+        instance.registerProgram(message);
+        instance.sendMessage(message);
+    }
+
+    /**
+     * Change playback speed for a particular program.
+     * @param cellID The cell connected to the program
+     * @param playbackSpeed The new playback speed
+     */
+    static public void changePlaybackSpeed(CellID cellID, float playbackSpeed) {
+        getInstance().sendMessage(new ProgramPlaybackSpeedChangeMessage(cellID, playbackSpeed));
+    }
+
+    static public void reconnect() {
+        getInstance().recreatePrograms();
+    }
+
+    private void recreatePrograms() {
+        synchronized (this.programsCreated) {
+            for (CreateProgramMessage message : programsCreated) {
+                sendMessage(message);
+            }
+        }
+    }
 }

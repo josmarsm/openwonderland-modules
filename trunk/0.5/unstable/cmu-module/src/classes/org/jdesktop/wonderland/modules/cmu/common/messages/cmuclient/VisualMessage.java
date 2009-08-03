@@ -41,6 +41,7 @@ public class VisualMessage implements Serializable {
     private static final long serialVersionUID = 1L;
     private final Collection<TriMesh> meshes = new Vector<TriMesh>();
     private final TransformationMessage transformation;
+    private String name;
     private int[] texturePixels;
     private int textureWidth,  textureHeight;
 
@@ -75,6 +76,22 @@ public class VisualMessage implements Serializable {
      */
     public void setNodeID(int nodeID) {
         this.transformation.setNodeID(nodeID);
+    }
+
+    /**
+     * Get the name of the CMU visual.
+     * @return Current name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Set the name of the CMU visual.
+     * @param name New name
+     */
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
