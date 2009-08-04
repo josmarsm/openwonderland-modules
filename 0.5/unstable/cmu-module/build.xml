@@ -60,6 +60,9 @@
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**/*.png"/>
+                    </fileset>
                 </clientjar>
             </client>
                 
@@ -82,7 +85,7 @@
                 <pathelement path="${build.classes.dir}"/>
             </classpath>
             <!--TODO: can't need to pass in the library path. -->
-            <jvmarg value="-Djava.library.path=/home/kevin/Documents/Employment/Sun/bin/Alice3Beta/ext/jogl/lib/linux-amd64"/>
+            <jvmarg value="-Djava.library.path=${wonderland.dir}/core/ext/linux/native"/>
             <arg value="${wonderland.web.url}"/>
             <arg value="admin"/>
         </java>
