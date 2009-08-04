@@ -18,6 +18,7 @@
 
     <pathconvert property="module-client.classpath">
         <path location="lib/PDFRenderer.jar"/>
+        <path location="${current.dir}/../presentation-base/build/client/presentation-base-client.jar"/>
     </pathconvert>
 
     <target name="dist" depends="build">
@@ -25,7 +26,10 @@
         
         <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 description="${module.description}" builddir="${build.dir}">
-                    
+
+            <!-- Depends on the presentation-base module to provide some interface bits. -->
+            <requires name="presentation-base" version="1"/>
+
 	    <client dir="${current.dir}/lib">
                 <include name="*.jar"/>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">

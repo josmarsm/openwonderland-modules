@@ -25,6 +25,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
+import org.jdesktop.wonderland.modules.presentationbase.client.PresentationManager;
 
 /**
  *
@@ -140,6 +141,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
         linearButton = new javax.swing.JRadioButton();
         semicircleButton = new javax.swing.JRadioButton();
         circleButton = new javax.swing.JRadioButton();
+        createPresentationButton = new javax.swing.JButton();
 
         jRadioButton2.setText("jRadioButton2");
 
@@ -204,17 +206,39 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridheight = 3;
         add(jPanel1, gridBagConstraints);
+
+        createPresentationButton.setText("Create Presentation Space");
+        createPresentationButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createPresentationButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(createPresentationButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void linearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linearButtonActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_linearButtonActionPerformed
 
+    private void createPresentationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPresentationButtonActionPerformed
+        // Make a call into the presentation manager to tell it that this PDF wants to be
+        // turned into a full presentation space.
+
+        PresentationManager.getManager().createPresentationSpace(cell);
+
+    }//GEN-LAST:event_createPresentationButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton circleButton;
+    private javax.swing.JButton createPresentationButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;

@@ -20,25 +20,22 @@ package org.jdesktop.wonderland.modules.pdfspreader.client;
 
 import com.sun.pdfview.PDFFile;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.pdfspreader.client.jme.cell.PDFSpreaderCellRenderer;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellClientState;
-
+import org.jdesktop.wonderland.modules.presentationbase.client.SlidesCell;
 
 /**
  * The client side component of the PDFSpreaderCell. When a user drops a PDF,
@@ -46,7 +43,7 @@ import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellClientS
  *
  * @author Drew Harry <drew_harry@dev.java.net>
  */
-public class PDFSpreaderCell extends Cell {
+public class PDFSpreaderCell extends Cell implements SlidesCell {
 
     private PDFSpreaderCellRenderer renderer = null;
 
@@ -175,6 +172,18 @@ public class PDFSpreaderCell extends Cell {
         msg.setSpacing(spacing);
 
         this.sendCellMessage(msg);
+    }
+
+    public CellTransform getTransform() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getNumSlides() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public float getInterslideSpacing() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     class PDFSpreaderCellMessageReceiver implements ComponentMessageReceiver {
