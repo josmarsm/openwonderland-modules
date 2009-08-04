@@ -119,6 +119,9 @@
         </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
       </Properties>
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="restartButtonMouseReleased"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="speedResetButton">
       <Properties>

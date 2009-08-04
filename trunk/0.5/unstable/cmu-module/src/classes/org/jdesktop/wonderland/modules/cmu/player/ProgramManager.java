@@ -40,10 +40,9 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
 
 /**
- * Processes messages sent to control CMU programs; for now, just creates them.
+ * Processes messages sent to control CMU programs.
  * @author kevin
  */
-//TODO: Should forward mouse clicks, etc.
 public class ProgramManager {
 
     private final Map<CellID, ProgramPlayer> programs = new HashMap<CellID, ProgramPlayer>();
@@ -85,6 +84,7 @@ public class ProgramManager {
      */
     public CreateProgramResponseMessage createProgram(MessageID messageID, CellID cellID, String assetURI) {
         // Load local cache file, and send it to the program.
+        System.out.println("Creating program: " + assetURI);
         ProgramPlayer newProgram = null;
         try {
             URL url = AssetUtils.getAssetURL(assetURI);
@@ -126,6 +126,11 @@ public class ProgramManager {
      */
     private void addProgram(CellID key, ProgramPlayer program) {
         synchronized(programs) {
+            // Check for an existing program, and stop it if it's there.
+            if (programs.containsKey(key)) {
+                ProgramPlayer oldProgram = programs.get(key);
+                oldProgram.stop();
+            }
             programs.put(key, program);
         }
     }

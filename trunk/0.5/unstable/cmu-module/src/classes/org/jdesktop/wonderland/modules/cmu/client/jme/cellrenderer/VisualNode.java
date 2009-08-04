@@ -30,7 +30,6 @@ import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 
 /**
@@ -41,7 +40,8 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessa
  */
 public class VisualNode extends VisualParent {
 
-    protected final NodeID nodeID;     // Unique ID for this node
+    private final NodeID nodeID;     // Unique ID for this node
+    private BoundingBox bound = null;
 
     /**
      * Basic constructor, generally not used.
@@ -69,7 +69,7 @@ public class VisualNode extends VisualParent {
      */
     protected void applyVisual(VisualMessage message) {
         // Apply geometries, compute bounding box
-        BoundingBox bound = null;
+        bound = null;
         for (TriMesh mesh : message.getMeshes()) {
             this.attachChild(mesh);
 
@@ -133,8 +133,13 @@ public class VisualNode extends VisualParent {
     public synchronized void applyVisibilityToChild(NodeID nodeID, boolean visible) {
         super.applyVisibilityToChild(nodeID, visible);
         if (nodeID.equals(this.getNodeID())) {
-            this.setVisible(visible);
+            this.setPartOfWorld(visible);
         }
+    }
+
+    private synchronized void setPartOfWorld(boolean partOfWorld) {
+        setVisible(partOfWorld);
+        setModelBound(partOfWorld ? bound : null);
     }
 
     /**

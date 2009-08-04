@@ -66,7 +66,7 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
             }
         });
 
-        playbackSlider.setFont(new java.awt.Font("DejaVu Sans", 0, 1)); // NOI18N
+        playbackSlider.setFont(new java.awt.Font("DejaVu Sans", 0, 1));
         playbackSlider.setMaximum(10);
         playbackSlider.setPaintTrack(false);
         playbackSlider.setSnapToTicks(true);
@@ -96,6 +96,11 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
         restartButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/cmu/client/resources/control_start.png"))); // NOI18N
         restartButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         restartButton.setBorderPainted(false);
+        restartButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                restartButtonMouseReleased(evt);
+            }
+        });
 
         speedResetButton.setText("Reset");
         speedResetButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -170,6 +175,10 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
     private void groundVisibleBoxMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_groundVisibleBoxMouseReleased
         cell.setGroundPlaneShowing(groundVisibleBox.isSelected());
     }//GEN-LAST:event_groundVisibleBoxMouseReleased
+
+    private void restartButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_restartButtonMouseReleased
+        cell.restart();
+    }//GEN-LAST:event_restartButtonMouseReleased
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox groundVisibleBox;
