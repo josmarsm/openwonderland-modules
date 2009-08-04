@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 
 /**
@@ -66,6 +67,11 @@ public class ProgramConnection extends BaseConnection {
         if (ProgramPlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
             handlePlaybackSpeedChange((ProgramPlaybackSpeedChangeMessage) message);
         }
+
+        // Delete program
+        if (DeleteProgramMessage.class.isAssignableFrom(message.getClass())) {
+            handleDeleteProgram((DeleteProgramMessage)message);
+        }
     }
 
     /**
@@ -91,5 +97,9 @@ public class ProgramConnection extends BaseConnection {
      */
     protected void handlePlaybackSpeedChange(ProgramPlaybackSpeedChangeMessage message) {
         programManager.setPlaybackSpeed(message.getCellID(), message.getPlaybackSpeed());
+    }
+
+    protected void handleDeleteProgram(DeleteProgramMessage message) {
+        programManager.deleteProgram(message.getCellID());
     }
 }

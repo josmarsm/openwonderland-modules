@@ -44,6 +44,7 @@ public class CMUCellFactory implements CellFactorySPI {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         CMUCellServerState state = new CMUCellServerState();
 

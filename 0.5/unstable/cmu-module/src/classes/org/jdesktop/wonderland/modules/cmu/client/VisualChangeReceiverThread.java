@@ -17,12 +17,13 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
-import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Thread to process incoming scene graph changes from a CMU instance.
@@ -62,16 +63,29 @@ public class VisualChangeReceiverThread extends Thread {
 
             // Notify connection successful.
             parentCell.markConnected(this);
-            
+
+            System.out.println("Connected on port " + port);
             while (parentCell.allowsUpdatesFrom(this)) {
                 // Read messages as long as they're being sent
                 Object received = fromServer.readObject();
+                if (parentCell.getPlaybackSpeed() > 1.1f) {
+                    //System.out.println(received);
+                }
                 parentCell.applyMessage(received, this);
             }
-        } catch (Exception ex) {
-            //TODO: Notify the CMUCell about the reason for the disconnect?
-            parentCell.markDisconnected(this);
+        } catch (ClassNotFoundException ex) {
+            System.out.println("Disconnecting: " + ex);
+        } catch (SocketException ex) {
+            System.out.println("Disconnecting: " + ex);
+        } catch (UnknownHostException ex) {
+            System.out.println("Disconnecting: " + ex);
+        } catch (IOException ex) {
+            Logger.getLogger(VisualChangeReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        //TODO: Notify the CMUCell about the reason for the disconnect?
+        System.out.println("Disconnecting from port " + port);
+        parentCell.markDisconnected(this);
     }
 }
 

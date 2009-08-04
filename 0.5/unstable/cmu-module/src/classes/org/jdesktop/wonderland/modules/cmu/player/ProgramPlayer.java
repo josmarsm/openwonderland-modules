@@ -152,25 +152,19 @@ public class ProgramPlayer extends Program {
     public void initialize() {
     }
 
-    /**
-     * Play at standard speed.
-     *
-    public void play() {
-        this.setPlaybackSpeed(PlaybackDefaults.PLAY_SPEED);
-    }*/
-
-    /**
-     * Pause playback.
-     *
-    public void pause() {
-        this.setPlaybackSpeed(PlaybackDefaults.PAUSE_SPEED);
-    }*/
+    @Override
+    public void destroy() {
+        System.out.println("Program destroyed, port: " + this.getPort());
+        this.cmuScene.unloadScene();
+        super.destroy();
+    }
 
     /**
      * Set a particular playback speed and update the total elapsed time.
      * @param speed The speed at which to play
      */
     public void setPlaybackSpeed(float speed) {
+        System.out.println("Port " + this.getPort() + " setting speed: " + speed);
         synchronized (speedChangeLock) {
             long currTime = System.currentTimeMillis();
             this.elapsed += this.playbackSpeed * (currTime - this.timeOfLastSpeedChange);

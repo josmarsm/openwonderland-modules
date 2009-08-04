@@ -119,18 +119,26 @@ public class ProgramManager {
         }
     }
 
+    public void deleteProgram(CellID cellID) {
+        synchronized (programs) {
+            ProgramPlayer program = programs.get(cellID);
+            if (program != null) {
+                program.destroy();
+                //TODO: Make sure this performs necessary cleanup
+                programs.remove(cellID);
+            }
+        }
+    }
+
     /**
      * Synchronously adds a program to our map.
      * @param key The Wonderland cell ID associated with the program
      * @param program The program instance
      */
     private void addProgram(CellID key, ProgramPlayer program) {
-        synchronized(programs) {
+        synchronized (programs) {
             // Check for an existing program, and stop it if it's there.
-            if (programs.containsKey(key)) {
-                ProgramPlayer oldProgram = programs.get(key);
-                oldProgram.stop();
-            }
+            deleteProgram(key);
             programs.put(key, program);
         }
     }
@@ -141,7 +149,7 @@ public class ProgramManager {
      * @return The program instance, or null if none is found
      */
     private ProgramPlayer getProgram(CellID key) {
-        synchronized(programs) {
+        synchronized (programs) {
             return programs.get(key);
         }
     }
