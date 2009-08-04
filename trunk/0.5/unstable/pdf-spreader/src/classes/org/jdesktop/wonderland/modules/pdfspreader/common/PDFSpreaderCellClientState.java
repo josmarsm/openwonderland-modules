@@ -28,6 +28,8 @@ public class PDFSpreaderCellClientState extends CellClientState {
     private float scale;
     private float spacing;
 
+    private String creatorName;
+
     private LayoutType layout;
     
     public PDFSpreaderCellClientState() {
@@ -64,6 +66,14 @@ public class PDFSpreaderCellClientState extends CellClientState {
 
     public void setSpacing(float spacing) {
         this.spacing = spacing;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
     }
 
 

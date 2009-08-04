@@ -42,6 +42,9 @@ public class PDFSpreaderCellServerState extends CellServerState {
     @XmlElement(name="layout")
     private LayoutType layout;
 
+    @XmlElement(name="creator-name")
+    private String creatorName;
+
     public PDFSpreaderCellServerState() {
     }
 
@@ -68,6 +71,11 @@ public class PDFSpreaderCellServerState extends CellServerState {
     @XmlTransient public LayoutType getLayout() { return this.layout; }
     public void setLayout(LayoutType layout) {
         this.layout = layout;
+    }
+
+    @XmlTransient public String getCreatorName() { return this.creatorName; }
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
     }
 
 }

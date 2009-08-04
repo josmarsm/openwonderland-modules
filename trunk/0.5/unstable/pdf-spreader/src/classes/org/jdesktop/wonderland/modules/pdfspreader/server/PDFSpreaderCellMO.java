@@ -43,6 +43,7 @@ public class PDFSpreaderCellMO extends CellMO {
     private float spacing = 4.0f;
     private float scale = 1.0f;
     private LayoutType layout = LayoutType.LINEAR;
+    private String creatorName;
 
     public PDFSpreaderCellMO () {
         super();
@@ -64,6 +65,7 @@ public class PDFSpreaderCellMO extends CellMO {
         this.scale = ((PDFSpreaderCellServerState)state).getScale();
         this.spacing = ((PDFSpreaderCellServerState)state).getSpacing();
         this.layout = ((PDFSpreaderCellServerState)state).getLayout();
+        this.creatorName = ((PDFSpreaderCellServerState)state).getCreatorName();
     }
 
     @Override
@@ -76,6 +78,7 @@ public class PDFSpreaderCellMO extends CellMO {
         ((PDFSpreaderCellServerState)state).setScale(scale);
         ((PDFSpreaderCellServerState)state).setSpacing(spacing);
         ((PDFSpreaderCellServerState)state).setLayout(layout);
+        ((PDFSpreaderCellServerState)state).setCreatorName(creatorName);
         
         return super.getServerState(state);
     }

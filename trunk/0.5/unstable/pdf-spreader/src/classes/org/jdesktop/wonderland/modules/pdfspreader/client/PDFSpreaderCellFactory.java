@@ -20,8 +20,10 @@ package org.jdesktop.wonderland.modules.pdfspreader.client;
 
 import java.awt.Image;
 import java.util.Properties;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellServerState;
@@ -40,6 +42,7 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
         state.setLayout(LayoutType.LINEAR);
         state.setScale(1.0f);
         state.setSpacing(4.0f);
+        state.setCreatorName(LoginManager.getPrimary().getUsername());
 
         if (props != null) {
            String uri = props.getProperty("content-uri");
@@ -54,7 +57,6 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
     public String getDisplayName() {
         // if null, won't show in the insert component dialog
         return null;
-//        return "PDF Spreader Cell";
     }
 
     public Image getPreviewImage() {
