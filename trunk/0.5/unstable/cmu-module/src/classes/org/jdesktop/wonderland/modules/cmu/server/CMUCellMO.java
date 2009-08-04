@@ -46,7 +46,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 public class CMUCellMO extends CellMO {
 
     private String cmuURI;
-    private String server;
+    private String hostName;
     private int port;
     private boolean playing;
     private float playbackSpeed;
@@ -205,7 +205,7 @@ public class CMUCellMO extends CellMO {
         cmuClientState.setGroundPlaneShowing(isGroundPlaneShowing());
         synchronized (socketLock) {
             if (this.socketInitialized) {
-                cmuClientState.setServerAndPort(getServer(), getPort());
+                cmuClientState.setServerAndPort(getHostname(), getPort());
             }
         }
 
@@ -283,25 +283,25 @@ public class CMUCellMO extends CellMO {
         }
     }
 
-    public String getServer() {
+    public String getHostname() {
         synchronized (socketLock) {
-            return server;
+            return hostName;
         }
     }
 
-    public void setServerAndPort(String server, int port) {
+    public void setHostnameAndPort(String hostname, int port) {
         synchronized (socketLock) {
             this.socketInitialized = true;
-            this.server = server;
+            this.hostName = hostname;
             this.port = port;
-            sendServerInformation();
+            sendConnectionInformation();
         }
     }
 
-    private void sendServerInformation() {
+    private void sendConnectionInformation() {
         synchronized (socketLock) {
             synchronized (playbackSpeedLock) {
-                this.sendCellMessage(null, new ConnectionChangeMessage(this.getCellID(), getServer(), getPort()));
+                this.sendCellMessage(null, new ConnectionChangeMessage(this.getCellID(), getHostname(), getPort()));
                 this.sendCellMessage(null, new PlaybackSpeedChangeMessage(this.getCellID(),
                         this.getPlaybackSpeed(), this.isPlaying()));
             }

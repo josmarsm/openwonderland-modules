@@ -82,7 +82,7 @@ public class ProgramPlayer extends Program {
      * @return The server used to connect to this program
      */
     public String getServer() {
-        return this.cmuScene.getServer();
+        return this.cmuScene.getHostname();
     }
 
     /**
