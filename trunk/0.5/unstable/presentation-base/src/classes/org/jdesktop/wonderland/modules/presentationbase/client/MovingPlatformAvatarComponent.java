@@ -9,10 +9,8 @@ import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
-import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
-import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -84,9 +82,7 @@ public class MovingPlatformAvatarComponent extends CellComponent implements Tran
 
             logger.warning("finalGlobalTransform: " + finalTransform.getTranslation(Vector3f.ZERO));
 
-            MovableComponent mc = this.cell.getComponent(MovableComponent.class);
-            if(mc!=null)
-               mc.localMoveRequest(finalTransform);
+            ((AvatarCell)this.cell).triggerGoto(finalTransform.getTranslation(null), finalTransform.getRotation(null));
             
             currentPlatformTransform = platformCell.getWorldTransform();
 //        }
