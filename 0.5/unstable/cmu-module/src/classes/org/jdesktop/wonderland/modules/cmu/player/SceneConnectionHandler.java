@@ -238,7 +238,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                             newConnection.outputStream.writeObject(visual.getVisualMessage());
                             newConnection.outputStream.flush();
                         } catch (SocketException ex) {
-                            //TODO: Does this really catch all disconnects?
                             removeConnection(newConnection);
                         }
                     }

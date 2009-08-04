@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Connecti
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPlaneChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -91,6 +92,12 @@ public class CMUCellMO extends CellMO {
                 GroundPlaneChangeMessage change = (GroundPlaneChangeMessage) message;
                 cellMO.setGroundPlaneShowing(change.isGroundPlaneShowing());
                 cellMO.sendCellMessage(clientID, message);
+            }
+
+            // Restart program
+            if (RestartProgramMessage.class.isAssignableFrom(message.getClass())) {
+                System.out.println("Received restart message");
+                cellMO.createProgram();
             }
 
             // Mouse button event
@@ -162,13 +169,13 @@ public class CMUCellMO extends CellMO {
     }
 
     public boolean isGroundPlaneShowing() {
-        synchronized(groundPlaneLock) {
+        synchronized (groundPlaneLock) {
             return groundPlaneShowing;
         }
     }
 
     public void setGroundPlaneShowing(boolean groundPlaneShowing) {
-        synchronized(groundPlaneLock) {
+        synchronized (groundPlaneLock) {
             this.groundPlaneShowing = groundPlaneShowing;
         }
     }
@@ -216,10 +223,7 @@ public class CMUCellMO extends CellMO {
         setCmuURI(setup.getCmuURI());
         setGroundPlaneShowing(setup.isGroundPlaneShowing());
 
-        // Create CMU instance
-        ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
-
-        this.setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
+        createProgram();
     }
 
     /**
@@ -230,10 +234,17 @@ public class CMUCellMO extends CellMO {
         if (serverState == null) {
             serverState = new CMUCellServerState();
         }
-        CMUCellServerState cmuServerState = (CMUCellServerState)serverState;
+        CMUCellServerState cmuServerState = (CMUCellServerState) serverState;
         cmuServerState.setCmuURI(getCmuURI());
         cmuServerState.setGroundPlaneShowing(isGroundPlaneShowing());
         return super.getServerState(serverState);
+    }
+
+    protected void createProgram() {
+        // Create CMU instance
+        ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
+
+        this.setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
     }
 
     /**
@@ -245,10 +256,17 @@ public class CMUCellMO extends CellMO {
 
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if (live == true) {
-            channel.addMessageReceiver(PlaybackSpeedChangeMessage.class,
-                    (ChannelComponentMO.ComponentMessageReceiver) new CMUCellMessageReceiver(this));
+            ChannelComponentMO.ComponentMessageReceiver receiver =
+                    (ChannelComponentMO.ComponentMessageReceiver) new CMUCellMessageReceiver(this);
+            channel.addMessageReceiver(PlaybackSpeedChangeMessage.class, receiver);
+            channel.addMessageReceiver(GroundPlaneChangeMessage.class, receiver);
+            channel.addMessageReceiver(MouseButtonEventMessage.class, receiver);
+            channel.addMessageReceiver(RestartProgramMessage.class, receiver);
         } else {
             channel.removeMessageReceiver(PlaybackSpeedChangeMessage.class);
+            channel.removeMessageReceiver(GroundPlaneChangeMessage.class);
+            channel.removeMessageReceiver(MouseButtonEventMessage.class);
+            channel.removeMessageReceiver(RestartProgramMessage.class);
         }
     }
 
@@ -275,7 +293,11 @@ public class CMUCellMO extends CellMO {
 
     private void sendServerInformation() {
         synchronized (socketLock) {
-            this.sendCellMessage(null, new ConnectionChangeMessage(this.getCellID(), getServer(), getPort()));
+            synchronized (playbackSpeedLock) {
+                this.sendCellMessage(null, new ConnectionChangeMessage(this.getCellID(), getServer(), getPort()));
+                this.sendCellMessage(null, new PlaybackSpeedChangeMessage(this.getCellID(),
+                        this.getPlaybackSpeed(), this.isPlaying()));
+            }
         }
     }
 }

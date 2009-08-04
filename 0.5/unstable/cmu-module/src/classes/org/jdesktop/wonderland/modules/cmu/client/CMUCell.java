@@ -49,6 +49,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Connecti
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPlaneChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
 
 /**
  * Cell to display and interact with a CMU scene.
@@ -99,7 +100,6 @@ public class CMUCell extends Cell {
             }
 
             setHUDShowing(!isHUDShowing());
-        //TODO: send these more discriminately
         //sendCellMessage(new MouseButtonEventMessage(getCellID()));//, mbe));
         }
 
@@ -135,7 +135,7 @@ public class CMUCell extends Cell {
 
             // Playback speed message
             if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
-                if (!(message.getSenderID().equals(getCellCache().getSession().getID()))) {
+                if (message.getSenderID() == null || !(message.getSenderID().equals(getCellCache().getSession().getID()))) {
                     PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
                     setPlayingWithoutUpdate(change.isPlaying());
                     setPlaybackSpeedWithoutUpdate(change.getPlaybackSpeed());
@@ -144,7 +144,7 @@ public class CMUCell extends Cell {
 
             // Ground plane visibility change message
             if (GroundPlaneChangeMessage.class.isAssignableFrom(message.getClass())) {
-                if (!(message.getSenderID().equals(getCellCache().getSession().getID()))) {
+                if (message.getSenderID() == null || !(message.getSenderID().equals(getCellCache().getSession().getID()))) {
                     GroundPlaneChangeMessage change = (GroundPlaneChangeMessage) message;
                     setGroundPlaneShowingWithoutUpdate(change.isGroundPlaneShowing());
                 }
@@ -390,6 +390,7 @@ public class CMUCell extends Cell {
 
         switch (status) {
             case DISK:
+                //TODO: Weird stuff happening when going to disk and back
                 // Remove mouse listener.
                 if (mouseListener != null) {
                     mouseListener.removeFromEntity(renderer.getEntity());
@@ -535,6 +536,11 @@ public class CMUCell extends Cell {
 
     private void sendGroundPlaneData() {
         sendCellMessage(new GroundPlaneChangeMessage(getCellID(), isGroundPlaneShowing()));
+    }
+
+    public void restart() {
+        System.out.println("Sending restart message...");
+        sendCellMessage(new RestartProgramMessage(getCellID()));
     }
 
     protected void setHUDShowing(boolean showing) {
