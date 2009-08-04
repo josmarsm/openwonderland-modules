@@ -251,6 +251,7 @@ public class CMUCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected void setLive(boolean live) {
         super.setLive(live);
 
@@ -272,6 +273,7 @@ public class CMUCellMO extends CellMO {
             for (Class c : messagesToReceive) {
                 channel.removeMessageReceiver(c);
             }
+            ProgramConnectionHandlerMO.removeProgram(this.getCellID());
         }
     }
 

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import java.util.Iterator;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
@@ -54,12 +55,17 @@ public class VisualParent extends Node {
         removeChild(deleted.getNodeID());
     }
 
-    public synchronized void removeChild(NodeID id) {
-        for (Spatial child : this.getChildren()) {
+    public synchronized boolean removeChild(NodeID id) {
+        Iterator<Spatial> it = this.getChildren().iterator();
+        while(it.hasNext()) {
+            Spatial child = it.next();
             if (VisualParent.class.isAssignableFrom(child.getClass())) {
-                ((VisualParent) child).removeChild(id);
+                if (((VisualParent) child).removeChild(id)) {
+                    it.remove();
+                }
             }
         }
+        return false;
     }
 
     public synchronized void applyVisibilityToChild(NodeID nodeID, boolean visible) {

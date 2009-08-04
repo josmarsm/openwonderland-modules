@@ -120,13 +120,15 @@ public class VisualNode extends VisualParent {
     /**
      * Recursively remove the node with ID given by the VisualDeletedMessage.
      * @param deleted Message specifying the node to remove.
+     * @return True if this node should be deleted
      */
     @Override
-    public synchronized void removeChild(NodeID nodeID) {
+    public synchronized boolean removeChild(NodeID nodeID) {
         super.removeChild(nodeID);
         if (nodeID.equals(this.getNodeID())) {
-            this.removeFromParent();
+            return true;
         }
+        return false;
     }
 
     @Override
