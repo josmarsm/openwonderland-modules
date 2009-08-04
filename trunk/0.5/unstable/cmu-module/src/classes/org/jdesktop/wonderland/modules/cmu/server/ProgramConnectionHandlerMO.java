@@ -119,7 +119,7 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
     }
 
     static public void removeProgram(CellID cellID) {
-        
+        getInstance().deleteProgram(cellID);
     }
 
     private void deleteProgram(CellID cellID) {
