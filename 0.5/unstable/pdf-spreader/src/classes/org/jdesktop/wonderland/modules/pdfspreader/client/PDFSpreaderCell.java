@@ -56,6 +56,8 @@ public class PDFSpreaderCell extends Cell implements SlidesCell {
 
     private LayoutType layout = LayoutType.LINEAR;
 
+    private String creatorName;
+
     private float spacing = 4.0f;
     private float scale = 1.0f;
 
@@ -93,6 +95,7 @@ public class PDFSpreaderCell extends Cell implements SlidesCell {
         this.spacing = ((PDFSpreaderCellClientState)state).getSpacing();
         this.layout = ((PDFSpreaderCellClientState)state).getLayout();
         this.scale = ((PDFSpreaderCellClientState)state).getScale();
+        this.creatorName = ((PDFSpreaderCellClientState)state).getCreatorName();
     }
 
     @Override
@@ -184,6 +187,10 @@ public class PDFSpreaderCell extends Cell implements SlidesCell {
 
     public float getInterslideSpacing() {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getCreatorName() {
+        return this.creatorName;
     }
 
     class PDFSpreaderCellMessageReceiver implements ComponentMessageReceiver {
