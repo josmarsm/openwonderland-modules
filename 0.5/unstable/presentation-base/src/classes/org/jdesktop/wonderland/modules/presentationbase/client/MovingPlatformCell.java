@@ -59,7 +59,7 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
         // Register the platform with the PresentationManager
         // on status changes.
         if(status==CellStatus.ACTIVE && increasing) {
-            PresentationManager.getManager().addPlatform(this);
+//            PresentationToolbarManager.getManager().addPlatform(this);
 
             this.setLocalBounds(new BoundingBox(Vector3f.ZERO, 10.0f, 20.0f, 10.0f));
 
@@ -68,7 +68,7 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
             logger.warning("Added proximity listener.");
 
         } else if (status==CellStatus.DISK && !increasing) {
-            PresentationManager.getManager().removePlatform(this);
+//            PresentationToolbarManager.getManager().removePlatform(this);
         }
     }
 

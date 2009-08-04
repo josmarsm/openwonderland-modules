@@ -32,7 +32,7 @@ import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellServerState;
-import org.jdesktop.wonderland.modules.presentationbase.client.PresentationManager;
+import org.jdesktop.wonderland.modules.presentationbase.client.PresentationToolbarManager;
 
 /**
  * Client-side plugin for the ChatZones system.
@@ -65,12 +65,12 @@ public class ChatZonesClientPlugin extends BaseClientPlugin implements ActionLis
             button.setActionCommand(CREATE_CHAT_ZONE_COMMAND);
         }
 
-       PresentationManager.getManager().addToolbarButton(button);
+       PresentationToolbarManager.getManager().addToolbarButton(button);
     }
 
     @Override
     protected void deactivate() {
-      PresentationManager.getManager().removeToolbarButton(button);
+      PresentationToolbarManager.getManager().removeToolbarButton(button);
     }
 
     public void actionPerformed(ActionEvent arg0) {
