@@ -130,7 +130,7 @@ public class CMUCell extends Cell {
             // Socket information message
             if (ConnectionChangeMessage.class.isAssignableFrom(message.getClass())) {
                 ConnectionChangeMessage changeMessage = (ConnectionChangeMessage) message;
-                CMUCell.this.setServerAndPort(changeMessage.getServer(), changeMessage.getPort());
+                CMUCell.this.setHostnameAndPort(changeMessage.getServer(), changeMessage.getPort());
             }
 
             // Playback speed message
@@ -273,7 +273,7 @@ public class CMUCell extends Cell {
      * @param server The host address to connect to
      * @param port The port to connect to
      */
-    public void setServerAndPort(String server, int port) {
+    public void setHostnameAndPort(String server, int port) {
         // Synchronize this on sceneRoot, so that no changes can
         synchronized (this.sceneRoot) {
             this.disconnect();
@@ -362,7 +362,7 @@ public class CMUCell extends Cell {
         this.setPlayingWithoutUpdate(cmuClientState.isPlaying());
         this.setPlaybackSpeedWithoutUpdate(cmuClientState.getPlaybackSpeed());
         if (cmuClientState.isServerAndPortInitialized()) {
-            this.setServerAndPort(cmuClientState.getServer(), cmuClientState.getPort());
+            this.setHostnameAndPort(cmuClientState.getServer(), cmuClientState.getPort());
         }
     }
 

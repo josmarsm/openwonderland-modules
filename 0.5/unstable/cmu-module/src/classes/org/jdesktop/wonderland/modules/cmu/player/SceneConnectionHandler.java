@@ -25,9 +25,11 @@ import edu.cmu.cs.dennisc.scenegraph.event.ChildRemovedEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.ChildrenListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
@@ -130,10 +132,16 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
          * Get the server set up by this thread's ServerSocket.
          * @return The server used to connect to this thread
          */
-        public String getServer() {
+        public String getHostname() {
             synchronized (socketListenerLock) {
                 assert socketListener != null;
-                return socketListener.getInetAddress().getHostAddress();
+                try {
+                    System.out.println("Host address: " + InetAddress.getLocalHost().getHostName());
+                    return InetAddress.getLocalHost().getHostName();
+                } catch (UnknownHostException ex) {
+                    Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+                    return null;
+                }
             }
         }
     }
@@ -167,8 +175,8 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      * Get the address used to connect to this scene.
      * @return The address on which this scene is listening for connections
      */
-    public String getServer() {
-        return this.handlerThread.getServer();
+    public String getHostname() {
+        return this.handlerThread.getHostname();
     }
 
     /**
