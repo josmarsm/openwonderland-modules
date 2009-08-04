@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.thoughtbubbles.client;
 
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
-import com.jme.scene.Node;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Date;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
@@ -52,7 +50,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.modules.presentationbase.client.PresentationManager;
+import org.jdesktop.wonderland.modules.presentationbase.client.PresentationToolbarManager;
 import org.jdesktop.wonderland.modules.thoughtbubbles.client.jme.cell.ThoughtBubbleEntity;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentChangeMessage;
 import org.jdesktop.wonderland.modules.thoughtbubbles.common.ThoughtBubblesComponentChangeMessage.ThoughtBubblesAction;
@@ -214,10 +212,10 @@ public class ThoughtBubblesCellComponent extends CellComponent implements Proxim
             if (entered) {
                 // turn on the toolbar
                 logger.warning("Adding toolbar button.");
-                PresentationManager.getManager().addToolbarButton(createThoughtButton);
+                PresentationToolbarManager.getManager().addToolbarButton(createThoughtButton);
             } else {
                 logger.warning("Removing toolbar button.");
-                PresentationManager.getManager().removeToolbarButton(createThoughtButton);
+                PresentationToolbarManager.getManager().removeToolbarButton(createThoughtButton);
             }
         }
     }
