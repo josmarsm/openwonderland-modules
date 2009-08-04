@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player;
 
-import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -155,17 +154,17 @@ public class ProgramPlayer extends Program {
 
     /**
      * Play at standard speed.
-     */
+     *
     public void play() {
-        this.setPlaybackSpeed(PlaybackDefaults.DEFAULT_PLAYBACK_SPEED);
-    }
+        this.setPlaybackSpeed(PlaybackDefaults.PLAY_SPEED);
+    }*/
 
     /**
      * Pause playback.
-     */
+     *
     public void pause() {
         this.setPlaybackSpeed(PlaybackDefaults.PAUSE_SPEED);
-    }
+    }*/
 
     /**
      * Set a particular playback speed and update the total elapsed time.
@@ -192,7 +191,7 @@ public class ProgramPlayer extends Program {
         //handleSpeedChange doesn't have any effect until after the program thread is running,
         //i.e. a little while after start is called).
 
-        if (!this.isStarted() && speed != PlaybackDefaults.PAUSE_SPEED) {
+        if (!this.isStarted() && speed != 0.0f) {
             this.setStarted();
         }
 
@@ -212,10 +211,10 @@ public class ProgramPlayer extends Program {
     /**
      * Check whether the program is playing.
      * @return true if the program is playing at any speed
-     */
+     *
     public boolean isPlaying() {
         return (this.getPlaybackSpeed() != PlaybackDefaults.PAUSE_SPEED);
-    }
+    }*/
 
     /**
      * Start this scene and mark that this has been done; should be

@@ -39,7 +39,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 public class ProgramConnectionHandler implements ClientConnectionHandler, Serializable {
 
     private WonderlandClientSender clientSender;
-    private final List<Message> messageQueue = new Vector<Message>();   // Ordered message queue
 
     /**
      * {@inheritDoc}
@@ -66,18 +65,6 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
      */
     public void clientConnected(WonderlandClientSender sender, WonderlandClientID clientID, Properties properties) {
         ProgramConnectionHandlerMO.reconnect();
-        // Send any messages that were in queue.
-
-        /*
-        synchronized(messageQueue) {
-            Iterator<Message> iterator = messageQueue.iterator();
-            while (iterator.hasNext()) {
-                Message message = iterator.next();
-                //TODO: figure out how to do this safely
-                //clientSender.send(message);
-                iterator.remove();
-            }
-        }*/
     }
 
     /**
@@ -113,7 +100,7 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
             cmuCellMO.setServerAndPort(message.getServer(), message.getPort());
         }
 
-        //TODO: handle unsuccessful program creation
+    //TODO: handle unsuccessful program creation
     }
 
     /**
@@ -123,14 +110,6 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
      * @param message The message to send
      */
     public void sendMessage(Message message) {
-        if (this.clientSender.getClients().isEmpty()) {
-            // Queue messages until at least one client connects (we shouldn't ever have more than one)
-            synchronized(messageQueue) {
-                messageQueue.add(message);
-            }
-        }
-        else {
-            this.clientSender.send(message);
-        }
+        this.clientSender.send(message);
     }
 }

@@ -17,20 +17,33 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common;
 
+import java.io.Serializable;
+
 /**
- * Defines default values for scene playback speed.
+ * ID for a CMU visual node.
  * @author kevin
  */
-public final class PlaybackDefaults {
+public class NodeID implements Serializable {
 
-    public static final float PLAY_SPEED = 1.0f;
-    public static final float PAUSE_SPEED = 0.0f;
-    public static final float DEFAULT_START_SPEED = PLAY_SPEED;
-    public static final boolean DEFAULT_START_PLAYING = false;
+    private final long id;
 
-    /**
-     * Class should never be instantiated.
-     */
-    private PlaybackDefaults() {
+    public NodeID(long id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) return true;
+        if (other instanceof NodeID) {
+            if (((NodeID)other).id == this.id) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + (int) (this.id ^ (this.id >>> 32));
+        return hash;
     }
 }

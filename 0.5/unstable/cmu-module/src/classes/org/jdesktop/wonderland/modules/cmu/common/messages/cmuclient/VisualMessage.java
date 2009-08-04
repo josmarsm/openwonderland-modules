@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
  * Serializable information about a CMU visual; stores geometry and texture
@@ -56,7 +57,7 @@ public class VisualMessage implements Serializable {
      * Constructor with ID.
      * @param nodeID The node ID of the relevant visual
      */
-    public VisualMessage(int nodeID) {
+    public VisualMessage(NodeID nodeID) {
         this();
         transformation.setNodeID(nodeID);
     }
@@ -65,7 +66,7 @@ public class VisualMessage implements Serializable {
      * Get the node ID of the relevant visual.
      * @return Current ID
      */
-    public int getNodeID() {
+    public NodeID getNodeID() {
         return this.transformation.getNodeID();
     }
 
@@ -74,7 +75,7 @@ public class VisualMessage implements Serializable {
      * TransformationMessage).
      * @param nodeID New ID
      */
-    public void setNodeID(int nodeID) {
+    public void setNodeID(NodeID nodeID) {
         this.transformation.setNodeID(nodeID);
     }
 

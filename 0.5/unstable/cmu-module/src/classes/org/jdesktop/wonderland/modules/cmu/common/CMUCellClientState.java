@@ -27,7 +27,9 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 public class CMUCellClientState extends CellClientState {
 
     private boolean serverAndPortInitialized = false;
+    private boolean playing;
     private float playbackSpeed;
+    private boolean groundPlaneShowing;
     private String server;
     private int port;
 
@@ -84,5 +86,21 @@ public class CMUCellClientState extends CellClientState {
      */
     public synchronized boolean isServerAndPortInitialized() {
         return serverAndPortInitialized;
+    }
+
+    public synchronized boolean isPlaying() {
+        return playing;
+    }
+
+    public synchronized void setPlaying(boolean playing) {
+        this.playing = playing;
+    }
+
+    public boolean isGroundPlaneShowing() {
+        return groundPlaneShowing;
+    }
+
+    public void setGroundPlaneShowing(boolean groundPlaneShowing) {
+        this.groundPlaneShowing = groundPlaneShowing;
     }
 }

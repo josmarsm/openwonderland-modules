@@ -37,6 +37,10 @@ public class CMUCellServerState extends CellServerState {
     @XmlElement(name="cmu-uri")
     private String cmuURI = null;
 
+    /** Whether to show the ground plane when loading this CMU file. */
+    @XmlElement(name="groundplane-visible")
+    private boolean groundPlaneShowing = false;
+
     /**
      * {@inheritDoc}
      */
@@ -58,6 +62,14 @@ public class CMUCellServerState extends CellServerState {
      */
     public void setCmuURI(String uri) {
         cmuURI = uri;
+    }
+
+    @XmlTransient public boolean isGroundPlaneShowing() {
+        return groundPlaneShowing;
+    }
+
+    public void setGroundPlaneShowing(boolean showing) {
+        groundPlaneShowing = showing;
     }
 
 }

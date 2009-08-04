@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
 import java.io.Serializable;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
  * Serializable message to inform that a particular visual should be
@@ -27,7 +28,7 @@ import java.io.Serializable;
 public class VisualDeletedMessage implements Serializable {
 
     private final static long serialVersionUID = 1L;
-    private int nodeID;
+    private NodeID nodeID;
 
     /**
      * Basic constructor.
@@ -40,7 +41,7 @@ public class VisualDeletedMessage implements Serializable {
      * Constructor with ID.
      * @param nodeID ID of the visual to delete
      */
-    public VisualDeletedMessage(int nodeID) {
+    public VisualDeletedMessage(NodeID nodeID) {
         this();
         this.setNodeID(nodeID);
     }
@@ -49,7 +50,7 @@ public class VisualDeletedMessage implements Serializable {
      * Get the ID of the visual to delete.
      * @return Current ID
      */
-    public int getNodeID() {
+    public NodeID getNodeID() {
         return nodeID;
     }
 
@@ -57,7 +58,7 @@ public class VisualDeletedMessage implements Serializable {
      * Set the ID of the visual to delete.
      * @param nodeID New ID
      */
-    public void setNodeID(int nodeID) {
+    public void setNodeID(NodeID nodeID) {
         this.nodeID = nodeID;
     }
 }
