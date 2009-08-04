@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellServerState;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPlaneChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -46,8 +47,11 @@ public class CMUCellMO extends CellMO {
     private String cmuURI;
     private String server;
     private int port;
+    private boolean playing;
     private float playbackSpeed;
     private final Serializable playbackSpeedLock = new String();
+    private boolean groundPlaneShowing;
+    private final Serializable groundPlaneLock = new String();
     private boolean socketInitialized = false;  // False until a CMU instance informs us with valid socket information.
     private final Serializable socketLock = new String();
 
@@ -78,14 +82,21 @@ public class CMUCellMO extends CellMO {
             // Playback speed change
             if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
                 PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
-                cellMO.setPlaybackSpeed(change.getPlaybackSpeed());
+                cellMO.setPlaybackInformation(change.isPlaying(), change.getPlaybackSpeed());
+                cellMO.sendCellMessage(clientID, message);
+            }
+
+            // Ground plane visibility change
+            if (GroundPlaneChangeMessage.class.isAssignableFrom(message.getClass())) {
+                GroundPlaneChangeMessage change = (GroundPlaneChangeMessage) message;
+                cellMO.setGroundPlaneShowing(change.isGroundPlaneShowing());
                 cellMO.sendCellMessage(clientID, message);
             }
 
             // Mouse button event
             if (MouseButtonEventMessage.class.isAssignableFrom(message.getClass())) {
                 MouseButtonEventMessage mouseMessage = (MouseButtonEventMessage) message;
-                //TODO: forward mouse clicks
+            //TODO: forward mouse clicks
             }
         }
     }
@@ -112,26 +123,53 @@ public class CMUCellMO extends CellMO {
     }
 
     /**
-     * Get current playback speed.
-     * @return Current playback speed for the CMU instance.
+     * We use two separate forms of playback speed control: a binary play/pause
+     * control, and a many-valued playback speed control.  This method
+     * gets the net result of boht methods.
+     * If the scene is playing, get the stored playback speed; if it is paused,
+     * get the default paused speed.
+     * @return Actual playback speed
      */
-    public float getPlaybackSpeed() {
-        synchronized(playbackSpeedLock) {
-            return this.playbackSpeed;
+    private float getActualPlaybackSpeed() {
+        synchronized (playbackSpeedLock) {
+            return (isPlaying() ? this.playbackSpeed : PlaybackDefaults.PAUSE_SPEED);
+        }
+    }
+
+    public void setPlaybackInformation(boolean playing, float playbackSpeed) {
+        synchronized (playbackSpeedLock) {
+            this.playbackSpeed = playbackSpeed;
+            this.playing = playing;
+            // Inform the associated program of the change
+            ProgramConnectionHandlerMO.changePlaybackSpeed(getCellID(), getActualPlaybackSpeed());
         }
     }
 
     /**
-     * Set the playback speed, and pass a message along to the
-     * program associated with this cell.
-     * @param playbackSpeed The new playback speed
+     * Get current playback speed.
+     * @return Current playback speed for the CMU instance.
      */
-    public void setPlaybackSpeed(float playbackSpeed) {
-        synchronized(playbackSpeedLock) {
-            this.playbackSpeed = playbackSpeed;
+    public float getPlaybackSpeed() {
+        synchronized (playbackSpeedLock) {
+            return this.playbackSpeed;
+        }
+    }
 
-            // Inform the associated program of the change
-            ProgramConnectionHandlerMO.changePlaybackSpeed(getCellID(), playbackSpeed);
+    public boolean isPlaying() {
+        synchronized (playbackSpeedLock) {
+            return playing;
+        }
+    }
+
+    public boolean isGroundPlaneShowing() {
+        synchronized(groundPlaneLock) {
+            return groundPlaneShowing;
+        }
+    }
+
+    public void setGroundPlaneShowing(boolean groundPlaneShowing) {
+        synchronized(groundPlaneLock) {
+            this.groundPlaneShowing = groundPlaneShowing;
         }
     }
 
@@ -153,13 +191,17 @@ public class CMUCellMO extends CellMO {
         }
 
         CMUCellClientState cmuClientState = ((CMUCellClientState) clientState);
-        cmuClientState.setPlaybackSpeed(getPlaybackSpeed());
+        synchronized (playbackSpeedLock) {
+            cmuClientState.setPlaying(isPlaying());
+            cmuClientState.setPlaybackSpeed(getPlaybackSpeed());
+        }
+        cmuClientState.setGroundPlaneShowing(isGroundPlaneShowing());
         synchronized (socketLock) {
             if (this.socketInitialized) {
                 cmuClientState.setServerAndPort(getServer(), getPort());
             }
         }
-        
+
         return super.getClientState(clientState, clientID, capabilities);
     }
 
@@ -172,11 +214,12 @@ public class CMUCellMO extends CellMO {
 
         CMUCellServerState setup = (CMUCellServerState) serverState;
         setCmuURI(setup.getCmuURI());
+        setGroundPlaneShowing(setup.isGroundPlaneShowing());
 
         // Create CMU instance
         ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
 
-        this.setPlaybackSpeed(PlaybackDefaults.DEFAULT_START_SPEED);
+        this.setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
     }
 
     /**
@@ -187,7 +230,9 @@ public class CMUCellMO extends CellMO {
         if (serverState == null) {
             serverState = new CMUCellServerState();
         }
-        ((CMUCellServerState) serverState).setCmuURI(getCmuURI());
+        CMUCellServerState cmuServerState = (CMUCellServerState)serverState;
+        cmuServerState.setCmuURI(getCmuURI());
+        cmuServerState.setGroundPlaneShowing(isGroundPlaneShowing());
         return super.getServerState(serverState);
     }
 
@@ -229,7 +274,7 @@ public class CMUCellMO extends CellMO {
     }
 
     private void sendServerInformation() {
-        synchronized(socketLock) {
+        synchronized (socketLock) {
             this.sendCellMessage(null, new ConnectionChangeMessage(this.getCellID(), getServer(), getPort()));
         }
     }

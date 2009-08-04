@@ -26,6 +26,7 @@ import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationListener;
 import java.util.Collection;
 import java.util.Vector;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.AppearanceConverter;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.GeometryConverter;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.OrthogonalMatrix3x3Converter;
@@ -39,17 +40,17 @@ import org.jdesktop.wonderland.modules.cmu.player.conversions.ScaleConverter;
  */
 public class VisualWrapper implements AbsoluteTransformationListener {
 
-    private static int numNodes = 0;        // Used to assign unique IDs to each node.
+    private static long numNodes = 0;        // Used to assign unique IDs to each node.
     private final Visual cmuVisual;         // The wrapped visual.
     private final VisualMessage visualMessage;     // The serializable data for this visual.
     private final Collection<TransformationMessageListener> transformationListeners = new Vector<TransformationMessageListener>();
-    protected final int nodeID;             // Unique ID for this visual.
+    protected final NodeID nodeID;             // Unique ID for this visual.
 
 
     {
         // Set node ID in every constructor.
         synchronized (this.getClass()) {
-            this.nodeID = numNodes;
+            this.nodeID = new NodeID(numNodes);
             numNodes++;
         }
     }
@@ -76,7 +77,7 @@ public class VisualWrapper implements AbsoluteTransformationListener {
      * Get the unique ID for this node.
      * @return The node ID, uniquely generated at construction
      */
-    public int getNodeID() {
+    public NodeID getNodeID() {
         return nodeID;
     }
 

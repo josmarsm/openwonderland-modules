@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
 import java.io.Serializable;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
  * Serializable transformation information for a particular CMU visual.
@@ -29,7 +30,7 @@ import java.io.Serializable;
 public class TransformationMessage implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private int nodeID;
+    private NodeID nodeID;
     private float scale;
     private Vector3f translation;
     private Matrix3f rotation;
@@ -44,7 +45,7 @@ public class TransformationMessage implements Serializable {
      * Constructor with ID.
      * @param nodeID The ID of the node to which this transformation applies
      */
-    public TransformationMessage(int nodeID) {
+    public TransformationMessage(NodeID nodeID) {
         this();
         this.setNodeID(nodeID);
     }
@@ -66,7 +67,7 @@ public class TransformationMessage implements Serializable {
      * Set the node ID to which this transformation applies.
      * @param nodeID New node ID
      */
-    public synchronized void setNodeID(int nodeID) {
+    public synchronized void setNodeID(NodeID nodeID) {
         this.nodeID = nodeID;
     }
 
@@ -74,7 +75,7 @@ public class TransformationMessage implements Serializable {
      * Get the node ID to which this transformation applies.
      * @return Revelant node ID
      */
-    public synchronized int getNodeID() {
+    public synchronized NodeID getNodeID() {
         return this.nodeID;
     }
 

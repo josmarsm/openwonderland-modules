@@ -51,6 +51,7 @@ public class CMUCellFactory implements CellFactorySPI {
             String uri = props.getProperty("content-uri");
             state.setCmuURI(uri);
         }
+        state.setGroundPlaneShowing(false);
 
         return (T) state;
     }

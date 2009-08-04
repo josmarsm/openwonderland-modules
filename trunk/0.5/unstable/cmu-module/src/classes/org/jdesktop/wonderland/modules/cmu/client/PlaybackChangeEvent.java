@@ -15,46 +15,28 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
-
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+package org.jdesktop.wonderland.modules.cmu.client;
 
 /**
- * Message containing information about a change in playback speed for a
- * CMU scene.
+ *
  * @author kevin
  */
-public class PlaybackSpeedChangeMessage extends CellMessage {
+public class PlaybackChangeEvent {
 
-    private boolean playing;
     private float playbackSpeed;
-
-    /**
-     * Standard constructor.
-     * @param cellID ID of the relevant cell
-     * @param speed
-     */
-    public PlaybackSpeedChangeMessage(CellID cellID, float speed, boolean playing) {
-        super(cellID);
-        this.setPlaybackSpeed(speed);
-        this.setPlaying(playing);
+    private boolean playing;
+    
+    public PlaybackChangeEvent(float playbackSpeed, boolean isPlaying) {
+        setPlaybackSpeed(playbackSpeed);
+        setPlaying(isPlaying);
     }
 
-    /**
-     * Get the playback speed.
-     * @return Current playback speed
-     */
     public float getPlaybackSpeed() {
         return playbackSpeed;
     }
 
-    /**
-     * Set the playback speed.
-     * @param speed New playback speed
-     */
-    public void setPlaybackSpeed(float speed) {
-        this.playbackSpeed = speed;
+    public void setPlaybackSpeed(float playbackSpeed) {
+        this.playbackSpeed = playbackSpeed;
     }
 
     public boolean isPlaying() {

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 
@@ -39,7 +40,7 @@ public class VisualParent extends Node {
     public synchronized void applyTransformationToChild(TransformationMessage transformation) {
         for (Spatial child : this.getChildren()) {
             if (VisualParent.class.isAssignableFrom(child.getClass())) {
-                ((VisualParent)child).applyTransformationToChild(transformation);
+                ((VisualParent) child).applyTransformationToChild(transformation);
             }
         }
     }
@@ -50,9 +51,21 @@ public class VisualParent extends Node {
      * @param deleted The deletion message to be applied to a matching child
      */
     public synchronized void removeChild(VisualDeletedMessage deleted) {
+        removeChild(deleted.getNodeID());
+    }
+
+    public synchronized void removeChild(NodeID id) {
         for (Spatial child : this.getChildren()) {
             if (VisualParent.class.isAssignableFrom(child.getClass())) {
-                ((VisualParent)child).removeChild(deleted);
+                ((VisualParent) child).removeChild(id);
+            }
+        }
+    }
+
+    public synchronized void applyVisibilityToChild(NodeID nodeID, boolean visible) {
+        for (Spatial child : this.getChildren()) {
+            if (VisualParent.class.isAssignableFrom(child.getClass())) {
+                ((VisualParent) child).applyVisibilityToChild(nodeID, visible);
             }
         }
     }

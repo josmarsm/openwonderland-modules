@@ -28,6 +28,7 @@ import com.jme.util.TextureManager;
 import java.awt.Image;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
@@ -40,13 +41,13 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessa
  */
 public class VisualNode extends VisualParent {
 
-    protected final int nodeID;     // Unique ID for this node
+    protected final NodeID nodeID;     // Unique ID for this node
 
     /**
      * Basic constructor, generally not used.
      * @param nodeID Unique ID for this node
      */
-    public VisualNode(int nodeID) {
+    public VisualNode(NodeID nodeID) {
         super();
         this.nodeID = nodeID;
     }
@@ -99,7 +100,7 @@ public class VisualNode extends VisualParent {
      * Get the unique node ID for this visual.
      * @return This visual's node ID
      */
-    public int getNodeID() {
+    public NodeID getNodeID() {
         return this.nodeID;
     }
 
@@ -110,7 +111,7 @@ public class VisualNode extends VisualParent {
      */
     @Override
     public synchronized void applyTransformationToChild(TransformationMessage transformation) {
-        if (transformation.getNodeID() == this.getNodeID()) {
+        if (transformation.getNodeID().equals(this.getNodeID())) {
             this.applyTransformation(transformation);
         }
         super.applyTransformationToChild(transformation);
@@ -121,10 +122,18 @@ public class VisualNode extends VisualParent {
      * @param deleted Message specifying the node to remove.
      */
     @Override
-    public synchronized void removeChild(VisualDeletedMessage deleted) {
-        super.removeChild(deleted);
-        if (deleted.getNodeID() == this.getNodeID()) {
+    public synchronized void removeChild(NodeID nodeID) {
+        super.removeChild(nodeID);
+        if (nodeID.equals(this.getNodeID())) {
             this.removeFromParent();
+        }
+    }
+
+    @Override
+    public synchronized void applyVisibilityToChild(NodeID nodeID, boolean visible) {
+        super.applyVisibilityToChild(nodeID, visible);
+        if (nodeID.equals(this.getNodeID())) {
+            this.setVisible(visible);
         }
     }
 
