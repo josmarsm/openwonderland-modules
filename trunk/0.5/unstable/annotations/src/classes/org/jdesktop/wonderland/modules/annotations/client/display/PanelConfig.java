@@ -20,6 +20,9 @@ package org.jdesktop.wonderland.modules.annotations.client.display;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.font.FontRenderContext;
+import java.awt.image.BufferedImage;
 
 /**
  * Stores graphical config information for an AnnotationPane
@@ -37,24 +40,33 @@ public class PanelConfig {
   private Color fontColor = DEFAULT_FONT_COLOR;
   private Color shadowColor = DEFAULT_SHADOW_COLOR;
 
+  /** base font */
   private Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+  /** derived from base font in the setFont method */
+  private Font authorFont = null;
+  /** derived from base font in the setFont method */
+  private Font subjectFont = null;
+
+  private float authorFontResolution = 40f;
+  private float subjectFontResolution = 40f;
+  private FontRenderContext fontRenderContext;
 
   public PanelConfig(Color bgc, Color fc, Color sc, Font f){
     bgColor = bgc;
     fontColor = fc;
     shadowColor = sc;
-    font = f;
+    setFont(f);
   }
 
   public PanelConfig(Color bgc, Color fc, Color sc){
     bgColor = bgc;
     fontColor = fc;
     shadowColor = sc;
-
+    setFont(null);
   }
 
   public PanelConfig(){
-    
+    setFont(null);
   }
 
   public void setBackgroundColor(Color c){
@@ -65,9 +77,26 @@ public class PanelConfig {
     fontColor = c;
   }
 
-  public void setFont(Font f){
-    font = f;
+  public void setFont(Font font) {
+    if(font == null){
+      font = Font.decode("Sans PLAIN 40");
+    }
+    this.font = font;
+    authorFont = new Font(font.getName(),Font.BOLD,font.getSize());
+    BufferedImage tmp0 = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
+    authorFont = authorFont.deriveFont(authorFontResolution);
+//    int intendedSubjSize = (int)(font.getSize() * 0.8f);
+    subjectFont = authorFont.deriveFont(subjectFontResolution);
+    subjectFont = subjectFont.deriveFont(Font.ITALIC);
+    fontRenderContext = g2d.getFontRenderContext();
   }
+
+  public void setFontResolution(float fontResolution) {
+      this.authorFontResolution = fontResolution;
+      this.subjectFontResolution = fontResolution * 0.8f;
+  }
+
 
   public Color getBackgroundColor(){
     return bgColor;
@@ -81,6 +110,18 @@ public class PanelConfig {
     return font;
   }
 
+  public FontRenderContext getFontRenderContext(){
+    return fontRenderContext;
+  }
+
+  public Font getAuthorFont(){
+    return authorFont;
+  }
+
+  public Font getSubjectFont(){
+    return subjectFont;
+  }
+
   public Color getShadowColor() {
     return shadowColor;
   }
@@ -88,5 +129,8 @@ public class PanelConfig {
   public void setShadowColor(Color shadowColor) {
     this.shadowColor = shadowColor;
   }
+
+
+
   
 }

@@ -34,10 +34,11 @@ import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuInvocationSettings;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuManager.ContextMenuListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuListener;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
@@ -57,6 +58,7 @@ import org.jdesktop.wonderland.modules.metadata.client.cache.CacheEvent;
 import org.jdesktop.wonderland.modules.metadata.client.cache.CacheEventListener;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.ModifyCacheAction;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
 
 /**
  *
@@ -79,7 +81,7 @@ public class AnnotationComponent extends CellComponent
   /**
    * look for annotationpanes of this component
    */
-  private PanelConfig panelConfig = new PanelConfig();
+  private PanelConfig panelConfig;
 
   /**
    * maps annotations (from associated MetadataComponent) to hud components
@@ -98,6 +100,12 @@ public class AnnotationComponent extends CellComponent
   DisplayMode localDisplay = DisplayMode.HIDDEN;
 
   /**
+   * local (component) font size setting.. will be overwritten by the global
+   * every time the global is changed
+   */
+  private float localFontModifier;
+
+  /**
    * where to place new annotations initially
    */
   private Vector3f baseAnnoLocation;
@@ -106,7 +114,7 @@ public class AnnotationComponent extends CellComponent
    * count of annotation components, used to assign different colors to component's panes
    * @param cell
    */
-  private static int panelConfigCount = 1;
+  private static int panelConfigCount = 0;
 
   /**
    * The root of this component's parent cell, used to add AnnotationNodes
@@ -130,6 +138,7 @@ public class AnnotationComponent extends CellComponent
    *
    */
   DeleteAnnotationContextMenuFactory deleteCMF = new DeleteAnnotationContextMenuFactory();
+
 
 
   /**
@@ -158,12 +167,26 @@ public class AnnotationComponent extends CellComponent
     }
   }
 
+  /**
+   * set a new component-wide font size modifier
+   * @param newMode the new display mode setting
+   */
+  public void setLocalFontSizeModifier(float mod){
+    logger.info("[ANNO COMPO] set font size mod: " + mod);
+    localFontModifier = mod;
+    for(AnnotationEntity ent:nodes.values()){
+      ent.setFontSizeModifier(mod);
+    }
+  }
+
   @Override
   protected void setStatus(CellStatus status, boolean increasing){
     super.setStatus(status, increasing);
     if(status == CellStatus.RENDERING && increasing){
-      localDisplay = AnnotationPlugin.addDisplayListener(this);
-      logger.info("[ANNO COMPO] add self as listener! local display val is now: " + localDisplay);
+      AnnotationPlugin.addComponentListener(this);
+      localDisplay = AnnotationPlugin.getDisplayMode();
+      localFontModifier = AnnotationPlugin.getFontSizeModifier();
+      logger.info("[ANNO COMPO] add self as listener! local display val is now: " + localDisplay + "and font mod is " + localFontModifier);
       // build annotations
       rebuildAnnotations();
       // listen to ctx menu events
@@ -301,7 +324,7 @@ public class AnnotationComponent extends CellComponent
     
     // create the node to display in world
     logger.info("add anno, and local display is:" + localDisplay);
-    AnnotationEntity an = new AnnotationEntity(a, panelConfig, cell, localDisplay);
+    AnnotationEntity an = new AnnotationEntity(a, panelConfig, cell, localDisplay, localFontModifier);
     logger.info("about to set local translation from in compo");
     an.setLocalTranslation(baseAnnoLocation);
     baseAnnoLocation = baseAnnoLocation.add(0.5f, 0.5f, 0.5f);
@@ -315,6 +338,7 @@ public class AnnotationComponent extends CellComponent
 
   /**
    * remove an annotation, also removing its hud component
+   * does NOT remove from metadata component
    * @param a
    */
   private void removeAnnotation(MetadataID annoID) {
@@ -340,11 +364,14 @@ public class AnnotationComponent extends CellComponent
     AnnotationEntity an = nodes.get(annoID);
     an.dispose();
     nodes.remove(annoID);
+
+    // remove metadata
   }
 
   /**
    * convenience overload
    * remove an annotation, also removing its hud component
+   * does NOT remove from metadata component
    * @param a
    */
   private void removeAnnotation(Annotation a) {
@@ -393,7 +420,7 @@ public class AnnotationComponent extends CellComponent
     PanelConfig pc = n.getPanelConfig();
     Vector3f loc = n.getNode().getLocalTranslation();
     n.dispose();
-    n = new AnnotationEntity(a, pc, cell, localDisplay);
+    n = new AnnotationEntity(a, pc, cell, localDisplay, localFontModifier);
     n.setLocalTranslation(loc);
     nodes.put(a.getID(), n);
     n.setDisplayMode(currentDisplay);
@@ -498,21 +525,22 @@ public class AnnotationComponent extends CellComponent
       case 1:
         // orange and black
         logger.info("default pc 1");
-        pc = new PanelConfig(new Color(230, 150, 65), Color.black, Color.lightGray);
+        pc = new PanelConfig(new Color(230, 150, 65), Color.black, Color.gray);
         break;
       case 2:
         // blue and black
         logger.info("default pc 2");
-        pc = new PanelConfig(new Color(150, 175, 210), Color.black, Color.lightGray);
+        pc = new PanelConfig(new Color(150, 175, 210), Color.black, Color.gray);
         break;
       case 3:
         // red and white
         logger.info("default pc 3");
-        pc = new PanelConfig(new Color(145, 20, 20), Color.white, Color.lightGray);
+        pc = new PanelConfig(new Color(145, 20, 20), Color.white, Color.gray);
         break;
       case 4:
+        // white
         logger.info("default pc 3");
-        pc = new PanelConfig(new Color(250, 250, 165), Color.black, Color.lightGray);
+        pc = new PanelConfig(new Color(255, 255, 255), Color.black, Color.gray);
         break;
       default:
         panelConfigCount = 1;
@@ -645,7 +673,7 @@ public class AnnotationComponent extends CellComponent
   class CtxListener implements ContextMenuListener{
     
 
-    public void contextMenuDisplayed(ContextEvent event) {
+    public void contextMenuDisplayed(org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent event) {
 
       // only pay attention if it is for our cell
       if(event.getPrimaryCell().getCellID() != cell.getCellID()){
@@ -663,16 +691,31 @@ public class AnnotationComponent extends CellComponent
       }
       AnnotationEntity ent = (AnnotationEntity) primary;
       logger.info("do context menu for annotation " + ent.getAnnoID());
-      contextMenuCompo.setShowStandardMenuItems(false);
 
-      editCMF.setAnnotationID(ent.getAnnoID());
-      contextMenuCompo.addContextMenuFactory(editCMF);
+      // if the event isn't a ContextMenuEvent, an alternative implementation
+      // of the context menu (rather than SwingContextMenu) has been created,
+      // and this needs to be updated
+      if(event instanceof ContextMenuEvent){
+        ContextMenuEvent evt = (ContextMenuEvent) event;
+        logger.info("adjust CME");
+        // get/adjust settings
+        ContextMenuInvocationSettings settings = evt.getSettings();
+        settings.setDisplayStandard(false);
+        settings.setDisplayCellStandard(false);
+        settings.setMenuName("Annotation " + ent.getAnnoID());
 
-      moveCMF.setAnnotationID(ent.getAnnoID());
-      contextMenuCompo.addContextMenuFactory(moveCMF);
+        editCMF.setAnnotationID(ent.getAnnoID());
+        settings.addTempFactory(editCMF);
 
-      deleteCMF.setAnnotationID(ent.getAnnoID());
-      contextMenuCompo.addContextMenuFactory(deleteCMF);
+        moveCMF.setAnnotationID(ent.getAnnoID());
+        settings.addTempFactory(moveCMF);
+
+        deleteCMF.setAnnotationID(ent.getAnnoID());
+        settings.addTempFactory(deleteCMF);
+      }
+//      contextMenuCompo.setShowStandardMenuItems(false);
+
+      
 
     }
 
@@ -792,7 +835,7 @@ public class AnnotationComponent extends CellComponent
   }
 
   /**
-   * Listener for when the move item is selected from the annotation's context menu
+   * Listener for when the delete item is selected from the annotation's context menu
    */
   class DeleteAnnotationContextMenuListener implements ContextMenuActionListener {
     MetadataID annoID;
@@ -808,6 +851,7 @@ public class AnnotationComponent extends CellComponent
       // create an object
       logger.info("[ANNO COMPO] delete annotation performed for aid " + annoID);
       removeAnnotation(annoID);
+      removeAnnotationFromMetadata((Annotation)metaCompo.getMetadata(annoID));
       // TODO this is not the best place for this, it would be better suited
       // in an event listenr for a 'context menu closed' event, but put it
       // here for now to avoid crippling the parent cell
