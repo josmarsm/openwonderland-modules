@@ -61,6 +61,8 @@ public class PresentationManager {
 
     private Set<MovingPlatformCell> platformCells = new HashSet<MovingPlatformCell>();
 
+    private SlidesCell slidesCell;
+
     private PresentationManager() {
 
         // Do the startup stuff for a presentation manager.
@@ -154,5 +156,36 @@ public class PresentationManager {
     public void removePlatform(MovingPlatformCell cell) {
         logger.warning("Presentation mananger is sad to see a cell leave.");
         this.platformCells.remove(cell);
+    }
+
+    public void createPresentationSpace(SlidesCell slidesCell) {
+        if(this.slidesCell==null)
+            this.slidesCell = slidesCell;
+
+        // Do a bunch of exciting things now to do this setup, including
+        // getting layout information from the slidesCell.
+
+        logger.warning("Setting up a presentation space for slidesCell: " + slidesCell);
+
+        // Overall steps:
+        //
+        // 1. Put a toolbar up for everyone that gives them next/previous controls.
+        //     (eventually this should be just for the username that created
+        //      the file, but it's not clear to me how to do that since this
+        //      object contains only local state and isn't synced at all.)
+
+
+        // 2. Create a presentation platform in front of the first slide, sized
+        //    so it is as wide as the slide + the inter-slide space.
+        //
+
+        // 3. Tell the PDF spreader to grow itself to contain the whole space
+        //    of the presentation.
+
+        // 4. Attach a thought bubbles component to the parent cell.
+
+        // 5. Add buttons to the main presentation toolbar for setting camera
+        //    positions (back / top)
+
     }
 }

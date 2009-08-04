@@ -25,7 +25,10 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.presentationbase.common.MovingPlatformCellServerState;
 
 /**
- *
+ * This exists only for testing. Eventually, these will only be instantiated by
+ * the presentation system. But for now, it's helpful to be able to create
+ * them with the in-world HUD.
+ * 
  * @author Drew Harry <drew_harry@dev.java.net>
  */
 
