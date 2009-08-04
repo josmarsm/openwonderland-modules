@@ -21,12 +21,13 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.NameNotBoundException;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Vector;
+import java.util.HashMap;
+import java.util.Map;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
 
@@ -40,7 +41,7 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
 
     private static final String HANDLER_MO_NAME = "__CMU_PROGRAM_CONNECTION_HANDLER";
     private final ProgramConnectionHandler connectionHandler;
-    private final Collection<CreateProgramMessage> programsCreated = new Vector<CreateProgramMessage>();
+    private final Map<CellID, CreateProgramMessage> programsCreated = new HashMap<CellID, CreateProgramMessage>();
 
     /**
      * Get the relevant connection handler.
@@ -88,7 +89,8 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
      */
     private void registerProgram(CreateProgramMessage message) {
         synchronized (this.programsCreated) {
-            programsCreated.add(message);
+            // Overwrite previously written message if applicable
+            programsCreated.put(message.getCellID(), message);
         }
     //TODO: clean up when cells disconnect
     }
@@ -116,13 +118,24 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
         getInstance().sendMessage(new ProgramPlaybackSpeedChangeMessage(cellID, playbackSpeed));
     }
 
+    static public void removeProgram(CellID cellID) {
+        
+    }
+
+    private void deleteProgram(CellID cellID) {
+        synchronized(this.programsCreated) {
+            programsCreated.remove(cellID);
+        }
+        sendMessage(new DeleteProgramMessage(cellID));
+    }
+
     static public void reconnect() {
         getInstance().recreatePrograms();
     }
 
     private void recreatePrograms() {
         synchronized (this.programsCreated) {
-            for (CreateProgramMessage message : programsCreated) {
+            for (CreateProgramMessage message : programsCreated.values()) {
                 sendMessage(message);
             }
         }

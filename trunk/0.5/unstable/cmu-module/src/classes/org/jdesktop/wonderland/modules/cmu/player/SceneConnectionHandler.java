@@ -186,8 +186,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      */
     public synchronized void setScene(Scene sc) {
         this.unloadScene();
-        this.sc = sc;
-        this.processNode(sc.getSGComposite());
+        if (sc != null) {
+            this.sc = sc;
+            this.processNode(sc.getSGComposite());
+        }
     }
 
     /**
@@ -255,6 +257,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      */
     protected void removeConnection(Connection connection) {
         synchronized (connections) {
+            closeConnection(connection);
             connections.remove(connection);
         }
     }
@@ -265,9 +268,20 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      * for removing connections while iterating over them.
      * @param iterator
      */
-    protected void removeConnection(Iterator<Connection> iterator) {
+    protected void removeConnection(Iterator<Connection> iterator, Connection connection) {
         synchronized (connections) {
+            closeConnection(connection);
             iterator.remove();
+        }
+    }
+
+    protected void closeConnection(Connection connection) {
+        System.out.println("Closing connection...");
+        try {
+            connection.outputStream.close();
+            connection.socket.close();
+        } catch (IOException ex) {
+
         }
     }
 
@@ -294,7 +308,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                         connection.outputStream.writeObject(visualWrapper.getVisualMessage());
                         connection.outputStream.flush();
                     } catch (SocketException ex) {
-                        removeConnection(iterator);
+                        removeConnection(iterator, connection);
                     } catch (IOException ex) {
                         Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -316,7 +330,8 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                     connection.outputStream.writeObject(message);
                     connection.outputStream.flush();
                 } catch (SocketException ex) {
-                    removeConnection(iterator);
+                    System.out.println(ex);
+                    removeConnection(iterator, connection);
                 } catch (IOException ex) {
                     Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -344,7 +359,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                                 connection.outputStream.writeObject(new VisualDeletedMessage(visual.getNodeID()));
                                 connection.outputStream.flush();
                             } catch (SocketException ex) {
-                                removeConnection(iterator);
+                                removeConnection(iterator, connection);
                             } catch (IOException ex) {
                                 Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                             }

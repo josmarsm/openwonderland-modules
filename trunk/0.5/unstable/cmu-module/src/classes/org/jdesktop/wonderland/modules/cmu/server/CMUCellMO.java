@@ -254,19 +254,24 @@ public class CMUCellMO extends CellMO {
     protected void setLive(boolean live) {
         super.setLive(live);
 
+        final Class[] messagesToReceive = {
+            PlaybackSpeedChangeMessage.class,
+            GroundPlaneChangeMessage.class,
+            MouseButtonEventMessage.class,
+            RestartProgramMessage.class
+        };
+
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if (live == true) {
             ChannelComponentMO.ComponentMessageReceiver receiver =
                     (ChannelComponentMO.ComponentMessageReceiver) new CMUCellMessageReceiver(this);
-            channel.addMessageReceiver(PlaybackSpeedChangeMessage.class, receiver);
-            channel.addMessageReceiver(GroundPlaneChangeMessage.class, receiver);
-            channel.addMessageReceiver(MouseButtonEventMessage.class, receiver);
-            channel.addMessageReceiver(RestartProgramMessage.class, receiver);
+            for (Class c : messagesToReceive) {
+                channel.addMessageReceiver(c, receiver);
+            }
         } else {
-            channel.removeMessageReceiver(PlaybackSpeedChangeMessage.class);
-            channel.removeMessageReceiver(GroundPlaneChangeMessage.class);
-            channel.removeMessageReceiver(MouseButtonEventMessage.class);
-            channel.removeMessageReceiver(RestartProgramMessage.class);
+            for (Class c : messagesToReceive) {
+                channel.removeMessageReceiver(c);
+            }
         }
     }
 
