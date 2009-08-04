@@ -26,9 +26,15 @@ import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDComponentManager;
@@ -38,6 +44,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationEntity.DisplayMode;
+import org.jdesktop.wonderland.modules.annotations.client.display.FontSizePane;
 import org.jdesktop.wonderland.modules.hud.client.HUDCompassLayoutManager;
 import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDComponentManager;
 
@@ -54,7 +61,7 @@ import org.jdesktop.wonderland.modules.hud.client.WonderlandHUDComponentManager;
 public class AnnotationPlugin extends BaseClientPlugin
 {
   private static Logger logger = Logger.getLogger(AnnotationPlugin.class.getName());
-//  private static HUD mainHUD;
+  //  private static HUD mainHUD;
 
 
 
@@ -67,7 +74,19 @@ public class AnnotationPlugin extends BaseClientPlugin
     /** global display setting of annotations */
     private static DisplayMode globalDisplayMode = DisplayMode.HIDDEN;
 
-    private static ArrayList<AnnotationComponent> displayModeListeners = new ArrayList<AnnotationComponent>();
+    /** global tool for adjusting display size of fonts in Annotations in world */
+    JMenuItem fontSize;
+
+    /** the font size adjusting tool */
+    static FontSizePane fontPane;
+
+    /** hud compo to hold the font panel */
+    HUDComponent fontHudCompo;
+
+    /** global setting for font size */
+    static float globalFontSizeModifier;
+
+    private static ArrayList<AnnotationComponent> componentListeners = new ArrayList<AnnotationComponent>();
 
     private static HUD myHud = null;
     public static final String ANNOTATION_HUD = "annotations";
@@ -87,10 +106,24 @@ public class AnnotationPlugin extends BaseClientPlugin
     public void initialize(final ServerSessionManager loginInfo) {
       logger.info("[ANNO PLUGIN] initialize");
 
+      // create new 'font size' controller
+      fontSize = new JMenuItem("Annotation Size");
+      fontSize.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+              hudCheck();
+              // set the hud visible
+              HUDManagerFactory.getHUDManager().setVisible(myHud, true);
+
+              // display the component
+              logger.info("[ANNO PLUGIN] display new font hud compo");
+              fontHudCompo.setVisible(true);
+            }
+        });
+
       // Create the 'global set annotation view mode' menu
       displayMenu = new JMenu("Annotations");
-      JRadioButtonMenuItem button;
-      
+
+      JRadioButtonMenuItem button;    
       // add menu items for every possible display mode
       ButtonGroup group = new ButtonGroup();
       for(DisplayMode dm:DisplayMode.values()){
@@ -139,7 +172,21 @@ public class AnnotationPlugin extends BaseClientPlugin
     protected void activate() {
       logger.info("[ANNO PLUGIN] activated");
       // add the display menu item
+      JmeClientMain.getFrame().addToWindowMenu(fontSize, -1);
       JmeClientMain.getFrame().addToViewMenu(displayMenu, -1);
+      // create hud component for font-size elt
+      hudCheck();
+      fontPane = new FontSizePane();
+      globalFontSizeModifier = fontPane.getFontSize();
+      fontPane.addFontSliderListener(new fontPanelListener());
+      fontHudCompo = myHud.createComponent(fontPane);
+      fontHudCompo.setName("Annotation Font Size");
+      myHud.addComponent(fontHudCompo);
+      fontHudCompo.setPreferredLocation(Layout.SOUTHEAST);
+      fontHudCompo.setTransparency(0.3f);
+      fontHudCompo.setVisible(false);
+      fontHudCompo.setWorldVisible(false);
+      
     }
 
     @Override
@@ -150,14 +197,21 @@ public class AnnotationPlugin extends BaseClientPlugin
     }
 
     /**
-     * AnnotationComponents listen for new global display modes here.
+     * AnnotationComponents listen for new global display modes and font sizes.
      *
      * static so that annotation components can add themselves as necessary
      * @param l
      */
-    static DisplayMode addDisplayListener(AnnotationComponent ac){
-      displayModeListeners.add(ac);
+    static void addComponentListener(AnnotationComponent ac){
+      componentListeners.add(ac);
+    }
+
+    static DisplayMode getDisplayMode(){
       return globalDisplayMode;
+    }
+
+    static float getFontSizeModifier(){
+      return globalFontSizeModifier;
     }
 
     /**
@@ -168,7 +222,7 @@ public class AnnotationPlugin extends BaseClientPlugin
      * @param l
      */
     static void removeDisplayListener(AnnotationComponent ac){
-      displayModeListeners.remove(ac);
+      componentListeners.remove(ac);
     }
 
     /**
@@ -177,7 +231,7 @@ public class AnnotationPlugin extends BaseClientPlugin
      */
     private void notifyComponentsDisplayChanged(DisplayMode newMode){
       logger.info("[ANNO PLUGIN] notify listeners of display change, new state is: " + newMode );
-      for(AnnotationComponent ac: displayModeListeners){
+      for(AnnotationComponent ac: componentListeners){
         logger.info("[ANNO PLUGIN] notifying..");
         ac.setLocalDisplayMode(newMode);
       }
@@ -248,5 +302,16 @@ public class AnnotationPlugin extends BaseClientPlugin
     myHud.setComponentManager(compManager);
   }
 
+  private class fontPanelListener implements ChangeListener{
+
+    public void stateChanged(ChangeEvent e) {
+      // font changed, inform all component listeners to resize themselves
+      for(AnnotationComponent ac: componentListeners){
+        logger.info("[ANNO PLUGIN] notifying..");
+        ac.setLocalFontSizeModifier(fontPane.getFontSize());
+      }
+    }
+
+  }
 
 }
