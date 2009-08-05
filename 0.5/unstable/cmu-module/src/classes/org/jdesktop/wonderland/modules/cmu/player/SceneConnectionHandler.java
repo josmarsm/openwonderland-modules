@@ -25,6 +25,7 @@ import edu.cmu.cs.dennisc.scenegraph.event.ChildRemovedEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.ChildrenListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -74,13 +75,14 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         }
     }
 
-    private class SceneSenderThread extends Thread {
+    private class MessageSenderThread<T extends Serializable> extends Thread {
 
-        private final SceneMessage message;
+        private final T message;
         private final Connection connection;
 
-        public SceneSenderThread(Connection connection, SceneMessage message) {
+        public MessageSenderThread(Connection connection, T message) {
             super();
+            System.out.println(message);
             this.connection = connection;
             this.message = message;
         }
@@ -89,6 +91,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         public void run() {
             try {
                 connection.outputStream.writeObject(message);
+                connection.outputStream.flush();
             } catch (SocketException ex) {
                 SceneConnectionHandler.this.removeConnection(connection);
             } catch (IOException ex) {
@@ -273,7 +276,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 connections.add(newConnection);
 
                 // Broadcast setup data to this connection.
-                new SceneSenderThread(newConnection, message).start();
+                new MessageSenderThread<SceneMessage>(newConnection, message).start();
             }
         }
     }
@@ -335,16 +338,8 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 Iterator<Connection> iterator = connections.iterator();
                 while (iterator.hasNext()) {
                     Connection connection = iterator.next();
-                    try {
-                        connection.outputStream.writeObject(visualWrapper.getVisualMessage());
-                        connection.outputStream.flush();
-                    } catch (SocketException ex) {
-                        removeConnection(iterator, connection);
-                    } catch (IOException ex) {
-                        Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    new MessageSenderThread<VisualMessage>(connection, visualWrapper.getVisualMessage()).start();
                 }
-
             }
         }
     }
