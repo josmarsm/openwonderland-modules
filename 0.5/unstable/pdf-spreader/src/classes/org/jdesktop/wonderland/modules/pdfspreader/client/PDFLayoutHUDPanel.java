@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.presentationbase.client.PresentationCell;
 
@@ -231,7 +232,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
         // Make a call into the presentation manager to tell it that this PDF wants to be
         // turned into a full presentation space.
 
-        PresentationCell.createPresentationSpace(cell);
+        PresentationCell.createPresentationSpace((Cell)cell);
 
     }//GEN-LAST:event_createPresentationButtonActionPerformed
 

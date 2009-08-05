@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.client;
 
+import org.jdesktop.wonderland.modules.presentationbase.server.SlidesCell;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

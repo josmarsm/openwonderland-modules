@@ -45,6 +45,9 @@ public class PDFSpreaderCellServerState extends CellServerState {
     @XmlElement(name="creator-name")
     private String creatorName;
 
+    @XmlElement(name="num-pages")
+    private int numPages;
+
     public PDFSpreaderCellServerState() {
     }
 
@@ -76,6 +79,11 @@ public class PDFSpreaderCellServerState extends CellServerState {
     @XmlTransient public String getCreatorName() { return this.creatorName; }
     public void setCreatorName(String creatorName) {
         this.creatorName = creatorName;
+    }
+
+    @XmlTransient public int getNumPages() { return this.numPages; }
+    public void setNumPages(int numPages) {
+        this.numPages = numPages;
     }
 
 }

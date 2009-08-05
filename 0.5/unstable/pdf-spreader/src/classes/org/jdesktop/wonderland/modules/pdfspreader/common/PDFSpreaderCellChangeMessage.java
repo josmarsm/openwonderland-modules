@@ -22,18 +22,29 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 public class PDFSpreaderCellChangeMessage extends CellMessage {
 
+
+    public enum MessageType {
+        LAYOUT,
+        DOCUMENT
+    }
+
     public enum LayoutType {
         LINEAR,
         SEMICIRCLE,
         CIRCLE
     }
 
+    private MessageType type;
+
     private float scale;
     private float spacing;
     private LayoutType layout;
 
-    public PDFSpreaderCellChangeMessage() {
-        
+    private int numPages;
+    private float slideWidth;
+
+    public PDFSpreaderCellChangeMessage(MessageType type) {
+        this.type = type;
     }
 
     public LayoutType getLayout() {
@@ -59,4 +70,26 @@ public class PDFSpreaderCellChangeMessage extends CellMessage {
     public void setSpacing(float spacing) {
         this.spacing = spacing;
     }
+
+    public int getNumPages() {
+        return numPages;
+    }
+
+    public void setNumPages(int numPages) {
+        this.numPages = numPages;
+    }
+
+    public MessageType getType() {
+        return type;
+    }
+
+    public float getSlideWidth() {
+        return slideWidth;
+    }
+
+    public void setSlideWidth(float slideWidth) {
+        this.slideWidth = slideWidth;
+    }
+
+
 }

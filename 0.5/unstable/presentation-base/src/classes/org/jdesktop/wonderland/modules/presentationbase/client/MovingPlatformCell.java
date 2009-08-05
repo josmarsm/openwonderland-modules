@@ -31,7 +31,9 @@ import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.presentationbase.client.jme.cell.MovingPlatformCellRenderer;
+import org.jdesktop.wonderland.modules.presentationbase.common.MovingPlatformCellClientState;
 
 /**
  *
@@ -46,6 +48,9 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
     @UsesCellComponent
     private ProximityComponent prox;
+
+    protected float platformWidth = 10.0f;
+    protected float platformDepth = 10.0f;
 
     public MovingPlatformCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -70,6 +75,21 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
         } else if (status==CellStatus.DISK && !increasing) {
 //            PresentationToolbarManager.getManager().removePlatform(this);
         }
+    }
+
+    @Override
+    public void setClientState(CellClientState state) {
+
+        this.platformWidth = ((MovingPlatformCellClientState)state).getPlatformWidth();
+        this.platformDepth = ((MovingPlatformCellClientState)state).getPlatformDepth();
+
+        if(platformWidth==0.0f)
+            platformWidth = 10.0f;
+
+        if(platformDepth==0.0f)
+            platformDepth = 10.0f;
+
+        logger.warning("SETTING PLATFORM WIDTH/DEPTH: " + this.platformWidth + "x" + this.platformDepth);
     }
 
     @Override
@@ -110,4 +130,12 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
     }
 
+    public float getPlatformWidth() {
+
+        return this.platformWidth;
+    }
+
+    public float getPlatformDepth() {
+        return platformDepth;
+    }
 }

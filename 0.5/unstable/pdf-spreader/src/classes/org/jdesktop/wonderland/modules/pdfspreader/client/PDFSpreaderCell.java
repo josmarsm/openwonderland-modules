@@ -28,14 +28,13 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.pdfspreader.client.jme.cell.PDFSpreaderCellRenderer;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.MessageType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellClientState;
-import org.jdesktop.wonderland.modules.presentationbase.client.SlidesCell;
 
 /**
  * The client side component of the PDFSpreaderCell. When a user drops a PDF,
@@ -43,7 +42,7 @@ import org.jdesktop.wonderland.modules.presentationbase.client.SlidesCell;
  *
  * @author Drew Harry <drew_harry@dev.java.net>
  */
-public class PDFSpreaderCell extends Cell implements SlidesCell {
+public class PDFSpreaderCell extends Cell {
 
     private PDFSpreaderCellRenderer renderer = null;
 
@@ -74,7 +73,7 @@ public class PDFSpreaderCell extends Cell implements SlidesCell {
         // This ONLY gets called by the HUD panel, so when we get this call
         // we know that a local change has occured that we need to send
         // to the server.
-        PDFSpreaderCellChangeMessage msg = new PDFSpreaderCellChangeMessage();
+        PDFSpreaderCellChangeMessage msg = new PDFSpreaderCellChangeMessage(MessageType.LAYOUT);
         msg.setLayout(layout);
         msg.setScale(scale);
         msg.setSpacing(spacing);
@@ -82,9 +81,6 @@ public class PDFSpreaderCell extends Cell implements SlidesCell {
 
         logger.finer("just sent cell message to server: " + msg);
     }
-
-
-
 
     @Override
     public void setClientState(CellClientState state) {
@@ -147,8 +143,6 @@ public class PDFSpreaderCell extends Cell implements SlidesCell {
         renderer.updateLayout();
     }
 
-
-
     public String getSourceURI() {
         return this.pdfURI;
     }
@@ -162,30 +156,6 @@ public class PDFSpreaderCell extends Cell implements SlidesCell {
         else {
             return super.createCellRenderer(rendererType);
         }
-    }
-
-    public void updateServerCell() {
-        // package the current local settings up and send them to the server.
-        // this should only trigger on local changes.
-
-        PDFSpreaderCellChangeMessage msg = new PDFSpreaderCellChangeMessage();
-        msg.setLayout(this.layout);
-        msg.setScale(scale);
-        msg.setSpacing(spacing);
-
-        this.sendCellMessage(msg);
-    }
-
-    public CellTransform getTransform() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public int getNumSlides() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public float getInterslideSpacing() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public String getCreatorName() {

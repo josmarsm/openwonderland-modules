@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.client;
 
+import org.jdesktop.wonderland.modules.presentationbase.server.SlidesCell;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
@@ -107,7 +108,7 @@ public class PresentationCell extends Cell implements ProximityListener {
 
     }
 
-    public static void createPresentationSpace(SlidesCell slidesCell) {
+    public static void createPresentationSpace(Cell slidesCell) {
 
         // Do a bunch of exciting things now to do this setup, including
         // getting layout information from the slidesCell.

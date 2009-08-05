@@ -18,7 +18,9 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.common;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
@@ -30,11 +32,28 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class MovingPlatformCellServerState extends CellServerState {
 
+    @XmlElement(name="platform-width")
+    private float platformWidth;
+
+    @XmlElement(name="platform-depth")
+    private float platformDepth;
+
+
     public MovingPlatformCellServerState() {
     }
 
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.presentationbase.server.MovingPlatformCellMO";
+    }
+
+    @XmlTransient public float getPlatformWidth() { return this.platformWidth; }
+    public void setPlatformWidth(float platformWidth) {
+        this.platformWidth = platformWidth;
+    }
+
+    @   XmlTransient public float getPlatformDepth() { return this.platformDepth; }
+    public void setPlatformDepth(float platformDepth) {
+        this.platformDepth = platformDepth;
     }
 
 }
