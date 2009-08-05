@@ -107,8 +107,8 @@ public class MetadataComponent extends CellComponent {
 
 
             // TODO add test context items
-            menuComponent.addContextMenuFactory(new TestContextMenuFactory(0));
-            menuComponent.addContextMenuFactory(new TestContextMenuFactory(1));
+//            menuComponent.addContextMenuFactory(new TestContextMenuFactory(0));
+//            menuComponent.addContextMenuFactory(new TestContextMenuFactory(1));
           }
           else{
 //            channel.removeMessageReceiver(MetadataCacheResponse.class);
