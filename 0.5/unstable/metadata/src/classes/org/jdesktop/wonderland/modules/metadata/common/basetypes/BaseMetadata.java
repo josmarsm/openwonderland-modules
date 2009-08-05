@@ -48,11 +48,11 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataValue.Datatype;
 @MetadataType
 @MetadataContextMenuItem
 public class BaseMetadata implements Serializable, Metadata {
-    private CellID parentCell;
     public final MetadataID id; // unique id
     // TODO does this need to be synchronized in some way?
     // cellregistry didn't seem to sync on cellid's...
     private static int count;
+
     /**
      * this DateFormat to be used in all default date fields
      */
@@ -68,7 +68,6 @@ public class BaseMetadata implements Serializable, Metadata {
     
 
     private HashMap<String, MetadataValue> attributes;
-//    private String author, modAuthor, creationDate, modDate;
 
     /**
      * Subclasses should include all attributes and any default values
@@ -103,13 +102,6 @@ public class BaseMetadata implements Serializable, Metadata {
         id = new MetadataID(count++);
         return;
     }
-
-//    private void initDefaults(String inAuthor, String inCreationDate) {
-////        author = inAuthor;
-////        creationDate = inCreationDate;
-////        modAuthor = "";
-////        modDate = "";
-//    }
 
     /**
      * Subclasses should overwrite this and provide their own human
@@ -198,9 +190,6 @@ public class BaseMetadata implements Serializable, Metadata {
       return false;
     }
     final BaseMetadata other = (BaseMetadata) obj;
-    if (this.parentCell != other.parentCell && (this.parentCell == null || !this.parentCell.equals(other.parentCell))) {
-      return false;
-    }
     if (this.id != other.id) {
       return false;
     }
@@ -213,7 +202,6 @@ public class BaseMetadata implements Serializable, Metadata {
   @Override
   public int hashCode() {
     int hash = 7;
-    hash = 31 * hash + (this.parentCell != null ? this.parentCell.hashCode() : 0);
     hash = 31 * hash + this.id.hashCode();
     hash = 31 * hash + (this.attributes != null ? this.attributes.hashCode() : 0);
     return hash;
@@ -235,4 +223,5 @@ public class BaseMetadata implements Serializable, Metadata {
   public String getModified(){
     return attributes.get(MODIFIED_ATTR).getVal();
   }
+
 }
