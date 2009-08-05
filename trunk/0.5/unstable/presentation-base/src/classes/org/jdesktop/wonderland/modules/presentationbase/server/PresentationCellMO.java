@@ -17,11 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.presentationbase.server;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.modules.presentationbase.common.MovingPlatformCellServerState;
 import org.jdesktop.wonderland.modules.presentationbase.common.PresentationCellServerState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
@@ -74,12 +79,12 @@ public class PresentationCellMO extends CellMO {
             //////////////////////////////////////////////
             // Setup process as continued from PresentationCell.createPresentationSpace
             ////////////////////
-            CellMO slidesCell = CellManagerMO.getCell(pcsState.getSlidesCellID());
+            CellMO pdfCell = CellManagerMO.getCell(pcsState.getSlidesCellID());
 
 
             // 0. Setup this cell so it's got the same transform that the PDF
             //    cell used to have, but bigger.
-            this.setLocalTransform(slidesCell.getLocalTransform(null));
+            this.setLocalTransform(pdfCell.getLocalTransform(null));
 
 
             // 1. Reparent the PDF cell to be a child of this cell instead.
@@ -88,22 +93,27 @@ public class PresentationCellMO extends CellMO {
             //       cell message is implemented. They should probably
             //       be refactored to be the same common utility method.)
 
-            CellMO slideParent = slidesCell.getParent();
+            CellMO slideParent = pdfCell.getParent();
 
             if(slideParent==null) {
-                CellManagerMO.getCellManager().removeCellFromWorld(slidesCell);
+                CellManagerMO.getCellManager().removeCellFromWorld(pdfCell);
             } else {
-                slideParent.removeChild(slidesCell);
+                slideParent.removeChild(pdfCell);
             }
             try {
-                this.addChild(slidesCell);
+                this.addChild(pdfCell);
 
                 // Now move it to 0,0,0 within its new parent cell (which
                 // already moved to the PDF cell's location.
-                MovableComponentMO mc = slidesCell.getComponent(MovableComponentMO.class);
-                mc.moveRequest(null, new CellTransform(null, Vector3f.ZERO));
-                this.setLocalBounds(slidesCell.getLocalBounds());
+                MovableComponentMO mc = pdfCell.getComponent(MovableComponentMO.class);
 
+                if(mc!=null)
+                    mc.moveRequest(null, new CellTransform(null, Vector3f.ZERO));
+                else
+                    logger.warning("NO MOVABLE COMPONENT ON THE PDF CELL");
+
+                this.setLocalBounds(pdfCell.getLocalBounds());
+                
             } catch (MultipleParentException ex) {
                 logger.info("MultipleParentException while reparenting the slidesCell: " + ex.getLocalizedMessage());
             }
@@ -111,11 +121,48 @@ public class PresentationCellMO extends CellMO {
             // 2. Create a presentation platform in front of the first slide, sized
             //    so it is as wide as the slide + the inter-slide space. Parent to
             //    the new PresentationCell.
-            //
+
+            SlidesCell slidesCell = (SlidesCell)pdfCell;
 
 
-            // 3. Tell the PDF spreader to grow itself to contain the whole space
-            //    of the presentation.
+            logger.info("numpages: " + slidesCell.getNumSlides() + " created by: " + slidesCell.getCreatorName());
+            
+
+
+            // The width of the presentation platform is the width of the slide + one spacing distance.
+            float actualSlideSpacing = slidesCell.getInterslideSpacing();
+            if(actualSlideSpacing < 0) actualSlideSpacing = 0.0f;
+
+            float platformWidth = slidesCell.getMaxSlideWidth() + slidesCell.getInterslideSpacing();
+
+            MovingPlatformCellMO platform = new MovingPlatformCellMO();
+
+            MovingPlatformCellServerState platformState = new MovingPlatformCellServerState();
+            platformState.setPlatformWidth(platformWidth);
+            platformState.setPlatformDepth(8.0f);
+
+            PositionComponentServerState posState = new PositionComponentServerState();
+            posState.setTranslation(new Vector3f(0.0f, 0.0f, 0.0f));
+            posState.setScaling(Vector3f.UNIT_XYZ);
+            posState.setRotation(new Quaternion());
+            
+            platformState.addComponentServerState(posState);
+            platform.setServerState(platformState);
+
+
+            // Move the platform into the right position.
+//            MovableComponentMO mc = platform.getComponent(MovableComponentMO.class);
+//            if(mc!=null)
+//                mc.moveRequest(null, new CellTransform(null, new Vector3f(0.0f,0.0f,0.0f)));
+//            else
+//                logger.warning("NO MOVABLE COMPONENT FOUND ON THE PLATFORM");
+
+
+            try {
+                this.addChild(platform);
+            } catch (MultipleParentException ex) {
+                Logger.getLogger(PresentationCellMO.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
             // 4. Attach a thought bubbles component to the parent cell.
 

@@ -21,6 +21,10 @@
         <path location="${current.dir}/../presentation-base/build/client/presentation-base-client.jar"/>
     </pathconvert>
 
+    <pathconvert property="module-server.classpath">
+        <path location="${current.dir}/../presentation-base/build/server/presentation-base-server.jar"/>
+    </pathconvert>
+
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
         

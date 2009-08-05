@@ -23,9 +23,11 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.modules.presentationbase.client.MovingPlatformCell;
 
 /**
  *
@@ -33,20 +35,28 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
  */
 public class MovingPlatformCellRenderer extends BasicRenderer {
 
+    private static final Logger logger = Logger.getLogger(MovingPlatformCellRenderer.class.getName());
+
+    MovingPlatformCell platformCell;
 
     public MovingPlatformCellRenderer(Cell cell) {
         super(cell);
+
+        platformCell = (MovingPlatformCell)cell;
     }
 
     protected Node createSceneGraph(Entity entity) {
         Node root = new Node();
 
-        TriMesh platform = new Box("platform", Vector3f.ZERO, 10.0f, 0.25f, 10.0f);
+        logger.warning("About to create PLATFORM TRIMESH with dimensions: " + platformCell.getPlatformWidth() + "x" + platformCell.getPlatformDepth());
+        TriMesh platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.25f, platformCell.getPlatformDepth());
 
         root.attachChild(platform);
-
-        root.setModelBound(new BoundingBox(Vector3f.ZERO, 10.0f, 0.25f, 10.0f));
+        logger.warning("Attached platform.");
+        root.setModelBound(new BoundingBox(Vector3f.ZERO, platformCell.getPlatformWidth(), 0.25f, platformCell.getPlatformDepth()));
         root.updateModelBound();
+
+        logger.warning("Updated bounds.");
 
         return root;
     }

@@ -18,17 +18,57 @@
 package org.jdesktop.wonderland.modules.presentationbase.server;
 
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.presentationbase.common.MovingPlatformCellClientState;
+import org.jdesktop.wonderland.modules.presentationbase.common.MovingPlatformCellServerState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  *
- * @author Drew Harry <drew_harry@dev.java.net
+ * @author Drew Harry <drew_harry@dev.java.net>
  */
+
 public class MovingPlatformCellMO extends CellMO {
+
+
+    private float platformWidth;
+    private float platformDepth;
 
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.presentationbase.client.MovingPlatformCell";
+    }
+
+    @Override
+    public void setServerState(CellServerState state) {
+        super.setServerState(state);
+
+        platformWidth = ((MovingPlatformCellServerState)state).getPlatformWidth();
+        platformDepth = ((MovingPlatformCellServerState)state).getPlatformDepth();
+    }
+
+    @Override
+    public CellServerState getServerState(CellServerState state) {
+        if(state==null)
+            state = new MovingPlatformCellServerState();
+
+        ((MovingPlatformCellServerState)state).setPlatformWidth(platformWidth);
+        ((MovingPlatformCellServerState)state).setPlatformDepth(platformDepth);
+
+
+        return state;
+    }
+
+    @Override
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        if (cellClientState == null)
+            cellClientState = new MovingPlatformCellClientState();
+
+        ((MovingPlatformCellClientState)cellClientState).setPlatformWidth(platformWidth);
+        ((MovingPlatformCellClientState)cellClientState).setPlatformDepth(platformDepth);
+
+        return cellClientState;
     }
 
 }

@@ -26,9 +26,28 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  * @author Drew Harry <drew_harry@dev.java.net>
  */
 public class MovingPlatformCellClientState extends CellClientState {
+    
+    private float platformWidth;
+    private float platformDepth;
 
     public MovingPlatformCellClientState() {
         
     }
 
+    public float getPlatformWidth() {
+        return platformWidth;
+    }
+
+    public void setPlatformWidth(float platformWidth) {
+        this.platformWidth = platformWidth;
+    }
+
+    public float getPlatformDepth() {
+        return platformDepth;
+    }
+
+    public void setPlatformDepth(float platformDepth) {
+        this.platformDepth = platformDepth;
+    }
+    
 }

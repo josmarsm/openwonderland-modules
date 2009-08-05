@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.pdfspreader.server;
 
+import com.sun.sgs.app.ManagedReference;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -26,15 +27,19 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.MessageType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellClientState;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellServerState;
+import org.jdesktop.wonderland.modules.presentationbase.server.SlidesCell;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
-public class PDFSpreaderCellMO extends CellMO {
+public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
 
     private static final Logger logger = Logger.getLogger(PDFSpreaderCellMO.class.getName());
 
@@ -44,6 +49,12 @@ public class PDFSpreaderCellMO extends CellMO {
     private float scale = 1.0f;
     private LayoutType layout = LayoutType.LINEAR;
     private String creatorName;
+
+    protected int numPages = 0;
+    private float slideWidth = 0;
+
+    @UsesCellComponentMO(MovableComponentMO.class)
+    private ManagedReference<MovableComponentMO> moveRef;
 
     public PDFSpreaderCellMO () {
         super();
@@ -128,6 +139,37 @@ public class PDFSpreaderCellMO extends CellMO {
             channel.removeMessageReceiver(PDFSpreaderCellChangeMessage.class);
         }
     }
+
+    public int getNumSlides() {
+        return this.numPages;
+    }
+
+    public float getInterslideSpacing() {
+        // I think we might need to do some math to get this value out. I'm
+        // not sure it really corresponds with the spacing variable as written.
+        // We need to figure out per-slide width first. 
+        return 0.0f;
+    }
+
+    public String getCreatorName() {
+        return this.creatorName;
+    }
+
+    private void setNumPages(int numPages) {
+        this.numPages = numPages;
+    }
+
+    private boolean isDocumentSetup() {
+        return this.numPages>0 && this.slideWidth>0;
+    }
+
+    private void setSlideWidth(float slideWidth) {
+        this.slideWidth = slideWidth;
+    }
+
+    public float getMaxSlideWidth() {
+        return this.slideWidth;
+    }
     
     private static class PDFSpreaderCellMessageReceiver extends AbstractComponentMessageReceiver {
         public PDFSpreaderCellMessageReceiver(PDFSpreaderCellMO cellMO) {
@@ -142,15 +184,32 @@ public class PDFSpreaderCellMO extends CellMO {
 
             logger.info("Received PDFSpreader message from client: " + msg.getLayout() + "; " + msg.getScale() + "; " + msg.getSpacing());
             // when we get a message, change our internal state and send it back to everyone else.
-            cellMO.setSpacing(msg.getSpacing());
-            cellMO.setScale(msg.getScale());
-            cellMO.setLayout(msg.getLayout());
 
-            // Remove the user who sent it from the list of people to send to.
-            Set<WonderlandClientID> clients = sender.getClients();
-            clients.remove(clientID);
+            // Either a message contains a numPages bit, or the other info.
+            // Probably
+            if(msg.getType() == MessageType.DOCUMENT) {
+                if(!cellMO.isDocumentSetup()) {
+                cellMO.setNumPages(msg.getNumPages());
+                cellMO.setSlideWidth(msg.getSlideWidth());
+                logger.warning("Setting document data. numpages: " + msg.getNumPages() + "; slideWidth: " + msg.getSlideWidth());
+                }
 
-            sender.send(clients, message);
+            } else if(msg.getType() == MessageType.LAYOUT) {
+                cellMO.setSpacing(msg.getSpacing());
+                cellMO.setScale(msg.getScale());
+                cellMO.setLayout(msg.getLayout());
+
+                // Pass on only LAYOUT messages, not document.
+                // All clients already know document info, that message
+                // is just to keep the server in sync.
+
+                // Remove the user who sent it from the list of people to send to.
+                Set<WonderlandClientID> clients = sender.getClients();
+                clients.remove(clientID);
+
+                sender.send(clients, message);
+            }
+
         }
     }
 

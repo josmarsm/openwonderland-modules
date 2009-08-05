@@ -37,6 +37,7 @@ import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.Dimension2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -57,7 +58,9 @@ import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.modules.pdfspreader.client.PDFSpreaderCell;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
+import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.MessageType;
 
 public class PDFSpreaderCellRenderer extends BasicRenderer {
     private Node node = null;
@@ -73,6 +76,11 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
     // Keeps track of the slide objects so we can
     // move them around in response to HUD events.
     private List<Spatial> slides = new Vector<Spatial>();
+
+    // Controls the relationship between the size of the rendered texture
+    // (as generated from the PDF library) and the object in world.
+    // Making this value bigger makes slides appear bigger in world.
+    public static final float SLIDE_SIZE_FACTOR = 0.00125F;
 
     public PDFSpreaderCellRenderer(Cell cell) {
         super(cell);
@@ -258,8 +266,10 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 e.printStackTrace();
             }
 
-            // centered around 0,0, calculate starting position.
-            
+            float maxHeight = 0.0f;
+            float maxWidth = 0.0f;
+
+            // centered around 0,0, calculate starting position.            
             for (int i = 1; i <= pdf.getNumPages(); i++) {
 
                 // logger.warning("currentCenter: " + currentCenter + " (page " + i + ")");
@@ -274,7 +284,15 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 // Dispatch the JME specific stuff to a thread that we can run inside
                 // the RenderingThread.
                 ClientContextJME.getWorldManager().addRenderUpdater((RenderUpdater)new NewSlideUpdater(node, pageTexture, i), null);
+
+                if(pageTexture.getHeight()*SLIDE_SIZE_FACTOR>maxHeight)
+                    maxHeight = pageTexture.getHeight()*SLIDE_SIZE_FACTOR;
+
+                if(pageTexture.getWidth()*SLIDE_SIZE_FACTOR>maxWidth)
+                    maxWidth = pageTexture.getWidth()*SLIDE_SIZE_FACTOR;
             }
+
+            setSlideDimensions(maxHeight, maxWidth);
         }
     }
 
@@ -312,7 +330,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 break;
                 
             case LINEAR:
-                // i-1 because pages is 1-n, not 0-(n-1)
+                // i->1 because pages is 1->n, not 0->(n-1)
                 // the other negative bit recenters the line around the middle
                 // of the set of slides, not the start point.
                 pos = new Vector3f(0, 0, (pdfCell.getSpacing() * (i-1) + (pdfCell.getSpacing()*((pdf.getNumPages()-1)/2.0f)*-1)));
@@ -327,6 +345,25 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         s.setLocalTranslation(pos);
         s.setLocalRotation(rot);
         ClientContextJME.getWorldManager().addToUpdateList(s);
+    }
+
+    protected void setSlideDimensions(float width, float height) {
+        
+
+        // Once we know the first slide's dimensoin, trigger a message that
+        // informs the server what it is (as well as the num pages)
+        // This data will allow the server to figure out how to place
+        // the platform.
+
+        // Trigger a message to the server with the number of pages.
+        PDFSpreaderCellChangeMessage msg = new PDFSpreaderCellChangeMessage(MessageType.DOCUMENT);
+        msg.setNumPages(pdf.getNumPages());
+
+        // Thought a little bit here about how scaling will work. If you scale up the
+        // PDFCell, should that scale transfer to the PresentationCell? Probably.
+        msg.setSlideWidth(width);
+
+        pdfCell.sendCellMessage(msg);
     }
 
     private class NewSlideUpdater implements RenderUpdater {
@@ -349,8 +386,8 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 
                 // Figure out what the size of the texture is, scale it down to something
                 // reasonable.
-                float width = texture.getImage().getWidth() * 0.00125f;
-                float height = texture.getImage().getHeight() * 0.00125f;
+                float width = texture.getImage().getWidth() * SLIDE_SIZE_FACTOR;
+                float height = texture.getImage().getHeight() * SLIDE_SIZE_FACTOR;
 
                 TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + index, new Vector3f(), 0.1f, width, height);
                 node.attachChild(currentSlide);

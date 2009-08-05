@@ -16,10 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.presentationbase.client;
-
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
+package org.jdesktop.wonderland.modules.presentationbase.server;
 
 /**
  * Utility interface so presentation-base doesn't have to depend on the PDF
@@ -31,14 +28,12 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * @author Drew Harry <drew_harry@dev.java.net>
  */
 public interface SlidesCell {
-    
-    public CellTransform getTransform();
-    
+        
     public int getNumSlides();
     
     public float getInterslideSpacing();
 
     public String getCreatorName();
 
-    public CellID getCellID();
+    public float getMaxSlideWidth();
 }
