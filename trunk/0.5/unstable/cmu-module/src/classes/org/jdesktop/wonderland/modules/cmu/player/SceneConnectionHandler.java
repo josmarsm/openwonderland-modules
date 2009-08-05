@@ -62,8 +62,8 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      */
     protected class Connection {
 
-        protected Socket socket;
-        protected ObjectOutputStream outputStream;
+        private final Socket socket;
+        private ObjectOutputStream outputStream;
 
         public Connection(Socket socket) {
             this.socket = socket;
@@ -71,6 +71,24 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 this.outputStream = new ObjectOutputStream(socket.getOutputStream());
             } catch (IOException ex) {
                 Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        public void writeToOutputStream(Object message) throws IOException {
+            synchronized (socket) {
+                this.outputStream.writeObject(message);
+                this.outputStream.flush();
+            }
+        }
+
+        public void close() {
+            synchronized(socket) {
+                try {
+                    this.writeToOutputStream(new UnloadSceneMessage());
+                    this.outputStream.close();
+                    this.socket.close();
+                } catch (IOException ex) {
+                }
             }
         }
     }
@@ -82,7 +100,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
 
         public MessageSenderThread(Connection connection, T message) {
             super();
-            System.out.println(message);
             this.connection = connection;
             this.message = message;
         }
@@ -90,8 +107,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         @Override
         public void run() {
             try {
-                connection.outputStream.writeObject(message);
-                connection.outputStream.flush();
+                connection.writeToOutputStream(message);
             } catch (SocketException ex) {
                 SceneConnectionHandler.this.removeConnection(connection);
             } catch (IOException ex) {
@@ -270,13 +286,13 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
             }
             SceneMessage message = new SceneMessage(visualMessages);
 
+            Connection newConnection = new Connection(connection);
+            // Broadcast setup data to this connection.
+            new MessageSenderThread<SceneMessage>(newConnection, message).start();
+
             synchronized (connections) {
                 // Store the connection and the associated stream.
-                Connection newConnection = new Connection(connection);
                 connections.add(newConnection);
-
-                // Broadcast setup data to this connection.
-                new MessageSenderThread<SceneMessage>(newConnection, message).start();
             }
         }
     }
@@ -288,7 +304,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      */
     protected void removeConnection(Connection connection) {
         synchronized (connections) {
-            closeConnection(connection);
+            connection.close();
             connections.remove(connection);
         }
 
@@ -302,23 +318,12 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      */
     protected void removeConnection(Iterator<Connection> iterator, Connection connection) {
         synchronized (connections) {
-            closeConnection(connection);
+            connection.close();
             iterator.remove();
         }
 
     }
 
-    protected void closeConnection(Connection connection) {
-        System.out.println("Closing connection...");
-        try {
-            connection.outputStream.writeObject(new UnloadSceneMessage());
-            connection.outputStream.close();
-            connection.socket.close();
-        } catch (IOException ex) {
-        }
-    }
-
-    //TODO: handle this in separate threads
     /**
      * Create a wrapper for the given CMU visual, and broadcast its addition
      * to any connected clients.
@@ -354,8 +359,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
             while (iterator.hasNext()) {
                 Connection connection = iterator.next();
                 try {
-                    connection.outputStream.writeObject(message);
-                    connection.outputStream.flush();
+                    connection.writeToOutputStream(message);
                 } catch (SocketException ex) {
                     System.out.println(ex);
                     removeConnection(iterator, connection);
@@ -386,8 +390,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                     while (iterator.hasNext()) {
                         Connection connection = iterator.next();
                         try {
-                            connection.outputStream.writeObject(new UnloadSceneMessage());
-                            connection.outputStream.flush();
+                            connection.writeToOutputStream(new UnloadSceneMessage());
                         } catch (SocketException ex) {
                             removeConnection(iterator, connection);
                         } catch (IOException ex) {
