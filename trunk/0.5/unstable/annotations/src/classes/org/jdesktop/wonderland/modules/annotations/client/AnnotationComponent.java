@@ -50,7 +50,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationEntity;
 import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationEntity.DisplayMode;
 import org.jdesktop.wonderland.modules.annotations.client.display.AnnotationPane;
-import org.jdesktop.wonderland.modules.annotations.client.display.PanelConfig;
+import org.jdesktop.wonderland.modules.annotations.common.AnnotationSettings;
 import org.jdesktop.wonderland.modules.annotations.common.Annotation;
 import org.jdesktop.wonderland.modules.hud.client.HUDComponent2D;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataComponent;
@@ -61,7 +61,7 @@ import org.jdesktop.wonderland.modules.metadata.common.ModifyCacheAction;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
 
 /**
- *
+ * 
  * @author mabonner
  */
 public class AnnotationComponent extends CellComponent 
@@ -79,9 +79,9 @@ public class AnnotationComponent extends CellComponent
   @UsesCellComponent ContextMenuComponent contextMenuCompo;
   
   /**
-   * look for annotationpanes of this component
+   * default graphical options for annotations on this cell/component
    */
-  private PanelConfig panelConfig;
+  private AnnotationSettings defaultSettings;
 
   /**
    * maps annotations (from associated MetadataComponent) to hud components
@@ -91,7 +91,7 @@ public class AnnotationComponent extends CellComponent
   /**
    * maps annotations (from associated MetadataComponent) to AnnotationNodes displayed in world
    */
-  HashMap<MetadataID, AnnotationEntity> nodes = new HashMap<MetadataID, AnnotationEntity>();
+  HashMap<MetadataID, AnnotationEntity> entities = new HashMap<MetadataID, AnnotationEntity>();
   
   /**
    * local (component) display mode setting.. will be overwritten by the global
@@ -123,36 +123,28 @@ public class AnnotationComponent extends CellComponent
   private CtxListener ctxListener;
 
   /**
-   * Creates the edit item for annotations' context menus
+   * Creates annotation specific items for context menu, set its annotation
+   * ID before using for each annotation.
    */
-  EditAnnotationContextMenuFactory editCMF = new EditAnnotationContextMenuFactory();
+   AnnotationContextMenuFactory annoCMF = new AnnotationContextMenuFactory();
 
   /**
-   * Creates the move item for annotations' context menus
-   *
-   */
-  MoveAnnotationContextMenuFactory moveCMF = new MoveAnnotationContextMenuFactory();
-
-  /**
-   * Creates the delete item for annotations' context menus
-   *
-   */
-  DeleteAnnotationContextMenuFactory deleteCMF = new DeleteAnnotationContextMenuFactory();
-
-
-
-  /**
-   *
+   * Constructor, takes the parent cell for default cell component constructor
    * @param cell
    */
   public AnnotationComponent(Cell cell) {
     super(cell);
-    panelConfig = getPanelConfig();
+    defaultSettings = getPanelConfig();
     logger.info("[ANNO COMPO] compo created");
   }
 
-  public void setPanelConfig(PanelConfig pc){
-    panelConfig = pc;
+  /**
+   * AnnotationSettings that will be applied to new annotations by default, unless
+   * they are changed one by one.
+   * @param pc
+   */
+  public void setDefaultAnnotationSettings(AnnotationSettings as){
+    defaultSettings = as;
   }
 
   /**
@@ -162,7 +154,7 @@ public class AnnotationComponent extends CellComponent
   public void setLocalDisplayMode(DisplayMode newMode){
     logger.info("[ANNO COMPO] set display mode: " + newMode);
     localDisplay = newMode;
-    for(AnnotationEntity ent:nodes.values()){
+    for(AnnotationEntity ent:entities.values()){
       setAnnotationDisplayMode(ent, newMode);
     }
   }
@@ -174,7 +166,7 @@ public class AnnotationComponent extends CellComponent
   public void setLocalFontSizeModifier(float mod){
     logger.info("[ANNO COMPO] set font size mod: " + mod);
     localFontModifier = mod;
-    for(AnnotationEntity ent:nodes.values()){
+    for(AnnotationEntity ent:entities.values()){
       ent.setFontSizeModifier(mod);
     }
   }
@@ -235,10 +227,10 @@ public class AnnotationComponent extends CellComponent
     }
     else if(status == CellStatus.DISK && !increasing){
       logger.info("[ANNO COMPO] clean up annotations");
-      for(AnnotationEntity node:nodes.values()){
+      for(AnnotationEntity node:entities.values()){
         node.dispose();
       }
-      nodes.clear();
+      entities.clear();
       for(HUDComponent hc:hudComponents.values()){
         hc.setVisible(false);
         hc.setWorldVisible(false);
@@ -297,19 +289,37 @@ public class AnnotationComponent extends CellComponent
    * @param a
    */
   private void addAnnotation(Annotation a) {
+    // if annotation is modified while being added (position, graphics settings..)
+    // alert the metadata system of the changes to make them persistent
+    boolean modified = false;
+
+    if(a.getSettings() == null){
+      // annotation doesn't have its own graphical settings, give it this cell's
+      // default look
+      a.setSettings(defaultSettings);
+      modified = true;
+    }
+
+    if(a.getTranslation() == null){
+      // annotation doesn't have its own position, give it this cell's
+      // default starting position
+      a.setTranslation(baseAnnoLocation);
+      baseAnnoLocation = baseAnnoLocation.add(0.5f, 0.5f, 0.5f);
+      modified = true;
+    }
+
+    // TODO is this ok?
     logger.info("[ANNO COMPO] adding annotation to cell " + cell.getCellID());
     if(hudComponents.get(a.getID()) != null){
       logger.info("[ANNO COMPO] annotation already registered and has non-null hud compo!");
-//      logger.info("[ANNO COMPO] its hud compo is visible in the world:" + hudComponents.get(a.getID()));
       return;
     }
 
     logger.info("[ANNO COMPO]" + a);
 
     // create the panel that will represent this annotation
-    AnnotationPane p = new AnnotationPane(panelConfig, a, cell);
+    AnnotationPane p = new AnnotationPane(a, cell);
     p.addSaveButtonListener(new AnnotationSaveListener(a, p));
-    p.addViewOnHudButtonListener(new AnnotationViewOnHudListener(a));
 
     // create hud component, show in world if necessary
     HUDComponent myHudCompo = AnnotationPlugin.createHUDComponent(p, cell);
@@ -322,23 +332,24 @@ public class AnnotationComponent extends CellComponent
     // add new compo to hud BEFORE you set it visible
     AnnotationPlugin.addHUDComponent(myHudCompo);
     
-    // create the node to display in world
+    // create the entity to represent in world
     logger.info("add anno, and local display is:" + localDisplay);
-    AnnotationEntity an = new AnnotationEntity(a, panelConfig, cell, localDisplay, localFontModifier);
-    logger.info("about to set local translation from in compo");
-    an.setLocalTranslation(baseAnnoLocation);
-    baseAnnoLocation = baseAnnoLocation.add(0.5f, 0.5f, 0.5f);
-    nodes.put(a.getID(), an);
+    AnnotationEntity an = new AnnotationEntity(a, cell, localDisplay, localFontModifier);
+    entities.put(a.getID(), an);
 
     logger.info("new entity is:" + an + " name is " + an.getName());
-    
+
+    if(modified){
+      // alert metadata system of change to make persistent
+      modifyAnnotationInMetadata(a);
+    }
     
   }
 
 
   /**
    * remove an annotation, also removing its hud component
-   * does NOT remove from metadata component
+   * does NOT remove from metadata component, use removeFromMetadata to do this.
    * @param a
    */
   private void removeAnnotation(MetadataID annoID) {
@@ -361,11 +372,9 @@ public class AnnotationComponent extends CellComponent
     hc = null;
 
     // remove node
-    AnnotationEntity an = nodes.get(annoID);
+    AnnotationEntity an = entities.get(annoID);
     an.dispose();
-    nodes.remove(annoID);
-
-    // remove metadata
+    entities.remove(annoID);
   }
 
   /**
@@ -395,7 +404,7 @@ public class AnnotationComponent extends CellComponent
    * @param a modified annotation
    */
   private void modifyAnnotation(Annotation a) {
-    logger.info("[ANNO COMPO] mod annotation, passed in:" + "\n" + a);
+    logger.info("[ANNO COMPO] mod annotation, passed in:" + a.getID() + "with location" + a.getTranslation());
     HUDComponent hc = hudComponents.get(a.getID());
     if(hc == null){
       logger.severe("[ANNO COMPO] error: trying to modify a non existent annotation" +
@@ -411,19 +420,21 @@ public class AnnotationComponent extends CellComponent
     ap.setAuthor(a.getCreator());
     ap.setText(a.getText());
     ap.setDate(a.getModified());
+//    ap.removeSaveButtonListener();
+//    ap.addSaveButtonListener(new AnnotationSaveListener(a, ap));
 
 
     // adjust in-world entity
-    AnnotationEntity n = nodes.get(a.getID());
-    DisplayMode currentDisplay = n.getDisplayMode();
-    nodes.remove(a.getID());
-    PanelConfig pc = n.getPanelConfig();
-    Vector3f loc = n.getNode().getLocalTranslation();
-    n.dispose();
-    n = new AnnotationEntity(a, pc, cell, localDisplay, localFontModifier);
-    n.setLocalTranslation(loc);
-    nodes.put(a.getID(), n);
-    n.setDisplayMode(currentDisplay);
+    AnnotationEntity n = entities.get(a.getID());
+//    DisplayMode currentDisplay = n.getDisplayMode();
+//    entities.remove(a.getID());
+//    AnnotationSettings pc = n.getAnnotationSettings();
+//    Vector3f loc = n.getNode().getLocalTranslation();
+//    n.dispose();
+//    n = new AnnotationEntity(a, pc, cell, localDisplay, localFontModifier);
+//    n.setLocalTranslation(loc);
+//    entities.put(a.getID(), n);
+    n.setAnnotation(a);
   }
 
   // These functions are called after an annotation is updated within the component (e.g., an
@@ -442,8 +453,8 @@ public class AnnotationComponent extends CellComponent
    * Inform Metadata component of an annotation (e.g., a piece of Metadata) modification
    * @param a
    */
-  private void modifyAnnotationInMetadata(Annotation a) {
-    logger.info("[ANNO COMPO] anno mod'd ");
+  public void modifyAnnotationInMetadata(Annotation a) {
+    logger.info("[ANNO COMPO] modify anno " + a.getID() + " in metadata");
     metaCompo.modifyMetadata(a);
   }
 
@@ -508,43 +519,43 @@ public class AnnotationComponent extends CellComponent
   }
 
   /**
-   * returns a PanelConfig based on the pased in integer, which should be
+   * returns a AnnotationSettings based on the pased in integer, which should be
    * a count of annotation components. Used to get semi-unique coloration.
    * @param i count of annotation components
    * @return
    */
-  private PanelConfig getPanelConfig() {
+  private AnnotationSettings getPanelConfig() {
     logger.info("[ANNO COMPO] get pc... count is" + panelConfigCount);
-    PanelConfig pc = null;
+    AnnotationSettings pc = null;
     switch(panelConfigCount){
       case 0:
         // default - dark gray and white
         logger.info("default pc");
-        pc = new PanelConfig();
+        pc = new AnnotationSettings();
         break;
       case 1:
         // orange and black
         logger.info("default pc 1");
-        pc = new PanelConfig(new Color(230, 150, 65), Color.black, Color.gray);
+        pc = new AnnotationSettings(new Color(230, 150, 65), Color.black, Color.gray);
         break;
       case 2:
         // blue and black
         logger.info("default pc 2");
-        pc = new PanelConfig(new Color(150, 175, 210), Color.black, Color.gray);
+        pc = new AnnotationSettings(new Color(150, 175, 210), Color.black, Color.gray);
         break;
       case 3:
         // red and white
         logger.info("default pc 3");
-        pc = new PanelConfig(new Color(145, 20, 20), Color.white, Color.gray);
+        pc = new AnnotationSettings(new Color(145, 20, 20), Color.white, Color.gray);
         break;
       case 4:
         // white
         logger.info("default pc 3");
-        pc = new PanelConfig(new Color(255, 255, 255), Color.black, Color.gray);
+        pc = new AnnotationSettings(new Color(255, 255, 255), Color.black, Color.gray);
         break;
       default:
         panelConfigCount = 1;
-        pc = new PanelConfig();
+        pc = new AnnotationSettings();
     }   
     panelConfigCount += 1;
     logger.info("panel config count is now " + panelConfigCount);
@@ -558,7 +569,7 @@ public class AnnotationComponent extends CellComponent
    * @param mode new display mode for that annotation
    */
   public void setAnnotationDisplayMode(MetadataID id, DisplayMode mode) {
-    AnnotationEntity an = nodes.get(id);
+    AnnotationEntity an = entities.get(id);
     if(an == null){
       logger.severe("[ANNO COMPO] trying to set display mode of annotation " +
               id + " which is not attached to cell " + cell.getCellID());
@@ -599,7 +610,7 @@ public class AnnotationComponent extends CellComponent
     AnnotationPane ap = (AnnotationPane) hc2d.getComponent();
 
     // now we can reset all of its fields to match the annotation
-    AnnotationEntity ae = nodes.get(id);
+    AnnotationEntity ae = entities.get(id);
     logger.info("setting ap subject to " + a.getSubject());
     ap.setSubject(a.getSubject());
     ap.setText(a.getText());
@@ -615,7 +626,7 @@ public class AnnotationComponent extends CellComponent
    * Annotation and then informs component of update.
    */
   class AnnotationSaveListener implements ActionListener{
-    Annotation anno;
+    MetadataID annoID;
     AnnotationPane pane;
 
     /**
@@ -624,51 +635,28 @@ public class AnnotationComponent extends CellComponent
      * @param p the pane to retrive the updated annotation information from
      */
     public AnnotationSaveListener(Annotation a, AnnotationPane p){
-      anno = a;
+      annoID = a.getID();
       pane = p;
     }
 
     public void actionPerformed(ActionEvent e) {
-      // changes, then send them back here
-      AnnotationComponent.logger.info("[ANNO COMPONENT] save button for anno with ID " + anno.getID() + " clicked");
-      AnnotationComponent.logger.info("[ANNO COMPONENT] should change text from " + anno.getText() );
-      AnnotationComponent.logger.info("[ANNO COMPONENT] should change text to " + pane.getEditableText() );
-      AnnotationComponent.logger.info("[ANNO COMPONENT] should change subject from " + anno.getSubject() );
-      AnnotationComponent.logger.info("[ANNO COMPONENT] should change subject to " + pane.getEditableSubject() );
+      // set changes
+      AnnotationEntity ent = entities.get(annoID);
+      Annotation anno = ent.getAnnotation();
       anno.setText(pane.getEditableText());
       anno.setSubject(pane.getEditableSubject());
+      logger.info("location of anno in save:" + anno.getTranslation() + " id is" + anno.getID());
+
+      // if settings were changed, add to map, adjust annotation
+      if(pane.isSettingsChanged()){
+        ent.setAnnotationSettings(pane.getSettings());
+        pane.setSettingsChanged(false);
+        anno.setSettings(pane.getSettings());
+      }
+      // alert metadata system of change
       modifyAnnotationInMetadata(anno);
     }
   }
-
-  /**
-   * listens for view on hud button presses in an AnnotationPane, adjusts
-   * pane's display appropriately
-   */
-  class AnnotationViewOnHudListener implements ActionListener{
-    Annotation anno;
-    boolean toggle = false;
-
-    /**
-     *
-     * @param a the annotation to update
-     * @param p the pane to retrive the updated annotation information from
-     */
-    public AnnotationViewOnHudListener(Annotation a){
-      anno = a;
-    }
-
-    public void actionPerformed(ActionEvent e) {
-      toggle = !toggle;
-      setAnnotationHudVisible(anno, toggle);
-    }
-  }
-
-
-
-
-
-
 
   class CtxListener implements ContextMenuListener{
     
@@ -704,18 +692,10 @@ public class AnnotationComponent extends CellComponent
         settings.setDisplayCellStandard(false);
         settings.setMenuName("Annotation " + ent.getAnnoID());
 
-        editCMF.setAnnotationID(ent.getAnnoID());
-        settings.addTempFactory(editCMF);
-
-        moveCMF.setAnnotationID(ent.getAnnoID());
-        settings.addTempFactory(moveCMF);
-
-        deleteCMF.setAnnotationID(ent.getAnnoID());
-        settings.addTempFactory(deleteCMF);
+        // set the CMF for this annotation
+        annoCMF.setAnnotationID(ent.getAnnoID());
+        settings.addTempFactory(annoCMF);
       }
-//      contextMenuCompo.setShowStandardMenuItems(false);
-
-      
 
     }
 
@@ -723,10 +703,20 @@ public class AnnotationComponent extends CellComponent
 
   
   /**
-   * Context menu factory for the edit annoation menu item
+   * Context menu factory for the edit, delete, move, and settings
    */
-  class EditAnnotationContextMenuFactory implements ContextMenuFactorySPI {
+  class AnnotationContextMenuFactory implements ContextMenuFactorySPI {
     MetadataID annoID;
+    ArrayList<SimpleContextMenuItem> items = new ArrayList<SimpleContextMenuItem>();
+
+    public AnnotationContextMenuFactory(){
+      // edit annotation text, color, etc
+      items.add(new SimpleContextMenuItem("Edit Annotation", null, new EditAnnotationContextMenuListener()));
+      // move annotation/edit location
+      items.add(new SimpleContextMenuItem("Move Annotation", null, new MoveAnnotationContextMenuListener()));
+      // delete annotation
+      items.add(new SimpleContextMenuItem("Delete Annotation", null, new DeleteAnnotationContextMenuListener()));
+    }
 
     /**
      * When an annotation's context menu is opening, set its ID here
@@ -737,128 +727,43 @@ public class AnnotationComponent extends CellComponent
     }
 
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-        return new ContextMenuItem[] {
-            new SimpleContextMenuItem("Edit Annotation", null, new EditAnnotationContextMenuListener(annoID))
-        };
+        return items.toArray(new ContextMenuItem[4]);
     }
-  }
-
-  /**
-   * Listener for when the edit item is selected from the annotation's context menu
-   */
-  class EditAnnotationContextMenuListener implements ContextMenuActionListener {
-    MetadataID annoID;
-    /**
-     *
-     * @param t the type of metadata to create
-     */
-    public EditAnnotationContextMenuListener(MetadataID mid){
-      annoID = mid;
-    }
-
-    public void actionPerformed(ContextMenuItemEvent event) {
-      // create an object
-      logger.info("[ANNO COMPO] edit annotation performed for aid " + annoID);
-      displayAnnotationOnHUD(annoID);
-
-      // TODO this is not the best place for this, it would be better suited
-      // in an event listenr for a 'context menu closed' event, but put it
-      // here for now to avoid crippling the parent cell
-      contextMenuCompo.setShowStandardMenuItems(true);
-    }
-  }
-
-  /**
-   * Context menu factory for move annotation menu item
-   */
-  class MoveAnnotationContextMenuFactory implements ContextMenuFactorySPI {
-    MetadataID annoID;
 
     /**
-     * When an annotation's context menu is opening, set its ID here
-     * @param mid the annotation's id
+     * Listener for when the edit item is selected from the annotation's context menu
      */
-    public void setAnnotationID(MetadataID mid) {
-      annoID = mid;
+    class EditAnnotationContextMenuListener implements ContextMenuActionListener {
+      public void actionPerformed(ContextMenuItemEvent event) {
+        logger.info("[ANNO COMPO] edit annotation performed for aid " + annoID);
+        displayAnnotationOnHUD(annoID);
+      }
     }
-
-    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-        return new ContextMenuItem[] {
-            new SimpleContextMenuItem("Move Annotation", null, new MoveAnnotationContextMenuListener(annoID))
-        };
-    }
-  }
-
-  /**
-   * Listener for when the move item is selected from the annotation's context menu
-   */
-  class MoveAnnotationContextMenuListener implements ContextMenuActionListener {
-    MetadataID annoID;
-    /**
-     *
-     * @param t the type of metadata to create
-     */
-    public MoveAnnotationContextMenuListener(MetadataID mid){
-      annoID = mid;
-    }
-
-    public void actionPerformed(ContextMenuItemEvent event) {
-      // create an object
-      logger.info("[ANNO COMPO] move annotation performed for aid " + annoID);
-      // TODO this is not the best place for this, it would be better suited
-      // in an event listenr for a 'context menu closed' event, but put it
-      // here for now to avoid crippling the parent cell
-      contextMenuCompo.setShowStandardMenuItems(true);
-
-    }
-  }
-  
-  /**
-   * Context menu factory for delete annotation menu item
-   */
-  class DeleteAnnotationContextMenuFactory implements ContextMenuFactorySPI {
-    MetadataID annoID;
 
     /**
-     * When an annotation's context menu is opening, set its ID here
-     * @param mid the annotation's id
+     * Listener for when the move item is selected from the annotation's context menu
      */
-    public void setAnnotationID(MetadataID mid) {
-      annoID = mid;
+    class MoveAnnotationContextMenuListener implements ContextMenuActionListener {
+      public void actionPerformed(ContextMenuItemEvent event) {
+        logger.info("[ANNO COMPO] move annotation performed for aid " + annoID);
+        AnnotationEntity ent = entities.get(annoID);
+        ent.toggleMoving();
+//        TranslateAffordance affordance = new TranslateAffordance(ent.getNode());
+//        affordance.addTranslationListener(new TranslateAffordanceListener());
+//        affordance.setVisible(true);
+      }
     }
 
-    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-        return new ContextMenuItem[] {
-            new SimpleContextMenuItem("Delete Annotation", null, new DeleteAnnotationContextMenuListener(annoID))
-        };
-    }
-  }
-
-  /**
-   * Listener for when the delete item is selected from the annotation's context menu
-   */
-  class DeleteAnnotationContextMenuListener implements ContextMenuActionListener {
-    MetadataID annoID;
     /**
-     *
-     * @param t the type of metadata to create
+     * Listener for when the delete item is selected from the annotation's context menu
      */
-    public DeleteAnnotationContextMenuListener(MetadataID mid){
-      annoID = mid;
-    }
-
-    public void actionPerformed(ContextMenuItemEvent event) {
-      // create an object
-      logger.info("[ANNO COMPO] delete annotation performed for aid " + annoID);
-      removeAnnotation(annoID);
-      removeAnnotationFromMetadata((Annotation)metaCompo.getMetadata(annoID));
-      // TODO this is not the best place for this, it would be better suited
-      // in an event listenr for a 'context menu closed' event, but put it
-      // here for now to avoid crippling the parent cell
-      contextMenuCompo.setShowStandardMenuItems(true);
-
+    class DeleteAnnotationContextMenuListener implements ContextMenuActionListener {
+      public void actionPerformed(ContextMenuItemEvent event) {
+        logger.info("[ANNO COMPO] delete annotation performed for aid " + annoID);
+        removeAnnotation(annoID);
+        removeAnnotationFromMetadata((Annotation)metaCompo.getMetadata(annoID));
+      }
     }
   }
-
 
 }

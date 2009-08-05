@@ -299,7 +299,7 @@ public class AnnotationPlugin extends BaseClientPlugin
     compManager.setLayoutManager(new HUDCompassLayoutManager(myHud));
 
     // manage the components in annotations hud, show hud
-    myHud.setComponentManager(compManager);
+    myHud.addEventListener(compManager);
   }
 
   private class fontPanelListener implements ChangeListener{

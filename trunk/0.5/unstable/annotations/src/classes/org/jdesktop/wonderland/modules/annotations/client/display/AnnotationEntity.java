@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.annotations.client.display;
 
+import org.jdesktop.wonderland.modules.annotations.common.AnnotationSettings;
 import com.jme.bounding.BoundingBox;
 
 import com.jme.math.Vector3f;
@@ -26,12 +27,12 @@ import com.jme.scene.Node;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ZBufferState;
 
+import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JMECollisionSystem;
@@ -46,7 +47,9 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.input.MouseDraggedEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.modules.annotations.client.AnnotationComponent;
 import org.jdesktop.wonderland.modules.annotations.common.Annotation;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 
@@ -59,10 +62,15 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 public class AnnotationEntity extends Entity {
 
   /** the annotation this entity represents */
-  private final Annotation anno;
+  private Annotation anno;
 
   /** sets font size, given to annotation node */
   private float fontSizeModifier;
+
+  /** set whether annotation is currently movable */
+  private boolean moving = false;
+
+
 
 
 
@@ -106,7 +114,7 @@ public class AnnotationEntity extends Entity {
 
   private static Logger logger = Logger.getLogger(AnnotationEntity.class.getName());
 
-  private PanelConfig pc;
+  private AnnotationSettings annoSettings;
 
   DisplayMode displayMode = DisplayMode.HIDDEN;
 
@@ -118,7 +126,7 @@ public class AnnotationEntity extends Entity {
   /** Whether this entity has been added to the JME manager */
   private boolean entityAdded = false;
 
-  /** local translation of the entity */
+  /** local translation of the entity during a drag, committed to annotation itself when drag completed */
   private Vector3f localTranslation = null;
 
   // mouse listeners on this annotation
@@ -134,30 +142,36 @@ public class AnnotationEntity extends Entity {
 
 
 
-  public PanelConfig getPanelConfig() {
-    return pc;
+  public AnnotationSettings getAnnotationSettings() {
+    return annoSettings;
   }
 
-  public void setPanelConfig(PanelConfig pc) {
-    this.pc = pc;
+  /**
+   * set new graphics for this annotation
+   * causes node to revalidat/repaint itself
+   * @param pc
+   */
+  public void setAnnotationSettings(AnnotationSettings as) {
+    this.annoSettings = as;
+    revalidateNode();
   }
 
   /**
    * Constructor
    * @param a the annotation to represent
-   * @param pc initial font/color settings
    * @param cell cell to reference in CellRefComponent, for context menu
    * @param mode initial DisplayMode
    * @param fontSize initial fontSizeModifier
    */
-  public AnnotationEntity(Annotation a, PanelConfig pc, Cell cell, DisplayMode mode, float fontSize) {
+  public AnnotationEntity(Annotation a, Cell cell, DisplayMode mode, float fontSize) {
     super("annotation with id: " + a.getID());
 
     this.anno = a;
-    this.pc = pc;
+    // create own copy, so the entity can be adjusted individually
+    this.annoSettings = new AnnotationSettings(a.getSettings());
     this.fontSizeModifier = fontSize;
 
-    logger.info("Annotation with id " + a.getID() + " author: " + a.getCreator() + " font size:" + fontSizeModifier);
+    logger.info("creating anno ent with id " + a.getID() + " author: " + a.getCreator() + " font size:" + fontSizeModifier + " location " + anno.getTranslation());
 
     attachMouseListener(new MouseListener(this));
 
@@ -168,11 +182,10 @@ public class AnnotationEntity extends Entity {
     // cell ref component.
     this.addComponent(CellRefComponent.class, new CellRefComponent(cell));
 
-    // set this using setDisplayMode - this will result in the entity
-    // getting added to the world if necessary
-    logger.info("display mode is: " + displayMode);
+    // setDisplayMode - this will result in the entity
+    // getting added to the world if necessary, also builds the correct
+    // node (graphical representation of annotation/entity) 
     displayMode = DisplayMode.HIDDEN;
-    logger.info("now mode is: " + displayMode);
     setDisplayMode(mode);
 
     return;
@@ -180,17 +193,21 @@ public class AnnotationEntity extends Entity {
 
 
 
-  public void setLocalTranslation(Vector3f v){
-    logger.info("[anno ent] setting local trans to " + v);
-    localTranslation = v;
-    if(node != null){
-      node.setLocalTranslation(v);
-    }
-  }
+//  public void setLocalTranslation(Vector3f v){
+//    logger.info("[anno ent] setting local trans to " + v);
+//    localTranslation = v;
+//    if(node != null){
+//      node.setLocalTranslation(v);
+//    }
+//  }
 
   /** get the ID of the annotation this entity represents */
   public MetadataID getAnnoID() {
     return anno.getID();
+  }
+
+  public Annotation getAnnotation() {
+    return anno;
   }
 
   /**
@@ -213,6 +230,19 @@ public class AnnotationEntity extends Entity {
   /** A basic listener for 3D mouse events */
   protected class MouseListener extends EventClassListener {
     private Entity ent;
+    // dragging variables
+    // The intersection point on the entity over which the button was pressed, in world coordinates.
+    Vector3f dragStartWorld;
+
+    // The screen coordinates of the button press event.
+    Point dragStartScreen;
+    Vector3f translationOnPress = null;
+    // store true start location here, in order to cancel movement and to
+    // allow feedback by moving annotation immediately
+    Vector3f startLocation;
+
+    // set true if drag begins
+    boolean dragging = false;
 
     public MouseListener(Entity e){
       ent = e;
@@ -230,9 +260,12 @@ public class AnnotationEntity extends Entity {
      */
     @Override
     public void commitEvent(final Event event) {
-//      logger.info("AN: commit event!");
+      // collect events
       MouseEvent3D me3d = (MouseEvent3D) event;
       MouseEvent me = (MouseEvent) me3d.getAwtEvent();
+      logger.info("got mouse event!");
+
+      // click events - display context menu, cycle display mode
       if(me.getID() == MouseEvent.MOUSE_CLICKED){
         if(me.getButton() == MouseEvent.BUTTON3){
           logger.info("AN: right click!");
@@ -252,6 +285,50 @@ public class AnnotationEntity extends Entity {
           // cycle to next display mode
           cycleDisplayMode();
         }
+      }
+      // drag start events
+      // this could be a drag start if the mouse button 1 was pressed, moving is
+      // enabled
+      else if(me.getID() == MouseEvent.MOUSE_PRESSED && moving &&
+              me.getButton() == MouseEvent.BUTTON1){
+        logger.info("began drag event");
+        dragging = true;
+        dragStartScreen = new Point(me.getX(), me.getY());
+        dragStartWorld = me3d.getIntersectionPointWorld();
+        startLocation = node.getLocalTranslation();
+//        translationOnPress = transform.getTranslation(null);
+      }
+
+      // drag events
+      else if(me.getID() == MouseEvent.MOUSE_DRAGGED && moving){
+        logger.info("dragged, and moving");
+        MouseDraggedEvent3D dragEvent = (MouseDraggedEvent3D) event;
+        logger.info("ds world, dss:" + dragStartWorld + " " + dragStartScreen);
+        Vector3f dragVector = dragEvent.getDragVectorWorld(dragStartWorld, dragStartScreen,
+                new Vector3f());
+        // Now add the drag vector the node translation and move the cell.
+        logger.info("node local trans is:" + node.getLocalTranslation());
+        logger.info("node world trans is:" + node.getWorldTranslation());
+        logger.info("node drag vector is:" + dragVector);
+//        Vector3f newTranslation = translationOnPress.add(dragVector);
+        node.setLocalTranslation(startLocation.add(dragVector));
+        localTranslation = startLocation.add(dragVector);
+
+        makeEntityPickable(AnnotationEntity.this, node);
+      }
+      else if(me.getID() == MouseEvent.MOUSE_RELEASED && moving && dragging){
+        logger.info("completed drag event");
+        dragging = false;
+        anno.setTranslation(localTranslation);
+        logger.info("node local trans is:" + node.getLocalTranslation());
+        logger.info("node world trans is:" + node.getWorldTranslation());
+        logger.info("final location stored in anno is:" + localTranslation);
+        revalidateNode();
+        // commit the change to anno compo
+        
+        CellRefComponent cRef = AnnotationEntity.this.getComponent(CellRefComponent.class);
+        AnnotationComponent annoCompo = cRef.getCell().getComponent(AnnotationComponent.class);
+        annoCompo.modifyAnnotationInMetadata(anno);
       }
     }
 
@@ -278,8 +355,20 @@ public class AnnotationEntity extends Entity {
     }
   }
 
+  /**
+   * Set the annotation this entity represents. Use this to update the current
+   * annotation by passing the current annotation.
+   *
+   * Causes node to revalidate/repaint itself
+   * @param a
+   */
+  public void setAnnotation(Annotation a){
+    logger.info("set annotation, current location is " + anno.getTranslation());
+    this.anno = a;
+    logger.info("set annotation, new location is " + anno.getTranslation());
 
-
+    revalidateNode();
+  }
 
 
 
@@ -293,6 +382,7 @@ public class AnnotationEntity extends Entity {
 
     logger.info("[ANNO ENT] setting display mode: " + newDisplayMode);
     logger.info("[ANNO ENT] current display mode: " + displayMode);
+    logger.info("[ANNO ENT] current location is: " + anno.getTranslation());
     // if node is currently HIDDEN and the new mode is not HIDDEN (is visible),
 //     make the node visible in the world
     if (newDisplayMode != DisplayMode.HIDDEN) {
@@ -301,7 +391,7 @@ public class AnnotationEntity extends Entity {
       logger.info("[ANNO ENT] display mode is now:" + displayMode);
 
       // refreshes the node to the new DisplayMode's version
-      node = new AnnotationNode(anno, displayMode, pc, fontSizeModifier);
+      node = new AnnotationNode(anno, displayMode, annoSettings, fontSizeModifier);
       // this is unnecessary but it can't hurt, it guarantees we are operating
       // on the nodes we think we are in the updater thread
       final Node newNode = node;
@@ -322,12 +412,12 @@ public class AnnotationEntity extends Entity {
           AnnotationEntity ent = (AnnotationEntity)arg0;
           ClientContextJME.getWorldManager().removeEntity(ent);
           entityAdded = false;
-          if(localTranslation != null){
-            node.setLocalTranslation(localTranslation);
-            logger.info("resetting location " + localTranslation);
+          if(anno.getTranslation() != null){
+            node.setLocalTranslation(anno.getTranslation());
+            logger.info("resetting location " + anno.getTranslation());
           }
           else{
-            logger.info("location was null");
+            logger.info("annotation's location was null");
           }
 //          Node rootNode = ent.getNode();
           logger.info("[ANNO ENT] adding entity");
@@ -380,18 +470,19 @@ public class AnnotationEntity extends Entity {
 
   /**
    * helper function, refreshes this Entity's Node. This will cause any changes
-   * like a new display mode or a new fontSizeModifier to take effect.
+   * like a new display mode or a new fontSizeModifier to take effect. Also used
+   * to re-calculate bounds, e.g. after node is moved.
    */
   private void revalidateNode(){
-    node = new AnnotationNode(anno, displayMode, pc, fontSizeModifier);
-    logger.info("[ANNO ENT] reset node");
+    node = new AnnotationNode(anno, displayMode, annoSettings, fontSizeModifier);
+    logger.info("[ANNO ENT] revalidate node");
     // this is unnecessary but it can't hurt, it guarantees we are operating
     // on the nodes we think we are in the updater thread
     final Node newNode = node;
 
-    if(localTranslation != null){
-      node.setLocalTranslation(localTranslation);
-      logger.info("resetting location " + localTranslation);
+    if(anno.getTranslation() != null){
+      node.setLocalTranslation(anno.getTranslation());
+      logger.info("resetting location " + anno.getTranslation());
     }
     else{
       logger.info("location was null");
@@ -443,6 +534,13 @@ public class AnnotationEntity extends Entity {
   }
 
   /**
+   * enable/disable relocating annoation via dragging
+   */
+  public void toggleMoving(){
+    moving = !moving;
+  }
+
+  /**
    * Make this entity pickable by adding a collision component to it.
    */
   protected void makeEntityPickable(Entity entity, Node node) {
@@ -465,6 +563,12 @@ public class AnnotationEntity extends Entity {
         ml = null;
         listeners.clear();
       }
+      RenderUpdater updater = new RenderUpdater() {
+        public void update(Object arg0) {
+          AnnotationEntity ent = (AnnotationEntity)arg0;
+          ClientContextJME.getWorldManager().removeEntity(ent);
+        }
+      };
   }
 
 }
