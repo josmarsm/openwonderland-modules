@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.annotations.client.display;
 
+import org.jdesktop.wonderland.modules.annotations.common.AnnotationSettings;
 import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture;
 import com.jme.image.Texture.MagnificationFilter;
@@ -43,6 +44,7 @@ import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
 import java.awt.font.LineBreakMeasurer;
 import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
@@ -74,7 +76,7 @@ public class AnnotationNode extends BillboardNode {
   private float fontSizeModifier;
 
   /** graphical configurations (fonts, colors..) */
-  PanelConfig gfxConfig;
+  AnnotationSettings gfxConfig;
 
   // graphical settings used only by the node
   private float blurIntensity = 0.1f;
@@ -104,7 +106,7 @@ public class AnnotationNode extends BillboardNode {
   String text;
 
 
-  public AnnotationNode(Annotation a, DisplayMode displayMode, PanelConfig pc, float fontMod){
+  public AnnotationNode(Annotation a, DisplayMode displayMode, AnnotationSettings pc, float fontMod){
     super("anno node");
     mode = displayMode;
     fontSizeModifier = fontMod;
@@ -141,9 +143,10 @@ public class AnnotationNode extends BillboardNode {
    */
   private BufferedImage getImage() {
     // calculate the size of the label text rendered with the specified font
-
+    FontRenderContext frc = getFontRenderContext();
+    
     TextLayout authorLayout = new TextLayout(author,
-            gfxConfig.getAuthorFont(), gfxConfig.getFontRenderContext());
+            gfxConfig.getAuthorFont(), frc);
     Rectangle2D authorRect = authorLayout.getBounds();
 
     // and for subject line
@@ -151,7 +154,7 @@ public class AnnotationNode extends BillboardNode {
       subject = " ";
     }
     TextLayout subjectLayout = new TextLayout(subject,
-            gfxConfig.getSubjectFont(), gfxConfig.getFontRenderContext());
+            gfxConfig.getSubjectFont(), frc);
     Rectangle2D subjectRect = subjectLayout.getBounds();
 
     // calculate the width of the label with shadow and blur
@@ -163,10 +166,14 @@ public class AnnotationNode extends BillboardNode {
       if(totalWidth * fontSizeModifier < MIN_WIDTH * fontSizeModifier){
         totalWidth = MIN_WIDTH;
       }
+      // split into lines
+      String [] lines = text.split("\n");
+      // make each line fit into desired width
+      int singleLineWidth = totalWidth - PADDING_LEFT - PADDING_RIGHT;
       chunks = new ArrayList<TextLayout>();
-      // make text fit into desired width
-      int singleLineWidth = getLineWidth(authorRect, subjectRect);
-      splitText(chunks, singleLineWidth);
+      for(String s:lines){
+        splitText(chunks, singleLineWidth, s);
+      }
     }
 
     // now we can do the heights
@@ -326,7 +333,7 @@ public class AnnotationNode extends BillboardNode {
   private int getImageWidth(Rectangle2D authorRect, Rectangle2D subjectRect){
     int actualWidth = PADDING_LEFT + PADDING_RIGHT; // 18
     if(mode == DisplayMode.SMALL){
-      return actualWidth;
+      return actualWidth * 2;
     }
 
     // the maximal length for a line of text
@@ -339,27 +346,6 @@ public class AnnotationNode extends BillboardNode {
       actualWidth += subjectRect.getWidth();
     }
     return actualWidth;
-  }
-
-  /**
-   * Compares author and subject to find the maximal line width
-   *
-   * Used by getImage.
-   * @return the actual width the image should have
-   * @param authorRect rectangle bounding the author text
-   * @param subjectRect rectangle bounding the subject text
-   */
-  private int getLineWidth(Rectangle2D authorRect, Rectangle2D subjectRect){
-    int width;
-    if(authorRect.getWidth() > subjectRect.getWidth()){
-      logger.info("[anno node] an: author had larger width " + authorRect.getWidth() + " vs " + subjectRect.getWidth());
-      width = (int) authorRect.getWidth();
-    }
-    else{
-      logger.info("[anno node] an: subject had equal or larger width " + subjectRect.getWidth() + " " +  authorRect.getWidth());
-      width = (int) subjectRect.getWidth();
-    }
-    return width;
   }
 
   /**
@@ -376,7 +362,7 @@ public class AnnotationNode extends BillboardNode {
     // add subject and text to height for medium and large versions
     logger.info("[anno node] display mode here is: " + mode);
     if(mode == DisplayMode.SMALL){
-      // TODO
+      return ret* 2;
     }
     else if(mode == DisplayMode.MEDIUM || mode == DisplayMode.LARGE){
 //      logger.info("[anno node] medium/large, adding author and subj");
@@ -406,23 +392,28 @@ public class AnnotationNode extends BillboardNode {
    * lineWidth if necessary. Stores line(s) in the chunks ArrayList.
    * @param chunks ArrayList to store line(s) in
    * @param lineWidth maximum length of each line
+   * @param str string to split
    */
-  private void splitText(ArrayList<TextLayout> chunks, int lineWidth){
-    TextLayout textLayout = new TextLayout(text, 
-            gfxConfig.getSubjectFont(), gfxConfig.getFontRenderContext());
+  private void splitText(ArrayList<TextLayout> chunks, int lineWidth, String str){
+    if(str.length() == 0){
+      str = " ";
+    }
+    FontRenderContext frc = getFontRenderContext();
+    TextLayout textLayout = new TextLayout(str,
+            gfxConfig.getSubjectFont(), frc);
     Rectangle2D textRect = textLayout.getBounds();
     // does text need to be split?
     if(textRect.getWidth() > lineWidth){
 
-      AttributedString asText = new AttributedString(text);
+      AttributedString asText = new AttributedString(str);
       asText.addAttribute(TextAttribute.FONT, gfxConfig.getSubjectFont());
       AttributedCharacterIterator asItr = asText.getIterator();
 
       int start = asItr.getBeginIndex();
       int end = asItr.getEndIndex();
 
-      LineBreakMeasurer line = new LineBreakMeasurer(asItr, gfxConfig.getFontRenderContext());
-//          LineBreakMeasurer line = new LineBreakMeasurer(asItr, new FontRenderContext(null, false, false));
+      LineBreakMeasurer line = new LineBreakMeasurer(asItr, frc);
+//          LineBreakMeasurer line = new LineBreakMeasurer(asItr, frc);
       line.setPosition(start);
       // Get lines from lineMeasurer until the entire
       // paragraph has been displayed.
@@ -482,29 +473,16 @@ public class AnnotationNode extends BillboardNode {
     return ret;
   }
 
-// if shadow offsets, etc are made configurable, these will do the trick
-//  public void setShadowOffsetX(int offsetPixelX) {
-//      shadowOffsetX = offsetPixelX;
-//  }
-//
-//  public void setShadowOffsetY(int offsetPixelY) {
-//      shadowOffsetY = offsetPixelY;
-//  }
-//
-//  public void setBlurSize(int kernelSize) {
-//      this.kernelSize = kernelSize;
-//      updateKernel();
-//  }
-//
-//  public void setBlurStrength(float strength) {
-//      this.blurIntensity = strength;
-//      updateKernel();
-//  }
-
   private void updateKernel() {
       float[] kernel = new float[kernelSize * kernelSize];
       Arrays.fill(kernel, blurIntensity);
       blur = new ConvolveOp(new Kernel(kernelSize, kernelSize, kernel));
+  }
+
+  private FontRenderContext getFontRenderContext(){
+    BufferedImage tmp0 = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
+    return g2d.getFontRenderContext();
   }
 
 }

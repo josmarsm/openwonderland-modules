@@ -16,19 +16,21 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.annotations.client.display;
+package org.jdesktop.wonderland.modules.annotations.common;
 
+import java.io.Serializable;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
 
 /**
- * Stores graphical config information for an AnnotationPane
+ * Stores graphical configuration information for an Annotation. Referenced
+ * by the AnnotationEntity and AnnotationNode generated to represent this
+ * anno in-world.
  * @author mabonner
  */
-public class PanelConfig {
+public class AnnotationSettings implements Serializable{
   // Default Colors
   public static Color DEFAULT_BACKGROUND_COLOR = Color.DARK_GRAY;
   public static Color DEFAULT_FONT_COLOR = Color.WHITE;
@@ -49,23 +51,33 @@ public class PanelConfig {
 
   private float authorFontResolution = 40f;
   private float subjectFontResolution = 40f;
-  private FontRenderContext fontRenderContext;
 
-  public PanelConfig(Color bgc, Color fc, Color sc, Font f){
+  public AnnotationSettings(Color bgc, Color fc, Color sc, Font f){
     bgColor = bgc;
     fontColor = fc;
     shadowColor = sc;
     setFont(f);
   }
 
-  public PanelConfig(Color bgc, Color fc, Color sc){
+  public AnnotationSettings(Color bgc, Color fc, Color sc){
     bgColor = bgc;
     fontColor = fc;
     shadowColor = sc;
     setFont(null);
   }
 
-  public PanelConfig(){
+  /**
+   * copy constructor
+   * @param ac
+   */
+  public AnnotationSettings(AnnotationSettings ac){
+    bgColor = ac.getBackgroundColor();
+    fontColor = ac.getFontColor();
+    shadowColor = ac.getShadowColor();
+    setFont(ac.getFont());
+  }
+
+  public AnnotationSettings(){
     setFont(null);
   }
 
@@ -79,17 +91,15 @@ public class PanelConfig {
 
   public void setFont(Font font) {
     if(font == null){
-      font = Font.decode("Sans PLAIN 40");
+      font = Font.decode("Sans PLAIN 12");
     }
     this.font = font;
     authorFont = new Font(font.getName(),Font.BOLD,font.getSize());
     BufferedImage tmp0 = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
     Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
     authorFont = authorFont.deriveFont(authorFontResolution);
-//    int intendedSubjSize = (int)(font.getSize() * 0.8f);
     subjectFont = authorFont.deriveFont(subjectFontResolution);
-    subjectFont = subjectFont.deriveFont(Font.ITALIC);
-    fontRenderContext = g2d.getFontRenderContext();
+    subjectFont = subjectFont.deriveFont(Font.ITALIC);   
   }
 
   public void setFontResolution(float fontResolution) {
@@ -108,10 +118,6 @@ public class PanelConfig {
 
   public Font getFont(){
     return font;
-  }
-
-  public FontRenderContext getFontRenderContext(){
-    return fontRenderContext;
   }
 
   public Font getAuthorFont(){

@@ -18,9 +18,12 @@
 
 package org.jdesktop.wonderland.modules.annotations.client.display;
 
+import org.jdesktop.wonderland.modules.annotations.common.AnnotationSettings;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import javax.swing.JColorChooser;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.modules.annotations.common.Annotation;
@@ -42,23 +45,33 @@ public class AnnotationPane extends javax.swing.JPanel {
     /**
      * graphical configuration for this panel
      */
-    private PanelConfig config;
+    private AnnotationSettings settings;
 
     private static final String userName = LoginManager.getPrimary().getPrimarySession().getUserID().getUsername();
-//    private static final WonderlandIdentity userID = LoginManager.getPrimary().getPrimarySession().getUserID();
+
+    /**
+     * used for choosing background and font color
+     */
+    private JColorChooser colorChooser = new JColorChooser();
+
+    /**
+     * note if the annotation settings have been adjusted
+     */
+    private boolean settingsChanged = false;
 
     /** Creates new form AnnotationPane 
-     * @param pc configuration (fonts, colors) for this pane
      * @param a annotation this pane represents
-     * @param c cell this annotation is associated with
+     * @param c the cell this pane is associated with
      */
-    public AnnotationPane(PanelConfig pc, Annotation a, Cell c) {
-      config = pc;
+    public AnnotationPane(Annotation a, Cell c) {
+      settings = a.getSettings();
       initComponents();
-      setBackground(pc.getBackgroundColor());
-      setForeground(pc.getFontColor());
+      setBackground(settings.getBackgroundColor());
+      bgColorButton.setBackground(settings.getBackgroundColor());
+      setForeground(settings.getFontColor());
       // set author/editted to be italic
-      Font italicFont =new Font(pc.getFont().getName(),Font.ITALIC,pc.getFont().getSize());
+      Font italicFont =new Font(settings.getFont().getName(),Font.ITALIC,settings.getFont().getSize());
+      italicFont = italicFont.deriveFont(14f);
       author.setFont(italicFont);
       date.setFont(italicFont);
       setPreferredSize(new Dimension(350, 300));
@@ -101,12 +114,8 @@ public class AnnotationPane extends javax.swing.JPanel {
 //      g2.dispose();
 //    }
 
-    public void setConfig(PanelConfig pc){
-      config = pc;
-    }
-
-    public void addViewOnHudButtonListener(ActionListener l){
-      viewOnHud.addActionListener(l);
+    public void setConfig(AnnotationSettings pc){
+      settings = pc;
     }
 
     public void addSaveButtonListener(ActionListener l){
@@ -127,30 +136,34 @@ public class AnnotationPane extends javax.swing.JPanel {
     editableMessage = new javax.swing.JTextArea();
     author = new javax.swing.JLabel();
     date = new javax.swing.JLabel();
-    viewOnHud = new javax.swing.JButton();
     saveButton = new javax.swing.JButton();
     message = new javax.swing.JLabel();
     cancelButton = new javax.swing.JButton();
     cellIDLabel = new javax.swing.JLabel();
     cellID = new javax.swing.JLabel();
-    jLabel1 = new javax.swing.JLabel();
+    cellNameLabel = new javax.swing.JLabel();
     cellName = new javax.swing.JLabel();
     jSeparator1 = new javax.swing.JSeparator();
     subject = new javax.swing.JLabel();
     editableSubject = new javax.swing.JTextField();
+    jToolBar1 = new javax.swing.JToolBar();
+    bgColorButton = new javax.swing.JButton();
+    fontColorButton = new javax.swing.JButton();
+    fontButton = new javax.swing.JButton();
 
     setBackground(new java.awt.Color(51, 51, 51));
     setMinimumSize(new java.awt.Dimension(350, 350));
-    setPreferredSize(new java.awt.Dimension(350, 350));
+    setPreferredSize(new java.awt.Dimension(450, 400));
     addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseClicked(java.awt.event.MouseEvent evt) {
         formMouseClicked(evt);
       }
     });
 
-    dateLabel.setText("at");
+    dateLabel.setText("@");
 
     editableMessage.setColumns(20);
+    editableMessage.setLineWrap(true);
     editableMessage.setRows(5);
     editableMessage.setText("message");
     editableMessage.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -163,13 +176,6 @@ public class AnnotationPane extends javax.swing.JPanel {
     author.setText("name");
 
     date.setText("date");
-
-    viewOnHud.setText("view on hud");
-    viewOnHud.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        viewOnHudActionPerformed(evt);
-      }
-    });
 
     saveButton.setBackground(new java.awt.Color(153, 153, 255));
     saveButton.setText("save");
@@ -192,7 +198,7 @@ public class AnnotationPane extends javax.swing.JPanel {
 
     cellID.setText("id");
 
-    jLabel1.setText("-");
+    cellNameLabel.setText("-");
 
     cellName.setText("jLabel2");
 
@@ -210,6 +216,51 @@ public class AnnotationPane extends javax.swing.JPanel {
       }
     });
 
+    jToolBar1.setFloatable(false);
+    jToolBar1.setRollover(true);
+
+    bgColorButton.setToolTipText("Background Color");
+    bgColorButton.setMaximumSize(new java.awt.Dimension(25, 20));
+    bgColorButton.setMinimumSize(new java.awt.Dimension(25, 20));
+    bgColorButton.setPreferredSize(new java.awt.Dimension(20, 20));
+    bgColorButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        bgColorButtonActionPerformed(evt);
+      }
+    });
+    jToolBar1.add(bgColorButton);
+
+    fontColorButton.setForeground(new java.awt.Color(204, 0, 0));
+    fontColorButton.setText("A");
+    fontColorButton.setToolTipText("FontColor");
+    fontColorButton.setFocusable(false);
+    fontColorButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    fontColorButton.setMaximumSize(new java.awt.Dimension(25, 20));
+    fontColorButton.setMinimumSize(new java.awt.Dimension(25, 20));
+    fontColorButton.setPreferredSize(new java.awt.Dimension(20, 20));
+    fontColorButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    fontColorButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        fontColorButtonActionPerformed(evt);
+      }
+    });
+    jToolBar1.add(fontColorButton);
+
+    fontButton.setText("f");
+    fontButton.setToolTipText("Font");
+    fontButton.setFocusable(false);
+    fontButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    fontButton.setMaximumSize(new java.awt.Dimension(25, 20));
+    fontButton.setMinimumSize(new java.awt.Dimension(25, 20));
+    fontButton.setPreferredSize(new java.awt.Dimension(20, 20));
+    fontButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    fontButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        fontButtonActionPerformed(evt);
+      }
+    });
+    jToolBar1.add(fontButton);
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
@@ -217,56 +268,60 @@ public class AnnotationPane extends javax.swing.JPanel {
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addGroup(layout.createSequentialGroup()
-            .addComponent(author)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(dateLabel)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(date)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 183, Short.MAX_VALUE)
-            .addComponent(viewOnHud))
-          .addGroup(layout.createSequentialGroup()
-            .addGap(8, 8, 8)
-            .addComponent(cellIDLabel)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(cellID)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jLabel1)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(cellName))
-          .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+          .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
           .addGroup(layout.createSequentialGroup()
             .addComponent(subject)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-            .addComponent(editableSubject, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE))
+            .addComponent(editableSubject, javax.swing.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE))
           .addGroup(layout.createSequentialGroup()
             .addComponent(message)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(editableMessageScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE))
+            .addComponent(editableMessageScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE))
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
             .addComponent(cancelButton)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(saveButton)))
+            .addComponent(saveButton))
+          .addGroup(layout.createSequentialGroup()
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+              .addGroup(layout.createSequentialGroup()
+                .addComponent(author)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dateLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(date))
+              .addGroup(layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(cellIDLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(cellID)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cellNameLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cellName)))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 157, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)))
         .addContainerGap())
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-          .addComponent(viewOnHud)
-          .addComponent(author)
-          .addComponent(dateLabel)
-          .addComponent(date))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-          .addComponent(cellIDLabel)
-          .addComponent(cellID)
-          .addComponent(jLabel1)
-          .addComponent(cellName))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addGroup(layout.createSequentialGroup()
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+              .addComponent(author)
+              .addComponent(dateLabel)
+              .addComponent(date))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+              .addComponent(cellIDLabel)
+              .addComponent(cellID)
+              .addComponent(cellNameLabel)
+              .addComponent(cellName)))
+          .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addGap(9, 9, 9)
         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addGap(10, 10, 10)
+        .addGap(4, 4, 4)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(subject)
           .addComponent(editableSubject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -279,13 +334,25 @@ public class AnnotationPane extends javax.swing.JPanel {
               .addComponent(saveButton)
               .addComponent(cancelButton)))
           .addComponent(message))
-        .addGap(26, 26, 26))
+        .addContainerGap(57, Short.MAX_VALUE))
     );
   }// </editor-fold>//GEN-END:initComponents
 
-    private void viewOnHudActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewOnHudActionPerformed
-      // TODO add your handling code here:
-    }//GEN-LAST:event_viewOnHudActionPerformed
+    public boolean isSettingsChanged() {
+      return settingsChanged;
+    }
+
+    public void setSettingsChanged(boolean settingsChanged) {
+      this.settingsChanged = settingsChanged;
+    }
+
+    public AnnotationSettings getSettings() {
+      return settings;
+    }
+
+
+
+
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
       message.setText(editableMessage.getText());
@@ -327,24 +394,64 @@ public class AnnotationPane extends javax.swing.JPanel {
       saveButton.setEnabled(true);
     }//GEN-LAST:event_editableSubjectKeyTyped
 
+    private void bgColorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bgColorButtonActionPerformed
+      Color newColor = JColorChooser.showDialog(
+                     colorChooser,
+                     "Choose Annotation Background Color",
+                     settings.getBackgroundColor());
+      if(newColor != null){
+        // apply the new color
+        settings.setBackgroundColor(newColor);
+        this.setBackground(newColor);
+        bgColorButton.setBackground(newColor);
+        // note that settings have been changed
+        settingsChanged = true;
+        // enable save
+        saveButton.setEnabled(true);
+      }
+    }//GEN-LAST:event_bgColorButtonActionPerformed
+
+    private void fontColorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontColorButtonActionPerformed
+      Color newColor = JColorChooser.showDialog(
+                     colorChooser,
+                     "Choose Annotation Font Color",
+                     settings.getFontColor());
+      if(newColor != null){
+        // apply the new color
+        settings.setFontColor(newColor);
+        setForegrounds(newColor);
+        // note that settings have been changed
+        settingsChanged = true;
+        // enable save
+        saveButton.setEnabled(true);
+      }
+    }//GEN-LAST:event_fontColorButtonActionPerformed
+
+    private void fontButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontButtonActionPerformed
+      // TODO add your handling code here:
+    }//GEN-LAST:event_fontButtonActionPerformed
+
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JLabel author;
+  private javax.swing.JButton bgColorButton;
   private javax.swing.JButton cancelButton;
   private javax.swing.JLabel cellID;
   private javax.swing.JLabel cellIDLabel;
   private javax.swing.JLabel cellName;
+  private javax.swing.JLabel cellNameLabel;
   private javax.swing.JLabel date;
   private javax.swing.JLabel dateLabel;
   private javax.swing.JTextArea editableMessage;
   private javax.swing.JScrollPane editableMessageScrollPane;
   private javax.swing.JTextField editableSubject;
-  private javax.swing.JLabel jLabel1;
+  private javax.swing.JButton fontButton;
+  private javax.swing.JButton fontColorButton;
   private javax.swing.JSeparator jSeparator1;
+  private javax.swing.JToolBar jToolBar1;
   private javax.swing.JLabel message;
   private javax.swing.JButton saveButton;
   private javax.swing.JLabel subject;
-  private javax.swing.JButton viewOnHud;
   // End of variables declaration//GEN-END:variables
 
 
@@ -499,6 +606,21 @@ public class AnnotationPane extends javax.swing.JPanel {
     }
 
     return s;
+  }
+
+  private void setForegrounds(Color newColor) {
+    this.setForeground(newColor);
+    author.setForeground(newColor);
+    dateLabel.setForeground(newColor);
+    date.setForeground(newColor);
+    cellName.setForeground(newColor);
+    cellNameLabel.setForeground(newColor);
+    cellID.setForeground(newColor);
+    cellIDLabel.setForeground(newColor);
+  }
+
+  public void removeSaveButtonListener(ActionListener l) {
+    saveButton.removeActionListener(l);
   }
 
   

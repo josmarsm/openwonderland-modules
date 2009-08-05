@@ -22,6 +22,7 @@
         <path location="${current.dir}/../metadata/build/client/metadata-module-client.jar"/>
          <path location="${wonderland.dir}/modules/foundation/hud/build/client/hud-client.jar"/>
          <path location="${wonderland.dir}/modules/world/context-menu/build/client/contextmenu-client.jar"/>
+         <path location="${wonderland.dir}/modules/world/affordances/build/client/affordances-client.jar"/>
         <!--<path location="/Users/Matt/trunk/wonderland-trunk/modules/foundation/hud/build/client/hud-client.jar"/>-->
     </pathconvert>
     <pathconvert property="module-common.classpath">

@@ -22,9 +22,9 @@ public class FontSizePane extends javax.swing.JPanel {
     /** Creates new form FontSizePane */
     public FontSizePane() {
         initComponents();
-        slider.setMinimum(25);
-        slider.setMaximum(400);
-        slider.setValue(50);
+        slider.setMinimum(20);
+        slider.setMaximum(250);
+        slider.setValue(60);
     }
 
     /** This method is called from within the constructor to

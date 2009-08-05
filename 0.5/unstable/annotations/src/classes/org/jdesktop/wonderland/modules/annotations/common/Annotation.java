@@ -18,30 +18,38 @@
 
 package org.jdesktop.wonderland.modules.annotations.common;
 
-/**
- *
- * @author mabonner
- */
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataContextMenuItem;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
 import org.jdesktop.wonderland.modules.metadata.common.basetypes.SimpleMetadata;
 
 /**
- * Example extension of the default Metadata base class.
+ * Metadata system provides backend for Annotations, providing search access
+ * and persistence.
  *
- * @author Matt
+ * @author mabonner
  */
 
 @MetadataType
 @MetadataContextMenuItem
 public class Annotation extends SimpleMetadata{
+  // All members in an Annotation will be preserved
+  // To make information searchable via the Metadata system as well, add it
+  // to this object as TEXT_ATTR and SUBJ_ATTR are using put, and match with a
+  // MetadataValue
+
+  // graphical settings
+  AnnotationSettings settings = null;
+  // position in world
+  Vector3f translation = null;
+
   public static final String REPLY_ATTR = "Reply To";
   public static final String SUBJ_ATTR = "Subject";
 
   public Annotation(){
     super();
-    put(TEXT_ATTR, new MetadataValue("no text"));
+    put(TEXT_ATTR, new MetadataValue("No Text"));
     put(SUBJ_ATTR, new MetadataValue("No Subject"));
   }
 
@@ -80,6 +88,22 @@ public class Annotation extends SimpleMetadata{
     return true;
   }
 
+  public AnnotationSettings getSettings() {
+    return settings;
+  }
+
+  public Vector3f getTranslation() {
+    return translation;
+  }
+
+  public void setSettings(AnnotationSettings settings) {
+    this.settings = settings;
+  }
+
+  public void setTranslation(Vector3f translation) {
+    this.translation = translation;
+  }
+
 //  @Override
 //  public boolean contextMenuCheck(Cell c) {
 //    return true;
@@ -93,5 +117,7 @@ public class Annotation extends SimpleMetadata{
 //    super.initByClient(id);
 //    // init subtype here
 //  }
+
+  
 
 }
