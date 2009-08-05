@@ -64,7 +64,6 @@ public class PDFSpreaderCell extends Cell implements SlidesCell {
 
     public PDFSpreaderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-
     }
 
     protected void updateLayout() {

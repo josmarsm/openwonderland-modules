@@ -18,7 +18,10 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.common;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
@@ -30,11 +33,30 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class PresentationCellServerState extends CellServerState {
 
+
+    // Transient because CellID isn't jaxb serializable, and we only
+    // need this field for the initial construction of the cell.
+    @XmlTransient
+    private CellID slidesCellID;
+
+    @XmlElement(name="initialized")
+    private boolean initialized;
+
     public PresentationCellServerState() {
     }
 
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.presentationbase.server.PresentationCellMO";
+    }
+
+    @XmlTransient public CellID getSlidesCellID() { return this.slidesCellID; }
+    public void setSlidesCellID(CellID cellID) {
+        this.slidesCellID = cellID;
+    }
+
+    @XmlTransient public boolean isInitialized() { return this.initialized; }
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
     }
 
 }
