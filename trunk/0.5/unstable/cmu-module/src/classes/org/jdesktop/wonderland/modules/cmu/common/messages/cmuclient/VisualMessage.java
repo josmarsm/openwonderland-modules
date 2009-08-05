@@ -26,6 +26,7 @@ import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,11 +108,11 @@ public class VisualMessage implements Serializable {
     /**
      * Get the TriMesh'es associated with this visual (generally one per
      * CMU geometry).
-     * @return Updatable collection of TriMesh'es
+     * @return Collection of TriMesh'es
      */
     public Collection<TriMesh> getMeshes() {
         synchronized(this.meshes) {
-            return this.meshes;
+            return Collections.unmodifiableCollection(meshes);
         }
     }
 

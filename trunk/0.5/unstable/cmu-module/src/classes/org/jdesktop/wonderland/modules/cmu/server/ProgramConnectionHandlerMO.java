@@ -92,7 +92,6 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
             // Overwrite previously written message if applicable
             programsCreated.put(message.getCellID(), message);
         }
-    //TODO: clean up when cells disconnect
     }
 
     /**

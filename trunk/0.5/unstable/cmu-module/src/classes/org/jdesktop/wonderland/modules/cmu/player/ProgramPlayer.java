@@ -154,7 +154,6 @@ public class ProgramPlayer extends Program {
 
     @Override
     public void destroy() {
-        System.out.println("Program destroyed, port: " + this.getPort());
         this.cmuScene.unloadScene();
         super.destroy();
     }
@@ -164,7 +163,6 @@ public class ProgramPlayer extends Program {
      * @param speed The speed at which to play
      */
     public void setPlaybackSpeed(float speed) {
-        System.out.println("Port " + this.getPort() + " setting speed: " + speed);
         synchronized (speedChangeLock) {
             long currTime = System.currentTimeMillis();
             this.elapsed += this.playbackSpeed * (currTime - this.timeOfLastSpeedChange);

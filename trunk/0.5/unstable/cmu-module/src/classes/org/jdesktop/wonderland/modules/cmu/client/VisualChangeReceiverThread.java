@@ -68,9 +68,6 @@ public class VisualChangeReceiverThread extends Thread {
             while (parentCell.allowsUpdatesFrom(this)) {
                 // Read messages as long as they're being sent
                 Object received = fromServer.readObject();
-                if (parentCell.getPlaybackSpeed() > 1.1f) {
-                    //System.out.println(received);
-                }
                 parentCell.applyMessage(received, this);
             }
         } catch (ClassNotFoundException ex) {
