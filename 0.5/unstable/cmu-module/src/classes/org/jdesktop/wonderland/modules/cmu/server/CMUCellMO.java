@@ -96,7 +96,6 @@ public class CMUCellMO extends CellMO {
 
             // Restart program
             if (RestartProgramMessage.class.isAssignableFrom(message.getClass())) {
-                System.out.println("Received restart message");
                 cellMO.createProgram();
             }
 
@@ -143,7 +142,7 @@ public class CMUCellMO extends CellMO {
         }
     }
 
-    public void setPlaybackInformation(boolean playing, float playbackSpeed) {
+    private void setPlaybackInformation(boolean playing, float playbackSpeed) {
         synchronized (playbackSpeedLock) {
             this.playbackSpeed = playbackSpeed;
             this.playing = playing;
@@ -241,10 +240,9 @@ public class CMUCellMO extends CellMO {
     }
 
     protected void createProgram() {
+        this.setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
         // Create CMU instance
         ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
-
-        this.setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
     }
 
     /**

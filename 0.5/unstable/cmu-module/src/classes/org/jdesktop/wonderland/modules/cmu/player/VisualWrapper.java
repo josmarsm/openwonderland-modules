@@ -149,8 +149,6 @@ public class VisualWrapper implements AbsoluteTransformationListener {
                 visualMessage.setTexture(appConverter.getTexture(), appConverter.getTextureWidth(), appConverter.getTextureHeight());
             }
 
-            //TODO: Process other appearance properties.
-
             cmuVisual.addAbsoluteTransformationListener(this);
             updateTransformation();
         }

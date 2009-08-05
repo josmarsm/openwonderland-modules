@@ -45,6 +45,8 @@ import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
@@ -59,6 +61,7 @@ public class CMUCell extends Cell {
 
     private CMUCellRenderer renderer;
     private MouseEventListener mouseListener;
+    private boolean sceneLoaded = false;
     private float playbackSpeed;
     private boolean playing;
     private final Object playbackSpeedLock = new Object();
@@ -137,8 +140,8 @@ public class CMUCell extends Cell {
             if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
                 if (message.getSenderID() == null || !(message.getSenderID().equals(getCellCache().getSession().getID()))) {
                     PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
-                    setPlayingWithoutUpdate(change.isPlaying());
-                    setPlaybackSpeedWithoutUpdate(change.getPlaybackSpeed());
+                    //System.out.println("Setting playback: " + change.getPlaybackSpeed() + ", " + change.isPlaying());
+                    setPlaybackInformationWithoutUpdate(change.getPlaybackSpeed(), change.isPlaying());
                 }
             }
 
@@ -171,16 +174,21 @@ public class CMUCell extends Cell {
                 // Transformation for existing visual
                 if (TransformationMessage.class.isAssignableFrom(message.getClass())) {
                     this.applyTransformationMessage((TransformationMessage) message);
-                }
-
-                // New visual
-                if (VisualMessage.class.isAssignableFrom(message.getClass())) {
+                } // New visual
+                else if (VisualMessage.class.isAssignableFrom(message.getClass())) {
                     this.applyVisualMessage((VisualMessage) message);
-                }
-
-                // Visual deleted
-                if (VisualDeletedMessage.class.isAssignableFrom(message.getClass())) {
+                } // Visual deleted
+                else if (VisualDeletedMessage.class.isAssignableFrom(message.getClass())) {
                     this.applyVisualDeletedMessage((VisualDeletedMessage) message);
+                } // Load entire scene
+                else if (SceneMessage.class.isAssignableFrom(message.getClass())) {
+                    this.applySceneMessage((SceneMessage) message);
+                } // Unload scene
+                else if (UnloadSceneMessage.class.isAssignableFrom(message.getClass())) {
+                    this.applyUnloadSceneMessage((UnloadSceneMessage) message);
+                } // Unknown message
+                else {
+                    System.out.println("CMUCell WARNING: UNKOWN MESSAGE: " + message);
                 }
             }
         }
@@ -191,19 +199,38 @@ public class CMUCell extends Cell {
     }
 
     private void applyVisualMessage(VisualMessage message) {
-        sceneRoot.attachChild(new VisualNode(message));
+        synchronized (sceneRoot) {
+            if (this.isSceneLoaded()) {
+                sceneRoot.attachChild(new VisualNode(message));
 
-        // Filter ground plane
-        if (NodeNameClassifier.isGroundPlaneName(message.getName())) {
-            synchronized (this.groundPlaneIDs) {
-                groundPlaneIDs.add(message.getNodeID());
+                // Filter ground plane
+                if (NodeNameClassifier.isGroundPlaneName(message.getName())) {
+                    synchronized (this.groundPlaneIDs) {
+                        groundPlaneIDs.add(message.getNodeID());
+                    }
+                    sceneRoot.applyVisibilityToChild(message.getNodeID(), isGroundPlaneShowing());
+                }
             }
-            sceneRoot.applyVisibilityToChild(message.getNodeID(), isGroundPlaneShowing());
         }
     }
 
     private void applyVisualDeletedMessage(VisualDeletedMessage message) {
         sceneRoot.removeChild(message);
+    }
+
+    private void applySceneMessage(SceneMessage message) {
+        synchronized (sceneRoot) {
+            this.setSceneLoaded(true);
+            for (VisualMessage visual : message.getVisuals()) {
+                applyVisualMessage(visual);
+            }
+        }
+    }
+
+    private void applyUnloadSceneMessage(UnloadSceneMessage message) {
+        synchronized (sceneRoot) {
+            this.disconnect();
+        }
     }
 
     /**
@@ -216,6 +243,21 @@ public class CMUCell extends Cell {
         synchronized (this.sceneRoot) {
             return this.cmuConnectionThread == receiver;
         }
+
+    }
+
+    public boolean isSceneLoaded() {
+        synchronized (sceneRoot) {
+            return sceneLoaded;
+        }
+
+    }
+
+    public void setSceneLoaded(boolean sceneLoaded) {
+        synchronized (sceneRoot) {
+            this.sceneLoaded = sceneLoaded;
+        }
+
     }
 
     /**
@@ -228,6 +270,7 @@ public class CMUCell extends Cell {
             if (allowsUpdatesFrom(receiver)) {
                 this.disconnect();
             }
+
         }
     }
 
@@ -241,6 +284,7 @@ public class CMUCell extends Cell {
             if (allowsUpdatesFrom(receiver)) {
                 this.markConnected();
             }
+
         }
     }
 
@@ -251,11 +295,13 @@ public class CMUCell extends Cell {
      */
     private void disconnect() {
         synchronized (this.sceneRoot) {
+            this.setSceneLoaded(false);
             this.cmuConnectionThread = null;
 
             //TODO: Show something noting that the scene is disconnected.
             this.sceneRoot.detachAllChildren();
         }
+
     }
 
     /**
@@ -274,12 +320,15 @@ public class CMUCell extends Cell {
      * @param port The port to connect to
      */
     public void setHostnameAndPort(String server, int port) {
-        // Synchronize this on sceneRoot, so that no changes can
+        // Synchronize this on sceneRoot, so that no changes can happen to
+        // the scene while this is occurring
         synchronized (this.sceneRoot) {
             this.disconnect();
-            cmuConnectionThread = new VisualChangeReceiverThread(this, server, port);
+            cmuConnectionThread =
+                    new VisualChangeReceiverThread(this, server, port);
             cmuConnectionThread.start();
         }
+
     }
 
     /**
@@ -291,12 +340,15 @@ public class CMUCell extends Cell {
         synchronized (playbackSpeedLock) {
             return this.playbackSpeed;
         }
+
     }
 
     public void setPlaybackSpeed(float playbackSpeed) {
-        synchronized (playbackSpeedLock) {
-            setPlaybackSpeedWithoutUpdate(playbackSpeed);
-            this.sendPlaybackData();
+        if (isSceneLoaded()) {
+            synchronized (playbackSpeedLock) {
+                setPlaybackInformationWithoutUpdate(playbackSpeed, this.isPlaying());
+                this.sendPlaybackData();
+            }
         }
     }
 
@@ -304,18 +356,24 @@ public class CMUCell extends Cell {
      * Set playback speed.
      * @param playbackSpeed The speed at which the associated CMU scene is playing.
      */
-    private void setPlaybackSpeedWithoutUpdate(float playbackSpeed) {
+    private void setPlaybackInformationWithoutUpdate(float playbackSpeed, boolean playing) {
         synchronized (playbackSpeedLock) {
+            this.playing = playing;
             this.playbackSpeed = playbackSpeed;
             firePlaybackChanged();
         }
+
+
     }
 
     public void setPlaying(boolean playing) {
-        synchronized (playbackSpeedLock) {
-            setPlayingWithoutUpdate(playing);
-            this.sendPlaybackData();
+        if (isSceneLoaded()) {
+            synchronized (playbackSpeedLock) {
+                setPlaybackInformationWithoutUpdate(this.getPlaybackSpeed(), playing);
+                this.sendPlaybackData();
+            }
         }
+
     }
 
     /**
@@ -327,13 +385,6 @@ public class CMUCell extends Cell {
     public boolean isPlaying() {
         synchronized (playbackSpeedLock) {
             return playing;
-        }
-    }
-
-    private void setPlayingWithoutUpdate(boolean playing) {
-        synchronized (playbackSpeedLock) {
-            this.playing = playing;
-            firePlaybackChanged();
         }
     }
 
@@ -359,24 +410,26 @@ public class CMUCell extends Cell {
 
         assert clientState instanceof CMUCellClientState;
         CMUCellClientState cmuClientState = (CMUCellClientState) clientState;
-        this.setPlayingWithoutUpdate(cmuClientState.isPlaying());
-        this.setPlaybackSpeedWithoutUpdate(cmuClientState.getPlaybackSpeed());
+        this.setPlaybackInformationWithoutUpdate(cmuClientState.getPlaybackSpeed(), cmuClientState.isPlaying());
         if (cmuClientState.isServerAndPortInitialized()) {
             this.setHostnameAndPort(cmuClientState.getServer(), cmuClientState.getPort());
         }
+
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected CellRenderer createCellRenderer(RendererType rendererType) {
+    protected CellRenderer createCellRenderer(
+            RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
             this.renderer = new CMUCellRenderer(this);
             return this.renderer;
         } else {
             return super.createCellRenderer(rendererType);
         }
+
     }
 
     /**
@@ -460,12 +513,14 @@ public class CMUCell extends Cell {
             playbackChangeListeners.add(listener);
             listener.playbackChanged(new PlaybackChangeEvent(this.getPlaybackSpeed(), this.isPlaying()));
         }
+
     }
 
     public void removePlaybackChangeListener(PlaybackChangeListener listener) {
         synchronized (playbackChangeListeners) {
             playbackChangeListeners.remove(listener);
         }
+
     }
 
     private void firePlaybackChanged() {
@@ -473,10 +528,12 @@ public class CMUCell extends Cell {
         synchronized (playbackSpeedLock) {
             event = new PlaybackChangeEvent(this.getPlaybackSpeed(), this.isPlaying());
         }
+
         synchronized (playbackChangeListeners) {
             for (PlaybackChangeListener listener : playbackChangeListeners) {
                 listener.playbackChanged(event);
             }
+
         }
     }
 
@@ -485,12 +542,14 @@ public class CMUCell extends Cell {
             groundPlaneChangeListeners.add(listener);
             listener.groundPlaneChanged(new GroundPlaneChangeEvent(this.isGroundPlaneShowing()));
         }
+
     }
 
     public void removeGroundPlaneChangeListener(PlaybackChangeListener listener) {
         synchronized (playbackChangeListeners) {
             playbackChangeListeners.remove(listener);
         }
+
     }
 
     private void fireGroundPlaneChanged() {
@@ -498,10 +557,12 @@ public class CMUCell extends Cell {
         synchronized (groundPlaneLock) {
             event = new GroundPlaneChangeEvent(this.isGroundPlaneShowing());
         }
+
         synchronized (groundPlaneChangeListeners) {
             for (GroundPlaneChangeListener listener : groundPlaneChangeListeners) {
                 listener.groundPlaneChanged(event);
             }
+
         }
     }
 
@@ -509,13 +570,17 @@ public class CMUCell extends Cell {
         synchronized (groundPlaneLock) {
             return groundPlaneShowing;
         }
+
     }
 
     public void setGroundPlaneShowing(boolean groundPlaneShowing) {
         synchronized (groundPlaneLock) {
             this.setGroundPlaneShowingWithoutUpdate(groundPlaneShowing);
             sendGroundPlaneData();
+
         }
+
+
     }
 
     private void setGroundPlaneShowingWithoutUpdate(boolean groundPlaneShowing) {
@@ -525,12 +590,15 @@ public class CMUCell extends Cell {
                 for (NodeID id : groundPlaneIDs) {
                     sceneRoot.applyVisibilityToChild(id, groundPlaneShowing);
                 }
+
             }
             fireGroundPlaneChanged();
         }
+
     }
 
     private void sendPlaybackData() {
+        //System.out.println("Sending playback data: " + getPlaybackSpeed() + ", " + isPlaying());
         sendCellMessage(new PlaybackSpeedChangeMessage(getCellID(), getPlaybackSpeed(), isPlaying()));
     }
 
@@ -539,7 +607,7 @@ public class CMUCell extends Cell {
     }
 
     public void restart() {
-        System.out.println("Sending restart message...");
+        //TODO: Fix the bug(s) with this
         sendCellMessage(new RestartProgramMessage(getCellID()));
     }
 
@@ -556,7 +624,8 @@ public class CMUCell extends Cell {
 
                         // Create the HUD component
                         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-                        hudComponent = mainHUD.createComponent(hudPanel);
+                        hudComponent =
+                                mainHUD.createComponent(hudPanel);
                         hudComponent.setPreferredTransparency(0.0f);
                         hudComponent.setName("CMU Player");
                         hudComponent.setPreferredLocation(Layout.NORTHWEST);
@@ -572,6 +641,7 @@ public class CMUCell extends Cell {
                     }
                 };
             }
+
         } else {
             toRun = new Runnable() {
 
@@ -586,6 +656,7 @@ public class CMUCell extends Cell {
         synchronized (hudShowingLock) {
             this.hudShowing = showing;
         }
+
     }
 
     protected boolean isHUDShowing() {
