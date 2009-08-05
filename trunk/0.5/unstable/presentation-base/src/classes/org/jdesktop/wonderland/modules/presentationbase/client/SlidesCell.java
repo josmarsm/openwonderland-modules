@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.client;
 
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
@@ -37,4 +38,7 @@ public interface SlidesCell {
     
     public float getInterslideSpacing();
 
+    public String getCreatorName();
+
+    public CellID getCellID();
 }

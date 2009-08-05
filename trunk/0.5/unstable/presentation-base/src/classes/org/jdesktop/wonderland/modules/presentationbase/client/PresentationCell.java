@@ -29,9 +29,14 @@ import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
+import org.jdesktop.wonderland.client.comms.ClientConnection;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.modules.presentationbase.client.jme.cell.MovingPlatformCellRenderer;
+import org.jdesktop.wonderland.modules.presentationbase.common.PresentationCellServerState;
 
 /**
  *
@@ -84,14 +89,14 @@ public class PresentationCell extends Cell implements ProximityListener {
         // Check to see if the avatar entering/exiting is the local one.
         if (cell.getCellCache().getViewCell().getCellID() == viewCellID) {
             if (entered) {
-                logger.warning("Local user on platform.");
+                logger.warning("Local user in presentation space.");
 
                 AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
 
                 // Do something with the entering avatar.
 
             } else {
-                logger.warning("Local user off platform.");
+                logger.warning("Local user out of presentation space.");
 
                 AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
 
@@ -111,23 +116,31 @@ public class PresentationCell extends Cell implements ProximityListener {
 
         // Overall steps:
         //
-        // 1. Put a toolbar up for everyone that gives them next/previous controls.
+        // 0. Put a toolbar up for everyone that gives them next/previous controls.
         //     (eventually this should be just for the username that created
         //      the file, but it's not clear to me how to do that since this
         //      object contains only local state and isn't synced at all.)
+        // ------------------ deferring this until the platform is in place ---
+
+        // 1. Create a new PresentationCell, put it in the right place, and
+        //    reparent the PDF cell into it. Size it so it contains the PDF cell
+        //    plus tons of extra space in front of the slides for the platform.
+
+        // Get a reference to the connection we'll use to send these messages.
+        ClientConnection sender = LoginManager.getPrimary().getPrimarySession().getConnection(CellEditConnectionType.CLIENT_TYPE);
+        
+        PresentationCellServerState state = new PresentationCellServerState();
+
+        state.setSlidesCellID(slidesCell.getCellID());
+        state.setInitialized(false);
 
 
-        // 2. Create a presentation platform in front of the first slide, sized
-        //    so it is as wide as the slide + the inter-slide space.
-        //
+        CellCreateMessage createPresentationCell = new CellCreateMessage(null, state);
 
-        // 3. Tell the PDF spreader to grow itself to contain the whole space
-        //    of the presentation.
+        LoginManager.getPrimary().getPrimarySession().getConnection(CellEditConnectionType.CLIENT_TYPE).getSession().send(sender, createPresentationCell);
 
-        // 4. Attach a thought bubbles component to the parent cell.
-
-        // 5. Add buttons to the main presentation toolbar for setting camera
-        //    positions (back / top)
-
+        // This setup process continues on the server side, where the cell
+        // figures out how big it is and where it should go in the
+        // setServerState method on the just-created new cell.
     }
 }
