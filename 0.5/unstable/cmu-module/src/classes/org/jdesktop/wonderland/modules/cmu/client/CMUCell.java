@@ -195,21 +195,23 @@ public class CMUCell extends Cell {
     }
 
     private void applyTransformationMessage(TransformationMessage message) {
-        this.sceneRoot.applyTransformationToChild(message);
+        synchronized (sceneRoot) {
+            if (this.isSceneLoaded()) {
+                this.sceneRoot.applyTransformationToChild(message);
+            }
+        }
     }
 
     private void applyVisualMessage(VisualMessage message) {
         synchronized (sceneRoot) {
-            if (this.isSceneLoaded()) {
-                sceneRoot.attachChild(new VisualNode(message));
+            sceneRoot.attachChild(new VisualNode(message));
 
-                // Filter ground plane
-                if (NodeNameClassifier.isGroundPlaneName(message.getName())) {
-                    synchronized (this.groundPlaneIDs) {
-                        groundPlaneIDs.add(message.getNodeID());
-                    }
-                    sceneRoot.applyVisibilityToChild(message.getNodeID(), isGroundPlaneShowing());
+            // Filter ground plane
+            if (NodeNameClassifier.isGroundPlaneName(message.getName())) {
+                synchronized (this.groundPlaneIDs) {
+                    groundPlaneIDs.add(message.getNodeID());
                 }
+                sceneRoot.applyVisibilityToChild(message.getNodeID(), isGroundPlaneShowing());
             }
         }
     }
