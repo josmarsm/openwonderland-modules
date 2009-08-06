@@ -239,7 +239,7 @@ public class CMUCellMO extends CellMO {
         return super.getServerState(serverState);
     }
 
-    protected void createProgram() {
+    public void createProgram() {
         this.setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
         // Create CMU instance
         ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
