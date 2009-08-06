@@ -104,6 +104,17 @@ public class Annotation extends SimpleMetadata{
     this.translation = translation;
   }
 
+  /**
+    * The in-world location associated with this metadata. The default implementation
+    * returns null, which will cause the search's goto button to use the parent
+    * cell's location.
+    * @return location
+    */
+  @Override
+  public Vector3f getLocation() {
+    return null;
+  }
+
 //  @Override
 //  public boolean contextMenuCheck(Cell c) {
 //    return true;
