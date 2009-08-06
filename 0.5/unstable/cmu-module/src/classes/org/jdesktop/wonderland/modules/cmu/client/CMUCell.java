@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
+import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import com.jme.scene.Node;
 import java.util.Collection;
@@ -30,6 +31,8 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageRece
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
@@ -57,7 +60,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartP
  * Cell to display and interact with a CMU scene.
  * @author kevin
  */
-public class CMUCell extends Cell {
+public class CMUCell extends Cell implements HUDEventListener {
 
     private CMUCellRenderer renderer;
     private MouseEventListener mouseListener;
@@ -355,8 +358,10 @@ public class CMUCell extends Cell {
     }
 
     /**
-     * Set playback speed.
-     * @param playbackSpeed The speed at which the associated CMU scene is playing.
+     * Set playback speed and play/pause state without propagating this change
+     * to the server (i.e. to respond to server commands).
+     * @param playbackSpeed The speed at which the associated CMU scene is playing
+     * @param playing The play/pause state of the scene
      */
     private void setPlaybackInformationWithoutUpdate(float playbackSpeed, boolean playing) {
         synchronized (playbackSpeedLock) {
@@ -368,6 +373,11 @@ public class CMUCell extends Cell {
 
     }
 
+    /**
+     * Change the play/pause state of the scene, and send an update to the server
+     * noting that this has been done.
+     * @param playing The play/pause state of the scene
+     */
     public void setPlaying(boolean playing) {
         if (isSceneLoaded()) {
             synchronized (playbackSpeedLock) {
@@ -445,7 +455,6 @@ public class CMUCell extends Cell {
 
         switch (status) {
             case DISK:
-                //TODO: Weird stuff happening when going to disk and back
                 // Remove mouse listener.
                 if (mouseListener != null) {
                     mouseListener.removeFromEntity(renderer.getEntity());
@@ -457,14 +466,6 @@ public class CMUCell extends Cell {
                 if (!increasing) {
                     if (channel != null) {
                         channel.removeMessageReceiver(ConnectionChangeMessage.class);
-                    }
-                }
-                break;
-
-            case INACTIVE:
-                if (increasing) {
-                    if (channel != null) {
-                        channel.addMessageReceiver(ConnectionChangeMessage.class, messageReceiver);
                     }
                 }
 
@@ -481,13 +482,16 @@ public class CMUCell extends Cell {
                         channel.removeMessageReceiver(GroundPlaneChangeMessage.class);
                     }
                 }
+
+                unloadHUD();
+
                 break;
 
-            case ACTIVE:
-                // Add mouse listener.
-                if (mouseListener == null) {
-                    mouseListener = new MouseEventListener();
-                    mouseListener.addToEntity(renderer.getEntity());
+            case INACTIVE:
+                if (increasing) {
+                    if (channel != null) {
+                        channel.addMessageReceiver(ConnectionChangeMessage.class, messageReceiver);
+                    }
                 }
 
                 // Start receiving playback speed changes.
@@ -503,6 +507,16 @@ public class CMUCell extends Cell {
                         channel.addMessageReceiver(GroundPlaneChangeMessage.class, messageReceiver);
                     }
                 }
+
+                break;
+
+            case ACTIVE:
+                // Add mouse listener.
+                if (mouseListener == null) {
+                    mouseListener = new MouseEventListener();
+                    mouseListener.addToEntity(renderer.getEntity());
+                }
+
                 break;
 
             default:
@@ -515,14 +529,12 @@ public class CMUCell extends Cell {
             playbackChangeListeners.add(listener);
             listener.playbackChanged(new PlaybackChangeEvent(this.getPlaybackSpeed(), this.isPlaying()));
         }
-
     }
 
     public void removePlaybackChangeListener(PlaybackChangeListener listener) {
         synchronized (playbackChangeListeners) {
             playbackChangeListeners.remove(listener);
         }
-
     }
 
     private void firePlaybackChanged() {
@@ -535,7 +547,6 @@ public class CMUCell extends Cell {
             for (PlaybackChangeListener listener : playbackChangeListeners) {
                 listener.playbackChanged(event);
             }
-
         }
     }
 
@@ -579,10 +590,7 @@ public class CMUCell extends Cell {
         synchronized (groundPlaneLock) {
             this.setGroundPlaneShowingWithoutUpdate(groundPlaneShowing);
             sendGroundPlaneData();
-
         }
-
-
     }
 
     private void setGroundPlaneShowingWithoutUpdate(boolean groundPlaneShowing) {
@@ -592,7 +600,6 @@ public class CMUCell extends Cell {
                 for (NodeID id : groundPlaneIDs) {
                     sceneRoot.applyVisibilityToChild(id, groundPlaneShowing);
                 }
-
             }
             fireGroundPlaneChanged();
         }
@@ -600,7 +607,6 @@ public class CMUCell extends Cell {
     }
 
     private void sendPlaybackData() {
-        //System.out.println("Sending playback data: " + getPlaybackSpeed() + ", " + isPlaying());
         sendCellMessage(new PlaybackSpeedChangeMessage(getCellID(), getPlaybackSpeed(), isPlaying()));
     }
 
@@ -609,61 +615,80 @@ public class CMUCell extends Cell {
     }
 
     public void restart() {
-        //TODO: Fix the bug(s) with this
         sendCellMessage(new RestartProgramMessage(getCellID()));
     }
 
-    protected void setHUDShowing(boolean showing) {
-        Runnable toRun;
-        if (showing) {
-            if (hudComponent == null) {
-                // Set up the UI
-                toRun = new Runnable() {
+    private class HUDDisplayer implements Runnable {
 
-                    public void run() {
-                        // Create the panel
-                        hudPanel = new CMUJPanel(CMUCell.this);
+        private final boolean showing;
 
-                        // Create the HUD component
-                        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-                        hudComponent =
-                                mainHUD.createComponent(hudPanel);
-                        hudComponent.setPreferredTransparency(0.0f);
-                        hudComponent.setName("CMU Player");
-                        hudComponent.setPreferredLocation(Layout.NORTHWEST);
-                        mainHUD.addComponent(hudComponent);
-                        hudComponent.setVisible(true);
-                    }
-                };
-            } else {
-                toRun = new Runnable() {
+        public HUDDisplayer(boolean showing) {
+            this.showing = showing;
+        }
 
-                    public void run() {
-                        hudComponent.setVisible(true);
-                    }
-                };
-            }
+        @Override
+        public void run() {
+            synchronized (hudShowingLock) {
+                // Set up UI
+                if (showing && hudComponent == null) {
+                    // Create the panel
+                    hudPanel = new CMUJPanel(CMUCell.this);
 
-        } else {
-            toRun = new Runnable() {
-
-                public void run() {
-                    hudComponent.setVisible(false);
+                    // Create the HUD component
+                    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+                    assert mainHUD != null;
+                    hudComponent = mainHUD.createComponent(hudPanel);
+                    hudComponent.setPreferredTransparency(0.0f);
+                    hudComponent.setName("CMU Player");
+                    hudComponent.setPreferredLocation(Layout.NORTHWEST);
+                    hudComponent.addEventListener(CMUCell.this);
+                    mainHUD.addComponent(hudComponent);
                 }
-            };
+                if (hudComponent != null) {
+                    hudComponent.setVisible(showing);
+                }
+                hudShowing = showing;
+            }
+        }
+    }
+
+    private class HUDKiller extends HUDDisplayer {
+        public HUDKiller() {
+            super(false);
         }
 
-        SwingUtilities.invokeLater(toRun);
+        @Override
+        public void run() {
+            synchronized(hudShowingLock) {
+                super.run();
 
-        synchronized (hudShowingLock) {
-            this.hudShowing = showing;
+                //TODO: Remove from HUD manager?
+                hudComponent = null;
+            }
         }
+    }
 
+    protected void setHUDShowing(boolean showing) {
+        SwingUtilities.invokeLater(new HUDDisplayer(showing));
     }
 
     protected boolean isHUDShowing() {
         synchronized (hudShowingLock) {
             return hudShowing;
+        }
+    }
+
+    private void unloadHUD() {
+        SwingUtilities.invokeLater(new HUDKiller());
+    }
+
+    public void HUDObjectChanged(HUDEvent event) {
+        synchronized (hudShowingLock) {
+            if (event.getObject().equals(this.hudComponent)) {
+                if (event.getEventType().equals(HUDEventType.DISAPPEARED) || event.getEventType().equals(HUDEventType.CLOSED)) {
+                    this.setHUDShowing(false);
+                }
+            }
         }
     }
 }

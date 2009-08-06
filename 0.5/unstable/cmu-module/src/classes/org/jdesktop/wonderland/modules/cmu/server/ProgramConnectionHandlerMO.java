@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgr
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 
 /**
  * Managed object with singleton instance to interface between cells and
@@ -134,8 +135,9 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
 
     private void recreatePrograms() {
         synchronized (this.programsCreated) {
-            for (CreateProgramMessage message : programsCreated.values()) {
-                sendMessage(message);
+            for (CellID cellID : programsCreated.keySet()) {
+                CMUCellMO cellMO = (CMUCellMO)CellManagerMO.getCell(cellID);
+                cellMO.createProgram();
             }
         }
     }
