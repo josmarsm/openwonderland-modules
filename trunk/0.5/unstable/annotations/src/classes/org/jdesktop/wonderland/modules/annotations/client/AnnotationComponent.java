@@ -366,7 +366,6 @@ public class AnnotationComponent extends CellComponent
     
     // remove hud component
     AnnotationPlugin.removeHUDComponent(hc);
-    hudComponents.remove(annoID);
     hc.setWorldVisible(false);
     hc.setVisible(false);
     hc = null;
@@ -396,6 +395,8 @@ public class AnnotationComponent extends CellComponent
     for(MetadataID a:hudComponents.keySet()){
       removeAnnotation(a);
     }
+    // silly rabbit, you can't remove these during iteration over their container
+    hudComponents.clear();
   }
 
   /**
