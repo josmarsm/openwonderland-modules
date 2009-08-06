@@ -102,7 +102,7 @@ public class ProgramManager {
         }
 
         // Create and send response message.
-        return new CreateProgramResponseMessage(messageID, cellID, newProgram.getServer(), newProgram.getPort());
+        return new CreateProgramResponseMessage(messageID, cellID, newProgram.getHostname(), newProgram.getPort());
     }
 
     /**

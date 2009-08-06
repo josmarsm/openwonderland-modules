@@ -26,7 +26,6 @@ import edu.cmu.cs.dennisc.scenegraph.event.ChildrenListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -37,6 +36,7 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.alice.apis.moveandturn.Scene;
+import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
@@ -173,14 +173,15 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         }
 
         /**
-         * Get the server set up by this thread's ServerSocket.
-         * @return The server used to connect to this thread
+         * Get the hostname for this thread's ServerSocket.
+         * @return The hostname used to connect to this thread
          */
         public String getHostname() {
             synchronized (socketListenerLock) {
                 assert socketListener != null;
                 try {
-                    return InetAddress.getLocalHost().getHostAddress();
+                    return NetworkAddress.getPrivateLocalAddress().getHostAddress();
+                    //return InetAddress.getLocalHost().getHostAddress();
                 } catch (UnknownHostException ex) {
                     Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                     return null;

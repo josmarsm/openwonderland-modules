@@ -36,6 +36,8 @@ public class VisualChangeReceiverThread extends Thread {
     private final String server;
     private final int port;
     private final CMUCell parentCell;
+    private final Object statsLock = new Object();
+    private long numReads = 0;
 
     /**
      * Standard constructor.
@@ -49,6 +51,27 @@ public class VisualChangeReceiverThread extends Thread {
         this.port = port;
     }
 
+    private class MonitorThread extends Thread {
+
+        private static final long PAUSE_TIME = 5000;
+        @Override
+        public void run() {
+            while (VisualChangeReceiverThread.this.isAlive()) {
+                try {
+                    Thread.sleep(PAUSE_TIME);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(VisualChangeReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                long currNumReads;
+                synchronized(statsLock) {
+                   currNumReads = getNumReads();
+                   resetStats();
+                }
+                System.out.println(currNumReads + "messages in last " + PAUSE_TIME / 1000 + "s");
+            }
+        }
+    }
+
     /**
      * Create a connection to the CMU instance, and wait for incoming
      * messages; these can be either transformation updates, or information
@@ -56,6 +79,7 @@ public class VisualChangeReceiverThread extends Thread {
      */
     @Override
     public void run() {
+        //new MonitorThread().start();
         try {
             // Get incoming stream from server
             Socket connection = new Socket(server, port);
@@ -68,6 +92,7 @@ public class VisualChangeReceiverThread extends Thread {
             while (parentCell.allowsUpdatesFrom(this)) {
                 // Read messages as long as they're being sent
                 Object received = fromServer.readObject();
+                addObjectToStats(received);
                 parentCell.applyMessage(received, this);
             }
         } catch (ClassNotFoundException ex) {
@@ -83,6 +108,24 @@ public class VisualChangeReceiverThread extends Thread {
         //TODO: Notify the CMUCell about the reason for the disconnect?
         System.out.println("Disconnecting from port " + port);
         parentCell.markDisconnected(this);
+    }
+
+    private void addObjectToStats(Object object) {
+        synchronized(statsLock) {
+            numReads++;
+        }
+    }
+
+    public long getNumReads() {
+        synchronized(statsLock) {
+            return numReads;
+        }
+    }
+
+    public void resetStats() {
+        synchronized(statsLock) {
+            numReads = 0;
+        }
     }
 }
 
