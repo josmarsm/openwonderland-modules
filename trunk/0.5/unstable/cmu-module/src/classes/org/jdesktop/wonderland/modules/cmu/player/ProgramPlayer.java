@@ -81,7 +81,7 @@ public class ProgramPlayer extends Program {
      * Get the server designated by the SceneConnectionHandler for this program.
      * @return The server used to connect to this program
      */
-    public String getServer() {
+    public String getHostname() {
         return this.cmuScene.getHostname();
     }
 
