@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeM
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.MessageType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellClientState;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellServerState;
+import org.jdesktop.wonderland.modules.presentationbase.server.PresentationCellMO;
 import org.jdesktop.wonderland.modules.presentationbase.server.SlidesCell;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -134,6 +135,12 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if(live) {
             channel.addMessageReceiver(PDFSpreaderCellChangeMessage.class, (ChannelComponentMO.ComponentMessageReceiver)new PDFSpreaderCellMessageReceiver(this));
+
+            // Check to see if we should register with a potential PresentationCell parent.
+            if(this.getParent() instanceof PresentationCellMO) {{
+                ((PresentationCellMO)this.getParent()).setSlidesCell(this);
+            }
+            }
         }
         else {
             channel.removeMessageReceiver(PDFSpreaderCellChangeMessage.class);
@@ -147,8 +154,18 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
     public float getInterslideSpacing() {
         // I think we might need to do some math to get this value out. I'm
         // not sure it really corresponds with the spacing variable as written.
-        // We need to figure out per-slide width first. 
-        return 0.0f;
+        // We need to figure out per-slide width first.
+
+        float interslideSpacing = this.spacing - this.slideWidth;
+
+        if(interslideSpacing < 0)
+            return 0.0f;
+
+        return interslideSpacing;
+    }
+
+    public float getCenterSpacing() {
+        return this.spacing;
     }
 
     public String getCreatorName() {

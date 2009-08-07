@@ -30,8 +30,18 @@ package org.jdesktop.wonderland.modules.presentationbase.server;
 public interface SlidesCell {
         
     public int getNumSlides();
-    
+
+    /**
+     *
+     * @return The distance between the edges of the slides.
+     */
     public float getInterslideSpacing();
+
+    /**
+     *
+     * @return The distance between the centers of the slides. 
+     */
+    public float getCenterSpacing();
 
     public String getCreatorName();
 

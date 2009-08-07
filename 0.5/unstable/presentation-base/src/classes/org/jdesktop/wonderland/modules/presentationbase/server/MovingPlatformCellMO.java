@@ -17,13 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.presentationbase.server;
 
+import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.presentationbase.common.MovingPlatformCellClientState;
 import org.jdesktop.wonderland.modules.presentationbase.common.MovingPlatformCellServerState;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+
+
 
 /**
  *
@@ -39,6 +44,9 @@ public class MovingPlatformCellMO extends CellMO {
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.presentationbase.client.MovingPlatformCell";
     }
+
+    @UsesCellComponentMO(MovableComponentMO.class)
+    private ManagedReference<MovableComponentMO> moveRef;
 
     @Override
     public void setServerState(CellServerState state) {
@@ -56,8 +64,7 @@ public class MovingPlatformCellMO extends CellMO {
         ((MovingPlatformCellServerState)state).setPlatformWidth(platformWidth);
         ((MovingPlatformCellServerState)state).setPlatformDepth(platformDepth);
 
-
-        return state;
+        return super.getServerState(state);
     }
 
     @Override
@@ -68,7 +75,18 @@ public class MovingPlatformCellMO extends CellMO {
         ((MovingPlatformCellClientState)cellClientState).setPlatformWidth(platformWidth);
         ((MovingPlatformCellClientState)cellClientState).setPlatformDepth(platformDepth);
 
-        return cellClientState;
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
+    @Override
+    public void setLive(boolean live) {
+        
+        // When we go live, check to see who our parent is.
+        // If our parent is a presentationcell, register
+        // our existence with said cell.
+        if(this.getParent() instanceof PresentationCellMO)
+            ((PresentationCellMO)this.getParent()).setPlatformCellMO(this);
+        
+        super.setLive(live);
+    }
 }
