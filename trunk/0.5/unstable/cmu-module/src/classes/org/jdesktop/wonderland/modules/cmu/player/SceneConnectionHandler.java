@@ -76,8 +76,9 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
 
         public void writeToOutputStream(Object message) throws IOException {
             synchronized (socket) {
-                this.outputStream.writeObject(message);
+                this.outputStream.writeUnshared(message);
                 this.outputStream.flush();
+                this.outputStream.reset();
             }
         }
 
@@ -91,6 +92,11 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 }
             }
         }
+
+        @Override
+        public String toString() {
+            return "Connection: " + socket;
+        }
     }
 
     private class MessageSenderThread<T extends Serializable> extends Thread {
@@ -99,7 +105,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         private final Connection connection;
 
         public MessageSenderThread(Connection connection, T message) {
-            super();
+            super("CMU Message Sender " + connection + " " + message.getClass());
             this.connection = connection;
             this.message = message;
         }
@@ -140,6 +146,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                     Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            this.setName("CMU Connection Handler " + socketListener);
         }
 
         /**

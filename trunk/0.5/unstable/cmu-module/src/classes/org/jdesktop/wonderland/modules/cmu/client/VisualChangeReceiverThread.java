@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -33,7 +34,7 @@ import java.util.logging.Logger;
  */
 public class VisualChangeReceiverThread extends Thread {
 
-    private final String server;
+    private final String hostname;
     private final int port;
     private final CMUCell parentCell;
     private final Object statsLock = new Object();
@@ -44,14 +45,18 @@ public class VisualChangeReceiverThread extends Thread {
      * @param server The server on which the CMU instance is running.
      * @param port The port on which the CMU instance is running.
      */
-    public VisualChangeReceiverThread(CMUCell parentCell, String server, int port) {
-        super();
+    public VisualChangeReceiverThread(CMUCell parentCell, String hostname, int port) {
+        super("CMU Message Receiver " + hostname + ":" + port);
         this.parentCell = parentCell;
-        this.server = server;
+        this.hostname = hostname;
         this.port = port;
     }
 
     private class MonitorThread extends Thread {
+
+        public MonitorThread() {
+            super("CMU Message Statistics Monitor " + hostname + ":" + port);
+        }
 
         private static final long PAUSE_TIME = 5000;
         @Override
@@ -82,7 +87,7 @@ public class VisualChangeReceiverThread extends Thread {
         //new MonitorThread().start();
         try {
             // Get incoming stream from server
-            Socket connection = new Socket(server, port);
+            Socket connection = new Socket(hostname, port);
             ObjectInputStream fromServer = new ObjectInputStream(connection.getInputStream());
 
             // Notify connection successful.
@@ -91,7 +96,7 @@ public class VisualChangeReceiverThread extends Thread {
             System.out.println("Connected on port " + port);
             while (parentCell.allowsUpdatesFrom(this)) {
                 // Read messages as long as they're being sent
-                Object received = fromServer.readObject();
+                Object received = fromServer.readUnshared();
                 addObjectToStats(received);
                 parentCell.applyMessage(received, this);
             }
@@ -100,6 +105,8 @@ public class VisualChangeReceiverThread extends Thread {
         } catch (SocketException ex) {
             System.out.println("Disconnecting: " + ex);
         } catch (UnknownHostException ex) {
+            System.out.println("Disconnecting: " + ex);
+        } catch (EOFException ex) {
             System.out.println("Disconnecting: " + ex);
         } catch (IOException ex) {
             Logger.getLogger(VisualChangeReceiverThread.class.getName()).log(Level.SEVERE, null, ex);

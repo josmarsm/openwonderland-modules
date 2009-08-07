@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.server;
 
+import java.io.File;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -47,6 +48,7 @@ public class CMUCellMO extends CellMO {
 
     private String cmuURI;
     private String hostName;
+    private String sceneTitle;
     private int port;
     private boolean playing;
     private float playbackSpeed;
@@ -207,6 +209,7 @@ public class CMUCellMO extends CellMO {
                 cmuClientState.setServerAndPort(getHostname(), getPort());
             }
         }
+        cmuClientState.setSceneTitle(this.getSceneTitle());
 
         return super.getClientState(clientState, clientID, capabilities);
     }
@@ -221,6 +224,9 @@ public class CMUCellMO extends CellMO {
         CMUCellServerState setup = (CMUCellServerState) serverState;
         setCmuURI(setup.getCmuURI());
         setGroundPlaneShowing(setup.isGroundPlaneShowing());
+        //TODO: Better title handling
+        //setSceneTitle(setup.getSceneTitle());
+        setSceneTitle(getCmuURI().substring(getCmuURI().lastIndexOf('/') + 1));
 
         createProgram();
     }
@@ -236,6 +242,7 @@ public class CMUCellMO extends CellMO {
         CMUCellServerState cmuServerState = (CMUCellServerState) serverState;
         cmuServerState.setCmuURI(getCmuURI());
         cmuServerState.setGroundPlaneShowing(isGroundPlaneShowing());
+        cmuServerState.setSceneTitle(getSceneTitle());
         return super.getServerState(serverState);
     }
 
@@ -294,6 +301,14 @@ public class CMUCellMO extends CellMO {
             this.port = port;
             sendConnectionInformation();
         }
+    }
+
+    public String getSceneTitle() {
+        return sceneTitle;
+    }
+
+    public void setSceneTitle(String sceneTitle) {
+        this.sceneTitle = sceneTitle;
     }
 
     private void sendConnectionInformation() {
