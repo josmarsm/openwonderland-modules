@@ -18,11 +18,13 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.client;
 
-import org.jdesktop.wonderland.modules.presentationbase.server.SlidesCell;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
@@ -37,13 +39,14 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.modules.presentationbase.client.jme.cell.MovingPlatformCellRenderer;
+import org.jdesktop.wonderland.modules.presentationbase.common.PresentationCellChangeMessage;
 import org.jdesktop.wonderland.modules.presentationbase.common.PresentationCellServerState;
 
 /**
  *
  * @author Drew Harry <drew_harry@dev.java.net
  */
-public class PresentationCell extends Cell implements ProximityListener {
+public class PresentationCell extends Cell implements ProximityListener, ActionListener {
     
     MovingPlatformCellRenderer renderer = null;
 
@@ -52,6 +55,12 @@ public class PresentationCell extends Cell implements ProximityListener {
 
     @UsesCellComponent
     private ProximityComponent prox;
+
+    private JButton nextSlideButton;
+    private JButton prevSlideButton;
+
+    protected static final String NEXT_SLIDE_ACTION = "next_slide";
+    protected static final String PREV_SLIDE_ACTION = "prev_slide";
 
     public PresentationCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -73,7 +82,7 @@ public class PresentationCell extends Cell implements ProximityListener {
             logger.warning("Added proximity listener.");
 
         } else if (status==CellStatus.DISK && !increasing) {
-
+            prox.removeProximityListener(this);
         }
     }
 
@@ -94,14 +103,27 @@ public class PresentationCell extends Cell implements ProximityListener {
 
                 AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
 
-                // Do something with the entering avatar.
+                // Add in next/previous slide buttons.
+                if(nextSlideButton==null && prevSlideButton == null) {
+                    nextSlideButton = new JButton("Next Slide");
+                    nextSlideButton.setActionCommand(NEXT_SLIDE_ACTION);
+                    nextSlideButton.addActionListener(this);
 
+                    prevSlideButton = new JButton("Previous Slide");
+                    prevSlideButton.setActionCommand(PREV_SLIDE_ACTION);
+                    prevSlideButton.addActionListener(this);
+                }
+
+                   PresentationToolbarManager.getManager().addToolbarButton(nextSlideButton);
+                   PresentationToolbarManager.getManager().addToolbarButton(prevSlideButton);
             } else {
                 logger.warning("Local user out of presentation space.");
 
-                AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
+               AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
 
-                // Do something with the exiting avatar.
+               PresentationToolbarManager.getManager().removeToolbarButton(nextSlideButton);
+               PresentationToolbarManager.getManager().removeToolbarButton(prevSlideButton);
+               
             }
         }
 
@@ -143,5 +165,19 @@ public class PresentationCell extends Cell implements ProximityListener {
         // This setup process continues on the server side, where the cell
         // figures out how big it is and where it should go in the
         // setServerState method on the just-created new cell.
+    }
+
+    public void actionPerformed(ActionEvent arg0) {
+        if(arg0.getActionCommand().equals(NEXT_SLIDE_ACTION)) {
+            // Send a message to the server, teling it to increment the slide count.
+            PresentationCellChangeMessage msg = new PresentationCellChangeMessage();
+            msg.setSlideIncrement(+1);
+            this.sendCellMessage(msg);
+            
+        } else if(arg0.getActionCommand().equals(PREV_SLIDE_ACTION)) {
+            PresentationCellChangeMessage msg = new PresentationCellChangeMessage();
+            msg.setSlideIncrement(-1);
+            this.sendCellMessage(msg);
+        }
     }
 }

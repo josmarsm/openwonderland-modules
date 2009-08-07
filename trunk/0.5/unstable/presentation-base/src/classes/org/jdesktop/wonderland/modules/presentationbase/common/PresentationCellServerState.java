@@ -42,6 +42,9 @@ public class PresentationCellServerState extends CellServerState {
     @XmlElement(name="initialized")
     private boolean initialized;
 
+    @XmlElement(name="cur-slide")
+    private int curSlide;
+    
     public PresentationCellServerState() {
     }
 
@@ -59,4 +62,8 @@ public class PresentationCellServerState extends CellServerState {
         this.initialized = initialized;
     }
 
+    @XmlTransient public int getCurSlide() { return this.curSlide; }
+    public void setCurslide(int curSlide) {
+        this.curSlide = curSlide;
+    }
 }

@@ -79,6 +79,7 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
     @Override
     public void setClientState(CellClientState state) {
+        super.setClientState(state);
 
         this.platformWidth = ((MovingPlatformCellClientState)state).getPlatformWidth();
         this.platformDepth = ((MovingPlatformCellClientState)state).getPlatformDepth();

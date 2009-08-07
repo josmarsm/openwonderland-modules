@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.presentationbase.client.MovingPlatformCell;
 
 /**
@@ -61,4 +62,9 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
         return root;
     }
 
+    @Override
+    public void setStatus(CellStatus status,boolean increasing) {
+        super.setStatus(status, increasing);
+        logger.warning("setting renderer status: " + status + "; increasisng? " + increasing);
+    }
 }

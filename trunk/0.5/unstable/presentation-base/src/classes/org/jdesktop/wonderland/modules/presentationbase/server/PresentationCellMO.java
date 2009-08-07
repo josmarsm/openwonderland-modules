@@ -19,28 +19,40 @@ package org.jdesktop.wonderland.modules.presentationbase.server;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.presentationbase.common.MovingPlatformCellServerState;
+import org.jdesktop.wonderland.modules.presentationbase.common.PresentationCellChangeMessage;
 import org.jdesktop.wonderland.modules.presentationbase.common.PresentationCellServerState;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  *
- * @author Drew Harry <drew_harry@dev.java.net
+ * @author Drew Harry <drew_harry@dev.java.net>
  */
 public class PresentationCellMO extends CellMO {
 
-
+    protected int curSlide = 0;
     
+    private ManagedReference<MovingPlatformCellMO> platformCellMORef;
+    private ManagedReference<SlidesCell> slidesCellRef;
+
+    // Figure out the right way to persist a reference to the
+    // platform cell. 
 
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.presentationbase.client.PresentationCell";
@@ -60,6 +72,20 @@ public class PresentationCellMO extends CellMO {
 
 
         return state;
+    }
+
+    /**
+     * This is pulled from the PDF spreader's layout algorithm verbatim. It would be nice
+     * for them to both call the same thing, but it feels kind of wrong to move the layout
+     * function to a presentation-base util class.
+     *
+     * @param i
+     * @return
+     */
+    protected Vector3f getPositionForIndex(SlidesCell cell, int i) {
+        Vector3f newPosition = new Vector3f(0, 0, (cell.getCenterSpacing() * (i-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)/2.0f)*-1)));
+        logger.info("returning position for platform: " + newPosition);
+        return newPosition;
     }
 
     @Override
@@ -124,11 +150,8 @@ public class PresentationCellMO extends CellMO {
 
             SlidesCell slidesCell = (SlidesCell)pdfCell;
 
-
             logger.info("numpages: " + slidesCell.getNumSlides() + " created by: " + slidesCell.getCreatorName());
             
-
-
             // The width of the presentation platform is the width of the slide + one spacing distance.
             float actualSlideSpacing = slidesCell.getInterslideSpacing();
             if(actualSlideSpacing < 0) actualSlideSpacing = 0.0f;
@@ -142,26 +165,18 @@ public class PresentationCellMO extends CellMO {
             platformState.setPlatformDepth(8.0f);
 
             PositionComponentServerState posState = new PositionComponentServerState();
-            posState.setTranslation(new Vector3f(0.0f, 0.0f, 0.0f));
+            posState.setTranslation(getPositionForIndex(slidesCell, curSlide));
             posState.setScaling(Vector3f.UNIT_XYZ);
             posState.setRotation(new Quaternion());
             
             platformState.addComponentServerState(posState);
             platform.setServerState(platformState);
 
-
-            // Move the platform into the right position.
-//            MovableComponentMO mc = platform.getComponent(MovableComponentMO.class);
-//            if(mc!=null)
-//                mc.moveRequest(null, new CellTransform(null, new Vector3f(0.0f,0.0f,0.0f)));
-//            else
-//                logger.warning("NO MOVABLE COMPONENT FOUND ON THE PLATFORM");
-
-
             try {
                 this.addChild(platform);
+                logger.warning("Just added the platform to the cell.");
             } catch (MultipleParentException ex) {
-                Logger.getLogger(PresentationCellMO.class.getName()).log(Level.SEVERE, null, ex);
+                logger.warning("ERROR ADDING MOVING PLATFORM");
             }
 
             // 4. Attach a thought bubbles component to the parent cell.
@@ -169,11 +184,66 @@ public class PresentationCellMO extends CellMO {
             // 5. Add buttons to the main presentation toolbar for setting camera
             //    positions (back / top)
 
-
         } else {
 
         }
 
-
     }
+
+        @Override
+        protected void setLive(boolean live) {
+            super.setLive(live);
+
+            ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
+            if(live) {
+                channel.addMessageReceiver(PresentationCellChangeMessage.class, (ChannelComponentMO.ComponentMessageReceiver)new PresentationCellChangeMessageReceiver(this));
+            }
+            else {
+                channel.removeMessageReceiver(PresentationCellChangeMessage.class);
+            }
+        }
+
+        public void setPlatformCellMO(MovingPlatformCellMO cellMO) {
+            this.platformCellMORef = AppContext.getDataManager().createReference(cellMO);
+        }
+
+    public void setSlidesCell(SlidesCell slidesCell) {
+        this.slidesCellRef = AppContext.getDataManager().createReference(slidesCell);
+    }
+
+
+
+        public int getCurSlide() {
+            return curSlide;
+        }
+
+        public void setCurSlide(int curSlide) {
+            this.curSlide = curSlide;
+
+            // Update the position of the MovingPlatformCell.
+            if(this.platformCellMORef!=null) {
+                logger.info("Updating platform position.");
+                MovableComponentMO mc = this.platformCellMORef.get().getComponent(MovableComponentMO.class);
+                mc.moveRequest(null, new CellTransform(null, this.getPositionForIndex(this.slidesCellRef.get(), curSlide)));
+            }
+        }
+
+        private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
+        public PresentationCellChangeMessageReceiver(PresentationCellMO cellMO) {
+            super(cellMO);
+        }
+
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            PresentationCellMO cellMO = (PresentationCellMO)getCell();
+            PresentationCellChangeMessage msg = (PresentationCellChangeMessage) message;
+
+            if(msg.getSlideIncrement()==1)
+                cellMO.setCurSlide(cellMO.getCurSlide()+1);
+            else if(msg.getSlideIncrement()==-1)
+                cellMO.setCurSlide(cellMO.getCurSlide()-1);
+
+        }
+    }
+
+
 }
