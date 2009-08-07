@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.topcamera.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
@@ -36,14 +36,14 @@ import org.jdesktop.wonderland.modules.topcamera.client.jme.camera.TopPersonCame
 @Plugin
 public class TopCameraClientPlugin extends BaseClientPlugin {
 
-    private JMenuItem topCameraMI = null;
+    private JRadioButtonMenuItem topCameraMI = null;
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void initialize(ServerSessionManager loginInfo) {
-        topCameraMI = new JMenuItem("Top Camera");
+        topCameraMI = new JRadioButtonMenuItem("Top Camera");
         topCameraMI.setToolTipText("A camera looking from the top");
         topCameraMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -61,7 +61,7 @@ public class TopCameraClientPlugin extends BaseClientPlugin {
     @Override
     protected void activate() {
         // activate
-        JmeClientMain.getFrame().addToViewMenu(topCameraMI, 3);
+        JmeClientMain.getFrame().addToCameraChoices(topCameraMI, 4);
     }
 
     /**
@@ -70,6 +70,6 @@ public class TopCameraClientPlugin extends BaseClientPlugin {
     @Override
     protected void deactivate() {
         // deactivate
-        JmeClientMain.getFrame().removeFromViewMenu(topCameraMI);
+        JmeClientMain.getFrame().removeFromCameraChoices(topCameraMI);
     }
 }
