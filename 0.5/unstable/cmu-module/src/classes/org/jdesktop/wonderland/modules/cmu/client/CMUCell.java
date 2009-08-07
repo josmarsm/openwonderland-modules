@@ -67,6 +67,7 @@ public class CMUCell extends Cell implements HUDEventListener {
     private boolean sceneLoaded = false;
     private float playbackSpeed;
     private boolean playing;
+    private String sceneTitle;
     private final Object playbackSpeedLock = new Object();
     private boolean groundPlaneShowing;
     private final Object groundPlaneLock = new Object();
@@ -336,6 +337,14 @@ public class CMUCell extends Cell implements HUDEventListener {
 
     }
 
+    public String getSceneTitle() {
+        return sceneTitle;
+    }
+
+    public void setSceneTitle(String sceneTitle) {
+        this.sceneTitle = sceneTitle;
+    }
+
     /**
      * Get the stored playback speed, i.e. the playback speed that will
      * be used as long as this scene isn't paused.
@@ -426,6 +435,7 @@ public class CMUCell extends Cell implements HUDEventListener {
         if (cmuClientState.isServerAndPortInitialized()) {
             this.setHostnameAndPort(cmuClientState.getServer(), cmuClientState.getPort());
         }
+        this.setSceneTitle(cmuClientState.getSceneTitle());
 
     }
 
@@ -483,7 +493,11 @@ public class CMUCell extends Cell implements HUDEventListener {
                     }
                 }
 
-                unloadHUD();
+                // Clean up HUD and network stuff
+                if (!increasing) {
+                    unloadHUD();
+                    disconnect();
+                }
 
                 break;
 
@@ -639,7 +653,7 @@ public class CMUCell extends Cell implements HUDEventListener {
                     assert mainHUD != null;
                     hudComponent = mainHUD.createComponent(hudPanel);
                     hudComponent.setPreferredTransparency(0.0f);
-                    hudComponent.setName("CMU Player");
+                    hudComponent.setName(getSceneTitle());
                     hudComponent.setPreferredLocation(Layout.NORTHWEST);
                     hudComponent.addEventListener(CMUCell.this);
                     mainHUD.addComponent(hudComponent);

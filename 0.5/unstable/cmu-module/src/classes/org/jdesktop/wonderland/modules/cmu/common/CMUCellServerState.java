@@ -41,6 +41,10 @@ public class CMUCellServerState extends CellServerState {
     @XmlElement(name="groundplane-visible")
     private boolean groundPlaneShowing = false;
 
+    /** The title of the scene. */
+    @XmlElement(name="scene-title")
+    private String sceneTitle = null;
+
     /**
      * {@inheritDoc}
      */
@@ -72,4 +76,11 @@ public class CMUCellServerState extends CellServerState {
         groundPlaneShowing = showing;
     }
 
+    public String getSceneTitle() {
+        return sceneTitle;
+    }
+
+    public void setSceneTitle(String sceneTitle) {
+        this.sceneTitle = sceneTitle;
+    }
 }

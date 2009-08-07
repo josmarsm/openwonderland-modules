@@ -31,7 +31,8 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 public class CreateProgramResponseMessage extends ResponseMessage {
 
     private static final long serialVersionUID = 1L;
-    private String server;
+    private String name;
+    private String hostname;
     private int port;
     private boolean creationSuccessful = false;
     private CellID cellID;
@@ -55,9 +56,10 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      * @param server The host address to connect to
      * @param port The port to connect to
      */
-    public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String server, int port) {
+    public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String hostname, int port) {
         this(messageID, cellID);
-        this.setServerAndPort(server, port);
+        this.setHostnameAndPort(hostname, port);
+        this.setName(name);
     }
 
     /**
@@ -89,9 +91,9 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      * Get the host address to connect to.
      * @return Current host address
      */
-    public String getServer() {
+    public String getHostname() {
         assert this.isCreationSuccessful();
-        return server;
+        return hostname;
     }
 
     /**
@@ -100,8 +102,8 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      * @param server New host address
      * @param port New port
      */
-    public void setServerAndPort(String server, int port) {
-        this.server = server;
+    public void setHostnameAndPort(String server, int port) {
+        this.hostname = server;
         this.port = port;
         this.creationSuccessful = true;
     }
@@ -116,8 +118,16 @@ public class CreateProgramResponseMessage extends ResponseMessage {
         return this.creationSuccessful;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     @Override
     public String toString() {
-        return "Program created [Cell:"+ cellID + "] [Server:" + server + "] [Port:" + port + "]";
+        return "Program created [Cell:"+ cellID + "] [Server:" + hostname + "] [Port:" + port + "]";
     }
 }

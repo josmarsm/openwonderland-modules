@@ -32,6 +32,15 @@ public class CMUCellClientState extends CellClientState {
     private boolean groundPlaneShowing;
     private String server;
     private int port;
+    private String sceneTitle;
+
+    public synchronized String getSceneTitle() {
+        return sceneTitle;
+    }
+
+    public synchronized void setSceneTitle(String sceneTitle) {
+        this.sceneTitle = sceneTitle;
+    }
 
     /**
      * Set the server and port on which the relevant socket is running,
@@ -103,4 +112,6 @@ public class CMUCellClientState extends CellClientState {
     public void setGroundPlaneShowing(boolean groundPlaneShowing) {
         this.groundPlaneShowing = groundPlaneShowing;
     }
+
+
 }

@@ -19,9 +19,7 @@ package org.jdesktop.wonderland.modules.cmu.server;
 
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import java.io.Serializable;
-import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
@@ -97,7 +95,7 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
         // Set server and port information if the program was successfully created
         if (message.isCreationSuccessful()) {
             CMUCellMO cmuCellMO = (CMUCellMO) cellMO;
-            cmuCellMO.setHostnameAndPort(message.getServer(), message.getPort());
+            cmuCellMO.setHostnameAndPort(message.getHostname(), message.getPort());
         } else {
             //TODO: Handle unsuccessful program creation
         }
