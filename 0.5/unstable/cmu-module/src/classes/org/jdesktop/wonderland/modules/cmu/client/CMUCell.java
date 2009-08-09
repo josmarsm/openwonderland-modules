@@ -55,6 +55,8 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDelet
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPlaneChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.SceneTitleChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ServerClientMessageTypes;
 
 /**
  * Cell to display and interact with a CMU scene.
@@ -65,9 +67,10 @@ public class CMUCell extends Cell implements HUDEventListener {
     private CMUCellRenderer renderer;
     private MouseEventListener mouseListener;
     private boolean sceneLoaded = false;
+    private String sceneTitle;
+    private final Object sceneTitleLock = new Object();
     private float playbackSpeed;
     private boolean playing;
-    private String sceneTitle;
     private final Object playbackSpeedLock = new Object();
     private boolean groundPlaneShowing;
     private final Object groundPlaneLock = new Object();
@@ -77,6 +80,7 @@ public class CMUCell extends Cell implements HUDEventListener {
     private final CMUCellMessageReceiver messageReceiver = new CMUCellMessageReceiver();
     private final Collection<PlaybackChangeListener> playbackChangeListeners = new Vector<PlaybackChangeListener>();
     private final Collection<GroundPlaneChangeListener> groundPlaneChangeListeners = new Vector<GroundPlaneChangeListener>();
+    private final Collection<SceneTitleChangeListener> sceneTitleChangeListeners = new Vector<SceneTitleChangeListener>();
     private CMUJPanel hudPanel;
     private HUDComponent hudComponent;
     private boolean hudShowing = false;
@@ -134,26 +138,35 @@ public class CMUCell extends Cell implements HUDEventListener {
          */
         @Override
         public void messageReceived(CellMessage message) {
+            final boolean fromMe = message.getSenderID() != null && message.getSenderID().equals(getCellCache().getSession().getID());
+
             // Socket information message
             if (ConnectionChangeMessage.class.isAssignableFrom(message.getClass())) {
                 ConnectionChangeMessage changeMessage = (ConnectionChangeMessage) message;
-                CMUCell.this.setHostnameAndPort(changeMessage.getServer(), changeMessage.getPort());
+                setHostnameAndPort(changeMessage.getServer(), changeMessage.getPort());
             }
 
             // Playback speed message
             if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
-                if (message.getSenderID() == null || !(message.getSenderID().equals(getCellCache().getSession().getID()))) {
+                if (!fromMe) {
                     PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
-                    //System.out.println("Setting playback: " + change.getPlaybackSpeed() + ", " + change.isPlaying());
                     setPlaybackInformationWithoutUpdate(change.getPlaybackSpeed(), change.isPlaying());
                 }
             }
 
             // Ground plane visibility change message
             if (GroundPlaneChangeMessage.class.isAssignableFrom(message.getClass())) {
-                if (message.getSenderID() == null || !(message.getSenderID().equals(getCellCache().getSession().getID()))) {
+                if (!fromMe) {
                     GroundPlaneChangeMessage change = (GroundPlaneChangeMessage) message;
                     setGroundPlaneShowingWithoutUpdate(change.isGroundPlaneShowing());
+                }
+            }
+
+            // Scene title change message
+            if (SceneTitleChangeMessage.class.isAssignableFrom(message.getClass())) {
+                if (!fromMe) {
+                    SceneTitleChangeMessage change = (SceneTitleChangeMessage) message;
+                    setSceneTitleWithoutUpdate(change.getSceneTitle());
                 }
             }
         }
@@ -338,11 +351,24 @@ public class CMUCell extends Cell implements HUDEventListener {
     }
 
     public String getSceneTitle() {
-        return sceneTitle;
+        synchronized (sceneTitleLock) {
+            return sceneTitle;
+        }
     }
 
     public void setSceneTitle(String sceneTitle) {
-        this.sceneTitle = sceneTitle;
+        synchronized (sceneTitleLock) {
+            setSceneTitleWithoutUpdate(sceneTitle);
+            sendSceneTitleData();
+        }
+    }
+
+    private void setSceneTitleWithoutUpdate(String sceneTitle) {
+        synchronized (sceneTitleLock) {
+            this.sceneTitle = sceneTitle;
+            updateHUD();
+            fireSceneTitleChanged();
+        }
     }
 
     /**
@@ -394,7 +420,6 @@ public class CMUCell extends Cell implements HUDEventListener {
                 this.sendPlaybackData();
             }
         }
-
     }
 
     /**
@@ -443,8 +468,7 @@ public class CMUCell extends Cell implements HUDEventListener {
      * {@inheritDoc}
      */
     @Override
-    protected CellRenderer createCellRenderer(
-            RendererType rendererType) {
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
             this.renderer = new CMUCellRenderer(this);
             return this.renderer;
@@ -471,30 +495,15 @@ public class CMUCell extends Cell implements HUDEventListener {
                     mouseListener = null;
                 }
 
-                // Stop receiving connection changes; they'll be loaded
-                // from the client state later if necessary.
                 if (!increasing) {
+                    // Remove message receivers
                     if (channel != null) {
-                        channel.removeMessageReceiver(ConnectionChangeMessage.class);
+                        for (Class messageClass : ServerClientMessageTypes.MESSAGE_TYPES_TO_RECEIVE) {
+                            channel.removeMessageReceiver(messageClass);
+                        }
                     }
-                }
 
-                // Stop receiving playback speed changes
-                if (!increasing) {
-                    if (channel != null) {
-                        channel.removeMessageReceiver(PlaybackSpeedChangeMessage.class);
-                    }
-                }
-
-                // Stop receiving ground plane changes
-                if (!increasing) {
-                    if (channel != null) {
-                        channel.removeMessageReceiver(GroundPlaneChangeMessage.class);
-                    }
-                }
-
-                // Clean up HUD and network stuff
-                if (!increasing) {
+                    // Clean up HUD and network stuff
                     unloadHUD();
                     disconnect();
                 }
@@ -503,22 +512,11 @@ public class CMUCell extends Cell implements HUDEventListener {
 
             case INACTIVE:
                 if (increasing) {
+                    // Add message receivers
                     if (channel != null) {
-                        channel.addMessageReceiver(ConnectionChangeMessage.class, messageReceiver);
-                    }
-                }
-
-                // Start receiving playback speed changes.
-                if (increasing) {
-                    if (channel != null) {
-                        channel.addMessageReceiver(PlaybackSpeedChangeMessage.class, messageReceiver);
-                    }
-                }
-
-                // Start receiving ground plane changes.
-                if (increasing) {
-                    if (channel != null) {
-                        channel.addMessageReceiver(GroundPlaneChangeMessage.class, messageReceiver);
+                        for (Class messageClass : ServerClientMessageTypes.MESSAGE_TYPES_TO_RECEIVE) {
+                            channel.addMessageReceiver(messageClass, messageReceiver);
+                        }
                     }
                 }
 
@@ -555,11 +553,10 @@ public class CMUCell extends Cell implements HUDEventListener {
         PlaybackChangeEvent event;
         synchronized (playbackSpeedLock) {
             event = new PlaybackChangeEvent(this.getPlaybackSpeed(), this.isPlaying());
-        }
-
-        synchronized (playbackChangeListeners) {
-            for (PlaybackChangeListener listener : playbackChangeListeners) {
-                listener.playbackChanged(event);
+            synchronized (playbackChangeListeners) {
+                for (PlaybackChangeListener listener : playbackChangeListeners) {
+                    listener.playbackChanged(event);
+                }
             }
         }
     }
@@ -583,13 +580,36 @@ public class CMUCell extends Cell implements HUDEventListener {
         GroundPlaneChangeEvent event;
         synchronized (groundPlaneLock) {
             event = new GroundPlaneChangeEvent(this.isGroundPlaneShowing());
-        }
-
-        synchronized (groundPlaneChangeListeners) {
-            for (GroundPlaneChangeListener listener : groundPlaneChangeListeners) {
-                listener.groundPlaneChanged(event);
+            synchronized (groundPlaneChangeListeners) {
+                for (GroundPlaneChangeListener listener : groundPlaneChangeListeners) {
+                    listener.groundPlaneChanged(event);
+                }
             }
+        }
+    }
 
+    public void addSceneTitleChangeListener(SceneTitleChangeListener listener) {
+        synchronized (sceneTitleChangeListeners) {
+            sceneTitleChangeListeners.add(listener);
+            listener.sceneTitleChanged(new SceneTitleChangeEvent(this.getSceneTitle()));
+        }
+    }
+
+    public void removeSceneTitleChangeListener(SceneTitleChangeListener listener) {
+        synchronized (sceneTitleChangeListeners) {
+            sceneTitleChangeListeners.remove(listener);
+        }
+    }
+
+    private void fireSceneTitleChanged() {
+        SceneTitleChangeEvent event;
+        synchronized (sceneTitleLock) {
+            event = new SceneTitleChangeEvent(this.getSceneTitle());
+            synchronized (sceneTitleChangeListeners) {
+                for (SceneTitleChangeListener listener : sceneTitleChangeListeners) {
+                    listener.sceneTitleChanged(event);
+                }
+            }
         }
     }
 
@@ -617,7 +637,6 @@ public class CMUCell extends Cell implements HUDEventListener {
             }
             fireGroundPlaneChanged();
         }
-
     }
 
     private void sendPlaybackData() {
@@ -626,6 +645,10 @@ public class CMUCell extends Cell implements HUDEventListener {
 
     private void sendGroundPlaneData() {
         sendCellMessage(new GroundPlaneChangeMessage(getCellID(), isGroundPlaneShowing()));
+    }
+
+    private void sendSceneTitleData() {
+        sendCellMessage(new SceneTitleChangeMessage(getCellID(), getSceneTitle()));
     }
 
     public void restart() {
@@ -667,19 +690,32 @@ public class CMUCell extends Cell implements HUDEventListener {
     }
 
     private class HUDKiller extends HUDDisplayer {
+
         public HUDKiller() {
             super(false);
         }
 
         @Override
         public void run() {
-            synchronized(hudShowingLock) {
+            synchronized (hudShowingLock) {
                 super.run();
 
                 //TODO: Remove from HUD manager?
                 hudComponent = null;
             }
         }
+    }
+
+    protected void updateHUD() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                if (hudComponent != null) {
+                    hudComponent.setName(getSceneTitle());
+                }
+            }
+        });
     }
 
     protected void setHUDShowing(boolean showing) {

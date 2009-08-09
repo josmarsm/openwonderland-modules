@@ -100,6 +100,8 @@ public class VisualChangeReceiverThread extends Thread {
                 addObjectToStats(received);
                 parentCell.applyMessage(received, this);
             }
+            fromServer.close();
+            connection.close();
         } catch (ClassNotFoundException ex) {
             System.out.println("Disconnecting: " + ex);
         } catch (SocketException ex) {
@@ -119,6 +121,9 @@ public class VisualChangeReceiverThread extends Thread {
 
     private void addObjectToStats(Object object) {
         synchronized(statsLock) {
+            if (parentCell.getPlaybackSpeed() > 1.1f) {
+                System.out.println("Recieved: " + object);
+            }
             numReads++;
         }
     }
