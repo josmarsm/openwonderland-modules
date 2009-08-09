@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import java.util.Iterator;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
@@ -74,5 +75,13 @@ public class VisualParent extends Node {
                 ((VisualParent) child).applyVisibilityToChild(nodeID, visible);
             }
         }
+    }
+
+    @Override
+    public int attachChild(Spatial child) {
+        int retVal = super.attachChild(child);
+        //TODO: Make nodes show up on load consistently
+        //ClientContextJME.getWorldManager().addToUpdateList(this);
+        return retVal;
     }
 }

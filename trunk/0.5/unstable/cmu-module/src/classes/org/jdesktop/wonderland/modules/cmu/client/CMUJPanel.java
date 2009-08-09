@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 
 /**
@@ -166,7 +167,13 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
     }//GEN-LAST:event_playbackSliderMouseReleased
 
     private void playbackSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_playbackSliderStateChanged
-        speedLabel.setText(playbackSlider.getValue() + "x");
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                speedLabel.setText(playbackSlider.getValue() + "x");
+            }
+        });
     }//GEN-LAST:event_playbackSliderStateChanged
 
     private void speedResetButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_speedResetButtonMouseReleased
@@ -190,7 +197,6 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
     private javax.swing.JButton speedResetButton;
     // End of variables declaration//GEN-END:variables
 
-    //TODO: THREAD SAFETY!
     public void playbackChanged(PlaybackChangeEvent e) {
         synchronized (this.playbackLock) {
             // Set play/pause appropriately
@@ -209,9 +215,17 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
         if (playbackSpeed > PLAYBACK_MAX) {
             playbackSpeed = PLAYBACK_MAX;
         }
-        synchronized (this.playbackLock) {
-            playbackSlider.setValue(playbackSpeed);
-        }
+
+        final int playbackSpeedCopy = playbackSpeed;
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                synchronized (playbackLock) {
+                    playbackSlider.setValue(playbackSpeedCopy);
+                }
+            }
+        });
     }
 
     private boolean isPlaying() {
@@ -224,16 +238,29 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
         synchronized (this.playbackLock) {
             if (playing != this.playing) {
                 this.playing = playing;
-                if (playing) {
+            }
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                if (isPlaying()) {
                     playPauseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(PAUSEBUTTON_PATH)));
                 } else {
                     playPauseButton.setIcon(new javax.swing.ImageIcon(getClass().getResource(PLAYBUTTON_PATH)));
                 }
             }
-        }
+        });
     }
 
     public void groundPlaneChanged(GroundPlaneChangeEvent e) {
-        this.groundVisibleBox.setSelected(e.isShowingPlane());
+        final boolean selected = e.isShowingPlane();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                groundVisibleBox.setSelected(selected);
+            }
+        });
     }
 }

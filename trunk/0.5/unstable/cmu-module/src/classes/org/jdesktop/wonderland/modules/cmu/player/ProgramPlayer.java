@@ -35,7 +35,6 @@ public class ProgramPlayer extends Program {
     private edu.cmu.cs.dennisc.alice.virtualmachine.VirtualMachine vm;
     private edu.cmu.cs.dennisc.alice.ast.AbstractType sceneType;
     private Object scene;
-    private String name;
     private final SceneConnectionHandler cmuScene;
     private boolean started = false;        // True once the program has begun to execute.
     private float elapsed = 0;              // The total amount of "time" this program has been executing.
@@ -91,7 +90,6 @@ public class ProgramPlayer extends Program {
      * @param cmuFile The file to load
      */
     protected void setFile(File cmuFile) {
-        name = cmuFile.getName();
         edu.cmu.cs.dennisc.alice.Project project = edu.cmu.cs.dennisc.alice.io.FileUtilities.readProject(cmuFile);
         edu.cmu.cs.dennisc.alice.ast.AbstractType programType = project.getProgramType();
 

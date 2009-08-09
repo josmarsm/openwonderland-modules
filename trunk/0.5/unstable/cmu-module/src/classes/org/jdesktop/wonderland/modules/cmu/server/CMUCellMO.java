@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.server;
 
-import java.io.File;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -31,6 +30,8 @@ import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPlaneChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.SceneTitleChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ServerClientMessageTypes;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -48,8 +49,9 @@ public class CMUCellMO extends CellMO {
 
     private String cmuURI;
     private String hostName;
-    private String sceneTitle;
     private int port;
+    private String sceneTitle;
+    private final Serializable sceneTitleLock = new String();
     private boolean playing;
     private float playbackSpeed;
     private final Serializable playbackSpeedLock = new String();
@@ -85,15 +87,19 @@ public class CMUCellMO extends CellMO {
             // Playback speed change
             if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
                 PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
-                cellMO.setPlaybackInformation(change.isPlaying(), change.getPlaybackSpeed());
-                cellMO.sendCellMessage(clientID, message);
+                cellMO.setPlaybackInformation(clientID, change.isPlaying(), change.getPlaybackSpeed());
             }
 
             // Ground plane visibility change
             if (GroundPlaneChangeMessage.class.isAssignableFrom(message.getClass())) {
                 GroundPlaneChangeMessage change = (GroundPlaneChangeMessage) message;
-                cellMO.setGroundPlaneShowing(change.isGroundPlaneShowing());
-                cellMO.sendCellMessage(clientID, message);
+                cellMO.setGroundPlaneShowing(clientID, change.isGroundPlaneShowing());
+            }
+
+            // Scene title change
+            if (SceneTitleChangeMessage.class.isAssignableFrom(message.getClass())) {
+                SceneTitleChangeMessage change = (SceneTitleChangeMessage) message;
+                cellMO.setSceneTitle(clientID, change.getSceneTitle());
             }
 
             // Restart program
@@ -144,12 +150,15 @@ public class CMUCellMO extends CellMO {
         }
     }
 
-    private void setPlaybackInformation(boolean playing, float playbackSpeed) {
+    private void setPlaybackInformation(WonderlandClientID notifier, boolean playing, float playbackSpeed) {
         synchronized (playbackSpeedLock) {
             this.playbackSpeed = playbackSpeed;
             this.playing = playing;
             // Inform the associated program of the change
             ProgramConnectionHandlerMO.changePlaybackSpeed(getCellID(), getActualPlaybackSpeed());
+            // Send a message to clients
+            sendCellMessage(notifier, new PlaybackSpeedChangeMessage(this.getCellID(),
+                    this.getPlaybackSpeed(), this.isPlaying()));
         }
     }
 
@@ -175,9 +184,10 @@ public class CMUCellMO extends CellMO {
         }
     }
 
-    public void setGroundPlaneShowing(boolean groundPlaneShowing) {
+    public void setGroundPlaneShowing(WonderlandClientID notifier, boolean groundPlaneShowing) {
         synchronized (groundPlaneLock) {
             this.groundPlaneShowing = groundPlaneShowing;
+            sendCellMessage(notifier, new GroundPlaneChangeMessage(this.getCellID(), this.isGroundPlaneShowing()));
         }
     }
 
@@ -223,10 +233,8 @@ public class CMUCellMO extends CellMO {
 
         CMUCellServerState setup = (CMUCellServerState) serverState;
         setCmuURI(setup.getCmuURI());
-        setGroundPlaneShowing(setup.isGroundPlaneShowing());
-        //TODO: Better title handling
-        //setSceneTitle(setup.getSceneTitle());
-        setSceneTitle(getCmuURI().substring(getCmuURI().lastIndexOf('/') + 1));
+        setGroundPlaneShowing(null, setup.isGroundPlaneShowing());
+        setSceneTitle(null, setup.getSceneTitle());
 
         createProgram();
     }
@@ -247,7 +255,7 @@ public class CMUCellMO extends CellMO {
     }
 
     public void createProgram() {
-        this.setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
+        this.setPlaybackInformation(null, PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
         // Create CMU instance
         ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
     }
@@ -260,22 +268,15 @@ public class CMUCellMO extends CellMO {
     protected void setLive(boolean live) {
         super.setLive(live);
 
-        final Class[] messagesToReceive = {
-            PlaybackSpeedChangeMessage.class,
-            GroundPlaneChangeMessage.class,
-            MouseButtonEventMessage.class,
-            RestartProgramMessage.class
-        };
-
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if (live == true) {
             ChannelComponentMO.ComponentMessageReceiver receiver =
                     (ChannelComponentMO.ComponentMessageReceiver) new CMUCellMessageReceiver(this);
-            for (Class c : messagesToReceive) {
+            for (Class c : ServerClientMessageTypes.MESSAGE_TYPES_TO_RECEIVE) {
                 channel.addMessageReceiver(c, receiver);
             }
         } else {
-            for (Class c : messagesToReceive) {
+            for (Class c : ServerClientMessageTypes.MESSAGE_TYPES_TO_RECEIVE) {
                 channel.removeMessageReceiver(c);
             }
             ProgramConnectionHandlerMO.removeProgram(this.getCellID());
@@ -304,19 +305,22 @@ public class CMUCellMO extends CellMO {
     }
 
     public String getSceneTitle() {
-        return sceneTitle;
+        synchronized (sceneTitleLock) {
+            return sceneTitle;
+        }
     }
 
-    public void setSceneTitle(String sceneTitle) {
-        this.sceneTitle = sceneTitle;
+    public void setSceneTitle(WonderlandClientID notifier, String sceneTitle) {
+        synchronized (sceneTitleLock) {
+            this.sceneTitle = sceneTitle;
+            sendCellMessage(notifier, new SceneTitleChangeMessage(this.getCellID(), this.getSceneTitle()));
+        }
     }
 
     private void sendConnectionInformation() {
         synchronized (socketLock) {
             synchronized (playbackSpeedLock) {
                 this.sendCellMessage(null, new ConnectionChangeMessage(this.getCellID(), getHostname(), getPort()));
-                this.sendCellMessage(null, new PlaybackSpeedChangeMessage(this.getCellID(),
-                        this.getPlaybackSpeed(), this.isPlaying()));
             }
         }
     }

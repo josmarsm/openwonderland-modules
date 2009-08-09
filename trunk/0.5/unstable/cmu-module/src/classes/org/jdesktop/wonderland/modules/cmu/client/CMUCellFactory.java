@@ -48,9 +48,11 @@ public class CMUCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         CMUCellServerState state = new CMUCellServerState();
 
+        state.setSceneTitle("CMU Scene");
         if (props != null) {
             String uri = props.getProperty("content-uri");
             state.setCmuURI(uri);
+            state.setSceneTitle(uri.substring(uri.lastIndexOf('/') + 1));
         }
         state.setGroundPlaneShowing(false);
 

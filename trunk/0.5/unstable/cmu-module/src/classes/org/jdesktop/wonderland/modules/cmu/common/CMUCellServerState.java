@@ -76,7 +76,7 @@ public class CMUCellServerState extends CellServerState {
         groundPlaneShowing = showing;
     }
 
-    public String getSceneTitle() {
+    @XmlTransient public String getSceneTitle() {
         return sceneTitle;
     }
 

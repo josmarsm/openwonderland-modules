@@ -73,17 +73,24 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        private int numSent = 0;
 
         public void writeToOutputStream(Object message) throws IOException {
             synchronized (socket) {
                 this.outputStream.writeUnshared(message);
                 this.outputStream.flush();
                 this.outputStream.reset();
+
+                if (numSent > 20000) {
+                    System.out.println("Still sending: " + message);
+                    numSent = 0;
+                }
+                numSent++;
             }
         }
 
         public void close() {
-            synchronized(socket) {
+            synchronized (socket) {
                 try {
                     this.writeToOutputStream(new UnloadSceneMessage());
                     this.outputStream.close();
@@ -188,7 +195,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 assert socketListener != null;
                 try {
                     return NetworkAddress.getPrivateLocalAddress().getHostAddress();
-                    //return InetAddress.getLocalHost().getHostAddress();
+                //return InetAddress.getLocalHost().getHostAddress();
                 } catch (UnknownHostException ex) {
                     Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                     return null;
@@ -356,13 +363,23 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
             }
         }
     }
-
     /**
      * {@inheritDoc}
      */
+    private int numTransformsChanged = 0;
+
     @Override
     public void transformationMessageChanged(TransformationMessage message) {
         synchronized (connections) {
+
+            if (numTransformsChanged > 10000) {
+                System.out.println("Transforms still changing");
+                numTransformsChanged = 0;
+            }
+            numTransformsChanged++;
+            if (numTransformsChanged % 50 != 0) {
+                //return;
+            }
             Iterator<Connection> iterator = connections.iterator();
             while (iterator.hasNext()) {
                 Connection connection = iterator.next();

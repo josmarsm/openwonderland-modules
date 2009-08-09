@@ -31,7 +31,6 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 public class CreateProgramResponseMessage extends ResponseMessage {
 
     private static final long serialVersionUID = 1L;
-    private String name;
     private String hostname;
     private int port;
     private boolean creationSuccessful = false;
@@ -59,7 +58,6 @@ public class CreateProgramResponseMessage extends ResponseMessage {
     public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String hostname, int port) {
         this(messageID, cellID);
         this.setHostnameAndPort(hostname, port);
-        this.setName(name);
     }
 
     /**
@@ -116,14 +114,6 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      */
     public boolean isCreationSuccessful() {
         return this.creationSuccessful;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
     
     @Override

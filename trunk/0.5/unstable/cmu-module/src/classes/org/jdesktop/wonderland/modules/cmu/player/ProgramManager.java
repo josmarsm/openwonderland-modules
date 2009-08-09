@@ -161,7 +161,7 @@ public class ProgramManager {
      */
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
-            System.out.println("Usage: ConnectionClientMain serverURL" +
+            System.out.println("Usage: ProgramManager serverURL" +
                     " username [password]");
             System.exit(-1);
         }
