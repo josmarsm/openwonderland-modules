@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.timeline.client;
 
+import java.util.logging.Logger;
+
 /**
  * A simple slider that lets you easily update the avatar's position on the
  * timeline spiral.
@@ -26,9 +28,16 @@ package org.jdesktop.wonderland.modules.timeline.client;
  */
 public class TimelineMovementHUDPanel extends javax.swing.JPanel {
 
+    private static final Logger logger =
+        Logger.getLogger(TimelineMovementHUDPanel.class.getName());
+
+    private final TimelineCell cell;
+
     /** Creates new form TimelineMovementHUDPanel */
-    public TimelineMovementHUDPanel() {
+    public TimelineMovementHUDPanel(TimelineCell cell) {
         initComponents();
+
+        this.cell = cell;
     }
 
     /** This method is called from within the constructor to
@@ -43,6 +52,11 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
         positionSlider = new javax.swing.JSlider();
 
         positionSlider.setOrientation(javax.swing.JSlider.VERTICAL);
+        positionSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                positionSliderStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -62,6 +76,25 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void positionSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_positionSliderStateChanged
+        cell.moveAvatar(((float)this.positionSlider.getValue())/this.positionSlider.getMaximum());
+    }//GEN-LAST:event_positionSliderStateChanged
+
+    /**
+     * Updates the location of the position slider based. Is generally triggered
+     * by avatar movements around the spiral, so the UI for the navigation
+     * represents the actual current location.
+     * 
+     * @param position
+     */
+    public void setSliderLocation(float position) {
+
+       // cheating a bit here - this is only true for min=0, but
+       // that's an assumption I think we can make here since we
+       // own the slider.
+        
+       this.positionSlider.setValue((int) (positionSlider.getMaximum() * position));
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSlider positionSlider;
