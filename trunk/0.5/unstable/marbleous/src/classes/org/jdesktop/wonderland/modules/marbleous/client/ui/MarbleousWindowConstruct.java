@@ -63,7 +63,7 @@ public class MarbleousWindowConstruct
        	JmeClientMain.getFrame().getCanvas3DPanel().add(constructPanel);
 
     	setComponent(constructPanel);
-        setTitle("Construction Controls");
+        setTitle("Marbleous Roller Coaster");
     }
 
 
