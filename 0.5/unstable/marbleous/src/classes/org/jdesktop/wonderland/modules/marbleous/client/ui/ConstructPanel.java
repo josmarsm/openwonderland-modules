@@ -63,6 +63,7 @@ public class ConstructPanel extends javax.swing.JFrame implements ListSelectionL
     /* The drag gesture recognizers for the cell palette */
     private DragGestureRecognizer previewRecognizer = null;
     private DragGestureRecognizer listRecognizer = null;
+    private Container container;
 
     /** Creates new form CellPalette */
     public ConstructPanel() {
@@ -110,6 +111,10 @@ public class ConstructPanel extends javax.swing.JFrame implements ListSelectionL
 
         // Finally, ask the superclass to make the dialog visible.
         super.setVisible(visible);
+    }
+
+    void setContainer(Container container) {
+        this.container = container;
     }
 
     /** This method is called from within the constructor to
@@ -312,6 +317,10 @@ private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
 
             
         }
+    }
+
+    public interface Container {
+        
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
