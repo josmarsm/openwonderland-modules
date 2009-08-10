@@ -11,6 +11,10 @@
     <!--pathconvert property="module-client.classpath">
     </pathconvert-->
 
+    <pathconvert property="module-server.classpath">
+        <path location="${wonderland.dir}/modules/tools/audio-manager/lib/voicelib.jar"/>
+    </pathconvert>
+
     <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
                                                 -module-compile-client"/>
