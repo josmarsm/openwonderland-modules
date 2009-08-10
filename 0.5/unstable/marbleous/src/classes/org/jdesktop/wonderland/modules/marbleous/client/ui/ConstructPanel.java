@@ -1,55 +1,34 @@
-/**
- * Project Wonderland
- *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
- *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
- *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
- *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
- * this code.
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
+
+/*
+ * ConstructPanel.java
+ *
+ * Created on Aug 10, 2009, 10:22:50 PM
+ */
+
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureRecognizer;
-import java.awt.dnd.DragSource;
-import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
-import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry.CellRegistryListener;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 
 /**
- * A palette of cell types available to create in the world.
- * 
- * @author  Jordan Slott <jslott@dev.java.net>
+ *
+ * @author bh37721
  */
-public class ConstructPanel extends javax.swing.JFrame implements ListSelectionListener {
+public class ConstructPanel extends javax.swing.JPanel {
     /* A map of cell display names and their cell factories */
-    private Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
+    private final Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
 
     /* The "No Preview Available" image */
     private Image noPreviewAvailableImage = null;
@@ -57,64 +36,19 @@ public class ConstructPanel extends javax.swing.JFrame implements ListSelectionL
     /* The listener for changes in the list of registered Cell factories */
     private CellRegistryListener cellListener = null;
 
-    /* The drag support from the preview label */
-    private DragSource dragSource = null;
-
-    /* The drag gesture recognizers for the cell palette */
-    private DragGestureRecognizer previewRecognizer = null;
-    private DragGestureRecognizer listRecognizer = null;
     private Container container;
 
-    /** Creates new form CellPalette */
+    void setContainer(Container aContainer) {
+        container = aContainer;
+    }
+
+    public interface Container {
+
+    }
+
+    /** Creates new form ConstructPanel */
     public ConstructPanel() {
-        // Initialize the GUI components
         initComponents();
-
-        // Create the icon for the "No Preview Available" image
-        URL url = ConstructPanel.class.getResource("resources/nopreview.png");
-        noPreviewAvailableImage = Toolkit.getDefaultToolkit().createImage(url);
-
-        // Listen for list selection events and update the preview panel with
-        // the selected item's image
-        cellList.addListSelectionListener(this);
-
-        
-
-        // Create a listener for changes to the list of registered Cell
-        // factories, to be used in setVisible(). When the list changes we
-        // simply do a fresh update of all values.
-        cellListener = new CellRegistryListener() {
-            public void cellRegistryChanged() {
-                // Since this is not happening (necessarily) in the AWT Event
-                // Thread, we should put it in one
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        updateListValues();
-                    }
-                });
-            }
-        };
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        // Update the list values. We also want to (de)register a listener for
-        // changes to the list of registered Cell factories any time after we
-        // make it (in)visible.
-        if (visible == true) {
-            updateListValues();
-            CellRegistry.getCellRegistry().addCellRegistryListener(cellListener);
-        }
-        else {
-            CellRegistry.getCellRegistry().removeCellRegistryListener(cellListener);
-        }
-
-        // Finally, ask the superclass to make the dialog visible.
-        super.setVisible(visible);
-    }
-
-    void setContainer(Container container) {
-        this.container = container;
     }
 
     /** This method is called from within the constructor to
@@ -126,210 +60,99 @@ public class ConstructPanel extends javax.swing.JFrame implements ListSelectionL
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollBar1 = new javax.swing.JScrollBar();
+        jLabel1 = new javax.swing.JLabel();
+        createButton = new javax.swing.JButton();
         cellScrollPane = new javax.swing.JScrollPane();
         cellList = new javax.swing.JList();
-        createButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
         previewPanel = new javax.swing.JPanel();
         previewLabel = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Insert Component");
-        setName("cellFrame"); // NOI18N
-
-        cellList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        cellScrollPane.setViewportView(cellList);
+        jLabel1.setText("Insert Component:");
 
         createButton.setText("Insert");
         createButton.setEnabled(false);
         createButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createActionPerformed(evt);
+                createButtoncreateActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("Insert Component:");
+        cellList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        cellScrollPane.setViewportView(cellList);
 
         previewPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         previewPanel.setMinimumSize(new java.awt.Dimension(128, 128));
         previewPanel.setPreferredSize(new java.awt.Dimension(128, 128));
-        previewPanel.setLayout(new java.awt.GridLayout(1, 0));
+        previewPanel.setLayout(new java.awt.GridLayout());
 
         previewLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         previewLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         previewLabel.setIconTextGap(0);
         previewPanel.add(previewLabel);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(createButton)
-                            .add(cellScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 141, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(createButton)
+                            .addComponent(cellScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(previewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cellScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 232, Short.MAX_VALUE)
-                    .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(createButton)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cellScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                    .addComponent(previewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(createButton)
                 .addContainerGap())
         );
-
-        pack();
     }// </editor-fold>//GEN-END:initComponents
 
-private void createActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createActionPerformed
-
-    // We synchronized around the cellFactoryMap so that this action does not
-    // interfere with any changes in the map.
-    synchronized (cellFactoryMap) {
-        // From the selected value, find the proper means to create the object
-        String cellDisplayName = (String) cellList.getSelectedValue();
-        CellFactorySPI factory = cellFactoryMap.get(cellDisplayName);
-        CellServerState setup = factory.getDefaultCellServerState(null);
-
-        // Create the new cell at a distance away from the avatar
-        try {
-            CellUtils.createCell(setup);
-        } catch (CellCreationException excp) {
-            Logger logger = Logger.getLogger(ConstructPanel.class.getName());
-            logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
-                    " using palette", excp);
-        }
-    }
-}//GEN-LAST:event_createActionPerformed
-
-    /**
-     * Updates the list of values displayed from the CellRegistry.
-     */
-    private void updateListValues() {
-        // Let's synchronized around cellFactoryMap so that any selections do
-        // not interfere with changes in this map
-        synchronized (cellFactoryMap) {
-            // Clear out any existing entries in the map of registered Cells
-            cellFactoryMap.clear();
-
-            // Fetch the registry of cells and for each, get the palette info and
-            // populate the list.
-            CellRegistry registry = CellRegistry.getCellRegistry();
-            Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
-            List<String> listNames = new LinkedList();
-
-            // Loop through each cell factory we find. Insert the cell names into
-            // a list. Ignore any factories without a cell name.
-            for (CellFactorySPI cellFactory : cellFactories) {
-                try {
-                    String name = cellFactory.getDisplayName();
-                    if (name != null) {
-                        listNames.add(name);
-                        cellFactoryMap.put(name, cellFactory);
-                    }
-                } catch (java.lang.Exception excp) {
-                    // Just ignore, but log a message
-                    Logger logger = Logger.getLogger(ConstructPanel.class.getName());
-                    logger.log(Level.WARNING, "No Display Name for Cell Factory " +
-                            cellFactory, excp);
-                }
-            }
-
-            // Set the names of the list, first sorting the list in alphabetical
-            // order
-            Collections.sort(listNames);
-            cellList.setListData(listNames.toArray(new String[]{}));
-            cellList.setDragEnabled(true);
-        }
-    }
-    
-    /**
-     * Handles when a selection has been made of the list of cell type names.
-     * @param e
-     */
-    public void valueChanged(ListSelectionEvent e) {
+    private void createButtoncreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createButtoncreateActionPerformed
 
         // We synchronized around the cellFactoryMap so that this action does not
         // interfere with any changes in the map.
         synchronized (cellFactoryMap) {
+            // From the selected value, find the proper means to create the object
+            String cellDisplayName = (String) cellList.getSelectedValue();
+            CellFactorySPI factory = cellFactoryMap.get(cellDisplayName);
+            CellServerState setup = factory.getDefaultCellServerState(null);
 
-            // Fetch the display name of the cell selected. If it happens to
-            // be null (not sure why this would happen), then simply return.
-            String selectedName = (String) cellList.getSelectedValue();
-            if (selectedName == null) {
-                // If nothing is selected, then disable the Insert button, the
-                // preview image and disable drag-and-drop from the preview
-                // label.
-                createButton.setEnabled(false);
-                previewLabel.setIcon(null);
-
-                // Make sure the recognizers are not null, and set their
-                // components to null;
-                if (previewRecognizer != null) {
-                    previewRecognizer.setComponent(null);
-                }
-
-                if (listRecognizer != null) {
-                    listRecognizer.setComponent(null);
-                }
-                return;
+            // Create the new cell at a distance away from the avatar
+            try {
+                CellUtils.createCell(setup);
+            } catch (CellCreationException excp) {
+                Logger logger = Logger.getLogger(ConstructPanel.class.getName());
+                logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
+                        " using palette", excp);
             }
-
-            // Next, fetch the Cell factory associated with the display name.
-            // If it happens to be null (not sure why this would happen), then
-            // simply return.
-            CellFactorySPI cellFactory = cellFactoryMap.get(selectedName);
-            if (cellFactory == null) {
-                return;
-            }
-
-            // Enable the Insert button
-            createButton.setEnabled(true);
-
-            // Otherwise, update the preview image, if one exists, otherwise
-            // use the default image.
-            Image previewImage = cellFactory.getPreviewImage();
-            if (previewImage != null) {
-                ImageIcon icon = new ImageIcon(previewImage);
-                previewLabel.setIcon(icon);
-
-            }
-            else {
-                ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
-                previewLabel.setIcon(icon);
-
-            }
-
-            
-
-            
         }
-    }
 
-    public interface Container {
-        
-    }
-    
+}//GEN-LAST:event_createButtoncreateActionPerformed
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList cellList;
-    private javax.swing.JScrollPane cellScrollPane;
-    private javax.swing.JButton createButton;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JScrollBar jScrollBar1;
-    private javax.swing.JLabel previewLabel;
-    private javax.swing.JPanel previewPanel;
+    protected javax.swing.JList cellList;
+    protected javax.swing.JScrollPane cellScrollPane;
+    protected javax.swing.JButton createButton;
+    protected javax.swing.JLabel jLabel1;
+    protected javax.swing.JLabel previewLabel;
+    protected javax.swing.JPanel previewPanel;
     // End of variables declaration//GEN-END:variables
+
 }
