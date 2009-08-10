@@ -112,6 +112,8 @@ public class TrapozoidleSpatializer implements Spatializer, Serializable {
 	 * This is the hard part.
 	 * Doug and Paul using the pick engine to detect a hit.
 	 * An easier approach might be to use a collision detection component.
+	 * Yet another possibility is to define a new BoundingVolume that the ProximityComponentMO
+	 * understands.
 	 */
 	
 	return true;
