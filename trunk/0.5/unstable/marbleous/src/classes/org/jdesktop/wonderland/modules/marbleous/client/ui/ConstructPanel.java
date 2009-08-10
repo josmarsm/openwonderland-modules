@@ -53,6 +53,11 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
     /** Creates new form ConstructPanel */
     public ConstructPanel() {
         initComponents();
+
+        // Listen for list selection events and update the preview panel with
+        // the selected item's image
+        cellList.addListSelectionListener(this);
+
         updateListValues();
     }
 
