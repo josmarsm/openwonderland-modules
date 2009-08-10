@@ -16,104 +16,53 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.jothjava.client.ui;
+package org.jdesktop.wonderland.modules.marbleous.client.uijava;
 
 import com.jme.math.Vector2f;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
-import org.jdesktop.wonderland.modules.jothjava.client.cell.MarbleousCell;
+import org.jdesktop.wonderland.modules.marbleous.client.cell.MarbleousCell;
 
 /*********************************************
- * MarbleousWindow: The control window for Othello.
+ * MarbleousWindowConstruct: The track construction window.
  * @author deronj@dev.java.net
  */
 
-public class JothWindow 
+public class MarbleousWindowConstruct
     extends WindowSwing 
-    implements JothControlPanel.ControlPanelContainer 
 {
     /* The cell. */
-    private JothJavaCell cell;
+    private MarbleousCell cell;
 
-    /** The control panel. */
-    private JothControlPanel controlPanel;
+    /** The Swing panels. */
+    //private MarbleousConstructPanel constructPanel;
 
-    public JothWindow (JothJavaCell cell, App2D app, int width, int height, boolean decorated,
-                       Vector2f pixelScale) {
-        super(app, Window2D.Type.PRIMARY, width, height, decorated, pixelScale);
+    public MarbelousWindowConstruct (MarbleousCell cell, App2D app, int width, int height, boolean decorated,
+                                     Vector2f pixelScale) {
+        super(app, Window2D.Type.SECONDARY, width, height, decorated, pixelScale);
         this.cell = cell;
 
         try {
-            SwingUtilities.invokeAndWait(new Runnable () {
-                public void run () {
-                    controlPanel = new JothControlPanel();
-                    controlPanel.setContainer(JothWindow.this);
+            SwingUtilities.invokeAndWait(new Constructnable () {
+                public void construct () {
+                    //controlPanel = new JothControlPanel();
+                    //controlPanel.setContainer(JothWindow.this);
                 }
             });
         } catch (Exception ex) {
             ex.printStackTrace();
-            throw new RuntimeException("Cannot create control panel");
+            throw new ConstructtimeException("Cannot create construct window");
         }
 
 	// Parent to Wonderland main window for proper focus handling 
-       	JmeClientMain.getFrame().getCanvas3DPanel().add(controlPanel);
+       	//JmeClientMain.getFrame().getCanvas3DPanel().add(controlPanel);
 
-    	setComponent(controlPanel);
-        setTitle("Othello Controls");
+    	//setComponent(controlPanel);
+        setTitle("Construction Controls");
     }
 
-    /**
-     * Set the error message to blank.
-     */
-    public void clearError () {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
-                controlPanel.clearError();
-            }
-        });
-    }
-
-    /**
-     * Display the given message.
-     */
-    public void error (final String message) {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
-                controlPanel.error(message);
-            }
-        });
-    }
-
-    /**
-     * Display the current color counts.
-     */
-    public void displayCounts (final int whiteCount, final int blackCount) {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
-                controlPanel.displayCounts(whiteCount, blackCount);
-            }
-        });
-    }
-
-    /** Display whose turn it is. */
-    public void setTurn (final String whoseTurn) {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
-                controlPanel.setTurn(whoseTurn);
-            }
-        });
-    }
-
-    /** The game is over. Notify the user of the result. */
-    public void notifyGameOver (final String msg) {
-        SwingUtilities.invokeLater(new Runnable () {
-            public void run () {
-                controlPanel.notifyGameOver(msg);
-            }
-        });
-    }
 
     /** Control the visibility of the window. */
     public void setVisible (boolean visible) {
@@ -123,12 +72,5 @@ public class JothWindow
         } else {
             setVisibleApp(false);
         }
-    }
-
-    /**
-     * Called by the user to start a new game.
-     */
-    public void newGame() {
-        // TODO: not yet implemented
     }
 }
