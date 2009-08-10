@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.timeline.client;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -29,6 +30,7 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageRece
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -56,6 +58,8 @@ public class TimelineCell extends Cell implements ProximityListener {
 
     private HUD mainHUD;
     private HUDComponent navigationHUD;
+
+    private AvatarCell localAvatarCell;
     
     public TimelineCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -71,6 +75,8 @@ public class TimelineCell extends Cell implements ProximityListener {
 
             BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds()};
             prox.addProximityListener(this, bounds);
+
+            localAvatarCell = (AvatarCell)getCellCache().getViewCell();
  
         } else if (status==CellStatus.DISK && !increasing) {
             prox.removeProximityListener(this);
@@ -85,7 +91,7 @@ public class TimelineCell extends Cell implements ProximityListener {
                 // Add the navigation HUD.
                 mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-                navigationHUD = mainHUD.createComponent(new TimelineMovementHUDPanel());
+                navigationHUD = mainHUD.createComponent(new TimelineMovementHUDPanel(this));
                 
                 navigationHUD.setPreferredLocation(Layout.EAST);
                 navigationHUD.setName("Navigation");
@@ -124,5 +130,20 @@ public class TimelineCell extends Cell implements ProximityListener {
 
             // handle message
         }
+    }
+
+    /**
+     *
+     * @param position A nondimensionalized variable representing where in the timeline the avatar should move to.
+     */
+    public void moveAvatar(float position) {
+
+
+        Vector3f targetPosition = this.getWorldTransform().getTranslation(null).add(new Vector3f(0, 0, 20 * position));
+
+        logger.warning("Moving avatar to position: " + targetPosition + " (" + position + ")");
+
+
+        localAvatarCell.triggerGoto(targetPosition, new Quaternion());
     }
 }
