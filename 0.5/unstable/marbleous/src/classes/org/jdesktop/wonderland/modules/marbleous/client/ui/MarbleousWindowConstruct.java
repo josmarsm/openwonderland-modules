@@ -43,7 +43,8 @@ public class MarbleousWindowConstruct
 
     public MarbleousWindowConstruct (MarbleousCell cell, App2D app, int width, int height, boolean decorated,
                                      Vector2f pixelScale) {
-        super(app, Window2D.Type.SECONDARY, width, height, decorated, pixelScale);
+        //super(app, Window2D.Type.SECONDARY, width, height, decorated, pixelScale);
+        super(app, Window2D.Type.PRIMARY, width, height, decorated, pixelScale);
         this.cell = cell;
 
         try {

@@ -54,7 +54,7 @@ public class MarbleousMain {
      */
     public void setVisible (boolean visible) {
         windowConstruct.setVisible(visible);
-        windowRun.setVisible(visible);
+        //windowRun.setVisible(visible);
     }
 }
 
