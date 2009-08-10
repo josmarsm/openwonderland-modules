@@ -12,24 +12,21 @@
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import java.awt.Image;
-import java.awt.dnd.DnDConstants;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
-import org.jdesktop.wonderland.client.cell.registry.CellRegistry.CellRegistryListener;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
 
 /**
  *
@@ -37,14 +34,11 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  */
 public class ConstructPanel extends javax.swing.JPanel implements ListSelectionListener {
 
-    /* A map of cell display names and their cell factories */
-    private final Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
+    /* A map of track segment type names and their track segment types */
+    private final Map<String, TrackSegmentType> segmentTypeMap = new HashMap();
 
     /* The "No Preview Available" image */
     private Image noPreviewAvailableImage = null;
-
-    /* The listener for changes in the list of registered Cell factories */
-    private CellRegistryListener cellListener = null;
 
     private Container container;
 
@@ -59,6 +53,7 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
     /** Creates new form ConstructPanel */
     public ConstructPanel() {
         initComponents();
+        updateListValues();
     }
 
     /** This method is called from within the constructor to
@@ -149,22 +144,13 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
     private void createButtoncreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createButtoncreateActionPerformed
 
-        // We synchronized around the cellFactoryMap so that this action does not
-        // interfere with any changes in the map.
-        synchronized (cellFactoryMap) {
+        synchronized (segmentTypeMap) {
             // From the selected value, find the proper means to create the object
-            String cellDisplayName = (String) cellList.getSelectedValue();
-            CellFactorySPI factory = cellFactoryMap.get(cellDisplayName);
-            CellServerState setup = factory.getDefaultCellServerState(null);
+            String typeName = (String) cellList.getSelectedValue();
+            TrackSegmentType segmentType = segmentTypeMap.get(typeName);
 
-            // Create the new cell at a distance away from the avatar
-            try {
-                CellUtils.createCell(setup);
-            } catch (CellCreationException excp) {
-                Logger logger = Logger.getLogger(ConstructPanel.class.getName());
-                logger.log(Level.WARNING, "Unable to create cell " + cellDisplayName +
-                        " using palette", excp);
-            }
+            // TODO: Add the new segment to the track.
+            System.err.println("Segment add: type = " + typeName);
         }
 
 }//GEN-LAST:event_createButtoncreateActionPerformed
@@ -175,35 +161,34 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
 
     /**
-     * Updates the list of values displayed from the CellRegistry.
+     * Updates the list of values displayed from the track segment factory
      */
     private void updateListValues() {
-        // Let's synchronized around cellFactoryMap so that any selections do
+        // Let's synchronized around segmentTypeMap so that any selections do
         // not interfere with changes in this map
-        synchronized (cellFactoryMap) {
-            // Clear out any existing entries in the map of registered Cells
-            cellFactoryMap.clear();
+        synchronized (segmentTypeMap) {
+            // Clear out any existing entries in the map of supported types
+            segmentTypeMap.clear();
 
             // Fetch the registry of cells and for each, get the palette info and
             // populate the list.
-            CellRegistry registry = CellRegistry.getCellRegistry();
-            Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
+            TrackSegmentType[] segmentTypes = TrackSegmentType.getSupportedTypes();
             List<String> listNames = new LinkedList();
 
-            // Loop through each cell factory we find. Insert the cell names into
-            // a list. Ignore any factories without a cell name.
-            for (CellFactorySPI cellFactory : cellFactories) {
+            // Loop through each segment type we find. Insert the type names into
+            // a list. Ignore any types without a name.
+            for (TrackSegmentType segmentType : segmentTypes) {
                 try {
-                    String name = cellFactory.getDisplayName();
+                    String name = segmentType.getName();
                     if (name != null) {
                         listNames.add(name);
-                        cellFactoryMap.put(name, cellFactory);
+                        segmentTypeMap.put(name, segmentType);
                     }
                 } catch (java.lang.Exception excp) {
                     // Just ignore, but log a message
                     Logger logger = Logger.getLogger(ConstructPanel.class.getName());
-                    logger.log(Level.WARNING, "No Display Name for Cell Factory " +
-                            cellFactory, excp);
+                    logger.log(Level.WARNING, "No name for track segment type " +
+                            segmentType, excp);
                 }
             }
 
@@ -211,7 +196,7 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
             // order
             Collections.sort(listNames);
             cellList.setListData(listNames.toArray(new String[]{}));
-            cellList.setDragEnabled(true);
+            cellList.setDragEnabled(false);
         }
     }
     
@@ -221,11 +206,11 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
      */
     public void valueChanged(ListSelectionEvent e) {
 
-        // We synchronized around the cellFactoryMap so that this action does not
+        // We synchronized around the segmentTypeMap so that this action does not
         // interfere with any changes in the map.
-        synchronized (cellFactoryMap) {
+        synchronized (segmentTypeMap) {
 
-            // Fetch the display name of the cell selected. If it happens to
+            // Fetch the name of the segment selected. If it happens to
             // be null (not sure why this would happen), then simply return.
             String selectedName = (String) cellList.getSelectedValue();
             if (selectedName == null) {
@@ -252,8 +237,8 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
             // Next, fetch the Cell factory associated with the display name.
             // If it happens to be null (not sure why this would happen), then
             // simply return.
-            CellFactorySPI cellFactory = cellFactoryMap.get(selectedName);
-            if (cellFactory == null) {
+            TrackSegmentType segmentType = segmentTypeMap.get(selectedName);
+            if (segmentType == null) {
                 return;
             }
 
@@ -262,13 +247,13 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
             // Otherwise, update the preview image, if one exists, otherwise
             // use the default image.
-            Image previewImage = cellFactory.getPreviewImage();
+            Image previewImage = segmentType.getPreviewImage();
             if (previewImage != null) {
                 ImageIcon icon = new ImageIcon(previewImage);
                 previewLabel.setIcon(icon);
 
                 // Pass the necessary information for drag and drop
-                //gestureListener.cellFactory = cellFactory;
+                //gestureListener.segmentType = cellFactory;
                 //gestureListener.previewImage = previewImage;
             }
             else {

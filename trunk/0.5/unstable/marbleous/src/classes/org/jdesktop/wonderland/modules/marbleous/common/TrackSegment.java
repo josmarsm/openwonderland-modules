@@ -33,6 +33,5 @@ public class TrackSegment  {
 
     TrackSegment(TrackSegmentType segmentType) {
         this.segmentType = segmentType;
-        
     }
 }
