@@ -20,10 +20,12 @@ package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import com.jme.math.Vector2f;
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.MarbleousCell;
+import org.jdesktop.wonderland.modules.marbleous.client.ui.ConstructPanel.Container;
 
 /*********************************************
  * MarbleousWindowConstruct: The track construction window.
@@ -31,13 +33,13 @@ import org.jdesktop.wonderland.modules.marbleous.client.cell.MarbleousCell;
  */
 
 public class MarbleousWindowConstruct
-    extends WindowSwing 
+    extends WindowSwing implements Container
 {
     /* The cell. */
     private MarbleousCell cell;
 
     /** The Swing panels. */
-    //private MarbleousConstructPanel constructPanel;
+    private ConstructPanel constructPanel;
 
     public MarbleousWindowConstruct (MarbleousCell cell, App2D app, int width, int height, boolean decorated,
                                      Vector2f pixelScale) {
@@ -47,8 +49,8 @@ public class MarbleousWindowConstruct
         try {
             SwingUtilities.invokeAndWait(new Runnable () {
                 public void run () {
-                    //controlPanel = new JothControlPanel();
-                    //controlPanel.setContainer(JothWindow.this);
+                    constructPanel = new ConstructPanel();
+                    constructPanel.setContainer(MarbleousWindowConstruct.this);
                 }
             });
         } catch (Exception ex) {
@@ -56,10 +58,10 @@ public class MarbleousWindowConstruct
             throw new RuntimeException("Cannot create construct window");
         }
 
-	// Parent to Wonderland main window for proper focus handling 
-       	//JmeClientMain.getFrame().getCanvas3DPanel().add(controlPanel);
+        // Parent to Wonderland main window for proper focus handling
+       	JmeClientMain.getFrame().getCanvas3DPanel().add(constructPanel);
 
-    	//setComponent(controlPanel);
+    	setComponent(constructPanel);
         setTitle("Construction Controls");
     }
 
