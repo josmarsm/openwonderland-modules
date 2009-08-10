@@ -60,7 +60,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">lib/xml-apis.jar:lib/xml-apis-ext.jar:../../../../../trunk/core/build/lib/wonderland-client.jar:../../../trunk/core/build/lib/wonderland-common.jar:../../../../../trunk/core/build/lib/wonderland-server.jar:../../../../../trunk/core/ext/common/swing-layout-1.0.jar:../../../../../trunk/core/ext/jme20/target/jme.jar:../../../../../trunk/modules/foundation/appbase/build/client/appbase-client.jar:../../../../../trunk/modules/foundation/appbase/build/client/appbase-client-cell.jar:../../../../../trunk/modules/foundation/appbase/build/server/appbase-server.jar:../../../../../trunk/core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:../../../../../trunk/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-0.9.8.jar:../../../../../trunk/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../../../../../trunk/core/ext/common/mtgame.jar</classpath>
+                <classpath mode="compile">lib/xml-apis.jar:lib/xml-apis-ext.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar</classpath>
                 <built-to>dist/marbleous.jar</built-to>
                 <source-level>1.5</source-level>
             </compilation-unit>
