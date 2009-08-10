@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.marbleous.client.uijava;
+package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import com.jme.math.Vector2f;
 import javax.swing.SwingUtilities;
@@ -39,21 +39,21 @@ public class MarbleousWindowConstruct
     /** The Swing panels. */
     //private MarbleousConstructPanel constructPanel;
 
-    public MarbelousWindowConstruct (MarbleousCell cell, App2D app, int width, int height, boolean decorated,
+    public MarbleousWindowConstruct (MarbleousCell cell, App2D app, int width, int height, boolean decorated,
                                      Vector2f pixelScale) {
         super(app, Window2D.Type.SECONDARY, width, height, decorated, pixelScale);
         this.cell = cell;
 
         try {
-            SwingUtilities.invokeAndWait(new Constructnable () {
-                public void construct () {
+            SwingUtilities.invokeAndWait(new Runnable () {
+                public void run () {
                     //controlPanel = new JothControlPanel();
                     //controlPanel.setContainer(JothWindow.this);
                 }
             });
         } catch (Exception ex) {
             ex.printStackTrace();
-            throw new ConstructtimeException("Cannot create construct window");
+            throw new RuntimeException("Cannot create construct window");
         }
 
 	// Parent to Wonderland main window for proper focus handling 

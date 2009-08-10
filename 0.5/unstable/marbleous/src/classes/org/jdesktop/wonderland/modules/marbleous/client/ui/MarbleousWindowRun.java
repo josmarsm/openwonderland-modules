@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.marbleous.client.uijava;
+package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import com.jme.math.Vector2f;
 import javax.swing.SwingUtilities;
@@ -30,7 +30,7 @@ import org.jdesktop.wonderland.modules.marbleous.client.cell.MarbleousCell;
  * @author deronj@dev.java.net
  */
 
-public class MarbleousWindowrun
+public class MarbleousWindowRun
     extends WindowSwing 
 {
     /* The cell. */
@@ -39,7 +39,7 @@ public class MarbleousWindowrun
     /** The Swing panels. */
     //private MarbleousRunPanel runPanel;
 
-    public MarbelousWindowRun (MarbleousCell cell, App2D app, int width, int height, boolean decorated,
+    public MarbleousWindowRun (MarbleousCell cell, App2D app, int width, int height, boolean decorated,
                                Vector2f pixelScale) {
         super(app, Window2D.Type.PRIMARY, width, height, decorated, pixelScale);
         this.cell = cell;
