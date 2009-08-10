@@ -20,7 +20,7 @@
  * exception as provided by Sun in the License file that accompanied this 
  * code. 
  */
-package com.sun.mpk20.voicelib.app;
+package org.jdesktop.wonderland.modules.timeline.server;
 
 import com.sun.sgs.app.AppContext;
 
