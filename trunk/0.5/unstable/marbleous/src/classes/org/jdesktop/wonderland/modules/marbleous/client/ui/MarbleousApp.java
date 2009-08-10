@@ -19,7 +19,6 @@
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
-import org.jdesktop.wonderland.modules.appbase.client.ControlArbSingle;
 import com.jme.math.Vector2f;
 
 /**
@@ -38,7 +37,7 @@ public class MarbleousApp extends App2D {
      * @param pixelScale The horizontal and vertical pixel sizes (in world meters per pixel).
      */
     public MarbleousApp(String name, Vector2f pixelScale) {
-        super(name, new ControlArbSingle(), pixelScale);
+        super(name, new ControlArbMarbleous(), pixelScale);
         controlArb.setApp(this);
     }
 }
