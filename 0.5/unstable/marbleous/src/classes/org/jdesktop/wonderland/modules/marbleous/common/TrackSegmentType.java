@@ -17,14 +17,46 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.common;
 
+import java.awt.Image;
 
 
 /**
  * Represents a type of a segment of roller coaster track.
  *
- * @author Bernard Horan
+ * @author Bernard Horan, deronj
  */
 
 public class TrackSegmentType  {
-    
+
+    // TODO: define preview images in this array
+    private static TrackSegmentType[] supportedTypes = new TrackSegmentType[] {
+        new TrackSegmentType("Straight"),
+        new TrackSegmentType("Loop"),
+        new TrackSegmentType("Down Ramp"),
+        new TrackSegmentType("Up Ramp")
+    };
+
+    private String name;
+    private Image previewImage;
+
+    public TrackSegmentType (String name) {
+        this(name, null);
+    }
+
+    public TrackSegmentType (String name, Image previewImage) {
+        this.name = name;
+        this.previewImage = previewImage;
+    }
+
+    public String getName () {
+        return name;
+    }
+
+    public Image getPreviewImage () {
+        return previewImage;
+    }
+
+    public static TrackSegmentType[] getSupportedTypes () {
+        return supportedTypes;
+    }
 }
