@@ -12,10 +12,19 @@
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import java.awt.Image;
+import java.awt.dnd.DnDConstants;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
 import org.jdesktop.wonderland.client.cell.registry.CellRegistry.CellRegistryListener;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
@@ -26,7 +35,8 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
  *
  * @author bh37721
  */
-public class ConstructPanel extends javax.swing.JPanel {
+public class ConstructPanel extends javax.swing.JPanel implements ListSelectionListener {
+
     /* A map of cell display names and their cell factories */
     private final Map<String, CellFactorySPI> cellFactoryMap = new HashMap();
 
@@ -145,6 +155,140 @@ public class ConstructPanel extends javax.swing.JPanel {
 
 }//GEN-LAST:event_createButtoncreateActionPerformed
 
+
+    /**
+     * Updates the list of values displayed from the CellRegistry.
+     */
+    private void updateListValues() {
+        // Let's synchronized around cellFactoryMap so that any selections do
+        // not interfere with changes in this map
+        synchronized (cellFactoryMap) {
+            // Clear out any existing entries in the map of registered Cells
+            cellFactoryMap.clear();
+
+            // Fetch the registry of cells and for each, get the palette info and
+            // populate the list.
+            CellRegistry registry = CellRegistry.getCellRegistry();
+            Set<CellFactorySPI> cellFactories = registry.getAllCellFactories();
+            List<String> listNames = new LinkedList();
+
+            // Loop through each cell factory we find. Insert the cell names into
+            // a list. Ignore any factories without a cell name.
+            for (CellFactorySPI cellFactory : cellFactories) {
+                try {
+                    String name = cellFactory.getDisplayName();
+                    if (name != null) {
+                        listNames.add(name);
+                        cellFactoryMap.put(name, cellFactory);
+                    }
+                } catch (java.lang.Exception excp) {
+                    // Just ignore, but log a message
+                    Logger logger = Logger.getLogger(ConstructPanel.class.getName());
+                    logger.log(Level.WARNING, "No Display Name for Cell Factory " +
+                            cellFactory, excp);
+                }
+            }
+
+            // Set the names of the list, first sorting the list in alphabetical
+            // order
+            Collections.sort(listNames);
+            cellList.setListData(listNames.toArray(new String[]{}));
+            cellList.setDragEnabled(true);
+        }
+    }
+    
+    /**
+     * Handles when a selection has been made of the list of cell type names.
+     * @param e
+     */
+    public void valueChanged(ListSelectionEvent e) {
+
+        // We synchronized around the cellFactoryMap so that this action does not
+        // interfere with any changes in the map.
+        synchronized (cellFactoryMap) {
+
+            // Fetch the display name of the cell selected. If it happens to
+            // be null (not sure why this would happen), then simply return.
+            String selectedName = (String) cellList.getSelectedValue();
+            if (selectedName == null) {
+                // If nothing is selected, then disable the Insert button, the
+                // preview image and disable drag-and-drop from the preview
+                // label.
+                createButton.setEnabled(false);
+                previewLabel.setIcon(null);
+
+                /*
+                 // Make sure the recognizers are not null, and set their
+                // components to null;
+                if (previewRecognizer != null) {
+                    previewRecognizer.setComponent(null);
+                }
+
+                if (listRecognizer != null) {
+                    listRecognizer.setComponent(null);
+                }
+                */
+                return;
+            }
+
+            // Next, fetch the Cell factory associated with the display name.
+            // If it happens to be null (not sure why this would happen), then
+            // simply return.
+            CellFactorySPI cellFactory = cellFactoryMap.get(selectedName);
+            if (cellFactory == null) {
+                return;
+            }
+
+            // Enable the Insert button
+            createButton.setEnabled(true);
+
+            // Otherwise, update the preview image, if one exists, otherwise
+            // use the default image.
+            Image previewImage = cellFactory.getPreviewImage();
+            if (previewImage != null) {
+                ImageIcon icon = new ImageIcon(previewImage);
+                previewLabel.setIcon(icon);
+
+                // Pass the necessary information for drag and drop
+                //gestureListener.cellFactory = cellFactory;
+                //gestureListener.previewImage = previewImage;
+            }
+            else {
+                ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
+                previewLabel.setIcon(icon);
+
+                // Pass the necessary information for drag and drop
+                //gestureListener.cellFactory = cellFactory;
+                //gestureListener.previewImage = noPreviewAvailableImage;
+            }
+
+            // Enable drag-and-drop from the preview image, creating the
+            // recognizer if necessary
+            /*
+             if (previewRecognizer == null) {
+                previewRecognizer =
+                        dragSource.createDefaultDragGestureRecognizer(previewLabel,
+                        DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+            }
+            else {
+                previewRecognizer.setComponent(previewLabel);
+            }
+            */
+
+            // Add support for drag from the text list of cells, creating the
+            // recognizer if necessary
+            /*
+             if (listRecognizer == null) {
+                listRecognizer =
+                        dragSource.createDefaultDragGestureRecognizer(cellList,
+                        DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+            }
+            else {
+                listRecognizer.setComponent(cellList);
+            }
+            */
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JList cellList;
