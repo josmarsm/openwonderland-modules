@@ -51,7 +51,9 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
 
         positionSlider = new javax.swing.JSlider();
 
+        positionSlider.setMaximum(10000);
         positionSlider.setOrientation(javax.swing.JSlider.VERTICAL);
+        positionSlider.setValue(50000);
         positionSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 positionSliderStateChanged(evt);
