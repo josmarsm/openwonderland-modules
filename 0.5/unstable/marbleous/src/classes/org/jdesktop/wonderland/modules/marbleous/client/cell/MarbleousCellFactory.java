@@ -51,12 +51,15 @@ public class MarbleousCellFactory implements CellFactorySPI {
     }
 
     public String getDisplayName() {
-        return "Swing Test Cell";
+        return "Marbleous";
     }
 
     public Image getPreviewImage() {
+        /*
         // TODO: come up with a marble png
         URL url = MarbleousCellFactory.class.getResource("resources/swingtest_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
+        */
+        return null;
     }
 }
