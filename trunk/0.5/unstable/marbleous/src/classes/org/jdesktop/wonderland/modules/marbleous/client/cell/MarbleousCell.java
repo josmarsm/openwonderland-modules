@@ -92,9 +92,10 @@ public class MarbleousCell extends App2DCell {
                     // Create the UI windows
                     windowConstruct = new MarbleousWindowConstruct(this, app, 400, 200, true, 
                                                           new Vector2f(0.01f, 0.01f));
-                    windowRun = new MarbleousWindowRun(this, app, 400, 200, true, 
-                                                 new Vector2f(0.01f, 0.01f));
-                
+                    //windowRun = new MarbleousWindowRun(this, app, 400, 200, true, 
+                    //                             new Vector2f(0.01f, 0.01f));
+                    windowRun = null;
+
                     main = new MarbleousMain(this, windowConstruct, windowRun);
                     main.setVisible(true);
                 }
