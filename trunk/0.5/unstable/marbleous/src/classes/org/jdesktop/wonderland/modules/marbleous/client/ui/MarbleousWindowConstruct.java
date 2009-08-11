@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.MarbleousCell;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.ConstructPanel.Container;
+import org.jdesktop.wonderland.modules.marbleous.common.Track;
 
 /*********************************************
  * MarbleousWindowConstruct: The track construction window.
@@ -35,10 +36,10 @@ import org.jdesktop.wonderland.modules.marbleous.client.ui.ConstructPanel.Contai
 public class MarbleousWindowConstruct
     extends WindowSwing implements Container
 {
-    /* The cell. */
+    /** The cell. */
     private MarbleousCell cell;
 
-    /** The Swing panels. */
+    /** The Swing panel. */
     private ConstructPanel constructPanel;
 
     public MarbleousWindowConstruct (MarbleousCell cell, App2D app, int width, int height, boolean decorated,
@@ -66,6 +67,10 @@ public class MarbleousWindowConstruct
         setTitle("Marbleous Roller Coaster");
     }
 
+    /** Give this window the track to construct. */
+    public void setTrack (Track track) {
+        constructPanel.setTrack(track);
+    }
 
     /** Control the visibility of the window. */
     public void setVisible (boolean visible) {

@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.marbleous.client;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.MarbleousWindowConstruct;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.MarbleousWindowRun;
+import org.jdesktop.wonderland.modules.marbleous.common.Track;
 
 /************************************
  * MarbleousMain: The Marble Roller Coaster main module.
@@ -35,6 +36,8 @@ public class MarbleousMain {
     private MarbleousWindowConstruct windowConstruct;
     /** The window which contains the run controls UI. */
     private MarbleousWindowRun windowRun;
+    /** A single track. */
+    private Track track;
 
     /**
      * Create a new instance of MarbleousMain.
@@ -47,6 +50,9 @@ public class MarbleousMain {
         this.cell = cell;
         this.windowConstruct = windowConstruct;
         this.windowRun = windowRun;
+
+        track = new Track();
+        windowConstruct.setTrack(track);
     }
 
     /**
