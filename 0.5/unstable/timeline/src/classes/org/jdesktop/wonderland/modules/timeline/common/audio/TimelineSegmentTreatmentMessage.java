@@ -37,7 +37,7 @@ public class TimelineSegmentTreatmentMessage extends CellMessage {
     private String treatment;
 
     public TimelineSegmentTreatmentMessage(CellID cellID, TimelineSegment segment,
-	    Vector3f location, String treatment, double attenuator) {
+	    Vector3f location, String treatment) {
 
 	super(cellID);
 
