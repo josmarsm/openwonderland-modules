@@ -184,8 +184,12 @@ public class AnnotationNode extends BillboardNode {
     int actualAuthorHeight = 0;
     int actualTextLineHeight = 0;
     int actualSubjectHeight = 0;
+    // small - get height of author
+    if(mode == DisplayMode.SMALL){
+      actualAuthorHeight= (int)(authorLayout.getAscent() + authorLayout.getDescent());
+    }
     // medium - get heights of author and subject
-    if(mode == DisplayMode.MEDIUM){
+    else if(mode == DisplayMode.MEDIUM){
       actualAuthorHeight= (int)(authorLayout.getAscent() + authorLayout.getDescent());
       actualSubjectHeight = (int)(subjectLayout.getAscent() + subjectLayout.getDescent());
     }
@@ -253,40 +257,42 @@ public class AnnotationNode extends BillboardNode {
     int textY = 0;
     // used to blur shadow
     BufferedImage ret = tmp0;
-    // draw author and subject text if necessary
+
+    // draw author text and shadow always
+    logger.info("[anno node] draw author");
+    textX = 0 + PADDING_LEFT;
+    textY = actualAuthorHeight + PADDING_TOP;// + paddingTop + borderWidth;
+
+    // draw the shadow of the text
+    g2d.setFont(gfxConfig.getAuthorFont());
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+    g2d.setColor(gfxConfig.getShadowColor());
+    System.out.println("shadow x and y: " + textX + " " + textY);
+    System.out.println("offsets: " + SHADOW_OFFSET_X + " " + SHADOW_OFFSET_Y);
+    System.out.println("desired heights, author subj: " + actualAuthorHeight + " " + actualSubjectHeight);
+    g2d.drawString(author, textX + SHADOW_OFFSET_X, textY + SHADOW_OFFSET_Y);
+
+
+    // blur the shadows
+    ret = blur.filter(tmp0, null);
+    // draw the text over the shadow
+    g2d = (Graphics2D) ret.getGraphics();
+    g2d.setFont(gfxConfig.getAuthorFont());
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+    g2d.setColor(gfxConfig.getFontColor());
+    System.out.println("the TEXT x and y: " + textX + " " + textY);
+    g2d.drawString(author, textX, textY);
+    
+    // draw subject text if necessary
     if(mode == DisplayMode.MEDIUM || mode == DisplayMode.LARGE){
-      logger.info("[anno node] draw subject and author");
-      textX = 0 + PADDING_LEFT;
-      textY = actualAuthorHeight + PADDING_TOP;// + paddingTop + borderWidth;
-
-      // draw the shadow of the text
-      g2d.setFont(gfxConfig.getAuthorFont());
-      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-      g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-      g2d.setColor(gfxConfig.getShadowColor());
-      System.out.println("shadow x and y: " + textX + " " + textY);
-      System.out.println("offsets: " + SHADOW_OFFSET_X + " " + SHADOW_OFFSET_Y);
-      System.out.println("desired heights, author subj: " + actualAuthorHeight + " " + actualSubjectHeight);
-      g2d.drawString(author, textX + SHADOW_OFFSET_X, textY + SHADOW_OFFSET_Y);
-
-
-      // blur the shadows
-      ret = blur.filter(tmp0, null);
-      // draw the text over the shadow
-      g2d = (Graphics2D) ret.getGraphics();
-      g2d.setFont(gfxConfig.getAuthorFont());
-      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-      g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-      g2d.setColor(gfxConfig.getFontColor());
-      System.out.println("the TEXT x and y: " + textX + " " + textY);
-      g2d.drawString(author, textX, textY);
-
+      logger.info("[anno node] draw subject");
 
       // draw subject text
       // make same left-justification, but different y
       textY += actualSubjectHeight + PADDING_LINE;
-
-      g2d = (Graphics2D) ret.getGraphics();
+      
       g2d.setFont(gfxConfig.getSubjectFont());
       g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -297,8 +303,7 @@ public class AnnotationNode extends BillboardNode {
     if(mode == DisplayMode.LARGE){
       logger.info("[anno node] draw message");
       textY += actualSubjectHeight + PADDING_LINE;
-
-      g2d = (Graphics2D) ret.getGraphics();
+      
       g2d.setFont(gfxConfig.getSubjectFont());
       g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -333,11 +338,11 @@ public class AnnotationNode extends BillboardNode {
   private int getImageWidth(Rectangle2D authorRect, Rectangle2D subjectRect){
     int actualWidth = PADDING_LEFT + PADDING_RIGHT; // 18
     if(mode == DisplayMode.SMALL){
-      return actualWidth * 2;
+      // display only the author
+      actualWidth += authorRect.getWidth();
     }
-
     // the maximal length for a line of text
-    if(authorRect.getWidth() > subjectRect.getWidth()){
+    else if(authorRect.getWidth() > subjectRect.getWidth()){
       logger.info("an: author had larger width " + authorRect.getWidth() + " vs " + subjectRect.getWidth());
       actualWidth += authorRect.getWidth();
     }
@@ -362,18 +367,15 @@ public class AnnotationNode extends BillboardNode {
     // add subject and text to height for medium and large versions
     logger.info("[anno node] display mode here is: " + mode);
     if(mode == DisplayMode.SMALL){
-      return ret* 2;
+      ret += (int) (authorLayout.getAscent() + authorLayout.getDescent() +
+                 kernelSize + 1 + SHADOW_OFFSET_Y);
     }
     else if(mode == DisplayMode.MEDIUM || mode == DisplayMode.LARGE){
-//      logger.info("[anno node] medium/large, adding author and subj");
-//      logger.info("[anno node] good #s inside:" + authorLayout.getAscent() + " " + authorLayout.getDescent() + " "
-//              + subjectLayout.getAscent() + " " + subjectLayout.getDescent() + " " + kernelSize + " " + SHADOW_OFFSET_Y + " " + PADDING_LINE);
-//      logger.info("[anno node] author asc is: " + authorLayout.getAscent());
       ret += (int) (authorLayout.getAscent() + authorLayout.getDescent() +
                   subjectLayout.getAscent() + subjectLayout.getDescent() +
                   kernelSize + 1 + SHADOW_OFFSET_Y + PADDING_LINE);
-//      logger.info("ret after auth/subj is now: " + ret);
     }
+
     // also add lines of text from chunks to height for large versions
     if(mode == DisplayMode.LARGE){
       logger.info("[anno node] large, adding chunks inside");

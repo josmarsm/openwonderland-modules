@@ -24,6 +24,7 @@ import com.jme.scene.Node;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -33,6 +34,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuInvocationSettings;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -59,6 +61,8 @@ import org.jdesktop.wonderland.modules.metadata.client.cache.CacheEventListener;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.ModifyCacheAction;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuEvent;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * 
@@ -134,8 +138,11 @@ public class AnnotationComponent extends CellComponent
    */
   public AnnotationComponent(Cell cell) {
     super(cell);
-    defaultSettings = getPanelConfig();
+    defaultSettings = getDefaultAnnotationSettings();
     logger.info("[ANNO COMPO] compo created");
+    if(defaultSettings == null){
+      logger.severe("[ANNO COMPO] settings are null!");
+    }
   }
 
   /**
@@ -178,9 +185,8 @@ public class AnnotationComponent extends CellComponent
       AnnotationPlugin.addComponentListener(this);
       localDisplay = AnnotationPlugin.getDisplayMode();
       localFontModifier = AnnotationPlugin.getFontSizeModifier();
-      logger.info("[ANNO COMPO] add self as listener! local display val is now: " + localDisplay + "and font mod is " + localFontModifier);
-      // build annotations
-      rebuildAnnotations();
+      logger.info("[ANNO COMPO] add self as listener! local display val is now: " + localDisplay + " and font mod is " + localFontModifier);
+      
       // listen to ctx menu events
       ctxListener = new CtxListener();
       ContextMenuManager.getContextMenuManager().addContextMenuListener(ctxListener);
@@ -192,10 +198,6 @@ public class AnnotationComponent extends CellComponent
 
       // set metadata component reference
       metaCompo = cell.getComponent(MetadataComponent.class);
-      if(metaCompo == null){
-        logger.severe("[ANNO COMPO] added annotation component to cell without metadata component");
-        // TODO in future, add the metadata compo here instead?
-      }
 
       // determine a decent starting position for metadata objects
       BoundingVolume vol = cell.getWorldBounds();
@@ -290,21 +292,33 @@ public class AnnotationComponent extends CellComponent
    */
   private void addAnnotation(Annotation a) {
     // if annotation is modified while being added (position, graphics settings..)
-    // alert the metadata system of the changes to make them persistent
+    // alert the metadata system of the changes to make them persistentexport ANT_OPTS="-Xms512m -Xmx1024m -XX:MaxPermSize=900m"
     boolean modified = false;
 
     if(a.getSettings() == null){
       // annotation doesn't have its own graphical settings, give it this cell's
       // default look
+      logger.info("[ANNO COMPO] settings were null, set to defaults " );
       a.setSettings(defaultSettings);
       modified = true;
     }
 
     if(a.getTranslation() == null){
+      // position in front of user's current position
+      // get current position
+      ViewCell vc = ClientContextJME.getViewManager().getPrimaryViewCell();
+      CellTransform trans = vc.getWorldTransform();
+      Vector3f pos = new Vector3f(), look = new Vector3f();
+      trans.getLookAt(pos, look);
+      logger.info("POSITION, LOOK: " + pos + " " + look);
+      // x, y, z
+      Vector3f loc = pos.add((look.getX() * 2.5f) , 3.0f, (look.getZ() * 2.5f));
+      a.setTranslation(loc);
+      logger.info("adjusted POSITION: " + loc);
       // annotation doesn't have its own position, give it this cell's
       // default starting position
-      a.setTranslation(baseAnnoLocation);
-      baseAnnoLocation = baseAnnoLocation.add(0.5f, 0.5f, 0.5f);
+//      a.setTranslation(baseAnnoLocation);
+//      baseAnnoLocation = baseAnnoLocation.add(0.5f, 0.5f, 0.5f);
       modified = true;
     }
 
@@ -421,6 +435,7 @@ public class AnnotationComponent extends CellComponent
     ap.setAuthor(a.getCreator());
     ap.setText(a.getText());
     ap.setDate(a.getModified());
+    ap.setSettings(a.getSettings());
 //    ap.removeSaveButtonListener();
 //    ap.addSaveButtonListener(new AnnotationSaveListener(a, ap));
 
@@ -525,7 +540,7 @@ public class AnnotationComponent extends CellComponent
    * @param i count of annotation components
    * @return
    */
-  private AnnotationSettings getPanelConfig() {
+  private AnnotationSettings getDefaultAnnotationSettings() {
     logger.info("[ANNO COMPO] get pc... count is" + panelConfigCount);
     AnnotationSettings pc = null;
     switch(panelConfigCount){
@@ -627,8 +642,8 @@ public class AnnotationComponent extends CellComponent
    * Annotation and then informs component of update.
    */
   class AnnotationSaveListener implements ActionListener{
-    MetadataID annoID;
-    AnnotationPane pane;
+    WeakReference<MetadataID> annoID;
+    WeakReference<AnnotationPane> pane;
 
     /**
      *
@@ -636,23 +651,25 @@ public class AnnotationComponent extends CellComponent
      * @param p the pane to retrive the updated annotation information from
      */
     public AnnotationSaveListener(Annotation a, AnnotationPane p){
-      annoID = a.getID();
-      pane = p;
+      annoID = new WeakReference<MetadataID>(a.getID());
+      pane = new WeakReference<AnnotationPane>(p);
     }
 
     public void actionPerformed(ActionEvent e) {
       // set changes
-      AnnotationEntity ent = entities.get(annoID);
+      AnnotationEntity ent = entities.get(annoID.get());
       Annotation anno = ent.getAnnotation();
-      anno.setText(pane.getEditableText());
-      anno.setSubject(pane.getEditableSubject());
+      AnnotationPane paneRef = pane.get();
+      anno.setText(paneRef.getEditableText());
+      anno.setSubject(paneRef.getEditableSubject());
       logger.info("location of anno in save:" + anno.getTranslation() + " id is" + anno.getID());
 
-      // if settings were changed, add to map, adjust annotation
-      if(pane.isSettingsChanged()){
-        ent.setAnnotationSettings(pane.getSettings());
-        pane.setSettingsChanged(false);
-        anno.setSettings(pane.getSettings());
+      // if settings were changed, adjust annotation
+      if(paneRef.isSettingsChanged()){
+        ent.setAnnotationSettings(paneRef.getSettings());
+        paneRef.setSettingsChanged(false);
+        anno.setSettings(paneRef.getSettings());
+        logger.info("anno settings changed, bg color is: " + paneRef.getSettings().getBackgroundColor());
       }
       // alert metadata system of change
       modifyAnnotationInMetadata(anno);

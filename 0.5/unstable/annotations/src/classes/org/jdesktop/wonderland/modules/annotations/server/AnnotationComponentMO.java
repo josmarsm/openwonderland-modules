@@ -31,13 +31,17 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 
 import org.jdesktop.wonderland.modules.annotations.common.AnnotationComponentServerState;
 
+import org.jdesktop.wonderland.modules.metadata.server.MetadataComponentMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+
+@DependsOnCellComponentMO(MetadataComponentMO.class)
 
 /**
  * Annotations component

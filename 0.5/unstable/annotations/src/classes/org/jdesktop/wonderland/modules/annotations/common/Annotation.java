@@ -112,7 +112,7 @@ public class Annotation extends SimpleMetadata{
     */
   @Override
   public Vector3f getLocation() {
-    return null;
+    return this.translation;
   }
 
 //  @Override

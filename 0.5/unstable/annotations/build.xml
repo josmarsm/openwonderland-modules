@@ -13,6 +13,10 @@
     
     <pathconvert property="module-server.classpath">
         <path location="${current.dir}/lib/apacheds-all-1.5.5-SNAPSHOT.jar"/>
+        <!-- depends on metadata module! -->
+        <!-- only used to create metadatacomponentMO in the event that a cell has -->
+        <!-- its annotation component added before its metadata component -->
+        <path location="${current.dir}/../metadata/build/server/metadata-module-server.jar"/>
     </pathconvert>
 
     <!-- depends on metadata module! -->
@@ -20,9 +24,9 @@
     <!-- assumes it is a sibling of the anno module in the file system -->
     <pathconvert property="module-client.classpath">
         <path location="${current.dir}/../metadata/build/client/metadata-module-client.jar"/>
-         <path location="${wonderland.dir}/modules/foundation/hud/build/client/hud-client.jar"/>
-         <path location="${wonderland.dir}/modules/world/context-menu/build/client/contextmenu-client.jar"/>
-         <path location="${wonderland.dir}/modules/world/affordances/build/client/affordances-client.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/hud/build/client/hud-client.jar"/>
+        <path location="${wonderland.dir}/modules/world/context-menu/build/client/contextmenu-client.jar"/>
+        <path location="${wonderland.dir}/modules/world/affordances/build/client/affordances-client.jar"/>
         <!--<path location="/Users/Matt/trunk/wonderland-trunk/modules/foundation/hud/build/client/hud-client.jar"/>-->
     </pathconvert>
     <pathconvert property="module-common.classpath">

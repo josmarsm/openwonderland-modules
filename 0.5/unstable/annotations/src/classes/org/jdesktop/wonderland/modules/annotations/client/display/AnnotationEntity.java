@@ -88,7 +88,7 @@ public class AnnotationEntity extends Entity {
     },
     SMALL{
       @Override
-      public String toString(){ return "Stub";}
+      public String toString(){ return "Mini";}
       public String rawValue(){ return "SMALL";}
     },
     MEDIUM{
@@ -367,7 +367,8 @@ public class AnnotationEntity extends Entity {
     this.anno = a;
     logger.info("set annotation, new location is " + anno.getTranslation());
 
-    revalidateNode();
+    // causes node to be revalidated
+    setAnnotationSettings(a.getSettings());
   }
 
 
