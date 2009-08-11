@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.timeline.common.audio;
 
+import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
+
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -30,24 +32,24 @@ import com.jme.math.Vector3f;
  */
 public class TimelineSegmentChangeMessage extends CellMessage {
 
-    private String previousSegmentID;
-    private String currentSegmentID;
+    private TimelineSegment previousSegment;
+    private TimelineSegment currentSegment;
 
-    public TimelineSegmentChangeMessage(CellID cellID, String previousSegmentID,
-	    String currentSegmentID) {
+    public TimelineSegmentChangeMessage(CellID cellID, TimelineSegment previousSegment,
+	    TimelineSegment currentSegment) {
 
 	super(cellID);
 
-	this.previousSegmentID = previousSegmentID;
-	this.currentSegmentID = currentSegmentID;
+	this.previousSegment = previousSegment;
+	this.currentSegment = currentSegment;
     }
 
-    public String getPreviousSegmentID() {
-	return previousSegmentID;
+    public TimelineSegment getPreviousSegment() {
+	return previousSegment;
     }
 
-    public String getCurrentSegmentID() {
-	return currentSegmentID;
+    public TimelineSegment getCurrentSegment() {
+	return currentSegment;
     }
 
 }
