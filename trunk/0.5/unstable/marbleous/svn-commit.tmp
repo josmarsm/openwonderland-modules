@@ -1,6 +1,0 @@
-Got control window visible alone.
-
---This line, and those below, will be ignored--
-
-M    src/classes/org/jdesktop/wonderland/modules/marbleous/client/cell/MarbleousCell.java
-M    src/classes/org/jdesktop/wonderland/modules/marbleous/client/MarbleousMain.java
