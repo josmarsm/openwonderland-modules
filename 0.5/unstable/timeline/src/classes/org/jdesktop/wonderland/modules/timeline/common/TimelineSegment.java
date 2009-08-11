@@ -35,6 +35,7 @@ public class TimelineSegment implements DatedObject {
 
     private CellTransform transform;
 
+    private String treatment;
 
     // Just making this up. I imagine we'll change it when we have a better
     // sense of what needs to be here.
@@ -61,8 +62,35 @@ public class TimelineSegment implements DatedObject {
         throw new UnsupportedOperationException("Not implemented in the common version of this object - server/client versions will handle this differently.");
     }
 
+    public String getTreatment() {
+        return treatment;
+    }
+
+    public void setTreatment(String treatment) {
+        this.treatment = treatment;
+    }
+
     @Override
     public String toString() {
         return date + " (@" + transform + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(!(o instanceof TimelineSegment))
+            return false;
+        
+        TimelineSegment seg = (TimelineSegment)o;
+
+        // Is this the right way to do this? I'm not really sure.
+        return seg.date.equals(this.date) && seg.transform.equals(this.transform);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 29 * hash + (this.date != null ? this.date.hashCode() : 0);
+        hash = 29 * hash + (this.transform != null ? this.transform.hashCode() : 0);
+        return hash;
     }
 }

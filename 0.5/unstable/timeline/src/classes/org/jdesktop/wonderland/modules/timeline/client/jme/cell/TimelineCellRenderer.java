@@ -40,12 +40,12 @@ public class TimelineCellRenderer extends BasicRenderer {
     
     @Override
     protected Node createSceneGraph(Entity entity) {
-        TriMesh box = new Box("box", Vector3f.ZERO, 3.0f, 3.0f, 3.0f);
+        TriMesh box = new Box("box", Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
 
         Node root = new Node();
         root.attachChild(box);
 
-        root.setModelBound(new BoundingBox(Vector3f.ZERO, 3.0f, 3.0f, 3.0f));
+        root.setModelBound(new BoundingBox(Vector3f.ZERO,0.5f, 0.5f, 0.5f));
         root.updateModelBound();
 
         return root;

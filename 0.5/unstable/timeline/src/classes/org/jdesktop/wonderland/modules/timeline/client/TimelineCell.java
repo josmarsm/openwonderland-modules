@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.modules.timeline.client.audio.TimelineAudioComponent;
 import org.jdesktop.wonderland.modules.timeline.client.jme.cell.TimelineCellRenderer;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
@@ -89,7 +90,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      * The pitch of the helix (which is the vertical distance of one complete
      * turn).
      */
-    private float pitch = 2.0f;
+    private float pitch = 3.0f;
 
     /**
      * The height in meters of the helix. 
@@ -108,6 +109,9 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      * last segment in sortedSegments. Set from cell properties (not yet)
      */
     private TimelineDate timelineRange = new TimelineDate(new Date(0), new Date());
+
+
+    private TimelineSegment curSegment;
 
     public TimelineCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -167,6 +171,13 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                     TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime+msPerSegment)));
                     newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.height / numSegments)*i, 0.0f), 1.0f));
                     this.sortedSegments.add(newSeg);
+
+                    TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
+
+                    if(tac!=null) {
+                        tac.createSegmentTreatment(newSeg, newSeg.getTransform().getTranslation(null), newSeg.getTreatment().toString());
+                    }
+
                     curTime += msPerSegment;
                 }
 
@@ -199,7 +210,25 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 //        logger.warning("local av pos: " + cell.getWorldTransform().getTranslation(null));
 
         TimelineDate date = this.getDateByPosition(cell.getWorldTransform().getTranslation(null));
-        
+
+        if(date!=null) {
+
+            TimelineSegment newSegment = getSegmentByDate(date.getMiddle());
+
+            if(this.curSegment!=null && !this.curSegment.equals(newSegment)) {
+                // Trigger a segment-changed message for the benefit of the
+                // audio system. If there get to be more things that need
+                // this info, will need to convert this into a listener sytem.
+                TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
+
+                if(tac!=null) {
+                    tac.changeSegment(curSegment, newSegment);
+                }
+            }
+
+            this.curSegment = newSegment;
+        }
+
         if(navigationPanel!=null) {
             if(date!=null)
                 navigationPanel.setDateLabel(date.toString());
@@ -376,6 +405,12 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
     public void addSegment(TimelineSegment seg) {
         this.sortedSegments.add(seg);
+
+        TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
+
+        if(tac!=null) {
+            
+        }
     }
 
     public void clearSegments() {
