@@ -73,10 +73,10 @@ public class TrackRenderer extends BasicRenderer {
             ret = new Node("TrackRoot");
             ret.setModelBound(new BoundingSphere());
 
-            Track track = ((TrackCell)cell).getTrack();
+            Track track = ((TrackCell) cell).getTrack();
             Collection<TCBKeyFrame> keyFrames = track.buildTrack();
-            System.err.println("SIZE "+keyFrames.size());
-            for(TCBKeyFrame f : keyFrames) {
+            System.err.println("SIZE " + keyFrames.size());
+            for (TCBKeyFrame f : keyFrames) {
                 System.err.println(f);
             }
             RotPosScaleTCBSplinePath spline = new RotPosScaleTCBSplinePath(keyFrames.toArray(new TCBKeyFrame[keyFrames.size()]));
@@ -102,8 +102,8 @@ public class TrackRenderer extends BasicRenderer {
         e.addComponent(RenderComponent.class, renderComponent);
 
         WonderlandSession session = cell.getCellCache().getSession();
-        JBulletPhysicsSystem physicsSystem = (JBulletPhysicsSystem)ClientContextJME.getPhysicsSystem(session.getSessionManager(), "Physics");
-        JBulletDynamicCollisionSystem collisionSystem = (JBulletDynamicCollisionSystem) ClientContextJME.getCollisionSystem(session.getSessionManager(), "Physics");
+        JBulletPhysicsSystem physicsSystem = ((TrackCell) cell).getPhysicsSystem();
+        JBulletDynamicCollisionSystem collisionSystem = ((TrackCell) cell).getCollisionSystem();
 
         JBulletCollisionComponent cc = null;
         JBulletPhysicsComponent pc = null;
@@ -124,9 +124,9 @@ public class TrackRenderer extends BasicRenderer {
 
     private void drawKnot(RotPosScaleTCBSplinePath spline, Node root) {
         int size = spline.getArrayLength();
-        for(int i=0; i<size; i++) {
+        for (int i = 0; i < size; i++) {
             TCBKeyFrame key = spline.getKeyFrame(i);
-            Box box = new Box("knot-"+i, key.position, 0.5f, 0.5f, 0.5f);
+            Box box = new Box("knot-" + i, key.position, 0.5f, 0.5f, 0.5f);
             root.attachChild(box);
         }
     }
@@ -138,7 +138,7 @@ public class TrackRenderer extends BasicRenderer {
         spline.computeTransform(0, mat);
         root.attachChild(createBox(0.1f, mat));
 
-        for(float s=step; s<=1; s+=0.01f) {
+        for (float s = step; s <= 1; s += 0.01f) {
             spline.computeTransform(s, mat);
             root.attachChild(createBox(0.1f, mat));
         }
@@ -149,19 +149,19 @@ public class TrackRenderer extends BasicRenderer {
 
         Line extrusionShape = new Line();
         extrusionShape.setMode(Line.Mode.Connected);
-        float[] points = new float[] {
+        float[] points = new float[]{
             -1, 0.5f, 0f,
-            0,0,0,
-            0,0,0,
-            1,0.5f,0
+            0, 0, 0,
+            0, 0, 0,
+            1, 0.5f, 0
         };
 
         // TODO fix normals
-        float[] normals = new float[] {
-            0,1,0,
-            0,1,0,
-            0,1,0,
-            0,1,0
+        float[] normals = new float[]{
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0,
+            0, 1, 0
         };
 
         extrusionShape.setVertexBuffer(FloatBuffer.wrap(points));
@@ -170,14 +170,14 @@ public class TrackRenderer extends BasicRenderer {
         Matrix4f mat = new Matrix4f();
         Vector3f pos;
         ArrayList<Vector3f> path = new ArrayList();
-        for(float s=0; s<=1; s+=0.01f) {
+        for (float s = 0; s <= 1; s += 0.01f) {
             spline.computeTransform(s, mat);
             pos = mat.mult(Vector3f.ZERO);
             path.add(pos);
             System.err.println(pos);
         }
 
-        Extrusion ext = new Extrusion(extrusionShape, path, new Vector3f(0,1,0));
+        Extrusion ext = new Extrusion(extrusionShape, path, new Vector3f(0, 1, 0));
         ext.setModelBound(new BoundingBox());
         return ext;
     }
@@ -190,5 +190,4 @@ public class TrackRenderer extends BasicRenderer {
 
         return b;
     }
-
 }
