@@ -350,7 +350,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, 
                                                       boolean isSelected, boolean cellHasFocus) {
             TrackSegment segment = (TrackSegment) value;
-            String s = segment.getType().getName();
+            String s = segment.getName();
             setText(s);
             if (isSelected) {
                 setBackground(list.getSelectionBackground());

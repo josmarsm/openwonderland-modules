@@ -19,17 +19,33 @@ package org.jdesktop.wonderland.modules.marbleous.client.jme;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.jdesktop.wonderland.common.utils.jaxb.QuaternionAdapter;
+import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
  * This class represents a Key Frame that can be used for Kochanek-Bartels
  * (TCB) spline interpolation.
  */
 
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType( namespace="marbleous" )
 public class TCBKeyFrame {
   
     // Position, Rotation and Scale
+    /**
+     *
+     */
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
     public Vector3f position;
+
+    @XmlJavaTypeAdapter(QuaternionAdapter.class)
     public Quaternion  quat;
+
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
     public Vector3f scale;
 
     // Tension, Continuity & Bias
