@@ -59,7 +59,9 @@ public class TrackCell extends Cell {
         track.addTrackSegment(new StraightDropTrackSegmentType().createSegment());
         track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
         track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
-        track.addTrackSegment(new LoopTrackSegmentType().createSegment());
+        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
+        track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
+//        track.addTrackSegment(new LoopTrackSegmentType().createSegment());
         track.buildTrack();
     }
 
