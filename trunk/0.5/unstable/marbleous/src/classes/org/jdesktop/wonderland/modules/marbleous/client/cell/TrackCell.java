@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
+import org.jdesktop.wonderland.modules.marbleous.client.ui.UI;
 import org.jdesktop.wonderland.modules.marbleous.common.LoopTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.RightTurnTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
@@ -54,7 +55,8 @@ public class TrackCell extends Cell {
     private SimulationState simulationState = SimulationState.STOPPED;
     private TrackRenderer cellRenderer = null;
     private Track track;
-
+    private UI ui;
+    
     public TrackCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         track = new Track();
@@ -66,6 +68,9 @@ public class TrackCell extends Cell {
         track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
 //        track.addTrackSegment(new LoopTrackSegmentType().createSegment());
         track.buildTrack();
+
+        ui = new UI(this, track);
+        ui.setVisible(true);
     }
 
     /**

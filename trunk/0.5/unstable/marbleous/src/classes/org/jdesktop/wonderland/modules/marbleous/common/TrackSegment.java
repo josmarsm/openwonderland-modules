@@ -24,7 +24,6 @@ import java.util.Properties;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
 
 
 

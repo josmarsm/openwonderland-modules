@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.marbleous.common;
 
 import com.jme.math.Matrix4f;
 import com.jme.math.Vector3f;
-import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
 
 /**
  *

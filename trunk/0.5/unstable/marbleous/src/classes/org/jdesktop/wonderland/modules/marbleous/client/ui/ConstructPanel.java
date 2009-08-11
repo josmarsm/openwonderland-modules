@@ -27,13 +27,9 @@ import java.awt.event.WindowEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -41,10 +37,12 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackManager;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 
 /**
  * Panel used to construct the roller coaster and start it running
@@ -61,18 +59,16 @@ public class ConstructPanel extends javax.swing.JPanel {
     /** Number of segments in the track. */
     private int numSegments;
 
-    private Container container;
-
     private List<TrackSegmentType> segmentTypes = new ArrayList<TrackSegmentType>();
 
     private TrackListModel segmentListModel;
 
-    public interface Container {
-
-    }
+    private TrackCell cell;
 
     /** Creates new form ConstructPanel */
-    public ConstructPanel() {
+    public ConstructPanel(TrackCell cell) {
+        this.cell = cell;
+
         initComponents();
 
         // Create the icon for the "No Preview Available" image
@@ -83,10 +79,6 @@ public class ConstructPanel extends javax.swing.JPanel {
         segmentList.addListSelectionListener(new SegmentListSelectionListener());
 
         initializeLists();
-    }
-
-    void setContainer(Container aContainer) {
-        container = aContainer;
     }
 
     /** This method is called from within the constructor to
@@ -195,7 +187,8 @@ public class ConstructPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_addButtonActionPerformed
 
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
-        // TODO add your handling code here:
+        cell.setSimulationState(SimulationState.STARTED);
+        System.err.println("******** START!");
 }//GEN-LAST:event_runButtonActionPerformed
 
 
@@ -283,6 +276,7 @@ public class ConstructPanel extends javax.swing.JPanel {
     /**
      * @param args the command line arguments
      */
+   /*
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
@@ -302,6 +296,7 @@ public class ConstructPanel extends javax.swing.JPanel {
             }
         });
     }
+    */
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JButton addButton;
