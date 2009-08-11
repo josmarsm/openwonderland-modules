@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.marbleous.common.TrackManager;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
 
 /**
@@ -177,7 +178,7 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
             // Fetch the registry of cells and for each, get the palette info and
             // populate the list.
-            TrackSegmentType[] segmentTypes = TrackSegmentType.getSupportedTypes();
+            TrackSegmentType[] segmentTypes = TrackManager.getTrackManager().getSupportedTypes();
             List<String> listNames = new LinkedList();
 
             // Loop through each segment type we find. Insert the type names into

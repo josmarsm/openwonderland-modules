@@ -29,12 +29,6 @@ import java.awt.Image;
 public class TrackSegmentType  {
 
     // TODO: define preview images in this array
-    private static TrackSegmentType[] supportedTypes = new TrackSegmentType[] {
-        new TrackSegmentType("Straight"),
-        new TrackSegmentType("Loop"),
-        new TrackSegmentType("Down Ramp"),
-        new TrackSegmentType("Up Ramp")
-    };
 
     private String name;
     private Image previewImage;
@@ -54,9 +48,5 @@ public class TrackSegmentType  {
 
     public Image getPreviewImage () {
         return previewImage;
-    }
-
-    public static TrackSegmentType[] getSupportedTypes () {
-        return supportedTypes;
     }
 }
