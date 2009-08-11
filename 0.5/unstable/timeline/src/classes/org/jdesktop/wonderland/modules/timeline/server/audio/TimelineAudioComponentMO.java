@@ -124,6 +124,7 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 
 	if (live) {
 	    ComponentMessageReceiverImpl receiver = new ComponentMessageReceiverImpl(cellRef, this);
+
             channelComponent.addMessageReceiver(TimelineSegmentTreatmentMessage.class, receiver);
             channelComponent.addMessageReceiver(TimelineSegmentChangeMessage.class, receiver);
             channelComponent.addMessageReceiver(TimelineRecordMessage.class, receiver);
@@ -192,7 +193,9 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
         private void setupTreatment(TimelineSegmentTreatmentMessage message) {
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	    String segmentID = getSegmentID(message.getSegment());
+	    TimelineSegment segment = message.getSegment();
+
+	    String segmentID = getSegmentID(segment);
 
             TreatmentGroup group = vm.createTreatmentGroup(segmentID);
 	
@@ -202,7 +205,7 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 
 	    setup.spatializer = spatializer;
 
-            setup.treatment = message.getTreatment();
+            setup.treatment = segment.getTreatment();
 
             String treatmentId = segmentID;
 
@@ -214,7 +217,7 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 	        return;
             }
 
-            Vector3f location = message.getLocation();
+            Vector3f location = segment.getTransform().getTranslation(null);
 
             setup.x = location.getX();
             setup.y = location.getY();
@@ -360,6 +363,26 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 
         private void playRecording(TimelinePlayRecordingMessage message) {
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	    String callID = message.getCallID();
+
+	    Call call = vm.getCall(callID);
+
+	    if (call == null) {
+	        System.out.println("No call for " + callID);
+		return;
+	    }
+	    
+	    try {
+		if (message.getIsPlaying()) {
+	            call.playTreatment(message.getRecordingPath());
+		} else {
+	            call.stopTreatment(message.getRecordingPath());
+		}
+	    } catch (IOException e) {
+		System.out.println("Unable to play/stop treatment " + message.getRecordingPath());
+		return; 
+	    }
         }
 
     }

@@ -33,29 +33,16 @@ import com.jme.math.Vector3f;
 public class TimelineSegmentTreatmentMessage extends CellMessage {
 
     private TimelineSegment segment;
-    private Vector3f location;
-    private String treatment;
 
-    public TimelineSegmentTreatmentMessage(CellID cellID, TimelineSegment segment,
-	    Vector3f location, String treatment) {
+    public TimelineSegmentTreatmentMessage(CellID cellID, TimelineSegment segment) {
 
 	super(cellID);
 
 	this.segment = segment;
-	this.location = location;
-	this.treatment = treatment;
     }
 
     public TimelineSegment getSegment() {
 	return segment;
-    }
-
-    public Vector3f getLocation() {
-	return location;
-    }
-
-    public String getTreatment() {
-	return treatment;
     }
 
 }

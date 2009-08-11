@@ -32,6 +32,7 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 
@@ -89,8 +90,10 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	}
     }
     
-    public void createSegmentTreatment(TimelineSegment segment, Vector3f location, String treatment) {
-	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), segment, location, treatment));
+    public void createSegmentTreatment(TimelineSegment segment) {
+	//Vector3f location = segment.getCellTransform().getTransform().getTranslation(null);
+
+	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), segment));
     }
 
     public void changeSegment(TimelineSegment previousSegment, TimelineSegment currentSegment) {
