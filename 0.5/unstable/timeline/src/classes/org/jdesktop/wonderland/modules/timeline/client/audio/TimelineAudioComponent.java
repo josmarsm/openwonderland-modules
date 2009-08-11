@@ -15,11 +15,13 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.audiomanager.client;
+package org.jdesktop.wonderland.modules.timeline.client.audio;
 
+import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
 
 import java.util.logging.Logger;
 
+import com.jme.math.Vector3f;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
@@ -80,6 +82,18 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	}
     }
     
+    public void createSegmentTreatment(TimelineSegment segment, Vector3f location, String treatment) {
+    }
+
+    public void changeSegment(TimelineSegment previousSegment, TimelineSegment currentSegment) {
+    }
+
+    public void playSegmentRecording(TimelineSegment segment, String recordingPath, boolean isPlaying) {
+    }
+
+    public void record(TimelineSegment segment, String recordinPath, boolean isRecording) {
+    }
+
     public void messageReceived(CellMessage message) {
     }
 

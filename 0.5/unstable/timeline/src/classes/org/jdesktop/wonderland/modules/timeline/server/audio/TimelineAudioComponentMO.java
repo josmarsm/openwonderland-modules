@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.timeline.server.audio;
 
+import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
+
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -143,9 +146,14 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 	System.out.println("Got status: " + status);
     }
 
+
     private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
 
         private ManagedReference<TimelineAudioComponentMO> compRef;
+
+        private String getSegmentID(TimelineSegment segment) {
+	    return segment.getDate().getMinimum().toString();
+        }
 
         public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
                 TimelineAudioComponentMO comp) {
@@ -184,7 +192,9 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
         private void setupTreatment(TimelineSegmentTreatmentMessage message) {
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-            TreatmentGroup group = vm.createTreatmentGroup(message.getSegmentID());
+	    String segmentID = getSegmentID(message.getSegment());
+
+            TreatmentGroup group = vm.createTreatmentGroup(segmentID);
 	
             TreatmentSetup setup = new TreatmentSetup();
 
@@ -192,13 +202,9 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 
 	    setup.spatializer = spatializer;
 
-            spatializer.setAttenuator(message.getAttenuator());
+            setup.treatment = message.getTreatment();
 
-            String treatment = message.getTreatment();
-
-            String treatmentId = message.getSegmentID();
-
-            setup.treatment = treatment;
+            String treatmentId = segmentID;
 
 	    setup.managedListenerRef = 
 	        AppContext.getDataManager().createReference((ManagedCallStatusListener) this);
@@ -221,7 +227,7 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 	        Treatment t = vm.createTreatment(treatmentId, setup);
                 group.addTreatment(t);
 	        t.pause(true);
-	        segmentTreatmentMap.put(message.getSegmentID(), t);
+	        segmentTreatmentMap.put(segmentID, t);
             } catch (IOException e) {
                 System.out.println("Unable to create treatment " + setup.treatment + e.getMessage());
                 return;
@@ -231,7 +237,7 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
         private ConcurrentHashMap<String, Integer> segmentUseMap = new ConcurrentHashMap();
 
         private void changeSegment(TimelineSegmentChangeMessage message) {
-	    String currentSegmentID = message.getCurrentSegmentID();
+	    String currentSegmentID = getSegmentID(message.getCurrentSegment());
 
     	    Integer useCount = segmentUseMap.get(currentSegmentID);
 
@@ -252,7 +258,7 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 
 	    segmentUseMap.put(currentSegmentID, useCount);
 
-	    String previousSegmentID = message.getPreviousSegmentID();	
+	    String previousSegmentID = getSegmentID(message.getPreviousSegment());	
 
 	    if (previousSegmentID == null) {
 	        return;
