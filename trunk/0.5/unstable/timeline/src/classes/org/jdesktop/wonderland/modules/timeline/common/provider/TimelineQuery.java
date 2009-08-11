@@ -22,6 +22,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlRootElement(name="timeline-query")
 public class TimelineQuery {
+    /** The unique ID of this query. */
+    private TimelineQueryID queryID;
+
     /**
      * the fully-qualified class name of the provider object that should be
      * used to exectute this query.
@@ -35,6 +38,7 @@ public class TimelineQuery {
      * Default constructor
      */
     public TimelineQuery() {
+        this (null);
     }
     
     /**
@@ -43,7 +47,37 @@ public class TimelineQuery {
      * executes this query
      */
     public TimelineQuery(String queryClass) {
+        this (null, queryClass);
+    }
+
+    /**
+     * Create a new TimelineQuery
+     * @param queryID the unique id of this query
+     * @param queryClass the class of this query
+     */
+    public TimelineQuery(TimelineQueryID queryID, String queryClass) {
+        this.queryID = queryID;
         this.queryClass = queryClass;
+    }
+
+    /**
+     * Get the ID of this query. The ID is assigned by the server when
+     * the query is added to the server. Queries with a null id will be
+     * assigned a unique id when the query is added.
+     * @return the id
+     */
+    @XmlElement
+    @XmlJavaTypeAdapter(QueryIDAdapter.class)
+    public TimelineQueryID getQueryID() {
+        return queryID;
+    }
+
+    /**
+     * Set the ID of this query
+     * @param queryID the queryID to set
+     */
+    public void setQueryID(TimelineQueryID queryID) {
+        this.queryID = queryID;
     }
     
     /**
@@ -79,7 +113,46 @@ public class TimelineQuery {
     public void setProperties(Properties props) {
         this.props = props;
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TimelineQuery other = (TimelineQuery) obj;
+        if (this.queryID != other.queryID &&
+                (this.queryID == null || !this.queryID.equals(other.queryID)))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + (this.queryID != null ? this.queryID.hashCode() : 0);
+        return hash;
+    }
+
+    private static final class QueryIDAdapter
+            extends XmlAdapter<Integer, TimelineQueryID>
+    {
+
+        @Override
+        public TimelineQueryID unmarshal(Integer v) throws Exception {
+            return new TimelineQueryID(v);
+        }
+
+        @Override
+        public Integer marshal(TimelineQueryID v) throws Exception {
+            return v.getID();
+        }
+    }
+
     private static final class PropertiesAdapter 
             extends XmlAdapter<Property[], Properties> 
     {
