@@ -25,20 +25,28 @@ import java.util.ArrayList;
  */
 public class Track {
 
-    private ArrayList track = new ArrayList();
+    private ArrayList<TrackSegment> segments = new ArrayList<TrackSegment>();
 
     public Track() {
     }
 
     public void addTrackSegment(TrackSegment trackSegment) {
-        track.add(trackSegment);
+        segments.add(trackSegment);
+    }
+
+    public int getSegmentCount() {
+        return segments.size();
+    }
+
+    public TrackSegment getTrackSegmentAt(int index) {
+        return segments.get(index);
     }
 
     public void removeTrackSegment(TrackSegment trackSegment) {
-        track.remove(trackSegment);
+        segments.remove(trackSegment);
     }
 
     public Iterable getTrackSegments() {
-        return track;
+        return segments;
     }
 }

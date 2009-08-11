@@ -1,41 +1,56 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * ConstructPanel.java
+/**
+ * Project Wonderland
  *
- * Created on Aug 10, 2009, 10:22:50 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackManager;
+import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
 
 /**
- *
- * @author bh37721
+ * Panel used to construct the roller coaster and start it running
+ * @author Bernard Horan
  */
 public class ConstructPanel extends javax.swing.JPanel implements ListSelectionListener {
-
-    /* A map of track segment type names and their track segment types */
-    private final Map<String, TrackSegmentType> segmentTypeMap = new HashMap();
 
     /* The "No Preview Available" image */
     private Image noPreviewAvailableImage = null;
@@ -46,14 +61,13 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
     /** Number of segments in the track. */
     private int numSegments;
 
-    /** List of segment type names that are in the track. */
-    private LinkedList<String> segmentTypeNames = new LinkedList<String>();
-
     private Container container;
 
-    void setContainer(Container aContainer) {
-        container = aContainer;
-    }
+    private List<TrackSegmentType> segmentTypes = new ArrayList<TrackSegmentType>();
+
+    private TrackListModel segmentListModel;
+
+    
 
     public interface Container {
 
@@ -69,9 +83,13 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
         // Listen for list selection events and update the preview panel with
         // the selected item's image
-        cellList.addListSelectionListener(this);
+        typeList.addListSelectionListener(this);
 
-        updateListValues();
+        initializeLists();
+    }
+
+    void setContainer(Container aContainer) {
+        container = aContainer;
     }
 
     /** This method is called from within the constructor to
@@ -84,28 +102,28 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        createButton = new javax.swing.JButton();
-        cellScrollPane = new javax.swing.JScrollPane();
-        cellList = new javax.swing.JList();
+        addButton = new javax.swing.JButton();
+        typeScrollPane = new javax.swing.JScrollPane();
+        typeList = new javax.swing.JList();
         previewPanel = new javax.swing.JPanel();
         previewLabel = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        runButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        segmentScrollPane = new javax.swing.JScrollPane();
         segmentList = new javax.swing.JList();
 
         jLabel1.setText("Track Segment Type to Add:");
 
-        createButton.setText("Add");
-        createButton.setEnabled(false);
-        createButton.addActionListener(new java.awt.event.ActionListener() {
+        addButton.setText("Add");
+        addButton.setEnabled(false);
+        addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createButtoncreateActionPerformed(evt);
+                addButtonActionPerformed(evt);
             }
         });
 
-        cellList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        cellScrollPane.setViewportView(cellList);
+        typeList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        typeScrollPane.setViewportView(typeList);
 
         previewPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         previewPanel.setMinimumSize(new java.awt.Dimension(128, 128));
@@ -117,11 +135,11 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
         previewLabel.setIconTextGap(0);
         previewPanel.add(previewLabel);
 
-        jButton1.setText("Run");
-        jButton1.setActionCommand("run");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        runButton.setText("Run");
+        runButton.setActionCommand("run");
+        runButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                runButtonActionPerformed(evt);
             }
         });
 
@@ -129,8 +147,7 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
         segmentList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         segmentList.setEnabled(false);
-        jScrollPane1.setViewportView(segmentList);
-        segmentList.setDragEnabled(false);
+        segmentScrollPane.setViewportView(segmentList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -143,15 +160,15 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
                     .addComponent(jLabel2)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(cellScrollPane, 0, 0, Short.MAX_VALUE)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
+                            .addComponent(typeScrollPane, 0, 0, Short.MAX_VALUE)
+                            .addComponent(segmentScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
                         .addGap(74, 74, 74)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(previewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(createButton)
+                                .addComponent(addButton)
                                 .addGap(18, 18, 18)
-                                .addComponent(jButton1)
+                                .addComponent(runButton)
                                 .addGap(21, 21, 21)))))
                 .addContainerGap())
         );
@@ -166,83 +183,51 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
                         .addComponent(previewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(38, 38, 38)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton1)
-                            .addComponent(createButton)))
-                    .addComponent(cellScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(runButton)
+                            .addComponent(addButton)))
+                    .addComponent(typeScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(segmentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(50, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void createButtoncreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createButtoncreateActionPerformed
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        TrackSegmentType selectedType = (TrackSegmentType) typeList.getSelectedValue();
+        TrackSegment newSegment = selectedType.createSegment();
+        // This adds the segment to the underlying model (the track)
+        segmentListModel.addSegment(newSegment);
+        //TODO restore code to enable the list?
 
-        synchronized (segmentTypeMap) {
-            // From the selected value, find the proper means to create the object
-            String typeName = (String) cellList.getSelectedValue();
-            TrackSegmentType segmentType = segmentTypeMap.get(typeName);
+}//GEN-LAST:event_addButtonActionPerformed
 
-            // TODO: Add the new segment to the track.
-            System.err.println("Segment add: type = " + typeName);
-            segmentTypeNames.add(typeName);
-            numSegments++;
-            if (numSegments == 1) {
-                segmentList.setEnabled(true);
-            }
-
-            // TrackSegment segment = segmentType.createSegment();
-            // track.addSegment(segment);
-                
-            segmentList.setListData(segmentTypeNames.toArray(new String[]{}));
-        }
-
-}//GEN-LAST:event_createButtoncreateActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+}//GEN-LAST:event_runButtonActionPerformed
 
 
     /**
      * Updates the list of values displayed from the track segment factory
      */
-    private void updateListValues() {
-        // Let's synchronized around segmentTypeMap so that any selections do
-        // not interfere with changes in this map
-        synchronized (segmentTypeMap) {
-            // Clear out any existing entries in the map of supported types
-            segmentTypeMap.clear();
-
-            // Fetch the registry of cells and for each, get the palette info and
-            // populate the list.
-            Iterable<TrackSegmentType> segmentTypes = TrackManager.getTrackManager().getTrackSegmentTypes();
-            List<String> listNames = new LinkedList();
-
-            // Loop through each segment type we find. Insert the type names into
-            // a list. Ignore any types without a name.
-            for (TrackSegmentType segmentType : segmentTypes) {
-                try {
-                    String name = segmentType.getName();
-                    if (name != null) {
-                        listNames.add(name);
-                        segmentTypeMap.put(name, segmentType);
-                    }
-                } catch (java.lang.Exception excp) {
-                    // Just ignore, but log a message
-                    Logger logger = Logger.getLogger(ConstructPanel.class.getName());
-                    logger.log(Level.WARNING, "No name for track segment type " +
-                            segmentType, excp);
-                }
-            }
-
-            // Set the names of the list, first sorting the list in alphabetical
-            // order
-            Collections.sort(listNames);
-            cellList.setListData(listNames.toArray(new String[]{}));
-            cellList.setDragEnabled(false);
+    private void initializeLists() {
+        typeList.setDragEnabled(false);
+        segmentTypes.addAll(TrackManager.getTrackManager().getTrackSegmentTypes());
+        Collections.sort(segmentTypes);
+        DefaultListModel typeListModel = new DefaultListModel();
+        for (Iterator it = segmentTypes.iterator(); it.hasNext();) {
+            typeListModel.addElement(it.next());
         }
+        typeList.setModel(typeListModel);
+        typeList.setCellRenderer(new TypeListRenderer());
+
+        //TODo remove after testing
+        if (track == null) {
+            track = new Track();
+        }
+        segmentListModel = new TrackListModel(track);
+        segmentList.setModel(segmentListModel);
     }
     
     /**
@@ -250,19 +235,12 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
      * @param e
      */
     public void valueChanged(ListSelectionEvent e) {
-
-        // We synchronized around the segmentTypeMap so that this action does not
-        // interfere with any changes in the map.
-        synchronized (segmentTypeMap) {
-
-            // Fetch the name of the segment selected. If it happens to
-            // be null (not sure why this would happen), then simply return.
-            String selectedName = (String) cellList.getSelectedValue();
-            if (selectedName == null) {
-                // If nothing is selected, then disable the Insert button, the
+        TrackSegmentType selectedType = (TrackSegmentType) typeList.getSelectedValue();
+        if (selectedType == null) {
+            // If nothing is selected, then disable the Insert button, the
                 // preview image and disable drag-and-drop from the preview
                 // label.
-                createButton.setEnabled(false);
+                addButton.setEnabled(false);
                 previewLabel.setIcon(null);
 
                 /*
@@ -279,20 +257,18 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
                 return;
             }
 
-            // Next, fetch the Cell factory associated with the display name.
-            // If it happens to be null (not sure why this would happen), then
-            // simply return.
-            TrackSegmentType segmentType = segmentTypeMap.get(selectedName);
-            if (segmentType == null) {
-                return;
-            }
+            System.out.println("Selected Type: " + selectedType);
 
             // Enable the Insert button
-            createButton.setEnabled(true);
+            addButton.setEnabled(true);
+
+
 
             // Otherwise, update the preview image, if one exists, otherwise
             // use the default image.
-            Image previewImage = segmentType.getPreviewImage();
+            Image previewImage = selectedType.getPreviewImage();
+            System.out.println("Preview image: " + previewImage);
+
             if (previewImage != null) {
                 ImageIcon icon = new ImageIcon(previewImage);
                 previewLabel.setIcon(icon);
@@ -302,8 +278,9 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
                 //gestureListener.previewImage = previewImage;
             }
             else {
-                ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
-                previewLabel.setIcon(icon);
+                //TODO restore this after testing
+                //ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
+                //previewLabel.setIcon(icon);
 
                 // Pass the necessary information for drag and drop
                 //gestureListener.cellFactory = cellFactory;
@@ -335,7 +312,7 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
                 listRecognizer.setComponent(cellList);
             }
             */
-        }
+        
     }
 
     /** Give this panel the track to construct. */
@@ -343,17 +320,69 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
         this.track = track;
     }
 
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                JPanel constructPanel = new ConstructPanel();
+                JFrame frame = new JFrame();
+                frame.getContentPane().add(constructPanel, BorderLayout.CENTER);
+                frame.addWindowListener(
+                        new WindowAdapter() {
+
+                            public void windowClosing(WindowEvent e) {
+                                System.exit(0);
+                            }
+                        });
+                frame.setBounds(constructPanel.getBounds());
+                frame.setVisible(true);
+            }
+        });
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    protected javax.swing.JList cellList;
-    protected javax.swing.JScrollPane cellScrollPane;
-    protected javax.swing.JButton createButton;
-    protected javax.swing.JButton jButton1;
+    protected javax.swing.JButton addButton;
     protected javax.swing.JLabel jLabel1;
     protected javax.swing.JLabel jLabel2;
-    protected javax.swing.JScrollPane jScrollPane1;
     protected javax.swing.JLabel previewLabel;
     protected javax.swing.JPanel previewPanel;
+    protected javax.swing.JButton runButton;
     protected javax.swing.JList segmentList;
+    protected javax.swing.JScrollPane segmentScrollPane;
+    protected javax.swing.JList typeList;
+    protected javax.swing.JScrollPane typeScrollPane;
     // End of variables declaration//GEN-END:variables
+
+    class TypeListRenderer extends JLabel implements ListCellRenderer {
+     // This is the only method defined by ListCellRenderer.
+     // We just reconfigure the JLabel each time we're called.
+
+     public Component getListCellRendererComponent(
+       JList list,
+       Object value,            // value to display
+       int index,               // cell index
+       boolean isSelected,      // is the cell selected
+       boolean cellHasFocus)    // the list and the cell have the focus
+     {
+         TrackSegmentType type = (TrackSegmentType) value;
+         String s = type.getName();
+         setText(s);
+   	   if (isSelected) {
+             setBackground(list.getSelectionBackground());
+	       setForeground(list.getSelectionForeground());
+	   }
+         else {
+	       setBackground(list.getBackground());
+	       setForeground(list.getForeground());
+	   }
+	   setEnabled(list.isEnabled());
+	   setFont(list.getFont());
+         setOpaque(true);
+         return this;
+     }
+ }
 
 }

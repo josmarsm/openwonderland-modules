@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.marbleous.common;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * The Singleton Track Manager.
@@ -42,7 +43,7 @@ public class TrackManager {
         supportedTypes.add(new RightTurnTrackSegmentType());
     }
 
-    public Iterable<TrackSegmentType> getTrackSegmentTypes() {
+    public Collection<TrackSegmentType> getTrackSegmentTypes() {
         return supportedTypes;
     }
 

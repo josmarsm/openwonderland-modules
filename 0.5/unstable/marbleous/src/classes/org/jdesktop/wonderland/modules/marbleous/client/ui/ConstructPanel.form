@@ -23,16 +23,16 @@
                   <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="cellScrollPane" alignment="1" min="0" pref="0" max="32767" attributes="1"/>
-                          <Component id="jScrollPane1" alignment="1" pref="186" max="32767" attributes="1"/>
+                          <Component id="typeScrollPane" alignment="1" min="0" pref="0" max="32767" attributes="1"/>
+                          <Component id="segmentScrollPane" alignment="1" pref="186" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="previewPanel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="1" attributes="1">
-                              <Component id="createButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="addButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                              <Component id="runButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -53,16 +53,16 @@
                       <Component id="previewPanel" min="-2" max="-2" attributes="1"/>
                       <EmptySpace min="-2" pref="38" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="createButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="runButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="addButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="cellScrollPane" min="-2" pref="198" max="-2" attributes="1"/>
+                  <Component id="typeScrollPane" min="-2" pref="198" max="-2" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
+              <Component id="segmentScrollPane" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="50" max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -74,23 +74,23 @@
         <Property name="text" type="java.lang.String" value="Track Segment Type to Add:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="createButton">
+    <Component class="javax.swing.JButton" name="addButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Add"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createButtoncreateActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addButtonActionPerformed"/>
       </Events>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="cellScrollPane">
+    <Container class="javax.swing.JScrollPane" name="typeScrollPane">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JList" name="cellList">
+        <Component class="javax.swing.JList" name="typeList">
           <Properties>
             <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
               <StringArray count="0"/>
@@ -129,13 +129,13 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JButton" name="jButton1">
+    <Component class="javax.swing.JButton" name="runButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Run"/>
         <Property name="actionCommand" type="java.lang.String" value="run"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="runButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
@@ -143,7 +143,7 @@
         <Property name="text" type="java.lang.String" value="Track Segments:"/>
       </Properties>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+    <Container class="javax.swing.JScrollPane" name="segmentScrollPane">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
