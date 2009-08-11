@@ -65,6 +65,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     private ProximityComponent prox;
 
     private HUD mainHUD;
+    private TimelineMovementHUDPanel navigationPanel;
     private HUDComponent navigationHUD;
 
     private AvatarCell localAvatarCell;
@@ -82,7 +83,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     /**
      * The total number of segments. Set from the cell properties screen (not yet)
      */
-    private int numSegments = 10;
+    private int numSegments = 30;
 
     /**
      * The pitch of the helix (which is the vertical distance of one complete
@@ -138,7 +139,8 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                 // Add the navigation HUD.
                 mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-                navigationHUD = mainHUD.createComponent(new TimelineMovementHUDPanel(this));                
+                navigationPanel = new TimelineMovementHUDPanel(this);
+                navigationHUD = mainHUD.createComponent(navigationPanel);
                 navigationHUD.setPreferredLocation(Layout.EAST);
                 navigationHUD.setName("Navigation");
 
@@ -193,8 +195,17 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     public void transformChanged(Cell cell, ChangeSource source) {
         // For now, when an avatar moves, just output our current guess
         // at the date.
-        logger.warning("date of local avatar: " + this.getDateByPosition(cell.getWorldTransform().getTranslation(null)));
+//        logger.warning("date of local avatar: " + this.getDateByPosition(cell.getWorldTransform().getTranslation(null)));
 //        logger.warning("local av pos: " + cell.getWorldTransform().getTranslation(null));
+
+        TimelineDate date = this.getDateByPosition(cell.getWorldTransform().getTranslation(null));
+        
+        if(navigationPanel!=null) {
+            if(date!=null)
+                navigationPanel.setDateLabel(date.toString());
+            
+            navigationPanel.setSliderLocation(getHeightFraction(cell.getWorldTransform().getTranslation(null)));
+        }
     }
 
     class TimelineCellMessageReceiver implements ComponentMessageReceiver {
@@ -255,8 +266,6 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     public TimelineSegment getSegmentByDate(Date date) {
         Set<DatedObject> segments = this.sortedSegments.containsSet(new TimelineDate(date));
 
-        logger.warning("segmentsByDate: " + segments);
-
         // because the time ranges of segments are non-overlapping, containsSet
         // will always return a single element.
         if(segments.size()==0)
@@ -289,16 +298,10 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         // Figure out the fraction of that height of the total height, and
         // then use that fraction date. (eg if our range is 1990 to 2000 and
         // the position is 2.5m in a 10m spiral, our date is 1992)
-        float minimumHeight = this.getWorldTransform().getTranslation(null).y - (this.height/2);
 
-        float avatarHeightRelativeToTimeline = pos.y - minimumHeight;
-
-        logger.warning("minHeight: " + minimumHeight + "; relativeToTimeline: " + avatarHeightRelativeToTimeline);
-        float heightFraction = avatarHeightRelativeToTimeline / this.height;
+        float heightFraction = getHeightFraction(pos);
 
         Date testDate = new Date(timelineRange.getMinimum().getTime() + ((long)(timelineRange.getRange()*heightFraction)));
-
-        logger.warning("Test date: " + testDate + "(height fraction: " + heightFraction + ")");
 
         TimelineSegment segByPosition = getSegmentByDate(testDate);
 
@@ -308,6 +311,30 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
             return segByPosition.getDate();
     }
 
+    /**
+     * Calculates the percentage the specified position is within the height
+     * of the timeline.
+     * 
+     * @param pos The test position. Only the y coordinate is used. 
+     * @return The percentage up the timeline that height is. The bottom is 0.0, the top is 1.0.
+     */
+    private float getHeightFraction(Vector3f pos) {
+
+        float minimumHeight = this.getWorldTransform().getTranslation(null).y - (this.height/2);
+
+        float avatarHeightRelativeToTimeline = pos.y - minimumHeight;
+
+        float height = avatarHeightRelativeToTimeline / this.height;
+
+        // clamp the hight.
+        if(height>1.0f)
+            height = 1.0f;
+        if(height<0.0f)
+            height = 0.0f;
+
+        return height;
+    }
+    
     public TimelineDate getTimelineRange() {
         return timelineRange;
     }
