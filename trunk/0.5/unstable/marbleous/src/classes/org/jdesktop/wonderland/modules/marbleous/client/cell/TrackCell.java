@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.client.cell;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -48,6 +50,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.Simulation
 public class TrackCell extends Cell {
 
     private final TrackCellMessageReceiver messageReceiver = new TrackCellMessageReceiver();
+    private final Set<SimulationStateChangeListener> simulationStateListeners = new HashSet<SimulationStateChangeListener>();
     private SimulationState simulationState = SimulationState.STOPPED;
     private TrackRenderer cellRenderer = null;
     private Track track;
@@ -179,10 +182,19 @@ public class TrackCell extends Cell {
         sendCellMessage(new SimulationStateMessage(simulationState));
     }
 
+    /**
+     * Set the simulation state without sending a message to notify other cells.
+     * @param simulationState The new simulation state
+     */
     private void setSimulationStateInternal(SimulationState simulationState) {
         this.simulationState = simulationState;
+        fireSimulationStateChanged(simulationState);
     }
 
+    /**
+     * Get the current start/stop state of the simulation.
+     * @return Current start/stop state of the simulation
+     */
     public SimulationState getSimulationState() {
         return simulationState;
     }
@@ -206,5 +218,48 @@ public class TrackCell extends Cell {
                 }
             }
         }
+    }
+
+    /**
+     * Add a listener for simulation state changes.
+     * @param listener The listener to add
+     */
+    public void addSimulationStateChangeListener(SimulationStateChangeListener listener) {
+        synchronized(simulationStateListeners) {
+            simulationStateListeners.add(listener);
+        }
+    }
+
+    /**
+     * Remove a simulation state change listener.
+     * @param listener The listener to remove
+     */
+    public void removeSimulationStateChangeListener(SimulationStateChangeListener listener) {
+        synchronized(simulationStateListeners) {
+            simulationStateListeners.add(listener);
+        }
+    }
+
+    /**
+     * Notify listeners that the simulation state has changed.
+     * @param newState The new simulation state
+     */
+    private void fireSimulationStateChanged(SimulationState newState) {
+        synchronized(simulationStateListeners) {
+            for (SimulationStateChangeListener listener : simulationStateListeners) {
+                listener.simulationStateChanged(newState);
+            }
+        }
+    }
+
+    /**
+     * Interface to listen for changes to the start/stop state of the simulation.
+     */
+    public interface SimulationStateChangeListener {
+        /**
+         * Called when the SimulationState for the cell is changed.
+         * @param simulationState The new SimulationState
+         */
+        public void simulationStateChanged(SimulationState simulationState);
     }
 }
