@@ -12,6 +12,8 @@
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,10 +24,6 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
-import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
-import org.jdesktop.wonderland.client.cell.utils.CellUtils;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackManager;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
 
@@ -54,6 +52,12 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
     /** Creates new form ConstructPanel */
     public ConstructPanel() {
         initComponents();
+
+        // Create the icon for the "No Preview Available" image
+        URL url = ConstructPanel.class.getResource("resources/nopreview.png");
+        System.err.println("url = " + url);
+        noPreviewAvailableImage = Toolkit.getDefaultToolkit().createImage(url);
+        System.err.println("noPreviewAvailableImage = " + noPreviewAvailableImage);
 
         // Listen for list selection events and update the preview panel with
         // the selected item's image
