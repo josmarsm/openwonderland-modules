@@ -11,6 +11,12 @@ package org.jdesktop.wonderland.modules.timeline.common.provider;
  */
 public interface TimelineResult {
     /**
+     * Get the query that generated this result
+     * @return the query that generated this result
+     */
+    public TimelineQuery getQuery();
+
+    /**
      * Get the set of all objects exposed by this result.
      * @return all objects in this result
      */
