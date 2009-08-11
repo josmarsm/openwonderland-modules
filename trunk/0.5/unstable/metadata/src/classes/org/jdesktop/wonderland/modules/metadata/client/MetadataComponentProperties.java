@@ -36,10 +36,9 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataComponentServerSt
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 
 /**
- *
+ * Provides an editing pane for Metadata in the cell properties editor. 
  * @author mabonner
  */
-
 @PropertiesFactory(MetadataComponentServerState.class)
 public class MetadataComponentProperties extends JPanel implements PropertiesFactorySPI {
   private CellPropertiesEditor editor = null;

@@ -201,13 +201,13 @@ public class EADSUtils {
       }
       while (list.hasMore()) {
         NameClassPair nc = (NameClassPair) list.next();
-        logger.fine(spacer + nc);
-        logger.fine(spacer + "name is :" + nc.getName());
+        logger.info(spacer + nc);
+        logger.info(spacer + "name is :" + nc.getName());
         try {
           DirContext subCtx = (DirContext) topCtx.lookup(nc.getName());
           printContentsVerbose(topCtx, subCtx, level + 4);
         } catch (LdapNameNotFoundException lnnfe) {
-          logger.fine("end of line");
+          logger.info("end of line");
         }
       }
       Attributes attrs = ctx.getAttributes("");

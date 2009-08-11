@@ -65,10 +65,13 @@ public class SimpleMetadata extends BaseMetadata{
     put(TEXT_ATTR, new MetadataValue(s));
   }
 
-  @Override
-  public Vector3f getLocation() {
-    return null;
-  }
+  // a metadata subclass that wishes to report an associated location would
+  // need to overwrite this. The goto functionality in SearchResultsForm will
+  // send users to the parent cell's location if this returns null.
+//  @Override
+//  public Vector3f getLocation() {
+//    return null;
+//  }
 
 //  @Override
 //  public boolean contextMenuCheck(Cell c) {
