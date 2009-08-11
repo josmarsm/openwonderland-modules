@@ -44,7 +44,7 @@ import org.jdesktop.wonderland.modules.presentationbase.common.PresentationCellS
 
 /**
  *
- * @author Drew Harry <drew_harry@dev.java.net
+ * @author Drew Harry <drew_harry@dev.java.net>
  */
 public class PresentationCell extends Cell implements ProximityListener, ActionListener {
     
