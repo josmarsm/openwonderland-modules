@@ -19,12 +19,16 @@ package org.jdesktop.wonderland.modules.marbleous.client.cell;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
+import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.component.CellPhysicsPropertiesComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -37,7 +41,6 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.UI;
-import org.jdesktop.wonderland.modules.marbleous.common.LoopTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.RightTurnTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
@@ -50,13 +53,15 @@ import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.Simulation
  */
 public class TrackCell extends Cell {
 
+    @UsesCellComponent
+    private MarblePhysicsComponent marblePhysicsComponent;
     private final TrackCellMessageReceiver messageReceiver = new TrackCellMessageReceiver();
     private final Set<SimulationStateChangeListener> simulationStateListeners = new HashSet<SimulationStateChangeListener>();
     private SimulationState simulationState = SimulationState.STOPPED;
     private TrackRenderer cellRenderer = null;
     private Track track;
     private UI ui;
-    
+
     public TrackCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         track = new Track();
@@ -181,9 +186,22 @@ public class TrackCell extends Cell {
      */
     public void setSimulationState(SimulationState simulationState) {
 
+        if (simulationState.equals(getSimulationState())) {
+            return;
+        }
+
         setSimulationStateInternal(simulationState);
 
-        //TODO: start simulation and send message to other cells
+        JBulletPhysicsSystem physicsSystem = getPhysicsSystem();
+        if (physicsSystem != null) {
+            if (simulationState == SimulationState.STARTED) {
+                physicsSystem.setStarted(true);
+            } else {
+                physicsSystem.setStarted(false);
+            }
+        } else {
+            logger.warning("Marble physics system not yet initialized!");
+        }
         sendCellMessage(new SimulationStateMessage(simulationState));
     }
 
@@ -230,7 +248,7 @@ public class TrackCell extends Cell {
      * @param listener The listener to add
      */
     public void addSimulationStateChangeListener(SimulationStateChangeListener listener) {
-        synchronized(simulationStateListeners) {
+        synchronized (simulationStateListeners) {
             simulationStateListeners.add(listener);
         }
     }
@@ -240,7 +258,7 @@ public class TrackCell extends Cell {
      * @param listener The listener to remove
      */
     public void removeSimulationStateChangeListener(SimulationStateChangeListener listener) {
-        synchronized(simulationStateListeners) {
+        synchronized (simulationStateListeners) {
             simulationStateListeners.add(listener);
         }
     }
@@ -250,7 +268,7 @@ public class TrackCell extends Cell {
      * @param newState The new simulation state
      */
     private void fireSimulationStateChanged(SimulationState newState) {
-        synchronized(simulationStateListeners) {
+        synchronized (simulationStateListeners) {
             for (SimulationStateChangeListener listener : simulationStateListeners) {
                 listener.simulationStateChanged(newState);
             }
@@ -261,10 +279,35 @@ public class TrackCell extends Cell {
      * Interface to listen for changes to the start/stop state of the simulation.
      */
     public interface SimulationStateChangeListener {
+
         /**
          * Called when the SimulationState for the cell is changed.
          * @param simulationState The new SimulationState
          */
         public void simulationStateChanged(SimulationState simulationState);
+    }
+
+    /**
+     * Convenience method to get the physics system from the attached physics
+     * component.
+     * @return Physics system for this cell
+     */
+    public JBulletPhysicsSystem getPhysicsSystem() {
+        if (marblePhysicsComponent == null) {
+            return null;
+        }
+        return marblePhysicsComponent.getPhysicsSystem();
+    }
+
+    /**
+     * Convenience method to get the collision system from the attached physics
+     * component.
+     * @return Collision system for this cell
+     */
+    public JBulletDynamicCollisionSystem getCollisionSystem() {
+        if (marblePhysicsComponent == null) {
+            return null;
+        }
+        return marblePhysicsComponent.getCollisionSystem();
     }
 }
