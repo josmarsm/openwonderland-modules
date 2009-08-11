@@ -33,6 +33,8 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
 
     private final TimelineCell cell;
 
+    private boolean ignoreChangeEvents = false;
+
     /** Creates new form TimelineMovementHUDPanel */
     public TimelineMovementHUDPanel(TimelineCell cell) {
         initComponents();
@@ -50,6 +52,7 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         positionSlider = new javax.swing.JSlider();
+        curDate = new javax.swing.JLabel();
 
         positionSlider.setMaximum(10000);
         positionSlider.setOrientation(javax.swing.JSlider.VERTICAL);
@@ -65,21 +68,31 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(positionSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(44, 44, 44)
+                        .addComponent(positionSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(curDate, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(positionSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
+                .addComponent(positionSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(curDate, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void positionSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_positionSliderStateChanged
-        cell.moveAvatarToHeightFraction(((float)this.positionSlider.getValue())/this.positionSlider.getMaximum());
+
+        if(!ignoreChangeEvents)
+            cell.moveAvatarToHeightFraction(((float)this.positionSlider.getValue())/this.positionSlider.getMaximum());
+
     }//GEN-LAST:event_positionSliderStateChanged
 
     /**
@@ -94,11 +107,20 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
        // cheating a bit here - this is only true for min=0, but
        // that's an assumption I think we can make here since we
        // own the slider.
-        
-       this.positionSlider.setValue((int) (positionSlider.getMaximum() * position));
+       
+       // we wrap the setValue in these isadjusting calls to avoid
+       // triggering an infinite loop of change requests.
+       ignoreChangeEvents = true;
+        this.positionSlider.setValue((int) (positionSlider.getMaximum() * position));
+       ignoreChangeEvents = false;
+    }
+
+    public void setDateLabel(String newDateLabel) {
+        this.curDate.setText(newDateLabel);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel curDate;
     private javax.swing.JSlider positionSlider;
     // End of variables declaration//GEN-END:variables
 
