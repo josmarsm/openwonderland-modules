@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.client.jme;
 
+import org.jdesktop.wonderland.modules.marbleous.common.TCBKeyFrame;
+
 /**
  * CubicSplineCurve is a container class that holds a number of 
  * cubicSplineSegments 
