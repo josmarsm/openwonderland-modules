@@ -23,7 +23,6 @@ import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 
 /**
  * List Model that adapts a roller coaster track.
- * //TODO: incomplete
  * @author Bernard Horan
  */
 public class TrackListModel extends AbstractListModel {
@@ -45,7 +44,15 @@ public class TrackListModel extends AbstractListModel {
     void addSegment(TrackSegment newSegment) {
         int index = getSize();
         track.addTrackSegment(newSegment);
-        fireIntervalAdded(this, index, index+1);
+        fireIntervalAdded(this, index, index);
+    }
+
+    void removeSegment(TrackSegment oldSegment) {
+        int index = track.indexOf(oldSegment);
+        track.removeTrackSegment(oldSegment);
+         if (index >= 0) {
+             fireIntervalRemoved(this, index, index);
+         }
     }
 }
 
