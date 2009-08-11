@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.common;
 
+import com.jme.math.Matrix4f;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
 
@@ -25,6 +26,8 @@ import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
  * @author paulby
  */
 public class LoopTrackSegmentType extends TrackSegmentType {
+
+    private Matrix4f endpoint;
 
     public LoopTrackSegmentType() {
         super("Loop");
@@ -38,5 +41,13 @@ public class LoopTrackSegmentType extends TrackSegmentType {
         };
 
         setDefaultKeyFrames(keys);
+
+        endpoint = new Matrix4f();
+        endpoint.setTranslation(1,0,5);
+    }
+
+    @Override
+    Matrix4f getEndpointTransform() {
+        return endpoint;
     }
 }
