@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.timeline.common;
+package org.jdesktop.wonderland.modules.timeline.common.audio;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -28,26 +28,38 @@ import com.jme.math.Vector3f;
  *
  *  
  */
-public class TimelineSegmentChangeMessage extends CellMessage {
+public class TimelineSegmentTreatmentMessage extends CellMessage {
 
-    private String previousSegmentID;
-    private String currentSegmentID;
+    private String segmentID;
+    private Vector3f location;
+    private String treatment;
+    private double attenuator;
 
-    public TimelineSegmentChangeMessage(CellID cellID, String previousSegmentID,
-	    String currentSegmentID) {
+    public TimelineSegmentTreatmentMessage(CellID cellID, String segmentID,
+	    Vector3f location, String treatment, double attenuator) {
 
 	super(cellID);
 
-	this.previousSegmentID = previousSegmentID;
-	this.currentSegmentID = currentSegmentID;
+	this.segmentID = segmentID;
+	this.location = location;
+	this.treatment = treatment;
+	this.attenuator = attenuator;
     }
 
-    public String getPreviousSegmentID() {
-	return previousSegmentID;
+    public String getSegmentID() {
+	return segmentID;
     }
 
-    public String getCurrentSegmentID() {
-	return currentSegmentID;
+    public Vector3f getLocation() {
+	return location;
+    }
+
+    public String getTreatment() {
+	return treatment;
+    }
+
+    public double getAttenuator() {
+	return attenuator;
     }
 
 }
