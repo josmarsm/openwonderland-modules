@@ -50,7 +50,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
  * Panel used to construct the roller coaster and start it running
  * @author Bernard Horan
  */
-public class ConstructPanel extends javax.swing.JPanel implements ListSelectionListener {
+public class ConstructPanel extends javax.swing.JPanel {
 
     /* The "No Preview Available" image */
     private Image noPreviewAvailableImage = null;
@@ -67,8 +67,6 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
     private TrackListModel segmentListModel;
 
-    
-
     public interface Container {
 
     }
@@ -81,9 +79,8 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
         URL url = ConstructPanel.class.getResource("resources/nopreview.png");
         noPreviewAvailableImage = Toolkit.getDefaultToolkit().createImage(url);
 
-        // Listen for list selection events and update the preview panel with
-        // the selected item's image
-        typeList.addListSelectionListener(this);
+        typeList.addListSelectionListener(new TypeListSelectionListener());
+        segmentList.addListSelectionListener(new SegmentListSelectionListener());
 
         initializeLists();
     }
@@ -136,7 +133,7 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
         jLabel2.setText("Track Segments:");
 
         segmentList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        segmentList.setEnabled(false);
+        segmentList.setEnabled(true);
         segmentScrollPane.setViewportView(segmentList);
 
         jButton1.setText("Remove");
@@ -194,7 +191,6 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
         TrackSegment newSegment = selectedType.createSegment();
         // This adds the segment to the underlying model (the track)
         segmentListModel.addSegment(newSegment);
-        //TODO restore code to enable the list?
 
 }//GEN-LAST:event_addButtonActionPerformed
 
@@ -223,29 +219,32 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
         }
         segmentListModel = new TrackListModel(track);
         segmentList.setModel(segmentListModel);
+        segmentList.setCellRenderer(new SegmentListRenderer());
     }
     
-    /**
-     * Handles when a selection has been made of the list of cell type names.
-     * @param e
-     */
-    public void valueChanged(ListSelectionEvent e) {
-        TrackSegmentType selectedType = (TrackSegmentType) typeList.getSelectedValue();
-        if (selectedType == null) {
-            // If nothing is selected, then disable the Insert button, the
+    private class TypeListSelectionListener implements ListSelectionListener {
+
+        /**
+         * Handles when a selection has been made of the list of segment type names.
+         * @param e
+         */
+        public void valueChanged(ListSelectionEvent e) {
+            TrackSegmentType selectedType = (TrackSegmentType) typeList.getSelectedValue();
+            if (selectedType == null) {
+                // If nothing is selected, then disable the Insert button, the
                 // preview image and disable drag-and-drop from the preview
                 // label.
                 addButton.setEnabled(false);
 
                 /*
-                 // Make sure the recognizers are not null, and set their
+                // Make sure the recognizers are not null, and set their
                 // components to null;
                 if (previewRecognizer != null) {
-                    previewRecognizer.setComponent(null);
+                previewRecognizer.setComponent(null);
                 }
 
                 if (listRecognizer != null) {
-                    listRecognizer.setComponent(null);
+                listRecognizer.setComponent(null);
                 }
                 */
                 return;
@@ -255,57 +254,25 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
             // Enable the Insert button
             addButton.setEnabled(true);
+        }
+    }
 
+    private class SegmentListSelectionListener implements ListSelectionListener {
 
-
-            // Otherwise, update the preview image, if one exists, otherwise
-            // use the default image.
-            Image previewImage = selectedType.getPreviewImage();
-            System.out.println("Preview image: " + previewImage);
-
-            if (previewImage != null) {
-                ImageIcon icon = new ImageIcon(previewImage);
-
-                // Pass the necessary information for drag and drop
-                //gestureListener.segmentType = cellFactory;
-                //gestureListener.previewImage = previewImage;
-            }
-            else {
-                //TODO restore this after testing
-                //ImageIcon icon = new ImageIcon(noPreviewAvailableImage);
-                //previewLabel.setIcon(icon);
-
-                // Pass the necessary information for drag and drop
-                //gestureListener.cellFactory = cellFactory;
-                //gestureListener.previewImage = noPreviewAvailableImage;
-            }
-
-            // Enable drag-and-drop from the preview image, creating the
-            // recognizer if necessary
+        /**
+         * Handles when a selection has been made of the list of segments.
+         * @param e
+         */
+        public void valueChanged(ListSelectionEvent e) {
+            TrackSegment selectedSegment = (TrackSegment) segmentList.getSelectedValue();
             /*
-             if (previewRecognizer == null) {
-                previewRecognizer =
-                        dragSource.createDefaultDragGestureRecognizer(previewLabel,
-                        DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
-            }
-            else {
-                previewRecognizer.setComponent(previewLabel);
+            if (selectedSegment == null) {
+                ...
             }
             */
 
-            // Add support for drag from the text list of cells, creating the
-            // recognizer if necessary
-            /*
-             if (listRecognizer == null) {
-                listRecognizer =
-                        dragSource.createDefaultDragGestureRecognizer(cellList,
-                        DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
-            }
-            else {
-                listRecognizer.setComponent(cellList);
-            }
-            */
-        
+            System.out.println("Selected Segment: " + selectedSegment);
+        }
     }
 
     /** Give this panel the track to construct. */
@@ -349,7 +316,7 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
     protected javax.swing.JScrollPane typeScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    class TypeListRenderer extends JLabel implements ListCellRenderer {
+    private class TypeListRenderer extends JLabel implements ListCellRenderer {
      // This is the only method defined by ListCellRenderer.
      // We just reconfigure the JLabel each time we're called.
 
@@ -377,5 +344,26 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
          return this;
      }
  }
+
+    private class SegmentListRenderer extends JLabel implements ListCellRenderer {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, 
+                                                      boolean isSelected, boolean cellHasFocus) {
+            TrackSegment segment = (TrackSegment) value;
+            String s = segment.getType().getName();
+            setText(s);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            setEnabled(list.isEnabled());
+            setFont(list.getFont());
+            setOpaque(true);
+            return this;
+        }
+    }
 
 }
