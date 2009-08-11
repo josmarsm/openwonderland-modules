@@ -22,6 +22,7 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.Date;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -30,6 +31,7 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -42,6 +44,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.timeline.client.jme.cell.TimelineCellRenderer;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 
@@ -50,7 +53,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
  *
  *  
  */
-public class TimelineCell extends Cell implements ProximityListener {
+public class TimelineCell extends Cell implements ProximityListener, TransformChangeListener {
 
     private static final Logger logger =
         Logger.getLogger(TimelineCell.class.getName());
@@ -66,6 +69,9 @@ public class TimelineCell extends Cell implements ProximityListener {
     private AvatarCell localAvatarCell;
 
     private DatedSet sortedSegments = new DatedSet();
+
+    // All these configuration parameters have default values
+    // for testing purposes. They should get wiped out later when we have a configuration panel.
 
     /**
      * Radians per segment. Set from the cell properties screen (not yet)
@@ -91,6 +97,15 @@ public class TimelineCell extends Cell implements ProximityListener {
      * values are updated.
      */
     private float height = 30.0f;
+
+    /**
+     * The date range of the timeline.
+     * 
+     * The first date here should match the first date of the first segment
+     * in sortedSegments, and the second date should match the last date of the
+     * last segment in sortedSegments. Set from cell properties (not yet)
+     */
+    private TimelineDate timelineRange = new TimelineDate(new Date(0), new Date());
 
     public TimelineCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -134,6 +149,13 @@ public class TimelineCell extends Cell implements ProximityListener {
                     }
                 });
 
+
+                // Now setup a transform change listener on the avatarcell,
+                // so we can properly update the navigation slider as they move
+                // around.
+                AvatarCell avatar = (AvatarCell)cell.getCellCache().getCell(viewCellID);
+                avatar.addTransformChangeListener(this);
+
             } else {
                 // Remove the navigation HUD.
                 mainHUD.removeComponent(navigationHUD);
@@ -152,6 +174,12 @@ public class TimelineCell extends Cell implements ProximityListener {
         else {
             return super.createCellRenderer(rendererType);
         }
+    }
+
+    public void transformChanged(Cell cell, ChangeSource source) {
+        // For now, when an avatar moves, just output our current guess
+        // at the date.
+        logger.warning("date of local avatar: " + this.getDateByPosition(cell.getWorldTransform().getTranslation(null)));
     }
 
     class TimelineCellMessageReceiver implements ComponentMessageReceiver {
@@ -210,10 +238,13 @@ public class TimelineCell extends Cell implements ProximityListener {
      * @return The segment that contains the specified date.
      */
     public TimelineSegment getSegmentByDate(Date date) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        Set<DatedObject> segments = this.sortedSegments.containsSet(new TimelineDate(date));
 
-        // Trivial call against the dated set when the relevant method comes
-        // online.
+        // because the time ranges of segments are non-overlapping, containsSet
+        // will always return a single element.
+        assert segments.size()==1;
+
+        return  (TimelineSegment) segments.iterator().next();
     }
 
     /**
@@ -224,7 +255,7 @@ public class TimelineCell extends Cell implements ProximityListener {
      */
     public Vector3f getPositionByDate(Date date) {
        // Look up the center of the segment associated with the specified dates.
-        throw new UnsupportedOperationException("Not implemented yet.");
+       return getSegmentByDate(date).getTransform().getTranslation(null);
     }
 
     /**
@@ -234,13 +265,35 @@ public class TimelineCell extends Cell implements ProximityListener {
      * @return The nearest TimelineDate for the specified position.
      */
     public TimelineDate getDateByPosition(Vector3f pos) {
-
         // Take the height of that position in the timeline.
         // Figure out the fraction of that height of the total height, and
         // then use that fraction date. (eg if our range is 1990 to 2000 and
         // the position is 2.5m in a 10m spiral, our date is 1992)
+        float minimumHeight = this.getWorldTransform().getTranslation(null).y - (this.height/2);
 
-        throw new UnsupportedOperationException("Not implemented yet.");
+        float avatarHeightRelativeToTimeline = pos.y - minimumHeight;
+
+        float heightFraction = avatarHeightRelativeToTimeline / this.height;
+
+        Date testDate = new Date(timelineRange.getMinimum().getTime() + ((long)(timelineRange.getRange()*heightFraction)));
+
+        return getSegmentByDate(testDate).getDate();
+    }
+
+    public TimelineDate getTimelineRange() {
+        return timelineRange;
+    }
+
+    public void setTimelineRange(TimelineDate timelineRange) {
+        this.timelineRange = timelineRange;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
+    public float getPitch() {
+        return pitch;
     }
 
     public int getNumSegments() {
