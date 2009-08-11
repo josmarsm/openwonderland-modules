@@ -170,13 +170,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                 for(int i=0; i<numSegments; i++) {
                     TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime+msPerSegment)));
                     newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.height / numSegments)*i, 0.0f), 1.0f));
-                    this.sortedSegments.add(newSeg);
-
-                    TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
-
-                    if(tac!=null) {
-                        tac.createSegmentTreatment(newSeg);
-                    }
+                    this.addSegment(newSeg);
 
                     curTime += msPerSegment;
                 }
@@ -409,7 +403,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
 
         if(tac!=null) {
-            
+            tac.createSegmentTreatment(seg);
         }
     }
 
