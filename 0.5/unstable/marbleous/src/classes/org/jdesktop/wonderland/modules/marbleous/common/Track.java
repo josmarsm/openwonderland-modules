@@ -42,6 +42,10 @@ public class Track {
         return segments.get(index);
     }
 
+    public int indexOf(TrackSegment oldSegment) {
+        return segments.indexOf(oldSegment);
+    }
+
     public void removeTrackSegment(TrackSegment trackSegment) {
         segments.remove(trackSegment);
     }
