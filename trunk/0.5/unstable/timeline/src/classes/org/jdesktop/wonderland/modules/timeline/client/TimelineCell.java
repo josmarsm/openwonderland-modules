@@ -175,7 +175,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                     TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
 
                     if(tac!=null) {
-                        tac.createSegmentTreatment(newSeg, newSeg.getTransform().getTranslation(null), newSeg.getTreatment().toString());
+                        tac.createSegmentTreatment(newSeg);
                     }
 
                     curTime += msPerSegment;
