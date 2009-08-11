@@ -18,13 +18,30 @@
 package org.jdesktop.wonderland.modules.marbleous.common.cell;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 
 /**
  * Container for Marbleous track client cell client state data.
  *
  * @author paulby
  */
-
 public class TrackCellClientState extends CellClientState {
 
+    private SimulationState simulationState;
+
+    /**
+     * Get the start/stop state of the simulation
+     * @return Start/stop state of the simulation
+     */
+    public SimulationState getSimulationState() {
+        return simulationState;
+    }
+
+    /**
+     * Set the start/stop state of the simulation
+     * @param simulationState State of the simulation
+     */
+    public void setSimluationState(SimulationState simulationState) {
+        this.simulationState = simulationState;
+    }
 }
