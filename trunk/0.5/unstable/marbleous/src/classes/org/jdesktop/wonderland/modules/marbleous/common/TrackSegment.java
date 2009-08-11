@@ -36,9 +36,13 @@ public class TrackSegment  {
     private Properties segmentProperties = new Properties();
     private TCBKeyFrame[] keyFrames = null;
 
-    TrackSegment(TrackSegmentType segmentType) {
+    public TrackSegment(TrackSegmentType segmentType) {
         this.segmentType = segmentType;
         keyFrames = segmentType.getDefaultKeyFrames();
+    }
+
+    public TrackSegmentType getType () {
+        return segmentType;
     }
 
     public TCBKeyFrame[] getKeyFrames() {
