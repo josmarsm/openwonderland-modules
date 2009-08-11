@@ -5,12 +5,11 @@
 
 package org.jdesktop.wonderland.modules.timeline.common.provider;
 
-import java.util.Comparator;
 import java.util.Date;
 
 /**
  * A date in the timeline system.  A date actually represents a range of time,
- * with a mimum and maximum value (they may be the same).
+ * with a minimum and maximum value (they may be the same).
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 public class TimelineDate implements Comparable {
