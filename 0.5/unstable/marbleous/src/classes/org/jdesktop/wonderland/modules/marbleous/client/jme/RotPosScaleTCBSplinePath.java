@@ -74,6 +74,13 @@ public class RotPosScaleTCBSplinePath extends TCBSplinePath {
 
     }
 
+    public RotPosScaleTCBSplinePath(TCBKeyFrame keys[]) {
+	super(keys);
+        // Create a spline curve using the derived key frames
+        cubicSplineCurve = new CubicSplineCurve(this.keyFrames);
+        numSegments = cubicSplineCurve.numSegments;
+
+    }
     /**
      * Computes the new transform for this interpolator for a given
      * alpha value.

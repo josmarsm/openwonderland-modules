@@ -17,7 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.common;
 
+import com.jme.math.Matrix4f;
 import java.util.ArrayList;
+import java.util.Collection;
+import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
 
 /**
  *
@@ -52,5 +55,17 @@ public class Track {
 
     public Iterable getTrackSegments() {
         return segments;
+    }
+
+    public Collection<TCBKeyFrame> buildTrack() {
+        ArrayList<TCBKeyFrame> keyFrames = new ArrayList();
+        Matrix4f currentEndpoint = new Matrix4f();
+        int segmentNumber = 0;
+        for(TrackSegment segment : segments) {
+            keyFrames.addAll(segment.computeWorldKeyFrames(currentEndpoint, segmentNumber, segments.size()));
+            currentEndpoint.multLocal(segment.getTrackSegmentType().getEndpointTransform());
+            segmentNumber++;
+        }
+        return keyFrames;
     }
 }
