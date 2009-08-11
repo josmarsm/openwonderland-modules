@@ -13,6 +13,8 @@
 
     <pathconvert property="module-server.classpath">
         <path location="${wonderland.dir}/modules/tools/audio-manager/lib/voicelib.jar"/>
+        <path location="${wonderland.dir}/modules/tools/audio-manager/lib/voip.jar"/>
+        <path location="${wonderland.dir}/modules/tools/audio-manager/lib/bridge_connector.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common,

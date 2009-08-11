@@ -28,38 +28,26 @@ import com.jme.math.Vector3f;
  *
  *  
  */
-public class TimelineSegmentTreatmentMessage extends CellMessage {
+public class TimelineSegmentChangeMessage extends CellMessage {
 
-    private String segmentID;
-    private Vector3f location;
-    private String treatment;
-    private double attenuator;
+    private String previousSegmentID;
+    private String currentSegmentID;
 
-    public TimelineSegmentTreatmentMessage(CellID cellID, String segmentID,
-	    Vector3f location, String treatment, double attenuator) {
+    public TimelineSegmentChangeMessage(CellID cellID, String previousSegmentID,
+	    String currentSegmentID) {
 
 	super(cellID);
 
-	this.segmentID = segmentID;
-	this.location = location;
-	this.treatment = treatment;
-	this.attenuator = attenuator;
+	this.previousSegmentID = previousSegmentID;
+	this.currentSegmentID = currentSegmentID;
     }
 
-    public String getSegmentID() {
-	return segmentID;
+    public String getPreviousSegmentID() {
+	return previousSegmentID;
     }
 
-    public Vector3f getLocation() {
-	return location;
-    }
-
-    public String getTreatment() {
-	return treatment;
-    }
-
-    public double getAttenuator() {
-	return attenuator;
+    public String getCurrentSegmentID() {
+	return currentSegmentID;
     }
 
 }
