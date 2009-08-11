@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.util.Date;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -40,6 +41,9 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.timeline.client.jme.cell.TimelineCellRenderer;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage;
+import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 
 
 /**
@@ -61,6 +65,18 @@ public class TimelineCell extends Cell implements ProximityListener {
 
     private AvatarCell localAvatarCell;
 
+    private DatedSet sortedSegments = new DatedSet();
+
+    /**
+     * Radians per segment. Set from the cell properties screen (not yet)
+     */
+    private float radsPerSegment = (float) (Math.PI / 4);
+
+    /**
+     * The total number of segments. Set from the cell properties screen (not yet)
+     */
+    private int numSegments = 10;
+
     /**
      * The pitch of the helix (which is the vertical distance of one complete
      * turn).
@@ -68,12 +84,11 @@ public class TimelineCell extends Cell implements ProximityListener {
     private float pitch = 2.0f;
 
     /**
-     * The height in meters of the helix. (There are lots of alternative ways
-     * to represent this - could be the number of turns or just the raw number
-     * of radians the helix covers. They're interchangeable, though, so I just
-     * picked the one that seems the most accessible to users. If we want to
-     * switch go something that is easier for all of us to work with internally,
-     * that's super easy to do.)
+     * The height in meters of the helix. 
+     *
+     * This value is never set, and is only derived from the
+     * pitch/radsPerSegment/numSegments values and is updated when those
+     * values are updated.
      */
     private float height = 30.0f;
 
@@ -151,7 +166,7 @@ public class TimelineCell extends Cell implements ProximityListener {
      *
      * @param position A nondimensionalized variable representing where in the timeline the avatar should move to.
      */
-    public void moveAvatar(float position) {
+    public void moveAvatarToHeightFraction(float position) {
 
         // Move the avatar on their current radius; ie no need to detect which
         // layer/track they're on, just pick their current distance to 0,0
@@ -187,4 +202,80 @@ public class TimelineCell extends Cell implements ProximityListener {
 
         localAvatarCell.triggerGoto(targetPosition, new Quaternion());
     }
+
+    /**
+     *
+     *
+     * @param date The date you want the segment for.
+     * @return The segment that contains the specified date.
+     */
+    public TimelineSegment getSegmentByDate(Date date) {
+        throw new UnsupportedOperationException("Not implemented yet.");
+
+        // Trivial call against the dated set when the relevant method comes
+        // online.
+    }
+
+    /**
+     * Given a date, returns the center position for that date.
+     * 
+     * @param date
+     * @return
+     */
+    public Vector3f getPositionByDate(Date date) {
+       // Look up the center of the segment associated with the specified dates.
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    /**
+     * Given a vector position, returns the matching TimelineDate.
+     * 
+     * @param pos
+     * @return The nearest TimelineDate for the specified position.
+     */
+    public TimelineDate getDateByPosition(Vector3f pos) {
+
+        // Take the height of that position in the timeline.
+        // Figure out the fraction of that height of the total height, and
+        // then use that fraction date. (eg if our range is 1990 to 2000 and
+        // the position is 2.5m in a 10m spiral, our date is 1992)
+
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
+
+    public int getNumSegments() {
+        return numSegments;
+    }
+
+    public void setNumSegments(int numSegments) {
+        this.numSegments = numSegments;
+        this.updateHeight();
+    }
+
+    public float getRadsPerSegment() {
+        return radsPerSegment;
+    }
+
+    public void setRadsPerSegment(float radsPerSegment) {
+        this.radsPerSegment = radsPerSegment;
+        this.updateHeight();
+    }
+
+    private void updateHeight() {
+        float numTurns = (float) ((radsPerSegment * numSegments) / (Math.PI * 2));
+        this.height = numTurns * pitch;
+    }
+
+    public void addSegment(TimelineSegment seg) {
+        this.sortedSegments.add(seg);
+    }
+
+    public void clearSegments() {
+        this.sortedSegments.clear();
+    }
+
+    public void removeSegment(TimelineSegment seg) {
+        this.sortedSegments.remove(seg);
+    }
+
 }
