@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.common;
 
+import com.jme.math.Matrix4f;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
@@ -28,7 +29,7 @@ import java.awt.Image;
  * @author Bernard Horan, deronj
  */
 
-public class TrackSegmentType  {
+public abstract class TrackSegmentType  {
 
     private String name=null;
     private TCBKeyFrame[] defaultKeyFrames=null;
@@ -36,6 +37,10 @@ public class TrackSegmentType  {
 
     protected TrackSegmentType(String name) {
         this.name = name;
+    }
+
+    public TrackSegment createSegment() {
+        return new TrackSegment(this);
     }
 
     public Image getPreviewImage () {
@@ -68,5 +73,13 @@ public class TrackSegmentType  {
         TCBKeyFrame ret = new TCBKeyFrame(knot, 0, pos, rot, new Vector3f(1,1,1), tension, continuity, bias);
         return ret;
     }
+
+    /**
+     * Return the transform of the endpoint of the track segment.
+     *
+     * These endpoints are concatenated to correctly orient subsequent segments
+     * @return
+     */
+    abstract Matrix4f getEndpointTransform();
 
 }
