@@ -142,13 +142,13 @@ public class EmbeddedADS implements MetadataBackendInterface
   
   /**
    * Creates a new instance of EmbeddedADS. It initializes the directory service.
-   *
+   * @param reset true if eads should rebuild itself, false if jbdm file already exists
    * @throws Exception If something went wrong
    */
-  public EmbeddedADS() throws Exception
+  public EmbeddedADS(boolean reset) throws Exception
   {
     logger.log(Level.CONFIG, "[EADS] creating EADS");
-    initLDAPServer();
+    initLDAPServer(reset);
     logger.log(Level.CONFIG, "[EADS] created");
   }
 
@@ -159,10 +159,10 @@ public class EmbeddedADS implements MetadataBackendInterface
    *
    * @throws Exception If something went wrong
    */
-  public EmbeddedADS(ArrayList<Metadata> metadata) throws Exception
+  public EmbeddedADS(boolean reset, ArrayList<Metadata> metadata) throws Exception
   {
     logger.log(Level.CONFIG, "[EADS] creating EADS");
-    initLDAPServer();
+    initLDAPServer(reset);
     logger.log(Level.CONFIG, "[EADS] register metadata types..");
     for(Metadata m:metadata){
       registerMetadataType(m);
@@ -296,7 +296,9 @@ public class EmbeddedADS implements MetadataBackendInterface
     attrs.put(objclass);
     try {
       // Create the context
+      logger.info("[EADS] create cell subcontext");
       parentCtx.createSubcontext(EADSUtils.CELL_ID_ATTR + "=" + cid, attrs);
+      logger.info("[EADS] created cell subcontext");
     } catch (NamingException ex) {
       logger.severe("[EADS] error adding cell id: " + cid + ", ex:" + ex);
       logger.severe("[EADS] looked like:" + EADSUtils.CELL_ID_ATTR + "=" + cid);
@@ -321,6 +323,8 @@ public class EmbeddedADS implements MetadataBackendInterface
       si = (SearchResult)results.next();
     } catch (NamingException ex) {
       logger.severe("[EADS] could not find cell with id: " + cid);
+      logger.info("[EADS] ================verbose ldap contents ================:");
+      EADSUtils.printContentsVerbose(rootCtx, wlCtx, 0);
     }
     return si.getName();
   }
@@ -424,7 +428,6 @@ public class EmbeddedADS implements MetadataBackendInterface
    * This implementation uses the full package name to describe a Metadata obj
    * and its attributes, avoiding collisions.
    *
-   * TODO will scan class loader take care of duplication checking anyway?
    * @param m example of the type to register
    */
   public void registerMetadataType(Metadata m) throws Exception {
@@ -485,7 +488,12 @@ public class EmbeddedADS implements MetadataBackendInterface
     ArrayList<String> mayLdap = new ArrayList<String>();
 
     // finally, register the type
-    registerObjectClass(nameLdap, descLdap, supersLdap, ObjectClassType.STRUCTURAL, mustLdap, mayLdap);
+    try{
+      registerObjectClass(nameLdap, descLdap, supersLdap, ObjectClassType.STRUCTURAL, mustLdap, mayLdap);
+    }
+    catch(NamingException e){
+      logger.info("[EADS] exception registering metadata type:" + e);
+    }
 
   }
 
@@ -913,7 +921,7 @@ public class EmbeddedADS implements MetadataBackendInterface
    *
    * @throws Exception if there were some problems why initializing the system
    */
-  private void initLDAPServer() throws Exception{
+  private void initLDAPServer(boolean reset) throws Exception{
     // Initialize the LDAP service
     // bash any old jdbm files
     // TODO
@@ -923,10 +931,16 @@ public class EmbeddedADS implements MetadataBackendInterface
     // like :.wonderland-server/0.5-dev/run/darkstar_server/run/core/data/sgs/server-work
     File jdbmFolder = new File("../../../../../metadata-module-db");
     //    logger.info("erase any old jbdm files");
-    if(!EADSUtils.deleteDir(jdbmFolder)){
-      logger.info("failed to delete jbdm folder!");
-    } else {
-      logger.info("deleted jbdm");
+    if(reset){
+      logger.info("rebuilding");
+      if(!EADSUtils.deleteDir(jdbmFolder)){
+        logger.info("failed to delete jbdm folder!");
+      } else {
+        logger.info("deleted jbdm");
+      }
+    }
+    else{
+      logger.info("rebuild self");
     }
     logger.info("create dir service");
     service = new DefaultDirectoryService();
@@ -960,7 +974,6 @@ public class EmbeddedADS implements MetadataBackendInterface
     attributeTypes = r.getAttributeTypeRegistry();
     objectClasses = r.getObjectClassRegistry();
 
-
     // Inject the world root entry if it does not already exist
     try
     {
@@ -990,8 +1003,14 @@ public class EmbeddedADS implements MetadataBackendInterface
     wlCtx = (DirContext) rootCtx.lookup(wlCtxDN);
     logger.info("[EADS] initial contexts prepared");
 
+    if(reset == false){
+      logger.info("[EADS] completed setup, do not need to rebuild db");
+      return;
+    }
+
     // register interior attributes
     logger.info("[EADS] register default attributes");
+    logger.info("[EADS] dummy");
     // prepare attribute names
     ArrayList<String> cidNames = new ArrayList<String>();
     cidNames.add(EADSUtils.CELL_ID_STR);

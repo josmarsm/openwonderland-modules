@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
+import com.sun.sgs.app.ManagedObject;
 import org.jdesktop.wonderland.modules.metadata.server.service.eads.EmbeddedADS;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 
@@ -33,6 +34,7 @@ import com.sun.sgs.kernel.KernelRunnable;
 import com.sun.sgs.service.Transaction;
 import com.sun.sgs.service.TransactionProxy;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
@@ -104,6 +106,9 @@ public class MetadataService extends AbstractService{
 
     /** backend search DB (e.g. LDAP implementation) */
     private MetadataBackendInterface db;
+
+    /** flag for whether or not backend needs to be reconstructed */
+    private boolean rebuildDB = true;
     
 
     public MetadataService(Properties props,
@@ -121,13 +126,9 @@ public class MetadataService extends AbstractService{
       // create the transaction context factory
       ctxFactory = new TransactionContextFactoryImpl(proxy);
       try {
-        db = new EmbeddedADS();
-        scanAndRegisterTypes();
-        // TODO  get this from the scanner in the future
-//        ArrayList<Metadata> tmp = new ArrayList<Metadata>();
-//        tmp.add(new Metadata());
-//        tmp.add(new SimpleMetadata());
-        ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
+//        db = new EmbeddedADS();
+//        scanAndRegisterTypes();
+//        ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
          /*
          * Check service version.
          */
@@ -154,7 +155,40 @@ public class MetadataService extends AbstractService{
 
     @Override
     protected void doReady() {
-        logger.log(Level.CONFIG, "Metadata service ready");
+      logger.log(Level.INFO, "Metadata service ready");
+      CheckMetadataBackend check = new CheckMetadataBackend();
+      try {
+        transactionScheduler.runTask(check, taskOwner);
+      } catch (Exception ex) {
+        logger.logThrow(Level.SEVERE, ex, "Error checking metadata backend");
+      }
+      if(rebuildDB == false){
+        try {
+          logger.log(Level.INFO, "flag was found, do not need to rebuild");
+          db = new EmbeddedADS(false);
+          ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
+        } catch (Exception ex) {
+          Logger.getLogger(MetadataService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      }
+      else{
+        try {
+          logger.log(Level.INFO, "flag was NOT found, need to rebuild");
+          db = new EmbeddedADS(true);
+          scanAndRegisterTypes();
+          ScannedClassLoader scl = ScannedClassLoader.getSystemScannedClassLoader();
+          // set flag
+          SetMetadataBackendFlag setFlag = new SetMetadataBackendFlag();
+          try {
+            transactionScheduler.runTask(setFlag, taskOwner);
+          } catch (Exception ex) {
+            logger.logThrow(Level.SEVERE, ex, "Error setting metadata backend flag");
+          }
+        } catch (Exception ex) {
+          Logger.getLogger(MetadataService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      }
+      logger.log(Level.INFO, "Metadata service doready complete");
     }
 
     @Override
@@ -376,5 +410,55 @@ public class MetadataService extends AbstractService{
     public HashMap<CellID, Set<MetadataID> > searchMetadata(MetadataSearchFilters filters, CellID cid){
       return db.searchMetadata(filters, cid);
     }
+
+    private class CheckMetadataBackend implements KernelRunnable {
+        // check darkstar datastore for backend flag.. if flag is present,
+        // assume backend is good. If flag missing, tell backend to rebuild.
+        private String key = "WonderlandMetadataBackend";
+
+        public String getBaseTaskType() {
+            return NAME + ".CheckMetadataBackend";
+        }
+
+        public void run() throws Exception {
+          // try to get key
+          try{
+            dataService.getServiceBinding(key);
+            logger.log(Level.INFO, "[META SERVICE] got backend binding");
+            // does not need to be rebuilt
+            rebuildDB = false;
+          }
+          catch(Exception e){
+            // binding was not present. rebuild DB, set binding.
+            logger.log(Level.INFO, "[META SERVICE] did not get backend binding: " + e);
+
+            rebuildDB = true;
+          }
+          logger.log(Level.INFO, "[META SERVICE]  completed backend check");
+        }
+    }
+
+    private class SetMetadataBackendFlag implements KernelRunnable {
+        // Set backend flag, indicating valid backend has been established
+        private String key = "WonderlandMetadataBackend";
+
+        public String getBaseTaskType() {
+            return NAME + ".CheckMetadataBackend";
+        }
+
+        public void run() throws Exception {
+            try{
+            dataService.setServiceBinding(key, new MetadataBackendFlag());
+            logger.log(Level.INFO, "[META SERVICE]  registered flag");
+            }
+            catch(Exception e2){
+              logger.log(Level.INFO, "[META SERVICE] error setting flag:" + e2);
+            }
+        }
+    }
+
+     private static class MetadataBackendFlag implements Serializable, ManagedObject {
+       // currently empty, no extra information needed other than flag's existence
+     }
 
 }
