@@ -33,11 +33,11 @@ public class LoopTrackSegmentType extends TrackSegmentType {
         super("Loop");
 
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
-          createKeyFrame(0, new Vector3f(-1,0,-5)),
-          createKeyFrame(0.4f, new Vector3f(0,2.5f,5)),
+          createKeyFrame(0, new Vector3f(-1,0,5)),
+          createKeyFrame(0.4f, new Vector3f(0,2.5f,-5)),
           createKeyFrame(0.5f, new Vector3f(0,5,0)),
-          createKeyFrame(0.6f, new Vector3f(0,2.5f,-5)),
-          createKeyFrame(1f, new Vector3f(1,0,5))
+          createKeyFrame(0.6f, new Vector3f(0,2.5f,5)),
+          createKeyFrame(1f, new Vector3f(1,0,-5))
         };
 
         setDefaultKeyFrames(keys);

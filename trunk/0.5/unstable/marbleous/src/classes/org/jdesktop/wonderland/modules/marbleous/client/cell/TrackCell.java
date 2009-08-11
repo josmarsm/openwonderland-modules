@@ -30,16 +30,38 @@ import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.marbleous.client.jme.TestRenderer;
+import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
+import org.jdesktop.wonderland.modules.marbleous.common.LoopTrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.RightTurnTrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.Track;
 
 /**
  * Client-side cell for rendering JME content
  */
 public class TrackCell extends Cell {
-    private TestRenderer cellRenderer = null;
+    private TrackRenderer cellRenderer = null;
+    private Track track;
 
     public TrackCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        track = new Track();
+
+        track.addTrackSegment(new StraightDropTrackSegmentType().createSegment());
+        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
+        track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
+        track.addTrackSegment(new LoopTrackSegmentType().createSegment());
+        track.buildTrack();
+    }
+
+    /**
+     * Get the track for this cell
+     * 
+     * @return
+     */
+    public Track getTrack() {
+        return track;
     }
     
     /**
@@ -69,7 +91,7 @@ public class TrackCell extends Cell {
 //            } catch (IOException e) {
 //                Logger.getLogger(AnimationTestRenderer.class.getName()).log(Level.SEVERE, null, e);
 //            }
-            cellRenderer = new TestRenderer(this);
+            cellRenderer = new TrackRenderer(this);
 
 //            getComponent(AnimationComponent.class).addMouseTrigger(cellRenderer.getEntity(), "ES_Box1");
 

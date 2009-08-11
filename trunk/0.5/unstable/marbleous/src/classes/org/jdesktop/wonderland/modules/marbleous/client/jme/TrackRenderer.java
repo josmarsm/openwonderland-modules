@@ -22,28 +22,46 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
+import java.util.Collection;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
+import org.jdesktop.wonderland.modules.marbleous.common.Track;
 
 /**
  *
  * @author paulby
  */
-public class TestRenderer extends BasicRenderer {
+public class TrackRenderer extends BasicRenderer {
 
-    public TestRenderer(Cell cell) {
+    public TrackRenderer(Cell cell) {
         super(cell);
     }
 
     @Override
     protected Node createSceneGraph(Entity entity) {
-        SplineTest splineTest = new SplineTest();
+        Node ret = null;
+        if (false) {
+            // Code for visualizing test splines
+            SplineTest splineTest = new SplineTest();
 
-        Node ret = new Node("Spline Test");
+            ret = new Node("Spline Test");
 
-        addPositions(splineTest.interp, ret);
-        drawSpline(splineTest.interp, ret);
+            addPositions(splineTest.interp, ret);
+            drawSpline(splineTest.interp, ret);
+        } else {
+            ret = new Node("TrackRoot");
+            Track track = ((TrackCell)cell).getTrack();
+            Collection<TCBKeyFrame> keyFrames = track.buildTrack();
+            System.err.println("SIZE "+keyFrames.size());
+            for(TCBKeyFrame f : keyFrames) {
+                System.err.println(f);
+            }
+            RotPosScaleTCBSplinePath spline = new RotPosScaleTCBSplinePath(keyFrames.toArray(new TCBKeyFrame[keyFrames.size()]));
+            addPositions(spline, ret);
+            drawSpline(spline, ret);
+        }
 
         return ret;
     }
