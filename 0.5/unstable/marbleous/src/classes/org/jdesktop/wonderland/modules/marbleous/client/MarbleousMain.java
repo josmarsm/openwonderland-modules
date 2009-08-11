@@ -19,8 +19,7 @@
 package org.jdesktop.wonderland.modules.marbleous.client;
 
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
-import org.jdesktop.wonderland.modules.marbleous.client.ui.MarbleousWindowConstruct;
-import org.jdesktop.wonderland.modules.marbleous.client.ui.MarbleousWindowRun;
+import org.jdesktop.wonderland.modules.marbleous.client.ui.UI;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 
 /************************************
@@ -33,34 +32,28 @@ public class MarbleousMain {
     /** The cell in which the game is displayed. */
     private App2DCell cell;
     /** The window which contains the track construction UI. */
-    private MarbleousWindowConstruct windowConstruct;
-    /** The window which contains the run controls UI. */
-    private MarbleousWindowRun windowRun;
+    private UI ui;
     /** A single track. */
     private Track track;
 
     /**
      * Create a new instance of MarbleousMain.
      * @param cell The app cell in which the game is displayed.
-     * @param windowConstruct The window which contains the track construction UI.
-     * @param windowRun The window which contains the run controls UI.
      */
-    public MarbleousMain (App2DCell cell, MarbleousWindowConstruct windowConstruct, 
-                          MarbleousWindowRun windowRun) {
+    public MarbleousMain (App2DCell cell) {
+
         this.cell = cell;
-        this.windowConstruct = windowConstruct;
-        this.windowRun = windowRun;
 
         track = new Track();
-        windowConstruct.setTrack(track);
+        ui = new UI(track);
     }
 
     /**
      * Controls the visibility of the game.
      */
     public void setVisible (boolean visible) {
-        windowConstruct.setVisible(visible);
-        //windowRun.setVisible(visible);
+        ui.setVisible(visible);
+        // track.setVisible(visible);
     }
 }
 
