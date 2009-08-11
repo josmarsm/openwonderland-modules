@@ -48,7 +48,7 @@ public class TrackCellFactory implements CellFactorySPI {
     }
 
     public String getDisplayName() {
-        return "Track Test";
+        return "Marbleous";
     }
 
     public Image getPreviewImage() {
