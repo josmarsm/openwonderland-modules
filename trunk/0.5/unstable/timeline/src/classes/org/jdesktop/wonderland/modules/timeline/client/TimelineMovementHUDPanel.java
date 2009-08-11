@@ -53,7 +53,7 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
 
         positionSlider.setMaximum(10000);
         positionSlider.setOrientation(javax.swing.JSlider.VERTICAL);
-        positionSlider.setValue(50000);
+        positionSlider.setValue(5000);
         positionSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 positionSliderStateChanged(evt);
@@ -79,7 +79,7 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void positionSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_positionSliderStateChanged
-        cell.moveAvatar(((float)this.positionSlider.getValue())/this.positionSlider.getMaximum());
+        cell.moveAvatarToHeightFraction(((float)this.positionSlider.getValue())/this.positionSlider.getMaximum());
     }//GEN-LAST:event_positionSliderStateChanged
 
     /**
