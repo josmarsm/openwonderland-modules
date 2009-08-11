@@ -238,9 +238,34 @@ public class TimelineCellMO extends CellMO {
 	}
 
 	private void setCurrentSegment(TimelineSegmentChangeMessage message) {
+	    String currentSegmentID = message.getCurrentSegmentID();
+
+	    Integer useCount = segmentUseMap.get(currentSegmentID);
+
+	    if (useCount == null) {
+		Treatment treatment = segmentTreatmentMap.get(currentSegmentID);
+
+		if (treatment == null) {
+		    System.out.println("No treatment for " + currentSegmentID);
+		    return;
+		} else {
+		    new Fade(treatment, false);
+		}
+
+		useCount = new Integer(1);
+	    } else {
+		useCount = new Integer(useCount.intValue() + 1);
+	    }
+
+	    segmentUseMap.put(currentSegmentID, useCount);
+
 	    String previousSegmentID = message.getPreviousSegmentID();	
 
-	    Integer useCount = segmentUseMap.get(previousSegmentID);
+	    if (previousSegmentID == null) {
+		return;
+	    }
+
+	    useCount = segmentUseMap.get(previousSegmentID);
 
 	    if (useCount == null) {
 		System.out.println("No map entry for " + previousSegmentID);
@@ -259,32 +284,12 @@ public class TimelineCellMO extends CellMO {
 		    segmentUseMap.remove(previousSegmentID);
 		}
 	    }
-
-	    String currentSegmentID = message.getCurrentSegmentID();
-
-	    useCount = segmentUseMap.get(currentSegmentID);
-
-	    if (useCount == null) {
-		Treatment treatment = segmentTreatmentMap.get(previousSegmentID);
-
-		if (treatment == null) {
-		    System.out.println("No treatment for " + previousSegmentID);
-		    return;
-		} else {
-		    new Fade(treatment, false);
-		}
-
-		useCount = new Integer(1);
-	    } else {
-		useCount = new Integer(useCount.intValue() + 1);
-	    }
-
-	    segmentUseMap.put(currentSegmentID, useCount);
 	}
 
 	private class Fade extends Thread {
 
-	    private static final double fadeValue = .05;
+	    private static final double fadeinValue = .05;
+	    private static final double fadeoutValue = .1;
 
 	    private boolean fadeout;
 	    private Treatment treatment;
@@ -303,7 +308,7 @@ public class TimelineCellMO extends CellMO {
 
 		if (fadeout == false) {
 	            treatment.pause(false);
-		    attenuator = fadeValue;
+		    attenuator = fadeoutValue;
 		} else {
 		    attenuator = DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME;
 		}
@@ -312,13 +317,13 @@ public class TimelineCellMO extends CellMO {
 		    spatializer.setAttenuator(attenuator);
 
 		    if (fadeout == true) {
-			attenuator -= fadeValue;
+			attenuator -= fadeoutValue;
 			if (attenuator <= 0) {
 	            	    treatment.pause(true);
 			    break;
 			}
 		    } else {
-			attenuator += fadeValue;
+			attenuator += fadeinValue;
 
 			if (attenuator >= DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME) {
 			    break;
