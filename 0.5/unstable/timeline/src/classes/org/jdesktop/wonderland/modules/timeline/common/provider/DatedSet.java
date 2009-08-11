@@ -76,6 +76,38 @@ public class DatedSet extends TreeSet<DatedObject> {
     }
 
     /**
+     * Get all elements in the given set that contain the given date.
+     * * <p>
+     * Unlike other set methods, the returned subset is not backed by
+     * the original set. It is a separate set, and adding or removing
+     * objects will have no effect on it.
+     *
+     * @param date the date that must be contained in the returned dates.
+     * @return a set of dates that contain the given date, or an
+     * empty set if no dates are contained.
+     */
+    public DatedSet containsSet(final TimelineDate date) {
+        DatedSet out = new DatedSet();
+
+        // first, find all possible objects with a minumum less than the
+        // minimum of the given range
+        SortedSet<DatedObject> containsSet = headSet(new SearchDatedObject(date.getMinimum()));
+
+        // now go through each object looking for whether the given range
+        // includes that object.  This checks every possible object with a
+        // minimum less than date's minimum.  An optimization would be to
+        // also look at maximums, but this would require a sorted set
+        // of maximums.
+        for (DatedObject d : containsSet) {
+            if (d.getDate().contains(date)) {
+                out.add(d);
+            }
+        }
+
+        return out;
+    }
+
+    /**
      * Compare dated objects by comparing the underlying timeline date for
      * each object. Note this will compare by minimum date.
      */

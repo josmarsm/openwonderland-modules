@@ -25,6 +25,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 
@@ -44,6 +45,9 @@ public class TimelineProviderComponent extends CellComponent {
     /** listeners */
     private final Set<TimelineProviderComponentListener> listeners =
             new CopyOnWriteArraySet<TimelineProviderComponentListener>();
+
+    @UsesCellComponent(SharedStateComponent.class)
+    private SharedStateComponent ssc;
 
     /**
      * Default constructor
