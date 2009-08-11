@@ -5,6 +5,7 @@
 
 package org.jdesktop.wonderland.modules.timeline.common.provider;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -12,7 +13,7 @@ import java.util.Date;
  * with a minimum and maximum value (they may be the same).
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public class TimelineDate implements Comparable {
+public class TimelineDate implements Comparable, Serializable {
     /** the minimum date */
     private Date min;
 
