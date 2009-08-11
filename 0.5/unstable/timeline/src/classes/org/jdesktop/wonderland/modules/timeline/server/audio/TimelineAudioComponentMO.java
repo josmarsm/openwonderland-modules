@@ -152,7 +152,7 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
         private ManagedReference<TimelineAudioComponentMO> compRef;
 
         private String getSegmentID(TimelineSegment segment) {
-	    return segment.getDate().getMinimum().toString();
+	    return segment.toString();
         }
 
         public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
