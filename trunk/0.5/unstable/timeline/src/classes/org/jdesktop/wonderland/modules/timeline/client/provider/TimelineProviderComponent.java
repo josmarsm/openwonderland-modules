@@ -38,7 +38,7 @@ public class TimelineProviderComponent extends CellComponent {
             Logger.getLogger(TimelineProviderComponent.class.getName());
 
     /** the set of timeline providers */
-    private final Set<TimelineProviderResult> providers =
+    private final Set<TimelineProviderResult> results =
             new LinkedHashSet<TimelineProviderResult>();
 
     /** listeners */
@@ -54,11 +54,11 @@ public class TimelineProviderComponent extends CellComponent {
     }
 
     /**
-     * Get all active providers for this cell.
-     * @return the set of active providers
+     * Get all active results for this cell.
+     * @return the set of timeline results
      */
-    public Set<TimelineProviderResult> getProviders() {
-        return Collections.unmodifiableSet(providers);
+    public Set<TimelineProviderResult> getResults() {
+        return Collections.unmodifiableSet(results);
     }
 
     /**
@@ -77,6 +77,10 @@ public class TimelineProviderComponent extends CellComponent {
     public void removeComponentListener(TimelineProviderComponentListener listener) {
         listeners.remove(listener);
     }
+
+    /**
+     * Get the set
+     */
 
     /**
      * Implementation of a result object
