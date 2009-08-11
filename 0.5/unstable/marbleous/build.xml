@@ -65,6 +65,17 @@
             <art dir="${current.dir}/art"/>
         </module>
     </target>
+
+    <target name="run-splinetest" depends="dist" description="Run script test">
+        <java classname="org.jdesktop.wonderland.modules.marbleous.client.jme.SplineTest" fork="true">
+
+            <classpath>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement path="build/classes"/>
+            </classpath>
+       </java>
+    </target>
+
                                            
     <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>

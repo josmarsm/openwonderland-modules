@@ -11,34 +11,30 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.marbleous.common;
 
-import java.util.Properties;
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
 
-
-
 /**
- * Represents a segment of roller coaster track.
  *
- * @author Bernard Horan
+ * @author paulby
  */
+public class RightTurnTrackSegmentType extends TrackSegmentType {
 
-public class TrackSegment  {
-    private TrackSegmentType segmentType;
-    private Properties segmentProperties = new Properties();
-    private TCBKeyFrame[] keyFrames = null;
+    public RightTurnTrackSegmentType() {
+        super("RightTurn");
 
-    TrackSegment(TrackSegmentType segmentType) {
-        this.segmentType = segmentType;
-        keyFrames = segmentType.getDefaultKeyFrames();
-    }
+        TCBKeyFrame[] keys = new TCBKeyFrame[] {
+          createKeyFrame(0, new Vector3f(0,0,0)),
+          createKeyFrame(0.5f, new Vector3f(0,0,5)),
+          createKeyFrame(1f, new Vector3f(5,0,5))
+        };
 
-    public TCBKeyFrame[] getKeyFrames() {
-        return keyFrames;
+        setDefaultKeyFrames(keys);
     }
 }

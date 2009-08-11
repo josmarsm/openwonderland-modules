@@ -17,47 +17,34 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.common;
 
+import java.util.ArrayList;
+
 /**
  * The Singleton Track Manager.
  *
  * @author deronj
  */
-
-public class TrackManager  {
+public class TrackManager {
 
     private static TrackManager trackManager;
 
-    public static TrackManager getTrackManager () {
+    public static TrackManager getTrackManager() {
         if (trackManager == null) {
             trackManager = new TrackManager();
         }
         return trackManager;
     }
 
-    private TrackSegmentType[] supportedTypes = new TrackSegmentType[] {
-        new TrackSegmentType("Straight"),
-        new TrackSegmentType("Loop"),
-        new TrackSegmentType("Down Ramp"),
-        new TrackSegmentType("Up Ramp")
-    };
+    private ArrayList supportedTypes = new ArrayList();
 
-    private TrackManager () {
+    private TrackManager() {
+        supportedTypes.add(new LoopTrackSegmentType());
+        supportedTypes.add(new RightTurnTrackSegmentType());
     }
 
-    public TrackSegmentType[] getSupportedTypes () {
+    public Iterable<TrackSegmentType> getTrackSegmentTypes() {
         return supportedTypes;
     }
 
-    public void addTrackSegment (TrackSegment trackSegment) {
-        // TODO: paul
-    }
 
-    public void removeTrackSegment (TrackSegment trackSegment) {
-        // TODO: paul
-    }
-
-    public TrackSegment[] getTrackSegments () {
-        // TODO: paul
-        return null;
-    }
 }
