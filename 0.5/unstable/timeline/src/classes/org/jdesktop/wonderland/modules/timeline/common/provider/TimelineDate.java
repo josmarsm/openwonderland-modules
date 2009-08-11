@@ -146,4 +146,8 @@ public class TimelineDate implements Comparable, Serializable {
         TimelineDate tdo = (TimelineDate) o;
         return getMinimum().compareTo(tdo.getMinimum());
     }
+
+    public long getRange() {
+        return this.max.getTime() - this.min.getTime();
+    }
 }
