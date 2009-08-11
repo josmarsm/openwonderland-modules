@@ -46,7 +46,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class PresentationCellMO extends CellMO {
 
-    protected int curSlide = 0;
+    protected int curSlide = 1;
     
     private ManagedReference<MovingPlatformCellMO> platformCellMORef;
     private ManagedReference<SlidesCell> slidesCellRef;
@@ -83,7 +83,8 @@ public class PresentationCellMO extends CellMO {
      * @return
      */
     protected Vector3f getPositionForIndex(SlidesCell cell, int i) {
-        Vector3f newPosition = new Vector3f(0, 0, (cell.getCenterSpacing() * (i-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)/2.0f)*-1)));
+//        Vector3f newPosition = new Vector3f(0, -1.0f, (cell.getCenterSpacing() * (i-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)/2.0f)*-1)));
+        Vector3f newPosition = new Vector3f((cell.getCenterSpacing() * (i-1)*-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)))/(-2.0f), -1.5f, 8.0f);
         logger.info("returning position for platform: " + newPosition);
         return newPosition;
     }
