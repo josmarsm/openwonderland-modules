@@ -3,15 +3,13 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.timeline.client.provider;
-
-import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
+package org.jdesktop.wonderland.modules.timeline.common.provider;
 
 /**
  * The client for a particular timeline provider.
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public interface TimelineProviderResult {
+public interface TimelineResult {
     /**
      * Get the set of all objects exposed by this result.
      * @return all objects in this result
@@ -22,11 +20,11 @@ public interface TimelineProviderResult {
      * Add a listener for objects being added or removed
      * @param listener the listener to add
      */
-    public void addResultListener(TimelineProviderResultListener listener);
+    public void addResultListener(TimelineResultListener listener);
 
     /**
      * Remove a listener for objects being added or removed
      * @param listener the listener to remove
      */
-    public void removeResultListener(TimelineProviderResultListener listener);
+    public void removeResultListener(TimelineResultListener listener);
 }

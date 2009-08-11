@@ -27,6 +27,8 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
 
 /**
  * Component for receiving data from a timeline provider.
@@ -38,8 +40,8 @@ public class TimelineProviderComponent extends CellComponent {
             Logger.getLogger(TimelineProviderComponent.class.getName());
 
     /** the set of timeline providers */
-    private final Set<TimelineProviderResult> results =
-            new LinkedHashSet<TimelineProviderResult>();
+    private final Set<TimelineResult> results =
+            new LinkedHashSet<TimelineResult>();
 
     /** listeners */
     private final Set<TimelineProviderComponentListener> listeners =
@@ -57,7 +59,7 @@ public class TimelineProviderComponent extends CellComponent {
      * Get all active results for this cell.
      * @return the set of timeline results
      */
-    public Set<TimelineProviderResult> getResults() {
+    public Set<TimelineResult> getResults() {
         return Collections.unmodifiableSet(results);
     }
 
@@ -79,16 +81,12 @@ public class TimelineProviderComponent extends CellComponent {
     }
 
     /**
-     * Get the set
-     */
-
-    /**
      * Implementation of a result object
      */
-    private class ResultImpl implements TimelineProviderResult {
+    private class ResultImpl implements TimelineResult {
         private DatedSet resultSet;
-        private final Set<TimelineProviderResultListener> listeners =
-                new CopyOnWriteArraySet<TimelineProviderResultListener>();
+        private final Set<TimelineResultListener> listeners =
+                new CopyOnWriteArraySet<TimelineResultListener>();
 
         ResultImpl(DatedSet resultSet) {
             this.resultSet = resultSet;
@@ -98,11 +96,11 @@ public class TimelineProviderComponent extends CellComponent {
             return resultSet;
         }
 
-        public void addResultListener(TimelineProviderResultListener listener) {
+        public void addResultListener(TimelineResultListener listener) {
             listeners.add(listener);
         }
 
-        public void removeResultListener(TimelineProviderResultListener listener) {
+        public void removeResultListener(TimelineResultListener listener) {
             listeners.remove(listener);
         }
 
@@ -118,13 +116,13 @@ public class TimelineProviderComponent extends CellComponent {
         }
 
         protected void fireResultAdded(DatedObject obj) {
-            for (TimelineProviderResultListener l : listeners) {
+            for (TimelineResultListener l : listeners) {
                 l.added(obj);
             }
         }
 
         protected void fireResultRemoved(DatedObject obj) {
-            for (TimelineProviderResultListener l : listeners) {
+            for (TimelineResultListener l : listeners) {
                 l.removed(obj);
             }
         }

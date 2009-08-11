@@ -3,15 +3,13 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.timeline.client.provider;
-
-import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
+package org.jdesktop.wonderland.modules.timeline.common.provider;
 
 /**
  * Listen for changes to a result.
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public interface TimelineProviderResultListener {
+public interface TimelineResultListener {
     /**
      * Notification when a result is added
      * @param obj the data that was added

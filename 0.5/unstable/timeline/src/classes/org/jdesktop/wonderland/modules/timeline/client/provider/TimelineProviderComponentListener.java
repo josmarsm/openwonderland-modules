@@ -5,6 +5,8 @@
 
 package org.jdesktop.wonderland.modules.timeline.client.provider;
 
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
+
 /**
  * A listener that will be notified of changes to the set of timeline provider
  * Results.
@@ -15,11 +17,11 @@ public interface TimelineProviderComponentListener {
      * Notification that a new result was added
      * @param result the result that was added
      */
-    public void resultAdded(TimelineProviderResult result);
+    public void resultAdded(TimelineResult result);
 
     /**
      * Notification that a result was removed
      * @param result the result that was removed
      */
-    public void resultRemoved(TimelineProviderResult result);
+    public void resultRemoved(TimelineResult result);
 }
