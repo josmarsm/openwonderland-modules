@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackManager;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
 
@@ -38,6 +39,15 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
     /* The "No Preview Available" image */
     private Image noPreviewAvailableImage = null;
+
+    /** The track. */
+    private Track track;
+       
+    /** Number of segments in the track. */
+    private int numSegments;
+
+    /** List of segment type names that are in the track. */
+    private LinkedList<String> segmentTypeNames = new LinkedList<String>();
 
     private Container container;
 
@@ -55,9 +65,7 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
         // Create the icon for the "No Preview Available" image
         URL url = ConstructPanel.class.getResource("resources/nopreview.png");
-        System.err.println("url = " + url);
         noPreviewAvailableImage = Toolkit.getDefaultToolkit().createImage(url);
-        System.err.println("noPreviewAvailableImage = " + noPreviewAvailableImage);
 
         // Listen for list selection events and update the preview panel with
         // the selected item's image
@@ -82,8 +90,11 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
         previewPanel = new javax.swing.JPanel();
         previewLabel = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        segmentList = new javax.swing.JList();
 
-        jLabel1.setText("Track Segment To Add:");
+        jLabel1.setText("Track Segment Type to Add:");
 
         createButton.setText("Add");
         createButton.setEnabled(false);
@@ -114,25 +125,34 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
             }
         });
 
+        jLabel2.setText("Track Segments:");
+
+        segmentList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        segmentList.setEnabled(false);
+        jScrollPane1.setViewportView(segmentList);
+        segmentList.setDragEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel2)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(cellScrollPane, 0, 0, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE))
+                        .addGap(74, 74, 74)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
+                            .addComponent(previewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(cellScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(previewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(63, 63, 63)
-                        .addComponent(createButton)
-                        .addGap(64, 64, 64)
-                        .addComponent(jButton1)))
+                                .addComponent(createButton)
+                                .addGap(18, 18, 18)
+                                .addComponent(jButton1)
+                                .addGap(21, 21, 21)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -142,13 +162,18 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cellScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
-                    .addComponent(previewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(previewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(38, 38, 38)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButton1)
+                            .addComponent(createButton)))
+                    .addComponent(cellScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(createButton)
-                    .addComponent(jButton1))
-                .addContainerGap())
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(50, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -161,6 +186,16 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
             // TODO: Add the new segment to the track.
             System.err.println("Segment add: type = " + typeName);
+            segmentTypeNames.add(typeName);
+            numSegments++;
+            if (numSegments == 1) {
+                segmentList.setEnabled(true);
+            }
+
+            // TrackSegment segment = segmentType.createSegment();
+            // track.addSegment(segment);
+                
+            segmentList.setListData(segmentTypeNames.toArray(new String[]{}));
         }
 
 }//GEN-LAST:event_createButtoncreateActionPerformed
@@ -303,14 +338,22 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
         }
     }
 
+    /** Give this panel the track to construct. */
+    public void setTrack (Track track) {
+        this.track = track;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JList cellList;
     protected javax.swing.JScrollPane cellScrollPane;
     protected javax.swing.JButton createButton;
     protected javax.swing.JButton jButton1;
     protected javax.swing.JLabel jLabel1;
+    protected javax.swing.JLabel jLabel2;
+    protected javax.swing.JScrollPane jScrollPane1;
     protected javax.swing.JLabel previewLabel;
     protected javax.swing.JPanel previewPanel;
+    protected javax.swing.JList segmentList;
     // End of variables declaration//GEN-END:variables
 
 }

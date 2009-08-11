@@ -47,11 +47,9 @@
                 <clientjar name="marbleous-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
-		    <!-- NOTYET: include textures here when they are ready.
                     <fileset dir="${current.dir}/src/classes">
-                        <include name="${module.src}/client/resources/**/*.png"/>
+                        <include name="${module.src}/client/ui/resources/*.png"/>
                     </fileset>
-		    -->
                 </clientjar>
             </client>
                 
