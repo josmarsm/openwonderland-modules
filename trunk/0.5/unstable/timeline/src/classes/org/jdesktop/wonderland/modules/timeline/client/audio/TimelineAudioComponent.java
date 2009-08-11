@@ -17,11 +17,18 @@
  */
 package org.jdesktop.wonderland.modules.timeline.client.audio;
 
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelinePlayRecordingMessage;
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineRecordMessage;
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentChangeMessage;
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentTreatmentMessage;
+
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
 
 import java.util.logging.Logger;
 
 import com.jme.math.Vector3f;
+
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
@@ -83,15 +90,23 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
     }
     
     public void createSegmentTreatment(TimelineSegment segment, Vector3f location, String treatment) {
+	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), segment, location, treatment));
     }
 
     public void changeSegment(TimelineSegment previousSegment, TimelineSegment currentSegment) {
+	channelComp.send(new TimelineSegmentChangeMessage(cell.getCellID(), previousSegment, currentSegment));
     }
 
     public void playSegmentRecording(TimelineSegment segment, String recordingPath, boolean isPlaying) {
+	String callID = SoftphoneControlImpl.getInstance().getCallID();
+
+	channelComp.send(new TimelinePlayRecordingMessage(cell.getCellID(), segment, callID, recordingPath, isPlaying));
     }
 
-    public void record(TimelineSegment segment, String recordinPath, boolean isRecording) {
+    public void record(TimelineSegment segment, String recordingPath, boolean isRecording) {
+	String callID = SoftphoneControlImpl.getInstance().getCallID();
+
+	channelComp.send(new TimelineRecordMessage(cell.getCellID(), segment, callID, recordingPath, isRecording));
     }
 
     public void messageReceived(CellMessage message) {
