@@ -178,7 +178,7 @@ public class ConstructPanel extends javax.swing.JPanel implements ListSelectionL
 
             // Fetch the registry of cells and for each, get the palette info and
             // populate the list.
-            TrackSegmentType[] segmentTypes = TrackManager.getTrackManager().getSupportedTypes();
+            Iterable<TrackSegmentType> segmentTypes = TrackManager.getTrackManager().getTrackSegmentTypes();
             List<String> listNames = new LinkedList();
 
             // Loop through each segment type we find. Insert the type names into

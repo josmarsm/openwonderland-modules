@@ -17,8 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.common;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
 import java.awt.Image;
-
 
 /**
  * Represents a type of a segment of roller coaster track.
@@ -28,25 +30,43 @@ import java.awt.Image;
 
 public class TrackSegmentType  {
 
-    // TODO: define preview images in this array
-
-    private String name;
+    private String name=null;
+    private TCBKeyFrame[] defaultKeyFrames=null;
     private Image previewImage;
 
-    public TrackSegmentType (String name) {
-        this(name, null);
-    }
-
-    public TrackSegmentType (String name, Image previewImage) {
+    protected TrackSegmentType(String name) {
         this.name = name;
-        this.previewImage = previewImage;
-    }
-
-    public String getName () {
-        return name;
     }
 
     public Image getPreviewImage () {
         return previewImage;
     }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @return the defaultKeyFrames
+     */
+    public TCBKeyFrame[] getDefaultKeyFrames() {
+        return defaultKeyFrames;
+    }
+
+    protected void setDefaultKeyFrames(TCBKeyFrame[] defaultKeyFrames) {
+        this.defaultKeyFrames = defaultKeyFrames;
+    }
+
+    protected TCBKeyFrame createKeyFrame(float knot, Vector3f pos) {
+        float tension = 0;
+        float continuity = 0;
+        float bias = 0;
+        Quaternion rot = new Quaternion();
+        TCBKeyFrame ret = new TCBKeyFrame(knot, 0, pos, rot, new Vector3f(1,1,1), tension, continuity, bias);
+        return ret;
+    }
+
 }

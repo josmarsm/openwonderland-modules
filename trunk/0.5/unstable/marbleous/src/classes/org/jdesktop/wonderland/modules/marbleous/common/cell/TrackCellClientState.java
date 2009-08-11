@@ -15,30 +15,16 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.marbleous.common;
+package org.jdesktop.wonderland.modules.marbleous.common.cell;
 
-import java.util.Properties;
-import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
-
-
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- * Represents a segment of roller coaster track.
+ * Container for Marbleous track client cell client state data.
  *
- * @author Bernard Horan
+ * @author paulby
  */
 
-public class TrackSegment  {
-    private TrackSegmentType segmentType;
-    private Properties segmentProperties = new Properties();
-    private TCBKeyFrame[] keyFrames = null;
+public class TrackCellClientState extends CellClientState {
 
-    TrackSegment(TrackSegmentType segmentType) {
-        this.segmentType = segmentType;
-        keyFrames = segmentType.getDefaultKeyFrames();
-    }
-
-    public TCBKeyFrame[] getKeyFrames() {
-        return keyFrames;
-    }
 }
