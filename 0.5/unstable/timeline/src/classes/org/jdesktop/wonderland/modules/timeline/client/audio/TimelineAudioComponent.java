@@ -91,8 +91,6 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
     }
     
     public void createSegmentTreatment(TimelineSegment segment) {
-	//Vector3f location = segment.getCellTransform().getTransform().getTranslation(null);
-
 	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), segment));
     }
 
