@@ -26,8 +26,6 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.marbleous.client.MarbleousMain;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.MarbleousApp;
-import org.jdesktop.wonderland.modules.marbleous.client.ui.MarbleousWindowConstruct;
-import org.jdesktop.wonderland.modules.marbleous.client.ui.MarbleousWindowRun;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.MarbleousCellClientState;
 
 
@@ -43,10 +41,6 @@ public class MarbleousCell extends App2DCell {
     private static final Logger logger = Logger.getLogger(MarbleousCell.class.getName());
     /** The MarbleousMain singleton -- the game logic. */
     private MarbleousMain main;
-    /** The track construction UI window. */
-    private MarbleousWindowConstruct windowConstruct;
-    /** The run simulation UI window. */
-    private MarbleousWindowRun windowRun;
     /** The cell client state message received from the server cell */
     private MarbleousCellClientState clientState;
 
@@ -89,14 +83,7 @@ public class MarbleousCell extends App2DCell {
                     // Tell the app to be displayed in this cell.
                     app.addDisplayer(this);
 
-                    // Create the UI windows
-                    windowConstruct = new MarbleousWindowConstruct(this, app, 800, 800, true, 
-                                                          new Vector2f(0.01f, 0.01f));
-                    //windowRun = new MarbleousWindowRun(this, app, 400, 200, true, 
-                    //                             new Vector2f(0.01f, 0.01f));
-                    windowRun = null;
-
-                    main = new MarbleousMain(this, windowConstruct, windowRun);
+                    main = new MarbleousMain(this);
                     main.setVisible(true);
                 }
                 break;
@@ -106,8 +93,6 @@ public class MarbleousCell extends App2DCell {
                 if (!increasing) {
                     main.setVisible(false);
                     main = null;
-                    windowConstruct = null;
-                    windowRun = null;
                 }
                 break;
         }
