@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.marbleous.common;
 
 import com.jme.math.Matrix4f;
+import com.jme.math.Vector3f;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -71,5 +72,14 @@ public class Track {
             segmentNumber++;
         }
         return keyFrames;
+    }
+
+    public Vector3f getMarbleStartPosition() {
+        TrackSegment firstSegment = segments.get(0);
+        TCBKeyFrame f = firstSegment.getKeyFrames()[0];
+        Vector3f ret = f.position;
+        System.err.println("Initial POS "+ret);
+        ret.y+=1;
+        return ret;
     }
 }
