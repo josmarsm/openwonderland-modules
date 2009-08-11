@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.timeline.common;
+package org.jdesktop.wonderland.modules.timeline.common.audio;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 
@@ -28,38 +28,38 @@ import com.jme.math.Vector3f;
  *
  *  
  */
-public class TimelineSegmentTreatmentMessage extends CellMessage {
+public class TimelinePlayRecordingMessage extends CellMessage {
 
     private String segmentID;
-    private Vector3f location;
-    private String treatment;
-    private double attenuator;
+    private String callID;
+    private String recordingPath;
+    private boolean isPlaying;
 
-    public TimelineSegmentTreatmentMessage(CellID cellID, String segmentID,
-	    Vector3f location, String treatment, double attenuator) {
+    public TimelinePlayRecordingMessage(CellID cellID, String segmentID, String callID,
+	    String recordingPath, boolean isPlaying) {
 
 	super(cellID);
 
 	this.segmentID = segmentID;
-	this.location = location;
-	this.treatment = treatment;
-	this.attenuator = attenuator;
+	this.callID = callID;
+	this.recordingPath = recordingPath;
+	this.isPlaying = isPlaying;
     }
 
     public String getSegmentID() {
 	return segmentID;
     }
 
-    public Vector3f getLocation() {
-	return location;
+    public String getCallID() {
+	return callID;
     }
 
-    public String getTreatment() {
-	return treatment;
+    public String getRecordingPath() {
+	return recordingPath;
     }
 
-    public double getAttenuator() {
-	return attenuator;
+    public boolean getIsPlaying() {
+	return isPlaying;
     }
 
 }
