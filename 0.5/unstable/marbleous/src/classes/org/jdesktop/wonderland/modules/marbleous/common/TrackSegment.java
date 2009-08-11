@@ -21,6 +21,9 @@ import com.jme.math.Matrix4f;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
 
 
@@ -30,27 +33,36 @@ import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
  *
  * @author Bernard Horan
  */
-
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType( namespace="marbleous" )
 public class TrackSegment  {
-    private TrackSegmentType segmentType;
+    private Class segmentTypeClass;
     private Properties segmentProperties = new Properties();
     private TCBKeyFrame[] keyFrames = null;
+    private String name;
+    private Matrix4f endpointTransform;
 
-    public TrackSegment(TrackSegmentType segmentType) {
-        this.segmentType = segmentType;
-        keyFrames = segmentType.getDefaultKeyFrames();
+    public TrackSegment() {
+        
     }
 
-    public TrackSegmentType getType () {
-        return segmentType;
+    TrackSegment(TrackSegmentType segmentType) {
+        segmentTypeClass = segmentType.getClass();
+        keyFrames = segmentType.getDefaultKeyFrames();
+        name = segmentType.getName();
+        endpointTransform = segmentType.getEndpointTransform();
+    }
+
+    public String getName () {
+        return name;
     }
 
     public TCBKeyFrame[] getKeyFrames() {
         return keyFrames;
     }
 
-    public TrackSegmentType getTrackSegmentType() {
-        return segmentType;
+    public Matrix4f getEndpointTransform() {
+        return endpointTransform;
     }
 
     /**
@@ -76,6 +88,6 @@ public class TrackSegment  {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + " [" + segmentType + "]";
+        return this.getClass().getSimpleName() + " [" + segmentTypeClass + "]";
     }
 }

@@ -20,12 +20,17 @@ package org.jdesktop.wonderland.modules.marbleous.common;
 import com.jme.math.Matrix4f;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TCBKeyFrame;
 
 /**
  *
- * @author paulby
+ * @author paulby, Bernard Horan
  */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType( namespace="marbleous" )
 public class Track {
 
     private ArrayList<TrackSegment> segments = new ArrayList<TrackSegment>();
@@ -63,7 +68,7 @@ public class Track {
         int segmentNumber = 0;
         for(TrackSegment segment : segments) {
             keyFrames.addAll(segment.computeWorldKeyFrames(currentEndpoint, segmentNumber, segments.size()));
-            currentEndpoint.multLocal(segment.getTrackSegmentType().getEndpointTransform());
+            currentEndpoint.multLocal(segment.getEndpointTransform());
             segmentNumber++;
         }
         return keyFrames;
