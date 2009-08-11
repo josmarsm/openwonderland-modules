@@ -61,4 +61,8 @@ public class TimelineSegment implements DatedObject {
         throw new UnsupportedOperationException("Not implemented in the common version of this object - server/client versions will handle this differently.");
     }
 
+    @Override
+    public String toString() {
+        return date + " (@" + transform + ")";
+    }
 }

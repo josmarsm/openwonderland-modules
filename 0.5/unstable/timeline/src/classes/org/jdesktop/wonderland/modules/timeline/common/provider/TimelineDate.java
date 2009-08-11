@@ -87,7 +87,7 @@ public class TimelineDate implements Comparable, Serializable {
      */
     public boolean contains(Date date) {
         // check if the minimum is less than or equal to the given date
-        boolean before = getMinimum().equals(date) || getMinimum().after(date);
+        boolean before = getMinimum().equals(date) || getMinimum().before(date);
 
         // make sure the given date is less than the maximum
         return before && getMaximum().after(date);
@@ -147,7 +147,16 @@ public class TimelineDate implements Comparable, Serializable {
         return getMinimum().compareTo(tdo.getMinimum());
     }
 
+    /**
+     * Get the range (in ms) between the dates represented by this TimelineDate.
+     * @return
+     */
     public long getRange() {
         return this.max.getTime() - this.min.getTime();
+    }
+
+    @Override
+    public String toString() {
+        return "TimelineDate: " + min + " -> " + max;
     }
 }

@@ -40,6 +40,7 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.timeline.client.jme.cell.TimelineCellRenderer;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage;
@@ -96,7 +97,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      * pitch/radsPerSegment/numSegments values and is updated when those
      * values are updated.
      */
-    private float height = 30.0f;
+    private float height;
 
     /**
      * The date range of the timeline.
@@ -149,12 +150,25 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                     }
                 });
 
-
                 // Now setup a transform change listener on the avatarcell,
                 // so we can properly update the navigation slider as they move
                 // around.
                 AvatarCell avatar = (AvatarCell)cell.getCellCache().getCell(viewCellID);
                 avatar.addTransformChangeListener(this);
+
+                this.updateHeight();
+
+                // generate a bunch of fake segments for testing purposes.
+                long msPerSegment = timelineRange.getRange() / numSegments;
+                long curTime = timelineRange.getMinimum().getTime();
+                for(int i=0; i<numSegments; i++) {
+                    TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime+msPerSegment)));
+                    newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.height / numSegments)*i, 0.0f), 1.0f));
+                    this.sortedSegments.add(newSeg);
+                    curTime += msPerSegment;
+                }
+
+                logger.warning("test segments: " + this.sortedSegments);
 
             } else {
                 // Remove the navigation HUD.
@@ -180,6 +194,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         // For now, when an avatar moves, just output our current guess
         // at the date.
         logger.warning("date of local avatar: " + this.getDateByPosition(cell.getWorldTransform().getTranslation(null)));
+//        logger.warning("local av pos: " + cell.getWorldTransform().getTranslation(null));
     }
 
     class TimelineCellMessageReceiver implements ComponentMessageReceiver {
@@ -240,8 +255,13 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     public TimelineSegment getSegmentByDate(Date date) {
         Set<DatedObject> segments = this.sortedSegments.containsSet(new TimelineDate(date));
 
+        logger.warning("segmentsByDate: " + segments);
+
         // because the time ranges of segments are non-overlapping, containsSet
         // will always return a single element.
+        if(segments.size()==0)
+            return null;
+        
         assert segments.size()==1;
 
         return  (TimelineSegment) segments.iterator().next();
@@ -273,11 +293,19 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
         float avatarHeightRelativeToTimeline = pos.y - minimumHeight;
 
+        logger.warning("minHeight: " + minimumHeight + "; relativeToTimeline: " + avatarHeightRelativeToTimeline);
         float heightFraction = avatarHeightRelativeToTimeline / this.height;
 
         Date testDate = new Date(timelineRange.getMinimum().getTime() + ((long)(timelineRange.getRange()*heightFraction)));
 
-        return getSegmentByDate(testDate).getDate();
+        logger.warning("Test date: " + testDate + "(height fraction: " + heightFraction + ")");
+
+        TimelineSegment segByPosition = getSegmentByDate(testDate);
+
+        if(segByPosition==null)
+            return null;
+        else
+            return segByPosition.getDate();
     }
 
     public TimelineDate getTimelineRange() {
