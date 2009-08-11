@@ -29,11 +29,11 @@ import java.awt.Image;
  * @author Bernard Horan, deronj
  */
 
-public abstract class TrackSegmentType  {
+public abstract class TrackSegmentType implements Comparable {
 
     private String name=null;
     private TCBKeyFrame[] defaultKeyFrames=null;
-    private Image previewImage;
+    private Image previewImage = null;
 
     protected TrackSegmentType(String name) {
         this.name = name;
@@ -81,5 +81,18 @@ public abstract class TrackSegmentType  {
      * @return
      */
     abstract Matrix4f getEndpointTransform();
+
+    /**
+     * 
+     * @return
+     */
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + " [" + name + "]";
+    }
+
+    public int compareTo(Object anotherType) {
+        return name.compareToIgnoreCase(((TrackSegmentType)anotherType).name);
+    }
 
 }

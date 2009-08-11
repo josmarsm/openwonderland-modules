@@ -41,4 +41,9 @@ public class TrackSegment  {
     public TCBKeyFrame[] getKeyFrames() {
         return keyFrames;
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + " [" + segmentType + "]";
+    }
 }
