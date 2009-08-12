@@ -76,10 +76,7 @@ public class TrackSegment implements Serializable {
         for(TCBKeyFrame f : keyFrames) {
             TCBKeyFrame worldFrame = new TCBKeyFrame(f);
             worldFrame.position = worldTransform.mult(worldFrame.position);
-            System.err.println("old "+worldFrame.knot+" "+segmentNumber+"  "+totalSegments);
-
             worldFrame.knot = (worldFrame.knot+segmentNumber)/totalSegments;
-            System.err.println("New Knot "+worldFrame.knot);
             ret.add(worldFrame);
         }
 
