@@ -30,6 +30,7 @@ public class LoopTrackSegmentType extends TrackSegmentType {
 
     public LoopTrackSegmentType() {
         super("Loop");
+        imageName = "RampLoop.png";
 
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
           createKeyFrame(0, new Vector3f(-1,0,5)),
