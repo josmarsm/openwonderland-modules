@@ -24,9 +24,16 @@ import com.sun.sgs.app.util.ScalableHashMap;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineProviderConnectionType;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQuery;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQueryID;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
+import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderAddQueryRequestMessage;
+import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderRemoveQueryRequestMessage;
+import org.jdesktop.wonderland.server.WonderlandContext;
+import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * The server registration mechanism for timeline providers connected
@@ -37,7 +44,7 @@ public class TimelineProviderRegistry {
     private static final String NAME = TimelineProviderRegistry.class.getName();
     private static final String NEXT_ID_BINDING = NAME + ".NextID";
     private static final String REGISTRATION_BINDING = NAME + ".Registration";
-
+    
     /**
      * Get an instance of the TimelineProviderRegistry singleton
      */
@@ -61,7 +68,7 @@ public class TimelineProviderRegistry {
         getQueries().put(query.getQueryID(), info);
 
         // notify the connected provider (if any)
-        //
+        getProviderSender().send(new ProviderAddQueryRequestMessage(query));
 
         // make sure our max id is up-to-date
         IDHolder holder = getIDHolder();
@@ -95,6 +102,20 @@ public class TimelineProviderRegistry {
     }
 
     /**
+     * Get the listener for a given query id
+     * @param id the id of the query to get a listener for
+     * @return the listener for that query
+     */
+    RegistryResultListener getListener(TimelineQueryID id) {
+        ResultInfo info = getQueries().get(id);
+        if (info == null) {
+            return null;
+        }
+
+        return info.listener;
+    }
+
+    /**
      * Remove the query with the given id from the provider
      * @param id the id of the provider to remove
      */
@@ -102,7 +123,7 @@ public class TimelineProviderRegistry {
         boolean removed = (getQueries().remove(id) != null);
         if (removed) {
             // notify the connected provider (if any)
-            //
+            getProviderSender().send(new ProviderRemoveQueryRequestMessage(id));
         }
     }
     
@@ -118,6 +139,15 @@ public class TimelineProviderRegistry {
         holder.max = out;
 
         return out;
+    }
+
+    /**
+     * Get the client sender to send to the timeline provider
+     * @return the sender to send to the timeline provider
+     */
+    private WonderlandClientSender getProviderSender() {
+        CommsManager cm = WonderlandContext.getCommsManager();
+        return cm.getSender(TimelineProviderConnectionType.TYPE);
     }
 
     /**
@@ -162,7 +192,18 @@ public class TimelineProviderRegistry {
      */
     interface RegistryResultListener extends TimelineResultListener {
         /**
-         * Notification that the results are being reset.
+         * Add a set of objects.
+         */
+        public void added(Set<DatedObject> objs);
+
+        /**
+         * Remove a set of objects.
+         */
+        public void removed(Set<DatedObject> objs);
+
+        /**
+         * Notification that the results are being reset, and all objects
+         * should be removed.
          */
         public void reset();
     }
@@ -189,5 +230,4 @@ public class TimelineProviderRegistry {
     private static final class IDHolder implements ManagedObject, Serializable {
         private TimelineQueryID max = new TimelineQueryID(0);
     }
-
 }
