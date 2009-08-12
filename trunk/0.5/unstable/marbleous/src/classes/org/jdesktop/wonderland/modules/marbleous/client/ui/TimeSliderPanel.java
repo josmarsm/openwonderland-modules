@@ -11,6 +11,8 @@
 
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
+import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.modules.marbleous.client.SampleInfo;
 import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
 
 /**
@@ -44,6 +46,14 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+
+        jSlider1.setPaintLabels(true);
+        jSlider1.setPaintTicks(true);
+        jSlider1.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jSlider1StateChanged(evt);
+            }
+        });
 
         jLabel1.setText("Time (ms)");
 
@@ -81,6 +91,23 @@ public class TimeSliderPanel extends javax.swing.JPanel {
                 .addGap(44, 44, 44))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jSlider1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider1StateChanged
+        int value = jSlider1.getValue();
+        float pct = (float)value / (float)(jSlider1.getMaximum() - jSlider1.getMinimum());
+        System.err.println("trace.getEndTime() = " + trace.getEndTime());
+        float t = pct * trace.getEndTime();
+
+        //System.err.println("value = " + value);
+        //System.err.println("pct = " + pct);
+        System.err.println("t = " + t);
+
+        SampleInfo sampleInfo = trace.getSampleInfo(t);
+        System.err.println("sampleInfo = " + sampleInfo);
+        Vector3f position = sampleInfo.getPosition();
+        System.err.println("position = " + position);
+
+    }//GEN-LAST:event_jSlider1StateChanged
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
