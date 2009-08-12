@@ -73,7 +73,7 @@ public class TimelineCellMO extends CellMO {
             cellClientState = new TimelineCellClientState();
         }
 
-        ((TimelineCellClientState)cellClientState).setConfig(config);
+        ((TimelineCellClientState)cellClientState).setConfig(new TimelineConfiguration(config));
         
         return super.getClientState(cellClientState, clientID, capabilities);
     }

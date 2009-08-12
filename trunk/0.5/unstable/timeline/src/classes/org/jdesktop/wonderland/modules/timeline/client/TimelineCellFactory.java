@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellServerState;
+import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 
 /**
  *
@@ -38,7 +39,7 @@ public class TimelineCellFactory implements CellFactorySPI{
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
 
         TimelineCellServerState state = new TimelineCellServerState();
-        state.setConfig(new TimelineClientConfiguration());
+        state.setConfig(new TimelineConfiguration());
         return (T)state;
     }
 

@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 @XmlRootElement(name="timeline-config")
-public abstract class TimelineConfiguration implements Serializable {
+public class TimelineConfiguration implements Serializable {
     /** Radians per segment. Default is PI / 4 (45 degrees)*/
     private float radsPerSegment = (float) (Math.PI / 4);
 
@@ -50,6 +50,13 @@ public abstract class TimelineConfiguration implements Serializable {
      * Default constructor
      */
     public TimelineConfiguration() {
+    }
+
+    public TimelineConfiguration(TimelineConfiguration config) {
+        this.dateRange = config.getDateRange();
+        this.numSegments = config.getNumSegments();
+        this.pitch = config.getPitch();
+        this.radsPerSegment = config.getRadsPerSegment();
     }
 
     /**
@@ -136,6 +143,4 @@ public abstract class TimelineConfiguration implements Serializable {
         float numTurns = (float) ((radsPerSegment * numSegments) / (Math.PI * 2));
         return numTurns * pitch;
     }
-
-    public abstract void sendUpdatedConfiguration();
 }
