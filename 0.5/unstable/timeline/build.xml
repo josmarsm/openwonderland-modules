@@ -8,13 +8,15 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
-    <!--pathconvert property="module-client.classpath">
-    </pathconvert-->
-
     <pathconvert property="module-server.classpath">
         <path location="${wonderland.dir}/modules/tools/audio-manager/lib/voicelib.jar"/>
         <path location="${wonderland.dir}/modules/tools/audio-manager/lib/voip.jar"/>
         <path location="${wonderland.dir}/modules/tools/audio-manager/lib/bridge_connector.jar"/>
+        <path location="${wonderland.dir}/modules/samples/image-viewer/build/server/imageviewer-server.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-client.classpath">
+        <path location="${wonderland.dir}/modules/samples/image-viewer/build/client/imageviewer-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-web.classpath">
@@ -101,6 +103,9 @@
                 moduleDescription="${module.description}"
                 jarfile="${module.dist.dir}/${module.name}.jar"
                 builddir="${build.lib.dir}">
+
+            <requires name="image-viewer" version="1"/>
+
 
             <client dir="${current.dir}/lib">
                 <include name="*.jar"/>
