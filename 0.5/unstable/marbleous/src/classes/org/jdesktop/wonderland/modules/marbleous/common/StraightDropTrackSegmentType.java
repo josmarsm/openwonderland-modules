@@ -30,7 +30,7 @@ public class StraightDropTrackSegmentType extends TrackSegmentType {
 
     public StraightDropTrackSegmentType() {
         super("StraightDrop");
-
+        imageName = "RampDown.png";
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
           createKeyFrame(0, new Vector3f(0,4,0)),
           createKeyFrame(1f, new Vector3f(0,0,-5))

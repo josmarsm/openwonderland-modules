@@ -32,7 +32,7 @@ public abstract class TrackSegmentType implements Comparable {
 
     private String name=null;
     private TCBKeyFrame[] defaultKeyFrames=null;
-    private Image previewImage = null;
+    protected String imageName = null;
 
     protected TrackSegmentType(String name) {
         this.name = name;
@@ -42,8 +42,8 @@ public abstract class TrackSegmentType implements Comparable {
         return new TrackSegment(this);
     }
 
-    public Image getPreviewImage () {
-        return previewImage;
+    public String getImageName () {
+        return imageName;
     }
 
     /**

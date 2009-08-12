@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -315,33 +316,42 @@ public class ConstructPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private class TypeListRenderer extends JLabel implements ListCellRenderer {
-     // This is the only method defined by ListCellRenderer.
-     // We just reconfigure the JLabel each time we're called.
+        // This is the only method defined by ListCellRenderer.
+        // We just reconfigure the JLabel each time we're called.
 
-     public Component getListCellRendererComponent(
-       JList list,
-       Object value,            // value to display
-       int index,               // cell index
-       boolean isSelected,      // is the cell selected
-       boolean cellHasFocus)    // the list and the cell have the focus
-     {
-         TrackSegmentType type = (TrackSegmentType) value;
-         String s = type.getName();
-         setText(s);
-   	   if (isSelected) {
-             setBackground(list.getSelectionBackground());
-	       setForeground(list.getSelectionForeground());
-	   }
-         else {
-	       setBackground(list.getBackground());
-	       setForeground(list.getForeground());
-	   }
-	   setEnabled(list.isEnabled());
-	   setFont(list.getFont());
-         setOpaque(true);
-         return this;
-     }
- }
+        public Component getListCellRendererComponent(
+                JList list,
+                Object value, // value to display
+                int index, // cell index
+                boolean isSelected, // is the cell selected
+                boolean cellHasFocus) // the list and the cell have the focus
+        {
+            TrackSegmentType type = (TrackSegmentType) value;
+            String s = type.getName();
+            setText(s);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            setEnabled(list.isEnabled());
+            setFont(list.getFont());
+            setOpaque(true);
+            String imageName = type.getImageName();
+            if (imageName != null) {
+                // Create the icon for the type image
+                URL url = ConstructPanel.class.getResource("resources/" + imageName);
+                Image typeImage = Toolkit.getDefaultToolkit().createImage(url);
+                ImageIcon icon = new ImageIcon(typeImage);
+                setIcon(icon);
+            } else {
+                setIcon(null);
+            }
+            return this;
+        }
+    }
 
     private class SegmentListRenderer extends JLabel implements ListCellRenderer {
 
