@@ -32,16 +32,22 @@ import com.jme.math.Vector3f;
  */
 public class TimelineSegmentChangeMessage extends CellMessage {
 
+    private String callID;
     private TimelineSegment previousSegment;
     private TimelineSegment currentSegment;
 
-    public TimelineSegmentChangeMessage(CellID cellID, TimelineSegment previousSegment,
+    public TimelineSegmentChangeMessage(CellID cellID, String callID, TimelineSegment previousSegment,
 	    TimelineSegment currentSegment) {
 
 	super(cellID);
 
+	this.callID = callID;
 	this.previousSegment = previousSegment;
 	this.currentSegment = currentSegment;
+    }
+
+    public String getCallID() {
+	return callID;
     }
 
     public TimelineSegment getPreviousSegment() {
