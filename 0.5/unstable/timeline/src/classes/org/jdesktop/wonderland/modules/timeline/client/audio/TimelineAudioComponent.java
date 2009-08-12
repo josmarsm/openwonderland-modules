@@ -22,17 +22,23 @@ import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineRecordMessa
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentChangeMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentTreatmentMessage;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
+import java.util.Date;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineAudioComponentClientState;
+
+import com.jme.math.Vector3f;
 
 /**
  * A component that provides audio participant control
@@ -51,18 +57,78 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
         super(cell);
     }
     
-   @Override
-    public void setClientState(CellComponentClientState clientState) {
-        super.setClientState(clientState);
+    @Override
+    protected void setStatus(CellStatus status, boolean increasing) {
+        switch (status) {
+            case DISK:
+                break;
 
-	TimelineAudioComponentClientState state = (TimelineAudioComponentClientState) 
-	    clientState;
+            case ACTIVE:
+                if (increasing) {
+		    //test();
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void setClientState(CellComponentClientState clientState) {
+	TimelineAudioComponentClientState state = (TimelineAudioComponentClientState) clientState;
+
+        super.setClientState(clientState);
+    }
+
+    private void test() {
+	TimelineSegment s0 = new TimelineSegment(new TimelineDate(new Date(2009, 7, 12, 11, 0)));
+
+	createSegmentTreatment(s0, "ring_tone.au");
+
+	TimelineSegment s1 = new TimelineSegment(new TimelineDate(new Date(2009, 7, 12, 11, 1)));
+	
+	createSegmentTreatment(s1, "please_wait.au");
+
+	TimelineSegment s2 = new TimelineSegment(new TimelineDate(new Date(2009, 7, 12, 11, 2)));
+
+	createSegmentTreatment(s2, "singing_teapot.au");
+
+	changeSegment(null, s0);
+
+	try {
+	    Thread.sleep(2000);
+	} catch (InterruptedException e) {
+	}
+
+	changeSegment(s0, s1);
+
+	try {
+	    Thread.sleep(2000);
+	} catch (InterruptedException e) {
+	}
+
+	changeSegment(s1, s2);
     }
    
-    public void createSegmentTreatment(TimelineSegment segment) {
-	System.out.println("Create segment: " + segment);
+    private String cleanSegmentID(String segmentID) {
+	return segmentID.replaceAll(":", "_");
+    }
 
-	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), segment));
+    public void createSegmentTreatment(TimelineSegment segment) {
+	createSegmentTreatment(segment, segment.getTreatment());
+    }
+
+    public void createSegmentTreatment(TimelineSegment segment, String treatment) {
+	System.out.println("Create segment: " + segment + " treatment " + treatment);
+
+	Vector3f location = new Vector3f();
+
+	CellTransform transform = segment.getTransform();
+
+	if (transform != null) {
+	    location = transform.getTranslation(null);
+	}
+
+	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), cleanSegmentID(segment.toString()),
+	    treatment, location));
     }
 
     public void changeSegment(TimelineSegment previousSegment, TimelineSegment currentSegment) {
@@ -71,7 +137,14 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	System.out.println("changeSegment: " + callID + " previous " + previousSegment 
 	    + " current " + currentSegment);
 
-	channelComp.send(new TimelineSegmentChangeMessage(cell.getCellID(), callID, previousSegment, currentSegment));
+	String previousSegmentID = null;
+
+	if (previousSegment != null) {
+	    previousSegmentID = cleanSegmentID(previousSegment.toString());
+	}
+
+	channelComp.send(new TimelineSegmentChangeMessage(cell.getCellID(), callID, previousSegmentID,
+	    cleanSegmentID(currentSegment.toString())));
     }
 
     public void playSegmentRecording(TimelineSegment segment, String recordingPath, boolean isPlaying) {
@@ -80,7 +153,8 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	System.out.println("playSegmentRecording " + segment + " path " + recordingPath + " isPlaying "
 	    + isPlaying);
 
-	channelComp.send(new TimelinePlayRecordingMessage(cell.getCellID(), segment, callID, recordingPath, isPlaying));
+	channelComp.send(new TimelinePlayRecordingMessage(cell.getCellID(), 
+	    cleanSegmentID(segment.toString()), callID, recordingPath, isPlaying));
     }
 
     public void record(TimelineSegment segment, String recordingPath, boolean isRecording) {
@@ -89,7 +163,8 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	System.out.println("record " + segment + " path " + recordingPath + " isPlaying "
 	    + isRecording);
 
-	channelComp.send(new TimelineRecordMessage(cell.getCellID(), segment, callID, recordingPath, isRecording));
+	channelComp.send(new TimelineRecordMessage(cell.getCellID(), 
+	    cleanSegmentID(segment.toString()), callID, recordingPath, isRecording));
     }
 
     public void messageReceived(CellMessage message) {

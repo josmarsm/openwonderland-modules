@@ -18,8 +18,6 @@
 
 package org.jdesktop.wonderland.modules.timeline.common.audio;
 
-import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
-
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -32,17 +30,30 @@ import com.jme.math.Vector3f;
  */
 public class TimelineSegmentTreatmentMessage extends CellMessage {
 
-    private TimelineSegment segment;
+    private String segmentID;
+    private String treatment;
+    private Vector3f location;
 
-    public TimelineSegmentTreatmentMessage(CellID cellID, TimelineSegment segment) {
+    public TimelineSegmentTreatmentMessage(CellID cellID, 
+	String segmentID, String treatment, Vector3f location) {
 
 	super(cellID);
 
-	this.segment = segment;
+	this.segmentID = segmentID;
+	this.treatment = treatment;
+	this.location = location;
     }
 
-    public TimelineSegment getSegment() {
-	return segment;
+    public String getSegmentID() {
+	return segmentID;
+    }
+
+    public String getTreatment() {
+	return treatment;
+    }
+
+    public Vector3f getLocation() {
+	return location;
     }
 
 }
