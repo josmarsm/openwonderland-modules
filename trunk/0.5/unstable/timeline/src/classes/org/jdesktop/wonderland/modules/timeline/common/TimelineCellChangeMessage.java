@@ -26,4 +26,13 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 public class TimelineCellChangeMessage extends CellMessage {
 
+    private TimelineConfiguration config;
+
+    public TimelineConfiguration getConfig() {
+        return config;
+    }
+
+    public void setConfig(TimelineConfiguration config) {
+        this.config = config;
+    }
 }

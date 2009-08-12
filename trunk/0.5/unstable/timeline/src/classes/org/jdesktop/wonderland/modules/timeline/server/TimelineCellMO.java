@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.timeline.server;
 
+import java.util.Set;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -24,6 +25,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellClientState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellServerState;
+import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -35,6 +37,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *  
  */
 public class TimelineCellMO extends CellMO {
+
+    private TimelineConfiguration config;
 
     public TimelineCellMO() {
         super();
@@ -48,6 +52,7 @@ public class TimelineCellMO extends CellMO {
     public void setServerState(CellServerState state) {
         super.setServerState(state);
 
+        this.setConfiguration(((TimelineCellServerState)state).getConfig());
     }
 
     @Override
@@ -55,6 +60,8 @@ public class TimelineCellMO extends CellMO {
         if (state == null) {
             state = new TimelineCellServerState();
         }
+
+        ((TimelineCellServerState)state).setConfig(config);
 
         return super.getServerState(state);
     }
@@ -64,8 +71,9 @@ public class TimelineCellMO extends CellMO {
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
             cellClientState = new TimelineCellClientState();
-
         }
+
+        ((TimelineCellClientState)cellClientState).setConfig(config);
         
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -83,6 +91,10 @@ public class TimelineCellMO extends CellMO {
         }
     }
 
+    public void setConfiguration(TimelineConfiguration config) {
+        this.config = new TimelineServerConfiguration(config, getComponent(ChannelComponentMO.class));
+    }
+
     private static class TimelineCellMessageReceiver extends AbstractComponentMessageReceiver {
 
         public TimelineCellMessageReceiver(TimelineCellMO cellMO) {
@@ -95,7 +107,12 @@ public class TimelineCellMO extends CellMO {
             TimelineCellMO cellMO = (TimelineCellMO)getCell();
 
             TimelineCellChangeMessage msg = (TimelineCellChangeMessage)message;
-         
+            cellMO.setConfiguration(msg.getConfig());
+
+            // Send updates to all other clients.
+            Set<WonderlandClientID> otherClients = sender.getClients();
+            otherClients.remove(clientID);
+            sender.send(otherClients, msg);
         }
 
     }

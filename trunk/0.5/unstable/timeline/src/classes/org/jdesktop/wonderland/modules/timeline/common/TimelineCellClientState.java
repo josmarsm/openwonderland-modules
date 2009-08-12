@@ -25,5 +25,15 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  *  
  */
 public class TimelineCellClientState extends CellClientState {
+    
+    private TimelineConfiguration config;
 
+    public TimelineConfiguration getConfig() {
+        return config;
+    }
+
+    public void setConfig(TimelineConfiguration config) {
+        this.config = config;
+    }
+    
 }
