@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.RightTurnTrackSegmentTyp
 import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
+import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellServerState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
@@ -127,7 +128,9 @@ public class TrackCellMO extends CellMO {
     }
 
     private void processAddSegmentMessage(WonderlandClientID clientID, TrackCellMessage tcm) {
-        serverState.getTrack().addTrackSegment(tcm.getTrackSegment());
+        TrackSegment segment = tcm.getTrackSegment();
+        System.out.println("TrackCellMO, adding " + segment);
+        serverState.getTrack().addTrackSegment(segment);
         sendCellMessage(clientID, tcm);
     }
 

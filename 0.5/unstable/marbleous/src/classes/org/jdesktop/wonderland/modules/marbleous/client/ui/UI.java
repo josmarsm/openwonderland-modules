@@ -42,7 +42,7 @@ public class UI {
     /** The HUD component for the panel. */
     private HUDComponent hudComponent;
 
-    public UI (final TrackCell cell, Track track) {
+    public UI (final TrackCell cell) {
 
         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
@@ -56,7 +56,7 @@ public class UI {
             ex.printStackTrace();
             throw new RuntimeException("Cannot create construct panel");
         }
-        constructPanel.setTrack(track);
+        //constructPanel.setTrack(track);
 
         hudComponent = mainHUD.createComponent(constructPanel);
         hudComponent.setPreferredLocation(Layout.SOUTHWEST);

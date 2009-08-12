@@ -38,10 +38,14 @@ public class TrackListModel extends AbstractListModel {
     }
 
     public int getSize() {
-        return (track.getSegmentCount());
+        return track.getSegmentCount();
     }
 
-    void addSegment(TrackSegment newSegment) {
+    public Track getTrack() {
+        return track;
+    }
+
+    public void addSegment(TrackSegment newSegment) {
         int index = getSize();
         track.addTrackSegment(newSegment);
         fireIntervalAdded(this, index, index);

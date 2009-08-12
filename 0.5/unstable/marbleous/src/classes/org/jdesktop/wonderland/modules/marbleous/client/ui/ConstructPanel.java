@@ -213,7 +213,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         if (track == null) {
             track = new Track();
         }
-        segmentListModel = new TrackListModel(track);
+        segmentListModel = cell.getTrackListModel();
         segmentList.setModel(segmentListModel);
         segmentList.setCellRenderer(new SegmentListRenderer());
     }

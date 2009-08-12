@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.client.cell;
 
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
@@ -40,14 +41,17 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
+import org.jdesktop.wonderland.modules.marbleous.client.ui.TrackListModel;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.UI;
 import org.jdesktop.wonderland.modules.marbleous.common.RightTurnTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
+import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
 
 /**
  * Client-side cell for rendering JME content
@@ -56,11 +60,10 @@ public class TrackCell extends Cell {
 
     @UsesCellComponent
     private MarblePhysicsComponent marblePhysicsComponent;
-    private final TrackCellMessageReceiver messageReceiver = new TrackCellMessageReceiver();
     private final Set<SimulationStateChangeListener> simulationStateListeners = new HashSet<SimulationStateChangeListener>();
     private SimulationState simulationState = SimulationState.STOPPED;
     private TrackRenderer cellRenderer = null;
-    private Track track;
+    private TrackListModel trackListModel;
     private UI ui;
 
     public TrackCell(CellID cellID, CellCache cellCache) {
@@ -85,7 +88,11 @@ public class TrackCell extends Cell {
      * @return
      */
     public Track getTrack() {
-        return track;
+        return trackListModel.getTrack();
+    }
+
+    public TrackListModel getTrackListModel() {
+        return trackListModel;
     }
 
     /**
@@ -98,9 +105,10 @@ public class TrackCell extends Cell {
     @Override
     public void setClientState(CellClientState clientState) {
         super.setClientState(clientState);
-        track = ((TrackCellClientState)clientState).getTrack();
+        Track track = ((TrackCellClientState)clientState).getTrack();
         System.out.println("TrackCell, track: " + track);
-        ui = new UI(this, track);
+        trackListModel = new TrackListModel(track);
+        ui = new UI(this);
     }
 
     @Override
@@ -145,7 +153,8 @@ public class TrackCell extends Cell {
 //                    Timeline translation = AnimationUtils.newTranslationTimeline(node, currentLoc, dest, 5000);
 //                    translation.playLoop(RepeatBehavior.LOOP);
 //                    hudTest.setActive(true);
-                    channel.addMessageReceiver(SimulationStateMessage.class, messageReceiver);
+                    channel.addMessageReceiver(SimulationStateMessage.class, new SimulationStateMessageReceiver());
+                    channel.addMessageReceiver(TrackCellMessage.class, new TrackCellMessageReceiver());
                     
                     ui.setVisible(true);
                 }
@@ -155,6 +164,7 @@ public class TrackCell extends Cell {
                 if (!increasing) {
 //                    hudTest.setActive(false);
                     channel.removeMessageReceiver(SimulationStateMessage.class);
+                    channel.removeMessageReceiver(TrackCellMessage.class);
                 }
                 break;
             case DISK:
@@ -233,7 +243,7 @@ public class TrackCell extends Cell {
      * Processes state change messages received from the server and/or
      * other clients.
      */
-    private class TrackCellMessageReceiver implements ComponentMessageReceiver {
+    private class SimulationStateMessageReceiver implements ComponentMessageReceiver {
 
         /**
          * {@inheritDoc}
@@ -246,6 +256,40 @@ public class TrackCell extends Cell {
                 if (!fromMe) {
                     setSimulationStateInternal(((SimulationStateMessage) message).getSimulationState());
                 }
+            }
+        }
+    }
+
+    /**
+     * Processes cell messages received from the server and/or
+     * other clients.
+     */
+    private class TrackCellMessageReceiver implements ComponentMessageReceiver {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void messageReceived(CellMessage message) {
+            System.out.println("TrackCellMessageReceiver, received message: " + message);
+            TrackCellMessage tcm = (TrackCellMessage) message;
+            BigInteger senderID = tcm.getSenderID();
+            if (senderID == null) {
+                //Broadcast from server
+                senderID = BigInteger.ZERO;
+            }
+            if (!senderID.equals(getCellCache().getSession().getID())) {
+                switch (tcm.getAction()) {
+                    case ADD_SEGMENT:
+                        TrackSegment aSegment = tcm.getTrackSegment();
+                        trackListModel.addSegment(aSegment);
+                        break;
+                        default:
+                        logger.severe("Unknown action type: " + tcm.getAction());
+
+                }
+
+
             }
         }
     }
