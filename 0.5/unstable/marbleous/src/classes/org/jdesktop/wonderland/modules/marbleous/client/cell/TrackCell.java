@@ -18,10 +18,9 @@
 package org.jdesktop.wonderland.modules.marbleous.client.cell;
 
 import com.jme.math.Vector3f;
-import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Vector;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -101,9 +100,9 @@ public class TrackCell extends Cell {
         System.err.println("******** ui = " + ui);
         
         SimTrace trace = new SimTrace(2f, 60);
-        trace.appendSample(5f, new Vector3f(0f, 0f, 0f), new Vector3f(1f, 2f, 3f));
-        trace.appendSample(5f, new Vector3f(0f, 1f, 0f), new Vector3f(4f, 5f, 6f));
-        trace.appendSample(5f, new Vector3f(0f, 2f, 0f), new Vector3f(7f, 8f, 9f));
+        trace.appendSample(5f, new Vector3f(0f, 2f, 0f), new Vector3f(1f, 2f, 3f));
+        trace.appendSample(5f, new Vector3f(0f, 3f, 0f), new Vector3f(4f, 5f, 6f));
+        trace.appendSample(5f, new Vector3f(0f, 4f, 0f), new Vector3f(7f, 8f, 9f));
 
         uiTimeSlider = new TimeSliderUI(this, trace);
         System.err.println("******** uiTimeSlider = " + uiTimeSlider);
@@ -131,6 +130,10 @@ public class TrackCell extends Cell {
             return cellRenderer;
         }
         return super.createCellRenderer(rendererType);
+    }
+
+    public Entity getMarbleEntity () {
+        return cellRenderer.getMarbleEntity();
     }
 
     @Override

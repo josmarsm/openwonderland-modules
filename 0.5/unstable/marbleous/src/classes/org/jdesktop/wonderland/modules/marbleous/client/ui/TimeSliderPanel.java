@@ -12,8 +12,14 @@
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import com.jme.math.Vector3f;
+import com.jme.scene.Node;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderUpdater;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.marbleous.client.SampleInfo;
 import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
+import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 
 /**
  *
@@ -21,10 +27,12 @@ import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
  */
 public class TimeSliderPanel extends javax.swing.JPanel {
 
+    private TrackCell cell;
     private SimTrace trace;
 
     /** Creates new form TimeSliderPanel */
-    public TimeSliderPanel(SimTrace trace) {
+    public TimeSliderPanel(TrackCell cell, SimTrace trace) {
+        this.cell = cell;
         this.trace = trace;
 
         initComponents();
@@ -49,6 +57,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
 
         jSlider1.setPaintLabels(true);
         jSlider1.setPaintTicks(true);
+        jSlider1.setValue(0);
         jSlider1.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jSlider1StateChanged(evt);
@@ -104,8 +113,21 @@ public class TimeSliderPanel extends javax.swing.JPanel {
 
         SampleInfo sampleInfo = trace.getSampleInfo(t);
         System.err.println("sampleInfo = " + sampleInfo);
-        Vector3f position = sampleInfo.getPosition();
+        final Vector3f position = sampleInfo.getPosition();
         System.err.println("position = " + position);
+
+        // Assumes that the marble is still attached to the cell
+        Entity marbleEntity = cell.getMarbleEntity();
+        RenderComponent rc = marbleEntity.getComponent(RenderComponent.class);
+        final Node marbleNode = rc.getSceneRoot();
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                marbleNode.setLocalTranslation(position);
+                ClientContextJME.getWorldManager().addToUpdateList(marbleNode);
+            }
+        }, null);
+
 
     }//GEN-LAST:event_jSlider1StateChanged
 

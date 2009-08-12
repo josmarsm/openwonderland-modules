@@ -48,7 +48,7 @@ public class TimeSliderUI {
     /** The HUD component for the panel. */
     private HUDComponent hudComponent;
 
-    public TimeSliderUI (TrackCell cell, final SimTrace trace) {
+    public TimeSliderUI (final TrackCell cell, final SimTrace trace) {
         this.cell = cell;
         this.trace = trace;
 
@@ -57,7 +57,7 @@ public class TimeSliderUI {
         try {
             SwingUtilities.invokeAndWait(new Runnable () {
                 public void run () {
-                    panel = new TimeSliderPanel(trace);
+                    panel = new TimeSliderPanel(cell, trace);
                 }
             });
         } catch (Exception ex) {

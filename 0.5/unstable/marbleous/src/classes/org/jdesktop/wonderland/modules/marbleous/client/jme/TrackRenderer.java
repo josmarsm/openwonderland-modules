@@ -69,8 +69,14 @@ public class TrackRenderer extends BasicRenderer {
     private Node cellRoot = new Node("Marbleous");
     private final Node trackRoot = new Node("TrackRoot");
 
+    private Entity marbleEntity;
+
     public TrackRenderer(Cell cell) {
         super(cell);
+    }
+
+    public Entity getMarbleEntity () {
+        return marbleEntity;
     }
 
     @Override
@@ -88,7 +94,8 @@ public class TrackRenderer extends BasicRenderer {
             Track track = ((TrackCell) cell).getTrack();
             createTrackGraph(track);
             
-            entity.addEntity(createMarble(track.getMarbleStartPosition()));
+            marbleEntity = createMarble(track.getMarbleStartPosition());
+            entity.addEntity(marbleEntity);
 
             ((TrackCell)cell).getTrackListModel().addListDataListener(new ListDataListener() {
                 public void intervalAdded(ListDataEvent e) {
