@@ -21,19 +21,24 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import org.jdesktop.wonderland.modules.marbleous.common.TCBKeyFrame;
 import com.jme.math.Matrix4f;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Line;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Extrusion;
+import com.jme.scene.shape.Quad;
 import com.jme.scene.shape.Sphere;
+import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.jdesktop.mtgame.CollisionComponent;
+import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JBulletCollisionComponent;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
@@ -42,9 +47,11 @@ import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.PhysicsComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 
@@ -53,6 +60,8 @@ import org.jdesktop.wonderland.modules.marbleous.common.Track;
  * @author paulby
  */
 public class TrackRenderer extends BasicRenderer {
+
+    private TriMesh trackMesh = null;
 
     public TrackRenderer(Cell cell) {
         super(cell);
@@ -71,23 +80,86 @@ public class TrackRenderer extends BasicRenderer {
             drawSpline(splineTest.interp, ret);
         } else {
             ret = new Node("TrackRoot");
+            ret.setLocalTranslation(Vector3f.ZERO);
+            ret.setLocalRotation(new Quaternion());
             ret.setModelBound(new BoundingSphere());
 
             Track track = ((TrackCell) cell).getTrack();
             Collection<TCBKeyFrame> keyFrames = track.buildTrack();
-            System.err.println("SIZE " + keyFrames.size());
-            for (TCBKeyFrame f : keyFrames) {
-                System.err.println(f);
-            }
             RotPosScaleTCBSplinePath spline = new RotPosScaleTCBSplinePath(keyFrames.toArray(new TCBKeyFrame[keyFrames.size()]));
-            drawKnot(spline, ret);
+//            drawKnot(spline, ret);
             //drawSpline(spline, ret);
-            ret.attachChild(createTrackMesh(spline));
+//            trackMesh = createTrackMesh(spline);
+//            trackMesh.setLocalTranslation(Vector3f.ZERO);
+//            trackMesh.setLocalRotation(new Quaternion());
+//            ret.attachChild(trackMesh);
+
+//            trackMesh = new Dome("", 25, 25, 10f);
+            trackMesh = new Quad("", 100, 100);
+            trackMesh.setLocalTranslation(Vector3f.ZERO);
+            Quaternion rot = new Quaternion();
+            rot.fromAngleAxis((float)Math.PI/2, new Vector3f(1,0,0));
+            trackMesh.setLocalRotation(rot);
+            trackMesh.setModelBound(new BoundingBox());
+            trackMesh.updateModelBound();
+            ret.attachChild(trackMesh);
 
             entity.addEntity(createMarble(track.getMarbleStartPosition()));
         }
 
         return ret;
+    }
+
+    public void cellTransformUpdate(CellTransform localTransform) {
+        System.err.println("Ignore cell transform");
+    }
+
+    /**
+     * Override so we can add the mesh to the collision system instead of the node, which means we
+     * do triangle collision instead of bounds
+     * @param entity
+     * @param rootNode
+     */
+    @Override
+    protected void addDefaultComponents(Entity entity, Node rootNode) {
+        if (cell.getComponent(MovableComponent.class)!=null) {
+            if (rootNode==null) {
+                logger.warning("Cell is movable, but has no root node !");
+            } else {
+                // The cell is movable so create a move processor
+                moveProcessor = new MoveProcessor(ClientContextJME.getWorldManager(), rootNode);
+                entity.addComponent(MoveProcessor.class, moveProcessor);
+            }
+        }
+
+        if (rootNode!=null) {
+            // Some subclasses (like the imi collada renderer) already add
+            // a render component
+            RenderComponent rc = entity.getComponent(RenderComponent.class);
+            if (rc==null) {
+                rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(rootNode);
+                entity.addComponent(RenderComponent.class, rc);
+            }
+
+            WonderlandSession session = cell.getCellCache().getSession();
+            CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Default");
+
+            rootNode.updateWorldBound();
+
+            CollisionComponent cc=null;
+
+//            cc = setupCollision(collisionSystem, rootNode);
+//            if (cc!=null) {
+//                entity.addComponent(CollisionComponent.class, cc);
+//            }
+
+            JBulletDynamicCollisionSystem trackCollisionSystem = (JBulletDynamicCollisionSystem) ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Physics");
+
+            entity.addComponent(CollisionComponent.class, trackCollisionSystem.createCollisionComponent(trackMesh));
+        } else {
+            logger.warning("**** BASIC RENDERER - ROOT NODE WAS NULL !");
+        }
+
     }
 
     private Entity createMarble(Vector3f initialPosition) {
@@ -118,6 +190,11 @@ public class TrackRenderer extends BasicRenderer {
         buf.setEnabled(true);
         buf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
         marbleRoot.setRenderState(buf);
+
+        ColorRGBA color = new ColorRGBA(1.0f, 0.0f, 0.0f, 1.0f);
+        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Material);
+        matState.setDiffuse(color);
+        marble.setRenderState(matState);
 
         return e;
     }
@@ -179,6 +256,8 @@ public class TrackRenderer extends BasicRenderer {
 
         Extrusion ext = new Extrusion(extrusionShape, path, new Vector3f(0, 1, 0));
         ext.setModelBound(new BoundingBox());
+        ext.updateModelBound();
+
         return ext;
     }
 
