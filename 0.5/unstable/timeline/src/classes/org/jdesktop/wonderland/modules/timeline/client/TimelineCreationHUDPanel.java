@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.timeline.client;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -37,12 +38,36 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     private HUD mainHUD;
     private TimelineAddCollectionPanel addCollectionPanel;
     private HUDComponent addCollectionHUD;
+    private PropertyChangeSupport listeners;
 
     public TimelineCreationHUDPanel(TimelineCell cell) {
         initComponents();
         addProviders();
 
         this.cell = cell;
+    }
+
+    /**
+     * Adds a bound property listener to the dialog
+     * @param listener a listener for dialog events
+     */
+    @Override
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners == null) {
+            listeners = new PropertyChangeSupport(this);
+        }
+        listeners.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Removes a bound property listener from the dialog
+     * @param listener the listener to remove
+     */
+    @Override
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners != null) {
+            listeners.removePropertyChangeListener(listener);
+        }
     }
 
     private void addProviders() {
@@ -111,8 +136,9 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
         createButton = new javax.swing.JButton();
         providersPanel = new javax.swing.JPanel();
         addKeywordButton = new javax.swing.JButton();
-        jSpinner1 = new javax.swing.JSpinner();
-        jSpinner2 = new javax.swing.JSpinner();
+        granularitySpinner = new javax.swing.JSpinner();
+        scaleSpinner = new javax.swing.JSpinner();
+        cancelButton = new javax.swing.JButton();
 
         createLabel.setFont(createLabel.getFont().deriveFont(createLabel.getFont().getStyle() | java.awt.Font.BOLD));
         createLabel.setText("Create Timeline");
@@ -166,9 +192,16 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
             }
         });
 
-        jSpinner1.setModel(new javax.swing.SpinnerListModel(new String[] {"Hours", "Days", "Weeks", "Months", "Years"}));
+        granularitySpinner.setModel(new javax.swing.SpinnerListModel(new String[] {"Hours", "Days", "Weeks", "Months", "Years"}));
 
-        jSpinner2.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(1), null, null, Integer.valueOf(1)));
+        scaleSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(1), null, null, Integer.valueOf(1)));
+
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -192,9 +225,9 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(revolutionLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jSpinner2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(scaleSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jSpinner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(granularitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                 .add(org.jdesktop.layout.GroupLayout.LEADING, descriptionScrollPane, 0, 0, Short.MAX_VALUE)
                                 .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
@@ -209,7 +242,10 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addKeywordButton))
                     .add(providersPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, createButton)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(cancelButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(createButton))
                     .add(createLabel))
                 .addContainerGap())
         );
@@ -237,10 +273,10 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                     .add(endDateTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(jSpinner2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(scaleSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(revolutionLabel)
                     .add(scaleLabel)
-                    .add(jSpinner1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(granularitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(providersLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -250,7 +286,9 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                     .add(addKeywordButton)
                     .add(addProviderButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(createButton)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(createButton)
+                    .add(cancelButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -260,9 +298,6 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
         // for now, just add another generic provider panel
         addProvider(new TimelineProviderPanel());
     }//GEN-LAST:event_addProviderButtonActionPerformed
-
-    private void createButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createButtonActionPerformed
-    }//GEN-LAST:event_createButtonActionPerformed
 
     private void addKeywordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addKeywordButtonActionPerformed
         if (mainHUD == null) {
@@ -295,9 +330,19 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
         }
         addCollectionHUD.setVisible(true);
     }//GEN-LAST:event_addKeywordButtonActionPerformed
+
+    private void createButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createButtonActionPerformed
+        listeners.firePropertyChange("create", new String(""), null);
+    }//GEN-LAST:event_createButtonActionPerformed
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        listeners.firePropertyChange("cancel", new String(""), null);
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addKeywordButton;
     private javax.swing.JButton addProviderButton;
+    private javax.swing.JButton cancelButton;
     private javax.swing.JButton createButton;
     private javax.swing.JLabel createLabel;
     private javax.swing.JLabel descriptionLabel;
@@ -305,12 +350,12 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     private javax.swing.JTextArea descriptionTextArea;
     private javax.swing.JLabel endDateLabel;
     private javax.swing.JTextField endDateTextField;
-    private javax.swing.JSpinner jSpinner1;
-    private javax.swing.JSpinner jSpinner2;
+    private javax.swing.JSpinner granularitySpinner;
     private javax.swing.JLabel providersLabel;
     private javax.swing.JPanel providersPanel;
     private javax.swing.JLabel revolutionLabel;
     private javax.swing.JLabel scaleLabel;
+    private javax.swing.JSpinner scaleSpinner;
     private javax.swing.JLabel startDateLabel;
     private javax.swing.JTextField startDateTextField;
     private javax.swing.JLabel titleLabel;

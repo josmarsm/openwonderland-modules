@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.timeline.client;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+
 /**
  * A panel for curating a Timeline
  * @author nsimpson
@@ -24,11 +27,35 @@ package org.jdesktop.wonderland.modules.timeline.client;
 public class TimelineCurationHUDPanel extends javax.swing.JPanel {
 
     private final TimelineCell cell;
+    private PropertyChangeSupport listeners;
 
     public TimelineCurationHUDPanel(TimelineCell cell) {
         initComponents();
 
         this.cell = cell;
+    }
+
+    /**
+     * Adds a bound property listener to the dialog
+     * @param listener a listener for dialog events
+     */
+    @Override
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners == null) {
+            listeners = new PropertyChangeSupport(this);
+        }
+        listeners.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Removes a bound property listener from the dialog
+     * @param listener the listener to remove
+     */
+    @Override
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners != null) {
+            listeners.removePropertyChangeListener(listener);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -158,11 +185,11 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        // TODO: add a keyword collection
+        listeners.firePropertyChange("add", new String(""), null);
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
-        // TODO: dismiss this dialog
+        listeners.firePropertyChange("done", new String(""), null);
     }//GEN-LAST:event_doneButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
