@@ -5,6 +5,7 @@
 
 package org.jdesktop.wonderland.modules.timeline.common.provider;
 
+import java.io.Serializable;
 import java.util.Map.Entry;
 import java.util.Properties;
 import javax.xml.bind.annotation.XmlElement;
@@ -21,7 +22,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 @XmlRootElement(name="timeline-query")
-public class TimelineQuery {
+public class TimelineQuery implements Serializable {
     /** The unique ID of this query. */
     private TimelineQueryID queryID;
 
@@ -101,6 +102,7 @@ public class TimelineQuery {
      * Get the properties for this query
      * @return the properties for this query
      */
+    @XmlElement
     @XmlJavaTypeAdapter(PropertiesAdapter.class)
     public Properties getProperties() {
         return props;
@@ -184,7 +186,7 @@ public class TimelineQuery {
     }
 
     private static final class Property {
-        String key;
-        String value;
+        @XmlElement String key;
+        @XmlElement String value;
     }
 }

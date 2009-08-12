@@ -17,10 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.timeline.common.provider;
 
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.io.Serializable;
-import java.net.URL;
 
 /**
  * An image with an associated date
@@ -28,23 +25,23 @@ import java.net.URL;
  */
 public class DatedImage implements DatedObject, Serializable {
     private TimelineDate date;
-    private URL imageURL;
+    private String imageURI;
     
-    public DatedImage(TimelineDate date, URL imageURL) {
+    public DatedImage(TimelineDate date, String imageURI) {
         this.date = date;
-        this.imageURL = imageURL;
+        this.imageURI = imageURI;
     }
 
     public TimelineDate getDate() {
         return date;
     }
 
-    public Image getImage() {
-        return Toolkit.getDefaultToolkit().createImage(imageURL);
+    public String getImageURI() {
+        return imageURI;
     }
 
     @Override
     public String toString() {
-        return "[DatedImage " + imageURL + "]";
+        return "[DatedImage " + imageURI + "]";
     }
 }

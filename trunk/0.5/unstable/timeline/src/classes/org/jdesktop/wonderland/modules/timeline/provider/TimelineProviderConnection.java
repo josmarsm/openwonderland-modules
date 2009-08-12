@@ -17,10 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.timeline.provider;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -44,7 +43,8 @@ import org.jdesktop.wonderland.modules.timeline.provider.spi.TimelineProviderCon
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 public class TimelineProviderConnection extends BaseConnection {
-    private Map<TimelineQueryID, TimelineProvider> providers;
+    private final Map<TimelineQueryID, TimelineProvider> providers =
+            new LinkedHashMap<TimelineQueryID, TimelineProvider>();
 
     public ConnectionType getConnectionType() {
         return TimelineProviderConnectionType.TYPE;
@@ -59,7 +59,7 @@ public class TimelineProviderConnection extends BaseConnection {
         }
     }
 
-    private void addResults(TimelineQueryID queryID, Set<DatedObject> objs) {
+    private void addResults(TimelineQueryID queryID, Set<DatedObject> objs) {        
         send(new ProviderObjectsMessage(null, queryID,
                                         ProviderObjectsMessage.Action.ADD,
                                         objs));

@@ -1,0 +1,45 @@
+<project basedir="." default="run" name="timelineprovider.run">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="current.dir" file="${ant.file.timelineprovider.run}"/>
+
+    <!-- override to fix library locations in core -->
+    <property name="core.lib.dir" location="${current.dir}/core/lib"/>
+    <property name="core.build.lib.dir" location="${current.dir}/core/lib"/>
+
+    <!-- import common setup -->
+    <import file="${current.dir}/build-tools/build-scripts/run-setup.xml"/>
+
+    <!-- import core setup -->
+    <import file="${current.dir}/core/build-tools/build-scripts/core-setup.xml"/>
+   
+    <target name="run">
+        <!-- generate the modules classpath -->
+        <pathconvert property="modules.classpath">
+            <path>
+                <fileset dir="${current.dir}">
+                    <include name="modules/**"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
+        <java classname="org.jdesktop.wonderland.modules.timeline.provider.TimelineProviderMain"
+              fork="true">
+            <classpath>
+                <path location="${current.dir}/lib/timeline-provider.jar"/>
+
+                <!-- the modules classpath -->
+                <pathelement path="${modules.classpath}"/>
+
+                <!-- core stuff we need -->
+                <pathelement path="${core-client.classpath}"/>
+            </classpath>
+            
+            <arg value="${wonderland.web.server.url}"/>
+            <arg value="timelineprovider"/>
+
+            <sysproperty key="java.util.logging.config.file" value="logging.properties"/>
+            <sysproperty key="java.library.path" value="${current.dir}/lib/${ostype}/native"/>
+            <sysproperty key="wonderland.web.server.url" value="${wonderland.web.server.url}"/>
+        </java>
+    </target>
+</project>
