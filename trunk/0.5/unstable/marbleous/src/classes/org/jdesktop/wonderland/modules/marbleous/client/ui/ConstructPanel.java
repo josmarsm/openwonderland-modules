@@ -132,6 +132,11 @@ public class ConstructPanel extends javax.swing.JPanel {
 
         jButton1.setText("Remove");
         jButton1.setActionCommand("remove");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Stop");
 
@@ -194,6 +199,16 @@ public class ConstructPanel extends javax.swing.JPanel {
         cell.setSimulationState(SimulationState.STARTED);
         System.err.println("******** START!");
 }//GEN-LAST:event_runButtonActionPerformed
+
+    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        TrackSegment selectedSegment = (TrackSegment) segmentList.getSelectedValue();
+        if (selectedSegment != null) {
+            // This removes the segment from the underlying model (the track)
+            segmentListModel.removeSegment(selectedSegment);
+            //Tell the server to add the segment
+            cell.sendCellMessage(TrackCellMessage.removeSegment(cell.getCellID(), selectedSegment));
+        }
+    }//GEN-LAST:event_removeButtonActionPerformed
 
 
     /**

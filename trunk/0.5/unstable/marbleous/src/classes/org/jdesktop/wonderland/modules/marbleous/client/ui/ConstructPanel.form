@@ -135,6 +135,9 @@
         <Property name="text" type="java.lang.String" value="Remove"/>
         <Property name="actionCommand" type="java.lang.String" value="remove"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="jButton2">
       <Properties>

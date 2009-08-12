@@ -278,13 +278,18 @@ public class TrackCell extends Cell {
                 //Broadcast from server
                 senderID = BigInteger.ZERO;
             }
+            TrackSegment aSegment;
             if (!senderID.equals(getCellCache().getSession().getID())) {
                 switch (tcm.getAction()) {
                     case ADD_SEGMENT:
-                        TrackSegment aSegment = tcm.getTrackSegment();
+                        aSegment = tcm.getTrackSegment();
                         trackListModel.addSegment(aSegment);
                         break;
-                        default:
+                    case REMOVE_SEGMENT:
+                        aSegment = tcm.getTrackSegment();
+                        trackListModel.addSegment(aSegment);
+                        break;
+                    default:
                         logger.severe("Unknown action type: " + tcm.getAction());
 
                 }
