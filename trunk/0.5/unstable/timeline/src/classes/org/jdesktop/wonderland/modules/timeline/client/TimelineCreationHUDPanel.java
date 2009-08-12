@@ -21,6 +21,7 @@ import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -33,11 +34,15 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
  * @author nsimpson
  */
 public class TimelineCreationHUDPanel extends javax.swing.JPanel {
+    private static final Logger logger =
+            Logger.getLogger(TimelineCreationHUDPanel.class.getName());
 
     private final TimelineCell cell;
     private HUD mainHUD;
     private TimelineAddCollectionPanel addCollectionPanel;
     private HUDComponent addCollectionHUD;
+    private TimelineAddProviderHUDPanel addProviderPanel;
+    private HUDComponent addProviderHUD;
     private PropertyChangeSupport listeners;
 
     public TimelineCreationHUDPanel(TimelineCell cell) {
@@ -296,7 +301,36 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     private void addProviderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProviderButtonActionPerformed
         // TODO: display a provider chooser dialog
         // for now, just add another generic provider panel
-        addProvider(new TimelineProviderPanel());
+        if (mainHUD == null) {
+            mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        }
+        if (addProviderHUD == null) {
+            addProviderPanel = new TimelineAddProviderHUDPanel();
+            addProviderPanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent pe) {
+                    logger.info("--- property changed: " + pe);
+                    if (pe.getPropertyName().equals("add")) {
+                        String[] providers = addProviderPanel.getProviders();
+                        for (int i = 0;i < providers.length;i++) {
+                            String provider = providers[i];
+                            logger.info("--- adding provider: " + provider);
+                        }
+                        addProviderHUD.setVisible(false);
+                        // TODO: actually add a provider!
+                    } else if (pe.getPropertyName().equals("cancel")) {
+                        addProviderHUD.setVisible(false);
+                    }
+                }
+            });
+            addProviderHUD = mainHUD.createComponent(addProviderPanel);
+            addProviderHUD.setPreferredLocation(Layout.EAST);
+            addProviderHUD.setName("Add Provider");
+
+            mainHUD.addComponent(addProviderHUD);
+        }
+        addProviderHUD.setVisible(true);
+        //addProvider(new TimelineProviderPanel());
     }//GEN-LAST:event_addProviderButtonActionPerformed
 
     private void addKeywordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addKeywordButtonActionPerformed
@@ -338,7 +372,6 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         listeners.firePropertyChange("cancel", new String(""), null);
     }//GEN-LAST:event_cancelButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addKeywordButton;
     private javax.swing.JButton addProviderButton;
