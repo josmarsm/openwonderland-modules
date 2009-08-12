@@ -120,6 +120,8 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
     public void setLive(boolean live) {
 	super.setLive(live);
 
+	System.out.println("TimelineAudioComponent setLive " + live);
+
         ChannelComponentMO channelComponent = (ChannelComponentMO)
             cellRef.get().getComponent(ChannelComponentMO.class);
 
@@ -139,7 +141,7 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
     }
 
     protected String getClientClass() {
-	return "org.jdesktop.wonderland.modules.audiomanager.client.TimelineAudioComponent";
+	return "org.jdesktop.wonderland.modules.timeline.client.audio.TimelineAudioComponent";
     }
 
     public void callStatusChanged(CallStatus status) {
