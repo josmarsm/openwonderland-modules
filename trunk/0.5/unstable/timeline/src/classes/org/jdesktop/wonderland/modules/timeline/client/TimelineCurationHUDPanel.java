@@ -18,14 +18,17 @@
 package org.jdesktop.wonderland.modules.timeline.client;
 
 /**
- *
+ * A panel for curating a Timeline
  * @author nsimpson
  */
 public class TimelineCurationHUDPanel extends javax.swing.JPanel {
 
-    /** Creates new form TimelineCurationHUDPanel */
-    public TimelineCurationHUDPanel() {
+    private final TimelineCell cell;
+
+    public TimelineCurationHUDPanel(TimelineCell cell) {
         initComponents();
+
+        this.cell = cell;
     }
 
     /** This method is called from within the constructor to
@@ -159,10 +162,8 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
-        // TODO: dismiss dialog
+        // TODO: dismiss this dialog
     }//GEN-LAST:event_doneButtonActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JLabel addEventLabel;
@@ -177,5 +178,4 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane textScrollPane;
     private javax.swing.JTextArea textTextArea;
     // End of variables declaration//GEN-END:variables
-
 }
