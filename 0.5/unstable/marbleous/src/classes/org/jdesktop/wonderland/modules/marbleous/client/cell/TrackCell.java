@@ -101,7 +101,10 @@ public class TrackCell extends Cell {
         System.err.println("******** ui = " + ui);
         
         SimTrace trace = new SimTrace(2f, 60);
-        trace.appendSample(5f, new Vector3f(), new Vector3f(1f, 2f, 3f));
+        trace.appendSample(5f, new Vector3f(0f, 0f, 0f), new Vector3f(1f, 2f, 3f));
+        trace.appendSample(5f, new Vector3f(0f, 1f, 0f), new Vector3f(4f, 5f, 6f));
+        trace.appendSample(5f, new Vector3f(0f, 2f, 0f), new Vector3f(7f, 8f, 9f));
+
         uiTimeSlider = new TimeSliderUI(this, trace);
         System.err.println("******** uiTimeSlider = " + uiTimeSlider);
     }

@@ -110,7 +110,7 @@ public class SimTrace {
      */
     public float getEndTime() {
         // Adjust the number of samples we have for samples per second
-        return (float)sampleList.size() / (float)getSamplesPerSecond();
+        return (float)(sampleList.size()-1) / (float)getSamplesPerSecond();
     }
 
     /**
