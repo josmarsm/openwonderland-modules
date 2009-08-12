@@ -271,13 +271,8 @@ public class TrackCell extends Cell {
         public void messageReceived(CellMessage message) {
             System.out.println("TrackCellMessageReceiver, received message: " + message);
             TrackCellMessage tcm = (TrackCellMessage) message;
-            BigInteger senderID = tcm.getSenderID();
-            if (senderID == null) {
-                //Broadcast from server
-                senderID = BigInteger.ZERO;
-            }
             TrackSegment aSegment;
-            if (!senderID.equals(getCellCache().getSession().getID())) {
+            
                 switch (tcm.getAction()) {
                     case ADD_SEGMENT:
                         aSegment = tcm.getTrackSegment();
@@ -285,7 +280,7 @@ public class TrackCell extends Cell {
                         break;
                     case REMOVE_SEGMENT:
                         aSegment = tcm.getTrackSegment();
-                        trackListModel.addSegment(aSegment);
+                        trackListModel.removeSegment(aSegment);
                         break;
                     default:
                         logger.severe("Unknown action type: " + tcm.getAction());
@@ -293,7 +288,7 @@ public class TrackCell extends Cell {
                 }
 
 
-            }
+            
         }
     }
 

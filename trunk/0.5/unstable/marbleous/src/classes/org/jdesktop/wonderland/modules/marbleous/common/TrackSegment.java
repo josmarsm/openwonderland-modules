@@ -41,6 +41,7 @@ public class TrackSegment implements Serializable {
     private TCBKeyFrame[] keyFrames = null;
     private String name;
     private Matrix4f endpointTransform;
+    private int id;
 
     public TrackSegment() {
         
@@ -86,5 +87,28 @@ public class TrackSegment implements Serializable {
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + " [" + segmentTypeClassName + "]";
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 17 * hash + this.id;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object aThat){
+        if ( this == aThat ) {
+            return true;
+        }
+      if ( !(aThat instanceof TrackSegment) ) {
+          return false;
+      }
+      TrackSegment that = (TrackSegment)aThat;
+      return id == that.id;
+    }
+
+    void setID(int i) {
+        id = i;
     }
 }

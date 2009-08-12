@@ -37,12 +37,15 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType( namespace="marbleous" )
 public class Track implements Serializable {
 
+    private static int COUNTER = 1;
+
     private ArrayList<TrackSegment> segments = new ArrayList<TrackSegment>();
 
     public Track() {
     }
 
     public void addTrackSegment(TrackSegment trackSegment) {
+        trackSegment.setID(COUNTER++);
         segments.add(trackSegment);
     }
 
