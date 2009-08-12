@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.client.jme;
 
+import com.bulletphysics.dynamics.RigidBody;
 import com.jme.bounding.BoundingBox;
 import javax.swing.event.ListDataEvent;
 import org.jdesktop.wonderland.modules.marbleous.common.TCBKeyFrame;
@@ -43,6 +44,7 @@ import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JBulletCollisionComponent;
+import org.jdesktop.mtgame.JBulletCollisionComponent.InitializedListener;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
@@ -56,6 +58,7 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.modules.marbleous.client.cell.MarblePhysicsComponent;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
@@ -238,14 +241,22 @@ public class TrackRenderer extends BasicRenderer {
         JBulletPhysicsSystem physicsSystem = ((TrackCell) cell).getPhysicsSystem();
         JBulletDynamicCollisionSystem collisionSystem = ((TrackCell) cell).getCollisionSystem();
 
-        JBulletCollisionComponent cc = null;
-        JBulletPhysicsComponent pc = null;
-
-        cc = collisionSystem.createCollisionComponent(marbleRoot);
-        pc = physicsSystem.createPhysicsComponent(cc);
-        pc.setMass(1f);
+        final JBulletCollisionComponent cc = collisionSystem.createCollisionComponent(marbleRoot);
+        JBulletPhysicsComponent pc = physicsSystem.createPhysicsComponent(cc);
+        pc.setMass(MarblePhysicsComponent.MASS);
         e.addComponent(JBulletCollisionComponent.class, cc);
         e.addComponent(JBulletPhysicsComponent.class, pc);
+
+        // Set the marble's rigid body on the cell so that we can fetch it for
+        // time-series stuff. We need to wait for the collision component to
+        // be initialized first.
+        cc.addInitializedListener(new InitializedListener() {
+            public void componentInitialized() {
+                if (cc.getCollisionObject() instanceof RigidBody) {
+                    ((TrackCell) cell).setMarbleRigidBody(((RigidBody) cc.getCollisionObject()));
+                }
+            }
+        });
 
         ZBufferState buf = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.ZBuffer);
         buf.setEnabled(true);

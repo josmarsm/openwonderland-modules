@@ -61,7 +61,7 @@ public class SimTrace {
      * @param v The linear velocity of the object
      * @return The new sample created
      */
-    public SampleInfo appendSample(float m, Vector3f p, Vector3f v) {
+    public synchronized SampleInfo appendSample(float m, Vector3f p, Vector3f v) {
         // In order to compute the acceleration, we first need the previous
         // acceleration. The first sample in the series has no acceleration
         Vector3f a = Vector3f.ZERO;
@@ -89,7 +89,7 @@ public class SimTrace {
      * @param t The time t (in seconds)
      * @return The sample at time t
      */
-    public SampleInfo getSampleInfo(float t) {
+    public synchronized SampleInfo getSampleInfo(float t) {
         // XXX TODO
         // For now, just take the closest sample, do not interpolate
         // XXX TODO
@@ -108,7 +108,7 @@ public class SimTrace {
      *
      * @return The number of seconds represented by the trace.
      */
-    public float getEndTime() {
+    public synchronized float getEndTime() {
         // Adjust the number of samples we have for samples per second
         return (float)(sampleList.size()-1) / (float)getSamplesPerSecond();
     }

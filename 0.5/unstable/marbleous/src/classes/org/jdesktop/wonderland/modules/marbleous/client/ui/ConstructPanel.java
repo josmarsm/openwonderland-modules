@@ -18,27 +18,31 @@
 
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
-import com.sun.tools.internal.xjc.model.CElement;
-import java.awt.BorderLayout;
+import com.bulletphysics.dynamics.RigidBody;
 import java.awt.Component;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.vecmath.Vector3f;
+import org.jdesktop.mtgame.JBulletPhysicsSystem;
+import org.jdesktop.mtgame.JBulletPhysicsSystem.TimeStepEvent;
+import org.jdesktop.mtgame.JBulletPhysicsSystem.TimeStepListener;
+import org.jdesktop.wonderland.modules.marbleous.client.SampleInfo;
+import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
+import org.jdesktop.wonderland.modules.marbleous.client.cell.MarblePhysicsComponent;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackManager;
@@ -52,6 +56,8 @@ import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellM
  * @author Bernard Horan
  */
 public class ConstructPanel extends javax.swing.JPanel {
+
+    private static Logger logger = Logger.getLogger(ConstructPanel.class.getName());
 
     /* The "No Preview Available" image */
     private Image noPreviewAvailableImage = null;
@@ -67,6 +73,11 @@ public class ConstructPanel extends javax.swing.JPanel {
     private TrackListModel segmentListModel;
 
     private TrackCell cell;
+
+    // The single instance of the time-series of simulation results and a
+    // listener for time step events from the simulation
+    private SimTrace simTrace = null;
+    private TimeStepListener timeStepListener = null;
 
     /** Creates new form ConstructPanel */
     public ConstructPanel(TrackCell cell) {
@@ -102,7 +113,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         segmentScrollPane = new javax.swing.JScrollPane();
         segmentList = new javax.swing.JList();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        stopButton = new javax.swing.JButton();
 
         jLabel1.setText("Track Segment Type to Add:");
 
@@ -138,7 +149,12 @@ public class ConstructPanel extends javax.swing.JPanel {
             }
         });
 
-        jButton2.setText("Stop");
+        stopButton.setText("Stop");
+        stopButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -150,7 +166,7 @@ public class ConstructPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(runButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2))
+                        .addComponent(stopButton))
                     .addComponent(typeScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
                     .addGroup(layout.createSequentialGroup()
@@ -169,7 +185,7 @@ public class ConstructPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(runButton)
-                    .addComponent(jButton2))
+                    .addComponent(stopButton))
                 .addGap(27, 27, 27)
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
@@ -196,6 +212,35 @@ public class ConstructPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_addButtonActionPerformed
 
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
+        // Create a new simulation trace object to place time series info
+        simTrace = new SimTrace(MarblePhysicsComponent.G, MarblePhysicsComponent.FREQ);
+
+        // Add a listener to listen for the time series data
+        JBulletPhysicsSystem physics = ((TrackCell)cell).getPhysicsSystem();
+        if (physics != null) {
+            timeStepListener = new MarbleTimeStepListener();
+            physics.addTimeStepListener(timeStepListener);
+        }
+
+        // XXX TEST
+        new Thread() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(1000);
+                        float endTime = simTrace.getEndTime();
+                        SampleInfo info = simTrace.getSampleInfo(endTime);
+                        logger.warning("SAMPLE " + info.getPosition().toString() + " FOR TIME " + endTime);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(ConstructPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }.start();
+        // XXX TEST
+
+        // Go ahead and start the simulation
         cell.setSimulationState(SimulationState.STARTED);
         System.err.println("******** START!");
 }//GEN-LAST:event_runButtonActionPerformed
@@ -208,7 +253,20 @@ public class ConstructPanel extends javax.swing.JPanel {
             //Tell the server to remove the segment
             cell.sendCellMessage(TrackCellMessage.removeSegment(cell.getCellID(), selectedSegment));
         }
-    }//GEN-LAST:event_removeButtonActionPerformed
+}//GEN-LAST:event_removeButtonActionPerformed
+
+    private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+        // First, stop the simulation
+        cell.setSimulationState(SimulationState.STOPPED);
+
+        // Remove the listener from the physics system
+        if (timeStepListener != null) {
+            JBulletPhysicsSystem physics = ((TrackCell) cell).getPhysicsSystem();
+            if (physics != null) {
+                physics.removeTimeStepListener(timeStepListener);
+            }
+        }
+}//GEN-LAST:event_stopButtonActionPerformed
 
 
     /**
@@ -320,12 +378,12 @@ public class ConstructPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JButton addButton;
     protected javax.swing.JButton jButton1;
-    protected javax.swing.JButton jButton2;
     protected javax.swing.JLabel jLabel1;
     protected javax.swing.JLabel jLabel2;
     protected javax.swing.JButton runButton;
     protected javax.swing.JList segmentList;
     protected javax.swing.JScrollPane segmentScrollPane;
+    protected javax.swing.JButton stopButton;
     protected javax.swing.JList typeList;
     protected javax.swing.JScrollPane typeScrollPane;
     // End of variables declaration//GEN-END:variables
@@ -389,4 +447,43 @@ public class ConstructPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * A listener to handle simulation time steps.
+     */
+    private class MarbleTimeStepListener implements TimeStepListener {
+        /**
+         * {@inheritDoc}
+         */
+        public void timeStepActionPerformed(TimeStepEvent tse) {
+            // Fetch the rigid body, if null, then log an error and return
+            RigidBody rb = cell.getMarbleRigidBody();
+            if (rb == null) {
+                logger.warning("Unable to find marble's rigid body");
+                return;
+            }
+
+            // Make sure there is a SimTrace object, otherwise just return
+            if (simTrace == null) {
+                logger.warning("No active SimTrace object.");
+                return;
+            }
+
+            // Add the data point to the time series
+            javax.vecmath.Vector3f jpos = new Vector3f();
+            rb.getCenterOfMassPosition(jpos);
+            com.jme.math.Vector3f pos = vecmathToJME(jpos);
+
+            javax.vecmath.Vector3f jvel = new Vector3f();
+            rb.getLinearVelocity(jvel);
+            com.jme.math.Vector3f vel = vecmathToJME(jvel);
+            simTrace.appendSample(MarblePhysicsComponent.MASS, pos, vel);
+        }
+
+        /**
+         * Takes a javax.vecmath.Vector3f and returns a jME Vector3f.
+         */
+        private com.jme.math.Vector3f vecmathToJME(javax.vecmath.Vector3f v) {
+            return new com.jme.math.Vector3f(v.x, v.y, v.z);
+        }
+    }
 }

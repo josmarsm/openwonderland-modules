@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.client.cell;
 
+import com.bulletphysics.dynamics.RigidBody;
 import com.jme.math.Vector3f;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,12 +31,6 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
-import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
-import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
-import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -192,34 +187,12 @@ public class TrackCell extends Cell {
     }
 
     /**
-     * Context menu factory for the Sample menu item
-     */
-    class SampleContextMenuFactory implements ContextMenuFactorySPI {
-
-        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-            return new ContextMenuItem[]{
-                        new SimpleContextMenuItem("Sample", null,
-                        new SampleContextMenuListener())
-                    };
-        }
-    }
-
-    /**
-     * Listener for event when the Sample context menu item is selected
-     */
-    class SampleContextMenuListener implements ContextMenuActionListener {
-
-        public void actionPerformed(ContextMenuItemEvent event) {
-            logger.warning("Sample context menu action performed!");
-        }
-    }
-
-    /**
      * Convenience method to set the started/stopped state of the simulation.
      * @param state The started/stopped state of the simulation
      */
     public void setSimulationState(SimulationState simulationState) {
 
+        logger.warning("New simulation state " + simulationState);
         if (simulationState.equals(getSimulationState())) {
             return;
         }
@@ -229,6 +202,8 @@ public class TrackCell extends Cell {
         JBulletPhysicsSystem physicsSystem = getPhysicsSystem();
         if (physicsSystem != null) {
             if (simulationState == SimulationState.STARTED) {
+                logger.warning("Starting physics system...");
+
                 physicsSystem.setStarted(true);
             } else {
                 physicsSystem.setStarted(false);
@@ -377,5 +352,33 @@ public class TrackCell extends Cell {
             return null;
         }
         return marblePhysicsComponent.getCollisionSystem();
+    }
+
+    /**
+     * Convenience method to set the marble's rigid body to the physics
+     * component
+     *
+     * @param rigidBody The marble's rigid body
+     */
+    public void setMarbleRigidBody(RigidBody rigidBody) {
+        if (marblePhysicsComponent == null) {
+            logger.warning("Unable to find marble physics component.");
+            return;
+        }
+        marblePhysicsComponent.setMarbleRigidBody(rigidBody);
+    }
+
+    /**
+     * Convenience method to get the marble's rigid body from the physics
+     * component.
+     *
+     * @return The marble's rigid body
+     */
+    public RigidBody getMarbleRigidBody() {
+        if (marblePhysicsComponent == null) {
+            logger.warning("Unable to find marble physics component.");
+            return null;
+        }
+        return marblePhysicsComponent.getMarbleRigidBody();
     }
 }
