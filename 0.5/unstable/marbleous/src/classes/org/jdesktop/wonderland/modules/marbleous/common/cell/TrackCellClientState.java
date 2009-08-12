@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.marbleous.common.cell;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 
 /**
@@ -28,6 +29,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.Simulation
 public class TrackCellClientState extends CellClientState {
 
     private SimulationState simulationState;
+    private Track track;
 
     /**
      * Get the start/stop state of the simulation
@@ -43,5 +45,13 @@ public class TrackCellClientState extends CellClientState {
      */
     public void setSimluationState(SimulationState simulationState) {
         this.simulationState = simulationState;
+    }
+
+    public void setTrack(Track aTrack) {
+        track = aTrack;
+    }
+
+    public Track getTrack() {
+        return track;
     }
 }
