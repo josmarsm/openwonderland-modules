@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -51,6 +52,10 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 public class TimelineProviderComponentMO extends CellComponentMO {
+    /** a logger */
+    private static final Logger logger =
+            Logger.getLogger(TimelineProviderComponentMO.class.getName());
+
     /** the results of active queries */
     private ManagedReference<Map<TimelineQueryID, TimelineResultHolder>> resultsRef;
 
@@ -110,6 +115,10 @@ public class TimelineProviderComponentMO extends CellComponentMO {
         super.setServerState(state);
 
         TimelineProviderServerState tpss = (TimelineProviderServerState) state;
+
+        logger.warning("[TimelineProviderComponentMO] Set server state: " +
+                        tpss.getQueries().size() + " queries");
+
         for (TimelineQuery query : tpss.getQueries()) {
             addQuery(query);
         }
@@ -209,7 +218,7 @@ public class TimelineProviderComponentMO extends CellComponentMO {
      */
     private static class TimelineResultHolder implements Serializable {
         private TimelineQuery query;
-        private DatedSet results;
+        private final DatedSet results = new DatedSet();
 
         private CellID cellID;
         private ManagedReference<CellMO> cellRef;

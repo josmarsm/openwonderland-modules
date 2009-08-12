@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.timeline.common.provider;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -124,7 +125,7 @@ public class DatedSet extends TreeSet<DatedObject> {
      * each object. Note this will compare by minimum date.
      */
     private static final class DatedObjectComparator
-            implements Comparator<DatedObject>
+            implements Comparator<DatedObject>, Serializable
     {
         public static final DatedObjectComparator INSTANCE =
                 new DatedObjectComparator();

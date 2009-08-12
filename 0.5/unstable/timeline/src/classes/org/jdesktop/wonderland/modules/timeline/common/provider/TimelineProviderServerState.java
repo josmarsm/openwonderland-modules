@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class TimelineProviderServerState extends CellComponentServerState {
     /** the set of queries */
-    private Set<TimelineQuery> queries;
+    private Set<TimelineQuery> queries = new LinkedHashSet<TimelineQuery>();
 
     /** Default constructor */
     public TimelineProviderServerState() {
@@ -45,7 +45,7 @@ public class TimelineProviderServerState extends CellComponentServerState {
 
     @Override
     public String getServerComponentClassName() {
-        return "org.jdesktop.wonderland.modules.timeline.provider.TimelineProviderComponentMO";
+        return "org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMO";
     }
 
     @XmlElement

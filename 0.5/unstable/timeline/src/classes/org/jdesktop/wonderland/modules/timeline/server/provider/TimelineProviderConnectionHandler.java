@@ -19,12 +19,14 @@ import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProvider
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
+import org.jdesktop.wonderland.server.comms.annotation.ClientHandler;
 
 /**
  * Connection handler for the TimelineProviderConnection.  This handles messages
  * from the provider application.
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
+@ClientHandler
 public class TimelineProviderConnectionHandler 
         implements ClientConnectionHandler, Serializable
 {
