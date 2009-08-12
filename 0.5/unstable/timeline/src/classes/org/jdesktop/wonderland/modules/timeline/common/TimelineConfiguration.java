@@ -28,7 +28,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 @XmlRootElement(name="timeline-config")
-public class TimelineConfiguration implements Serializable {
+public abstract class TimelineConfiguration implements Serializable {
     /** Radians per segment. Default is PI / 4 (90 degrees)*/
     private float radsPerSegment = (float) (Math.PI / 4);
 
@@ -127,4 +127,15 @@ public class TimelineConfiguration implements Serializable {
     public void setRadsPerSegment(float radsPerSegment) {
         this.radsPerSegment = radsPerSegment;
     }
+
+    /**
+     *
+     * @return The derived height of the timeline, based on the pitch, rads per segment, and number of segments.
+     */
+    public float getHeight() {
+        float numTurns = (float) ((radsPerSegment * numSegments) / (Math.PI * 2));
+        return numTurns * pitch;
+    }
+
+    public abstract void sendUpdatedConfiguration();
 }

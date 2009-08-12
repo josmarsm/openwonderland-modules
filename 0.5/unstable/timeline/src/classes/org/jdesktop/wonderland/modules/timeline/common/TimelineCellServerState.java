@@ -18,16 +18,31 @@
 
 package org.jdesktop.wonderland.modules.timeline.common;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
  *
  *  
  */
+
+@XmlRootElement(name="timeline-cell")
+@ServerState
 public class TimelineCellServerState extends CellServerState {
+
+    @XmlElement(name="config")
+    private TimelineConfiguration config;
 
     @Override
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.timeline.server.TimelineCellMO";
+    }
+
+    @XmlTransient public TimelineConfiguration getConfig() { return this.config; }
+    public void setConfig(TimelineConfiguration config) {
+        this.config = config;
     }
 }
