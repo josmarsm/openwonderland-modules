@@ -65,6 +65,7 @@ public class TrackCell extends Cell {
     private TrackListModel trackListModel;
     private UI ui;
     private TimeSliderUI uiTimeSlider;
+    Track track;
 
     public TrackCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -93,19 +94,9 @@ public class TrackCell extends Cell {
     @Override
     public void setClientState(CellClientState clientState) {
         super.setClientState(clientState);
-        Track track = ((TrackCellClientState)clientState).getTrack();
+        track = ((TrackCellClientState)clientState).getTrack();
         System.out.println("TrackCell, track: " + track);
         trackListModel = new TrackListModel(track);
-        ui = new UI(this);
-        System.err.println("******** ui = " + ui);
-        
-        SimTrace trace = new SimTrace(2f, 60);
-        trace.appendSample(5f, new Vector3f(0f, 2f, 0f), new Vector3f(1f, 2f, 3f));
-        trace.appendSample(5f, new Vector3f(0f, 3f, 0f), new Vector3f(4f, 5f, 6f));
-        trace.appendSample(5f, new Vector3f(0f, 4f, 0f), new Vector3f(7f, 8f, 9f));
-
-        uiTimeSlider = new TimeSliderUI(this, trace);
-        System.err.println("******** uiTimeSlider = " + uiTimeSlider);
     }
 
     @Override
@@ -136,6 +127,10 @@ public class TrackCell extends Cell {
         return cellRenderer.getMarbleEntity();
     }
 
+    public void addMarbleMouseListener (TrackRenderer.MarbleMouseEventListener listener) {
+        cellRenderer.addMarbleMouseListener(listener);
+    }
+
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
@@ -145,6 +140,10 @@ public class TrackCell extends Cell {
         switch (status) {
             case ACTIVE:
                 if (increasing) {
+
+                    if (ui == null) {
+                        initUI();
+                    }
 
 //                    Node node = ((BasicRenderer)cellRenderer).getSceneRoot();
 //                    Vector3f currentLoc = node.getLocalTranslation();
@@ -167,6 +166,7 @@ public class TrackCell extends Cell {
 //                    hudTest.setActive(false);
                     ui.setVisible(false);
                     uiTimeSlider.setVisible(false);
+                    ui = null;
                     channel.removeMessageReceiver(SimulationStateMessage.class);
                     channel.removeMessageReceiver(TrackCellMessage.class);
                 }
@@ -176,6 +176,19 @@ public class TrackCell extends Cell {
                 break;
         }
 
+    }
+
+    private void initUI () {
+        ui = new UI(this);
+        System.err.println("******** ui = " + ui);
+        
+        SimTrace trace = new SimTrace(2f, 60);
+        trace.appendSample(5f, new Vector3f(0f, 2f, 0f), new Vector3f(1f, 2f, 3f));
+        trace.appendSample(5f, new Vector3f(0f, 3f, 0f), new Vector3f(4f, 5f, 6f));
+        trace.appendSample(5f, new Vector3f(0f, 4f, 0f), new Vector3f(7f, 8f, 9f));
+
+        uiTimeSlider = new TimeSliderUI(this, trace);
+        System.err.println("******** uiTimeSlider = " + uiTimeSlider);
     }
 
     /**
