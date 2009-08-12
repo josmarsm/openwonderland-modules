@@ -59,6 +59,8 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
     
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
+	System.out.println("status " + status + " increasing " + increasing);
+
         switch (status) {
             case DISK:
                 break;
@@ -127,7 +129,9 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	    location = transform.getTranslation(null);
 	}
 
-	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), cleanSegmentID(segment.toString()),
+	String segmentID = cleanSegmentID(segment.toString());
+
+	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), segmentID,
 	    treatment, location));
     }
 
@@ -143,8 +147,10 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	    previousSegmentID = cleanSegmentID(previousSegment.toString());
 	}
 
+	String currentSegmentID = cleanSegmentID(currentSegment.toString());
+
 	channelComp.send(new TimelineSegmentChangeMessage(cell.getCellID(), callID, previousSegmentID,
-	    cleanSegmentID(currentSegment.toString())));
+	    currentSegmentID));
     }
 
     public void playSegmentRecording(TimelineSegment segment, String recordingPath, boolean isPlaying) {
@@ -153,8 +159,10 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	System.out.println("playSegmentRecording " + segment + " path " + recordingPath + " isPlaying "
 	    + isPlaying);
 
+	String segmentID = cleanSegmentID(segment.toString());
+
 	channelComp.send(new TimelinePlayRecordingMessage(cell.getCellID(), 
-	    cleanSegmentID(segment.toString()), callID, recordingPath, isPlaying));
+	    segmentID, callID, recordingPath, isPlaying));
     }
 
     public void record(TimelineSegment segment, String recordingPath, boolean isRecording) {
@@ -163,8 +171,10 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	System.out.println("record " + segment + " path " + recordingPath + " isPlaying "
 	    + isRecording);
 
-	channelComp.send(new TimelineRecordMessage(cell.getCellID(), 
-	    cleanSegmentID(segment.toString()), callID, recordingPath, isRecording));
+	String segmentID = cleanSegmentID(segment.toString());
+
+	channelComp.send(new TimelineRecordMessage(cell.getCellID(), segmentID,
+	    callID, recordingPath, isRecording));
     }
 
     public void messageReceived(CellMessage message) {
