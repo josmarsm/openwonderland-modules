@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.timeline.common;
 
 import java.awt.Color;
+import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
@@ -29,7 +30,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
  *
  * @author drew
  */
-public class TimelineSegment implements DatedObject {
+public class TimelineSegment implements DatedObject, Serializable {
 
     private TimelineDate date;
 
@@ -53,13 +54,6 @@ public class TimelineSegment implements DatedObject {
 
     public void setTransform(CellTransform transform) {
         this.transform = transform;
-    }
-
-    public void setColor(Color c) {
-        // We're going to want to do this, but this will need to call into
-        // the renderer. Maybe we need a client version of this that extends
-        // the common one that does set color operations on the jme objects?
-        throw new UnsupportedOperationException("Not implemented in the common version of this object - server/client versions will handle this differently.");
     }
 
     public String getTreatment() {
