@@ -42,7 +42,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQueryID;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderAddResultMessage;
-import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderObjectMessage;
+import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderObjectsMessage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderRemoveResultMessage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderResetResultMessage;
 
@@ -127,12 +127,12 @@ public class TimelineProviderComponent extends CellComponent {
 
         if (status == CellStatus.INACTIVE && increasing) {
             channel.addMessageReceiver(ProviderAddResultMessage.class, receiver);
-            channel.addMessageReceiver(ProviderObjectMessage.class, receiver);
+            channel.addMessageReceiver(ProviderObjectsMessage.class, receiver);
             channel.addMessageReceiver(ProviderRemoveResultMessage.class, receiver);
             channel.addMessageReceiver(ProviderResetResultMessage.class, receiver);
         } else if (status == CellStatus.INACTIVE && !increasing) {
             channel.removeMessageReceiver(ProviderAddResultMessage.class);
-            channel.removeMessageReceiver(ProviderObjectMessage.class);
+            channel.removeMessageReceiver(ProviderObjectsMessage.class);
             channel.removeMessageReceiver(ProviderRemoveResultMessage.class);
             channel.removeMessageReceiver(ProviderResetResultMessage.class);
         }
@@ -156,14 +156,18 @@ public class TimelineProviderComponent extends CellComponent {
         fireResultAdded(ri);
     }
 
-    private void handleObject(ProviderObjectMessage message) {
+    private void handleObject(ProviderObjectsMessage message) {
         ResultImpl result = results.get(message.getID());
         switch (message.getAction()) {
             case ADD:
-                result.addResult(message.getObject());
+                for (DatedObject obj : message.getObjects()) {
+                    result.addResult(obj);
+                }
                 break;
             case REMOVE:
-                result.removeResult(message.getObject());
+                for (DatedObject obj : message.getObjects()) {
+                    result.removeResult(obj);
+                }
                 break;
         }
     }
@@ -192,8 +196,8 @@ public class TimelineProviderComponent extends CellComponent {
         public void messageReceived(CellMessage message) {
             if (message instanceof ProviderAddResultMessage) {
                 handleAddResult((ProviderAddResultMessage) message);
-            } else if (message instanceof ProviderObjectMessage) {
-                handleObject((ProviderObjectMessage) message);
+            } else if (message instanceof ProviderObjectsMessage) {
+                handleObject((ProviderObjectsMessage) message);
             } else if (message instanceof ProviderRemoveResultMessage) {
                 handleRemoveResult((ProviderRemoveResultMessage) message);
             } else if (message instanceof ProviderResetResultMessage) {

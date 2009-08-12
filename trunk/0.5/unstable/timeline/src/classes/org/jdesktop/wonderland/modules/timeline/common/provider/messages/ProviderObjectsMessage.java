@@ -1,22 +1,12 @@
-/**
- * Project Wonderland
- *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
- *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
- *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
- *
- * Sun designates this particular file as subject to the "Classpath"
- * exception as provided by Sun in the License file that accompanied
- * this code.
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
+
 package org.jdesktop.wonderland.modules.timeline.common.provider.messages;
 
+import java.util.Collections;
+import java.util.Set;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
@@ -26,21 +16,27 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQueryID;
  * A message when a new object has been added to a result
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public class ProviderObjectMessage extends CellMessage {
+public class ProviderObjectsMessage extends CellMessage {
     public enum Action { ADD, REMOVE };
     
     private TimelineQueryID queryID;
     private Action action;
-    private DatedObject obj;
+    private Set<DatedObject> objs;
 
-    public ProviderObjectMessage(CellID cellID, TimelineQueryID queryID,
+    public ProviderObjectsMessage(CellID cellID, TimelineQueryID queryID,
                                  Action action, DatedObject obj)
+    {
+        this (cellID, queryID, action, Collections.singleton(obj));
+    }
+
+    public ProviderObjectsMessage(CellID cellID, TimelineQueryID queryID,
+                                 Action action, Set<DatedObject> objs)
     {
         super (cellID);
     
         this.queryID = queryID;
         this.action = action;
-        this.obj = obj;
+        this.objs = objs;
     }
 
     public TimelineQueryID getID() {
@@ -51,7 +47,7 @@ public class ProviderObjectMessage extends CellMessage {
         return action;
     }
 
-    public DatedObject getObject() {
-        return obj;
+    public Set<DatedObject> getObjects() {
+        return objs;
     }
 }

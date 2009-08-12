@@ -18,9 +18,28 @@
 package org.jdesktop.wonderland.modules.timeline.provider.spi;
 
 /**
- *
- * @author jkaplan
+ * The interface for implementing a timeline provider.  A TimelineProvider is
+ * responsible for reading actual data from the internet and formatting
+ * it for use on the timeline.
+ * <p>
+ * A TimelineProvider must provider a public, no-argument constructor.  When
+ * a query is added to the system, a new instance of the provider will be
+ * instantiated.  Immediately after instantiation, the setup method will be
+ * called with the context for this provider.  The context includes the
+ * query and associated configuration, as well as methods to send results
+ * back to the client.
+ * 
+ * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
 public interface TimelineProvider {
+    /**
+     * Initialize this provider
+     * @param context the setup information for the provider
+     */
+    public void initialize(TimelineProviderContext context);
 
+    /**
+     * Shut down this provider and release all associated resources.
+     */
+    public void shutdown();
 }

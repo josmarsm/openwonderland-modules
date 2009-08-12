@@ -25,15 +25,20 @@ import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.util.ScalableHashMap;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineProviderClientState;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineProviderServerState;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQuery;
+import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderObjectsMessage;
+import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderResetResultMessage;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderRegistry.RegistryResultListener;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -175,19 +180,27 @@ public class TimelineProviderComponentMO extends CellComponentMO {
         }
     
         public void added(DatedObject obj) {
+            added(Collections.singleton(obj));
+        }
+
+        public void added(Set<DatedObject> objs) {
             TimelineResultHolder holder = resultsRef.get().get(id);
-            holder.addResult(obj);
+            holder.addResults(objs);
         }
 
         public void removed(DatedObject obj) {
+            removed(Collections.singleton(obj));
+        }
+
+        public void removed(Set<DatedObject> objs) {
             TimelineResultHolder holder = resultsRef.get().get(id);
-            holder.removeResult(obj);
+            holder.removeResults(objs);
         }
 
         public void reset() {
             TimelineResultHolder holder = resultsRef.get().get(id);
             holder.resetResults();
-        }        
+        }
     }
 
     /**
@@ -198,11 +211,13 @@ public class TimelineProviderComponentMO extends CellComponentMO {
         private TimelineQuery query;
         private DatedSet results;
 
+        private CellID cellID;
         private ManagedReference<CellMO> cellRef;
         private ManagedReference<ChannelComponentMO> channelRef;
 
         public TimelineResultHolder(CellMO cell, TimelineQuery query)
         {
+            this.cellID = cell.getCellID();
             this.cellRef = AppContext.getDataManager().createReference(cell);
             this.query = query;
         }
@@ -215,32 +230,48 @@ public class TimelineProviderComponentMO extends CellComponentMO {
             return results;
         }
 
-        private void addResult(DatedObject obj) {
-            results.add(obj);
+        private void addResults(Set<DatedObject> objs) {
+            results.addAll(objs);
 
             // send a message to all clients
-            //
+            send(new ProviderObjectsMessage(cellID, query.getQueryID(),
+                                            ProviderObjectsMessage.Action.ADD,
+                                            objs));
         }
 
-        private void removeResult(DatedObject obj) {
-            results.remove(obj);
+        private void removeResults(Set<DatedObject> objs) {
+            results.removeAll(objs);
             
             // send a message to all clients
-            //
+            // send a message to all clients
+            send(new ProviderObjectsMessage(cellID, query.getQueryID(),
+                                            ProviderObjectsMessage.Action.REMOVE,
+                                            objs));
         }
 
         private void resetResults() {
             results.clear();
             
             // send a message to all clients
-            //
+            send(new ProviderResetResultMessage(cellID, query.getQueryID()));
+        }
+
+        /**
+         * Send a message to the cell channel
+         * @param message the message to send
+         */
+        private void send(CellMessage message) {
+           ChannelComponentMO channel = getCellChannel();
+           if (channel != null) {
+               channel.sendAll(null, message);
+           }
         }
 
         /**
          * Get the cell's channel
          * @return the cell's channel, or null if the cell is not live
          */
-        protected ChannelComponentMO getCellChannel() {
+        private ChannelComponentMO getCellChannel() {
             if (channelRef != null) {
                 return channelRef.get();
             }

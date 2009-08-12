@@ -21,35 +21,17 @@ import org.jdesktop.wonderland.modules.timeline.common.audio.TimelinePlayRecordi
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineRecordMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentChangeMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentTreatmentMessage;
-
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
-
 import java.util.logging.Logger;
-
-import com.jme.math.Vector3f;
-
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
-
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
-
 import org.jdesktop.wonderland.common.ExperimentalAPI;
-import org.jdesktop.wonderland.common.cell.CellStatus;
-
-import org.jdesktop.wonderland.common.cell.CallID;
-import org.jdesktop.wonderland.common.cell.CellID;
-
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineAudioComponentClientState;
 
 /**
@@ -62,6 +44,7 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
     
     private static Logger logger = Logger.getLogger(TimelineAudioComponent.class.getName());
 
+    @UsesCellComponent
     private ChannelComponent channelComp;
 
     public TimelineAudioComponent(Cell cell) {
@@ -75,21 +58,7 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	TimelineAudioComponentClientState state = (TimelineAudioComponentClientState) 
 	    clientState;
     }
-
-    @Override
-    protected void setStatus(CellStatus status, boolean increasing) {
-	switch(status) {
-        case DISK:
-            break;
-
-	case ACTIVE:
-            if (increasing) {
-                channelComp = cell.getComponent(ChannelComponent.class);
-	        break;
-            }
-	}
-    }
-    
+   
     public void createSegmentTreatment(TimelineSegment segment) {
 	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), segment));
     }
