@@ -17,9 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.client.cell;
 
+import com.jme.math.Vector3f;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Vector;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -29,7 +31,6 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
-import org.jdesktop.wonderland.client.cell.component.CellPhysicsPropertiesComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -40,12 +41,11 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
+import org.jdesktop.wonderland.modules.marbleous.client.ui.TimeSliderUI;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.TrackListModel;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.UI;
-import org.jdesktop.wonderland.modules.marbleous.common.RightTurnTrackSegmentType;
-import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
-import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
@@ -65,6 +65,7 @@ public class TrackCell extends Cell {
     private TrackRenderer cellRenderer = null;
     private TrackListModel trackListModel;
     private UI ui;
+    private TimeSliderUI uiTimeSlider;
 
     public TrackCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -109,6 +110,12 @@ public class TrackCell extends Cell {
         System.out.println("TrackCell, track: " + track);
         trackListModel = new TrackListModel(track);
         ui = new UI(this);
+        System.err.println("******** ui = " + ui);
+        
+        SimTrace trace = new SimTrace(2f, 60);
+        trace.appendSample(5f, new Vector3f(), new Vector3f(1f, 2f, 3f));
+        uiTimeSlider = new TimeSliderUI(this, trace);
+        System.err.println("******** uiTimeSlider = " + uiTimeSlider);
     }
 
     @Override
@@ -157,12 +164,15 @@ public class TrackCell extends Cell {
                     channel.addMessageReceiver(TrackCellMessage.class, new TrackCellMessageReceiver());
                     
                     ui.setVisible(true);
+                    uiTimeSlider.setVisible(true);
                 }
 
                 break;
             case INACTIVE:
                 if (!increasing) {
 //                    hudTest.setActive(false);
+                    ui.setVisible(false);
+                    uiTimeSlider.setVisible(false);
                     channel.removeMessageReceiver(SimulationStateMessage.class);
                     channel.removeMessageReceiver(TrackCellMessage.class);
                 }
