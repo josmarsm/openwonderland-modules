@@ -24,16 +24,16 @@ import com.jme.math.Vector3f;
  *
  * @author paulby
  */
-public class StraightDropTrackSegmentType extends TrackSegmentType {
+public class BumpTrackSegmentType extends TrackSegmentType {
 
     private Matrix4f endpoint;
 
-    public StraightDropTrackSegmentType() {
-        super("StraightDrop");
-        imageName = "RampDown.png";
+    public BumpTrackSegmentType() {
+        super("Bump");
+
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
-          createKeyFrame(0, new Vector3f(0,4,0)),
-//          createKeyFrame(0.8f, new Vector3f(0,-0.4f,-4.9f), 1, 0, 0),
+          createKeyFrame(0, new Vector3f(0,0,0)),
+          createKeyFrame(0.5f, new Vector3f(0,0.6f,-7.5f), 1,0,0),
           createKeyFrame(1f, new Vector3f(0,0,-15))
         };
 

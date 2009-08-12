@@ -69,18 +69,6 @@ public class TrackCell extends Cell {
 
     public TrackCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        /**track = new Track();
-
-        track.addTrackSegment(new StraightDropTrackSegmentType().createSegment());
-        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
-        track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
-        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
-        track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
-//        track.addTrackSegment(new LoopTrackSegmentType().createSegment());
-        track.buildTrack();
-         */
-
-        
     }
 
     /**

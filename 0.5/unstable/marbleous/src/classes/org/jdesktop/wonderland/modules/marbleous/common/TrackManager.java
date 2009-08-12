@@ -43,6 +43,7 @@ public class TrackManager {
         supportedTypes.add(new RightTurnTrackSegmentType());
         supportedTypes.add(new StraightLevelTrackSegmentType());
         supportedTypes.add(new StraightDropTrackSegmentType());
+        supportedTypes.add(new BumpTrackSegmentType());
     }
 
     public Collection<TrackSegmentType> getTrackSegmentTypes() {
