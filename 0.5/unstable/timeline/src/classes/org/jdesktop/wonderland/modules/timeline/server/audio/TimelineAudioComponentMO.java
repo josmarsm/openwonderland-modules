@@ -49,6 +49,7 @@ import com.sun.mpk20.voicelib.app.Call;
 import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
+import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.Treatment;
 import com.sun.mpk20.voicelib.app.TreatmentGroup;
 import com.sun.mpk20.voicelib.app.TreatmentSetup;
@@ -244,9 +245,23 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 
     	    Integer useCount = segmentUseMap.get(currentSegmentID);
 
-	    if (useCount == null) {
-	        Treatment treatment = segmentTreatmentMap.get(currentSegmentID);
+            VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	    Treatment treatment = segmentTreatmentMap.get(currentSegmentID);
+
+	    if (treatment != null) {
+	        Player treatmentPlayer = vm.getPlayer(treatment.getId());
+
+	        if (treatmentPlayer != null) {
+	    	    Player myPlayer = vm.getPlayer(message.getCallID());
+
+		    myPlayer.setPrivateSpatializer(treatmentPlayer, new FullVolumeSpatializer());
+	        } else {
+		    System.out.println("Can't find player for " + treatment);
+		}
+	    }
+	    
+	    if (useCount == null) {
 	        if (treatment == null) {
 		    System.out.println("No treatment for " + currentSegmentID);
 		    return;
@@ -267,23 +282,32 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 	        return;
 	    }
 
+	    treatment = segmentTreatmentMap.get(previousSegmentID);
+
+	    if (treatment == null) {
+		return;
+	    }
+
+	    Player treatmentPlayer = vm.getPlayer(treatment.getId());
+
+	    if (treatmentPlayer != null) {
+	    	Player myPlayer = vm.getPlayer(message.getCallID());
+
+		myPlayer.setPrivateSpatializer(treatmentPlayer, new FullVolumeSpatializer());
+	    } else {
+		System.out.println("Can't find player for " + treatment);
+	    }
+
 	    useCount = segmentUseMap.get(previousSegmentID);
 
 	    if (useCount == null) {
-	        System.out.println("No map entry for " + previousSegmentID);
+	        System.out.println("No use count map entry for " + previousSegmentID);
 	    } else {
 	        int i = useCount.intValue();
 
 	        if (i == 1) {
-		    Treatment treatment = segmentTreatmentMap.get(previousSegmentID);
-
-		    if (treatment == null) {
-		        System.out.println("No treatment for " + previousSegmentID);
-		    } else {
-		        new Fade(treatment, true);
-		    }
-
 		    segmentUseMap.remove(previousSegmentID);
+		    new Fade(treatment, true);
 	        }
 	    }
         }
