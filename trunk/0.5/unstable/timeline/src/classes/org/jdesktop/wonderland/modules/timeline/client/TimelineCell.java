@@ -21,6 +21,8 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Date;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -145,28 +147,63 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         }
     }
 
+    private void createCreationHUD() {
+        creationPanel = new TimelineCreationHUDPanel(this);
+        creationPanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pe) {
+                if ((pe.getPropertyName().equals("create")) || (pe.getPropertyName().equals("update"))) {
+                    logger.info("--- create/update timeline");
+                    timelineCreationHUD.setVisible(false);
+                    // TODO: actually create a Timeline!
+                } else if (pe.getPropertyName().equals("cancel")) {
+                    // timeline creation was canceled
+                    timelineCreationHUD.setVisible(false);
+                }
+            }
+        });
+        timelineCreationHUD = mainHUD.createComponent(creationPanel);
+        timelineCreationHUD.setPreferredLocation(Layout.CENTER);
+        timelineCreationHUD.setName("Create Timeline");
+    }
+
+    private void createCurationHUD() {
+        curationPanel = new TimelineCurationHUDPanel(this);
+        curationPanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent pe) {
+                if (pe.getPropertyName().equals("add")) {
+                    logger.info("--- add curated item");
+                    // TODO: add curated items to the Timeline
+                } else if (pe.getPropertyName().equals("done")) {
+                    // finished adding curated items
+                    timelineCurationHUD.setVisible(false);
+                }
+            }
+        });
+        timelineCurationHUD = mainHUD.createComponent(curationPanel);
+        timelineCurationHUD.setPreferredLocation(Layout.CENTER);
+        timelineCurationHUD.setName("Curate Timeline");
+    }
+
+    private void createNavigationHUD() {
+        navigationPanel = new TimelineMovementHUDPanel(this);
+        navigationHUD = mainHUD.createComponent(navigationPanel);
+        navigationHUD.setPreferredLocation(Layout.EAST);
+        navigationHUD.setName("Navigation");
+    }
+
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
 
         // If the person entering is the local avatar...
         if (cell.getCellCache().getViewCell().getCellID() == viewCellID) {
             if (entered) {
-                // Add the navigation HUD.
+                // create HUDs
                 mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-                navigationPanel = new TimelineMovementHUDPanel(this);
-                navigationHUD = mainHUD.createComponent(navigationPanel);
-                navigationHUD.setPreferredLocation(Layout.EAST);
-                navigationHUD.setName("Navigation");
-
-                creationPanel = new TimelineCreationHUDPanel(this);
-                timelineCreationHUD = mainHUD.createComponent(creationPanel);
-                timelineCreationHUD.setPreferredLocation(Layout.CENTER);
-                timelineCreationHUD.setName("Create Timeline");
-
-                curationPanel = new TimelineCurationHUDPanel(this);
-                timelineCurationHUD = mainHUD.createComponent(curationPanel);
-                timelineCurationHUD.setPreferredLocation(Layout.CENTER);
-                timelineCurationHUD.setName("Curate Timeline");
+                createNavigationHUD();
+                createCreationHUD();
+                createCurationHUD();
 
                 mainHUD.addComponent(timelineCreationHUD);
                 mainHUD.addComponent(timelineCurationHUD);
