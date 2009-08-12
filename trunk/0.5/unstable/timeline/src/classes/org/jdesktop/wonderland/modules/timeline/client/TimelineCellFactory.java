@@ -38,7 +38,7 @@ public class TimelineCellFactory implements CellFactorySPI{
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
 
         TimelineCellServerState state = new TimelineCellServerState();
-
+        state.setConfig(new TimelineClientConfiguration());
         return (T)state;
     }
 

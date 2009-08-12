@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
  */
 @XmlRootElement(name="timeline-config")
 public abstract class TimelineConfiguration implements Serializable {
-    /** Radians per segment. Default is PI / 4 (90 degrees)*/
+    /** Radians per segment. Default is PI / 4 (45 degrees)*/
     private float radsPerSegment = (float) (Math.PI / 4);
 
     /** The total number of segments. */
