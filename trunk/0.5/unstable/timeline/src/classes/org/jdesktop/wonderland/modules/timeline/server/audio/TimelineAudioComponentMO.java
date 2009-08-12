@@ -66,12 +66,13 @@ import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.sun.voip.client.connector.CallStatus;
+import com.sun.voip.client.connector.CallStatusListener;
 
 /**
  *
  *  
  */
-public class TimelineAudioComponentMO extends CellComponentMO implements ManagedCallStatusListener {
+public class TimelineAudioComponentMO extends CellComponentMO {
     private static final Logger logger =
             Logger.getLogger(TimelineAudioComponentMO.class.getName());
 
@@ -144,20 +145,10 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 	return "org.jdesktop.wonderland.modules.timeline.client.audio.TimelineAudioComponent";
     }
 
-    public void callStatusChanged(CallStatus status) {
-        String callId = status.getCallId();
-
-	System.out.println("Got status: " + status);
-    }
-
-
-    private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver {
+    private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver 
+	    implements CallStatusListener {
 
         private ManagedReference<TimelineAudioComponentMO> compRef;
-
-        private String getSegmentID(TimelineSegment segment) {
-	    return segment.toString();
-        }
 
         public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
                 TimelineAudioComponentMO comp) {
@@ -196,9 +187,7 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
         private void setupTreatment(TimelineSegmentTreatmentMessage message) {
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	    TimelineSegment segment = message.getSegment();
-
-	    String segmentID = getSegmentID(segment);
+	    String segmentID = message.getSegmentID();
 
             TreatmentGroup group = vm.createTreatmentGroup(segmentID);
 	
@@ -208,19 +197,18 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 
 	    setup.spatializer = spatializer;
 
-            setup.treatment = segment.getTreatment();
+            setup.treatment = message.getTreatment();
 
             String treatmentId = segmentID;
 
-	    setup.managedListenerRef = 
-	        AppContext.getDataManager().createReference((ManagedCallStatusListener) this);
+	    setup.listener = this;
 
             if (setup.treatment == null || setup.treatment.length() == 0) {
                 System.out.println("Invalid treatment '" + setup.treatment + "'");
 	        return;
             }
 
-            Vector3f location = segment.getTransform().getTranslation(null);
+            Vector3f location = message.getLocation();
 
             setup.x = location.getX();
             setup.y = location.getY();
@@ -243,44 +231,55 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
         private ConcurrentHashMap<String, Integer> segmentUseMap = new ConcurrentHashMap();
 
         private void changeSegment(TimelineSegmentChangeMessage message) {
-	    String currentSegmentID = getSegmentID(message.getCurrentSegment());
+	    String currentSegmentID = message.getCurrentSegmentID();
 
     	    Integer useCount = segmentUseMap.get(currentSegmentID);
 
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
+	    Player myPlayer = vm.getPlayer(message.getCallID());
+
 	    Treatment treatment = segmentTreatmentMap.get(currentSegmentID);
 
 	    if (treatment != null) {
-	        Player treatmentPlayer = vm.getPlayer(treatment.getId());
+		Call call = treatment.getCall();
 
-	        if (treatmentPlayer != null) {
-	    	    Player myPlayer = vm.getPlayer(message.getCallID());
+		if (call != null) {
+	            Player treatmentPlayer = call.getPlayer();
 
-		    myPlayer.setPrivateSpatializer(treatmentPlayer, new FullVolumeSpatializer());
-	        } else {
-		    System.out.println("Can't find player for " + treatment);
+	            if (treatmentPlayer != null) {
+		        System.out.println("Setting pm for " + treatmentPlayer);
+		        myPlayer.setPrivateSpatializer(treatmentPlayer, new FullVolumeSpatializer());
+		        //new Fade(myPlayer, treatment, false);
+	            } else {
+		        System.out.println("Can't find player for " + treatment);
+		    }
+		} else {
+		    System.out.println("No call for " + treatment);
 		}
+	    } else {
+		System.out.println("No treatment in map for seg " + currentSegmentID);
 	    }
 	    
 	    if (useCount == null) {
 	        if (treatment == null) {
 		    System.out.println("No treatment for " + currentSegmentID);
 		    return;
-	        } else {
-		    new Fade(treatment, false);
 	        }
 
 	        useCount = new Integer(1);
+		System.out.println("Unpausing treatment " + treatment);
+		treatment.pause(false);
 	    } else {
 	        useCount = new Integer(useCount.intValue() + 1);
 	    }
 
 	    segmentUseMap.put(currentSegmentID, useCount);
 
-	    String previousSegmentID = getSegmentID(message.getPreviousSegment());	
+	    String previousSegmentID = message.getPreviousSegmentID();	
 
 	    if (previousSegmentID == null) {
+		System.out.println("No previous segment");
 	        return;
 	    }
 
@@ -290,14 +289,18 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 		return;
 	    }
 
-	    Player treatmentPlayer = vm.getPlayer(treatment.getId());
+	    //new Fade(myPlayer, treatment, true);
 
-	    if (treatmentPlayer != null) {
-	    	Player myPlayer = vm.getPlayer(message.getCallID());
+	    Call call = treatment.getCall();
 
-		myPlayer.setPrivateSpatializer(treatmentPlayer, new FullVolumeSpatializer());
+	    Player player;
+
+	    if (call != null) {
+	        player = call.getPlayer();
+	        myPlayer.removePrivateSpatializer(player);
+	        System.out.println("Removed pm for " + treatment);
 	    } else {
-		System.out.println("Can't find player for " + treatment);
+		System.out.println("No player for " + treatment);
 	    }
 
 	    useCount = segmentUseMap.get(previousSegmentID);
@@ -309,7 +312,8 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 
 	        if (i == 1) {
 		    segmentUseMap.remove(previousSegmentID);
-		    new Fade(treatment, true);
+		    System.out.println("Pausing treatment " + treatment);
+		    treatment.pause(true);
 	        }
 	    }
         }
@@ -319,10 +323,12 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 	    private static final double fadeinValue = .05;
 	    private static final double fadeoutValue = .1;
 
+	    private Player myPlayer;
 	    private boolean fadeout;
 	    private Treatment treatment;
 
-	    public Fade(Treatment treatment, boolean fadeout) {
+	    public Fade(Player myPlayer, Treatment treatment, boolean fadeout) {
+		this.myPlayer = myPlayer;
 	        this.treatment = treatment;
 	        this.fadeout = fadeout;
 
@@ -335,19 +341,24 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 	        double attenuator;
 
 	        if (fadeout == false) {
-	            treatment.pause(false);
 		    attenuator = fadeoutValue;
 	        } else {
 		    attenuator = DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME;
 	        }
 
 	        while (true) {
+		    System.out.println("Attenuator " + attenuator + " " + treatment);
+
 	    	    spatializer.setAttenuator(attenuator);
 
 		    if (fadeout == true) {
 		        attenuator -= fadeoutValue;
+
 		        if (attenuator <= 0) {
-	            	    treatment.pause(true);
+            		    VoiceManager vm = AppContext.getManager(VoiceManager.class);
+	    		    Player player = vm.getPlayer(treatment.getId());
+			    myPlayer.removePrivateSpatializer(player);
+			    System.out.println("Removing pm for " + player);
 			    break;
 		        }
 		    } else {
@@ -409,6 +420,12 @@ public class TimelineAudioComponentMO extends CellComponentMO implements Managed
 		System.out.println("Unable to play/stop treatment " + message.getRecordingPath());
 		return; 
 	    }
+        }
+
+        public void callStatusChanged(CallStatus status) {
+            String callId = status.getCallId();
+
+	    System.out.println("Got status: " + status.getCode() + " " + status.getCallId());
         }
 
     }
