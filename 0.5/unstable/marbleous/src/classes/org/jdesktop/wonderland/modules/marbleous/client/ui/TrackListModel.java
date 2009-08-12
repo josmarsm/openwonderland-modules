@@ -51,7 +51,7 @@ public class TrackListModel extends AbstractListModel {
         fireIntervalAdded(this, index, index);
     }
 
-    void removeSegment(TrackSegment oldSegment) {
+    public void removeSegment(TrackSegment oldSegment) {
         int index = track.indexOf(oldSegment);
         track.removeTrackSegment(oldSegment);
          if (index >= 0) {

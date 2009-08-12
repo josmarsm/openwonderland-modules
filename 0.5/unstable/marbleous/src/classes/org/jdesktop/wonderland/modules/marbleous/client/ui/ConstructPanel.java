@@ -190,7 +190,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         TrackSegmentType selectedType = (TrackSegmentType) typeList.getSelectedValue();
         TrackSegment newSegment = selectedType.createSegment();
         // This adds the segment to the underlying model (the track)
-        segmentListModel.addSegment(newSegment);
+        //segmentListModel.addSegment(newSegment);
         //Tell the server to add the segment
         cell.sendCellMessage(TrackCellMessage.addSegment(cell.getCellID(), newSegment));
 }//GEN-LAST:event_addButtonActionPerformed
@@ -205,7 +205,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         if (selectedSegment != null) {
             // This removes the segment from the underlying model (the track)
             segmentListModel.removeSegment(selectedSegment);
-            //Tell the server to add the segment
+            //Tell the server to remove the segment
             cell.sendCellMessage(TrackCellMessage.removeSegment(cell.getCellID(), selectedSegment));
         }
     }//GEN-LAST:event_removeButtonActionPerformed
