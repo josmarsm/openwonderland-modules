@@ -16,10 +16,13 @@ import com.jme.scene.Node;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderUpdater;
+import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.marbleous.client.SampleInfo;
 import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
+import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
+import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer.MarbleMouseEventListener;
 
 /**
  *
@@ -29,6 +32,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
 
     private TrackCell cell;
     private SimTrace trace;
+    private MarbleMouseEventListener marbleMouseListener;
 
     /** Creates new form TimeSliderPanel */
     public TimeSliderPanel(TrackCell cell, SimTrace trace) {
@@ -39,6 +43,9 @@ public class TimeSliderPanel extends javax.swing.JPanel {
 
         float endTime = trace.getEndTime();
         jLabel3.setText(Float.toString(endTime));
+
+        marbleMouseListener = new MarbleMouseListener();
+        cell.addMarbleMouseListener(marbleMouseListener);
     }
 
     /** This method is called from within the constructor to
@@ -139,4 +146,10 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     private javax.swing.JSlider jSlider1;
     // End of variables declaration//GEN-END:variables
 
+
+    private class MarbleMouseListener implements TrackRenderer.MarbleMouseEventListener {
+        public void commitEvent (Entity marbleEntity, Event event) {
+            System.err.println("**** Mouse event on marble = " + event);
+        }
+    }
 }

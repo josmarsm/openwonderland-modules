@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.marbleous.client.jme;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
 import javax.swing.event.ListDataEvent;
 import org.jdesktop.wonderland.modules.marbleous.common.TCBKeyFrame;
 import com.jme.math.Matrix4f;
@@ -31,7 +30,6 @@ import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Extrusion;
-import com.jme.scene.shape.Quad;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
@@ -39,6 +37,7 @@ import com.jme.scene.state.ZBufferState;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import javax.swing.event.ListDataListener;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
@@ -47,15 +46,17 @@ import org.jdesktop.mtgame.JBulletCollisionComponent;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
-import org.jdesktop.mtgame.PhysicsComponent;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 
@@ -65,11 +66,18 @@ import org.jdesktop.wonderland.modules.marbleous.common.Track;
  */
 public class TrackRenderer extends BasicRenderer {
 
+    public interface MarbleMouseEventListener {
+        public void commitEvent (Entity marbleEntity, Event event);
+    }
+
     private TriMesh trackMesh = null;
     private Node cellRoot = new Node("Marbleous");
     private final Node trackRoot = new Node("TrackRoot");
 
     private Entity marbleEntity;
+
+    private LinkedList<MarbleMouseEventListener> marbleMouseListeners = 
+        new LinkedList<MarbleMouseEventListener>();
 
     public TrackRenderer(Cell cell) {
         super(cell);
@@ -96,6 +104,9 @@ public class TrackRenderer extends BasicRenderer {
             
             marbleEntity = createMarble(track.getMarbleStartPosition());
             entity.addEntity(marbleEntity);
+
+            MarbleMouseListener mouseListener = new MarbleMouseListener();
+            mouseListener.addToEntity(marbleEntity);
 
             ((TrackCell)cell).getTrackListModel().addListDataListener(new ListDataListener() {
                 public void intervalAdded(ListDataEvent e) {
@@ -254,6 +265,35 @@ public class TrackRenderer extends BasicRenderer {
         }
 
         return e;
+    }
+
+    protected class MarbleMouseListener extends EventClassListener {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[]{MouseEvent3D.class};
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+            public void commitEvent(Event event) {
+            synchronized (marbleMouseListeners) {
+                for (MarbleMouseEventListener ml : marbleMouseListeners) {
+                    ml.commitEvent(marbleEntity, event);
+                }
+            }
+        }
+    }
+
+    public void addMarbleMouseListener (MarbleMouseEventListener listener) {
+        synchronized (marbleMouseListeners) {
+            marbleMouseListeners.add(listener);
+        }
     }
 
     private void drawKnot(RotPosScaleTCBSplinePath spline, Node root) {
