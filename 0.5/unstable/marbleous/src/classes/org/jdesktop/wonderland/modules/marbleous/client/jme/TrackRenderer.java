@@ -19,9 +19,11 @@ package org.jdesktop.wonderland.modules.marbleous.client.jme;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
+import javax.swing.event.ListDataEvent;
 import org.jdesktop.wonderland.modules.marbleous.common.TCBKeyFrame;
 import com.jme.math.Matrix4f;
 import com.jme.math.Quaternion;
+import com.jme.math.Triangle;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Line;
@@ -37,6 +39,7 @@ import com.jme.scene.state.ZBufferState;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.event.ListDataListener;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.Entity;
@@ -46,6 +49,7 @@ import org.jdesktop.mtgame.JBulletPhysicsComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.PhysicsComponent;
 import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -62,6 +66,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.Track;
 public class TrackRenderer extends BasicRenderer {
 
     private TriMesh trackMesh = null;
+    private Node trackRoot = null;
 
     public TrackRenderer(Cell cell) {
         super(cell);
@@ -69,45 +74,74 @@ public class TrackRenderer extends BasicRenderer {
 
     @Override
     protected Node createSceneGraph(Entity entity) {
-        Node ret = null;
         if (false) {
             // Code for visualizing test splines
             SplineTest splineTest = new SplineTest();
 
-            ret = new Node("Spline Test");
+            trackRoot = new Node("Spline Test");
 
-            drawKnot(splineTest.interp, ret);
-            drawSpline(splineTest.interp, ret);
+            drawKnot(splineTest.interp, trackRoot);
+            drawSpline(splineTest.interp, trackRoot);
         } else {
-            ret = new Node("TrackRoot");
-            ret.setLocalTranslation(Vector3f.ZERO);
-            ret.setLocalRotation(new Quaternion());
-            ret.setModelBound(new BoundingSphere());
+            trackRoot = new Node("TrackRoot");
+            trackRoot.setLocalTranslation(Vector3f.ZERO);
+            trackRoot.setLocalRotation(new Quaternion());
+            trackRoot.setModelBound(new BoundingSphere());
 
             Track track = ((TrackCell) cell).getTrack();
-            Collection<TCBKeyFrame> keyFrames = track.buildTrack();
-            RotPosScaleTCBSplinePath spline = new RotPosScaleTCBSplinePath(keyFrames.toArray(new TCBKeyFrame[keyFrames.size()]));
-//            drawKnot(spline, ret);
-            //drawSpline(spline, ret);
-//            trackMesh = createTrackMesh(spline);
-//            trackMesh.setLocalTranslation(Vector3f.ZERO);
-//            trackMesh.setLocalRotation(new Quaternion());
-//            ret.attachChild(trackMesh);
-
-//            trackMesh = new Dome("", 25, 25, 10f);
-            trackMesh = new Quad("", 100, 100);
-            trackMesh.setLocalTranslation(Vector3f.ZERO);
-            Quaternion rot = new Quaternion();
-            rot.fromAngleAxis((float)Math.PI/2, new Vector3f(1,0,0));
-            trackMesh.setLocalRotation(rot);
-            trackMesh.setModelBound(new BoundingBox());
-            trackMesh.updateModelBound();
-            ret.attachChild(trackMesh);
-
+            createTrackGraph(track);
+            
             entity.addEntity(createMarble(track.getMarbleStartPosition()));
+
+            ((TrackCell)cell).getTrackListModel().addListDataListener(new ListDataListener() {
+                public void intervalAdded(ListDataEvent e) {
+                    System.err.println("Added "+e);
+                    ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+                        public void update(Object arg0) {
+                            synchronized(trackRoot) {
+                                createTrackGraph(((TrackCell) cell).getTrack());
+                                ClientContextJME.getWorldManager().addToUpdateList(trackRoot);
+                            }
+                        }
+                    }, trackRoot);
+                }
+
+                public void intervalRemoved(ListDataEvent e) {
+                    System.err.println("Removed "+e);
+                }
+
+                public void contentsChanged(ListDataEvent e) {
+                    System.err.println("Changed "+e);
+                }
+            });
         }
 
-        return ret;
+        return trackRoot;
+    }
+
+    private void createTrackGraph(Track track) {
+        Collection<TCBKeyFrame> keyFrames = track.buildTrack();
+        RotPosScaleTCBSplinePath spline = new RotPosScaleTCBSplinePath(keyFrames.toArray(new TCBKeyFrame[keyFrames.size()]));
+//            drawKnot(spline, ret);
+        //drawSpline(spline, ret);
+        trackMesh = createTrackMesh(spline);
+        trackMesh.setLocalTranslation(Vector3f.ZERO);
+        trackMesh.setLocalRotation(new Quaternion());
+
+//            trackMesh = new Dome("", 25, 25, 10f);
+        
+//        trackMesh = new Quad("", 100, 100);
+//        trackMesh.setLocalTranslation(Vector3f.ZERO);
+//        Quaternion rot = new Quaternion();
+//        rot.fromAngleAxis((float)Math.PI/2, new Vector3f(1,0,0));
+//        trackMesh.setLocalRotation(rot);
+
+
+        trackMesh.setModelBound(new BoundingBox());
+        trackMesh.updateModelBound();
+        trackRoot.detachAllChildren();
+        trackRoot.attachChild(trackMesh);
+
     }
 
     public void cellTransformUpdate(CellTransform localTransform) {
@@ -148,10 +182,10 @@ public class TrackRenderer extends BasicRenderer {
 
             CollisionComponent cc=null;
 
-//            cc = setupCollision(collisionSystem, rootNode);
-//            if (cc!=null) {
-//                entity.addComponent(CollisionComponent.class, cc);
-//            }
+            cc = setupCollision(collisionSystem, rootNode);
+            if (cc!=null) {
+                entity.addComponent(CollisionComponent.class, cc);
+            }
 
             JBulletDynamicCollisionSystem trackCollisionSystem = (JBulletDynamicCollisionSystem) ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Physics");
 
@@ -166,7 +200,11 @@ public class TrackRenderer extends BasicRenderer {
         Entity e = new Entity();
         Node marbleRoot = new Node("marble-root");
         Sphere marble = new Sphere("marble", 10, 10, 0.25f);
-        marble.setModelBound(new BoundingSphere());
+        Triangle[] tris = new Triangle[marble.getTriangleCount()];
+
+        BoundingBox bsphere = new BoundingBox();
+        bsphere.computeFromTris(marble.getMeshAsTriangles(tris), 0, tris.length);
+        marble.setModelBound(bsphere);
         marbleRoot.attachChild(marble);
         marbleRoot.setLocalTranslation(initialPosition);
 
@@ -195,6 +233,13 @@ public class TrackRenderer extends BasicRenderer {
         MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Material);
         matState.setDiffuse(color);
         marble.setRenderState(matState);
+
+        // Make marble pickable
+        CollisionSystem pickCollisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Default");
+        CollisionComponent pcc = setupCollision(pickCollisionSystem, marbleRoot);
+        if (pcc!=null) {
+            e.addComponent(CollisionComponent.class, pcc);
+        }
 
         return e;
     }
