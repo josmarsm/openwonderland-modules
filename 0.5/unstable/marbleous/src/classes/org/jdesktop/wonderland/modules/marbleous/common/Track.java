@@ -83,7 +83,8 @@ public class Track implements Serializable {
         TCBKeyFrame f = firstSegment.getKeyFrames()[0];
         Vector3f ret = f.position;
         System.err.println("Initial POS "+ret);
-        ret.y+=1;
+        ret.y+=6;
+        ret.z+=5.5f;
         return ret;
     }
 }
