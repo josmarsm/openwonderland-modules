@@ -126,6 +126,6 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
     public TimelineQuery build() {
         query = new TimelineQuery(QUERY_CLASS);
         // TODO: configure the query with the query parameters from the UI
-        return new TimelineQuery(QUERY_CLASS);
+        return query;
     }
 }
