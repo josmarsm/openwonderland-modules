@@ -35,10 +35,17 @@ import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
@@ -64,6 +71,8 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     TimelineCellRenderer renderer = null;
     @UsesCellComponent
     private ProximityComponent prox;
+    @UsesCellComponent
+    ContextMenuComponent menuComponent;
     private HUD mainHUD;
     private TimelineCreationHUDPanel creationPanel;
     private HUDComponent timelineCreationHUD;
@@ -96,6 +105,8 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
             localAvatarCell = (AvatarCell) getCellCache().getViewCell();
 
+            // a context menu for editing the timeline
+            menuComponent.addContextMenuFactory(new TimelineContextMenuFactory());
         } else if (status == CellStatus.DISK && !increasing) {
             prox.removeProximityListener(this);
         }
@@ -116,19 +127,19 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         config.setDateRange(new TimelineDate(new Date(0), new Date()));
         config.sendUpdatedConfiguration();
 
-        if(this.sortedSegments.size()==0) {
-                        // generate a bunch of fake segments for testing purposes.
-                long msPerSegment = config.getDateRange().getRange() / config.getNumSegments();
-                long curTime = config.getDateRange().getMinimum().getTime();
-                for(int i=0; i<config.getNumSegments(); i++) {
-                    TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime+msPerSegment)));
-                    newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.config.getHeight() / config.getNumSegments())*i, 0.0f), 1.0f));
-                    this.addSegment(newSeg);
+        if (this.sortedSegments.size() == 0) {
+            // generate a bunch of fake segments for testing purposes.
+            long msPerSegment = config.getDateRange().getRange() / config.getNumSegments();
+            long curTime = config.getDateRange().getMinimum().getTime();
+            for (int i = 0; i < config.getNumSegments(); i++) {
+                TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime + msPerSegment)));
+                newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.config.getHeight() / config.getNumSegments()) * i, 0.0f), 1.0f));
+                this.addSegment(newSeg);
 
-                    curTime += msPerSegment;
-                }
+                curTime += msPerSegment;
+            }
 
-                logger.warning("test segments: " + this.sortedSegments);
+            logger.warning("test segments: " + this.sortedSegments);
         }
     }
 
@@ -163,7 +174,6 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
                     public void run() {
                         navigationHUD.setVisible(true);
-                        //timelineCreationHUD.setVisible(true);
                     }
                 });
 
@@ -388,5 +398,34 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
     public void removeSegment(TimelineSegment seg) {
         this.sortedSegments.remove(seg);
+    }
+
+    /**
+     * Context menu factory for the Timeline menu
+     */
+    class TimelineContextMenuFactory implements ContextMenuFactorySPI {
+
+        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+            return new ContextMenuItem[]{
+                        new SimpleContextMenuItem("Curate Timeline...", null,
+                        new TimelineContextMenuListener())
+                    };
+        }
+    }
+
+    /**
+     * Listener for Timeline context menu item selection
+     */
+    class TimelineContextMenuListener implements ContextMenuActionListener {
+
+        public void actionPerformed(ContextMenuItemEvent event) {
+            logger.warning("Timeline context menu action performed!");
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    timelineCreationHUD.setVisible(true);
+                }
+            });
+        }
     }
 }
