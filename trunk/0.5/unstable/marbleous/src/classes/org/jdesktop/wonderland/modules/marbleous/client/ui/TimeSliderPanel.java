@@ -169,7 +169,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
                     System.err.println("********** Display sample info");
 
                     SampleDisplayEntity sampleEntity = new SampleDisplayEntity(null/*TODO: should be cell entity*/,
-                                                                 currentSampleInfo, 1f);
+                                                                 currentSampleInfo, 0.006f);
                     synchronized (sampleEntities) {
                         sampleEntities.add(sampleEntity);
                     }
