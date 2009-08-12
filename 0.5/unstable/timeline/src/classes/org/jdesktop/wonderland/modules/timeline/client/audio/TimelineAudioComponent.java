@@ -95,7 +95,9 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
     }
 
     public void changeSegment(TimelineSegment previousSegment, TimelineSegment currentSegment) {
-	channelComp.send(new TimelineSegmentChangeMessage(cell.getCellID(), previousSegment, currentSegment));
+	String callID = SoftphoneControlImpl.getInstance().getCallID();
+
+	channelComp.send(new TimelineSegmentChangeMessage(cell.getCellID(), callID, previousSegment, currentSegment));
     }
 
     public void playSegmentRecording(TimelineSegment segment, String recordingPath, boolean isPlaying) {
