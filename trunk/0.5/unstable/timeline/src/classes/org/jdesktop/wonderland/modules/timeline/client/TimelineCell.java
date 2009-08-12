@@ -72,7 +72,9 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     @UsesCellComponent
     private ProximityComponent prox;
     @UsesCellComponent
-    ContextMenuComponent menuComponent;
+    private ContextMenuComponent menuComponent;
+    private SimpleContextMenuItem editTimelineMenuItem;
+    private SimpleContextMenuItem curateTimelineMenuItem;
     private HUD mainHUD;
     private TimelineCreationHUDPanel creationPanel;
     private HUDComponent timelineCreationHUD;
@@ -406,10 +408,13 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     class TimelineContextMenuFactory implements ContextMenuFactorySPI {
 
         public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+            editTimelineMenuItem = new SimpleContextMenuItem("Edit Timeline...", null,
+                    new TimelineContextMenuListener());
+            curateTimelineMenuItem = new SimpleContextMenuItem("Curate Timeline...", null,
+                    new TimelineContextMenuListener());
             return new ContextMenuItem[]{
-                        new SimpleContextMenuItem("Curate Timeline...", null,
-                        new TimelineContextMenuListener())
-                    };
+                        editTimelineMenuItem,
+                        curateTimelineMenuItem};
         }
     }
 
@@ -418,12 +423,15 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      */
     class TimelineContextMenuListener implements ContextMenuActionListener {
 
-        public void actionPerformed(ContextMenuItemEvent event) {
-            logger.warning("Timeline context menu action performed!");
+        public void actionPerformed(final ContextMenuItemEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    timelineCreationHUD.setVisible(true);
+                    if (event.getContextMenuItem() == editTimelineMenuItem) {
+                        timelineCreationHUD.setVisible(true);
+                    } else if (event.getContextMenuItem() == curateTimelineMenuItem) {
+                        timelineCurationHUD.setVisible(true);
+                    }
                 }
             });
         }
