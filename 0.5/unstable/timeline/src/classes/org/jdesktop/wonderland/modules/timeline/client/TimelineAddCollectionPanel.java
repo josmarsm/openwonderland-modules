@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.timeline.client;
 
 import java.awt.Dimension;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -26,9 +28,33 @@ import javax.swing.table.DefaultTableModel;
  */
 public class TimelineAddCollectionPanel extends javax.swing.JPanel {
 
-    /** Creates new form TimelineAddCollectionPanel */
+    private PropertyChangeSupport listeners;
+
     public TimelineAddCollectionPanel() {
         initComponents();
+    }
+
+    /**
+     * Adds a bound property listener to the dialog
+     * @param listener a listener for dialog events
+     */
+    @Override
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners == null) {
+            listeners = new PropertyChangeSupport(this);
+        }
+        listeners.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Removes a bound property listener from the dialog
+     * @param listener the listener to remove
+     */
+    @Override
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners != null) {
+            listeners.removePropertyChangeListener(listener);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -113,21 +139,19 @@ public class TimelineAddCollectionPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addKeywordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addKeywordButtonActionPerformed
-        DefaultTableModel model = (DefaultTableModel)collectionTable.getModel();
+        DefaultTableModel model = (DefaultTableModel) collectionTable.getModel();
         int rows = collectionTable.getRowCount();
         model.addRow(new String[2]);
         collectionTable.setPreferredSize(new Dimension(collectionTable.getWidth(),
-                (rows + 1)*collectionTable.getRowHeight()));
-        this.setPreferredSize(new Dimension((int)getPreferredSize().getWidth(),
-                (int)(getPreferredSize().getHeight() + collectionTable.getRowHeight())));
+                (rows + 1) * collectionTable.getRowHeight()));
+        this.setPreferredSize(new Dimension((int) getPreferredSize().getWidth(),
+                (int) (getPreferredSize().getHeight() + collectionTable.getRowHeight())));
         validate();
     }//GEN-LAST:event_addKeywordButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
-        // TODO add your handling code here:
+        listeners.firePropertyChange("done", new String(""), null);
     }//GEN-LAST:event_doneButtonActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addKeywordButton;
     private javax.swing.JLabel collectionLabel;
@@ -135,5 +159,4 @@ public class TimelineAddCollectionPanel extends javax.swing.JPanel {
     private javax.swing.JTable collectionTable;
     private javax.swing.JButton doneButton;
     // End of variables declaration//GEN-END:variables
-
 }

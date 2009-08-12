@@ -48,12 +48,10 @@ import org.jdesktop.wonderland.modules.timeline.client.audio.TimelineAudioCompon
 import org.jdesktop.wonderland.modules.timeline.client.jme.cell.TimelineCellRenderer;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellClientState;
-import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
-
 
 /**
  *
@@ -62,23 +60,20 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 public class TimelineCell extends Cell implements ProximityListener, TransformChangeListener {
 
     private static final Logger logger =
-        Logger.getLogger(TimelineCell.class.getName());
-
+            Logger.getLogger(TimelineCell.class.getName());
     TimelineCellRenderer renderer = null;
-
     @UsesCellComponent
     private ProximityComponent prox;
-
     private HUD mainHUD;
+    private TimelineCreationHUDPanel creationPanel;
+    private HUDComponent timelineCreationHUD;
+    private TimelineCurationHUDPanel curationPanel;
+    private HUDComponent timelineCurationHUD;
     private TimelineMovementHUDPanel navigationPanel;
     private HUDComponent navigationHUD;
-
     private AvatarCell localAvatarCell;
-
     private DatedSet sortedSegments = new DatedSet();
-
     private TimelineClientConfiguration config;
-
     private TimelineSegment curSegment;
 
     public TimelineCell(CellID cellID, CellCache cellCache) {
@@ -88,9 +83,9 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     @Override
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
-        
-        if(status==CellStatus.ACTIVE && increasing) {
-            
+
+        if (status == CellStatus.ACTIVE && increasing) {
+
             ChannelComponent channel = getComponent(ChannelComponent.class);
             channel.addMessageReceiver(TimelineCellChangeMessage.class, new TimelineCellMessageReceiver());
 
@@ -99,9 +94,9 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
             BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds()};
             prox.addProximityListener(this, bounds);
 
-            localAvatarCell = (AvatarCell)getCellCache().getViewCell();
- 
-        } else if (status==CellStatus.DISK && !increasing) {
+            localAvatarCell = (AvatarCell) getCellCache().getViewCell();
+
+        } else if (status == CellStatus.DISK && !increasing) {
             prox.removeProximityListener(this);
         }
     }
@@ -111,7 +106,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         super.setClientState(state);
 
         // Unpack the TimelineConfiguration object from the client stae.
-        TimelineCellClientState tccs = (TimelineCellClientState)state;
+        TimelineCellClientState tccs = (TimelineCellClientState) state;
 
         // Do we need to do a setConfig setup with listeners here? Maybe...
         this.config = new TimelineClientConfiguration(tccs.getConfig(), getComponent(ChannelComponent.class));
@@ -134,10 +129,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                 }
 
                 logger.warning("test segments: " + this.sortedSegments);
-
-
         }
-
     }
 
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
@@ -153,35 +145,62 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                 navigationHUD.setPreferredLocation(Layout.EAST);
                 navigationHUD.setName("Navigation");
 
+                creationPanel = new TimelineCreationHUDPanel(this);
+                timelineCreationHUD = mainHUD.createComponent(creationPanel);
+                timelineCreationHUD.setPreferredLocation(Layout.CENTER);
+                timelineCreationHUD.setName("Create Timeline");
+
+                curationPanel = new TimelineCurationHUDPanel(this);
+                timelineCurationHUD = mainHUD.createComponent(curationPanel);
+                timelineCurationHUD.setPreferredLocation(Layout.CENTER);
+                timelineCurationHUD.setName("Curate Timeline");
+
+                mainHUD.addComponent(timelineCreationHUD);
+                mainHUD.addComponent(timelineCurationHUD);
                 mainHUD.addComponent(navigationHUD);
 
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         navigationHUD.setVisible(true);
+                        //timelineCreationHUD.setVisible(true);
                     }
                 });
 
                 // Now setup a transform change listener on the avatarcell,
                 // so we can properly update the navigation slider as they move
                 // around.
-                AvatarCell avatar = (AvatarCell)cell.getCellCache().getCell(viewCellID);
+                AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
                 avatar.addTransformChangeListener(this);
-            } else {
-                // Remove the navigation HUD.
-                mainHUD.removeComponent(navigationHUD);
-            }
 
+                // generate a bunch of fake segments for testing purposes.
+                long msPerSegment = config.getDateRange().getRange() / config.getNumSegments();
+                long curTime = config.getDateRange().getMinimum().getTime();
+                for (int i = 0; i < config.getNumSegments(); i++) {
+                    TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime + msPerSegment)));
+                    newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.config.getHeight() / config.getNumSegments()) * i, 0.0f), 1.0f));
+                    this.addSegment(newSeg);
+
+                    curTime += msPerSegment;
+                }
+
+                logger.warning("test segments: " + this.sortedSegments);
+
+            } else {
+                // Remove the HUDs
+                mainHUD.removeComponent(navigationHUD);
+                mainHUD.removeComponent(timelineCurationHUD);
+                mainHUD.removeComponent(timelineCreationHUD);
+            }
         }
     }
 
-    
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
             this.renderer = new TimelineCellRenderer(this);
             return this.renderer;
-        }
-        else {
+        } else {
             return super.createCellRenderer(rendererType);
         }
     }
@@ -194,17 +213,17 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
         TimelineDate date = this.getDateByPosition(cell.getWorldTransform().getTranslation(null));
 
-        if(date!=null) {
+        if (date != null) {
 
             TimelineSegment newSegment = getSegmentByDate(date.getMiddle());
 
-            if(this.curSegment!=null && !this.curSegment.equals(newSegment)) {
+            if (this.curSegment != null && !this.curSegment.equals(newSegment)) {
                 // Trigger a segment-changed message for the benefit of the
                 // audio system. If there get to be more things that need
                 // this info, will need to convert this into a listener sytem.
                 TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
 
-                if(tac!=null) {
+                if (tac != null) {
                     tac.changeSegment(curSegment, newSegment);
                 }
             }
@@ -212,17 +231,19 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
             this.curSegment = newSegment;
         }
 
-        if(navigationPanel!=null) {
-            if(date!=null)
+        if (navigationPanel != null) {
+            if (date != null) {
                 navigationPanel.setDateLabel(date.toString());
-            
+            }
+
             navigationPanel.setSliderLocation(getHeightFraction(cell.getWorldTransform().getTranslation(null)));
         }
     }
 
     class TimelineCellMessageReceiver implements ComponentMessageReceiver {
+
         public void messageReceived(CellMessage message) {
-            TimelineCellChangeMessage msg = (TimelineCellChangeMessage)message;
+            TimelineCellChangeMessage msg = (TimelineCellChangeMessage) message;
 
             config = new TimelineClientConfiguration(msg.getConfig(), getComponent(ChannelComponent.class));
         }
@@ -245,7 +266,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         // Set the heights the same so we can get just the distance to the center, not the
         // distance to the actual center of the cell.
         cellPositionAtHeight.y = avPosition.y;
-        
+
         float radius = avPosition.distance(cellPositionAtHeight);
 
         // Given the fraction up the helix we want to be (position), figure out
@@ -254,9 +275,9 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         // Since the height = pitch*t, just divide it to get the number of turns,
         // and the angle is 2PI times that.
         float targetHeight = (position * config.getHeight());
-        float angle = (float) ((float) (targetHeight / (float)config.getPitch()) * 2.0f * Math.PI);
+        float angle = (float) ((float) (targetHeight / (float) config.getPitch()) * 2.0f * Math.PI);
 
-        Vector3f positionRelativeToCell = new Vector3f((float)(radius * Math.sin(angle)), targetHeight, (float)(radius * Math.cos(angle)));
+        Vector3f positionRelativeToCell = new Vector3f((float) (radius * Math.sin(angle)), targetHeight, (float) (radius * Math.cos(angle)));
 
         // This is definitely not quite right - the height of the cell is not
         // interesting to us and we should be knocking it out. But we do care
@@ -280,12 +301,13 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
         // because the time ranges of segments are non-overlapping, containsSet
         // will always return a single element.
-        if(segments.size()==0)
+        if (segments.size() == 0) {
             return null;
-        
-        assert segments.size()==1;
+        }
 
-        return  (TimelineSegment) segments.iterator().next();
+        assert segments.size() == 1;
+
+        return (TimelineSegment) segments.iterator().next();
     }
 
     /**
@@ -295,8 +317,8 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      * @return
      */
     public Vector3f getPositionByDate(Date date) {
-       // Look up the center of the segment associated with the specified dates.
-       return getSegmentByDate(date).getTransform().getTranslation(null);
+        // Look up the center of the segment associated with the specified dates.
+        return getSegmentByDate(date).getTransform().getTranslation(null);
     }
 
     /**
@@ -313,14 +335,15 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
         float heightFraction = getHeightFraction(pos);
 
-        Date testDate = new Date(config.getDateRange().getMinimum().getTime() + ((long)(config.getDateRange().getRange()*heightFraction)));
+        Date testDate = new Date(config.getDateRange().getMinimum().getTime() + ((long) (config.getDateRange().getRange() * heightFraction)));
 
         TimelineSegment segByPosition = getSegmentByDate(testDate);
 
-        if(segByPosition==null)
+        if (segByPosition == null) {
             return null;
-        else
+        } else {
             return segByPosition.getDate();
+        }
     }
 
     /**
@@ -332,27 +355,29 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      */
     private float getHeightFraction(Vector3f pos) {
 
-        float minimumHeight = this.getWorldTransform().getTranslation(null).y - (this.config.getHeight()/2);
+        float minimumHeight = this.getWorldTransform().getTranslation(null).y - (this.config.getHeight() / 2);
 
         float avatarHeightRelativeToTimeline = pos.y - minimumHeight;
 
         float height = avatarHeightRelativeToTimeline / this.config.getHeight();
 
         // clamp the hight.
-        if(height>1.0f)
+        if (height > 1.0f) {
             height = 1.0f;
-        if(height<0.0f)
+        }
+        if (height < 0.0f) {
             height = 0.0f;
+        }
 
         return height;
     }
-    
+
     public void addSegment(TimelineSegment seg) {
         this.sortedSegments.add(seg);
 
         TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
 
-        if(tac!=null) {
+        if (tac != null) {
             tac.createSegmentTreatment(seg);
         }
     }
@@ -364,5 +389,4 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     public void removeSegment(TimelineSegment seg) {
         this.sortedSegments.remove(seg);
     }
-
 }
