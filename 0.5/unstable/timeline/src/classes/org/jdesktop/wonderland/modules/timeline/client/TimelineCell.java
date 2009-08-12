@@ -77,7 +77,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
     private DatedSet sortedSegments = new DatedSet();
 
-    private TimelineConfiguration config;
+    private TimelineClientConfiguration config;
 
     private TimelineSegment curSegment;
 
@@ -115,6 +115,29 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
         // Do we need to do a setConfig setup with listeners here? Maybe...
         this.config = new TimelineClientConfiguration(tccs.getConfig(), getComponent(ChannelComponent.class));
+
+        logger.warning("client config: " + config.getDateRange() + "; " + config.getHeight() + "; " + config.getNumSegments());
+
+        config.setDateRange(new TimelineDate(new Date(0), new Date()));
+        config.sendUpdatedConfiguration();
+
+        if(this.sortedSegments.size()==0) {
+                        // generate a bunch of fake segments for testing purposes.
+                long msPerSegment = config.getDateRange().getRange() / config.getNumSegments();
+                long curTime = config.getDateRange().getMinimum().getTime();
+                for(int i=0; i<config.getNumSegments(); i++) {
+                    TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime+msPerSegment)));
+                    newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.config.getHeight() / config.getNumSegments())*i, 0.0f), 1.0f));
+                    this.addSegment(newSeg);
+
+                    curTime += msPerSegment;
+                }
+
+                logger.warning("test segments: " + this.sortedSegments);
+
+
+        }
+
     }
 
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
@@ -143,20 +166,6 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                 // around.
                 AvatarCell avatar = (AvatarCell)cell.getCellCache().getCell(viewCellID);
                 avatar.addTransformChangeListener(this);
-
-                // generate a bunch of fake segments for testing purposes.
-                long msPerSegment = config.getDateRange().getRange() / config.getNumSegments();
-                long curTime = config.getDateRange().getMinimum().getTime();
-                for(int i=0; i<config.getNumSegments(); i++) {
-                    TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime+msPerSegment)));
-                    newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.config.getHeight() / config.getNumSegments())*i, 0.0f), 1.0f));
-                    this.addSegment(newSeg);
-
-                    curTime += msPerSegment;
-                }
-
-                logger.warning("test segments: " + this.sortedSegments);
-
             } else {
                 // Remove the navigation HUD.
                 mainHUD.removeComponent(navigationHUD);
@@ -215,7 +224,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         public void messageReceived(CellMessage message) {
             TimelineCellChangeMessage msg = (TimelineCellChangeMessage)message;
 
-            config = msg.getConfig();
+            config = new TimelineClientConfiguration(msg.getConfig(), getComponent(ChannelComponent.class));
         }
     }
 
