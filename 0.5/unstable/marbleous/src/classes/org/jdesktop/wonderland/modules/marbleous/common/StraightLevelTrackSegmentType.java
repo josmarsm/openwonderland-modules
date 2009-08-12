@@ -30,7 +30,7 @@ public class StraightLevelTrackSegmentType extends TrackSegmentType {
 
     public StraightLevelTrackSegmentType() {
         super("StraightLevel");
-
+        imageName = "Straight.png";
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
           createKeyFrame(0, new Vector3f(0,0,0)),
           createKeyFrame(1f, new Vector3f(0,0,-5))
