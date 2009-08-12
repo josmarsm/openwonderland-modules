@@ -62,7 +62,7 @@ public class TimelineAudioComponentServerState extends CellComponentServerState 
     //}
 
     public String getServerComponentClassName() {
-	return "org.jdesktop.wonderland.modules.timeline.server.audio.AudioTreatmentComponentMO";
+	return "org.jdesktop.wonderland.modules.timeline.server.audio.TimelineAudioComponentMO";
     }
 
 }

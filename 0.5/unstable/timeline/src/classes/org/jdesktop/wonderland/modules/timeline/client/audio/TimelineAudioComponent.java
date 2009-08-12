@@ -60,11 +60,16 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
     }
    
     public void createSegmentTreatment(TimelineSegment segment) {
+	System.out.println("Create segment: " + segment);
+
 	channelComp.send(new TimelineSegmentTreatmentMessage(cell.getCellID(), segment));
     }
 
     public void changeSegment(TimelineSegment previousSegment, TimelineSegment currentSegment) {
 	String callID = SoftphoneControlImpl.getInstance().getCallID();
+
+	System.out.println("changeSegment: " + callID + " previous " + previousSegment 
+	    + " current " + currentSegment);
 
 	channelComp.send(new TimelineSegmentChangeMessage(cell.getCellID(), callID, previousSegment, currentSegment));
     }
@@ -72,11 +77,17 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
     public void playSegmentRecording(TimelineSegment segment, String recordingPath, boolean isPlaying) {
 	String callID = SoftphoneControlImpl.getInstance().getCallID();
 
+	System.out.println("playSegmentRecording " + segment + " path " + recordingPath + " isPlaying "
+	    + isPlaying);
+
 	channelComp.send(new TimelinePlayRecordingMessage(cell.getCellID(), segment, callID, recordingPath, isPlaying));
     }
 
     public void record(TimelineSegment segment, String recordingPath, boolean isRecording) {
 	String callID = SoftphoneControlImpl.getInstance().getCallID();
+
+	System.out.println("record " + segment + " path " + recordingPath + " isPlaying "
+	    + isRecording);
 
 	channelComp.send(new TimelineRecordMessage(cell.getCellID(), segment, callID, recordingPath, isRecording));
     }
