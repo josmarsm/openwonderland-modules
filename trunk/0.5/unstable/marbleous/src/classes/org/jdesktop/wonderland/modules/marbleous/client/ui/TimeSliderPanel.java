@@ -13,11 +13,14 @@ package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import java.awt.event.MouseEvent;
+import java.util.LinkedList;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
 import org.jdesktop.wonderland.modules.marbleous.client.SampleInfo;
 import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
@@ -30,9 +33,12 @@ import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer.Marble
  */
 public class TimeSliderPanel extends javax.swing.JPanel {
 
+    private static final float SAMPLE_ENTITY_Y_OFFSET = 0.3f;
+
     private TrackCell cell;
     private SimTrace trace;
     private MarbleMouseEventListener marbleMouseListener;
+    private SampleInfo currentSampleInfo;
 
     /** Creates new form TimeSliderPanel */
     public TimeSliderPanel(TrackCell cell, SimTrace trace) {
@@ -118,9 +124,9 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         //System.err.println("pct = " + pct);
         System.err.println("t = " + t);
 
-        SampleInfo sampleInfo = trace.getSampleInfo(t);
-        System.err.println("sampleInfo = " + sampleInfo);
-        final Vector3f position = sampleInfo.getPosition();
+        currentSampleInfo = trace.getSampleInfo(t);
+        System.err.println("currentSampleInfo = " + currentSampleInfo);
+        final Vector3f position = currentSampleInfo.getPosition();
         System.err.println("position = " + position);
 
         // Assumes that the marble is still attached to the cell
@@ -147,9 +153,35 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
+    private final LinkedList<SampleDisplayEntity> sampleEntities = new LinkedList<SampleDisplayEntity>();
+
+    // TODO: eventually get from TrackRenderer
+    private float marbleRadius = 0.25f;
+
     private class MarbleMouseListener implements TrackRenderer.MarbleMouseEventListener {
         public void commitEvent (Entity marbleEntity, Event event) {
-            System.err.println("**** Mouse event on marble = " + event);
+            MouseEvent3D me3d = (MouseEvent3D) event;
+            MouseEvent me = (MouseEvent) me3d.getAwtEvent();
+            if(me3d.getID() == MouseEvent.MOUSE_CLICKED){
+                if(me.getButton() == MouseEvent.BUTTON1 &&
+                   me.getModifiersEx() == 0) {
+
+                    System.err.println("********** Display sample info");
+
+                    SampleDisplayEntity sampleEntity = new SampleDisplayEntity(null/*TODO: should be cell entity*/,
+                                                                 currentSampleInfo, 1f);
+                    synchronized (sampleEntities) {
+                        sampleEntities.add(sampleEntity);
+                    }
+
+                    Vector3f position = currentSampleInfo.getPosition();
+                    float y = position.y + marbleRadius + SAMPLE_ENTITY_Y_OFFSET;
+                    sampleEntity.setLocalTranslation(new Vector3f(position.x, y, position.z));
+
+                    // Make visible
+                    sampleEntity.setDisplayMode(SampleDisplayEntity.DisplayMode.FULL);
+                }
+            }
         }
     }
 }

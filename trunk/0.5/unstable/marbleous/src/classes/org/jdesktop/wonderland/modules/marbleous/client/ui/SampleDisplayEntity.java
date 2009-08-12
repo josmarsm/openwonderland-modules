@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ZBufferState;
@@ -73,6 +74,8 @@ public class SampleDisplayEntity extends Entity {
 
     protected static ZBufferState zbuf = null;
 
+    private Vector3f localTranslation = new Vector3f();
+
     static {
       RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
       zbuf = (ZBufferState)rm.createRendererState(StateType.ZBuffer);
@@ -87,15 +90,23 @@ public class SampleDisplayEntity extends Entity {
      * @param mode initial DisplayMode
      * @param fontSize initial fontSizeModifier
      */
-    public SampleDisplayEntity(SampleInfo sampleInfo, float fontSize) {
+    // TODO: parentEntity is not yet used. Entity is attached to world, not the cell entity. This is wrong.
+    public SampleDisplayEntity(Entity parentEntity, SampleInfo sampleInfo, float fontSizeModifier) {
         super("SampleDisplayEntity for Time " + sampleInfo.getTime());
 
         this.sampleInfo = sampleInfo;
-        this.fontSizeModifier = fontSize;
+        this.fontSizeModifier = fontSizeModifier;
 
         attachMouseListener(new MouseListener(this));
 
         setDisplayMode(DisplayMode.HIDDEN);
+    }
+
+    public void setLocalTranslation (Vector3f trans) {
+        localTranslation = trans;
+        if (displayMode != DisplayMode.HIDDEN) {
+            node.setLocalTranslation(trans);
+        }
     }
 
     /**
@@ -182,6 +193,8 @@ public class SampleDisplayEntity extends Entity {
             node.setRenderState(zbuf);
             node.setModelBound(new BoundingBox());
             node.updateModelBound();
+
+            node.setLocalTranslation(localTranslation);
 
             makeEntityPickable(this, node);
 

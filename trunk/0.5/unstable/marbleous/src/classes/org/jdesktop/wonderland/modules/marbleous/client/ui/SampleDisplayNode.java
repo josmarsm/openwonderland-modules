@@ -109,6 +109,7 @@ public class SampleDisplayNode extends BillboardNode {
 
     public SampleDisplayNode(SampleInfo sampleInfo, DisplayMode displayMode, float fontMod) {
         super("SampleDisplayNode for Time " + sampleInfo.getTime());
+        this.sampleInfo = sampleInfo;
 
         mode = displayMode;
         fontSizeModifier = fontMod;
