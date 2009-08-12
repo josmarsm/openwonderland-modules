@@ -45,6 +45,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.RightTurnTrackSegmentTyp
 import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 
@@ -64,7 +65,7 @@ public class TrackCell extends Cell {
 
     public TrackCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        track = new Track();
+        /**track = new Track();
 
         track.addTrackSegment(new StraightDropTrackSegmentType().createSegment());
         track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
@@ -73,9 +74,9 @@ public class TrackCell extends Cell {
         track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
 //        track.addTrackSegment(new LoopTrackSegmentType().createSegment());
         track.buildTrack();
+         */
 
-        ui = new UI(this, track);
-        ui.setVisible(true);
+        
     }
 
     /**
@@ -97,6 +98,9 @@ public class TrackCell extends Cell {
     @Override
     public void setClientState(CellClientState clientState) {
         super.setClientState(clientState);
+        track = ((TrackCellClientState)clientState).getTrack();
+        System.out.println("TrackCell, track: " + track);
+        ui = new UI(this, track);
     }
 
     @Override
@@ -132,6 +136,7 @@ public class TrackCell extends Cell {
         switch (status) {
             case ACTIVE:
                 if (increasing) {
+
 //                    Node node = ((BasicRenderer)cellRenderer).getSceneRoot();
 //                    Vector3f currentLoc = node.getLocalTranslation();
 //                    Vector3f dest = new Vector3f(currentLoc);
@@ -141,6 +146,8 @@ public class TrackCell extends Cell {
 //                    translation.playLoop(RepeatBehavior.LOOP);
 //                    hudTest.setActive(true);
                     channel.addMessageReceiver(SimulationStateMessage.class, messageReceiver);
+                    
+                    ui.setVisible(true);
                 }
 
                 break;

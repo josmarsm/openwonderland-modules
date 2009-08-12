@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
+import com.sun.tools.internal.xjc.model.CElement;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Image;
@@ -43,6 +44,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.TrackManager;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
 
 /**
  * Panel used to construct the roller coaster and start it running
@@ -183,7 +185,8 @@ public class ConstructPanel extends javax.swing.JPanel {
         TrackSegment newSegment = selectedType.createSegment();
         // This adds the segment to the underlying model (the track)
         segmentListModel.addSegment(newSegment);
-
+        //Tell the server to add the segment
+        cell.sendCellMessage(TrackCellMessage.addSegment(cell.getCellID(), newSegment));
 }//GEN-LAST:event_addButtonActionPerformed
 
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed

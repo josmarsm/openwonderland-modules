@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.marbleous.common;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -31,21 +32,21 @@ import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
  * (TCB) spline interpolation.
  */
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType( namespace="marbleous" )
-public class TCBKeyFrame {
+//@XmlAccessorType(XmlAccessType.FIELD)
+//@XmlType( namespace="marbleous" )
+public class TCBKeyFrame implements Serializable {
   
     // Position, Rotation and Scale
     /**
      *
      */
-    @XmlJavaTypeAdapter(Vector3fAdapter.class)
+    //@XmlJavaTypeAdapter(Vector3fAdapter.class)
     public Vector3f position;
 
-    @XmlJavaTypeAdapter(QuaternionAdapter.class)
+    //@XmlJavaTypeAdapter(QuaternionAdapter.class)
     public Quaternion  quat;
 
-    @XmlJavaTypeAdapter(Vector3fAdapter.class)
+    //@XmlJavaTypeAdapter(Vector3fAdapter.class)
     public Vector3f scale;
 
     // Tension, Continuity & Bias

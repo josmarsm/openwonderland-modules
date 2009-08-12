@@ -18,7 +18,11 @@
 package org.jdesktop.wonderland.modules.marbleous.common;
 
 import com.jme.math.Matrix4f;
+
+import java.io.Serializable;
+
 import com.jme.math.Vector3f;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -31,7 +35,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType( namespace="marbleous" )
-public class Track {
+public class Track implements Serializable {
 
     private ArrayList<TrackSegment> segments = new ArrayList<TrackSegment>();
 

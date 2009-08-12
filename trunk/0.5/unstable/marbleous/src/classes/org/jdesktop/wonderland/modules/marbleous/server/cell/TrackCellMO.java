@@ -21,9 +21,15 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.marbleous.common.RightTurnTrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellServerState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -31,15 +37,26 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
- * @author paulby
+ * @author paulby, Bernard Horan
  */
 public class TrackCellMO extends CellMO {
 
     private SimulationState simulationState = SimulationState.STOPPED;
+    private TrackCellServerState serverState;
 
     /** Default constructor, used when the cell is created via WFS */
     public TrackCellMO() {
         super();
+        serverState = new TrackCellServerState();
+        Track track = new Track();
+        track.addTrackSegment(new StraightDropTrackSegmentType().createSegment());
+        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
+        track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
+        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
+        track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
+//        track.addTrackSegment(new LoopTrackSegmentType().createSegment());
+        track.buildTrack();
+        serverState.setTrack(track);
     }
 
     /**
@@ -60,6 +77,7 @@ public class TrackCellMO extends CellMO {
             cellClientState = new TrackCellClientState();
         }
         ((TrackCellClientState) cellClientState).setSimluationState(getSimulationState());
+        ((TrackCellClientState) cellClientState).setTrack(serverState.getTrack());
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -97,15 +115,51 @@ public class TrackCellMO extends CellMO {
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if (live == true) {
             ChannelComponentMO.ComponentMessageReceiver receiver =
-                    (ChannelComponentMO.ComponentMessageReceiver) new TrackCellMessageReceiver(this);
+                    (ChannelComponentMO.ComponentMessageReceiver) new SimulationStateMessageReceiver(this);
             channel.addMessageReceiver(SimulationStateMessage.class, receiver);
+            receiver =
+                    (ChannelComponentMO.ComponentMessageReceiver) new TrackCellMessageReceiver(this);
+            channel.addMessageReceiver(TrackCellMessage.class, receiver);
+
         } else {
             channel.removeMessageReceiver(SimulationStateMessage.class);
         }
     }
 
+    private void processAddSegmentMessage(WonderlandClientID clientID, TrackCellMessage tcm) {
+        serverState.getTrack().addTrackSegment(tcm.getTrackSegment());
+        sendCellMessage(clientID, tcm);
+    }
+
     /**
      * Receives and passes on start/stop messages for the cell
+     */
+    private static class SimulationStateMessageReceiver extends AbstractComponentMessageReceiver {
+
+        /**
+         * Standard constructor.
+         * @param cellMO The associated TrackCellMO
+         */
+        public SimulationStateMessageReceiver(TrackCellMO cellMO) {
+            super(cellMO);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            TrackCellMO tcmo = (TrackCellMO) this.getCell();
+
+            if (message instanceof SimulationStateMessage) {
+                tcmo.setSimulationState(((SimulationStateMessage) message).getSimulationState());
+                tcmo.sendCellMessage(clientID, message);
+            }
+        }
+    }
+
+    /**
+     * Receives and acts on addSegment, deleteSegment, etc. messages
      */
     private static class TrackCellMessageReceiver extends AbstractComponentMessageReceiver {
 
@@ -124,10 +178,17 @@ public class TrackCellMO extends CellMO {
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             TrackCellMO tcmo = (TrackCellMO) this.getCell();
 
-            if (message instanceof SimulationStateMessage) {
-                tcmo.setSimulationState(((SimulationStateMessage) message).getSimulationState());
-                tcmo.sendCellMessage(clientID, message);
+            if (message instanceof TrackCellMessage) {
+                TrackCellMessage tcm = (TrackCellMessage) message;
+                switch (tcm.getAction()) {
+                    case ADD_SEGMENT:
+                        tcmo.processAddSegmentMessage(clientID, tcm);
+                        break;
+
+                }
             }
         }
     }
+
+
 }

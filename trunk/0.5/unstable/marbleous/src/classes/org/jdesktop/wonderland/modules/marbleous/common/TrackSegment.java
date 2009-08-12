@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.marbleous.common;
 
 import com.jme.math.Matrix4f;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
@@ -32,10 +33,10 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author Bernard Horan
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType( namespace="marbleous" )
-public class TrackSegment  {
-    private Class segmentTypeClass;
+//@XmlAccessorType(XmlAccessType.FIELD)
+//@XmlType( namespace="marbleous" )
+public class TrackSegment implements Serializable {
+    private String segmentTypeClassName;
     private Properties segmentProperties = new Properties();
     private TCBKeyFrame[] keyFrames = null;
     private String name;
@@ -46,7 +47,7 @@ public class TrackSegment  {
     }
 
     TrackSegment(TrackSegmentType segmentType) {
-        segmentTypeClass = segmentType.getClass();
+        segmentTypeClassName = segmentType.getClass().getCanonicalName();
         keyFrames = segmentType.getDefaultKeyFrames();
         name = segmentType.getName();
         endpointTransform = segmentType.getEndpointTransform();
@@ -87,6 +88,6 @@ public class TrackSegment  {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + " [" + segmentTypeClass + "]";
+        return this.getClass().getSimpleName() + " [" + segmentTypeClassName + "]";
     }
 }

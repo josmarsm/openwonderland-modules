@@ -42,7 +42,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.Track;
 @XmlRootElement(name="track-cell")
 @ServerState
 public class TrackCellServerState extends CellServerState {
-    @XmlElement(name="track")
+    //@XmlElement(name="track")
     private Track track;
     
     /** Default constructor */
@@ -93,6 +93,14 @@ public class TrackCellServerState extends CellServerState {
         TrackCellServerState info = (TrackCellServerState)unmarshaller.unmarshal(in);
 
         return info;
+    }
+
+    public Track getTrack() {
+        return track;
+    }
+
+    public void setTrack(Track track) {
+        this.track = track;
     }
 
 }
