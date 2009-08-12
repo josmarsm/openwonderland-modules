@@ -24,7 +24,10 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.util.ScalableHashMap;
+import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -38,19 +41,22 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineProviderClientState;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineProviderServerState;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQuery;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderObjectsMessage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderResetResultMessage;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderRegistry.RegistryResultListener;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * The server side of the timeline provider
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
+@DependsOnCellComponentMO(ChannelComponentMO.class)
 public class TimelineProviderComponentMO extends CellComponentMO {
     /** a logger */
     private static final Logger logger =
@@ -59,18 +65,23 @@ public class TimelineProviderComponentMO extends CellComponentMO {
     /** the results of active queries */
     private ManagedReference<Map<TimelineQueryID, TimelineResultHolder>> resultsRef;
 
-    /** the channel component */
-    @UsesCellComponentMO(ChannelComponentMO.class)
-    private ManagedReference<ChannelComponentMO> channelRef;
+    /** listeners to notify when the set of results changes */
+    private ManagedReference<Set<TimelineProviderComponentMOListener>> listenersRef;
 
     public TimelineProviderComponentMO(CellMO cell) {
         super(cell);
 
-        // initialize the results map
         DataManager dm = AppContext.getDataManager();
+
+        // initialize the results map
         Map<TimelineQueryID, TimelineResultHolder> results =
                 new ScalableHashMap<TimelineQueryID, TimelineResultHolder>();
         resultsRef = dm.createReference(results);
+
+        // initialize the listeners map
+        Set<TimelineProviderComponentMOListener> listeners =
+                new ScalableHashSet<TimelineProviderComponentMOListener>();
+        listenersRef = dm.createReference(listeners);
     }
 
     @Override
@@ -89,7 +100,7 @@ public class TimelineProviderComponentMO extends CellComponentMO {
 
         TimelineProviderClientState tpcs = (TimelineProviderClientState) state;
         for (TimelineResultHolder result : resultsRef.get().values()) {
-            tpcs.addResult(result.getQuery(), result.getResults());
+            tpcs.addResult(result.getQuery(), result.getResultSet());
         }
 
         return super.getClientState(state, clientID, capabilities);
@@ -151,6 +162,11 @@ public class TimelineProviderComponentMO extends CellComponentMO {
                                                      resultsRef.get());
         reg.register(query, listener);
 
+        // notify listeners
+        for (TimelineProviderComponentMOListener l : listenersRef.get()) {
+            l.resultAdded(holder);
+        }
+
         // return the new id
         return query.getQueryID();
     }
@@ -162,13 +178,43 @@ public class TimelineProviderComponentMO extends CellComponentMO {
      * @return true of the id existed and was removed, or false if not
      */
     public boolean removeQuery(TimelineQueryID id) {
-        boolean removed = (resultsRef.get().remove(id) != null);
-        if (removed) {
+        TimelineResultHolder res = resultsRef.get().remove(id);
+        if (res != null) {
             // unregister with the registry
             TimelineProviderRegistry.getInstance().unregister(id);
+
+            // notify listeners
+            // notify listeners
+            for (TimelineProviderComponentMOListener l : listenersRef.get()) {
+                l.resultRemoved(res);
+            }
         }
 
-        return removed;
+        return (res != null);
+    }
+
+    /**
+     * Get all available results
+     * @return the set of results
+     */
+    public Collection<TimelineResult> getResults() {
+        return new ArrayList<TimelineResult>(resultsRef.get().values());
+    }
+
+    /**
+     * Add a listener that will be notified when results are added or removed
+     * @param listner the listener to add
+     */
+    public void addComponentMOListener(TimelineProviderComponentMOListener listener) {
+        listenersRef.getForUpdate().add(listener);
+    }
+
+    /**
+     * Remove a listener
+     * @param listener the listener to remove
+     */
+    public void removeComponentMOListener(TimelineProviderComponentMOListener listener) {
+        listenersRef.getForUpdate().remove(listener);
     }
 
     /**
@@ -216,31 +262,45 @@ public class TimelineProviderComponentMO extends CellComponentMO {
      * A holder class to handle all the date associated with a particular
      * query.
      */
-    private static class TimelineResultHolder implements Serializable {
+    private static class TimelineResultHolder implements TimelineResult, Serializable {
         private TimelineQuery query;
         private final DatedSet results = new DatedSet();
 
         private CellID cellID;
         private ManagedReference<CellMO> cellRef;
         private ManagedReference<ChannelComponentMO> channelRef;
+        private ManagedReference<Set<TimelineResultListener>> listenersRef;
 
         public TimelineResultHolder(CellMO cell, TimelineQuery query)
         {
             this.cellID = cell.getCellID();
             this.cellRef = AppContext.getDataManager().createReference(cell);
             this.query = query;
+
+            // initialize the listeners map
+            DataManager dm = AppContext.getDataManager();
+            Set<TimelineResultListener> listeners =
+                new ScalableHashSet<TimelineResultListener>();
+            listenersRef = dm.createReference(listeners);
         }
 
         public TimelineQuery getQuery() {
             return query;
         }
 
-        public DatedSet getResults() {
+        public DatedSet getResultSet() {
             return results;
         }
 
         private void addResults(Set<DatedObject> objs) {
             results.addAll(objs);
+
+            // notify listeners
+            for (TimelineResultListener l : listenersRef.get()) {
+                for (DatedObject obj : objs) {
+                    l.added(obj);
+                }
+            }
 
             // send a message to all clients
             send(new ProviderObjectsMessage(cellID, query.getQueryID(),
@@ -250,8 +310,14 @@ public class TimelineProviderComponentMO extends CellComponentMO {
 
         private void removeResults(Set<DatedObject> objs) {
             results.removeAll(objs);
-            
-            // send a message to all clients
+
+            // notify listeners
+            for (TimelineResultListener l : listenersRef.get()) {
+                for (DatedObject obj : objs) {
+                    l.removed(obj);
+                }
+            }
+
             // send a message to all clients
             send(new ProviderObjectsMessage(cellID, query.getQueryID(),
                                             ProviderObjectsMessage.Action.REMOVE,
@@ -259,6 +325,14 @@ public class TimelineProviderComponentMO extends CellComponentMO {
         }
 
         private void resetResults() {
+            // notify listeners
+            for (TimelineResultListener l : listenersRef.get()) {
+                for (DatedObject obj : results) {
+                    l.removed(obj);
+                }
+            }
+
+            // remove all results
             results.clear();
             
             // send a message to all clients
@@ -295,6 +369,14 @@ public class TimelineProviderComponentMO extends CellComponentMO {
             // remember the reference for next time
             channelRef = AppContext.getDataManager().createReference(cc);
             return cc;
+        }
+
+        public void addResultListener(TimelineResultListener listener) {
+            listenersRef.getForUpdate().add(listener);
+        }
+
+        public void removeResultListener(TimelineResultListener listener) {
+            listenersRef.getForUpdate().remove(listener);
         }
     }
 }
