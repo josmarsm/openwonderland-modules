@@ -128,6 +128,7 @@ public class TrackRenderer extends BasicRenderer {
                 }
 
                 private void update() {
+                    System.out.println("Updating track renderer");
                     ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
                         public void update(Object arg0) {
                             synchronized(trackRoot) {

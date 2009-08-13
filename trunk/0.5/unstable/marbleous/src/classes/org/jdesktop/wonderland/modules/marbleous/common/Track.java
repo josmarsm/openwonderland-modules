@@ -65,6 +65,11 @@ public class Track implements Serializable {
         segments.remove(trackSegment);
     }
 
+    public void replaceTrackSegment(TrackSegment trackSegment) {
+        int index = indexOf(trackSegment);
+        segments.set(index, trackSegment);
+    }
+
     public Iterable getTrackSegments() {
         return segments;
     }

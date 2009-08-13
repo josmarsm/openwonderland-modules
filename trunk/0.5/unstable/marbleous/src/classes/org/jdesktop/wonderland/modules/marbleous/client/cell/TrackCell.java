@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
+import org.jdesktop.wonderland.modules.marbleous.client.ui.KnotFrame;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.TimeSliderUI;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.TrackListModel;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.UI;
@@ -62,10 +63,23 @@ public class TrackCell extends Cell {
     private UI ui;
     private TimeSliderUI uiTimeSlider;
     Track track;
+    private Object savedSegmentState;
 
     public TrackCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
+
+    public void editSegment(final TrackSegment segment) {
+        savedSegmentState = segment.saveToMemento();
+            java.awt.EventQueue.invokeLater(new Runnable() {
+
+                public void run() {
+                    new KnotFrame(segment, TrackCell.this).setVisible(true);
+                }
+            });
+    }
+
+
 
     /**
      * Get the track for this cell
@@ -78,6 +92,23 @@ public class TrackCell extends Cell {
 
     public TrackListModel getTrackListModel() {
         return trackListModel;
+    }
+
+    public void addSegment(TrackSegment newSegment) {
+        sendCellMessage(TrackCellMessage.addSegment(getCellID(), newSegment));
+    }
+
+    public void modifySegment(TrackSegment segment) {
+        trackListModel.modifySegment(segment);
+        //sendCellMessage(TrackCellMessage.modifySegment(getCellID(), segment));
+    }
+
+    public void removeSegment(TrackSegment selectedSegment) {
+        sendCellMessage(TrackCellMessage.removeSegment(getCellID(), selectedSegment));
+    }
+
+    public void restoreSegment(TrackSegment aSegment) {
+        aSegment.restoreFromMemento(savedSegmentState);
     }
 
     /**
