@@ -152,7 +152,6 @@ public class TrackCell extends Cell {
                     channel.addMessageReceiver(TrackCellMessage.class, new TrackCellMessageReceiver());
                     
                     ui.setVisible(true);
-                    uiTimeSlider.setVisible(true);
                 }
 
                 break;
@@ -160,7 +159,6 @@ public class TrackCell extends Cell {
                 if (!increasing) {
 //                    hudTest.setActive(false);
                     ui.setVisible(false);
-                    uiTimeSlider.setVisible(false);
                     ui = null;
                     channel.removeMessageReceiver(SimulationStateMessage.class);
                     channel.removeMessageReceiver(TrackCellMessage.class);
@@ -174,16 +172,18 @@ public class TrackCell extends Cell {
     }
 
     private void initUI () {
-        ui = new UI(this);
+        uiTimeSlider = new TimeSliderUI(this);
+        System.err.println("******** uiTimeSlider = " + uiTimeSlider);
+
+        ui = new UI(this, uiTimeSlider);
         System.err.println("******** ui = " + ui);
         
+        /*
         SimTrace trace = new SimTrace(2f, 60);
         trace.appendSample(5f, new Vector3f(0f, 2f, 0f), new Vector3f(1f, 2f, 3f));
         trace.appendSample(5f, new Vector3f(0f, 3f, 0f), new Vector3f(4f, 5f, 6f));
         trace.appendSample(5f, new Vector3f(0f, 4f, 0f), new Vector3f(7f, 8f, 9f));
-
-        uiTimeSlider = new TimeSliderUI(this, trace);
-        System.err.println("******** uiTimeSlider = " + uiTimeSlider);
+        */
     }
 
     /**
