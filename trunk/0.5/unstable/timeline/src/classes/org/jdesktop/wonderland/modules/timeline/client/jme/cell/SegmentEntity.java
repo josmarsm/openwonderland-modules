@@ -193,7 +193,8 @@ public class SegmentEntity extends Entity {
         logger.info("v1 is now: " + mesh.getVertex(1));
       }
       else{
-        logger.info("[SENG ENT] first mesh and first entity, don't translate");
+        logger.info("[SENG ENT] first mesh and first entity, translate so that center of cell is in center of spiral.");
+        mesh.translatePoints(new Vector3f(0.0f, 0.0f, config.getInnerRadius()));
         logger.info("[SEG ENT] in don't translate: old v1 " + oldV1 + " new v0 " + newV0);
         logger.info("[SEG ENT] in don't translate: new v1 (getting set to old v1) " + mesh.getVertex(1));
       }
