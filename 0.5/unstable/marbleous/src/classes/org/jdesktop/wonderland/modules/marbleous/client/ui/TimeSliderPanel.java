@@ -42,7 +42,6 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     private SampleInfo currentSampleInfo;
     private Vector3f currentPosition;
     private SampleDisplayEntity currentSampleEntity;
-    private SampleDisplayEntity toTakeDown;
     private SimTrace trace;
 
     /** Creates new form TimeSliderPanel */
@@ -172,16 +171,12 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         if (sampleInfo == currentSampleInfo) {
             return;
         }
+
         currentSampleInfo = sampleInfo;
         System.err.println("currentSampleInfo = " + currentSampleInfo);
 
         currentPosition = currentSampleInfo.getPosition();
         System.err.println("current position = " + currentPosition);
-
-        if (toTakeDown != null) {
-            toTakeDown.setDisplayMode(SampleDisplayEntity.DisplayMode.HIDDEN);
-            toTakeDown = null;
-        }
     }
 
     private final HashMap<String,SampleDisplayEntity> sampleEntities = new HashMap<String,SampleDisplayEntity>();
@@ -197,28 +192,12 @@ public class TimeSliderPanel extends javax.swing.JPanel {
                 if(me.getButton() == MouseEvent.BUTTON1 &&
                    me.getModifiersEx() == 0) {
 
-                    SampleDisplayEntity sampleEntity = getCurrentSampleEntity();
-
-                    if (sampleEntity.isVisible()) {
-
-                        // TODO: Make sample entity invisible
-
-                    } else {
-
-                        // Make sample entity visible
-
-                        // Take any previous, unpinned entity down
-                        if (toTakeDown != null) {
-                            toTakeDown.setDisplayMode(SampleDisplayEntity.DisplayMode.HIDDEN);
-                            toTakeDown = null;
-                        }
-
-                        // Make entity for this sample visible
-                        sampleEntity.setDisplayMode(SampleDisplayEntity.DisplayMode.FULL);
-
-                        // Schedule entity to be taken down 
-                        toTakeDown = sampleEntity;
+                    if (currentSampleEntity != null) {
+                        currentSampleEntity.setCurrent(false);
                     }
+ 
+                    SampleDisplayEntity sampleEntity = getCurrentSampleEntity();
+                    sampleEntity.setCurrent(true);
                 }
             }
         }
@@ -246,6 +225,8 @@ public class TimeSliderPanel extends javax.swing.JPanel {
                 sampleEntities.put(tStr, sampleEntity);
             }
         }
+
+        currentSampleEntity = sampleEntity;
 
         return sampleEntity;
     }
