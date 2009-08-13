@@ -164,7 +164,8 @@ public class SampleDisplayEntity extends Entity {
 
             // click events - display context menu, cycle display mode
             if(me.getID() == MouseEvent.MOUSE_CLICKED){
-                if(me.getButton() == MouseEvent.BUTTON1){
+                if(me.getButton() == MouseEvent.BUTTON1 &&
+                   (me.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0) {
                     setPinned(! pinned);
                 }
             }
@@ -189,8 +190,8 @@ public class SampleDisplayEntity extends Entity {
         if (this.pinned == pinned) return;
         this.pinned = pinned;
 
-        float t = sampleInfo.getTime();
-        System.err.println("********** setPinned: t = " + t + ", pinned = " + pinned);
+        //float t = sampleInfo.getTime();
+        //System.err.println("********** setPinned: t = " + t + ", pinned = " + pinned);
 
         evaluateVisibilityAndSize();
     }
@@ -217,7 +218,7 @@ public class SampleDisplayEntity extends Entity {
     }
 
     private void evaluateVisibilityAndSize () {
-        if (visible && (current || pinned)) {
+        if (pinned || (visible && current)) {
             if (large) {
                 setDisplayMode(DisplayMode.FULL);
             } else {
