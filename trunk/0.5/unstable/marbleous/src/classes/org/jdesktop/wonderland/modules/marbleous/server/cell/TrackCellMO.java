@@ -22,13 +22,13 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.marbleous.common.BumpTrackSegmentType;
-import org.jdesktop.wonderland.modules.marbleous.common.RightTurnTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellServerState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
@@ -126,9 +126,11 @@ public class TrackCellMO extends CellMO {
             receiver =
                     (ChannelComponentMO.ComponentMessageReceiver) new TrackCellMessageReceiver(this);
             channel.addMessageReceiver(TrackCellMessage.class, receiver);
+            channel.addMessageReceiver(SimTraceMessage.class, new SimTraceMessageReceiver(this));
 
         } else {
             channel.removeMessageReceiver(SimulationStateMessage.class);
+            channel.removeMessageReceiver(SimTraceMessage.class);
         }
     }
 
@@ -144,6 +146,22 @@ public class TrackCellMO extends CellMO {
         System.out.println("TrackCellMO, removing " + segment);
         serverState.getTrack().removeTrackSegment(segment);
         sendCellMessage(clientID, tcm);
+    }
+
+    /**
+     * Receives sim traces messages and passed it onto the clients
+     */
+    private static class SimTraceMessageReceiver extends AbstractComponentMessageReceiver {
+        public SimTraceMessageReceiver(TrackCellMO cellMO) {
+            super(cellMO);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            getCell().sendCellMessage(clientID, message);
+        }
     }
 
     /**

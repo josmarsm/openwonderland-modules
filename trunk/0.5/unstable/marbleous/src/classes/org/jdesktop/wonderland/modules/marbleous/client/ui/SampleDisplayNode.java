@@ -53,7 +53,7 @@ import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.jdesktop.wonderland.modules.marbleous.client.SampleInfo;
+import org.jdesktop.wonderland.modules.marbleous.common.trace.SampleInfo;
 
 /**
  * A billboarding node which displays the physics simulation trace sample info. Will

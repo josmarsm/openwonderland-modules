@@ -15,9 +15,10 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.marbleous.client;
+package org.jdesktop.wonderland.modules.marbleous.common.trace;
 
 import com.jme.math.Vector3f;
+import java.io.Serializable;
 import org.jdesktop.wonderland.modules.marbleous.client.utils.PhysicsUtils;
 
 /**
@@ -25,7 +26,7 @@ import org.jdesktop.wonderland.modules.marbleous.client.utils.PhysicsUtils;
  *
  * @author jslott, kmontag, deronj
  */
-public class SampleInfo {
+public class SampleInfo implements Serializable {
 
     // The time (in seconds) of this sample in the time series
     private float time = 0.0f;
@@ -45,18 +46,6 @@ public class SampleInfo {
     // The instantaneous acceleration (in meters/second/second) of the object
     private Vector3f acceleration = Vector3f.ZERO;
 
-    // The instantaneous net force (in Newtons) on the object
-    private Vector3f force = Vector3f.ZERO;
-
-    // The instantaneous momentum (in kilograms-meters/second) of the object
-    private Vector3f momentum = Vector3f.ZERO;
-
-    // The instantaneous potential energy (in Joules) of the object
-    private float potentialEnergy = 0.0f;
-
-    // The instantaneous kinetic energy (in Joules) of the object
-    private float kineticEnergy = 0.0f;
-
     /**
      * Constructor, takes the mass, velocity, acceleration, position, time of
      * the sample, and the acceleration due to gravity
@@ -68,10 +57,6 @@ public class SampleInfo {
         this.acceleration = a;
         this.position = p;
         this.gravity = g;
-        this.force = acceleration.mult(mass);
-        this.momentum = velocity.mult(mass);
-        this.potentialEnergy = PhysicsUtils.getPotentialEnergy(position, mass, gravity);
-        this.kineticEnergy = PhysicsUtils.getKineticEnergy(velocity, mass);
     }
 
     /**
@@ -116,7 +101,7 @@ public class SampleInfo {
      * @return The net force (in Newtons)
      */
     public Vector3f getForce() {
-        return force;
+        return acceleration.mult(mass);
     }
 
     /**
@@ -125,7 +110,7 @@ public class SampleInfo {
      * @return The momentum (in kilogram-meters/second)
      */
     public Vector3f getMomentum() {
-        return momentum;
+        return velocity.mult(mass);
     }
 
     /**
@@ -134,7 +119,7 @@ public class SampleInfo {
      * @return The potential energy (in Joules)
      */
     public float getPotentialEnergy() {
-        return potentialEnergy;
+        return PhysicsUtils.getPotentialEnergy(position, mass, gravity);
     }
 
     /**
@@ -143,7 +128,7 @@ public class SampleInfo {
      * @return The kinetic energy (in Joules)
      */
     public float getKineticEnergy() {
-        return kineticEnergy;
+        return PhysicsUtils.getKineticEnergy(velocity, mass);
     }
 
     /**

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -40,14 +39,14 @@ import javax.vecmath.Vector3f;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.JBulletPhysicsSystem.TimeStepEvent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem.TimeStepListener;
-import org.jdesktop.wonderland.modules.marbleous.client.SampleInfo;
-import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
+import org.jdesktop.wonderland.modules.marbleous.common.trace.SimTrace;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.MarblePhysicsComponent;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackManager;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
 
@@ -216,7 +215,6 @@ public class ConstructPanel extends javax.swing.JPanel {
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
         // Create a new simulation trace object to place time series info
         simTrace = new SimTrace(MarblePhysicsComponent.G, MarblePhysicsComponent.FREQ);
-        uiTimeSlider.setSimTrace(simTrace);
 
         // Add a listener to listen for the time series data
         JBulletPhysicsSystem physics = ((TrackCell)cell).getPhysicsSystem();
@@ -255,11 +253,9 @@ public class ConstructPanel extends javax.swing.JPanel {
             }
         }
 
-        // Make the time slider visible
-        uiTimeSlider.setVisible(true);
-
+        // Send a message to all clients with the simulation trace
+        cell.sendCellMessage(new SimTraceMessage(simTrace));
 }//GEN-LAST:event_stopButtonActionPerformed
-
 
     /**
      * Updates the list of values displayed from the track segment factory

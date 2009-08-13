@@ -15,9 +15,10 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.marbleous.client;
+package org.jdesktop.wonderland.modules.marbleous.common.trace;
 
 import com.jme.math.Vector3f;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
  * <p>
  * @author jslott, kmontag, deronj
  */
-public class SimTrace {
+public class SimTrace implements Serializable {
 
     private static Logger logger = Logger.getLogger(SimTrace.class.getName());
 
