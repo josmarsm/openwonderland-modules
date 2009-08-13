@@ -295,7 +295,7 @@ public class TrackCell extends Cell {
         public void messageReceived(CellMessage message) {
             final boolean fromMe = message.getSenderID() != null && message.getSenderID().equals(getCellCache().getSession().getID());
 
-            if (message instanceof SimulationStateMessage) {
+            if (message instanceof SelectedSampleMessage) {
                 if (!fromMe) {
                     uiTimeSlider.setSelectedTime(((SelectedSampleMessage)message).getSelectedTime());
                 }

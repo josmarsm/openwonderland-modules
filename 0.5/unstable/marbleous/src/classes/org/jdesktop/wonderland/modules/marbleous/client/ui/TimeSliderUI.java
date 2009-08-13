@@ -78,7 +78,8 @@ public class TimeSliderUI {
      * @param selectedTime The current selected time (in seconds)
      */
     public void setSelectedTime(float selectedTime) {
-        // Tell the time slider panel to update itself
+        // Tell the time slider panel to update itself, make
+        System.err.println("SET SELECTED TIME " + selectedTime);
         panel.setSelectedTime(selectedTime);
     }
 
