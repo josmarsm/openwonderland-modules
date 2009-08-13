@@ -28,19 +28,14 @@ import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
  */
 public class TrackCellMessage extends CellMessage {
 
-    
     private TrackAction action;
     private TrackSegment trackSegment;
-
-
-
-
 
     public enum TrackAction {
 
         ADD_SEGMENT,
-        REMOVE_SEGMENT
-    };
+        REMOVE_SEGMENT,
+        MODIFY_SEGMENT};
 
     private TrackCellMessage(CellID cellID) {
         super(cellID);
@@ -53,9 +48,16 @@ public class TrackCellMessage extends CellMessage {
         return msg;
     }
 
-    public static CellMessage removeSegment(CellID cellID, TrackSegment aSegment) {
+    public static TrackCellMessage removeSegment(CellID cellID, TrackSegment aSegment) {
         TrackCellMessage msg = new TrackCellMessage(cellID);
         msg.action = TrackAction.REMOVE_SEGMENT;
+        msg.trackSegment = aSegment;
+        return msg;
+    }
+
+    public static TrackCellMessage modifySegment(CellID cellID, TrackSegment aSegment) {
+        TrackCellMessage msg = new TrackCellMessage(cellID);
+        msg.action = TrackAction.MODIFY_SEGMENT;
         msg.trackSegment = aSegment;
         return msg;
     }
