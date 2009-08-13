@@ -61,7 +61,6 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -85,7 +84,8 @@ public class TrackRenderer extends BasicRenderer {
     private Node cellRoot = new Node("Marbleous");
     private final Node trackRoot = new Node("TrackRoot");
 
-    private Entity marbleEntity;
+    // The marble entity and it's root node
+    private Entity marbleEntity = null;;
 
     private LinkedList<MarbleMouseEventListener> marbleMouseListeners = 
         new LinkedList<MarbleMouseEventListener>();
@@ -96,6 +96,28 @@ public class TrackRenderer extends BasicRenderer {
 
     public Entity getMarbleEntity () {
         return marbleEntity;
+    }
+
+    /**
+     * Resets the marble to its initial position.
+     */
+    public void resetMarble() {
+        // First remove the marble entity and recreate and add it
+        getEntity().removeEntity(marbleEntity);
+
+        Vector3f cellPos = new Vector3f(rootNode.getLocalTranslation());
+        Quaternion cellRot = rootNode.getLocalRotation();
+
+//            cellRot.multLocal(cellPos);
+
+        Vector3f marblePos = ((TrackCell) cell).getTrack().getMarbleStartPosition();
+        cellRot.multLocal(marblePos);
+        marblePos.addLocal(cellPos);
+        marbleEntity = createMarble(marblePos);
+        entity.addEntity(marbleEntity);
+
+        MarbleMouseListener mouseListener = new MarbleMouseListener();
+        mouseListener.addToEntity(marbleEntity);
     }
 
     @Override

@@ -475,4 +475,11 @@ public class TrackCell extends Cell {
         }
         return marblePhysicsComponent.getMarbleRigidBody();
     }
+
+    /**
+     * Resets the marble
+     */
+    public void resetMarble() {
+        cellRenderer.resetMarble();
+    }
 }
