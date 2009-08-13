@@ -65,11 +65,12 @@ public abstract class TrackSegmentType implements Comparable {
     }
 
     protected TCBKeyFrame createKeyFrame(float knot, Vector3f pos) {
-        return createKeyFrame(knot, pos, 0, 0, 0);
+        return createKeyFrame(knot, pos, 0, 0, 0, new Vector3f(0,1,0), 0f);
     }
 
-    protected TCBKeyFrame createKeyFrame(float knot, Vector3f pos, float tension, float continuity, float bias) {
-         Quaternion rot = new Quaternion();
+    protected TCBKeyFrame createKeyFrame(float knot, Vector3f pos, float tension, float continuity, float bias, Vector3f rotAxis, float angle) {
+        Quaternion rot = new Quaternion();
+        rot.fromAngleAxis(angle, rotAxis);
         TCBKeyFrame ret = new TCBKeyFrame(knot, 0, pos, rot, new Vector3f(1,1,1), tension, continuity, bias);
         return ret;
     }

@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.modules.marbleous.client.jme;
 
 import com.bulletphysics.dynamics.RigidBody;
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 import javax.swing.event.ListDataEvent;
+import org.jdesktop.wonderland.client.input.Event;
 import javax.swing.event.TableModelEvent;
 import org.jdesktop.wonderland.modules.marbleous.common.TCBKeyFrame;
 import com.jme.math.Matrix4f;
@@ -37,6 +39,7 @@ import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import java.awt.event.MouseEvent;
 import com.jme.scene.state.GLSLShaderObjectsState;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -57,13 +60,14 @@ import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.modules.marbleous.client.cell.MarblePhysicsComponent;
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.marbleous.client.cell.MarblePhysicsComponent;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 
@@ -109,25 +113,17 @@ public class TrackRenderer extends BasicRenderer {
             Track track = ((TrackCell) cell).getTrack();
             createTrackGraph(track);
             
-            marbleEntity = createMarble(track.getMarbleStartPosition());
-            entity.addEntity(marbleEntity);
-
-            MarbleMouseListener mouseListener = new MarbleMouseListener();
-            mouseListener.addToEntity(marbleEntity);
-
+            // Listen for changes to the track and trigger a redraw
             ((TrackCell)cell).getTrackListModel().addListDataListener(new ListDataListener() {
                 public void intervalAdded(ListDataEvent e) {
-                    System.err.println("Added "+e);
                     update();
                 }
 
                 public void intervalRemoved(ListDataEvent e) {
-                    System.err.println("Removed "+e);
                     update();
                 }
 
                 public void contentsChanged(ListDataEvent e) {
-                    System.err.println("Changed "+e);
                     update();
                 }
 
@@ -149,6 +145,11 @@ public class TrackRenderer extends BasicRenderer {
         return cellRoot;
     }
 
+    @Override
+    public void cellTransformUpdate(CellTransform t) {
+        // Ignore cell transform
+    }
+
     private void update() {
         System.out.println("Updating track renderer");
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
@@ -163,28 +164,21 @@ public class TrackRenderer extends BasicRenderer {
     }
 
     private void createTrackGraph(Track track) {
+        trackRoot.detachAllChildren();
+        
         Collection<TCBKeyFrame> keyFrames = track.buildTrack();
         RotPosScaleTCBSplinePath spline = new RotPosScaleTCBSplinePath(keyFrames.toArray(new TCBKeyFrame[keyFrames.size()]));
-//            drawKnot(spline, ret);
-        //drawSpline(spline, ret);
+
+//        drawKnot(spline, trackRoot);
+//        drawSpline(spline, trackRoot);
+
         trackMesh = createTrackMesh(spline);
         trackMesh.setLocalTranslation(Vector3f.ZERO);
         trackMesh.setLocalRotation(new Quaternion());
 
-//            trackMesh = new Dome("", 25, 25, 10f);
-        
-//        trackMesh = new Quad("", 100, 100);
-//        trackMesh.setLocalTranslation(Vector3f.ZERO);
-//        Quaternion rot = new Quaternion();
-//        rot.fromAngleAxis((float)Math.PI/2, new Vector3f(1,0,0));
-//        trackMesh.setLocalRotation(rot);
-
-
         trackMesh.setModelBound(new BoundingBox());
         trackMesh.updateModelBound();
-        trackRoot.detachAllChildren();
         trackRoot.attachChild(trackMesh);
-
     }
 
     /**
@@ -227,8 +221,30 @@ public class TrackRenderer extends BasicRenderer {
             }
 
             JBulletDynamicCollisionSystem trackCollisionSystem = (JBulletDynamicCollisionSystem) ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Physics");
+            final JBulletCollisionComponent bcc = trackCollisionSystem.createCollisionComponent(trackMesh);
+            
+            // Set the friction on the track
+            bcc.addInitializedListener(new InitializedListener() {
+                public void componentInitialized() {
+                    bcc.getCollisionObject().setFriction(0f);
+                }
+            });
 
-            entity.addComponent(JBulletCollisionComponent.class, trackCollisionSystem.createCollisionComponent(trackMesh));
+            entity.addComponent(JBulletCollisionComponent.class, bcc);
+
+            Vector3f cellPos = new Vector3f(rootNode.getLocalTranslation());
+            Quaternion cellRot = rootNode.getLocalRotation();
+
+//            cellRot.multLocal(cellPos);
+
+            Vector3f marblePos = ((TrackCell)cell).getTrack().getMarbleStartPosition();
+            cellRot.multLocal(marblePos);
+            marblePos.addLocal(cellPos);
+            marbleEntity = createMarble(marblePos);
+            entity.addEntity(marbleEntity);
+
+            MarbleMouseListener mouseListener = new MarbleMouseListener();
+            mouseListener.addToEntity(marbleEntity);
         } else {
             logger.warning("**** BASIC RENDERER - ROOT NODE WAS NULL !");
         }
@@ -238,18 +254,20 @@ public class TrackRenderer extends BasicRenderer {
     private Entity createMarble(Vector3f initialPosition) {
         float size = 0.25f;
         Entity e = new Entity();
+        Vector3f pos = new Vector3f(initialPosition);
         Node marbleRoot = new Node("marble-root");
         Sphere marble = new Sphere("marble", 10, 10, size);
-        Triangle[] tris = new Triangle[marble.getTriangleCount()];
 
         // Compute bounds, JME does not calculate them correctly
-        BoundingBox bsphere = new BoundingBox();
+        Triangle[] tris = new Triangle[marble.getTriangleCount()];
+        BoundingSphere bsphere = new BoundingSphere();
         bsphere.computeFromTris(marble.getMeshAsTriangles(tris), 0, tris.length);
         marble.setModelBound(bsphere);
+
         marbleRoot.attachChild(marble);
-        initialPosition.y += 4;
-        initialPosition.z -= size;      // HACK assumes initial track orientation
-        marbleRoot.setLocalTranslation(initialPosition);
+        pos.y += 2;
+        marbleRoot.setLocalTranslation(pos);
+        marbleRoot.setLocalRotation(new Quaternion());
 
         RenderComponent renderComponent = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(marbleRoot);
         e.addComponent(RenderComponent.class, renderComponent);
@@ -329,10 +347,27 @@ public class TrackRenderer extends BasicRenderer {
     private void drawKnot(RotPosScaleTCBSplinePath spline, Node root) {
         int size = spline.getArrayLength();
         for (int i = 0; i < size; i++) {
+            Node knot = new Node("keyframe-"+i);
             TCBKeyFrame key = spline.getKeyFrame(i);
-            Box box = new Box("knot-" + i, key.position, 0.5f, 0.5f, 0.5f);
-            root.attachChild(box);
+
+            // Knot
+            Box box = new Box("knot-" + i, key.position, 0.1f, 0.1f, 0.1f);
+//            box.setModelBound(new BoundingBox(Vector3f.ZERO, 0.1f, 0.1f, 0.1f));
+            knot.attachChild(box);
+
+            Vector3f offset = new Vector3f(0,1,0);
+            key.quat.multLocal(offset);
+            System.err.println("Rotation offset "+offset);
+            offset.addLocal(key.position);
+            // Rotation
+            Sphere s = new Sphere("knot-up-"+i, offset, 10, 10, 0.1f);
+//            s.setModelBound(new BoundingSphere(0.1f, Vector3f.ZERO));
+            knot.attachChild(s);
+
+            root.attachChild(knot);
         }
+
+        ClientContextJME.getInputManager().addGlobalEventListener(new MouseKnotListener());
     }
 
     private void drawSpline(RotPosScaleTCBSplinePath spline, Node root) {
@@ -349,38 +384,23 @@ public class TrackRenderer extends BasicRenderer {
     }
 
     private TriMesh createTrackMesh(RotPosScaleTCBSplinePath spline) {
-        float step = 0.01f;
-
-        Line extrusionShape = new Line();
-        extrusionShape.setMode(Line.Mode.Connected);
-        float[] points = new float[]{
-            -1, 0.5f, 0f,
-            0, 0, 0,
-            0, 0, 0,
-            1, 0.5f, 0
-        };
-
-        // TODO fix normals
-        float[] normals = new float[]{
-            0, 1, 0,
-            0, 1, 0,
-            0, 1, 0,
-            0, 1, 0
-        };
-
-        extrusionShape.setVertexBuffer(FloatBuffer.wrap(points));
-        extrusionShape.setNormalBuffer(FloatBuffer.wrap(normals));
+        float step = 1f/spline.getArrayLength()*10;
 
         Matrix4f mat = new Matrix4f();
         Vector3f pos;
         ArrayList<Vector3f> path = new ArrayList();
+        ArrayList<Vector3f> upList = new ArrayList();
         for (float s = 0; s <= 1; s += 0.01f) {
             spline.computeTransform(s, mat);
             pos = mat.mult(Vector3f.ZERO);
             path.add(pos);
+
+            Vector3f up = new Vector3f(0,1,0);
+            mat.rotateVect(up);
+            upList.add(up);
         }
 
-        Extrusion ext = new Extrusion(extrusionShape, path, new Vector3f(0, 1, 0));
+        Extrusion ext = new Extrusion("trackMesh", getExtrusionShape(ExtrusionShape.U_SHAPE), path, upList);
         TrackShader shader = new TrackShader();
         shader.applyToGeometry(ext);
         ext.setModelBound(new BoundingBox());
@@ -389,13 +409,115 @@ public class TrackRenderer extends BasicRenderer {
         return ext;
     }
 
+    enum ExtrusionShape { V_SHAPE, U_SHAPE };
+
+    private Line getExtrusionShape(ExtrusionShape shape) {
+        Line extrusionShape = new Line();
+        extrusionShape.setMode(Line.Mode.Connected);
+
+        float[] points=null;
+        float[] normals=null;
+
+        switch(shape) {
+            case V_SHAPE :
+                points = new float[]{
+                    -0.7f, 0.4f, 0f,
+                    0, 0, 0,
+                    0, 0, 0,
+                    0.7f, 0.4f, 0
+                };
+
+                // TODO fix normals
+                normals = new float[]{
+                    0, 1, 0,
+                    0, 1, 0,
+                    0, 1, 0,
+                    0, 1, 0
+                };
+            break;
+            case U_SHAPE :
+                int samples = 12;
+                float radius = 0.4f;
+                double step = Math.toRadians(180/samples);
+                Vector3f tmp = new Vector3f();
+
+                points = new float[3*samples*2];
+                normals = new float[3*samples*2];
+
+                double angle = -Math.PI/2;
+                for(int i=0; i<samples*6; i+=6) {
+                    points[i] = (float)Math.sin(angle)*radius;
+                    points[i+1] = radius-(float)Math.cos(angle)*radius;
+                    points[i+2] = 0f;
+                    points[i+3] = (float)Math.sin(angle+step)*radius;
+                    points[i+4] = radius-(float)Math.cos(angle+step)*radius;
+                    points[i+5] = 0f;
+
+                    tmp.set(-points[i], -points[i+1], 0f);
+                    tmp.normalizeLocal();
+                    normals[i] = tmp.x;
+                    normals[i+1] = tmp.y;
+                    normals[i+2] = tmp.z;
+                    tmp.set(-points[i+3], -points[i+4], 0f);
+                    tmp.normalizeLocal();
+                    normals[i+3] = tmp.x;
+                    normals[i+4] = tmp.y;
+                    normals[i+5] = tmp.z;
+
+                    angle+=step;
+                }
+                break;
+        };
+
+        extrusionShape.setVertexBuffer(FloatBuffer.wrap(points));
+        extrusionShape.setNormalBuffer(FloatBuffer.wrap(normals));
+
+        return extrusionShape;
+    }
+
     private TriMesh createBox(float size, Matrix4f transform) {
-        Box b = new Box(null, Vector3f.ZERO, size, size, size);
+        Box b = new Box("box", Vector3f.ZERO, size, size, size);
 
         b.setLocalTranslation(transform.toTranslationVector());
         b.setLocalRotation(transform.toRotationQuat());
+        ColorRGBA color = new ColorRGBA(0.0f, 0.0f, 1.0f, 1.0f);
+        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Material);
+        matState.setDiffuse(color);
+        b.setRenderState(matState);
 
         return b;
+    }
+
+    private class MouseKnotListener extends EventClassListener {
+
+        public MouseKnotListener() {
+        }
+
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[]{MouseEvent3D.class};
+        }
+
+        @Override
+        public void commitEvent(Event event) {
+
+            if (event instanceof MouseButtonEvent3D) {
+                MouseButtonEvent3D buttonEvent = (MouseButtonEvent3D) event;
+                if (buttonEvent.isPressed() && buttonEvent.getButton() ==
+                        MouseButtonEvent3D.ButtonId.BUTTON1) {
+                    MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
+                    if (buttonEvent.getPickDetails()!=null) {
+                        System.err.println(buttonEvent.getPickDetails().getTriMesh().getName());
+                    }
+
+//                    if (buttonEvent.getPickDetails().getTriMesh().getName().equals(sourceNodeName)) {
+//                        System.err.println("BINGO !");
+//                    }
+                }
+                return;
+            }
+
+        }
     }
 
     public class TrackShader implements RenderUpdater {

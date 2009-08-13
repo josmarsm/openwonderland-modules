@@ -35,7 +35,7 @@ public class RightTurnTrackSegmentType extends TrackSegmentType {
 
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
           createKeyFrame(0, new Vector3f(0,0,0)),
-          createKeyFrame(0.5f, new Vector3f(1,0,-4), -1, 0, 0),
+          createKeyFrame(0.5f, new Vector3f(1,0,-4), -1, 0, 0, new Vector3f(1,0,-1), (float)Math.toRadians(45)),
           createKeyFrame(1f, new Vector3f(5,0,-5))
         };
 
