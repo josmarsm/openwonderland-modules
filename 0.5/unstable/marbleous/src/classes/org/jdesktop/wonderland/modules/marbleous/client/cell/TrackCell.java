@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.marbleous.client.cell;
 
 import com.bulletphysics.dynamics.RigidBody;
-import com.jme.math.Vector3f;
 import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.mtgame.Entity;
@@ -35,7 +34,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.TimeSliderUI;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.TrackListModel;
@@ -43,9 +41,11 @@ import org.jdesktop.wonderland.modules.marbleous.client.ui.UI;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
+import org.jdesktop.wonderland.modules.marbleous.common.trace.SimTrace;
 
 /**
  * Client-side cell for rendering JME content
@@ -149,6 +149,7 @@ public class TrackCell extends Cell {
 //                    translation.playLoop(RepeatBehavior.LOOP);
 //                    hudTest.setActive(true);
                     channel.addMessageReceiver(SimulationStateMessage.class, new SimulationStateMessageReceiver());
+                    channel.addMessageReceiver(SimTraceMessage.class, new SimTraceMessageReceiver());
                     channel.addMessageReceiver(TrackCellMessage.class, new TrackCellMessageReceiver());
                     
                     ui.setVisible(true);
@@ -161,6 +162,7 @@ public class TrackCell extends Cell {
                     ui.setVisible(false);
                     ui = null;
                     channel.removeMessageReceiver(SimulationStateMessage.class);
+                    channel.removeMessageReceiver(SimTraceMessage.class);
                     channel.removeMessageReceiver(TrackCellMessage.class);
                 }
                 break;
@@ -232,6 +234,20 @@ public class TrackCell extends Cell {
     }
 
     /**
+     * Handles when a simulation trace is sent to this client
+     */
+    private class SimTraceMessageReceiver implements ComponentMessageReceiver {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void messageReceived(CellMessage message) {
+            SimTrace simTrace = ((SimTraceMessage)message).getSimTrace();
+            uiTimeSlider.setSimTrace(simTrace);
+            uiTimeSlider.setVisible(true);
+        }
+    }
+    /**
      * Processes state change messages received from the server and/or
      * other clients.
      */
@@ -280,9 +296,6 @@ public class TrackCell extends Cell {
                         logger.severe("Unknown action type: " + tcm.getAction());
 
                 }
-
-
-            
         }
     }
 

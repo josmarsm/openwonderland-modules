@@ -22,11 +22,12 @@ import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.modules.marbleous.client.SampleInfo;
-import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
+import org.jdesktop.wonderland.modules.marbleous.common.trace.SampleInfo;
+import org.jdesktop.wonderland.modules.marbleous.common.trace.SimTrace;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer.MarbleMouseEventListener;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SelectedSampleMessage;
 
 /**
  *
@@ -69,6 +70,46 @@ public class TimeSliderPanel extends javax.swing.JPanel {
             ex.printStackTrace();
             throw new RuntimeException("Cannot create time sliderpanel");
         }
+    }
+
+    /**
+     * Sets the selected time, updates the GUI to indicate as such
+     *
+     * @param selectedTime The selected time (in seconds)
+     */
+    public void setSelectedTime(float selectedTime) {
+        // Set the value of the slider
+        float pct = selectedTime / trace.getEndTime();
+        float dT = (float) (jSlider1.getMaximum() - jSlider1.getMinimum());
+        int value = (int)(pct * dT);
+        jSlider1.setValue(value);
+
+        // Update the marble entity based upon the selected time
+        updateMarbleWithTime(selectedTime);
+    }
+
+    /**
+     * Updates the marble based upon the selected time.
+     */
+    private void updateMarbleWithTime(float selectedTime) {
+        //System.err.println("value = " + value);
+        //System.err.println("pct = " + pct);
+        System.err.println("t = " + selectedTime);
+        SampleInfo sampleInfo = trace.getSampleInfo(selectedTime);
+        setCurrentSampleInfo(sampleInfo);
+        System.err.println("********** currentPosition = " + currentPosition);
+
+        // Assumes that the marble is still attached to the cell
+        Entity marbleEntity = cell.getMarbleEntity();
+        RenderComponent rc = marbleEntity.getComponent(RenderComponent.class);
+        final Node marbleNode = rc.getSceneRoot();
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                marbleNode.setLocalTranslation(currentPosition);
+                ClientContextJME.getWorldManager().addToUpdateList(marbleNode);
+            }
+        }, null);
     }
 
     /** This method is called from within the constructor to
@@ -137,26 +178,11 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         //System.err.println("trace.getEndTime() = " + trace.getEndTime());
         float t = pct * trace.getEndTime();
 
-        //System.err.println("value = " + value);
-        //System.err.println("pct = " + pct);
-        //System.err.println("t = " + t);
-        SampleInfo sampleInfo = trace.getSampleInfo(t);
-        setCurrentSampleInfo(sampleInfo);
-        //System.err.println("********** currentPosition = " + currentPosition);
+        // Tell the other clients that the slider value has changed
+        cell.sendCellMessage(new SelectedSampleMessage(t));
 
-        // Assumes that the marble is still attached to the cell
-        Entity marbleEntity = cell.getMarbleEntity();
-        RenderComponent rc = marbleEntity.getComponent(RenderComponent.class);
-        final Node marbleNode = rc.getSceneRoot();
-
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-            public void update(Object arg0) {
-                marbleNode.setLocalTranslation(currentPosition);
-                ClientContextJME.getWorldManager().addToUpdateList(marbleNode);
-            }
-        }, null);
-
-
+        // Update the marble with the selected time
+        updateMarbleWithTime(t);
     }//GEN-LAST:event_jSlider1StateChanged
 
 

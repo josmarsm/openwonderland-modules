@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
-import org.jdesktop.wonderland.modules.marbleous.client.SimTrace;
+import org.jdesktop.wonderland.modules.marbleous.common.trace.SimTrace;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 
 /************************************************************
@@ -70,6 +70,16 @@ public class TimeSliderUI {
 
     public void setSimTrace (SimTrace trace) {
         panel.setSimTrace(trace);
+    }
+
+    /**
+     * Sets the currently selected time on the time slider.
+     *
+     * @param selectedTime The current selected time (in seconds)
+     */
+    public void setSelectedTime(float selectedTime) {
+        // Tell the time slider panel to update itself
+        panel.setSelectedTime(selectedTime);
     }
 
     /** Control the visibility of the window. */

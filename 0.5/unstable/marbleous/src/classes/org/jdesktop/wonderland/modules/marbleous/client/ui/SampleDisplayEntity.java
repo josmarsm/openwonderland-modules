@@ -41,7 +41,7 @@ import org.jdesktop.wonderland.client.input.EventClassListener;
 
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
-import org.jdesktop.wonderland.modules.marbleous.client.SampleInfo;
+import org.jdesktop.wonderland.modules.marbleous.common.trace.SampleInfo;
 
 /**
  * An Entity which displays the physics simulationt trace sample data for a particular time.
