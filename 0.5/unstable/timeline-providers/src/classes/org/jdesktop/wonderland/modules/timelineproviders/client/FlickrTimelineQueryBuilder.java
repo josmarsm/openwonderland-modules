@@ -207,9 +207,9 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
 
         // set the various dates
         props.setProperty(FlickrConstants.START_DATE_PROP,
-                          config.getDateRange().getMinimum().toString());
+                          String.valueOf(config.getDateRange().getMinimum().getTime()));
         props.setProperty(FlickrConstants.END_DATE_PROP,
-                          config.getDateRange().getMaximum().toString());
+                          String.valueOf(config.getDateRange().getMaximum().getTime()));
         props.setProperty(FlickrConstants.INCREMENTS_PROP,
                           String.valueOf(config.getNumSegments()));
     }
