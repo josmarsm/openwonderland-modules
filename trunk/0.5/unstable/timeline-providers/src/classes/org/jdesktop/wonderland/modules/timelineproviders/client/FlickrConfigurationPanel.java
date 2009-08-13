@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.timelineproviders.client;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.jdesktop.wonderland.modules.timelineproviders.common.FlickrConstants;
 
 /**
@@ -24,6 +26,8 @@ import org.jdesktop.wonderland.modules.timelineproviders.common.FlickrConstants;
  * @author nsimpson
  */
 public class FlickrConfigurationPanel extends javax.swing.JPanel {
+
+    private PropertyChangeSupport listeners;
 
     public enum SEARCH_TYPE {
         TAGS (FlickrConstants.SEARCH_TAGS_KEY),
@@ -146,7 +150,31 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
     public boolean isOK() {
         return ok;
     }
-    
+
+
+            /**
+     * Adds a bound property listener to the dialog
+     * @param listener a listener for dialog events
+     */
+    @Override
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners == null) {
+            listeners = new PropertyChangeSupport(this);
+        }
+        listeners.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Removes a bound property listener from the dialog
+     * @param listener the listener to remove
+     */
+    @Override
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners != null) {
+            listeners.removePropertyChangeListener(listener);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
