@@ -99,8 +99,8 @@ public class SampleDisplayNode extends BillboardNode {
   // padding between text and edges
   private final int PADDING_LEFT = 30;
   private final int PADDING_RIGHT = 30;
-  private final int PADDING_TOP = /*5*/ 10;
-  private final int PADDING_BOTTOM = /*5*/10;
+  private final int PADDING_TOP = /*5*/ 20;
+  private final int PADDING_BOTTOM = /*5*/20;
   /** padding between Author and Title */
   private final int PADDING_LINE = 5;
 
@@ -146,6 +146,7 @@ public class SampleDisplayNode extends BillboardNode {
     }
 
     private String getText () {
+        Vector3f p = sampleInfo.getPosition();
         Vector3f v = sampleInfo.getVelocity();
         Vector3f a = sampleInfo.getAcceleration();
         Vector3f f = sampleInfo.getForce();
@@ -153,13 +154,27 @@ public class SampleDisplayNode extends BillboardNode {
         float pe = sampleInfo.getPotentialEnergy();
         float ke = sampleInfo.getKineticEnergy();
         float te = pe + ke;
-        return "V:  [" + v.x + "," + v.y + "," + v.z + "]\n" +
-               "A:  [" + a.x + "," + a.y + "," + a.z + "]\n" +
-               "F:  [" + f.x + "," + f.y + "," + f.z + "]\n" +
-               "M:  [" + m.x + "," + m.y + "," + m.z + "]\n" +
-               "PE: [" + pe + "]\n" +
-               "KE: [" + ke + "]\n" +
-               "E:  [" + te + "]";
+        float mass = sampleInfo.getMass();
+        float g = sampleInfo.getGravity();
+
+        String ret = "V:  [" + v.x + "," + v.y + "," + v.z + "]\n" +
+                     "A:  [" + a.x + "," + a.y + "," + a.z + "]\n";
+
+        if (mode == DisplayMode.VERBOSE) {
+            ret += "F:  mA = " + mass + " x [" + a.x + "," + a.y + "," + a.z + "] = [" + f.x + "," + f.y + "," + f.z + "]\n" +
+                   "M:  mV = " + mass + " x [" + v.x + "," + v.y + "," + v.z + "] = [" + m.x + "," + m.y + "," + m.z + "]\n" +
+                   "pe: mGy = (" + mass + ") x (" + g + ") x (" + p.y + ") = " +  ke + "\n" +
+                   "ke: (1/2)mV^2 = (" + 0.5f * mass + ") x (" + v.lengthSquared() + ") = " + ke + "\n" +
+                   "e:  pe + ke = " + pe + " + " + ke + " = " + te;
+        } else {
+            ret += "F:  [" + f.x + "," + f.y + "," + f.z + "]\n" +
+                   "M:  [" + m.x + "," + m.y + "," + m.z + "]\n" +
+                   "pe: [" + pe + "]\n" +
+                   "ke: [" + ke + "]\n" +
+                   "e:  [" + te + "]";
+        }
+
+        return ret;
     }
 
 
