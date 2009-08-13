@@ -31,6 +31,8 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellServerState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineProviderServerState;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQuery;
 
 /**
  *
@@ -53,7 +55,18 @@ public class TimelineCellFactory implements CellFactorySPI {
         TimelineCellServerState state = new TimelineCellServerState();
         createCreationHUD();
         state.setConfig(new TimelineConfiguration());
-        return (T) state;
+
+        // Test code to add a provider to the timeline cell when it's created
+        // so we can test layout. 
+        TimelineProviderServerState providerState = new TimelineProviderServerState();
+        TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.SampleProvider");
+        query.getProperties().setProperty("test", "123");
+        providerState.getQueries().add(query);
+
+        state.addComponentServerState(providerState);
+
+
+        return (T)state;
     }
 
     private void createCreationHUD() {

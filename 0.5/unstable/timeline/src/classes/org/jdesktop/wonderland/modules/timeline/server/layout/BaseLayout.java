@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.timeline.server.layout;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
 import org.jdesktop.wonderland.modules.timeline.server.TimelineCellMO;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMO;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMOListener;
@@ -46,7 +48,7 @@ import org.jdesktop.wonderland.server.cell.MovableComponentMO;
  *
  * @author drew
  */
-public class BaseLayout implements TimelineProviderComponentMOListener {
+public class BaseLayout implements TimelineProviderComponentMOListener, LayoutManager, TimelineResultListener, Serializable {
 
     private static final Logger logger =
         Logger.getLogger(BaseLayout.class.getName());
@@ -78,18 +80,36 @@ public class BaseLayout implements TimelineProviderComponentMOListener {
 
         // Grab an initial list of results, if they're there.
         Collection<TimelineResult> results = providerComponent.getResults();
+
+        for(TimelineResult result : results) {
+            result.addResultListener(this);
+        }
+
+        logger.info("got initial results: " + results);
         processResults(results);
         doLayout();
     }
 
     public void resultAdded(TimelineResult result) {
-        processResult(result);
-        doLayout();
+        logger.info("Got new result from provider: " + result);
+//        result.addResultListener(this)
+//        processResult(result);
+//        doLayout();
     }
 
     public void resultRemoved(TimelineResult result) {
-        // This needs to be handled differently - write this later.
-        logger.info("Got a resultRemoved event that we're ignoring for now.");
+//        // This needs to be handled differently - write this later.
+//        logger.info("Got a resultRemoved event that we're ignoring for now.");
+    }
+
+
+    public void added(DatedObject obj) {
+        layoutDatedObject(obj);
+        doLayout();
+    }
+
+    public void removed(DatedObject obj) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
@@ -118,13 +138,28 @@ public class BaseLayout implements TimelineProviderComponentMOListener {
         logger.info("got a new cell for this DO: " + cell);
         // now assign this cell to a segment. get the middle date for the object
         // and look that date up against all our segments.
+        logger.info("segments:" + this.cellRef.get().getSegments());
+        logger.info("date: " + obj.getDate().getMiddle());
+
         DatedSet segments = this.cellRef.get().getSegments().containsSet(new TimelineDate(obj.getDate().getMiddle()));
 
+        if(segments.size()!=1) {
+            logger.warning("!!!!! Couldn't find a segment to assign this dated object to.");
+
+            DatedObjectComponentMO comp = new DatedObjectComponentMO(cell);
+            comp.setDatedObject(obj);
+            comp.setAddedToTimeline(false);
+            comp.setNeedsLayout(true);
+            comp.setAssignedToSegment(false);
+            cell.addComponent(comp);
+
+        }
+        
         // pick off the first one (which is guaranteed to be the only one, because
         // of the way we generate segments
         TimelineSegment seg = (TimelineSegment) segments.iterator().next();
-
         logger.info("Assigning current DO to this seg: " + seg);
+
         // now seg is the segment to which we're going to assign this new
         // cell. well do that by:
         //  1. Adding a DatedObjectCellComponent that associates the Cell with
@@ -137,6 +172,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener {
         comp.setDatedObject(obj);
         comp.setAddedToTimeline(false);
         comp.setNeedsLayout(true);
+        comp.setAssignedToSegment(true);
         cell.addComponent(comp);
 
         logger.info("Added relevant cell components.");
@@ -183,9 +219,14 @@ public class BaseLayout implements TimelineProviderComponentMOListener {
                 if(comp.isNeedsLayout() || !comp.isAddedToTimeline())
                     needsLayout = true;
 
+                // Really should collapse these if statements at some point.
+                if(!comp.isAssignedToSegment())
+                    needsLayout = false;
+
                 cells.add(cell);
             }
 
+            logger.info("First pass completed. Built necessary lists. This segment needs layout: " + needsLayout);
             // If we don't need to layout this segment, move on to the next
             // segment. 
             if(!needsLayout)
@@ -203,24 +244,29 @@ public class BaseLayout implements TimelineProviderComponentMOListener {
                 // Put smarter layout logic here, but for now just throw the
                 // images in the dead center of the segment.
 
+                logger.info("Setting position to: " + seg.getTransform());
                 movComp.moveRequest(null, seg.getTransform());
+
 
 
                 if(!doComp.isAddedToTimeline()) {
                     try {
-                        this.cellRef.get().addChild(cell);
+                        this.cellRef.getForUpdate().addChild(cell);
                         logger.info("Added cell to the timeline: " + cell);
+                        doComp.setNeedsLayout(false);
+                        doComp.setAddedToTimeline(true);
+                        
                     } catch (MultipleParentException ex) {
                         Logger.getLogger(BaseLayout.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }
 
-            logger.info("Done with layout for segment: " + seg);
+            logger.info("++++Done with layout for segment: " + seg + "+++++++");
 
         }
 
-        logger.info("Done with complete layout pass.");
+        logger.info("-------------Done with complete layout pass----------------");
     }
 
     private CellMO getNewCell(DatedObject datedObj) {
@@ -228,8 +274,10 @@ public class BaseLayout implements TimelineProviderComponentMOListener {
         // Check and see if we've generated a cell for that object. If we have,
         // use it. (Are we guaranteed the uniqueness of DatedObjects in ResultSets?)
 
-        if(datedObjectToCellMap.get(datedObj)!=null)
+        if(datedObjectToCellMap.get(datedObj)!=null) {
+            logger.info("=======Found Existing cell for this DO========");
             return datedObjectToCellMap.get(datedObj).get();
+        }
 
         CellMO out = null;
 
@@ -240,7 +288,8 @@ public class BaseLayout implements TimelineProviderComponentMOListener {
             
             out = new ImageViewerCellMO();
             ImageViewerCellServerState state = new ImageViewerCellServerState();
-            state.setImageURI(img.getImageURI().toString());
+            state.setImageURI(img.getImageURI());
+            logger.info("IMAGE URI: " + img.getImageURI());
             out.setServerState(state);
         } else {
             logger.warning("Attempted to make a cell from dated object (" + datedObj + ") but it was an unknown type.");
