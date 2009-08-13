@@ -102,6 +102,8 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
             ChannelComponent channel = getComponent(ChannelComponent.class);
             channel.addMessageReceiver(TimelineCellChangeMessage.class, new TimelineCellMessageReceiver());
 
+            // TODO matt
+            // should this = bounds created in new cell renderer?
             this.setLocalBounds(new BoundingBox(Vector3f.ZERO, 100.0f, 100.0f, 100.0f));
 
             BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds()};
@@ -113,7 +115,12 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
             menuComponent.addContextMenuFactory(new TimelineContextMenuFactory());
         } else if (status == CellStatus.DISK && !increasing) {
             prox.removeProximityListener(this);
+        } else if (status == CellStatus.RENDERING && increasing){
+          // TODO matt
+          // establish relation ship between segments built in rendrere and these
+          this.renderer.buildSegments(config);
         }
+
     }
 
     @Override
