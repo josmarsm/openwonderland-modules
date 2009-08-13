@@ -12,6 +12,7 @@
     <pathconvert property="module-provider.classpath">
         <path location="${current.dir}/../timeline/build/provider/timeline-provider.jar"/>
         <path location="${current.dir}/lib/flickrapi-1.2.jar"/>
+        <path location="${current.dir}/lib/json.jar"/>
     </pathconvert>
 
     <!-- import common build file -->
