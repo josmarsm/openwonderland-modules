@@ -65,13 +65,14 @@ public class SampleDisplayEntity extends Entity {
     private boolean current;
 
     // TODO: true is temp
-    private boolean large = true;
+    private boolean magnify = true;
 
-    /** 
-     * Determines how much information from the sample is displayed.
-     */
-    public enum DisplayMode { HIDDEN, BASIC, FULL };
+    public enum Verbosity { BASIC, FULL, VERBOSE };
 
+    private Verbosity verbosity = Verbosity.BASIC;
+    
+    enum DisplayMode { HIDDEN, BASIC, FULL, VERBOSE };
+    
     private DisplayMode displayMode;
 
     // The display node
@@ -164,9 +165,17 @@ public class SampleDisplayEntity extends Entity {
 
             // click events - display context menu, cycle display mode
             if(me.getID() == MouseEvent.MOUSE_CLICKED){
-                if(me.getButton() == MouseEvent.BUTTON1 &&
-                   (me.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0) {
-                    setPinned(! pinned);
+
+
+                if(me.getButton() == MouseEvent.BUTTON1) {
+                    if        (me.getModifiersEx() == 0) {
+                        // No modifier: Toggle verbosity
+                        toggleVerbosity();
+                    } else if ((me.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0) {
+                        togglePinned();
+                    } else if ((me.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) != 0) {
+                        toggleMagnify();
+                    }
                 }
             }
         }
@@ -179,21 +188,20 @@ public class SampleDisplayEntity extends Entity {
         //float t = sampleInfo.getTime();
         //System.err.println("********** setVisible: t = " + t + ", visible = " + visible);
 
-        evaluateVisibilityAndSize();
+        update();
     }
 
     public boolean getVisible () {
         return visible;
     }
 
-    public void setPinned (boolean pinned) {
-        if (this.pinned == pinned) return;
-        this.pinned = pinned;
+    public void togglePinned () {
+        pinned = ! pinned;
 
         //float t = sampleInfo.getTime();
         //System.err.println("********** setPinned: t = " + t + ", pinned = " + pinned);
 
-        evaluateVisibilityAndSize();
+        update();
     }
 
     public void setCurrent (boolean current) {
@@ -203,26 +211,49 @@ public class SampleDisplayEntity extends Entity {
         //float t = sampleInfo.getTime();
         //System.err.println("********** setCurrent: t = " + t + ", current = " + current);
 
-        evaluateVisibilityAndSize();
+        update();
     }
 
+    public void toggleVerbosity () {
+        switch (verbosity) {
+        case BASIC:
+            verbosity = Verbosity.FULL;
+            break;
+        case FULL:
+            verbosity = Verbosity.VERBOSE;
+            break;
+        case VERBOSE:
+            verbosity = Verbosity.BASIC;
+            break;
+        }
 
-    public void setLarge (boolean large) {
-        if (this.large == large) return;
-        this.large = large;
+        //float t = sampleInfo.getTime();
+        //System.err.println("********** setVerbosity: t = " + t + ", verbosity = " + verbosity);
+
+        update();
+    }
+
+    public void toggleMagnify () {
+        magnify = ! magnify;
 
         float t = sampleInfo.getTime();
-        System.err.println("********** setLarge: t = " + t + ", large = " + large);
+        System.err.println("********** setMagnify: t = " + t + ", magnify = " + magnify);
 
-        evaluateVisibilityAndSize();
+        update();
     }
 
-    private void evaluateVisibilityAndSize () {
+    private void update () {
         if (pinned || (visible && current)) {
-            if (large) {
+            switch (verbosity) {
+            case BASIC:
+                setDisplayMode(DisplayMode.BASIC);
+                break;
+            case FULL:
                 setDisplayMode(DisplayMode.FULL);
-            } else {
-                // TODO
+                break;
+            case VERBOSE:
+                setDisplayMode(DisplayMode.VERBOSE);
+                break;
             }
         } else {
             setDisplayMode(DisplayMode.HIDDEN);
