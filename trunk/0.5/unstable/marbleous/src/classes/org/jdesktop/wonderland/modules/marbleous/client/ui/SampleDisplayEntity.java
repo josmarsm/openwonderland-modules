@@ -26,6 +26,7 @@ import com.jme.scene.state.ZBufferState;
 
 import java.awt.event.MouseEvent;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
@@ -59,6 +60,11 @@ public class SampleDisplayEntity extends Entity {
     /** If entity is pinned, the entity should stay visible. */
     private boolean pinned;
 
+    private boolean current;
+
+    // TODO: true is temp
+    private boolean large = true;
+
     /** 
      * Determines how much information from the sample is displayed.
      */
@@ -85,7 +91,6 @@ public class SampleDisplayEntity extends Entity {
       zbuf.setEnabled(true);
       zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
     }
-
 
     /**
      * Creates a sample info display entity (initially invisible)
@@ -158,10 +163,40 @@ public class SampleDisplayEntity extends Entity {
             // click events - display context menu, cycle display mode
             if(me.getID() == MouseEvent.MOUSE_CLICKED){
                 if(me.getButton() == MouseEvent.BUTTON1){
-                    pinned = ! pinned;
-                    // TODO: node.setPinned(pinned);
+                    setPinned(! pinned);
                 }
             }
+        }
+    }
+
+    public void setPinned (boolean pinned) {
+        if (this.pinned == pinned) return;
+        this.pinned = pinned;
+        evaluateVisibilityAndSize();
+    }
+
+    public void setCurrent (boolean current) {
+        if (this.current == current) return;
+        this.current = current;
+        evaluateVisibilityAndSize();
+    }
+
+
+    public void setLarge (boolean large) {
+        if (this.large == large) return;
+        this.large = large;
+        evaluateVisibilityAndSize();
+    }
+
+    private void evaluateVisibilityAndSize () {
+        if (current || pinned) {
+            if (large) {
+                setDisplayMode(DisplayMode.FULL);
+            } else {
+                // TODO
+            }
+        } else {
+            setDisplayMode(DisplayMode.HIDDEN);
         }
     }
 
@@ -171,7 +206,8 @@ public class SampleDisplayEntity extends Entity {
      *
      * @param newDisplayMode what style to display the node as
      */
-    public synchronized void setDisplayMode(DisplayMode newDisplayMode) {
+    private synchronized void setDisplayMode(DisplayMode newDisplayMode) {
+        if (displayMode == newDisplayMode) return;
 
         logger.info(" setting display mode: " + newDisplayMode);
         logger.info(" current display mode: " + displayMode);
@@ -214,8 +250,6 @@ public class SampleDisplayEntity extends Entity {
                     }
                 };
 
-
-
             WorldManager wm = ClientContextJME.getWorldManager();
             wm.addRenderUpdater(updater, this);
 
@@ -237,9 +271,7 @@ public class SampleDisplayEntity extends Entity {
             WorldManager wm = ClientContextJME.getWorldManager();
             wm.addRenderUpdater(updater, this);
             displayMode = displayMode.HIDDEN;
-            return;
         }
-        //    logger.info(" did nothing!");
     }
 
     /**
