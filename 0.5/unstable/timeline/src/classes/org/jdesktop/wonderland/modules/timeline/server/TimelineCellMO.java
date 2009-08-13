@@ -74,7 +74,7 @@ public class TimelineCellMO extends CellMO {
 //        Date futureDate = new Date();
 //        futureDate = new Date(futureDate.getTime() - 2000000000);
 //        config.setDateRange(new TimelineDate(futureDate, new Date()));
-        this.generateSegments();
+        this.segments = config.generateSegments();
         if(layout==null)
             layout = new BaseLayout(this);
         else
@@ -150,34 +150,34 @@ public class TimelineCellMO extends CellMO {
         return segments;
     }
 
-    private void generateSegments() {
-        // based on the timeline configuration, generate a set of shell segments
-
-        float radius = 10.0f;
-
-        long dateIncrement = config.getDateRange().getRange() / config.getNumSegments();
-        long curDate = config.getDateRange().getMinimum().getTime();
-
-        logger.info("numSegmentsToGenerate: " + config.getNumSegments());
-        for(int i=0; i<config.getNumSegments(); i++) {
-            TimelineDate d = new TimelineDate(new Date(curDate), new Date(curDate + dateIncrement));
-
-            // now figure out the segment transform.
-            // all we care about is the translation for now, will worry about
-            // rotations later (and I think Matt is doing that math, so I'll
-            // just throw it in when he's worked it all out)
-
-            // starting at a theta of zero, move our way up.
-            Vector3f pos = new Vector3f(((float)(radius * Math.sin(i*config.getRadsPerSegment()))), i*config.getHeight()/config.getNumSegments(),(float) ((float)radius * Math.cos(i*config.getRadsPerSegment())));
-
-            TimelineSegment seg = new TimelineSegment(d);
-
-            seg.setTransform(new CellTransform(new Quaternion(), pos));
-
-            logger.info("Added segment: " + seg);
-            segments.add(seg);
-
-            curDate+=dateIncrement;
-        }
-    }
+//    private void generateSegments() {
+//        // based on the timeline configuration, generate a set of shell segments
+//
+//        float radius = 10.0f;
+//
+//        long dateIncrement = config.getDateRange().getRange() / config.getNumSegments();
+//        long curDate = config.getDateRange().getMinimum().getTime();
+//
+//        logger.info("numSegmentsToGenerate: " + config.getNumSegments());
+//        for(int i=0; i<config.getNumSegments(); i++) {
+//            TimelineDate d = new TimelineDate(new Date(curDate), new Date(curDate + dateIncrement));
+//
+//            // now figure out the segment transform.
+//            // all we care about is the translation for now, will worry about
+//            // rotations later (and I think Matt is doing that math, so I'll
+//            // just throw it in when he's worked it all out)
+//
+//            // starting at a theta of zero, move our way up.
+//            Vector3f pos = new Vector3f(((float)(radius * Math.sin(i*config.getRadsPerSegment()))), i*config.getHeight()/config.getNumSegments(),(float) ((float)radius * Math.cos(i*config.getRadsPerSegment())));
+//
+//            TimelineSegment seg = new TimelineSegment(d);
+//
+//            seg.setTransform(new CellTransform(new Quaternion(), pos));
+//
+//            logger.info("Added segment: " + seg);
+//            segments.add(seg);
+//
+//            curDate+=dateIncrement;
+//        }
+//    }
 }

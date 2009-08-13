@@ -104,6 +104,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
             // TODO matt
             // should this = bounds created in new cell renderer?
+            // yep, probably - this is just what I set for the sake of starting out (drew)
             this.setLocalBounds(new BoundingBox(Vector3f.ZERO, 100.0f, 100.0f, 100.0f));
 
             BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds()};
@@ -139,18 +140,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         config.sendUpdatedConfiguration();
 
         if (this.sortedSegments.size() == 0) {
-            // generate a bunch of fake segments for testing purposes.
-            long msPerSegment = config.getDateRange().getRange() / config.getNumSegments();
-            long curTime = config.getDateRange().getMinimum().getTime();
-            for (int i = 0; i < config.getNumSegments(); i++) {
-                TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime + msPerSegment)));
-                newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.config.getHeight() / config.getNumSegments()) * i, 0.0f), 1.0f));
-                this.addSegment(newSeg);
-
-                curTime += msPerSegment;
-            }
-
-            logger.warning("test segments: " + this.sortedSegments);
+            this.sortedSegments = config.generateSegments();
         }
     }
 

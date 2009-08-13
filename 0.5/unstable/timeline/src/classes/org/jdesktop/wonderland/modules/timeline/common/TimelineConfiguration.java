@@ -17,9 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.timeline.common;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.io.Serializable;
+import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 
 /**
@@ -29,6 +35,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
  */
 @XmlRootElement(name="timeline-config")
 public class TimelineConfiguration implements Serializable {
+
     /** Radians per segment. Default is PI / 3 (60 degrees)*/
     private float radsPerSegment = (float) (Math.PI / 3);
 
@@ -45,6 +52,17 @@ public class TimelineConfiguration implements Serializable {
      * The date range this timeline covers.
      */
     private TimelineDate dateRange;
+
+    /**
+     * The inner radius of the spiral, in meters.
+     */
+    private float innerRadius = 5.0f;
+
+    /**
+     * The outer radius of the spiral, in meters.
+     */
+    private float outerRadius = 12.5f;
+
 
     /**
      * Default constructor
@@ -142,5 +160,58 @@ public class TimelineConfiguration implements Serializable {
     public float getHeight() {
         float numTurns = (float) ((radsPerSegment * numSegments) / (Math.PI * 2));
         return numTurns * pitch;
+    }
+
+    @XmlElement
+    public float getInnerRadius() {
+      return innerRadius;
+    }
+
+    @XmlElement
+    public float getOuterRadius() {
+      return outerRadius;
+    }
+
+    public void setInnerRadius(float innerRadius) {
+      this.innerRadius = innerRadius;
+    }
+
+    public void setOuterRadius(float outerRadius) {
+      this.outerRadius = outerRadius;
+    }
+
+    public static final float RADS_PER_MESH = (float) (Math.PI / 18);
+
+    /**
+     * Given the values in this configuration object, generate a set of
+     * TimelineSegment objects that represent the proper division of the
+     * dateRange into numSegments Segments. Also calculates their CellTransforms,
+     * which we can use both to lay out the entities on the client as well as
+     * do Cell layout for Viewer cells on the server. Routing both
+     * server and client through this method guarantees that their models of
+     * time match up.
+     *
+     * @return A set of TimelineSegments that divide dateRange into numSegments intervals, with cellTransforms set in a spiral.
+     */
+    
+    public DatedSet generateSegments() {
+        DatedSet out = new DatedSet();
+
+        long dateIncrement = getDateRange().getRange() / getNumSegments();
+        long curTime = getDateRange().getMinimum().getTime();
+        float radius = getOuterRadius() - getInnerRadius();
+        for(int i=0; i< getNumSegments(); i++) {
+
+            TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime + dateIncrement)));
+
+            Vector3f pos = new Vector3f(((float)(radius * Math.sin(i*getRadsPerSegment()))), i*getHeight()/getNumSegments(),(float) ((float)radius * Math.cos(i*getRadsPerSegment())));
+            newSeg.setTransform(new CellTransform(new Quaternion(), pos));
+
+            out.add(newSeg);
+
+            curTime += dateIncrement;
+        }
+
+        return out;
     }
 }
