@@ -54,7 +54,8 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
     private JComboBox createConfigComboBox() {
         // TODO: configure the combo box
         JComboBox comboBox = new JComboBox();
-        ComboBoxModel model = comboBox.getModel();
+        comboBox.setEditable(true);
+        comboBox.addItem("horses and boats");
         return comboBox;
     }
 
