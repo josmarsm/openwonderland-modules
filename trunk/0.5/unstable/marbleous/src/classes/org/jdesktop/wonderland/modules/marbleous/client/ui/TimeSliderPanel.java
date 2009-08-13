@@ -45,6 +45,12 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     private SampleDisplayEntity currentSampleEntity;
     private SimTrace trace;
 
+    /*
+     * This boolean indicates whether the value of the slider is being
+     * set programmatically.
+     */
+    private boolean setLocal = false;
+
     /** Creates new form TimeSliderPanel */
     public TimeSliderPanel(TrackCell cell) {
         this.cell = cell;
@@ -73,16 +79,42 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     }
 
     /**
+     * Sets whether the changes being made to the JSlider is doing so
+     * programmatically, rather than via a mouse event. This is used to
+     * make sure that requests to the other clients are not made at the
+     * wrong time.
+     *
+     * @param isLocal True to indicate the JSlider values are being set
+     * programmatically.
+     */
+    private void setLocalChanges(boolean isLocal) {
+        setLocal = isLocal;
+    }
+
+    /**
      * Sets the selected time, updates the GUI to indicate as such
      *
      * @param selectedTime The selected time (in seconds)
      */
-    public void setSelectedTime(float selectedTime) {
-        // Set the value of the slider
-        float pct = selectedTime / trace.getEndTime();
-        float dT = (float) (jSlider1.getMaximum() - jSlider1.getMinimum());
-        int value = (int)(pct * dT);
-        jSlider1.setValue(value);
+    public void setSelectedTime(final float selectedTime) {
+        // Set the value of the slider, make sure this is done on the AWT
+        // Event Thread
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                float pct = selectedTime / trace.getEndTime();
+                float dT = (float) (jSlider1.getMaximum() - jSlider1.getMinimum());
+                int value = (int) (pct * dT);
+
+                // Update the value of the slider, but indicate that we are
+                // doing this programmatically.
+                setLocalChanges(true);
+                try {
+                    jSlider1.setValue(value);
+                } finally {
+                    setLocalChanges(false);
+                }
+            }
+        });
 
         // Update the marble entity based upon the selected time
         updateMarbleWithTime(selectedTime);
@@ -173,16 +205,18 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jSlider1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider1StateChanged
-        int value = jSlider1.getValue();
-        float pct = (float)value / (float)(jSlider1.getMaximum() - jSlider1.getMinimum());
-        //System.err.println("trace.getEndTime() = " + trace.getEndTime());
-        float t = pct * trace.getEndTime();
+        if (setLocal == false) {
+            int value = jSlider1.getValue();
+            float pct = (float) value / (float) (jSlider1.getMaximum() - jSlider1.getMinimum());
+            //System.err.println("trace.getEndTime() = " + trace.getEndTime());
+            float t = pct * trace.getEndTime();
 
-        // Tell the other clients that the slider value has changed
-        cell.sendCellMessage(new SelectedSampleMessage(t));
+            // Tell the other clients that the slider value has changed
+            cell.sendCellMessage(new SelectedSampleMessage(t));
 
-        // Update the marble with the selected time
-        updateMarbleWithTime(t);
+            // Update the marble with the selected time
+            updateMarbleWithTime(t);
+        }
     }//GEN-LAST:event_jSlider1StateChanged
 
 
