@@ -37,7 +37,7 @@ public class LoopTrackSegmentType extends TrackSegmentType {
         float radius=3;
         float finalAngle = (float)Math.PI*2*loops;
         float knot = 0;
-        float xStepPerLoop = 3; // Distance between the loops
+        float xStepPerLoop = 2; // Distance between the loops
 
         TCBKeyFrame[] keys = new TCBKeyFrame[samples*loops]; // Plus end & start
         float knotInc = 1f/(keys.length-1);

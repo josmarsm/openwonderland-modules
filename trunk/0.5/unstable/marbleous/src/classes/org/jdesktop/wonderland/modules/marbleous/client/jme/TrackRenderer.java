@@ -133,7 +133,7 @@ public class TrackRenderer extends BasicRenderer {
             trackRoot.setLocalRotation(new Quaternion());
 
             Track track = ((TrackCell) cell).getTrack();
-            createTrackGraph(track);
+            createTrackGraph(track, entity);
             
             // Listen for changes to the track and trigger a redraw
             ((TrackCell)cell).getTrackListModel().addListDataListener(new ListDataListener() {
@@ -178,15 +178,16 @@ public class TrackRenderer extends BasicRenderer {
 
             public void update(Object arg0) {
                 synchronized (trackRoot) {
-                    createTrackGraph(((TrackCell) cell).getTrack());
+                    createTrackGraph(((TrackCell) cell).getTrack(), entity);
                     ClientContextJME.getWorldManager().addToUpdateList(trackRoot);
                 }
             }
         }, trackRoot);
     }
 
-    private void createTrackGraph(Track track) {
+    private void createTrackGraph(Track track, Entity trackEntity) {
         trackRoot.detachAllChildren();
+        trackEntity.removeComponent(JBulletCollisionComponent.class);
         
         Collection<TCBKeyFrame> keyFrames = track.buildTrack();
         RotPosScaleTCBSplinePath spline = new RotPosScaleTCBSplinePath(keyFrames.toArray(new TCBKeyFrame[keyFrames.size()]));
@@ -201,6 +202,18 @@ public class TrackRenderer extends BasicRenderer {
         trackMesh.setModelBound(new BoundingBox());
         trackMesh.updateModelBound();
         trackRoot.attachChild(trackMesh);
+
+        JBulletDynamicCollisionSystem trackCollisionSystem = (JBulletDynamicCollisionSystem) ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Physics");
+        final JBulletCollisionComponent bcc = trackCollisionSystem.createCollisionComponent(trackMesh);
+
+        // Set the friction on the track
+        bcc.addInitializedListener(new InitializedListener() {
+            public void componentInitialized() {
+                bcc.getCollisionObject().setFriction(0f);
+            }
+        });
+
+        trackEntity.addComponent(JBulletCollisionComponent.class, bcc);
     }
 
     /**
@@ -241,18 +254,6 @@ public class TrackRenderer extends BasicRenderer {
             if (cc!=null) {
                 entity.addComponent(CollisionComponent.class, cc);
             }
-
-            JBulletDynamicCollisionSystem trackCollisionSystem = (JBulletDynamicCollisionSystem) ClientContextJME.getCollisionSystem(cell.getCellCache().getSession().getSessionManager(), "Physics");
-            final JBulletCollisionComponent bcc = trackCollisionSystem.createCollisionComponent(trackMesh);
-            
-            // Set the friction on the track
-            bcc.addInitializedListener(new InitializedListener() {
-                public void componentInitialized() {
-                    bcc.getCollisionObject().setFriction(0f);
-                }
-            });
-
-            entity.addComponent(JBulletCollisionComponent.class, bcc);
 
             Vector3f cellPos = new Vector3f(rootNode.getLocalTranslation());
             Quaternion cellRot = rootNode.getLocalRotation();
@@ -399,20 +400,20 @@ public class TrackRenderer extends BasicRenderer {
         spline.computeTransform(0, mat);
         root.attachChild(createBox(0.1f, mat));
 
-        for (float s = step; s <= 1; s += 0.01f) {
+        for (float s = step; s <= 1; s += step) {
             spline.computeTransform(s, mat);
             root.attachChild(createBox(0.1f, mat));
         }
     }
 
     private TriMesh createTrackMesh(RotPosScaleTCBSplinePath spline) {
-        float step = 1f/spline.getArrayLength()*10;
+        float step = 1f/spline.getArrayLength()/20;
 
         Matrix4f mat = new Matrix4f();
         Vector3f pos;
         ArrayList<Vector3f> path = new ArrayList();
         ArrayList<Vector3f> upList = new ArrayList();
-        for (float s = 0; s <= 1; s += 0.01f) {
+        for (float s = 0; s <= 1; s += step) {
             spline.computeTransform(s, mat);
             pos = mat.mult(Vector3f.ZERO);
             path.add(pos);

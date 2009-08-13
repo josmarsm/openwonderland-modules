@@ -21,7 +21,9 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.marbleous.common.BigDropTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.BumpTrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.LoopTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
@@ -52,8 +54,10 @@ public class TrackCellMO extends CellMO {
         super();
         serverState = new TrackCellServerState();
         Track track = new Track();
-        track.addTrackSegment(new StraightDropTrackSegmentType().createSegment());
+//        track.addTrackSegment(new StraightDropTrackSegmentType().createSegment());
+        track.addTrackSegment(new BigDropTrackSegmentType().createSegment());
         track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
+        track.addTrackSegment(new LoopTrackSegmentType().createSegment());
         track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
         track.addTrackSegment(new BumpTrackSegmentType().createSegment());
         track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
@@ -61,7 +65,6 @@ public class TrackCellMO extends CellMO {
 //        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
 //        track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
 //        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
-//        track.addTrackSegment(new LoopTrackSegmentType().createSegment());
         track.buildTrack();
         serverState.setTrack(track);
     }
