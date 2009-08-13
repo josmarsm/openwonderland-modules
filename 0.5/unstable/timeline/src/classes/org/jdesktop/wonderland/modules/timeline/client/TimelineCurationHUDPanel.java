@@ -86,7 +86,7 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
         addEventLabel.setText("Add an event at:");
 
         eventDateTextField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        eventDateTextField.setText("12/31/10");
+        eventDateTextField.setText("Aug 13, 2009");
 
         textLabel.setText("Text:");
 
@@ -119,12 +119,10 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(textScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))
+                    .add(textScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(curationLabel)
                             .add(layout.createSequentialGroup()
@@ -134,16 +132,14 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
                                     .add(layout.createSequentialGroup()
                                         .add(addEventLabel)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(eventDateTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 88, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                        .add(eventDateTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 107, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                     .add(textLabel))))
-                        .add(48, 48, 48))
+                        .add(29, 29, 29))
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(doneButton))
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(6, 6, 6)
