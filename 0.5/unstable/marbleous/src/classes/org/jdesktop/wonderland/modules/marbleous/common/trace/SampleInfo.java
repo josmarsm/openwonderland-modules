@@ -68,6 +68,14 @@ public class SampleInfo implements Serializable {
         return time;
     }
 
+    public float getMass () {
+        return mass;
+    }
+
+    public float getGravity () {
+        return gravity;
+    }
+
     /**
      * Returns the position of the object (in meters).
      *
