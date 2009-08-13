@@ -40,6 +40,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
 
     private MarbleMouseEventListener marbleMouseListener;
     private SampleInfo currentSampleInfo;
+    private Vector3f currentPosition;
     private SampleDisplayEntity currentSampleEntity;
     private SampleDisplayEntity toTakeDown;
     private SimTrace trace;
@@ -140,11 +141,9 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         //System.err.println("value = " + value);
         //System.err.println("pct = " + pct);
         System.err.println("t = " + t);
-
-        currentSampleInfo = trace.getSampleInfo(t);
-        System.err.println("currentSampleInfo = " + currentSampleInfo);
-        final Vector3f position = currentSampleInfo.getPosition();
-        System.err.println("position = " + position);
+        SampleInfo sampleInfo = trace.getSampleInfo(t);
+        setCurrentSampleInfo(sampleInfo);
+        System.err.println("********** currentPosition = " + currentPosition);
 
         // Assumes that the marble is still attached to the cell
         Entity marbleEntity = cell.getMarbleEntity();
@@ -153,7 +152,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
-                marbleNode.setLocalTranslation(position);
+                marbleNode.setLocalTranslation(currentPosition);
                 ClientContextJME.getWorldManager().addToUpdateList(marbleNode);
             }
         }, null);
@@ -169,6 +168,21 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     private javax.swing.JSlider jSlider1;
     // End of variables declaration//GEN-END:variables
 
+    private void setCurrentSampleInfo (SampleInfo sampleInfo) {
+        if (sampleInfo == currentSampleInfo) {
+            return;
+        }
+        currentSampleInfo = sampleInfo;
+        System.err.println("currentSampleInfo = " + currentSampleInfo);
+
+        currentPosition = currentSampleInfo.getPosition();
+        System.err.println("current position = " + currentPosition);
+
+        if (toTakeDown != null) {
+            toTakeDown.setDisplayMode(SampleDisplayEntity.DisplayMode.HIDDEN);
+            toTakeDown = null;
+        }
+    }
 
     private final HashMap<String,SampleDisplayEntity> sampleEntities = new HashMap<String,SampleDisplayEntity>();
 
