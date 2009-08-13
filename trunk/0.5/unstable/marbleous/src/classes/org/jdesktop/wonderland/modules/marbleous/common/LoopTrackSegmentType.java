@@ -32,18 +32,37 @@ public class LoopTrackSegmentType extends TrackSegmentType {
         super("Loop");
         imageName = "RampLoop.png";
 
-        TCBKeyFrame[] keys = new TCBKeyFrame[] {
-          createKeyFrame(0, new Vector3f(-1,0,5)),
-          createKeyFrame(0.4f, new Vector3f(0,2.5f,-5)),
-          createKeyFrame(0.5f, new Vector3f(0,5,0)),
-          createKeyFrame(0.6f, new Vector3f(0,2.5f,5)),
-          createKeyFrame(1f, new Vector3f(1,0,-5))
-        };
+        int samples = 16;        // Samples per loop
+        int loops = 1;
+        float radius=3;
+        float finalAngle = (float)Math.PI*2*loops;
+        float knot = 0;
+        float xStepPerLoop = 3; // Distance between the loops
+
+        TCBKeyFrame[] keys = new TCBKeyFrame[samples*loops]; // Plus end & start
+        float knotInc = 1f/(keys.length-1);
+        for(int i=0; i<keys.length; i++) {
+            float angle = (finalAngle/(keys.length-1))*i;
+            float x = ((xStepPerLoop*loops)/keys.length)*i;
+            float y = radius-(float)Math.cos(angle)*radius;
+            float z = -(float)Math.sin(angle)*radius;
+            keys[i] = createKeyFrame(knot, new Vector3f(x,y,z), 0,0,0, new Vector3f(1,0,0), angle);
+            keys[i].debugPrint(""+Math.toDegrees(angle));
+            knot += knotInc;
+        }
+
+//        TCBKeyFrame[] keys = new TCBKeyFrame[] {
+//          createKeyFrame(0, new Vector3f(0,0,0)),
+//          createKeyFrame(0.4f, new Vector3f(1,2.5f,-10), 1,0,0, new Vector3f(1,0,0), (float)Math.PI/2),
+//          createKeyFrame(0.5f, new Vector3f(2,5,-5), 1, 0, 0, new Vector3f(1,0,0), (float)Math.PI),
+//          createKeyFrame(0.6f, new Vector3f(3,2.5f,0), 1,0,0, new Vector3f(1,0,0), -(float)Math.PI/2),
+//          createKeyFrame(1f, new Vector3f(3,0,-10))
+//        };
 
         setDefaultKeyFrames(keys);
 
         endpoint = new Matrix4f();
-        endpoint.setTranslation(1,0,5);
+        endpoint.setTranslation(3,0,-10);
     }
 
     @Override

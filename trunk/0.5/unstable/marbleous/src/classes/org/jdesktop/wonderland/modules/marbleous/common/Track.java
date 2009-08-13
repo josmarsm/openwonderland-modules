@@ -90,9 +90,7 @@ public class Track implements Serializable {
         TrackSegment firstSegment = segments.get(0);
         TCBKeyFrame f = firstSegment.getKeyFrames()[0];
         Vector3f ret = f.position;
-        System.err.println("Initial POS "+ret);
-        ret.y+=2;
-        ret.z+=5.5f;
+        ret.z-=0.5f;
         return ret;
     }
 }

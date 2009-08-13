@@ -33,7 +33,7 @@ public class BumpTrackSegmentType extends TrackSegmentType {
 
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
           createKeyFrame(0, new Vector3f(0,0,0)),
-          createKeyFrame(0.5f, new Vector3f(0,0.6f,-7.5f), 1,0,0),
+          createKeyFrame(0.5f, new Vector3f(0,0.6f,-7.5f), 1,0,0, new Vector3f(0,1,0), 0),
           createKeyFrame(1f, new Vector3f(0,0,-15))
         };
 
