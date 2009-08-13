@@ -26,23 +26,47 @@ import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 /**
  *
  * @author drew
+ * @author mabonner
  */
 public class TimelineClientConfiguration extends TimelineConfiguration {
 
     private static final Logger logger =
         Logger.getLogger(TimelineClientConfiguration.class.getName());
 
+    private float innerRadius = 2.0f;
+    private float outerRadius = 4.5f;
+
     private ChannelComponent channel;
 
     public TimelineClientConfiguration(TimelineConfiguration config, ChannelComponent channel) {
         super();
         this.channel = channel;
-
+        // TODO matt what does this do?
         this.setDateRange(config.getDateRange());
         this.setNumSegments(config.getNumSegments());
         this.setPitch(config.getPitch());
         this.setRadsPerSegment(config.getRadsPerSegment());
     }
+
+    public float getInnerRadius() {
+      return innerRadius;
+    }
+
+    public float getOuterRadius() {
+      return outerRadius;
+    }
+
+    public void setInnerRadius(float innerRadius) {
+      this.innerRadius = innerRadius;
+    }
+
+    public void setOuterRadius(float outerRadius) {
+      this.outerRadius = outerRadius;
+    }
+
+
+
+
 
     public TimelineClientConfiguration() {
         super();

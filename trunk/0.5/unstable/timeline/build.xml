@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="package" name="wonderland-timeline">
+<project basedir="." default="dist" name="wonderland-timeline">
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderland-timeline}"/>
     <property file="${current.dir}/my.module.properties"/>
