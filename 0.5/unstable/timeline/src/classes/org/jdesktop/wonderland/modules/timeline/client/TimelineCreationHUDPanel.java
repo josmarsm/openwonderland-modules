@@ -18,25 +18,40 @@
 package org.jdesktop.wonderland.modules.timeline.client;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.modules.timeline.client.provider.TimelineProviderUtils;
+import org.jdesktop.wonderland.modules.timeline.client.provider.TimelineQueryBuilder;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQuery;
 
 /**
  * A panel for creating a new Timeline
  * @author nsimpson
  */
 public class TimelineCreationHUDPanel extends javax.swing.JPanel {
+
     private static final Logger logger =
             Logger.getLogger(TimelineCreationHUDPanel.class.getName());
-
     private final TimelineCell cell;
     private HUD mainHUD;
     private TimelineAddCollectionPanel addCollectionPanel;
@@ -44,12 +59,62 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     private TimelineAddProviderHUDPanel addProviderPanel;
     private HUDComponent addProviderHUD;
     private PropertyChangeSupport listeners;
+    private List<TimelineQueryBuilder> builders;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat();
+
+    public TimelineCreationHUDPanel() {
+        builders = new LinkedList<TimelineQueryBuilder>();
+        initComponents();
+        cell = null;
+    }
 
     public TimelineCreationHUDPanel(TimelineCell cell) {
+        builders = new LinkedList<TimelineQueryBuilder>();
         initComponents();
-        addProviders();
 
         this.cell = cell;
+    }
+
+    public String getTitle() {
+        return titleLabel.getText();
+    }
+
+    public String getDescription() {
+        return descriptionTextArea.getText();
+    }
+
+    public Date getStartDate() {
+        String dateText = startDateTextField.getText();
+        Date date;
+
+        try {
+            date = dateFormat.parse(dateText);
+        } catch (ParseException e) {
+            logger.warning("failed to parse date: " + dateText + ": " + e);
+            date = new Date();
+        }
+        return date;
+    }
+
+    public Date getEndDate() {
+        String dateText = endDateTextField.getText();
+        Date date;
+
+        try {
+            date = dateFormat.parse(dateText);
+        } catch (ParseException e) {
+            logger.warning("failed to parse date: " + dateText + ": " + e);
+            date = new Date();
+        }
+        return date;
+    }
+
+    public int getScale() {
+        return (Integer) scaleSpinner.getValue();
+    }
+
+    public String getUnits() {
+        return (String) granularitySpinner.getValue();
     }
 
     /**
@@ -76,6 +141,57 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     }
 
     private void addProviders() {
+        String[] providers = addProviderPanel.getProviders();
+        for (int i = 0; i < providers.length; i++) {
+            String provider = providers[i];
+            logger.info("--- adding provider: " + i + ": " + provider);
+
+            TimelineQueryBuilder builder = TimelineProviderUtils.createBuilder(provider, cell.getClientConfiguration());
+            if (builder != null) {
+                logger.info("--- got a builder: " + builder);
+                builders.add(builder);
+
+                TimelineProviderPanel panel = new TimelineProviderPanel();
+                panel.setProviderName(builder.getDisplayName());
+
+                // add the search combo box
+                JComboBox combo = builder.getConfigurationComboBox();
+                if (combo != null) {
+                    combo.setPreferredSize(new Dimension(40, (int) combo.getPreferredSize().getHeight()));
+                    panel.add(combo);
+                }
+
+                // add the query configuration button and panel
+                final JPanel configPanel = builder.getConfigurationPanel();
+                if (configPanel != null) {
+                    JButton configButton = new JButton("Configure...");
+                    configButton.addActionListener(new ActionListener() {
+
+                        public void actionPerformed(ActionEvent e) {
+                            final HUDComponent configureQueryHUD = mainHUD.createComponent(configPanel);
+                            configureQueryHUD.setPreferredLocation(Layout.EAST);
+                            configureQueryHUD.setName("Configure Query");
+                            configureQueryHUD.addEventListener(new HUDEventListener() {
+
+                                public void HUDObjectChanged(HUDEvent event) {
+                                    switch (event.getEventType()) {
+                                        case CLOSED:
+                                            mainHUD.removeComponent(configureQueryHUD);
+                                            break;
+                                    }
+                                }
+                            });
+                            mainHUD.addComponent(configureQueryHUD);
+                            configureQueryHUD.setVisible(true);
+                        }
+                    });
+                    panel.add(configButton);
+                    // TODO: create HUD panel for configuration panel
+                    // and display it when the button is pressed
+                }
+                addProvider(panel);
+            }
+        }
     }
 
     /**
@@ -216,42 +332,43 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(scaleLabel)
-                            .add(titleLabel)
-                            .add(descriptionLabel)
-                            .add(startDateLabel)
-                            .add(providersLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(titleTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(99, 99, 99))
-                            .add(layout.createSequentialGroup()
-                                .add(revolutionLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(scaleSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(granularitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, descriptionScrollPane, 0, 0, Short.MAX_VALUE)
-                                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                    .add(startDateTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 81, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(endDateLabel)
-                                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(endDateTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
-                    .add(layout.createSequentialGroup()
                         .add(21, 21, 21)
                         .add(addProviderButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addKeywordButton))
-                    .add(providersPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(cancelButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(createButton))
-                    .add(createLabel))
+                    .add(createLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, providersPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                                    .add(scaleLabel)
+                                    .add(titleLabel)
+                                    .add(descriptionLabel)
+                                    .add(startDateLabel)
+                                    .add(providersLabel))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(titleTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                    .add(layout.createSequentialGroup()
+                                        .add(revolutionLabel)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(scaleSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(12, 12, 12)
+                                        .add(granularitySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 83, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, descriptionScrollPane, 0, 0, Short.MAX_VALUE)
+                                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                            .add(startDateTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 81, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                            .add(endDateLabel)
+                                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                            .add(endDateTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))))
+                        .add(10, 10, 10)))
                 .addContainerGap())
         );
 
@@ -306,18 +423,14 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
         }
         if (addProviderHUD == null) {
             addProviderPanel = new TimelineAddProviderHUDPanel();
+
             addProviderPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent pe) {
                     logger.info("--- property changed: " + pe);
                     if (pe.getPropertyName().equals("add")) {
-                        String[] providers = addProviderPanel.getProviders();
-                        for (int i = 0;i < providers.length;i++) {
-                            String provider = providers[i];
-                            logger.info("--- adding provider: " + provider);
-                        }
+                        addProviders();
                         addProviderHUD.setVisible(false);
-                        // TODO: actually add a provider!
                     } else if (pe.getPropertyName().equals("cancel")) {
                         addProviderHUD.setVisible(false);
                     }
@@ -365,8 +478,17 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
         addCollectionHUD.setVisible(true);
     }//GEN-LAST:event_addKeywordButtonActionPerformed
 
+    private void buildQuery() {
+        ListIterator<TimelineQueryBuilder> iter = builders.listIterator();
+        while (iter.hasNext()) {
+            TimelineQueryBuilder builder = iter.next();
+            TimelineQuery query = builder.build();
+        }
+    }
+
     private void createButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createButtonActionPerformed
         listeners.firePropertyChange("create", new String(""), null);
+        buildQuery();
     }//GEN-LAST:event_createButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
