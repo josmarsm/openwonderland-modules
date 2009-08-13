@@ -188,7 +188,11 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         logger.info("Added DO to list of DOs attached to this segment.");
     }
 
-    private void doLayout() {
+    public void doLayout() {
+        doLayout(false);
+    }
+
+    public void doLayout(boolean force) {
         // Loop through all the dated objects by segment,
         // and check and see if their cells need either adding/layout or both.
         logger.info("---------------- STARTING LAYOUT-----------");
@@ -226,10 +230,10 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
                 cells.add(cell);
             }
 
-            logger.info("First pass completed. Built necessary lists. This segment needs layout: " + needsLayout);
+            logger.info("First pass completed. Built necessary lists. This segment needs layout: " + needsLayout + " (forcing? " + force + ")");
             // If we don't need to layout this segment, move on to the next
             // segment. 
-            if(!needsLayout)
+            if(!needsLayout && !force)
                 continue;
 
             // In this second pass, we know we need to run a layout.
@@ -246,8 +250,6 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
                 logger.info("Setting position to: " + seg.getTransform());
                 movComp.moveRequest(null, seg.getTransform());
-
-
 
                 if(!doComp.isAddedToTimeline()) {
                     try {

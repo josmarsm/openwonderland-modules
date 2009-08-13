@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.timeline.client;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
@@ -31,6 +33,7 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellServerState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineProviderServerState;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQuery;
 
@@ -56,15 +59,37 @@ public class TimelineCellFactory implements CellFactorySPI {
         createCreationHUD();
         state.setConfig(new TimelineConfiguration());
 
-        // Test code to add a provider to the timeline cell when it's created
-        // so we can test layout. 
-        TimelineProviderServerState providerState = new TimelineProviderServerState();
-        TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.SampleProvider");
-        query.getProperties().setProperty("test", "123");
-        providerState.getQueries().add(query);
+        // Setup code for the sample provider. Just used for testing.
+//        TimelineProviderServerState providerState = new TimelineProviderServerState();
+//        TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.SampleProvider");
+//        query.getProperties().setProperty("test", "123");
+//        providerState.getQueries().add(query);
+//
+//        state.addComponentServerState(providerState);
 
-        state.addComponentServerState(providerState);
 
+      Date end = new Date();
+      Calendar c = Calendar.getInstance();
+      c.set(Calendar.YEAR, 1999);
+      Date start = c.getTime();
+
+      state.getConfig().setDateRange(new TimelineDate(start, end));
+      state.getConfig().setNumSegments(10);
+
+      TimelineProviderServerState tpss = new TimelineProviderServerState();
+
+      TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.FlickrProvider");
+      query.getProperties().setProperty("apiKey", "aa664dbdefb318455a9a07a4245f5ff6");
+      query.getProperties().setProperty("startDate", String.valueOf(state.getConfig().getDateRange().getMinimum().getTime()));
+      query.getProperties().setProperty("endDate", String.valueOf(state.getConfig().getDateRange().getMaximum().getTime()));
+      query.getProperties().setProperty("increments", String.valueOf(state.getConfig().getNumSegments()));
+      query.getProperties().setProperty("searchText", "automobile");
+      query.getProperties().setProperty("searchType", "tags");
+      query.getProperties().setProperty("sort", "relevance");
+      query.getProperties().setProperty("returnCount", String.valueOf(1));
+      tpss.getQueries().add(query);
+
+      state.addComponentServerState(tpss);
 
         return (T)state;
     }
