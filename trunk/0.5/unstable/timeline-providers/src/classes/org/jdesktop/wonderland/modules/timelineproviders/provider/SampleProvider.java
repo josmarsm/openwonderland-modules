@@ -32,10 +32,10 @@ public class SampleProvider implements TimelineProvider {
         testThread = new Thread(new Runnable() {
             public void run() {
                 try {
-                    String imageURI = "wlhttp://l.yimg.com/g/images/spaceball.gif";
+                    String imageURI = "wlhttp://icanhascheezburger.files.wordpress.com/2007/01/funny-pictures-monorail-cat1.jpg";
 
                     while (!Thread.interrupted()) {
-                        Thread.sleep(5000);
+                        Thread.sleep(10000);
                         DatedImage image = new DatedImage(new TimelineDate(), imageURI);
                         context.addResults(Collections.singleton((DatedObject) image));
                     }
