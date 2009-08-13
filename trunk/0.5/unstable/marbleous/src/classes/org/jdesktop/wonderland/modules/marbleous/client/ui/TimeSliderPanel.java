@@ -14,7 +14,8 @@ package org.jdesktop.wonderland.modules.marbleous.client.ui;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.awt.event.MouseEvent;
-import java.util.LinkedList;
+import java.util.HashMap;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderUpdater;
@@ -36,22 +37,38 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     private static final float SAMPLE_ENTITY_Y_OFFSET = 0.3f;
 
     private TrackCell cell;
-    private SimTrace trace;
+
     private MarbleMouseEventListener marbleMouseListener;
     private SampleInfo currentSampleInfo;
+    private SampleDisplayEntity currentSampleEntity;
+    private SampleDisplayEntity toTakeDown;
+    private SimTrace trace;
 
     /** Creates new form TimeSliderPanel */
-    public TimeSliderPanel(TrackCell cell, SimTrace trace) {
+    public TimeSliderPanel(TrackCell cell) {
         this.cell = cell;
-        this.trace = trace;
 
         initComponents();
 
-        float endTime = trace.getEndTime();
-        jLabel3.setText(Float.toString(endTime));
-
         marbleMouseListener = new MarbleMouseListener();
         cell.addMarbleMouseListener(marbleMouseListener);
+    }
+
+
+    public void setSimTrace (SimTrace trace) {
+        this.trace = trace;
+
+        final float endTime = trace.getEndTime();
+        try {
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    jLabel3.setText(Float.toString(endTime));
+                }
+            });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException("Cannot create time sliderpanel");
+        }
     }
 
     /** This method is called from within the constructor to
@@ -153,7 +170,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
-    private final LinkedList<SampleDisplayEntity> sampleEntities = new LinkedList<SampleDisplayEntity>();
+    private final HashMap<String,SampleDisplayEntity> sampleEntities = new HashMap<String,SampleDisplayEntity>();
 
     // TODO: eventually get from TrackRenderer
     private float marbleRadius = 0.25f;
@@ -166,22 +183,56 @@ public class TimeSliderPanel extends javax.swing.JPanel {
                 if(me.getButton() == MouseEvent.BUTTON1 &&
                    me.getModifiersEx() == 0) {
 
-                    System.err.println("********** Display sample info");
+                    SampleDisplayEntity sampleEntity = getCurrentSampleEntity();
 
-                    SampleDisplayEntity sampleEntity = new SampleDisplayEntity(null/*TODO: should be cell entity*/,
-                                                                 currentSampleInfo, 0.006f);
-                    synchronized (sampleEntities) {
-                        sampleEntities.add(sampleEntity);
+                    if (sampleEntity.isVisible()) {
+
+                        // TODO: Make sample entity invisible
+
+                    } else {
+
+                        // Make sample entity visible
+
+                        // Take any previous, unpinned entity down
+                        if (toTakeDown != null) {
+                            toTakeDown.setDisplayMode(SampleDisplayEntity.DisplayMode.HIDDEN);
+                            toTakeDown = null;
+                        }
+
+                        // Make entity for this sample visible
+                        sampleEntity.setDisplayMode(SampleDisplayEntity.DisplayMode.FULL);
+
+                        // Schedule entity to be taken down 
+                        toTakeDown = sampleEntity;
                     }
-
-                    Vector3f position = currentSampleInfo.getPosition();
-                    float y = position.y + marbleRadius + SAMPLE_ENTITY_Y_OFFSET;
-                    sampleEntity.setLocalTranslation(new Vector3f(position.x, y, position.z));
-
-                    // Make visible
-                    sampleEntity.setDisplayMode(SampleDisplayEntity.DisplayMode.FULL);
                 }
             }
         }
+    }
+
+
+    private SampleDisplayEntity createSampleEntity (SampleInfo sampleInfo) {
+        SampleDisplayEntity sampleEntity = new SampleDisplayEntity(null/*TODO: should be cell entity*/,
+                                                                 sampleInfo, 0.006f);
+        Vector3f position = sampleInfo.getPosition();
+        float y = position.y + marbleRadius + SAMPLE_ENTITY_Y_OFFSET;
+        sampleEntity.setLocalTranslation(new Vector3f(position.x, y, position.z));
+
+        return sampleEntity;
+    }    
+
+    // Do we already have an entity for this sample info? If not, create one.
+    private SampleDisplayEntity getCurrentSampleEntity () {
+        String tStr = Float.toString(currentSampleInfo.getTime());
+        SampleDisplayEntity sampleEntity = sampleEntities.get(tStr);
+        synchronized (sampleEntities) {
+            sampleEntity = sampleEntities.get(tStr);
+            if (sampleEntity == null) {
+                sampleEntity = createSampleEntity(currentSampleInfo);
+                sampleEntities.put(tStr, sampleEntity);
+            }
+        }
+
+        return sampleEntity;
     }
 }

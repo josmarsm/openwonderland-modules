@@ -56,6 +56,9 @@ public class SampleDisplayEntity extends Entity {
     /** sets font size */
     private float fontSizeModifier;
 
+    /** If entity is pinned, the entity should stay visible. */
+    private boolean pinned;
+
     /** 
      * Determines how much information from the sample is displayed.
      */
@@ -155,7 +158,8 @@ public class SampleDisplayEntity extends Entity {
             // click events - display context menu, cycle display mode
             if(me.getID() == MouseEvent.MOUSE_CLICKED){
                 if(me.getButton() == MouseEvent.BUTTON1){
-                    System.err.println("Left clicked marble");
+                    pinned = ! pinned;
+                    // TODO: node.setPinned(pinned);
                 }
             }
         }
@@ -306,6 +310,10 @@ public class SampleDisplayEntity extends Entity {
      */
     public DisplayMode getDisplayMode(){
         return displayMode;
+    }
+
+    public boolean isVisible () {
+        return displayMode != SampleDisplayEntity.DisplayMode.HIDDEN;
     }
 
     /**

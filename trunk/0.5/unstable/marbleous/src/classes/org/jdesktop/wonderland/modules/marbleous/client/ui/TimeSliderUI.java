@@ -36,9 +36,6 @@ public class TimeSliderUI {
     /** The Cell. */
     private TrackCell cell;
 
-    /* The information from the simulation. */
-    private SimTrace trace;
-
     /** The Swing panel. */
     private TimeSliderPanel panel;
 
@@ -48,16 +45,15 @@ public class TimeSliderUI {
     /** The HUD component for the panel. */
     private HUDComponent hudComponent;
 
-    public TimeSliderUI (final TrackCell cell, final SimTrace trace) {
+    public TimeSliderUI (final TrackCell cell) {
         this.cell = cell;
-        this.trace = trace;
 
         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
         try {
             SwingUtilities.invokeAndWait(new Runnable () {
                 public void run () {
-                    panel = new TimeSliderPanel(cell, trace);
+                    panel = new TimeSliderPanel(cell);
                 }
             });
         } catch (Exception ex) {
@@ -70,6 +66,10 @@ public class TimeSliderUI {
         hudComponent.setPreferredLocation(Layout.SOUTH);
 
         mainHUD.addComponent(hudComponent);
+    }
+
+    public void setSimTrace (SimTrace trace) {
+        panel.setSimTrace(trace);
     }
 
     /** Control the visibility of the window. */

@@ -42,14 +42,14 @@ public class UI {
     /** The HUD component for the panel. */
     private HUDComponent hudComponent;
 
-    public UI (final TrackCell cell) {
+    public UI (final TrackCell cell, final TimeSliderUI uiTimeSlider) {
 
         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
         try {
             SwingUtilities.invokeAndWait(new Runnable () {
                 public void run () {
-                    constructPanel = new ConstructPanel(cell);
+                    constructPanel = new ConstructPanel(cell, uiTimeSlider);
                 }
             });
         } catch (Exception ex) {

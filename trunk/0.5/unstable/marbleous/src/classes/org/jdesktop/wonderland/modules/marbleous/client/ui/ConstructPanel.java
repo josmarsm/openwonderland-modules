@@ -78,10 +78,12 @@ public class ConstructPanel extends javax.swing.JPanel {
     // listener for time step events from the simulation
     private SimTrace simTrace = null;
     private TimeStepListener timeStepListener = null;
+    private TimeSliderUI uiTimeSlider;
 
     /** Creates new form ConstructPanel */
-    public ConstructPanel(TrackCell cell) {
+    public ConstructPanel(TrackCell cell, TimeSliderUI uiTimeSlider) {
         this.cell = cell;
+        this.uiTimeSlider = uiTimeSlider;
 
         initComponents();
 
@@ -214,6 +216,7 @@ public class ConstructPanel extends javax.swing.JPanel {
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
         // Create a new simulation trace object to place time series info
         simTrace = new SimTrace(MarblePhysicsComponent.G, MarblePhysicsComponent.FREQ);
+        uiTimeSlider.setSimTrace(simTrace);
 
         // Add a listener to listen for the time series data
         JBulletPhysicsSystem physics = ((TrackCell)cell).getPhysicsSystem();
@@ -222,27 +225,12 @@ public class ConstructPanel extends javax.swing.JPanel {
             physics.addTimeStepListener(timeStepListener);
         }
 
-        // XXX TEST
-        new Thread() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(1000);
-                        float endTime = simTrace.getEndTime();
-                        SampleInfo info = simTrace.getSampleInfo(endTime);
-                        logger.warning("SAMPLE " + info.getPosition().toString() + " FOR TIME " + endTime);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(ConstructPanel.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        }.start();
-        // XXX TEST
-
         // Go ahead and start the simulation
         cell.setSimulationState(SimulationState.STARTED);
-        System.err.println("******** START!");
+
+        // The time slider shouldn't ever be visible while the simulation is running
+        uiTimeSlider.setVisible(false);
+
 }//GEN-LAST:event_runButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
@@ -266,6 +254,10 @@ public class ConstructPanel extends javax.swing.JPanel {
                 physics.removeTimeStepListener(timeStepListener);
             }
         }
+
+        // Make the time slider visible
+        uiTimeSlider.setVisible(true);
+
 }//GEN-LAST:event_stopButtonActionPerformed
 
 
