@@ -32,7 +32,7 @@ public class SampleProvider implements TimelineProvider {
         testThread = new Thread(new Runnable() {
             public void run() {
                 try {
-                    String imageURI = "wlhttp://http://l.yimg.com/g/images/spaceball.gif";
+                    String imageURI = "wlhttp://l.yimg.com/g/images/spaceball.gif";
 
                     while (!Thread.interrupted()) {
                         Thread.sleep(5000);
