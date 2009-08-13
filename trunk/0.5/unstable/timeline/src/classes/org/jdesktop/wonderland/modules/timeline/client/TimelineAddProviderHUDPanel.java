@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.timeline.client;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -30,23 +31,33 @@ import org.jdesktop.wonderland.modules.timeline.client.provider.TimelineProvider
  * @author nsimpson
  */
 public class TimelineAddProviderHUDPanel extends javax.swing.JPanel {
+
     private static final Logger logger =
             Logger.getLogger(TimelineAddProviderHUDPanel.class.getName());
-
     private PropertyChangeSupport listeners;
     private Map<String, String> queryBuilders;
+    private Map<String, String> providerMap;
 
     public TimelineAddProviderHUDPanel() {
+        providerMap = new LinkedHashMap<String, String>();
         initComponents();
         providerList.setModel(new DefaultListModel());
+        populateProviderList();
+    }
+
+    private void populateProviderList() {
+        DefaultListModel model = (DefaultListModel) providerList.getModel();
+        model.clear();
+        providerMap.clear();
+
         queryBuilders = TimelineProviderUtils.getQueryBuilders();
         if (queryBuilders != null) {
             Iterator<String> iter = queryBuilders.keySet().iterator();
-            DefaultListModel model = (DefaultListModel)providerList.getModel();
             while (iter.hasNext()) {
                 String key = iter.next();
                 logger.info("--- found query builder: " + queryBuilders.get(key));
                 model.addElement(queryBuilders.get(key));
+                providerMap.put(queryBuilders.get(key), key);
             }
         }
     }
@@ -56,8 +67,13 @@ public class TimelineAddProviderHUDPanel extends javax.swing.JPanel {
      * @return an array of provider name strings
      */
     public String[] getProviders() {
-        return new String[] {(String)providerList.getSelectedValue()};
+        // TODO: handle multiple selection
+        String providerName = (String) providerList.getSelectedValue();
+        String providerClass = providerMap.get(providerName);
+
+        return new String[]{providerClass};
     }
+
     /**
      * Adds a bound property listener to the dialog
      * @param listener a listener for dialog events

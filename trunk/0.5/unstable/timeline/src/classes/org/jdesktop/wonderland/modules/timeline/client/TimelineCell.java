@@ -480,4 +480,8 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
             });
         }
     }
+
+    public TimelineClientConfiguration getClientConfiguration() {
+        return config;
+    }
 }

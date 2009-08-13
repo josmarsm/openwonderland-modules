@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.timeline.client;
 
+import javax.swing.JPanel;
+
 /**
  * A query panel for a provider
  *
@@ -24,6 +26,8 @@ package org.jdesktop.wonderland.modules.timeline.client;
  */
 public class TimelineProviderPanel extends javax.swing.JPanel {
 
+    private JPanel configPanel;
+    
     public TimelineProviderPanel() {
         initComponents();
     }
@@ -45,46 +49,55 @@ public class TimelineProviderPanel extends javax.swing.JPanel {
         return providerCheckBox.getText();
     }
 
-    /**
-     * Mark this provider as selected/unselected
-     * @param selected true to mark the provider as selected, false to
-     * unselect
-     */
-    public void selectProvider(boolean selected) {
-        providerCheckBox.setSelected(selected);
-    }
-
-    /**
-     * Get whether this provider is selected
-     * @return true if the provider is selected, false otherwise
-     */
-    public boolean isProviderSelected() {
-        return providerCheckBox.isSelected();
-    }
-
-    /**
-     * Add a query to the set of available query criteria
-     * @param criteria a new query
-     */
-    public void addQueryCriteria(Object criteria) {
-        providerComboBox.addItem(criteria);
-    }
-
-    /**
-     * Remove a query from the the set of available query criteria
-     * @param criteria the query criteria to remove
-     */
-    public void removeQueryCriteria(Object criteria) {
-        providerComboBox.removeItem(criteria);
-    }
-
-    /**
-     * Get the selected query criteria
-     * @return the currently selected query criteria
-     */
-    public Object getQueryCriteria() {
-        return providerComboBox.getSelectedItem();
-    }
+//    public void setProviderComboBox(JComboBox combo) {
+//        this.remove(providerComboBox);
+//        this.add(providerComboBox);
+//    }
+//
+//    public void setProviderConfigurationPanel(JPanel configPanel) {
+//        this.configPanel = configPanel;
+//    }
+//
+//    /**
+//     * Mark this provider as selected/unselected
+//     * @param selected true to mark the provider as selected, false to
+//     * unselect
+//     */
+//    public void selectProvider(boolean selected) {
+//        providerCheckBox.setSelected(selected);
+//    }
+//
+//    /**
+//     * Get whether this provider is selected
+//     * @return true if the provider is selected, false otherwise
+//     */
+//    public boolean isProviderSelected() {
+//        return providerCheckBox.isSelected();
+//    }
+//
+//    /**
+//     * Add a query to the set of available query criteria
+//     * @param criteria a new query
+//     */
+//    public void addQueryCriteria(Object criteria) {
+//        providerComboBox.addItem(criteria);
+//    }
+//
+//    /**
+//     * Remove a query from the the set of available query criteria
+//     * @param criteria the query criteria to remove
+//     */
+//    public void removeQueryCriteria(Object criteria) {
+//        providerComboBox.removeItem(criteria);
+//    }
+//
+//    /**
+//     * Get the selected query criteria
+//     * @return the currently selected query criteria
+//     */
+//    public Object getQueryCriteria() {
+//        return providerComboBox.getSelectedItem();
+//    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -96,67 +109,29 @@ public class TimelineProviderPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         providerCheckBox = new javax.swing.JCheckBox();
-        providerComboBox = new javax.swing.JComboBox();
-        providerAdvancedButton = new javax.swing.JButton();
+
+        setLayout(new java.awt.GridLayout());
 
         providerCheckBox.setText("Provider");
+        providerCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        providerCheckBox.setMaximumSize(new java.awt.Dimension(379, 23));
+        providerCheckBox.setMinimumSize(new java.awt.Dimension(379, 23));
+        providerCheckBox.setPreferredSize(new java.awt.Dimension(379, 23));
         providerCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 providerCheckBoxActionPerformed(evt);
             }
         });
-
-        providerComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "query criteria" }));
-        providerComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                providerComboBoxActionPerformed(evt);
-            }
-        });
-
-        providerAdvancedButton.setText("Advanced...");
-        providerAdvancedButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                providerAdvancedButtonActionPerformed(evt);
-            }
-        });
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(providerCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(providerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 177, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(providerAdvancedButton))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(providerCheckBox)
-                .add(providerComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(providerAdvancedButton))
-        );
+        add(providerCheckBox);
     }// </editor-fold>//GEN-END:initComponents
 
     private void providerCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_providerCheckBoxActionPerformed
         // TODO: include this provider in query
 }//GEN-LAST:event_providerCheckBoxActionPerformed
 
-    private void providerAdvancedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_providerAdvancedButtonActionPerformed
-        // TODO: display advanced configuration dialog for provider
-}//GEN-LAST:event_providerAdvancedButtonActionPerformed
-
-    private void providerComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_providerComboBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_providerComboBoxActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton providerAdvancedButton;
     private javax.swing.JCheckBox providerCheckBox;
-    private javax.swing.JComboBox providerComboBox;
     // End of variables declaration//GEN-END:variables
 
 }
