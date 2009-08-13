@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.modules.timelineproviders.provider;
 
 import com.aetrion.flickr.FlickrException;
 import com.aetrion.flickr.REST;
+import com.aetrion.flickr.photos.Extras;
 import com.aetrion.flickr.photos.Photo;
 import com.aetrion.flickr.photos.PhotoList;
 import com.aetrion.flickr.photos.PhotosInterface;
@@ -104,28 +105,41 @@ public class FlickrProvider implements TimelineProvider {
             sp.setMinTakenDate(start);
             sp.setMaxTakenDate(end);
 
+            System.out.println("Submitting query for search from " + start +
+                               " to " + end);
+
             // create a task
-            exec.submit(new FlickrQuery(sp));
+            exec.submit(new FlickrQuery(sp, new TimelineDate(start, end)));
         }
     }
 
     public void shutdown() {
     }
 
-    private void processResults(PhotoList results) {
+    private void processResults(PhotoList results, TimelineDate range) {
+        System.out.println("Processing " + results.size() + " results");
+
         Set<DatedObject> add = new LinkedHashSet<DatedObject>();
-        
-        for (Object o : results) {
-            Photo p = (Photo) o;
 
-            TimelineDate taken = new TimelineDate(p.getDateTaken());
-            String photoURI = "wl" + p.getMediumUrl();
+        for (int i = 0; i < results.size(); i++) {
+            Photo p = (Photo) results.get(i);
+      
+            TimelineDate taken;
+            Date takenDate = p.getDateTaken();
+            if (takenDate != null) {
+                taken = new TimelineDate(takenDate);
+            } else {
+                taken = range;
+            }
 
-            DatedImage image = new DatedImage(taken, photoURI);
-            image.setWidth(p.getMediumSize().getWidth());
-            image.setHeight(p.getMediumSize().getHeight());
+            String photoURI = "wl" + p.getUrl();
 
-            System.out.println("Adding image " + image.getImageURI());
+            DatedImage image = new DatedImage(taken, photoURI);            
+            image.setWidth(p.getOriginalHeight());
+            image.setHeight(p.getOriginalWidth());
+
+            System.out.println("Adding image " + photoURI + " date " +
+                               taken.getMinimum() + " - " + taken.getMaximum());
 
             add.add(image);
         }
@@ -138,6 +152,11 @@ public class FlickrProvider implements TimelineProvider {
      */
     private SearchParameters getSearchParameters() {
         SearchParameters sp = new SearchParameters();
+
+        Set<String> extras = new LinkedHashSet<String>();
+        extras.add(Extras.DATE_TAKEN);
+        sp.setExtras(extras);
+
         if (fullText) {
             sp.setText(text);
         } else {
@@ -162,24 +181,24 @@ public class FlickrProvider implements TimelineProvider {
 
     class FlickrQuery implements Runnable {
         private SearchParameters params;
+        private TimelineDate range;
 
-        public FlickrQuery(SearchParameters params) {
+        public FlickrQuery(SearchParameters params, TimelineDate range) {
             this.params = params;
+            this.range = range;
         }
 
         public void run() {
             try {
                 PhotosInterface photosI = new PhotosInterface(apiKey, null, new REST());
                 PhotoList results = photosI.search(params, returnCount, 0);
-                processResults(results);
-            } catch (IOException ex) {
-                logger.log(Level.WARNING, "Error performing query", ex);
-            } catch (SAXException ex) {
-                logger.log(Level.WARNING, "Error performing query", ex);
-            } catch (FlickrException ex) {
-                logger.log(Level.WARNING, "Error performing query", ex);
-            } catch (ParserConfigurationException ex) {
-                logger.log(Level.WARNING, "Error performing query", ex);
+
+                System.out.println("found " + results.size() + " results");
+
+                processResults(results, range);
+            } catch (Throwable t) {
+                // report any errors
+                logger.log(Level.WARNING, "Error performing query", t);
             }
         }
     }

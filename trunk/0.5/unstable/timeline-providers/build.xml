@@ -54,11 +54,13 @@
                 </clientjar>
             </client>
 
-            <part name="timelineprovider">
+            <part name="timelineprovider" dir="${current.dir}/lib">
                 <jar name="${module.name}" basedir="${build.classes.dir}">
                     <include name="${module.src}/provider/**"/>
                     <include name="${module.src}/common/**"/>
                 </jar>
+
+                <include name="*.jar"/>
             </part>
 
             <!--art dir="${current.dir}/art"/-->
