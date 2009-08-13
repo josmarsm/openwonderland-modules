@@ -104,7 +104,7 @@
                 jarfile="${module.dist.dir}/${module.name}.jar"
                 builddir="${build.lib.dir}">
 
-            <requires name="image-viewer" version="1"/>
+            <requires name="imageviewer" version="1"/>
 
 
             <client dir="${current.dir}/lib">
