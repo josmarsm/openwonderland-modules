@@ -48,7 +48,9 @@
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                     <fileset dir="${current.dir}/src/classes">
+                        <!--Images for the track types-->
                         <include name="${module.src}/client/ui/resources/*.png"/>
+                        <include name="${module.src}/client/cell/resources/*.jpg"/>
                     </fileset>
                 </clientjar>
             </client>
