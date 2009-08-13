@@ -117,6 +117,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         removeButton = new javax.swing.JButton();
         stopButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
+        resetButton = new javax.swing.JButton();
 
         jLabel1.setText("Track Segment Type to Add:");
 
@@ -153,6 +154,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         });
 
         stopButton.setText("Stop");
+        stopButton.setEnabled(false);
         stopButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 stopButtonActionPerformed(evt);
@@ -166,6 +168,14 @@ public class ConstructPanel extends javax.swing.JPanel {
             }
         });
 
+        resetButton.setText("Reset");
+        resetButton.setEnabled(false);
+        resetButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -175,8 +185,10 @@ public class ConstructPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(runButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(stopButton))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(stopButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(resetButton))
                     .addComponent(typeScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -191,7 +203,7 @@ public class ConstructPanel extends javax.swing.JPanel {
                             .addComponent(addButton)
                             .addGap(38, 38, 38)
                             .addComponent(removeButton))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(11, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -199,7 +211,8 @@ public class ConstructPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(runButton)
-                    .addComponent(stopButton))
+                    .addComponent(stopButton)
+                    .addComponent(resetButton))
                 .addGap(27, 27, 27)
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
@@ -247,7 +260,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         // Make the run button not enabled
         runButton.setEnabled(false);
         stopButton.setEnabled(true);
-
+        resetButton.setEnabled(false);
 }//GEN-LAST:event_runButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
@@ -276,8 +289,9 @@ public class ConstructPanel extends javax.swing.JPanel {
         cell.sendCellMessage(new SimTraceMessage(simTrace));
 
         // Make the run button enabled
-        runButton.setEnabled(true);
+        runButton.setEnabled(false);
         stopButton.setEnabled(false);
+        resetButton.setEnabled(true);
 }//GEN-LAST:event_stopButtonActionPerformed
 
 
@@ -288,6 +302,15 @@ public class ConstructPanel extends javax.swing.JPanel {
         }
 }//GEN-LAST:event_editButtonActionPerformed
 
+    private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+        // Put the buttons in the proper state and reset the marble
+        runButton.setEnabled(true);
+        stopButton.setEnabled(false);
+        resetButton.setEnabled(false);
+        cell.resetMarble();
+        uiTimeSlider.setVisible(false);
+    }//GEN-LAST:event_resetButtonActionPerformed
+
     /**
      * Tells the control panel that another client has started/stopped the
      * simulation
@@ -296,7 +319,6 @@ public class ConstructPanel extends javax.swing.JPanel {
         runButton.setEnabled(!isEnabled);
         stopButton.setEnabled(!isEnabled);
     }
-
 
 
     /**
@@ -410,6 +432,7 @@ public class ConstructPanel extends javax.swing.JPanel {
     protected javax.swing.JLabel jLabel1;
     protected javax.swing.JLabel jLabel2;
     protected javax.swing.JButton removeButton;
+    protected javax.swing.JButton resetButton;
     protected javax.swing.JButton runButton;
     protected javax.swing.JList segmentList;
     protected javax.swing.JScrollPane segmentScrollPane;
