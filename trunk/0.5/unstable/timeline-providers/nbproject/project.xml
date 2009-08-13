@@ -68,7 +68,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/jme20/target/jme-effects.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../timeline/build/provider/timeline-provider.jar:../timeline/build/lib/client/timeline-client.jar:lib/flickrapi-1.2.jar</classpath>
+                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/jme20/target/jme-effects.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../timeline/build/provider/timeline-provider.jar:../timeline/build/lib/client/timeline-client.jar:lib/flickrapi-1.2.jar:lib/json.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

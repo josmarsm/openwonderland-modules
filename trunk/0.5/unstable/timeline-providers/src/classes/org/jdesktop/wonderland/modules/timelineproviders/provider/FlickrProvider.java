@@ -132,11 +132,22 @@ public class FlickrProvider implements TimelineProvider {
                 taken = range;
             }
 
-            String photoURI = "wl" + p.getUrl();
+            //System.out.println("Small: " + p.getSmallUrl());
+            //System.out.println("Medium: " + p.getMediumUrl());
+            //System.out.println("Large: " + p.getLargeUrl());
+            //System.out.println("Square: " + p.getSmallSquareUrl());
+            //System.out.println("Orig: " + p.getOriginalUrl());
+            //System.out.println("" + p.);
+
+
+            String photoURI = "wl" + p.getSmallUrl();
 
             DatedImage image = new DatedImage(taken, photoURI);            
-            image.setWidth(p.getOriginalHeight());
-            image.setHeight(p.getOriginalWidth());
+            
+            if (p.getSmallSize() != null) {
+                image.setWidth(p.getSmallSize().getWidth());
+                image.setHeight(p.getSmallSize().getHeight());
+            }
 
             System.out.println("Adding image " + photoURI + " date " +
                                taken.getMinimum() + " - " + taken.getMaximum());
@@ -155,6 +166,12 @@ public class FlickrProvider implements TimelineProvider {
 
         Set<String> extras = new LinkedHashSet<String>();
         extras.add(Extras.DATE_TAKEN);
+        extras.add(Extras.URL_L);
+        extras.add(Extras.URL_M);
+        extras.add(Extras.URL_S);
+        extras.add(Extras.URL_O);
+        extras.add(Extras.URL_SQ);
+        extras.add(Extras.URL_T);
         sp.setExtras(extras);
 
         if (fullText) {
