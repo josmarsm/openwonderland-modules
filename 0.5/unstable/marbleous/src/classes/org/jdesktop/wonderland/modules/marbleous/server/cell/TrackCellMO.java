@@ -144,6 +144,13 @@ public class TrackCellMO extends CellMO {
         sendCellMessage(clientID, tcm);
     }
 
+    private void processModifySegmentMessage(WonderlandClientID clientID, TrackCellMessage tcm) {
+        TrackSegment segment = tcm.getTrackSegment();
+        System.out.println("TrackCellMO, modifying " + segment);
+        serverState.getTrack().replaceTrackSegment(segment);
+        sendCellMessage(clientID, tcm);
+    }
+
     private void processRemoveSegmentMessage(WonderlandClientID clientID, TrackCellMessage tcm) {
         TrackSegment segment = tcm.getTrackSegment();
         System.out.println("TrackCellMO, removing " + segment);
@@ -238,6 +245,9 @@ public class TrackCellMO extends CellMO {
                         break;
                     case REMOVE_SEGMENT:
                         tcmo.processRemoveSegmentMessage(clientID, tcm);
+                        break;
+                    case MODIFY_SEGMENT:
+                        tcmo.processModifySegmentMessage(clientID, tcm);
                         break;
                 }
             }

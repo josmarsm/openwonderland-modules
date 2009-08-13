@@ -107,7 +107,7 @@ public class TrackCell extends Cell {
 
     public void modifySegment(TrackSegment segment) {
         trackListModel.modifySegment(segment);
-        //sendCellMessage(TrackCellMessage.modifySegment(getCellID(), segment));
+        sendCellMessage(TrackCellMessage.modifySegment(getCellID(), segment));
     }
 
     public void removeSegment(TrackSegment selectedSegment) {
@@ -363,7 +363,16 @@ public class TrackCell extends Cell {
                     case REMOVE_SEGMENT:
                         aSegment = tcm.getTrackSegment();
                         trackListModel.removeSegment(aSegment);
+                        if (aSegment.equals(knotTableModel.getSegment())) {
+                            System.err.println("The segment you are editing has been removed by another user");
+                        }
                         break;
+                    case MODIFY_SEGMENT:
+                        aSegment = tcm.getTrackSegment();
+                        trackListModel.modifySegment(aSegment);
+                        if (aSegment.equals(knotTableModel.getSegment())) {
+                            knotTableModel.setSegment(aSegment);
+                        }
                     default:
                         logger.severe("Unknown action type: " + tcm.getAction());
 

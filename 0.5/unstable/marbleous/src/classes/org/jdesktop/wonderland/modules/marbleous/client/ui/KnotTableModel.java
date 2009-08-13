@@ -113,7 +113,7 @@ public class KnotTableModel extends AbstractTableModel{
         return columnIndex != 0;
     }
 
-    TrackSegment getSegment() {
+    public TrackSegment getSegment() {
         return segment;
     }
 
