@@ -57,6 +57,8 @@ public class SampleDisplayEntity extends Entity {
     /** sets font size */
     private float fontSizeModifier;
 
+    private boolean visible;
+
     /** If entity is pinned, the entity should stay visible. */
     private boolean pinned;
 
@@ -169,15 +171,37 @@ public class SampleDisplayEntity extends Entity {
         }
     }
 
+    public void setVisible (boolean visible) {
+        if (this.visible == visible) return;
+        this.visible = visible;
+
+        //float t = sampleInfo.getTime();
+        //System.err.println("********** setVisible: t = " + t + ", visible = " + visible);
+
+        evaluateVisibilityAndSize();
+    }
+
+    public boolean getVisible () {
+        return visible;
+    }
+
     public void setPinned (boolean pinned) {
         if (this.pinned == pinned) return;
         this.pinned = pinned;
+
+        float t = sampleInfo.getTime();
+        System.err.println("********** setPinned: t = " + t + ", pinned = " + pinned);
+
         evaluateVisibilityAndSize();
     }
 
     public void setCurrent (boolean current) {
         if (this.current == current) return;
         this.current = current;
+
+        //float t = sampleInfo.getTime();
+        //System.err.println("********** setCurrent: t = " + t + ", current = " + current);
+
         evaluateVisibilityAndSize();
     }
 
@@ -185,11 +209,15 @@ public class SampleDisplayEntity extends Entity {
     public void setLarge (boolean large) {
         if (this.large == large) return;
         this.large = large;
+
+        float t = sampleInfo.getTime();
+        System.err.println("********** setLarge: t = " + t + ", large = " + large);
+
         evaluateVisibilityAndSize();
     }
 
     private void evaluateVisibilityAndSize () {
-        if (current || pinned) {
+        if (visible && (current || pinned)) {
             if (large) {
                 setDisplayMode(DisplayMode.FULL);
             } else {

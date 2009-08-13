@@ -134,15 +134,15 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     private void jSlider1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider1StateChanged
         int value = jSlider1.getValue();
         float pct = (float)value / (float)(jSlider1.getMaximum() - jSlider1.getMinimum());
-        System.err.println("trace.getEndTime() = " + trace.getEndTime());
+        //System.err.println("trace.getEndTime() = " + trace.getEndTime());
         float t = pct * trace.getEndTime();
 
         //System.err.println("value = " + value);
         //System.err.println("pct = " + pct);
-        System.err.println("t = " + t);
+        //System.err.println("t = " + t);
         SampleInfo sampleInfo = trace.getSampleInfo(t);
         setCurrentSampleInfo(sampleInfo);
-        System.err.println("********** currentPosition = " + currentPosition);
+        //System.err.println("********** currentPosition = " + currentPosition);
 
         // Assumes that the marble is still attached to the cell
         Entity marbleEntity = cell.getMarbleEntity();
@@ -173,10 +173,12 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         }
 
         currentSampleInfo = sampleInfo;
-        System.err.println("currentSampleInfo = " + currentSampleInfo);
+        //System.err.println("currentSampleInfo = " + currentSampleInfo);
 
         currentPosition = currentSampleInfo.getPosition();
-        System.err.println("current position = " + currentPosition);
+        //System.err.println("current position = " + currentPosition);
+
+        updateCurrentSampleEntity();
     }
 
     private final HashMap<String,SampleDisplayEntity> sampleEntities = new HashMap<String,SampleDisplayEntity>();
@@ -191,13 +193,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
             if(me3d.getID() == MouseEvent.MOUSE_CLICKED){
                 if(me.getButton() == MouseEvent.BUTTON1 &&
                    me.getModifiersEx() == 0) {
-
-                    if (currentSampleEntity != null) {
-                        currentSampleEntity.setCurrent(false);
-                    }
- 
-                    SampleDisplayEntity sampleEntity = getCurrentSampleEntity();
-                    sampleEntity.setCurrent(true);
+                    currentSampleEntity.setVisible(! currentSampleEntity.getVisible());
                 }
             }
         }
@@ -214,8 +210,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         return sampleEntity;
     }    
 
-    // Do we already have an entity for this sample info? If not, create one.
-    private SampleDisplayEntity getCurrentSampleEntity () {
+    private void updateCurrentSampleEntity () {
         String tStr = Float.toString(currentSampleInfo.getTime());
         SampleDisplayEntity sampleEntity = sampleEntities.get(tStr);
         synchronized (sampleEntities) {
@@ -226,8 +221,15 @@ public class TimeSliderPanel extends javax.swing.JPanel {
             }
         }
 
-        currentSampleEntity = sampleEntity;
+        if (currentSampleEntity == sampleEntity) return;
 
-        return sampleEntity;
+        if (currentSampleEntity != null) {
+            currentSampleEntity.setCurrent(false);
+            // So it is not displayed automatically when we come back to it
+            currentSampleEntity.setVisible(false);
+        }
+
+        currentSampleEntity = sampleEntity;
+        currentSampleEntity.setCurrent(true);
     }
 }
