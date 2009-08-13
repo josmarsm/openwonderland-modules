@@ -26,9 +26,17 @@ import javax.swing.AbstractCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
+import org.jdesktop.wonderland.modules.marbleous.common.BumpTrackSegmentType;
+import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 
 /**
  * Frame for editing the properties of knots in a TrackSegment
@@ -36,16 +44,47 @@ import javax.swing.table.TableColumn;
  */
 public class KnotFrame extends javax.swing.JFrame {
     //The preferred width of the columns
-    private static final int[] COLUMN_WIDTHS = {10, 10, 10, 10, 10, 10};
+    private static final int[] COLUMN_WIDTHS = {10, 50, 10, 10, 10, 10};
     //Use a formatter to display doubles to 2 decimal places
     private static DecimalFormat twoDForm = new DecimalFormat("#.##");
+    //Table model to adapt a tracksegment's knots
+    private KnotTableModel tableModel;
+    //Flag to record when a segment's knots have been changed
+    private boolean segmentModified;
+    private TrackCell cell;
+    private TrackSegment segment;
+    
 
 
     /** Creates new form KnotFrame */
-    public KnotFrame() {
+    public KnotFrame(TrackSegment aSegment, TrackCell cell) {
+        this.cell = cell;
+        this.segment = aSegment;
         initComponents();
-        initTableModel();
+        initTableModel(aSegment);
+        tableModel.addTableModelListener(new TableModelListener() {
+
+            public void tableChanged(TableModelEvent tme) {
+                if (tme.getType() == TableModelEvent.UPDATE) {
+                    System.out.println("Updated table");
+                    
+                }
+                //We don't care which row or column has been updated
+                //Or whether a row has been added or deleted
+                //Just that we need to inform the server and clients
+                //That the tracksegment has been modified
+                //However, we probably don't want to do that until the user
+                //Tells us that they've finished editing
+                //So, make a note that the segment has changed
+                segmentModified = true;
+            }
+        });
+        knotTable.setRowHeight(25);
     }
+
+
+
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -58,8 +97,12 @@ public class KnotFrame extends javax.swing.JFrame {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         knotTable = new javax.swing.JTable();
+        okButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setAlwaysOnTop(true);
+        setName("Editing Track Segment"); // NOI18N
 
         knotTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -76,46 +119,103 @@ public class KnotFrame extends javax.swing.JFrame {
         knotTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(knotTable);
 
+        okButton.setText("OK");
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
+            }
+        });
+
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(19, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(68, 68, 68)
+                        .addComponent(okButton)
+                        .addGap(59, 59, 59)
+                        .addComponent(cancelButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(okButton)
+                    .addComponent(cancelButton))
+                .addContainerGap(9, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+        System.out.println("OK Button");
+        if (segmentModified) {
+            System.out.println("Segment modified");
+            cell.modifySegment(segment);
+        }
+    }//GEN-LAST:event_okButtonActionPerformed
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        cell.restoreSegment(segment);
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
     /**
     * @param args the command line arguments
     */
-    public static void main(String args[]) {
+    public static void main(String args[]) throws UnsupportedLookAndFeelException {
+        try {
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (UnsupportedLookAndFeelException e) {
+            // handle exception
+        } catch (ClassNotFoundException e) {
+            // handle exception
+        } catch (InstantiationException e) {
+            // handle exception
+        } catch (IllegalAccessException e) {
+            // handle exception
+        }
         java.awt.EventQueue.invokeLater(new Runnable() {
+
             public void run() {
-                new KnotFrame().setVisible(true);
+                TrackSegment segment = new BumpTrackSegmentType().createSegment();
+                new KnotFrame(segment, null).setVisible(true);
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    protected javax.swing.JButton cancelButton;
     protected javax.swing.JScrollPane jScrollPane1;
     protected javax.swing.JTable knotTable;
+    protected javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
 
-    private void initTableModel() {
-        KnotTableModel tableModel = new KnotTableModel();
+    private void initTableModel(TrackSegment aSegment) {
+        tableModel = new KnotTableModel(aSegment);
         //TODO remove after testing
-        tableModel.setDefaultValues();
+        //tableModel.setDefaultValues();
         knotTable.setModel(tableModel);
 
         //Use a specialised renderer and editor for the position column
@@ -150,7 +250,7 @@ public class KnotFrame extends javax.swing.JFrame {
             Quaternion quat = (Quaternion) value;
             float angleRadians = quat.toAngleAxis(new Vector3f(0,0,1));
             double angleDegrees = Math.toDegrees(angleRadians);
-
+            
             setText(twoDForm.format(angleDegrees));
             if (isSelected) {
                 setBackground(table.getSelectionBackground());

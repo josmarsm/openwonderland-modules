@@ -73,6 +73,7 @@ public class ConstructPanel extends javax.swing.JPanel {
 
     private TrackCell cell;
 
+
     // The single instance of the time-series of simulation results and a
     // listener for time step events from the simulation
     private SimTrace simTrace = null;
@@ -113,8 +114,9 @@ public class ConstructPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         segmentScrollPane = new javax.swing.JScrollPane();
         segmentList = new javax.swing.JList();
-        jButton1 = new javax.swing.JButton();
+        removeButton = new javax.swing.JButton();
         stopButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
 
         jLabel1.setText("Track Segment Type to Add:");
 
@@ -142,9 +144,9 @@ public class ConstructPanel extends javax.swing.JPanel {
         segmentList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         segmentScrollPane.setViewportView(segmentList);
 
-        jButton1.setText("Remove");
-        jButton1.setActionCommand("remove");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        removeButton.setText("Remove");
+        removeButton.setActionCommand("remove");
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
@@ -154,6 +156,13 @@ public class ConstructPanel extends javax.swing.JPanel {
         stopButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 stopButtonActionPerformed(evt);
+            }
+        });
+
+        editButton.setText("Edit…");
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
             }
         });
 
@@ -170,14 +179,18 @@ public class ConstructPanel extends javax.swing.JPanel {
                         .addComponent(stopButton))
                     .addComponent(typeScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(42, 42, 42)
-                        .addComponent(addButton)
-                        .addGap(38, 38, 38)
-                        .addComponent(jButton1))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(segmentScrollPane, javax.swing.GroupLayout.Alignment.LEADING, 0, 0, Short.MAX_VALUE)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(segmentScrollPane, javax.swing.GroupLayout.Alignment.LEADING, 0, 0, Short.MAX_VALUE)
+                                .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(editButton))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addGap(42, 42, 42)
+                            .addComponent(addButton)
+                            .addGap(38, 38, 38)
+                            .addComponent(removeButton))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -193,12 +206,14 @@ public class ConstructPanel extends javax.swing.JPanel {
                 .addComponent(typeScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(28, 28, 28)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
+                    .addComponent(removeButton)
                     .addComponent(addButton))
                 .addGap(27, 27, 27)
                 .addComponent(jLabel2)
                 .addGap(18, 18, 18)
-                .addComponent(segmentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(segmentScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(editButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -209,7 +224,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         // This adds the segment to the underlying model (the track)
         //segmentListModel.addSegment(newSegment);
         //Tell the server to add the segment
-        cell.sendCellMessage(TrackCellMessage.addSegment(cell.getCellID(), newSegment));
+        cell.addSegment(newSegment);
 }//GEN-LAST:event_addButtonActionPerformed
 
     private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
@@ -241,7 +256,7 @@ public class ConstructPanel extends javax.swing.JPanel {
             // This removes the segment from the underlying model (the track)
             segmentListModel.removeSegment(selectedSegment);
             //Tell the server to remove the segment
-            cell.sendCellMessage(TrackCellMessage.removeSegment(cell.getCellID(), selectedSegment));
+            cell.removeSegment(selectedSegment);
         }
 }//GEN-LAST:event_removeButtonActionPerformed
 
@@ -265,6 +280,14 @@ public class ConstructPanel extends javax.swing.JPanel {
         stopButton.setEnabled(false);
 }//GEN-LAST:event_stopButtonActionPerformed
 
+
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        TrackSegment segment = (TrackSegment) segmentList.getSelectedValue();
+        if (segment != null) {
+            cell.editSegment(segment);
+        }
+}//GEN-LAST:event_editButtonActionPerformed
+
     /**
      * Tells the control panel that another client has started/stopped the
      * simulation
@@ -273,6 +296,8 @@ public class ConstructPanel extends javax.swing.JPanel {
         runButton.setEnabled(!isEnabled);
         stopButton.setEnabled(!isEnabled);
     }
+
+
 
     /**
      * Updates the list of values displayed from the track segment factory
@@ -340,13 +365,12 @@ public class ConstructPanel extends javax.swing.JPanel {
          */
         public void valueChanged(ListSelectionEvent e) {
             TrackSegment selectedSegment = (TrackSegment) segmentList.getSelectedValue();
-            /*
-            if (selectedSegment == null) {
-                ...
-            }
-            */
-
             System.out.println("Selected Segment: " + selectedSegment);
+            if (selectedSegment == null) {
+                editButton.setEnabled(false);
+            } else {
+                editButton.setEnabled(true);
+            }
         }
     }
 
@@ -382,9 +406,10 @@ public class ConstructPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     protected javax.swing.JButton addButton;
-    protected javax.swing.JButton jButton1;
+    protected javax.swing.JButton editButton;
     protected javax.swing.JLabel jLabel1;
     protected javax.swing.JLabel jLabel2;
+    protected javax.swing.JButton removeButton;
     protected javax.swing.JButton runButton;
     protected javax.swing.JList segmentList;
     protected javax.swing.JScrollPane segmentScrollPane;

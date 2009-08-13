@@ -51,6 +51,13 @@ public class TrackListModel extends AbstractListModel {
         fireIntervalAdded(this, index, index);
     }
 
+    public void modifySegment(TrackSegment segment) {
+        System.out.println("TrackListModel modify segment");
+        int index = track.indexOf(segment);
+        track.replaceTrackSegment(segment);
+        fireContentsChanged(this, index, index);
+    }
+
     public void removeSegment(TrackSegment oldSegment) {
         int index = track.indexOf(oldSegment);
         track.removeTrackSegment(oldSegment);
