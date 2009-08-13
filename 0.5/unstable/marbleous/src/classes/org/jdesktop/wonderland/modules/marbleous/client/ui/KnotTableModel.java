@@ -39,11 +39,11 @@ public class KnotTableModel extends AbstractTableModel{
         setSegment(aSegment);
     }
 
-    KnotTableModel() {
+    public KnotTableModel() {
         
     }
 
-    private void setSegment(TrackSegment aSegment) {
+    public void setSegment(TrackSegment aSegment) {
         segment = aSegment;        
     }
 
@@ -111,6 +111,10 @@ public class KnotTableModel extends AbstractTableModel{
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         //Edit any cell except the first column
         return columnIndex != 0;
+    }
+
+    TrackSegment getSegment() {
+        return segment;
     }
 
     //TODO remove after testing

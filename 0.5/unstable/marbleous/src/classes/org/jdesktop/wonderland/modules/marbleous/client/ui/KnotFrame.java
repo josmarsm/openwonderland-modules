@@ -52,16 +52,15 @@ public class KnotFrame extends javax.swing.JFrame {
     //Flag to record when a segment's knots have been changed
     private boolean segmentModified;
     private TrackCell cell;
-    private TrackSegment segment;
     
 
 
     /** Creates new form KnotFrame */
-    public KnotFrame(TrackSegment aSegment, TrackCell cell) {
+    public KnotFrame(KnotTableModel knotTableModel, TrackCell cell) {
+        tableModel = knotTableModel;
         this.cell = cell;
-        this.segment = aSegment;
         initComponents();
-        initTableModel(aSegment);
+        initTable();
         tableModel.addTableModelListener(new TableModelListener() {
 
             public void tableChanged(TableModelEvent tme) {
@@ -168,12 +167,12 @@ public class KnotFrame extends javax.swing.JFrame {
         System.out.println("OK Button");
         if (segmentModified) {
             System.out.println("Segment modified");
-            cell.modifySegment(segment);
+            cell.modifySegment(tableModel.getSegment());
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        cell.restoreSegment(segment);
+        cell.restoreSegment(tableModel.getSegment());
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**
@@ -200,7 +199,7 @@ public class KnotFrame extends javax.swing.JFrame {
 
             public void run() {
                 TrackSegment segment = new BumpTrackSegmentType().createSegment();
-                new KnotFrame(segment, null).setVisible(true);
+                new KnotFrame(new KnotTableModel(segment), null).setVisible(true);
             }
         });
     }
@@ -212,10 +211,7 @@ public class KnotFrame extends javax.swing.JFrame {
     protected javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
 
-    private void initTableModel(TrackSegment aSegment) {
-        tableModel = new KnotTableModel(aSegment);
-        //TODO remove after testing
-        //tableModel.setDefaultValues();
+    private void initTable() {
         knotTable.setModel(tableModel);
 
         //Use a specialised renderer and editor for the position column

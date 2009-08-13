@@ -114,7 +114,11 @@ public class TrackSegment implements Serializable {
 
     public Object saveToMemento() {
         System.out.println("Originator: Saving to Memento.");
-        return new Memento(keyFrames);
+        TCBKeyFrame[] savedKeyFrames = new TCBKeyFrame[keyFrames.length];
+        for (int i = 0; i < keyFrames.length; i++) {
+            savedKeyFrames[i] = new TCBKeyFrame(keyFrames[i]);
+        }
+        return new Memento(savedKeyFrames);
     }
 
     public void restoreFromMemento(Object m) {

@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.marbleous.client.jme.TrackRenderer;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.KnotFrame;
+import org.jdesktop.wonderland.modules.marbleous.client.ui.KnotTableModel;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.TimeSliderUI;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.TrackListModel;
 import org.jdesktop.wonderland.modules.marbleous.client.ui.UI;
@@ -60,6 +61,7 @@ public class TrackCell extends Cell {
     private SimulationState simulationState = SimulationState.STOPPED;
     private TrackRenderer cellRenderer = null;
     private TrackListModel trackListModel;
+    private KnotTableModel knotTableModel;
     private UI ui;
     private TimeSliderUI uiTimeSlider;
     Track track;
@@ -71,10 +73,11 @@ public class TrackCell extends Cell {
 
     public void editSegment(final TrackSegment segment) {
         savedSegmentState = segment.saveToMemento();
+        knotTableModel.setSegment(segment);
             java.awt.EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
-                    new KnotFrame(segment, TrackCell.this).setVisible(true);
+                    new KnotFrame(knotTableModel, TrackCell.this).setVisible(true);
                 }
             });
     }
@@ -94,6 +97,10 @@ public class TrackCell extends Cell {
         return trackListModel;
     }
 
+    public KnotTableModel getKnotTableModel() {
+        return knotTableModel;
+    }
+
     public void addSegment(TrackSegment newSegment) {
         sendCellMessage(TrackCellMessage.addSegment(getCellID(), newSegment));
     }
@@ -109,6 +116,7 @@ public class TrackCell extends Cell {
 
     public void restoreSegment(TrackSegment aSegment) {
         aSegment.restoreFromMemento(savedSegmentState);
+        trackListModel.modifySegment(aSegment);
     }
 
     /**
@@ -124,6 +132,7 @@ public class TrackCell extends Cell {
         track = ((TrackCellClientState)clientState).getTrack();
         System.out.println("TrackCell, track: " + track);
         trackListModel = new TrackListModel(track);
+        knotTableModel = new KnotTableModel();
     }
 
     @Override
