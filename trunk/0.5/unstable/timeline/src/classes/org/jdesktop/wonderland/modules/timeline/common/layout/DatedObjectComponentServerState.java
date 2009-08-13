@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
-import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 
 /**
  *
@@ -33,8 +32,8 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 @ServerState
 public class DatedObjectComponentServerState extends CellComponentServerState {
 
-    @XmlElement(name="dated-object")
-    private DatedObject datedObject;
+//    @XmlElement(name="dated-object")
+//    private DatedObject datedObject;
 
     @XmlElement(name="added-to-timeline")
     private boolean addedToTimeline = false;
@@ -52,11 +51,11 @@ public class DatedObjectComponentServerState extends CellComponentServerState {
         this.addedToTimeline = addedToTimeline;
     }
 
-    @XmlTransient
-    public DatedObject getDatedObject() { return datedObject; }
-    public void setDatedObject(DatedObject datedObject) {
-        this.datedObject = datedObject;
-    }
+//    @XmlTransient
+//    public DatedObject getDatedObject() { return datedObject; }
+//    public void setDatedObject(DatedObject datedObject) {
+//        this.datedObject = datedObject;
+//    }
 
     @XmlTransient
     public boolean isNeedsLayout() {    return needsLayout; }
