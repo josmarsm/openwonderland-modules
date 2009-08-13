@@ -115,10 +115,10 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
             menuComponent.addContextMenuFactory(new TimelineContextMenuFactory());
         } else if (status == CellStatus.DISK && !increasing) {
             prox.removeProximityListener(this);
-        } else if (status == CellStatus.RENDERING && increasing){
-          // TODO matt
-          // establish relation ship between segments built in rendrere and these
-          this.renderer.buildSegments(config);
+        } else if (status == CellStatus.RENDERING && increasing) {
+            // TODO matt
+            // establish relation ship between segments built in rendrere and these
+            this.renderer.buildSegments(config);
         }
 
     }
@@ -472,8 +472,14 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
                 public void run() {
                     if (event.getContextMenuItem() == editTimelineMenuItem) {
+                        if (timelineCreationHUD == null) {
+                            createCreationHUD();
+                        }
                         timelineCreationHUD.setVisible(true);
                     } else if (event.getContextMenuItem() == curateTimelineMenuItem) {
+                        if (timelineCurationHUD == null) {
+                            createCurationHUD();
+                        }
                         timelineCurationHUD.setVisible(true);
                     }
                 }
