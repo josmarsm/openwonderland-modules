@@ -33,39 +33,30 @@ public class TimelineClientConfiguration extends TimelineConfiguration {
     private static final Logger logger =
         Logger.getLogger(TimelineClientConfiguration.class.getName());
 
-    private float innerRadius = 5.0f;
-    private float outerRadius = 12.5f;
-
     private ChannelComponent channel;
 
     public TimelineClientConfiguration(TimelineConfiguration config, ChannelComponent channel) {
         super();
         this.channel = channel;
         // TODO matt what does this do?
+        // So the issue here is that configurations need to be able to send
+        // update messages, but how they do that differs on the client and the
+        // server. So we have client/server versions of this object. The twist
+        // is that we need a channel to send the message on, and we have no
+        // way to get that without forcing its inclusion in the constructor.
+        // The other issue is that we can't send Client versions of this object
+        // to the server and vice-versa. So when configurations are moving
+        // between the client and server, the get converted into generic
+        // versions and then when they arrive, I use this constructor to turn
+        // them into, eg, a clientconfiguration that includes the right channel
+        // object. This is stupid and elaborate but it was the only thing I
+        // could figure out at the time that worked. (Drew)
+        
         this.setDateRange(config.getDateRange());
         this.setNumSegments(config.getNumSegments());
         this.setPitch(config.getPitch());
         this.setRadsPerSegment(config.getRadsPerSegment());
     }
-
-    public float getInnerRadius() {
-      return innerRadius;
-    }
-
-    public float getOuterRadius() {
-      return outerRadius;
-    }
-
-    public void setInnerRadius(float innerRadius) {
-      this.innerRadius = innerRadius;
-    }
-
-    public void setOuterRadius(float outerRadius) {
-      this.outerRadius = outerRadius;
-    }
-
-
-
 
 
     public TimelineClientConfiguration() {
