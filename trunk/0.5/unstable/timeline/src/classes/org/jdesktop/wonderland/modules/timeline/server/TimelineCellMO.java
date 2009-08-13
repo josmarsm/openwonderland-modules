@@ -22,6 +22,7 @@ import com.jme.math.Vector3f;
 import java.awt.LayoutManager;
 import java.util.Date;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -43,15 +44,18 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  *
- *  
+ * 
  */
 public class TimelineCellMO extends CellMO {
 
+    private static final Logger logger =
+        Logger.getLogger(TimelineCellMO.class.getName());
+
     private TimelineConfiguration config;
 
-    private DatedSet segments;
+    private DatedSet segments = new DatedSet();
 
-    private LayoutManager layout;
+    private BaseLayout layout;
 
     public TimelineCellMO() {
         super();
@@ -66,6 +70,11 @@ public class TimelineCellMO extends CellMO {
         super.setServerState(state);
 
         this.setConfiguration(((TimelineCellServerState)state).getConfig());
+        logger.info("generating segments");
+        Date futureDate = new Date();
+        futureDate = new Date(futureDate.getTime() + 200000);
+        config.setDateRange(new TimelineDate(new Date(), futureDate));
+        this.generateSegments();
 
     }
 
@@ -76,6 +85,7 @@ public class TimelineCellMO extends CellMO {
         }
 
         ((TimelineCellServerState)state).setConfig(config);
+
 
         return super.getServerState(state);
     }
@@ -98,8 +108,15 @@ public class TimelineCellMO extends CellMO {
 
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if(live) {
+
             channel.addMessageReceiver(TimelineCellChangeMessage.class, 
 		(ChannelComponentMO.ComponentMessageReceiver)new TimelineCellMessageReceiver(this));
+
+            // disabled in trunk for now because it's a little annoying
+            // to use at the moment.
+//            layout = new BaseLayout(this);
+//            logger.warning("Constructed new BaseLayout object! HOORAY.");
+
         } else {
             channel.removeMessageReceiver(TimelineCellChangeMessage.class);
         }
@@ -143,6 +160,7 @@ public class TimelineCellMO extends CellMO {
         long dateIncrement = config.getDateRange().getRange() / config.getNumSegments();
         long curDate = config.getDateRange().getMinimum().getTime();
 
+        logger.info("numSegmentsToGenerate: " + config.getNumSegments());
         for(int i=0; i<config.getNumSegments(); i++) {
             TimelineDate d = new TimelineDate(new Date(curDate), new Date(curDate + dateIncrement));
 
@@ -160,6 +178,8 @@ public class TimelineCellMO extends CellMO {
 
             logger.info("Added segment: " + seg);
             segments.add(seg);
+
+            curDate+=dateIncrement;
         }
     }
 }

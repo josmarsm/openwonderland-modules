@@ -38,6 +38,7 @@ public class DatedObjectComponentMO extends CellComponentMO {
 
     private boolean addedToTimeline = false;
     private boolean needsLayout = true;
+    private boolean assignedToSegment = false;
 
     public DatedObjectComponentMO(CellMO cell) {
         super(cell);
@@ -100,4 +101,14 @@ public class DatedObjectComponentMO extends CellComponentMO {
     public boolean isNeedsLayout() {
         return needsLayout;
     }
+
+    public boolean isAssignedToSegment() {
+        return assignedToSegment;
+    }
+
+    public void setAssignedToSegment(boolean assignedToSegment) {
+        this.assignedToSegment = assignedToSegment;
+    }
+
+    
 }

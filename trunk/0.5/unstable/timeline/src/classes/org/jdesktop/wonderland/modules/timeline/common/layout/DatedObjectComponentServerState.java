@@ -41,6 +41,8 @@ public class DatedObjectComponentServerState extends CellComponentServerState {
     @XmlElement(name="needs-layout")
     private boolean needsLayout = true;
 
+    @XmlElement(name="assigned-to-segment")
+    private boolean assignedToSegment = false;
 
     public DatedObjectComponentServerState() {
     }
@@ -62,6 +64,13 @@ public class DatedObjectComponentServerState extends CellComponentServerState {
     public void setNeedsLayout(boolean needsLayout) {
         this.needsLayout = needsLayout;
     }
+
+    @XmlTransient
+    public boolean isAssignedToSegment() {    return assignedToSegment; }
+    public void setAssignedToSegment(boolean assignedToSegment) {
+        this.assignedToSegment = assignedToSegment;
+    }
+
 
     @Override
     public String getServerComponentClassName() {
