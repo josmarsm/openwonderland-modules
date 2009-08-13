@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellServerState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SelectedSampleMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
@@ -127,10 +128,12 @@ public class TrackCellMO extends CellMO {
                     (ChannelComponentMO.ComponentMessageReceiver) new TrackCellMessageReceiver(this);
             channel.addMessageReceiver(TrackCellMessage.class, receiver);
             channel.addMessageReceiver(SimTraceMessage.class, new SimTraceMessageReceiver(this));
+            channel.addMessageReceiver(SelectedSampleMessage.class, new SelectedSampleMessageReceiver(this));
 
         } else {
             channel.removeMessageReceiver(SimulationStateMessage.class);
             channel.removeMessageReceiver(SimTraceMessage.class);
+            channel.removeMessageReceiver(SelectedSampleMessage.class);
         }
     }
 
@@ -146,6 +149,22 @@ public class TrackCellMO extends CellMO {
         System.out.println("TrackCellMO, removing " + segment);
         serverState.getTrack().removeTrackSegment(segment);
         sendCellMessage(clientID, tcm);
+    }
+
+    /**
+     * Receives selected time messages and passed it onto the clients
+     */
+    private static class SelectedSampleMessageReceiver extends AbstractComponentMessageReceiver {
+        public SelectedSampleMessageReceiver(TrackCellMO cellMO) {
+            super(cellMO);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            getCell().sendCellMessage(clientID, message);
+        }
     }
 
     /**

@@ -41,6 +41,7 @@ import org.jdesktop.wonderland.modules.marbleous.client.ui.UI;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SelectedSampleMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
@@ -151,6 +152,7 @@ public class TrackCell extends Cell {
                     channel.addMessageReceiver(SimulationStateMessage.class, new SimulationStateMessageReceiver());
                     channel.addMessageReceiver(SimTraceMessage.class, new SimTraceMessageReceiver());
                     channel.addMessageReceiver(TrackCellMessage.class, new TrackCellMessageReceiver());
+                    channel.addMessageReceiver(SelectedSampleMessage.class, new SelectedSampleMessageReceiver());
                     
                     ui.setVisible(true);
                 }
@@ -164,6 +166,7 @@ public class TrackCell extends Cell {
                     channel.removeMessageReceiver(SimulationStateMessage.class);
                     channel.removeMessageReceiver(SimTraceMessage.class);
                     channel.removeMessageReceiver(TrackCellMessage.class);
+                    channel.removeMessageReceiver(SelectedSampleMessage.class);
                 }
                 break;
             case DISK:
@@ -200,7 +203,17 @@ public class TrackCell extends Cell {
         }
 
         setSimulationStateInternal(simulationState);
+        sendCellMessage(new SimulationStateMessage(simulationState));
+    }
 
+    /**
+     * Set the simulation state without sending a message to notify other cells.
+     * @param simulationState The new simulation state
+     */
+    private void setSimulationStateInternal(SimulationState simulationState) {
+        this.simulationState = simulationState;
+
+        // Start or stop the physics system
         JBulletPhysicsSystem physicsSystem = getPhysicsSystem();
         if (physicsSystem != null) {
             if (simulationState == SimulationState.STARTED) {
@@ -213,15 +226,6 @@ public class TrackCell extends Cell {
         } else {
             logger.warning("Marble physics system not yet initialized!");
         }
-        sendCellMessage(new SimulationStateMessage(simulationState));
-    }
-
-    /**
-     * Set the simulation state without sending a message to notify other cells.
-     * @param simulationState The new simulation state
-     */
-    private void setSimulationStateInternal(SimulationState simulationState) {
-        this.simulationState = simulationState;
         fireSimulationStateChanged(simulationState);
     }
 
@@ -247,6 +251,27 @@ public class TrackCell extends Cell {
             uiTimeSlider.setVisible(true);
         }
     }
+
+    /**
+     * Processes selection changes on the slider
+     */
+    private class SelectedSampleMessageReceiver implements ComponentMessageReceiver {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void messageReceived(CellMessage message) {
+            final boolean fromMe = message.getSenderID() != null && message.getSenderID().equals(getCellCache().getSession().getID());
+
+            if (message instanceof SimulationStateMessage) {
+                if (!fromMe) {
+                    uiTimeSlider.setSelectedTime(((SelectedSampleMessage)message).getSelectedTime());
+                }
+            }
+        }
+    }
+
     /**
      * Processes state change messages received from the server and/or
      * other clients.
@@ -262,7 +287,14 @@ public class TrackCell extends Cell {
 
             if (message instanceof SimulationStateMessage) {
                 if (!fromMe) {
+                    // Turn on/off the simulation
                     setSimulationStateInternal(((SimulationStateMessage) message).getSimulationState());
+
+                    // Since someone else started/stopped the simulation, we
+                    // turn off buttons if running
+                    boolean isEnabled = ((SimulationStateMessage)message).getSimulationState() == SimulationState.STARTED;
+                    ui.externalSimulationEnabled(isEnabled);
+                    
                 }
             }
         }
