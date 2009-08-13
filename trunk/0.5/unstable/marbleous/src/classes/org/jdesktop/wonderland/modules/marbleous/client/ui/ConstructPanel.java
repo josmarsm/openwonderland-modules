@@ -159,7 +159,7 @@ public class ConstructPanel extends javax.swing.JPanel {
             }
         });
 
-        editButton.setText("Edit…");
+        editButton.setText("Edit...");
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);

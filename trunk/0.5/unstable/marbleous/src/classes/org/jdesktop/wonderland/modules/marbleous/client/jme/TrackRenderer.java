@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.marbleous.client.jme;
 import com.bulletphysics.dynamics.RigidBody;
 import com.jme.bounding.BoundingBox;
 import javax.swing.event.ListDataEvent;
+import javax.swing.event.TableModelEvent;
 import org.jdesktop.wonderland.modules.marbleous.common.TCBKeyFrame;
 import com.jme.math.Matrix4f;
 import com.jme.math.Quaternion;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import javax.swing.event.ListDataListener;
+import javax.swing.event.TableModelListener;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.Entity;
@@ -129,23 +131,35 @@ public class TrackRenderer extends BasicRenderer {
                     update();
                 }
 
-                private void update() {
-                    System.out.println("Updating track renderer");
-                    ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-                        public void update(Object arg0) {
-                            synchronized(trackRoot) {
-                                createTrackGraph(((TrackCell) cell).getTrack());
-                                ClientContextJME.getWorldManager().addToUpdateList(trackRoot);
-                            }
-                        }
-                    }, trackRoot);
+                
+            });
+            ((TrackCell)cell).getKnotTableModel().addTableModelListener(new TableModelListener() {
+
+                public void tableChanged(TableModelEvent arg0) {
+                    System.out.println("Table changed in renderer");
+                    update();
                 }
             });
         }
 
+
+
         cellRoot.attachChild(trackRoot);
 
         return cellRoot;
+    }
+
+    private void update() {
+        System.out.println("Updating track renderer");
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+            public void update(Object arg0) {
+                synchronized (trackRoot) {
+                    createTrackGraph(((TrackCell) cell).getTrack());
+                    ClientContextJME.getWorldManager().addToUpdateList(trackRoot);
+                }
+            }
+        }, trackRoot);
     }
 
     private void createTrackGraph(Track track) {
