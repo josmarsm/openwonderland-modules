@@ -71,11 +71,14 @@ public class TimelineCellMO extends CellMO {
 
         this.setConfiguration(((TimelineCellServerState)state).getConfig());
         logger.info("generating segments");
-        Date futureDate = new Date();
-        futureDate = new Date(futureDate.getTime() + 200000);
-        config.setDateRange(new TimelineDate(new Date(), futureDate));
+//        Date futureDate = new Date();
+//        futureDate = new Date(futureDate.getTime() - 2000000000);
+//        config.setDateRange(new TimelineDate(futureDate, new Date()));
         this.generateSegments();
-
+        if(layout==null)
+            layout = new BaseLayout(this);
+        else
+            layout.doLayout(true);
     }
 
     @Override
@@ -111,11 +114,6 @@ public class TimelineCellMO extends CellMO {
 
             channel.addMessageReceiver(TimelineCellChangeMessage.class, 
 		(ChannelComponentMO.ComponentMessageReceiver)new TimelineCellMessageReceiver(this));
-
-            // disabled in trunk for now because it's a little annoying
-            // to use at the moment.
-//            layout = new BaseLayout(this);
-//            logger.warning("Constructed new BaseLayout object! HOORAY.");
 
         } else {
             channel.removeMessageReceiver(TimelineCellChangeMessage.class);
