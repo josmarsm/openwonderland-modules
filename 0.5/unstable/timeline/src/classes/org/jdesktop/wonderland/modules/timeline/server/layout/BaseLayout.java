@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.timeline.server.layout;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
@@ -28,9 +30,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.modules.imageviewer.common.cell.ImageViewerCellServerState;
 import org.jdesktop.wonderland.modules.imageviewer.server.cell.ImageViewerCellMO;
+import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedImage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
@@ -192,9 +196,13 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         doLayout(false);
     }
 
+    @SuppressWarnings("empty-statement")
     public void doLayout(boolean force) {
         // Loop through all the dated objects by segment,
         // and check and see if their cells need either adding/layout or both.
+
+        TimelineConfiguration config = cellRef.get().getConfiguration();
+
         logger.info("---------------- STARTING LAYOUT-----------");
         for(TimelineSegment seg : datedObjectBySegment.keySet()) {
 
@@ -248,8 +256,32 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
                 // Put smarter layout logic here, but for now just throw the
                 // images in the dead center of the segment.
 
-                logger.info("Setting position to: " + seg.getTransform());
-                movComp.moveRequest(null, seg.getTransform());
+                // Okay, here's the plan. First, lets just do one image per segment.
+                // We're going to make a vector from 0,y,0 to the center segment,
+                // normalize that vector and then scale it to outerradius.
+                // that'll give us a vector to the edge.
+
+                Vector3f segPos = seg.getTransform().getTranslation(null);
+                segPos.y = 0;
+                segPos = segPos.normalize();
+                segPos = segPos.mult(config.getOuterRadius());
+                segPos.y = seg.getTransform().getTranslation(null).y;
+
+                // Move it up into the middle of the space in the spiral.
+                segPos.y += config.getHeight() / config.getNumTurns() /2;
+
+
+                float angleBetween = (float) Math.atan2(segPos.x, segPos.z);
+
+                float[] angles = {0.0f, angleBetween, 0.0f};
+
+                Quaternion q = new Quaternion(angles);
+
+
+                logger.info("Setting position to: " + seg.getTransform() + " angle: " + angleBetween);
+
+
+                movComp.moveRequest(null, new CellTransform(q, segPos));
 
                 if(!doComp.isAddedToTimeline()) {
                     try {

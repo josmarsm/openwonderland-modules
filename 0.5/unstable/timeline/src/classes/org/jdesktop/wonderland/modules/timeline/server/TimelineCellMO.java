@@ -124,6 +124,10 @@ public class TimelineCellMO extends CellMO {
         this.config = new TimelineServerConfiguration(config, getComponent(ChannelComponentMO.class));
     }
 
+    public TimelineConfiguration getConfiguration() {
+        return this.config;
+    }
+
     private static class TimelineCellMessageReceiver extends AbstractComponentMessageReceiver {
 
         public TimelineCellMessageReceiver(TimelineCellMO cellMO) {
