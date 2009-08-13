@@ -18,31 +18,29 @@
 package org.jdesktop.wonderland.modules.timelineproviders.client;
 
 import java.util.Properties;
-import org.jdesktop.wonderland.modules.timeline.client.provider.*;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import org.jdesktop.wonderland.modules.timeline.client.provider.TimelineQueryBuilder;
 import org.jdesktop.wonderland.modules.timeline.client.provider.annotation.QueryBuilder;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQuery;
-import org.jdesktop.wonderland.modules.timelineproviders.client.FlickrConfigurationPanel.SEARCH_TYPE;
-import org.jdesktop.wonderland.modules.timelineproviders.client.FlickrConfigurationPanel.SORT_TYPE;
-import org.jdesktop.wonderland.modules.timelineproviders.common.FlickrConstants;
+import org.jdesktop.wonderland.modules.timelineproviders.common.NYTimesConstants;
 
 /**
  * A query builder for Flickr queries
  * @author nsimpson
  */
 @QueryBuilder
-public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
-    private static final String DISPLAY_NAME = "Flickr";
-    private static final String QUERY_CLASS = "org.jdesktop.wonderland.modules.timeline.server.provider.FlickrProvider";
+public class NYTimesQueryBuilder implements TimelineQueryBuilder {
+    private static final String DISPLAY_NAME = "New York Times";
+    private static final String QUERY_CLASS = "org.jdesktop.wonderland.modules.timeline.server.provider.NYTimesProvider";
     private TimelineConfiguration config;
     private TimelineQuery query;
     private JComboBox configComboBox;
-    private FlickrConfigurationPanel configPanel;
+    private NYTimesConfigurationPanel configPanel;
 
-    public FlickrTimelineQueryBuilder() {
+    public NYTimesQueryBuilder() {
         configComboBox = createConfigComboBox();
         configPanel = createConfigPanel();
     }
@@ -62,8 +60,8 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
      * Create the query configuration panel
      * @return a query configuration panel
      */
-    private FlickrConfigurationPanel createConfigPanel() {
-        return new FlickrConfigurationPanel();
+    private NYTimesConfigurationPanel createConfigPanel() {
+        return new NYTimesConfigurationPanel();
     }
     /**
      * The display name for this builder
@@ -104,35 +102,16 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
 
         // set the configuration based on this query
         Properties props = query.getProperties();
-        configComboBox.setSelectedItem(props.getProperty(FlickrConstants.SEARCH_TEXT_PROP));
+        configComboBox.setSelectedItem(props.getProperty(NYTimesConstants.SEARCH_TEXT_PROP));
 
         // set up the configuration panel
-        if (props.containsKey(FlickrConstants.API_KEY_PROP)) {
-            configPanel.setAPIKey(props.getProperty(FlickrConstants.API_KEY_PROP));
+        if (props.containsKey(NYTimesConstants.API_KEY_PROP)) {
+            configPanel.setAPIKey(props.getProperty(NYTimesConstants.API_KEY_PROP));
         }
 
-        if (props.containsKey(FlickrConstants.SEARCH_TYPE_PROP)) {
-            String t = props.getProperty(FlickrConstants.SEARCH_TYPE_PROP);
-            SEARCH_TYPE type = (t.equals(FlickrConstants.SEARCH_TAGS_KEY)) ?
-                SEARCH_TYPE.TAGS : SEARCH_TYPE.TEXT;
-            configPanel.setSearchType(type);
-        }
-
-        if (props.containsKey(FlickrConstants.SORT_PROP)) {
-            String s = props.getProperty(FlickrConstants.SORT_PROP);
-            SORT_TYPE type = (s.equals(FlickrConstants.SORT_RELEVANCE_KEY)) ?
-                SORT_TYPE.RELEVANCE : SORT_TYPE.INTEREST;
-            configPanel.setSortType(type);
-        }
-
-        if (props.containsKey(FlickrConstants.RETURN_COUNT_PROP)) {
+        if (props.containsKey(NYTimesConstants.RETURN_COUNT_PROP)) {
             configPanel.setResultLimit(Integer.parseInt(
-                    props.getProperty(FlickrConstants.RETURN_COUNT_PROP)));
-        }
-
-        if (props.containsKey(FlickrConstants.CC_PROP)) {
-            configPanel.setCreativeCommons(Boolean.parseBoolean(
-                    props.getProperty(FlickrConstants.CC_PROP)));
+                    props.getProperty(NYTimesConstants.RETURN_COUNT_PROP)));
         }
     }
 
@@ -170,22 +149,13 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
 
         // get the query properties
         Properties props = query.getProperties();
-        props.setProperty(FlickrConstants.SEARCH_TEXT_PROP,
+        props.setProperty(NYTimesConstants.SEARCH_TEXT_PROP,
                           (String) configComboBox.getSelectedItem());
 
         // set the advanced configuration
         if (configPanel.isOK()) {
-            props.setProperty(FlickrConstants.SEARCH_TYPE_PROP, 
-                    configPanel.getSearchType().getKey());
-            
-            props.setProperty(FlickrConstants.SORT_PROP,
-                    configPanel.getSortType().getKey());
-
-            props.setProperty(FlickrConstants.RETURN_COUNT_PROP,
+            props.setProperty(NYTimesConstants.RETURN_COUNT_PROP,
                     String.valueOf(configPanel.getResultLimit()));
-
-            props.setProperty(FlickrConstants.CC_PROP,
-                    String.valueOf(configPanel.isCreativeCommons()));
         }
 
         return query;
@@ -199,18 +169,18 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
         Properties props = query.getProperties();
 
         // get the api key
-        String apiKey = System.getProperty("flickr.api.key");
+        String apiKey = System.getProperty("nytimes.api.key");
         if (apiKey == null) {
             apiKey = configPanel.getAPIKey();
         }
-        props.setProperty(FlickrConstants.API_KEY_PROP, apiKey);
+        props.setProperty(NYTimesConstants.API_KEY_PROP, apiKey);
 
         // set the various dates
-        props.setProperty(FlickrConstants.START_DATE_PROP,
+        props.setProperty(NYTimesConstants.START_DATE_PROP,
                           String.valueOf(config.getDateRange().getMinimum().getTime()));
-        props.setProperty(FlickrConstants.END_DATE_PROP,
+        props.setProperty(NYTimesConstants.END_DATE_PROP,
                           String.valueOf(config.getDateRange().getMaximum().getTime()));
-        props.setProperty(FlickrConstants.INCREMENTS_PROP,
+        props.setProperty(NYTimesConstants.INCREMENTS_PROP,
                           String.valueOf(config.getNumSegments()));
     }
 }
