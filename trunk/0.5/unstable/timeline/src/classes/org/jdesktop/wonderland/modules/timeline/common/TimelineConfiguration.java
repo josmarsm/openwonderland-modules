@@ -158,8 +158,12 @@ public class TimelineConfiguration implements Serializable {
      * @return The derived height of the timeline, based on the pitch, rads per segment, and number of segments.
      */
     public float getHeight() {
-        float numTurns = (float) ((radsPerSegment * numSegments) / (Math.PI * 2));
-        return numTurns * pitch;
+        return getNumTurns() * pitch;
+    }
+
+    public float getNumTurns() {
+
+        return (float) ((radsPerSegment * numSegments) / (Math.PI * 2));
     }
 
     @XmlElement
