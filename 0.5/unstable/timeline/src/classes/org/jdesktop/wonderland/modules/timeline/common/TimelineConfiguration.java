@@ -33,13 +33,13 @@ public class TimelineConfiguration implements Serializable {
     private float radsPerSegment = (float) (Math.PI / 3);
 
     /** The total number of segments. */
-    private int numSegments = 10;
+    private int numSegments = 8;
 
     /**
      * The pitch of the helix (which is the vertical distance in meters of one
      * complete turn).
      */
-    private float pitch = 2.0f;
+    private float pitch = 4.5f;
 
     /**
      * The date range this timeline covers.

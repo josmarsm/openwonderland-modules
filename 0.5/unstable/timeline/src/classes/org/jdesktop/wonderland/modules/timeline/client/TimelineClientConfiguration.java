@@ -33,8 +33,8 @@ public class TimelineClientConfiguration extends TimelineConfiguration {
     private static final Logger logger =
         Logger.getLogger(TimelineClientConfiguration.class.getName());
 
-    private float innerRadius = 2.0f;
-    private float outerRadius = 4.5f;
+    private float innerRadius = 5.0f;
+    private float outerRadius = 12.5f;
 
     private ChannelComponent channel;
 
