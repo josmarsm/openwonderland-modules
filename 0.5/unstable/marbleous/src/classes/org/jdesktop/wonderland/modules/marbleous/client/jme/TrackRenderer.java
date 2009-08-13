@@ -29,12 +29,14 @@ import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Line;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
+import com.jme.scene.Geometry;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Extrusion;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import com.jme.scene.state.GLSLShaderObjectsState;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -268,6 +270,8 @@ public class TrackRenderer extends BasicRenderer {
         MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Material);
         matState.setDiffuse(color);
         marble.setRenderState(matState);
+        MarbleShader shader = new MarbleShader();
+        shader.applyToGeometry(marble);
 
         // Make marble pickable
         CollisionSystem pickCollisionSystem = ClientContextJME.getCollisionSystem(session.getSessionManager(), "Default");
@@ -363,6 +367,8 @@ public class TrackRenderer extends BasicRenderer {
         }
 
         Extrusion ext = new Extrusion(extrusionShape, path, new Vector3f(0, 1, 0));
+        TrackShader shader = new TrackShader();
+        shader.applyToGeometry(ext);
         ext.setModelBound(new BoundingBox());
         ext.updateModelBound();
 
@@ -376,5 +382,113 @@ public class TrackRenderer extends BasicRenderer {
         b.setLocalRotation(transform.toRotationQuat());
 
         return b;
+    }
+
+    public class TrackShader implements RenderUpdater {
+        GLSLShaderObjectsState shaderState = null;
+
+        /**
+         * The vertex and fragment shader
+         */
+        protected static final String vShader =
+                "uniform float Scale;" +
+                "varying vec3  MCposition;" +
+                "void main(void)" +
+                "{" +
+                    "MCposition      = vec3(gl_Vertex) * Scale;" +
+                    "gl_Position     = ftransform();" +
+                "}";
+
+        private static final String fShader =
+                "varying vec3  MCposition;" +
+                "uniform vec3 Color1;" +
+                "uniform vec3 Color2;" +
+                "void main(void) { " +
+                    "vec4 noisevec   = noise4(MCposition);" +
+
+                    "float intensity = abs(noisevec[0] - 0.25) +" +
+                                      "abs(noisevec[1] - 0.125) +" +
+                                      "abs(noisevec[2] - 0.0625) +" +
+                                      "abs(noisevec[3] - 0.03125);" +
+                    "intensity    = clamp(intensity, 0.0, 1.0);" +
+                    "vec3 color    = mix(Color1, Color2, intensity);" +
+                    "gl_FragColor  = vec4(color, 1.0);" +
+                "}";
+
+        public TrackShader() {
+        }
+
+        /**
+         * This applies this shader to the given geometry
+         */
+        public void applyToGeometry(Geometry geo) {
+            shaderState = (GLSLShaderObjectsState) ClientContextJME.getWorldManager().getRenderManager().
+                createRendererState(RenderState.StateType.GLSLShaderObjects);
+            shaderState.setUniform("Scale", 1.2f);
+            shaderState.setUniform("Color1", 0.8f, 0.7f, 0.0f);
+            shaderState.setUniform("Color2", 0.6f, 0.1f, 0.0f);
+            geo.setRenderState(shaderState);
+            ClientContextJME.getWorldManager().addRenderUpdater(this, this);
+        }
+        /**
+         * This loads the shader
+         */
+        public void update(Object o) {
+            shaderState.load(vShader, fShader);
+        }
+    }
+
+    public class MarbleShader implements RenderUpdater {
+        GLSLShaderObjectsState shaderState = null;
+
+        /**
+         * The vertex and fragment shader
+         */
+        protected static final String vShader =
+                "uniform float Scale;" +
+                "varying vec3  MCposition;" +
+                "void main(void)" +
+                "{" +
+                    "MCposition      = vec3(gl_Vertex) * Scale;" +
+                    "gl_Position     = ftransform();" +
+                "}";
+
+        private static final String fShader =
+                "varying vec3  MCposition;" +
+                "uniform vec3 Color1;" +
+                "uniform vec3 Color2;" +
+                "void main(void) { " +
+                    "vec4 noisevec   = noise4(MCposition);" +
+
+                    "float intensity = abs(noisevec[0] - 0.25) +" +
+                                      "abs(noisevec[1] - 0.125) +" +
+                                      "abs(noisevec[2] - 0.0625) +" +
+                                      "abs(noisevec[3] - 0.03125);" +
+                    "float sineval = sin(MCposition.y * 6.0 + intensity * 12.0) * 0.5 + 0.5;" +
+                    "vec3 color    = mix(Color1, Color2, intensity);" +
+                    "gl_FragColor  = vec4(color, 1.0);" +
+                "}";
+
+        public MarbleShader() {
+        }
+
+        /**
+         * This applies this shader to the given geometry
+         */
+        public void applyToGeometry(Geometry geo) {
+            shaderState = (GLSLShaderObjectsState) ClientContextJME.getWorldManager().getRenderManager().
+                createRendererState(RenderState.StateType.GLSLShaderObjects);
+            shaderState.setUniform("Scale", 5.0f);
+            shaderState.setUniform("Color1", 0.0f, 0.0f, 1.0f);
+            shaderState.setUniform("Color2", 1.0f, 1.0f, 1.0f);
+            geo.setRenderState(shaderState);
+            ClientContextJME.getWorldManager().addRenderUpdater(this, this);
+        }
+        /**
+         * This loads the shader
+         */
+        public void update(Object o) {
+            shaderState.load(vShader, fShader);
+        }
     }
 }
