@@ -229,6 +229,10 @@ public class ConstructPanel extends javax.swing.JPanel {
         // The time slider shouldn't ever be visible while the simulation is running
         uiTimeSlider.setVisible(false);
 
+        // Make the run button not enabled
+        runButton.setEnabled(false);
+        stopButton.setEnabled(true);
+
 }//GEN-LAST:event_runButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
@@ -255,7 +259,20 @@ public class ConstructPanel extends javax.swing.JPanel {
 
         // Send a message to all clients with the simulation trace
         cell.sendCellMessage(new SimTraceMessage(simTrace));
+
+        // Make the run button enabled
+        runButton.setEnabled(true);
+        stopButton.setEnabled(false);
 }//GEN-LAST:event_stopButtonActionPerformed
+
+    /**
+     * Tells the control panel that another client has started/stopped the
+     * simulation
+     */
+    public void externalSimulationEnabled(boolean isEnabled) {
+        runButton.setEnabled(!isEnabled);
+        stopButton.setEnabled(!isEnabled);
+    }
 
     /**
      * Updates the list of values displayed from the track segment factory

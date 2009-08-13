@@ -24,7 +24,6 @@ import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
-import org.jdesktop.wonderland.modules.marbleous.common.Track;
 
 /*********************************************
  * UI: The marbleous control window
@@ -67,5 +66,13 @@ public class UI {
     /** Control the visibility of the window. */
     public void setVisible (boolean visible) {
         hudComponent.setVisible(visible);
+    }
+
+    /**
+     * Tells the control panel that another client has started/stopped the
+     * simulation
+     */
+    public void externalSimulationEnabled(boolean isEnabled) {
+        constructPanel.externalSimulationEnabled(isEnabled);
     }
 }
