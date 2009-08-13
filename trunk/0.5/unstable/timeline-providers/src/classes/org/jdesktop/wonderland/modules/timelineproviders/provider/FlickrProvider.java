@@ -5,14 +5,12 @@
 
 package org.jdesktop.wonderland.modules.timelineproviders.provider;
 
-import com.aetrion.flickr.FlickrException;
 import com.aetrion.flickr.REST;
 import com.aetrion.flickr.photos.Extras;
 import com.aetrion.flickr.photos.Photo;
 import com.aetrion.flickr.photos.PhotoList;
 import com.aetrion.flickr.photos.PhotosInterface;
 import com.aetrion.flickr.photos.SearchParameters;
-import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Properties;
@@ -21,14 +19,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.ParserConfigurationException;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedImage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 import org.jdesktop.wonderland.modules.timeline.provider.spi.TimelineProvider;
 import org.jdesktop.wonderland.modules.timeline.provider.spi.TimelineProviderContext;
 import org.jdesktop.wonderland.modules.timelineproviders.common.FlickrConstants;
-import org.xml.sax.SAXException;
 
 /**
  * A provider that reads data from flickr
