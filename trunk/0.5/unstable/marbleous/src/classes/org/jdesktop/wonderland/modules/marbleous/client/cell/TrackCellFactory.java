@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.marbleous.client.cell;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -27,7 +29,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellServerState;
 
 /**
- * The cell factory for the animation test cell.
+ * The cell factory for the marbelous cell.
  */
 @CellFactory
 public class TrackCellFactory implements CellFactorySPI {
@@ -39,11 +41,6 @@ public class TrackCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         TrackCellServerState state = new TrackCellServerState();
 
-        // HACK!
-        Map<String, String> metadata = new HashMap();
-        metadata.put("sizing-hint", "2.0");
-        state.setMetaData(metadata);
-
         return (T)state;
     }
 
@@ -52,8 +49,7 @@ public class TrackCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        return null;
-//        URL url = TrackCellFactory.class.getResource("resources/sample_preview.jpg");
-//        return Toolkit.getDefaultToolkit().createImage(url);
+        URL url = TrackCellFactory.class.getResource("resources/marbelous.jpg");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
