@@ -27,6 +27,10 @@ public class DatedImage implements DatedObject, Serializable {
     private TimelineDate date;
     private String imageURI;
     
+    // image size is optional
+    private int width = -1;
+    private int height = -1;
+
     public DatedImage(TimelineDate date, String imageURI) {
         this.date = date;
         this.imageURI = imageURI;
@@ -38,6 +42,28 @@ public class DatedImage implements DatedObject, Serializable {
 
     public String getImageURI() {
         return imageURI;
+    }
+
+    /**
+     * Return the image width, or -1 if not known
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    /**
+     * Return the image height, or -1 if not known
+     */
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 
     @Override
