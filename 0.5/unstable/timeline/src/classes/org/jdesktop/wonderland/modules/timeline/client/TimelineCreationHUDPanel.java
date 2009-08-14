@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.timeline.client;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -205,15 +206,13 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                 // add the search combo box
                 JComboBox combo = builder.getConfigurationComboBox();
                 if (combo != null) {
-                    combo.setPreferredSize(new Dimension(40, (int) combo.getPreferredSize().getHeight()));
-                    panel.add(combo);
+                    panel.add(combo, BorderLayout.CENTER);
                 }
 
                 // add the query configuration button and panel
                 final JPanel configPanel = builder.getConfigurationPanel();
                 if (configPanel != null) {
                     JButton configButton = new JButton("Configure...");
-                    configButton.setPreferredSize(new Dimension(83, 29));
                     configButton.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
@@ -243,7 +242,7 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                             configureQueryHUD.setVisible(true);
                         }
                     });
-                    panel.add(configButton);
+                    panel.add(configButton, BorderLayout.EAST);
                 }
                 addProvider(panel);
             }
@@ -375,6 +374,7 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
         });
 
         providersPanel.setBackground(new java.awt.Color(255, 255, 204));
+        providersPanel.setLayout(new java.awt.BorderLayout());
 
         addKeywordButton.setText("Add Keyword Collection...");
         addKeywordButton.addActionListener(new java.awt.event.ActionListener() {
@@ -537,7 +537,7 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(providersLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(providersPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(providersPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 10, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addKeywordButton)
@@ -550,8 +550,6 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addProviderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProviderButtonActionPerformed
-        // TODO: display a provider chooser dialog
-        // for now, just add another generic provider panel
         if (mainHUD == null) {
             mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         }
@@ -561,7 +559,6 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
             addProviderPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent pe) {
-                    logger.info("--- property changed: " + pe);
                     if (pe.getPropertyName().equals("add")) {
                         addProviders();
                         addProviderHUD.setVisible(false);
@@ -577,7 +574,6 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
             mainHUD.addComponent(addProviderHUD);
         }
         addProviderHUD.setVisible(true);
-        //addProvider(new TimelineProviderPanel());
     }//GEN-LAST:event_addProviderButtonActionPerformed
 
     private void addKeywordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addKeywordButtonActionPerformed
