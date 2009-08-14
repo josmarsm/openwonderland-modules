@@ -17,6 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.server.cell;
 
+import com.sun.mpk20.voicelib.app.Call;
+import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.sgs.app.AppContext;
+import java.io.IOException;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -24,7 +29,6 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.marbleous.common.BigDropTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.BumpTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.LoopTrackSegmentType;
-import org.jdesktop.wonderland.modules.marbleous.common.StraightDropTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.StraightLevelTrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
@@ -34,7 +38,9 @@ import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SelectedSa
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SoundPlaybackMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
+import org.jdesktop.wonderland.modules.marbleous.server.utils.AudioUtils;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -132,11 +138,13 @@ public class TrackCellMO extends CellMO {
             channel.addMessageReceiver(TrackCellMessage.class, receiver);
             channel.addMessageReceiver(SimTraceMessage.class, new SimTraceMessageReceiver(this));
             channel.addMessageReceiver(SelectedSampleMessage.class, new SelectedSampleMessageReceiver(this));
+            channel.addMessageReceiver(SoundPlaybackMessage.class, new SoundPlaybackMessageReceiver(this));
 
         } else {
             channel.removeMessageReceiver(SimulationStateMessage.class);
             channel.removeMessageReceiver(SimTraceMessage.class);
             channel.removeMessageReceiver(SelectedSampleMessage.class);
+            channel.removeMessageReceiver(SoundPlaybackMessage.class);
         }
     }
 
@@ -159,6 +167,35 @@ public class TrackCellMO extends CellMO {
         System.out.println("TrackCellMO, removing " + segment);
         serverState.getTrack().removeTrackSegment(segment);
         sendCellMessage(clientID, tcm);
+    }
+
+    private static class SoundPlaybackMessageReceiver extends AbstractComponentMessageReceiver {
+
+        public SoundPlaybackMessageReceiver(TrackCellMO cellMO) {
+            super(cellMO);
+        }
+
+        @Override
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            if (message instanceof SoundPlaybackMessage) {
+                SoundPlaybackMessage spm = (SoundPlaybackMessage) message;
+                System.out.println("received Sound Playback Message");
+                if (spm.shouldPlay()) {
+                    String playURL = AudioUtils.uriToURL(spm.getUri());
+                    System.out.println("playing URL: " + playURL);
+                    VoiceManager vm = AppContext.getManager(VoiceManager.class);
+                    System.out.println("Getting call: " + spm.getCallID());
+                    Call call = vm.getCall(spm.getCallID());
+
+
+                    try {
+                        call.playTreatment(playURL);
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -256,6 +293,4 @@ public class TrackCellMO extends CellMO {
             }
         }
     }
-
-
 }

@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -47,6 +48,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SelectedSa
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SoundPlaybackMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.trace.SimTrace;
 
@@ -65,6 +67,7 @@ public class TrackCell extends Cell {
     private UI ui;
     private TimeSliderUI uiTimeSlider;
     Track track;
+    private static final String COASTER_STARTED_SOUND = "wls://marbleous/start.au";
     private Object savedSegmentState;
 
     public TrackCell(CellID cellID, CellCache cellCache) {
@@ -74,15 +77,13 @@ public class TrackCell extends Cell {
     public void editSegment(final TrackSegment segment) {
         savedSegmentState = segment.saveToMemento();
         knotTableModel.setSegment(segment);
-            java.awt.EventQueue.invokeLater(new Runnable() {
+        java.awt.EventQueue.invokeLater(new Runnable() {
 
-                public void run() {
-                    new KnotFrame(knotTableModel, TrackCell.this).setVisible(true);
-                }
-            });
+            public void run() {
+                new KnotFrame(knotTableModel, TrackCell.this).setVisible(true);
+            }
+        });
     }
-
-
 
     /**
      * Get the track for this cell
@@ -159,11 +160,11 @@ public class TrackCell extends Cell {
         return super.createCellRenderer(rendererType);
     }
 
-    public Entity getMarbleEntity () {
+    public Entity getMarbleEntity() {
         return cellRenderer.getMarbleEntity();
     }
 
-    public void addMarbleMouseListener (TrackRenderer.MarbleMouseEventListener listener) {
+    public void addMarbleMouseListener(TrackRenderer.MarbleMouseEventListener listener) {
         cellRenderer.addMarbleMouseListener(listener);
     }
 
@@ -193,7 +194,7 @@ public class TrackCell extends Cell {
                     channel.addMessageReceiver(SimTraceMessage.class, new SimTraceMessageReceiver());
                     channel.addMessageReceiver(TrackCellMessage.class, new TrackCellMessageReceiver());
                     channel.addMessageReceiver(SelectedSampleMessage.class, new SelectedSampleMessageReceiver());
-                    
+
                     ui.setVisible(true);
                 }
 
@@ -222,13 +223,13 @@ public class TrackCell extends Cell {
 
         ui = new UI(this, uiTimeSlider);
         System.err.println("******** ui = " + ui);
-        
-        /*
-        SimTrace trace = new SimTrace(2f, 60);
-        trace.appendSample(5f, new Vector3f(0f, 2f, 0f), new Vector3f(1f, 2f, 3f));
-        trace.appendSample(5f, new Vector3f(0f, 3f, 0f), new Vector3f(4f, 5f, 6f));
-        trace.appendSample(5f, new Vector3f(0f, 4f, 0f), new Vector3f(7f, 8f, 9f));
-        */
+
+    /*
+    SimTrace trace = new SimTrace(2f, 60);
+    trace.appendSample(5f, new Vector3f(0f, 2f, 0f), new Vector3f(1f, 2f, 3f));
+    trace.appendSample(5f, new Vector3f(0f, 3f, 0f), new Vector3f(4f, 5f, 6f));
+    trace.appendSample(5f, new Vector3f(0f, 4f, 0f), new Vector3f(7f, 8f, 9f));
+     */
     }
 
     /**
@@ -252,6 +253,7 @@ public class TrackCell extends Cell {
      */
     private void setSimulationStateInternal(SimulationState simulationState) {
         this.simulationState = simulationState;
+        fireSimulationStateChanged(simulationState);
 
         // Start or stop the physics system
         JBulletPhysicsSystem physicsSystem = getPhysicsSystem();
@@ -260,13 +262,20 @@ public class TrackCell extends Cell {
                 logger.warning("Starting physics system...");
 
                 physicsSystem.setStarted(true);
+                playSound(COASTER_STARTED_SOUND);
             } else {
                 physicsSystem.setStarted(false);
             }
         } else {
             logger.warning("Marble physics system not yet initialized!");
         }
-        fireSimulationStateChanged(simulationState);
+        sendCellMessage(new SimulationStateMessage(simulationState));
+    }
+
+    private void playSound(String soundURI) {
+        // Play a sound
+        String callID = SoftphoneControlImpl.getInstance().getCallID();
+        sendCellMessage(new SoundPlaybackMessage(callID, soundURI, true));
     }
 
     /**
@@ -286,7 +295,7 @@ public class TrackCell extends Cell {
          */
         @Override
         public void messageReceived(CellMessage message) {
-            SimTrace simTrace = ((SimTraceMessage)message).getSimTrace();
+            SimTrace simTrace = ((SimTraceMessage) message).getSimTrace();
             uiTimeSlider.setSimTrace(simTrace);
             uiTimeSlider.setVisible(true);
         }
@@ -306,7 +315,7 @@ public class TrackCell extends Cell {
 
             if (message instanceof SelectedSampleMessage) {
                 if (!fromMe) {
-                    uiTimeSlider.setSelectedTime(((SelectedSampleMessage)message).getSelectedTime());
+                    uiTimeSlider.setSelectedTime(((SelectedSampleMessage) message).getSelectedTime());
                 }
             }
         }
@@ -327,7 +336,7 @@ public class TrackCell extends Cell {
 
             if (message instanceof SimulationStateMessage) {
                 if (!fromMe) {
-                    SimulationState state = ((SimulationStateMessage)message).getSimulationState();
+                    SimulationState state = ((SimulationStateMessage) message).getSimulationState();
 
                     // Turn on/off the simulation
                     setSimulationStateInternal(state);
@@ -354,29 +363,28 @@ public class TrackCell extends Cell {
             System.out.println("TrackCellMessageReceiver, received message: " + message);
             TrackCellMessage tcm = (TrackCellMessage) message;
             TrackSegment aSegment;
-            
-                switch (tcm.getAction()) {
-                    case ADD_SEGMENT:
-                        aSegment = tcm.getTrackSegment();
-                        trackListModel.addSegment(aSegment);
-                        break;
-                    case REMOVE_SEGMENT:
-                        aSegment = tcm.getTrackSegment();
-                        trackListModel.removeSegment(aSegment);
-                        if (aSegment.equals(knotTableModel.getSegment())) {
-                            System.err.println("The segment you are editing has been removed by another user");
-                        }
-                        break;
-                    case MODIFY_SEGMENT:
-                        aSegment = tcm.getTrackSegment();
-                        trackListModel.modifySegment(aSegment);
-                        if (aSegment.equals(knotTableModel.getSegment())) {
-                            knotTableModel.setSegment(aSegment);
-                        }
-                    default:
-                        logger.severe("Unknown action type: " + tcm.getAction());
 
-                }
+            switch (tcm.getAction()) {
+                case ADD_SEGMENT:
+                    aSegment = tcm.getTrackSegment();
+                    trackListModel.addSegment(aSegment);
+                    break;
+                case REMOVE_SEGMENT:
+                    aSegment = tcm.getTrackSegment();
+                    trackListModel.removeSegment(aSegment);
+                    if (aSegment.equals(knotTableModel.getSegment())) {
+                        System.err.println("The segment you are editing has been removed by another user");
+                    }
+                    break;
+                case MODIFY_SEGMENT:
+                    aSegment = tcm.getTrackSegment();
+                    trackListModel.modifySegment(aSegment);
+                    if (aSegment.equals(knotTableModel.getSegment())) {
+                        knotTableModel.setSegment(aSegment);
+                    }
+                default:
+                    logger.severe("Unknown action type: " + tcm.getAction());
+            }
         }
     }
 
