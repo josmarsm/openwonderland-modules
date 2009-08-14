@@ -295,7 +295,10 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     }
 
     public void cleanup () {
+        // TODO: dispose all entities, not just current
+        sampleEntities.clear();
         currentSampleEntity.dispose();
+        currentSampleEntity = null;
         SampleDisplayEntity.disposeAll();
         currentSampleInfo = null;
         trace = null;
