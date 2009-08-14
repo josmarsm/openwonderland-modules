@@ -293,7 +293,9 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             // Start out at half the heightIncrement, so the first cell starts
             // a little off the ground. Then we'll add on a full height increment
             // to find the center of each other cell.
-            float curHeight = heightIncrement / 2;
+            // this really shouldn't be set manually to be this value, but it's what makes things
+            // look good for this pitch, sooooooo.
+            float curHeight = -1.2f;
 
 
 //            logger.warning("laying out segment. cells/row: " + maxCellsPerRow + "; numRows: " + numRows + "; angleIncrement: " + angleIncrement + "; heightIncrement: " + heightIncrement);
