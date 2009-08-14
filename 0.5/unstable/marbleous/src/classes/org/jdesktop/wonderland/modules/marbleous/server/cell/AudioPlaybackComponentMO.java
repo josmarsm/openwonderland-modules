@@ -77,8 +77,10 @@ public class AudioPlaybackComponentMO extends CellComponentMO {
         Call call = vm.getCall(callID);
 
         try {
-            // Play the sound
-            call.playTreatment(playURL);
+            if (call != null) {
+                // Play the sound
+                call.playTreatment(playURL);
+            }
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
