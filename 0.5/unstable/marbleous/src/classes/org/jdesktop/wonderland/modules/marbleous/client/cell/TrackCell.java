@@ -242,7 +242,6 @@ public class TrackCell extends Cell {
      * @param state The started/stopped state of the simulation
      */
     public void setSimulationState(SimulationState simulationState) {
-        cellRenderer.setSimulationState(simulationState);
 
         logger.warning("New simulation state " + simulationState);
         if (simulationState.equals(getSimulationState())) {
@@ -278,6 +277,9 @@ public class TrackCell extends Cell {
             logger.warning("Marble physics system not yet initialized!");
         }
         fireSimulationStateChanged(simulationState);
+
+        // Tell the renderer of the new state so that it can turn off physics
+        cellRenderer.setSimulationState(simulationState);
     }
 
     /**

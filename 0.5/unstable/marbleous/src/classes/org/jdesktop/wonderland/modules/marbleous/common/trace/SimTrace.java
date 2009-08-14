@@ -75,7 +75,7 @@ public class SimTrace implements Serializable {
 
         // Create a new SampleInfo with the position, velocity, acceleration
         // and mass. The SampleInfo class will figure everything else out
-        float time = sampleList.size() * (float)samplesPerSecond;
+        float time = sampleList.size() / (float)samplesPerSecond;
         SampleInfo sample = new SampleInfo(m, p, v, a, time, g);
         sampleList.add(sample);
         return sample;
