@@ -324,10 +324,10 @@ public class SampleDisplayEntity extends Entity {
             node.setModelBound(new BoundingBox());
             node.updateModelBound();
 
-            System.err.println("******** samplePosition = " + samplePosition);
+            //System.err.println("******** samplePosition = " + samplePosition);
             float y = samplePosition.y + marbleRadius;
             Vector3f trans = new Vector3f(samplePosition.x, y, samplePosition.z);
-            System.err.println("******** trans = " + trans);
+            //System.err.println("******** trans = " + trans);
             transformNode.setLocalTranslation(trans);
 
             makeEntityPickable(this, node);

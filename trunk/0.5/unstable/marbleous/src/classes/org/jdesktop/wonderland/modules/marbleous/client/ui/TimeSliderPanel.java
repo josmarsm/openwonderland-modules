@@ -170,7 +170,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText("Time (ms)");
+        jLabel1.setText("Time (sec)");
 
         jLabel2.setText("0");
 
@@ -207,8 +207,17 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void setSliderValue (int value) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                jSlider1.setValue(0);
+            }
+        });
+        
+    }
+
     private void jSlider1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jSlider1StateChanged
-        if (setLocal == false) {
+        if (setLocal == false && trace != null) {
             int value = jSlider1.getValue();
             float pct = (float) value / (float) (jSlider1.getMaximum() - jSlider1.getMinimum());
             //System.err.println("trace.getEndTime() = " + trace.getEndTime());
@@ -295,6 +304,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     }
 
     public void cleanup () {
+        setSliderValue(0);
         // TODO: dispose all entities, not just current
         sampleEntities.clear();
         currentSampleEntity.dispose();
