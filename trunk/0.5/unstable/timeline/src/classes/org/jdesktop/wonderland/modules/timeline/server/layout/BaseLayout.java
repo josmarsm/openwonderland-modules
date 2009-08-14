@@ -50,6 +50,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
 import org.jdesktop.wonderland.modules.timeline.common.sticky.TimelineStickyServerState;
 import org.jdesktop.wonderland.modules.timeline.server.TimelineCellMO;
+import org.jdesktop.wonderland.modules.timeline.server.audio.TimelineAudioComponentMO;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMO;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMOListener;
 import org.jdesktop.wonderland.modules.timeline.server.sticky.TimelineStickyCellMO;
@@ -138,7 +139,10 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
     private void layoutDatedObject(DatedObject obj) {
         // make a new Cell for this object (or get an existing one if we have one)
         CellMO cell = getNewCell(obj);
-        if (cell == null) {
+        // have an exception for dated audio, which will return a null cell above.
+        // this is a terrible way to structure this, but it's a hack that should
+        // work okay for now.
+        if (cell == null && !(obj instanceof DatedAudio)) {
             logger.warning("Type " + obj.getClass() + " not supported.");
             return;
         }
@@ -176,12 +180,32 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         //     after we're done creating cells to do the actual layout work.
 
         // 1.
-        DatedObjectComponentMO comp = new DatedObjectComponentMO(cell);
+
+        if(obj instanceof DatedAudio) {
+            // do some special stuff.
+            DatedAudio audioObj = (DatedAudio) obj;
+//            TimelineAudioComponentMO audio = this.cellRef.getForUpdate().getComponent(TimelineAudioComponentMO.class);
+            TimelineAudioComponentMO audio = this.cellRef.get().getAudio();
+
+            logger.info("audioComponent: " + audio);
+            logger.info("about to setup audio treatment with uri: " + audioObj.getAudioURI() + " on segment with date range: " + seg.getDate());
+            audio.setupTreatment(seg.getDate().toString(), audioObj.getAudioURI(), Vector3f.ZERO);
+
+//            comp.setNeedsLayout(false);
+//            comp.setAddedToTimeline(true);
+//            comp.setAssignedToSegment(true);
+        } else {
+
+            // Do the normal flow for dated objects that need a real
+            // spatial layout.
+            DatedObjectComponentMO comp = new DatedObjectComponentMO(cell);
         comp.setDatedObject(obj);
+
         comp.setAddedToTimeline(false);
         comp.setNeedsLayout(true);
         comp.setAssignedToSegment(true);
         cell.addComponent(comp);
+        }
 
 //        logger.info("Added relevant cell components.");
 
@@ -194,6 +218,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         currentObjects.add(obj);
 
         datedObjectBySegment.put(seg, currentObjects);
+
 //        logger.info("Added DO to list of DOs attached to this segment.");
     }
 
@@ -227,6 +252,9 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             for (DatedObject dObj : datedObjects.descendingSet()) {
                 // we know all of these objects will have an entry
                 // in this map by now.
+                if(dObj instanceof DatedAudio) {
+                    continue;
+                }
                 CellMO cell = datedObjectToCellMap.get(dObj).get();
                 DatedObjectComponentMO comp = cell.getComponent(DatedObjectComponentMO.class);
 
@@ -507,8 +535,9 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             DatedAudio audio = (DatedAudio)datedObj;
 
 
-            logger.warning("Not handling audio objects properly yet. Need to refactor some stuff for them to work.");
-//            DatedObjectComponentMO doComp =
+//            logger.warning("Not handling audio objects properly yet. Need to refactor some stuff for them to work.");
+
+            out = null;
 
 
         } else {

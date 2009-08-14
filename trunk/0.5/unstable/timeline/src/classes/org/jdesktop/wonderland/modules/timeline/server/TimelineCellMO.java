@@ -17,13 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.timeline.server;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
-import java.awt.LayoutManager;
-import java.util.Date;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -32,15 +29,15 @@ import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellClientState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellServerState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
-import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
-import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
+import org.jdesktop.wonderland.modules.timeline.server.audio.TimelineAudioComponentMO;
 import org.jdesktop.wonderland.modules.timeline.server.layout.BaseLayout;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMO;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -60,6 +57,9 @@ public class TimelineCellMO extends CellMO {
 
     private BaseLayout layout;
 
+    @UsesCellComponentMO(TimelineAudioComponentMO.class)
+    private ManagedReference<TimelineAudioComponentMO> audioRef;
+
     public TimelineCellMO() {
         super();
     }
@@ -74,9 +74,6 @@ public class TimelineCellMO extends CellMO {
 
         this.setConfiguration(((TimelineCellServerState)state).getConfig());
         logger.info("generating segments");
-//        Date futureDate = new Date();
-//        futureDate = new Date(futureDate.getTime() - 2000000000);
-//        config.setDateRange(new TimelineDate(futureDate, new Date()));
         this.segments = config.generateSegments();
         if(layout==null)
             layout = new BaseLayout(this);
@@ -129,6 +126,17 @@ public class TimelineCellMO extends CellMO {
 
     public TimelineConfiguration getConfiguration() {
         return this.config;
+    }
+
+    public TimelineAudioComponentMO getAudio() {
+
+        if(this.audioRef.get()==null) {
+            TimelineAudioComponentMO audio = new TimelineAudioComponentMO(this);
+            this.addComponent(audio, TimelineAudioComponentMO.class);
+            this.audioRef = AppContext.getDataManager().createReference(audio);
+        }
+
+        return this.audioRef.get();
     }
 
     private static class TimelineCellMessageReceiver extends AbstractComponentMessageReceiver {
