@@ -137,6 +137,10 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
     private void layoutDatedObject(DatedObject obj) {
         // make a new Cell for this object (or get an existing one if we have one)
         CellMO cell = getNewCell(obj);
+        if (cell == null) {
+            logger.warning("Type " + obj.getClass() + " not supported.");
+            return;
+        }
 
 //        logger.info("got a new cell for this DO: " + cell);
         // now assign this cell to a segment. get the middle date for the object

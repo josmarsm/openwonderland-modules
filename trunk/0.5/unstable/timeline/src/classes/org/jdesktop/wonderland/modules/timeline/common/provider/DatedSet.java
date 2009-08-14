@@ -56,6 +56,15 @@ public class DatedSet extends TreeSet<DatedObject> {
         super (source);
     }
 
+    @Override
+    public boolean add(DatedObject e) {
+        if (e == null) {
+            throw new IllegalStateException("Null not supported");
+        }
+
+        return super.add(e);
+    }
+
     /**
      * Get all elements in the set within the given date range.  This will
      * return all dates for which the includes() method of the given

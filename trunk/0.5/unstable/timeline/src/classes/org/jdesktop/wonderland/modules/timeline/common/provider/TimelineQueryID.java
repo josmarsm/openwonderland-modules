@@ -35,7 +35,7 @@ public class TimelineQueryID implements Serializable, Comparable<TimelineQueryID
      * @return the next valid id
      */
     public TimelineQueryID next() {
-        return new TimelineQueryID(id++);
+        return new TimelineQueryID(id + 1);
     }
 
     public int compareTo(TimelineQueryID o) {

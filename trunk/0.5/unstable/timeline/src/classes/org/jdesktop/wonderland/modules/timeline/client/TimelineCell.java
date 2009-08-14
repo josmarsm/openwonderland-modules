@@ -55,10 +55,12 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.timeline.client.audio.TimelineAudioComponent;
 import org.jdesktop.wonderland.modules.timeline.client.jme.cell.TimelineCellRenderer;
+import org.jdesktop.wonderland.modules.timeline.client.provider.TimelineProviderComponent;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellClientState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration.TimelineUnits;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedNews;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
@@ -90,6 +92,9 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     private TimelineClientConfiguration config;
     private TimelineSegment curSegment;
 
+    @UsesCellComponent
+    private TimelineProviderComponent provider;
+
     public TimelineCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
@@ -99,6 +104,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         super.setStatus(status, increasing);
 
         if (status == CellStatus.ACTIVE && increasing) {
+            mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
             ChannelComponent channel = getComponent(ChannelComponent.class);
             channel.addMessageReceiver(TimelineCellChangeMessage.class, new TimelineCellMessageReceiver());
@@ -195,9 +201,22 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         curationPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent pe) {
+                System.out.println("Property change: " + pe.getPropertyName());
+
                 if (pe.getPropertyName().equals("add")) {
                     logger.info("--- add curated item");
                     // TODO: add curated items to the Timeline
+                    try {
+                        addCuratedItem(curationPanel.getDate(),
+                                       curationPanel.getText(),
+                                       curationPanel.getFile());
+                        
+                        curationPanel.setText("");
+                        curationPanel.setFile("");
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
+
                 } else if (pe.getPropertyName().equals("done")) {
                     // finished adding curated items
                     timelineCurationHUD.setVisible(false);
@@ -216,14 +235,36 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         navigationHUD.setName("Navigation");
     }
 
+    private void addCuratedItem(Date date, String text, String file) {
+        if (date == null) {
+            throw new IllegalStateException("No date");
+        }
+
+        if (file == null && text == null) {
+            throw new IllegalStateException("No file or text");
+        }
+
+        if (file == null) {
+            // use the text to create a news item
+            DatedNews news = new DatedNews(new TimelineDate(date), null, null,
+                                           text);
+            provider.addManualObject(news);
+        } else {
+            ManualObjectCreator creator =
+                    new ManualObjectCreator(new TimelineDate(date), file, text);
+            DatedObject obj = creator.create();
+            if (obj != null) {
+                provider.addManualObject(obj);
+            }
+        }
+    }
+    
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
 
         // If the person entering is the local avatar...
         if (cell.getCellCache().getViewCell().getCellID() == viewCellID) {
             if (entered) {
                 // create HUDs
-                mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-
                 createNavigationHUD();
                 createCreationHUD();
                 createCurationHUD();

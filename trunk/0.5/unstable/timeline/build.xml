@@ -17,6 +17,7 @@
 
     <pathconvert property="module-client.classpath">
         <path location="${wonderland.dir}/modules/samples/image-viewer/build/client/imageviewer-client.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-web.classpath">
@@ -105,7 +106,7 @@
                 builddir="${build.lib.dir}">
 
             <requires name="imageviewer" version="1"/>
-
+            <requires name="content-repository" version="1"/>
 
             <client dir="${current.dir}/lib">
                 <include name="*.jar"/>

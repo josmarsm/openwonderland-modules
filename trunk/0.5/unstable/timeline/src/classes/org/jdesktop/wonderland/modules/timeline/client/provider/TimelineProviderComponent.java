@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQueryID;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderAddResultMessage;
+import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderManualObjectMessage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderObjectsMessage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderRemoveResultMessage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderResetResultMessage;
@@ -84,6 +85,32 @@ public class TimelineProviderComponent extends CellComponent {
      */
     public Collection<TimelineResult> getResults() {
         return new ArrayList<TimelineResult>(results.values());
+    }
+
+    /**
+     * Add a new query.  The query will be passed to the server, which will
+     * then generate a corresponding result.
+     * @param query the query to add
+     */
+    public void addQuery(TimelineQuery query) {
+        channel.send(new ProviderAddResultMessage(cell.getCellID(), query));
+    }
+
+    /**
+     * Remove an existing query.  The corresponding result will be removed
+     * by the server.
+     * @param queryID the id of the query to remove
+     */
+    public void removeQuery(TimelineQueryID queryID) {
+        channel.send(new ProviderRemoveResultMessage(cell.getCellID(), queryID));
+    }
+
+    /**
+     * Manually add an object to the timeline
+     * @param obj the object to add to the timeline
+     */
+    public void addManualObject(DatedObject obj) {
+        channel.send(new ProviderManualObjectMessage(cell.getCellID(), obj));
     }
 
     /**
@@ -161,6 +188,7 @@ public class TimelineProviderComponent extends CellComponent {
         switch (message.getAction()) {
             case ADD:
                 for (DatedObject obj : message.getObjects()) {
+                    System.out.println("Add object " + obj);
                     result.addResult(obj);
                 }
                 break;

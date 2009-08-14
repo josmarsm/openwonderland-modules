@@ -36,9 +36,11 @@ import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 import org.jdesktop.wonderland.modules.timeline.server.layout.BaseLayout;
+import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMO;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -46,6 +48,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * 
  */
+@DependsOnCellComponentMO(TimelineProviderComponentMO.class)
 public class TimelineCellMO extends CellMO {
 
     private static final Logger logger =
