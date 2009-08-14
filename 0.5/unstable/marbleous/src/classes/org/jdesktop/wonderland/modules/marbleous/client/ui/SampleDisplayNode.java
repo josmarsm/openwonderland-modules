@@ -22,9 +22,11 @@ import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture;
 import com.jme.image.Texture.MagnificationFilter;
 import com.jme.image.Texture.MinificationFilter;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.Renderer;
 import com.jme.scene.BillboardNode;
+import com.jme.scene.shape.Cylinder;
 import com.jme.scene.shape.Quad;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.TextureState;
@@ -55,7 +57,6 @@ import java.text.AttributedString;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.marbleous.common.trace.SampleInfo;
@@ -177,6 +178,16 @@ public class SampleDisplayNode extends BillboardNode {
         }
         quad = getQuad();
         attachChild(quad);
+
+
+        float descenderHeight = 0.6f;
+        Cylinder descender = new Cylinder("Descender cyl", 10, 10, 0.02f, descenderHeight, true);
+        Quaternion quat = new Quaternion();
+        quat.fromAngleAxis((float)Math.toRadians(90f), new Vector3f(1f, 0, 0 ));
+        descender.setLocalRotation(quat);
+        descender.setLocalTranslation(new Vector3f(0f, -height3D/2f - descenderHeight/2f, 0f));
+        attachChild(descender);
+
         // set bounds to make pickable
         setModelBound(new BoundingBox());
         updateModelBound();
