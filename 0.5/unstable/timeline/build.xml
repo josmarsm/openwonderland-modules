@@ -17,6 +17,11 @@
         <path location="${wonderland.dir}/modules/foundation/appbase/build/server/appbase-server.jar"/>
     </pathconvert>
 
+    <pathconvert property="module-common.classpath">
+        <path location="${current.dir}/../stickynote/build/client/stickynote-client.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/appbase/build/client/appbase-client-cell.jar"/>
+    </pathconvert>
+
     <pathconvert property="module-client.classpath">
         <path location="${wonderland.dir}/modules/samples/image-viewer/build/client/imageviewer-client.jar"/>
         <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
