@@ -52,7 +52,8 @@ public class NYTimesQueryBuilder implements TimelineQueryBuilder {
     private JComboBox createConfigComboBox() {
         // TODO: configure the combo box
         JComboBox comboBox = new JComboBox();
-        ComboBoxModel model = comboBox.getModel();
+        comboBox.setEditable(true);
+        comboBox.addItem("international space station");
         return comboBox;
     }
 
