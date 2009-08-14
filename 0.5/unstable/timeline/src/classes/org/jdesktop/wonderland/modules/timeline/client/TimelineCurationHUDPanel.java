@@ -19,6 +19,10 @@ package org.jdesktop.wonderland.modules.timeline.client;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * A panel for curating a Timeline
@@ -56,6 +60,54 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
         if (listeners != null) {
             listeners.removePropertyChangeListener(listener);
         }
+    }
+
+    /**
+     * Get the date from this panel
+     * @return the date
+     */
+    public Date getDate() {
+        try {
+            DateFormat df = new SimpleDateFormat("MMM dd, yyyy");
+            return df.parse(eventDateTextField.getText().trim());
+        } catch (ParseException pe) {
+            pe.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get the text
+     * @return the text, or null if there is no text
+     */
+    public String getText() {
+        String text = textTextArea.getText();
+        if (text == null || text.trim().length() == 0) {
+            return null;
+        }
+
+        return text.trim();
+    }
+
+    public void setText(String text) {
+        textTextArea.setText(text);
+    }
+
+    /**
+     * Get the file to upload
+     * @return the file name, or null if there is no file
+     */
+    public String getFile() {
+        String file = artworkTextField.getText();
+        if (file == null || file.trim().length() == 0) {
+            return null;
+        }
+
+        return file.trim();
+    }
+
+    public void setFile(String file) {
+        artworkTextField.setText(file);
     }
 
     /** This method is called from within the constructor to
@@ -181,6 +233,7 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        System.out.println("Add button action performed");
         listeners.firePropertyChange("add", new String(""), null);
     }//GEN-LAST:event_addButtonActionPerformed
 

@@ -43,20 +43,24 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineProvider
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQuery;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
+import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderAddResultMessage;
+import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderManualObjectMessage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderObjectsMessage;
+import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderRemoveResultMessage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.messages.ProviderResetResultMessage;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderRegistry.RegistryResultListener;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.annotation.DependsOnCellComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * The server side of the timeline provider
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-@DependsOnCellComponentMO(ChannelComponentMO.class)
 public class TimelineProviderComponentMO extends CellComponentMO {
     /** a logger */
     private static final Logger logger =
@@ -67,6 +71,13 @@ public class TimelineProviderComponentMO extends CellComponentMO {
 
     /** listeners to notify when the set of results changes */
     private ManagedReference<Set<TimelineProviderComponentMOListener>> listenersRef;
+
+    /** the id of the manual query provider */
+    private TimelineQueryID manualQueryID;
+
+    /** the channel component */
+    @UsesCellComponentMO(ChannelComponentMO.class)
+    private ManagedReference<ChannelComponentMO> channelRef;
 
     public TimelineProviderComponentMO(CellMO cell) {
         super(cell);
@@ -135,6 +146,54 @@ public class TimelineProviderComponentMO extends CellComponentMO {
         }
     }
 
+    @Override
+    protected void setLive(boolean live) {
+        super.setLive(live);
+
+        TimelineProviderRegistry reg = TimelineProviderRegistry.getInstance();
+
+        if (live) {
+            // add the manual provider
+            TimelineQuery manualQuery = new TimelineQuery("org.jdesktop.wonderland.modules.timeline.provider.ManualTimelineProvider");
+            manualQueryID = addQuery(manualQuery);
+
+            // add message listeners
+            MessageReceiver receiver = new MessageReceiver(cellRef.get(), this);
+            channelRef.get().addMessageReceiver(ProviderAddResultMessage.class, receiver);
+            channelRef.get().addMessageReceiver(ProviderRemoveResultMessage.class, receiver);
+            channelRef.get().addMessageReceiver(ProviderManualObjectMessage.class, receiver);
+
+            // register queries
+            for (TimelineResultHolder trh : resultsRef.get().values()) {
+                // register with the registry
+                ResultListener listener = new ResultListener(trh.getQuery().getQueryID(),
+                                                             resultsRef.get());
+                reg.register(trh.getQuery(), listener);
+
+                // notify listeners
+                for (TimelineProviderComponentMOListener l : listenersRef.get()) {
+                    l.resultAdded(trh);
+                }
+            }
+        } else {
+            // remove message listeners
+            channelRef.get().removeMessageReceiver(ProviderAddResultMessage.class);
+            channelRef.get().removeMessageReceiver(ProviderRemoveResultMessage.class);
+            channelRef.get().removeMessageReceiver(ProviderManualObjectMessage.class);
+
+            // unregister queries
+            for (TimelineResultHolder trh : resultsRef.get().values()) {
+                // unregister with the registry
+                reg.unregister(trh.getQuery().getQueryID());
+
+                // notify listeners
+                for (TimelineProviderComponentMOListener l : listenersRef.get()) {
+                    l.resultRemoved(trh);
+                }
+            }
+        }
+    }
+
     /**
      * Add a new query to the system.  This will create all the relevant
      * data necessary, and also register the new query with the provider
@@ -157,14 +216,16 @@ public class TimelineProviderComponentMO extends CellComponentMO {
         // add it to our record
         resultsRef.get().put(query.getQueryID(), holder);
 
-        // register with the registry
-        ResultListener listener = new ResultListener(query.getQueryID(),
-                                                     resultsRef.get());
-        reg.register(query, listener);
+        if (isLive()) {
+            // register with the registry
+            ResultListener listener = new ResultListener(query.getQueryID(),
+                                                        resultsRef.get());
+            reg.register(query, listener);
 
-        // notify listeners
-        for (TimelineProviderComponentMOListener l : listenersRef.get()) {
-            l.resultAdded(holder);
+            // notify listeners
+            for (TimelineProviderComponentMOListener l : listenersRef.get()) {
+                l.resultAdded(holder);
+            }
         }
 
         // return the new id
@@ -183,7 +244,6 @@ public class TimelineProviderComponentMO extends CellComponentMO {
             // unregister with the registry
             TimelineProviderRegistry.getInstance().unregister(id);
 
-            // notify listeners
             // notify listeners
             for (TimelineProviderComponentMOListener l : listenersRef.get()) {
                 l.resultRemoved(res);
@@ -215,6 +275,31 @@ public class TimelineProviderComponentMO extends CellComponentMO {
      */
     public void removeComponentMOListener(TimelineProviderComponentMOListener listener) {
         listenersRef.getForUpdate().remove(listener);
+    }
+
+    /**
+     * Handle an add result message
+     * @param message the add result message
+     */
+    private void handleAddResult(ProviderAddResultMessage message) {
+        addQuery(message.getQuery());
+    }
+
+    /**
+     * Handle a remove result message
+     * @param message the remove result message
+     */
+    private void handleRemoveResult(ProviderRemoveResultMessage message) {
+        removeQuery(message.getID());
+    }
+
+    /**
+     * Handle a manual object message
+     * @param message the manual object message
+     */
+    private void handleManualObject(ProviderManualObjectMessage message) {
+        TimelineResultHolder trh = resultsRef.get().get(manualQueryID);
+        trh.addResults(Collections.singleton(message.getObject()));
     }
 
     /**
@@ -377,6 +462,33 @@ public class TimelineProviderComponentMO extends CellComponentMO {
 
         public void removeResultListener(TimelineResultListener listener) {
             listenersRef.getForUpdate().remove(listener);
+        }
+    }
+
+    /**
+     * Receive messages on the server
+     */
+    private static class MessageReceiver extends AbstractComponentMessageReceiver {
+        private ManagedReference<TimelineProviderComponentMO> compRef;
+
+        public MessageReceiver(CellMO cellMO, TimelineProviderComponentMO comp) {
+            super (cellMO);
+
+            compRef = AppContext.getDataManager().createReference(comp);
+        }
+
+        @Override
+        public void messageReceived(WonderlandClientSender sender,
+                                    WonderlandClientID clientID,
+                                    CellMessage message)
+        {
+            if (message instanceof ProviderAddResultMessage) {
+                compRef.get().handleAddResult((ProviderAddResultMessage) message);
+            } else if (message instanceof ProviderRemoveResultMessage) {
+                compRef.get().handleRemoveResult((ProviderRemoveResultMessage) message);
+            } else if (message instanceof ProviderManualObjectMessage) {
+                compRef.get().handleManualObject((ProviderManualObjectMessage) message);
+            }
         }
     }
 }
