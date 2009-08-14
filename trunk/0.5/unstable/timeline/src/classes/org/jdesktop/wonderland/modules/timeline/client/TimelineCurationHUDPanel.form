@@ -139,7 +139,7 @@
     </Container>
     <Component class="javax.swing.JLabel" name="artworkLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Artwork:"/>
+        <Property name="text" type="java.lang.String" value="Media:"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="artworkTextField">
@@ -154,7 +154,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="artworkHelpLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="e.g., .jpg, .png, .kmz"/>
+        <Property name="text" type="java.lang.String" value="e.g., .jpg, .png, .kmz, .au"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="addButton">

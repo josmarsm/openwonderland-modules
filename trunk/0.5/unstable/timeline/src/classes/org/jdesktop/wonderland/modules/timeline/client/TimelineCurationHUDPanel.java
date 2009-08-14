@@ -152,7 +152,7 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
         textTextArea.setRows(5);
         textScrollPane.setViewportView(textTextArea);
 
-        artworkLabel.setText("Artwork:");
+        artworkLabel.setText("Media:");
 
         browseButton.setText("Browse...");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -161,7 +161,7 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
             }
         });
 
-        artworkHelpLabel.setText("e.g., .jpg, .png, .kmz");
+        artworkHelpLabel.setText("e.g., .jpg, .png, .kmz, .au");
 
         addButton.setText("Add");
         addButton.addActionListener(new java.awt.event.ActionListener() {
