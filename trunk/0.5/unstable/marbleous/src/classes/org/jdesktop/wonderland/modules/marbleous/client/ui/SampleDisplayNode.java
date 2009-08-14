@@ -24,6 +24,7 @@ import com.jme.image.Texture.MagnificationFilter;
 import com.jme.image.Texture.MinificationFilter;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import com.jme.renderer.Renderer;
 import com.jme.scene.BillboardNode;
 import com.jme.scene.shape.Cylinder;
@@ -32,6 +33,8 @@ import com.jme.scene.state.BlendState;
 import com.jme.scene.state.TextureState;
 import com.jme.scene.state.BlendState.TestFunction;
 
+import com.jme.scene.state.MaterialState;
+import com.jme.scene.state.RenderState;
 import com.jme.system.DisplaySystem;
 import java.awt.image.BufferedImage;
 
@@ -91,10 +94,15 @@ public class SampleDisplayNode extends BillboardNode {
     
     // TODO: not used
     private Color borderColorTransient = Color.BLACK;
+    private ColorRGBA borderColorRgbaTransient = new ColorRGBA(0f, 0f, 0f, 1f);
 
     private Color borderColorCurrentAndPinned = new Color(0, 0.75f, 0.75f);
     private Color borderColorCurrent = new Color(0, 0.75f, 0f);
     private Color borderColorPinned  = new Color(0, 0, 0.75f);
+
+    private ColorRGBA borderColorRgbaCurrentAndPinned = new ColorRGBA(0, 0.75f, 0.75f, 1f);
+    private ColorRGBA borderColorRgbaCurrent = new ColorRGBA(0, 0.75f, 0f, 1f);
+    private ColorRGBA borderColorRgbaPinned  = new ColorRGBA(0, 0, 0.75f, 1f);
 
     /** base font */
     private Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
@@ -136,6 +144,7 @@ public class SampleDisplayNode extends BillboardNode {
     String text;
 
     private Quad quad;
+    private Cylinder descender;
 
     private float height3D;
 
@@ -174,6 +183,23 @@ public class SampleDisplayNode extends BillboardNode {
         update();
     }
 
+    public synchronized void setDescenderColor(final ColorRGBA color) {
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                if (descender != null) {
+                    MaterialState ms = (MaterialState) descender.getRenderState(RenderState.RS_MATERIAL);
+                    if (ms == null) {
+                        ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
+                        descender.setRenderState(ms);
+                    }
+                    ms.setAmbient(new ColorRGBA(color));
+                    ms.setDiffuse(new ColorRGBA(color));
+                    ClientContextJME.getWorldManager().addToUpdateList(descender);
+                }
+            }
+        }, null); 
+    }
+
     private void update () {
         // build child
         if (quad != null) {
@@ -184,11 +210,22 @@ public class SampleDisplayNode extends BillboardNode {
 
 
         float descenderHeight = SAMPLE_ENTITY_Y_OFFSET + MARBLE_RADIUS;
-        Cylinder descender = new Cylinder("Descender cyl", 10, 10, 0.02f, descenderHeight, true);
+        descender = new Cylinder("Descender cyl", 10, 10, 0.02f, descenderHeight, true);
         Quaternion quat = new Quaternion();
         quat.fromAngleAxis((float)Math.toRadians(90f), new Vector3f(1f, 0, 0 ));
         descender.setLocalRotation(quat);
         descender.setLocalTranslation(new Vector3f(0f, -height3D/2f - descenderHeight/2f, 0f));
+
+        if (current && pinned) {
+            setDescenderColor(borderColorRgbaCurrentAndPinned);
+        } else if (current) {
+            setDescenderColor(borderColorRgbaCurrent);
+        } else if (pinned) {
+            setDescenderColor(borderColorRgbaPinned);
+        } else {
+            setDescenderColor(borderColorRgbaTransient);
+        }
+
         attachChild(descender);
 
         // set bounds to make pickable
