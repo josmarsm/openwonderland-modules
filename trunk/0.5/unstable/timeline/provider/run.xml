@@ -40,6 +40,10 @@
             <sysproperty key="java.util.logging.config.file" value="logging.properties"/>
             <sysproperty key="java.library.path" value="${current.dir}/lib/${ostype}/native"/>
             <sysproperty key="wonderland.web.server.url" value="${wonderland.web.server.url}"/>
+
+            <syspropertyset>
+                <propertyref builtin="commandline"/>
+            </syspropertyset>
         </java>
     </target>
 </project>

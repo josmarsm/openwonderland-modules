@@ -98,8 +98,8 @@ public class TimelineAddCollectionPanel extends javax.swing.JPanel {
         DefaultTableModel model = (DefaultTableModel) collectionTable.getModel();
 
         // clear the model
-        for (int i = 0; i < model.getRowCount(); i++) {
-            model.removeRow(i);
+        while (model.getRowCount() > 0) {
+            model.removeRow(0);
         }
 
         // add in the new rows
@@ -110,6 +110,9 @@ public class TimelineAddCollectionPanel extends javax.swing.JPanel {
 
             model.addRow(new String[] { df.format(date.getMinimum()), "" });
         }
+
+        collectionTable.invalidate();
+        collectionTable.repaint();
     }
 
     public List<String> getQueries() {
