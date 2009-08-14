@@ -325,7 +325,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
                 URL url;
 
                 try {
-		    path = URLEncoder.encode(path);
+		    path = path.replaceAll(" ", "%20");
 
                     url = new URL(new URL(serverURL),
                             "webdav/content/" + path);
@@ -361,7 +361,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
                     URL url;
 
                     try {
-			path = URLEncoder.encode(path);
+			path = path.replaceAll(" ", "%20");
 
                         url = new URL(new URL(serverURL),
                             "webdav/content/modules/installed/" + moduleName + "/audio/" + path);
