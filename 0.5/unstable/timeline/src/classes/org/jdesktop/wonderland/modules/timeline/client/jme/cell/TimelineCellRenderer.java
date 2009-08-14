@@ -54,13 +54,13 @@ private static Logger logger = Logger.getLogger(TimelineCellRenderer.class.getNa
     protected Node createSceneGraph(Entity entity) {
       Node root = new Node();
 
-      logger.info("[TIME REND] creating scene graph, have " + segments.size() + " segments");
+      logger.fine("[TIME REND] creating scene graph, have " + segments.size() + " segments");
 
       return root;
     }
 
     private void update() {
-      logger.info("[TIME REND] update");
+      logger.fine("[TIME REND] update");
       if(sceneRoot == null){
         sceneRoot = new Node();
       }
@@ -70,9 +70,9 @@ private static Logger logger = Logger.getLogger(TimelineCellRenderer.class.getNa
                  sceneRoot.detachAllChildren();
                  int segCount = 0; int meshCount = 0;
                  for(SegmentEntity s: segments){
-                   logger.info("[TIME REND] attaching segment " + segCount++);
+                   logger.fine("[TIME REND] attaching segment " + segCount++);
                    for(Geometry mesh:s.getMeshes()){
-                     logger.info("[TIME REND] attaching mesh " + meshCount++);
+                     logger.fine("[TIME REND] attaching mesh " + meshCount++);
                      sceneRoot.attachChild(mesh);
                    }
                    meshCount = 0;
@@ -106,16 +106,16 @@ private static Logger logger = Logger.getLogger(TimelineCellRenderer.class.getNa
     // ceiling = increase the precision as necessary, don't decrease it
     float radsPerMesh = (config.getRadsPerSegment()/((float)Math.ceil(config.getRadsPerSegment() / baseRadsPerMesh)));
 //    float radsPerMesh = (config.getRadsPerSegment()/((float)Math.ceil(config.getRadsPerSegment() % baseRadsPerMesh)));
-    logger.info("[TIME REND] rads/seg: " + config.getRadsPerSegment() + " base rads: " + baseRadsPerMesh + " mod: " + config.getRadsPerSegment() % baseRadsPerMesh
+    logger.fine("[TIME REND] rads/seg: " + config.getRadsPerSegment() + " base rads: " + baseRadsPerMesh + " mod: " + config.getRadsPerSegment() % baseRadsPerMesh
             + " ceil: " + ((float)Math.ceil(config.getRadsPerSegment() % baseRadsPerMesh)) + " rads/mesh: " + radsPerMesh);
     for(int i = 0; i < config.getNumSegments(); i++){
-      logger.info("[TIME REND] building seg entity " + i);
+      logger.fine("[TIME CELL] building seg entity " + i);
       // cell, distance in degrees, climb, inner, outer
       SegmentEntity ent = new SegmentEntity(cell, config, rotation, nextTarget, radsPerMesh);
       segments.add(ent);
       rotation = ent.getNextRotation();
       nextTarget = ent.getNextTarget();
-      logger.info("[TIME REND] AFTER building seg entity, target is " + nextTarget);
+      logger.fine("[TIME CELL] AFTER building seg entity, target is " + nextTarget);
     }
     update();
   }

@@ -222,8 +222,8 @@ public class SegmentMesh extends TriMesh {
     }
 
     private void setVertexData(float climbPerMesh) {
-      logger.info("setting vertex data with climb per mesh of " + climbPerMesh);
-      logger.info("vtx 4: " + trapSmallBase *0.5f + " " + climbPerMesh * 0.5f + " " + trapHeight*0.5f);
+      logger.fine("setting vertex data with climb per mesh of " + climbPerMesh);
+      logger.fine("vtx 4: " + trapSmallBase *0.5f + " " + climbPerMesh * 0.5f + " " + trapHeight*0.5f);
       // movement in 'x' from small side points vs large side points
       // BOTTOM
       // 0
