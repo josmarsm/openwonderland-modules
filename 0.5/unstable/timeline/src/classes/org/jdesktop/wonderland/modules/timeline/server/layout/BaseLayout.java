@@ -89,7 +89,6 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             result.addResultListener(this);
         }
 
-        logger.info("got initial results: " + results);
         processResults(results);
         doLayout();
     }
@@ -139,16 +138,16 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         // make a new Cell for this object (or get an existing one if we have one)
         CellMO cell = getNewCell(obj);
 
-        logger.info("got a new cell for this DO: " + cell);
+//        logger.info("got a new cell for this DO: " + cell);
         // now assign this cell to a segment. get the middle date for the object
         // and look that date up against all our segments.
-        logger.info("segments:" + this.cellRef.get().getSegments());
-        logger.info("date: " + obj.getDate().getMiddle());
+//        logger.info("segments:" + this.cellRef.get().getSegments());
+//        logger.info("date: " + obj.getDate().getMiddle());
 
         DatedSet segments = this.cellRef.get().getSegments().containsSet(new TimelineDate(obj.getDate().getMiddle()));
 
         if(segments.size()!=1) {
-            logger.warning("!!!!! Couldn't find a segment to assign this dated object to.");
+//            logger.warning("!!!!! Couldn't find a segment to assign this dated object to.");
 
             DatedObjectComponentMO comp = new DatedObjectComponentMO(cell);
             comp.setDatedObject(obj);
@@ -162,7 +161,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         // pick off the first one (which is guaranteed to be the only one, because
         // of the way we generate segments
         TimelineSegment seg = (TimelineSegment) segments.iterator().next();
-        logger.info("Assigning current DO to this seg: " + seg);
+//        logger.info("Assigning current DO to this seg: " + seg);
 
         // now seg is the segment to which we're going to assign this new
         // cell. well do that by:
@@ -179,7 +178,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         comp.setAssignedToSegment(true);
         cell.addComponent(comp);
 
-        logger.info("Added relevant cell components.");
+//        logger.info("Added relevant cell components.");
 
         // 2.
         DatedSet currentObjects = datedObjectBySegment.get(seg);
@@ -189,7 +188,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         currentObjects.add(obj);
 
         datedObjectBySegment.put(seg, currentObjects);
-        logger.info("Added DO to list of DOs attached to this segment.");
+//        logger.info("Added DO to list of DOs attached to this segment.");
     }
 
     public void doLayout() {
@@ -206,7 +205,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         logger.info("---------------- STARTING LAYOUT-----------");
         for(TimelineSegment seg : datedObjectBySegment.keySet()) {
 
-            logger.info("Processing layout for: " + seg);
+//            logger.info("Processing layout for: " + seg);
 
             DatedSet datedObjects = datedObjectBySegment.get(seg);
 
@@ -225,6 +224,17 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
                 CellMO cell = datedObjectToCellMap.get(dObj).get();
                 DatedObjectComponentMO comp = cell.getComponent(DatedObjectComponentMO.class);
 
+                if(dObj instanceof DatedImage) {
+                    DatedImage dImg = (DatedImage) dObj;
+//                    logger.info("Setting WIDTH AND HEIGHT: " + dImg.getWidth() + "-" + dImg.getHeight());
+
+                    comp.setWidth(dImg.getWidth());
+                    comp.setHeight(dImg.getHeight());
+
+//                    logger.info("Getting the stuff we just set: " + comp.getWidth() + "-" + comp.getHeight());
+                }
+
+
                 // Not sure I need this second test. I think isAddedToTimeline
                 // implies isNeedsLayout, but not 100% sure. For now verge
                 // on the side of more false positives.
@@ -238,7 +248,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
                 cells.add(cell);
             }
 
-            logger.info("First pass completed. Built necessary lists. This segment needs layout: " + needsLayout + " (forcing? " + force + ")");
+//            logger.info("First pass completed. Built necessary lists. This segment needs layout: " + needsLayout + " (forcing? " + force + ")");
             // If we don't need to layout this segment, move on to the next
             // segment. 
             if(!needsLayout && !force)
@@ -249,13 +259,48 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             // appropriately. Add them to the TimelineCell if we need to.
 
             int numCellsInSegment = cells.size();
-            float angleIncrement = (seg.getEndAngle() - seg.getStartAngle())/numCellsInSegment;
             int curCellIndex = 0;
             float curAngle = seg.getStartAngle();
 
 
+            // Figure out how many rows/columns we're going to have.
+            // we know how many items we need to lay out, and lets have a min
+            // size.
+
+            /**
+             * Smallest we'll let a cell get. Determines how many cells we can
+             * fit on a row.
+             */
+            float MIN_CELL_WIDTH = 3.0f;
+
+            // first, decide how many cells we can fit within our arc length.
+            float currentSegmentArcLength = (seg.getEndAngle() - seg.getStartAngle())*config.getOuterRadius();
+//            logger.info("currentArcLength: " + currentSegmentArcLength);
+
+            int maxCellsPerRow = (int) Math.floor(currentSegmentArcLength / MIN_CELL_WIDTH);
+
+            // calculate the angle increment based on how many columns we think we can
+            // fit in. 
+            float angleIncrement = (seg.getEndAngle() - seg.getStartAngle())/maxCellsPerRow;
+
+            int numRows = (int) Math.ceil(numCellsInSegment / (float)maxCellsPerRow);
+            
+            float heightIncrement = config.getPitch() / numRows;
+
+            int row = 0;
+            int col = 0;
+
+            // Start out at half the heightIncrement, so the first cell starts
+            // a little off the ground. Then we'll add on a full height increment
+            // to find the center of each other cell.
+            float curHeight = heightIncrement / 2;
+
+
+//            logger.warning("laying out segment. cells/row: " + maxCellsPerRow + "; numRows: " + numRows + "; angleIncrement: " + angleIncrement + "; heightIncrement: " + heightIncrement);
+
             // For each cell in this segment...
             for(CellMO cell : cells) {
+//                logger.info("\t " + row + " - " + col);
                 DatedObjectComponentMO doComp = cell.getComponent(DatedObjectComponentMO.class);
                 MovableComponentMO movComp = cell.getComponent(MovableComponentMO.class);
 
@@ -265,7 +310,13 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
                 // TODO make this properly height dependent.
 
-                Vector3f edgePoint = new Vector3f((float) (config.getOuterRadius() * Math.sin(curAngle)), seg.getTransform().getTranslation(null).y, ((float)(config.getOuterRadius() * Math.cos(curAngle))));
+
+
+                // we need a meters of height / PI relationship, which we get from the pitch
+
+                float heightAtThisAngle = (float) ((config.getPitch() / (2 * Math.PI)) * curAngle);
+
+                Vector3f edgePoint = new Vector3f((float) (config.getOuterRadius() * Math.sin(curAngle)), heightAtThisAngle + curHeight, ((float)(config.getOuterRadius() * Math.cos(curAngle))));
                 edgePoint.y += config.getHeight() / config.getNumTurns() / 2;
 
                 // Okay, here's the plan. First, lets just do one image per segment.
@@ -282,22 +333,78 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 //                // Move it up into the middle of the space in the spiral.
 //                segPos.y += config.getHeight() / config.getNumTurns() / 2;
 
-
                 float angleBetween = (float) Math.atan2(edgePoint.x, edgePoint.z);
 
                 float[] angles = {0.0f, angleBetween, 0.0f};
 
                 Quaternion q = new Quaternion(angles);
 
-                logger.info("Setting position to: " + seg.getTransform() + " angle: " + angleBetween);
+//                logger.info("Setting position to: " + seg.getTransform() + " angle: " + angleBetween);
 
-                movComp.moveRequest(null, new CellTransform(q, edgePoint));
+                CellTransform transform = new CellTransform(q, edgePoint);
+
+                // now we need to deal with size. we know what the maximum dimension
+                // for any object is.
+                float maxWidth = MIN_CELL_WIDTH;
+                float maxHeight = heightIncrement;
+
+                // depending on the object, we need to handle this different.
+                // either objects can tell us what size they're going to be
+                // and we can set the scale with movable component, or
+                // they can accept a maxWidth/maxHeight and then size themselves
+                // appropriately.
+                if(cell instanceof ImageViewerCellMO) {
+//                    // for image cells, we can get their dimsensions and size them
+//                    // appropriately.
+//                    ImageViewerCellMO imageCell = (ImageViewerCellMO) cell;
+//
+//                    DatedObjectComponentMO dObjComp = imageCell.getComponent(DatedObjectComponentMO.class);
+//
+//                    // Figure out how to scale things to fit them in their
+//                    // designated spot. Either scale up or down, according to
+//                    // the object's size relative to the target.
+//                    float scaleFactor;
+//
+//                    if(dObjComp.getWidth() > dObjComp.getHeight()) {
+//                        // if width is the trouble dimension, figure
+//                        // how much we need to scale to fit it in.
+//
+//                        scaleFactor = maxWidth / (float)dObjComp.getWidth();
+//                    } else {
+//                        scaleFactor = maxHeight / (float)dObjComp.getHeight();
+//                    }
+//
+//                    logger.info("(" + dObjComp.getWidth() + "-" + dObjComp.getHeight() + ")" + "Setting scaling: " + scaleFactor);
+//
+//                    transform.setScaling(scaleFactor);
+                    transform.setScaling(0.6f);
+                }
+
+
+//
+
+                movComp.moveRequest(null, transform);
+
+                // increment the column.
+                col++;
                 curAngle += angleIncrement;
+
+                // if we've done as many cells in this row as we think we can
+                // fit, move up to the next row.
+                if(col == maxCellsPerRow) {
+                    col = 0;
+
+                    row++;
+                    curHeight += heightIncrement;
+                    curAngle = seg.getStartAngle();
+                }
+
+
 
                 if(!doComp.isAddedToTimeline()) {
                     try {
                         this.cellRef.getForUpdate().addChild(cell);
-                        logger.info("Added cell to the timeline: " + cell);
+//                        logger.info("Added cell to the timeline: " + cell);
                         doComp.setNeedsLayout(false);
                         doComp.setAddedToTimeline(true);
                         
@@ -307,7 +414,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
                 }
             }
 
-            logger.info("++++Done with layout for segment: " + seg + "+++++++");
+//            logger.info("++++Done with layout for segment: " + seg + "+++++++");
 
         }
 
@@ -320,7 +427,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         // use it. (Are we guaranteed the uniqueness of DatedObjects in ResultSets?)
 
         if(datedObjectToCellMap.get(datedObj)!=null) {
-            logger.info("=======Found Existing cell for this DO========");
+//            logger.info("=======Found Existing cell for this DO========");
             return datedObjectToCellMap.get(datedObj).get();
         }
 
@@ -334,7 +441,8 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             out = new ImageViewerCellMO();
             ImageViewerCellServerState state = new ImageViewerCellServerState();
             state.setImageURI(img.getImageURI());
-            logger.info("IMAGE URI: " + img.getImageURI());
+            
+//            logger.info("IMAGE URI: " + img.getImageURI());
             out.setServerState(state);
         } else {
             logger.warning("Attempted to make a cell from dated object (" + datedObj + ") but it was an unknown type.");

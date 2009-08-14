@@ -70,11 +70,11 @@ public class TimelineCellFactory implements CellFactorySPI {
 
       Date end = new Date();
       Calendar c = Calendar.getInstance();
-      c.set(Calendar.YEAR, 1999);
+      c.set(Calendar.YEAR, 2006);
       Date start = c.getTime();
 
       state.getConfig().setDateRange(new TimelineDate(start, end));
-      state.getConfig().setNumSegments(10);
+      state.getConfig().setNumSegments(3);
 
       TimelineProviderServerState tpss = new TimelineProviderServerState();
 
@@ -86,7 +86,7 @@ public class TimelineCellFactory implements CellFactorySPI {
       query.getProperties().setProperty("searchText", "automobile");
       query.getProperties().setProperty("searchType", "tags");
       query.getProperties().setProperty("sort", "relevance");
-      query.getProperties().setProperty("returnCount", String.valueOf(3));
+      query.getProperties().setProperty("returnCount", String.valueOf(12));
       tpss.getQueries().add(query);
 
       state.addComponentServerState(tpss);
