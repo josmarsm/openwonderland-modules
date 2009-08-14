@@ -83,10 +83,10 @@ public class TrackCell extends Cell {
         knotTableModel.setSegment(segment);
         java.awt.EventQueue.invokeLater(new Runnable() {
 
-                public void run() {
-                    new KnotFrame(knotTableModel, segment, TrackCell.this).setVisible(true);
-                }
-            });
+            public void run() {
+                new KnotFrame(knotTableModel, segment, TrackCell.this).setVisible(true);
+            }
+        });
     }
 
     /**
@@ -248,6 +248,7 @@ public class TrackCell extends Cell {
         }
 
         setSimulationStateInternal(simulationState);
+        playSound(COASTER_STARTED_SOUND);
         sendCellMessage(new SimulationStateMessage(simulationState));
     }
 
@@ -266,7 +267,6 @@ public class TrackCell extends Cell {
                 logger.warning("Starting physics system...");
 
                 physicsSystem.setStarted(true);
-//                playSound(COASTER_STARTED_SOUND);
             } else {
                 physicsSystem.setStarted(false);
             }
