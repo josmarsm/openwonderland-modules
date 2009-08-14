@@ -92,6 +92,9 @@ public class SampleDisplayEntity extends Entity {
     // Transforms the coordinate system of the bubble to the top of the marble
     private Node transformNode = new Node();
 
+    private static final LinkedList<SampleDisplayEntity> pinnedEntities = 
+        new LinkedList<SampleDisplayEntity>();
+
     static {
       RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
       zbuf = (ZBufferState)rm.createRendererState(StateType.ZBuffer);
@@ -203,6 +206,14 @@ public class SampleDisplayEntity extends Entity {
 
         if (node != null) {
             node.setPinned(pinned);
+        }
+
+        synchronized (pinnedEntities) {
+            if (pinned) {
+                pinnedEntities.add(this);
+            } else {
+                pinnedEntities.remove(this);
+            }
         }
 
         update();
@@ -451,5 +462,13 @@ public class SampleDisplayEntity extends Entity {
                     ClientContextJME.getWorldManager().removeEntity(ent);
                 }
             };
+    }
+
+    public static void disposeAll () {
+        synchronized (pinnedEntities) {
+            for (SampleDisplayEntity entity : pinnedEntities) {
+                entity.dispose();
+            }
+        }
     }
 }

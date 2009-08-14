@@ -55,6 +55,9 @@ import java.text.AttributedString;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import org.jdesktop.mtgame.RenderUpdater;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.marbleous.common.trace.SampleInfo;
 
 
@@ -67,55 +70,57 @@ import org.jdesktop.wonderland.modules.marbleous.common.trace.SampleInfo;
  */
 public class SampleDisplayNode extends BillboardNode {
 
-  private static Logger logger = Logger.getLogger(SampleDisplayNode.class.getName());
+    private static Logger logger = Logger.getLogger(SampleDisplayNode.class.getName());
 
-  // Default Colors
+    private static final float SAMPLE_ENTITY_Y_OFFSET = 0.6f;
+
+    // Default Colors
     public static Color DEFAULT_BACKGROUND_COLOR = new Color(0.5f, 0.5f, 0.5f);
-  public static Color DEFAULT_FONT_COLOR = Color.BLACK;
-  public static Color DEFAULT_SHADOW_COLOR = Color.WHITE;
-  // Default alpha
-  public static int DEFAULT_ALPHA = 200;
+    public static Color DEFAULT_FONT_COLOR = Color.BLACK;
+    public static Color DEFAULT_SHADOW_COLOR = Color.WHITE;
+    // Default alpha
+    public static int DEFAULT_ALPHA = 200;
   
-  private Color bgColor = DEFAULT_BACKGROUND_COLOR;
-  private Color fontColor = DEFAULT_FONT_COLOR;
-  private Color shadowColor = DEFAULT_SHADOW_COLOR;
-
-  // TODO: not used
-  private Color borderColorTransient = Color.BLACK;
+    private Color bgColor = DEFAULT_BACKGROUND_COLOR;
+    private Color fontColor = DEFAULT_FONT_COLOR;
+    private Color shadowColor = DEFAULT_SHADOW_COLOR;
+    
+    // TODO: not used
+    private Color borderColorTransient = Color.BLACK;
 
     private Color borderColorCurrentAndPinned = new Color(0, 0.75f, 0.75f);
     private Color borderColorCurrent = new Color(0, 0.75f, 0f);
     private Color borderColorPinned  = new Color(0, 0, 0.75f);
 
-  /** base font */
-  private Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+    /** base font */
+    private Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 
-  /** controls the graphics generation of this SampleDisplayNode */
-  DisplayMode mode;
+    /** controls the graphics generation of this SampleDisplayNode */
+    DisplayMode mode;
 
-  /** controls size of font */
-  private float fontSizeModifier;
+    /** controls size of font */
+    private float fontSizeModifier;
 
-  // graphical settings used only by the node
-  private float blurIntensity = 0.1f;
-  private int kernelSize = 5;
-  private ConvolveOp blur;
+    // graphical settings used only by the node
+    private float blurIntensity = 0.1f;
+    private int kernelSize = 5;
+    private ConvolveOp blur;
 
-  private final int SHADOW_OFFSET_X = 2;
-  private final int SHADOW_OFFSET_Y = 2;
+    private final int SHADOW_OFFSET_X = 2;
+    private final int SHADOW_OFFSET_Y = 2;
 
-  // padding between text and edges
-  private final int PADDING_LEFT = 30;
-  private final int PADDING_RIGHT = 30;
-  private final int PADDING_TOP = /*5*/ 20;
-  private final int PADDING_BOTTOM = /*5*/20;
-  /** padding between Author and Title */
-  private final int PADDING_LINE = 5;
+    // padding between text and edges
+    private final int PADDING_LEFT = 30;
+    private final int PADDING_RIGHT = 30;
+    private final int PADDING_TOP = /*5*/ 20;
+    private final int PADDING_BOTTOM = /*5*/20;
+    /** padding between Author and Title */
+    private final int PADDING_LINE = 5;
 
-  /** width of border */
-  private final int BORDER_WIDTH = 6;
+    /** width of border */
+    private final int BORDER_WIDTH = 6;
 
-  private final int MIN_WIDTH = 475;
+    private final int MIN_WIDTH = 475;
 
     private SampleInfo sampleInfo;
     private boolean current;
@@ -127,6 +132,8 @@ public class SampleDisplayNode extends BillboardNode {
     String text;
 
     private Quad quad;
+
+    private float height3D;
 
     public SampleDisplayNode(SampleInfo sampleInfo, DisplayMode displayMode, float fontMod,
                              boolean current, boolean pinned){
@@ -303,8 +310,6 @@ public class SampleDisplayNode extends BillboardNode {
 
         int h = totalHeight;
         int w = totalWidth;
-
-        // TODO: notyet setLocalTranslation(new Vector3f(0f, 0.6f, 0f));
 
         int arc = 60;
 
@@ -516,7 +521,7 @@ public class SampleDisplayNode extends BillboardNode {
      * @return
      */
     private Quad getQuad() {
-        BufferedImage img = getImage();
+        final BufferedImage img = getImage();
         if(img == null){
             logger.severe("[sample node] image is null!!!");
         }
@@ -527,29 +532,39 @@ public class SampleDisplayNode extends BillboardNode {
         //    float factor = height / h;
         float factor = 0.005524862f;
     
+        height3D = h * fontSizeModifier;
         //    Quad ret = new Quad("anno node", w * factor, h * factor);
-        Quad ret = new Quad("anno node", w * fontSizeModifier, h * fontSizeModifier);
+        final Quad ret = new Quad("anno node", w * fontSizeModifier, height3D);
         logger.info("[sample node] width, height of quad:" + w + " " + h + "mod size is: " + fontSizeModifier);
         logger.info("[sample node] factored width, height of quad:" + w*factor + " " + h*factor + " factor is:" + factor);
 
-        TextureState ts = DisplaySystem.getDisplaySystem().getRenderer().createTextureState();
-        Texture tex = TextureManager.loadTexture(img, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg0) {
+                TextureState ts = DisplaySystem.getDisplaySystem().getRenderer().createTextureState();
+                Texture tex = TextureManager.loadTexture(img, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
+                
+                ts.setTexture(tex);
+                ts.setEnabled(true);
+                ret.setRenderState(ts);
 
-        ts.setTexture(tex);
-        ts.setEnabled(true);
-        ret.setRenderState(ts);
+                ret.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
 
-        ret.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
+                BlendState as = DisplaySystem.getDisplaySystem().getRenderer().createBlendState();
+                as.setBlendEnabled(true);
+                as.setTestEnabled(true);
+                as.setTestFunction(TestFunction.GreaterThan);
+                as.setEnabled(true);
+                ret.setRenderState(as);
 
-        BlendState as = DisplaySystem.getDisplaySystem().getRenderer().createBlendState();
-        as.setBlendEnabled(true);
-        as.setTestEnabled(true);
-        as.setTestFunction(TestFunction.GreaterThan);
-        as.setEnabled(true);
-        ret.setRenderState(as);
+                ret.setLightCombineMode(LightCombineMode.Off);
+                ret.updateRenderState();
 
-        ret.setLightCombineMode(LightCombineMode.Off);
-        ret.updateRenderState();
+                float y = height3D/2f + SAMPLE_ENTITY_Y_OFFSET;
+                setLocalTranslation(new Vector3f(0f, y, 0f));
+
+                ClientContextJME.getWorldManager().addToUpdateList(SampleDisplayNode.this);
+            }
+        }, null);
 
         return ret;
     }
@@ -565,5 +580,4 @@ public class SampleDisplayNode extends BillboardNode {
         Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
         return g2d.getFontRenderContext();
     }
-
 }
