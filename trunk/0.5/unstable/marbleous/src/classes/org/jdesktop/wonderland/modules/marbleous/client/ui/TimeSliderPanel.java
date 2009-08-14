@@ -14,6 +14,7 @@ package org.jdesktop.wonderland.modules.marbleous.client.ui;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
@@ -68,7 +69,7 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         try {
             SwingUtilities.invokeLater(new Runnable () {
                 public void run () {
-                    jLabel3.setText(Float.toString(endTime));
+                    jLabel3.setText(format(endTime));
                 }
             });
         } catch (Exception ex) {
@@ -319,5 +320,11 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         SampleDisplayEntity.disposeAll();
         currentSampleInfo = null;
         trace = null;
+    }
+
+    private static DecimalFormat decimalFormat = new DecimalFormat("#.###");
+
+    private String format (float f) {
+        return decimalFormat.format(f);
     }
 }
