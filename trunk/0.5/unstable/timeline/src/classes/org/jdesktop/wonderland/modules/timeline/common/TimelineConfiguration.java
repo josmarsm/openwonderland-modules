@@ -22,6 +22,7 @@ import com.jme.math.Vector3f;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -35,59 +36,58 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDateRang
  * and JAXB serializable.
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-@XmlRootElement(name="timeline-config")
+@XmlRootElement(name = "timeline-config")
 public class TimelineConfiguration implements Serializable {
-    private float radsPerSegment;
 
+    private float radsPerSegment;
     /** The total number of segments. */
     private int numSegments = -1;
-
     /**
      * The pitch of the helix (which is the vertical distance in meters of one
      * complete turn).
      */
     private float pitch = 4.5f;
-
     /**
      * The date range this timeline covers.
      */
-    private TimelineDate dateRange = new TimelineDate();
+    private TimelineDate dateRange;
 
-    public enum TimelineUnits{ 
-        HOURS (Calendar.HOUR_OF_DAY), DAYS (Calendar.DAY_OF_YEAR),
-        WEEKS (Calendar.WEEK_OF_YEAR), MONTHS (Calendar.MONTH),
-        YEARS (Calendar.YEAR);
+    public enum TimelineUnits {
 
+        HOURS(Calendar.HOUR_OF_DAY), DAYS(Calendar.DAY_OF_YEAR),
+        WEEKS(Calendar.WEEK_OF_YEAR), MONTHS(Calendar.MONTH),
+        YEARS(Calendar.YEAR);
         private int calendarUnit;
+
         TimelineUnits(int calendarUnit) {
             this.calendarUnit = calendarUnit;
         }
+
         public int getCalendarUnit() {
             return calendarUnit;
         }
-
     };
-    TimelineUnits units = TimelineUnits.DAYS;
-
-    // default to 4 units/rev
-    private float unitsPerRev = 4;
-
+    TimelineUnits units = TimelineUnits.MONTHS;
+    // default to 3 units/rev
+    private float unitsPerRev = 3;
     /**
      * The inner radius of the spiral, in meters.
      */
     private float innerRadius = 5.0f;
-
     /**
      * The outer radius of the spiral, in meters.
      */
     private float outerRadius = 12.5f;
 
-
     /**
      * Default constructor
      */
     public TimelineConfiguration() {
-      calculateRadsPerSegment();
+        Calendar now = Calendar.getInstance();
+        Calendar yearAgo = Calendar.getInstance();
+        yearAgo.roll(Calendar.YEAR, -1);
+        dateRange = new TimelineDate(yearAgo.getTime(), now.getTime());
+        calculateRadsPerSegment();
     }
 
     public TimelineConfiguration(TimelineConfiguration config) {
@@ -114,8 +114,8 @@ public class TimelineConfiguration implements Serializable {
     }
 
     private void calculateRadsPerSegment() {
-  //    radsPerSegment = (float) (Math.PI / 3);
-      radsPerSegment = ((float) (Math.PI * 2))/unitsPerRev;
+        //    radsPerSegment = (float) (Math.PI / 3);
+        radsPerSegment = ((float) (Math.PI * 2)) / unitsPerRev;
     }
 
     /**
@@ -180,26 +180,26 @@ public class TimelineConfiguration implements Serializable {
     }
 
     public TimelineUnits getUnits() {
-      return units;
+        return units;
     }
 
     public void setUnits(TimelineUnits units) {
-      this.units = units;
-      calculateNumSegments();
+        this.units = units;
+        calculateNumSegments();
     }
 
     public float getUnitsPerRev() {
-      return unitsPerRev;
+        return unitsPerRev;
     }
 
     public void setUnitsPerRev(float unitsPerRev) {
-      this.unitsPerRev = unitsPerRev;
+        this.unitsPerRev = unitsPerRev;
     }
 
     private void calculateNumSegments() {
         TimelineDateRange range = new TimelineDateRange(getDateRange().getMinimum(),
-                                                        getDateRange().getMaximum(),
-                                                        getUnits().getCalendarUnit());
+                getDateRange().getMaximum(),
+                getUnits().getCalendarUnit());
         dateRange = new TimelineDate(range.getMinimum(), range.getMaximum());
         numSegments = range.getIncrementCount();
     }
@@ -219,22 +219,21 @@ public class TimelineConfiguration implements Serializable {
 
     @XmlElement
     public float getInnerRadius() {
-      return innerRadius;
+        return innerRadius;
     }
 
     @XmlElement
     public float getOuterRadius() {
-      return outerRadius;
+        return outerRadius;
     }
 
     public void setInnerRadius(float innerRadius) {
-      this.innerRadius = innerRadius;
+        this.innerRadius = innerRadius;
     }
 
     public void setOuterRadius(float outerRadius) {
-      this.outerRadius = outerRadius;
+        this.outerRadius = outerRadius;
     }
-
     public static final float RADS_PER_MESH = (float) (Math.PI / 18);
 
     /**
@@ -248,7 +247,6 @@ public class TimelineConfiguration implements Serializable {
      *
      * @return A set of TimelineSegments that divide dateRange into numSegments intervals, with cellTransforms set in a spiral.
      */
-    
     public DatedSet generateSegments() {
         DatedSet out = new DatedSet();
 
@@ -264,13 +262,13 @@ public class TimelineConfiguration implements Serializable {
 
             TimelineSegment newSeg = new TimelineSegment(increment);
 
-            Vector3f pos = new Vector3f(((float)(radius * Math.sin(i*getRadsPerSegment()))), i*getHeight()/getNumSegments(),(float) ((float)radius * Math.cos(i*getRadsPerSegment())));
+            Vector3f pos = new Vector3f(((float) (radius * Math.sin(i * getRadsPerSegment()))), i * getHeight() / getNumSegments(), (float) ((float) radius * Math.cos(i * getRadsPerSegment())));
             newSeg.setTransform(new CellTransform(new Quaternion(), pos));
             newSeg.setStartAngle(angle);
-            newSeg.setEndAngle(angle+getRadsPerSegment());
+            newSeg.setEndAngle(angle + getRadsPerSegment());
 
             angle += getRadsPerSegment();
-            
+
             out.add(newSeg);
 
             i++;
