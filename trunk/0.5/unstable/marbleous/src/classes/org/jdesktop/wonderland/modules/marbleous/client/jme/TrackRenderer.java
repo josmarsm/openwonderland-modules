@@ -79,6 +79,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.MarblePhysicsComponent;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 import java.net.URL;
 import java.net.MalformedURLException;
 
@@ -87,6 +88,7 @@ import java.net.MalformedURLException;
  * @author paulby
  */
 public class TrackRenderer extends BasicRenderer {
+
 
     public interface MarbleMouseEventListener {
         public void commitEvent (Entity marbleEntity, Event event);
@@ -102,6 +104,8 @@ public class TrackRenderer extends BasicRenderer {
 
     private LinkedList<MarbleMouseEventListener> marbleMouseListeners = 
         new LinkedList<MarbleMouseEventListener>();
+
+    private SimulationState simState = null;
 
     public TrackRenderer(Cell cell) {
         super(cell);
@@ -186,6 +190,12 @@ public class TrackRenderer extends BasicRenderer {
         return cellRoot;
     }
 
+    public void setSimulationState(SimulationState simulationState) {
+        simState = simulationState;
+        if (simState.equals(SimulationState.STOPPED))
+            stopParticles();
+    }
+    
     @Override
     public void cellTransformUpdate(CellTransform t) {
         // Ignore cell transform
@@ -312,7 +322,6 @@ public class TrackRenderer extends BasicRenderer {
         marbleRoot.setLocalRotation(new Quaternion());
 
         particles = new Particles(ClientContextJME.getWorldManager(), marbleRoot, e);
-        
 
         RenderComponent renderComponent = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(marbleRoot);
         e.addComponent(RenderComponent.class, renderComponent);
