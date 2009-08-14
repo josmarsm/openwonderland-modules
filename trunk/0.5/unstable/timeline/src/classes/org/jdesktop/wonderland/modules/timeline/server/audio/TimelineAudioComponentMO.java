@@ -34,10 +34,12 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineAudioComponentClientState;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineAudioComponentServerState;
-import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentTreatmentMessage;
-import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentChangeMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelinePlayRecordingMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineRecordMessage;
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineResetMessage;
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentChangeMessage;
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineSegmentTreatmentMessage;
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineTreatmentDoneMessage;
 
 import com.sun.sgs.app.AppContext;
 
@@ -66,7 +68,7 @@ import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.sun.voip.client.connector.CallStatus;
-import com.sun.voip.client.connector.CallStatusListener;
+//import com.sun.voip.client.connector.CallStatusListener;
 
 /**
  *
@@ -117,27 +119,34 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	return super.getClientState(clientState, clientID, capabilities);
     }
 
+    private ManagedReference<ComponentMessageReceiverImpl> receiverRef;
+
     @Override
     public void setLive(boolean live) {
 	super.setLive(live);
-
-	System.out.println("TimelineAudioComponent setLive " + live);
 
         ChannelComponentMO channelComponent = (ChannelComponentMO)
             cellRef.get().getComponent(ChannelComponentMO.class);
 
 	if (live) {
 	    ComponentMessageReceiverImpl receiver = new ComponentMessageReceiverImpl(cellRef, this);
+            receiverRef = AppContext.getDataManager().createReference(receiver);
 
             channelComponent.addMessageReceiver(TimelineSegmentTreatmentMessage.class, receiver);
             channelComponent.addMessageReceiver(TimelineSegmentChangeMessage.class, receiver);
             channelComponent.addMessageReceiver(TimelineRecordMessage.class, receiver);
+            channelComponent.addMessageReceiver(TimelineResetMessage.class, receiver);
             channelComponent.addMessageReceiver(TimelinePlayRecordingMessage.class, receiver);
         } else {
             channelComponent.removeMessageReceiver(TimelineSegmentTreatmentMessage.class);
             channelComponent.removeMessageReceiver(TimelineSegmentChangeMessage.class);
             channelComponent.removeMessageReceiver(TimelineRecordMessage.class);
+            channelComponent.removeMessageReceiver(TimelineResetMessage.class);
             channelComponent.removeMessageReceiver(TimelinePlayRecordingMessage.class);
+
+	    if (receiverRef != null) {
+		receiverRef.get().done();
+	    }
         }
     }
 
@@ -146,7 +155,11 @@ public class TimelineAudioComponentMO extends CellComponentMO {
     }
 
     private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver 
-	    implements CallStatusListener {
+	    implements ManagedCallStatusListener {
+
+        private ManagedReference<CellMO> cellRef;
+
+        private CellID cellID;
 
         private ManagedReference<TimelineAudioComponentMO> compRef;
 
@@ -154,6 +167,10 @@ public class TimelineAudioComponentMO extends CellComponentMO {
                 TimelineAudioComponentMO comp) {
 
             super(cellRef.get());
+
+	    this.cellRef = cellRef;
+
+	    cellID = cellRef.get().getCellID();
 
             compRef = AppContext.getDataManager().createReference(comp);
         }
@@ -176,6 +193,10 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 		return;
 	    }
 
+	    if (message instanceof TimelineResetMessage) {
+		done();
+	    }
+
 	    if (message instanceof TimelinePlayRecordingMessage) {
 		playRecording((TimelinePlayRecordingMessage) message);
 		return;
@@ -189,11 +210,13 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
 	    String segmentID = message.getSegmentID();
 
+	    AppContext.getManager(VoiceManager.class).addCallStatusListener(this, segmentID);
+
             TreatmentGroup group = vm.createTreatmentGroup(segmentID);
 	
             TreatmentSetup setup = new TreatmentSetup();
 
-	    FullVolumeSpatializer spatializer = new FullVolumeSpatializer();
+	    FullVolumeSpatializer spatializer = new FullVolumeSpatializer(.01);
 
 	    setup.spatializer = spatializer;
 
@@ -201,7 +224,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
             String treatmentId = segmentID;
 
-	    setup.listener = this;
+	    //setup.listener = this;
 
             if (setup.treatment == null || setup.treatment.length() == 0) {
                 System.out.println("Invalid treatment '" + setup.treatment + "'");
@@ -242,20 +265,20 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    Treatment treatment = segmentTreatmentMap.get(currentSegmentID);
 
 	    if (treatment != null) {
-		Call call = treatment.getCall();
+		Call call = vm.getCall(treatment.getId());
 
 		if (call != null) {
 	            Player treatmentPlayer = call.getPlayer();
 
 	            if (treatmentPlayer != null) {
-		        System.out.println("Setting pm for " + treatmentPlayer);
 		        myPlayer.setPrivateSpatializer(treatmentPlayer, new FullVolumeSpatializer());
+			treatment.restart(false);
 		        //new Fade(myPlayer, treatment, false);
 	            } else {
 		        System.out.println("Can't find player for " + treatment);
 		    }
 		} else {
-		    System.out.println("No call for " + treatment);
+		    System.out.println("No call for new treatment " + treatment + " setup " + treatment.getSetup());
 		}
 	    } else {
 		System.out.println("No treatment in map for seg " + currentSegmentID);
@@ -291,16 +314,15 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
 	    //new Fade(myPlayer, treatment, true);
 
-	    Call call = treatment.getCall();
+	    Call call = vm.getCall(treatment.getId());
 
 	    Player player;
 
 	    if (call != null) {
 	        player = call.getPlayer();
 	        myPlayer.removePrivateSpatializer(player);
-	        System.out.println("Removed pm for " + treatment);
 	    } else {
-		System.out.println("No player for " + treatment);
+		System.out.println("No call for " + treatment + " setup " + treatment.getSetup());
 	    }
 
 	    useCount = segmentUseMap.get(previousSegmentID);
@@ -425,8 +447,24 @@ public class TimelineAudioComponentMO extends CellComponentMO {
         public void callStatusChanged(CallStatus status) {
             String callId = status.getCallId();
 
-	    System.out.println("Got status: " + status.getCode() + " " + status.getCallId());
+	    if (status.getCode() == CallStatus.TREATMENTDONE) {
+                ChannelComponentMO channelComponent = (ChannelComponentMO)
+                    cellRef.get().getComponent(ChannelComponentMO.class);
+
+		channelComponent.sendAll(null, new TimelineTreatmentDoneMessage(cellID));
+	    }
         }
+
+	public void done() {
+            Treatment[] treatments = segmentTreatmentMap.values().toArray(new Treatment[0]);
+
+	    for (int i = 0; i < treatments.length; i++) {
+		treatments[i].stop();
+	    }
+
+	    segmentTreatmentMap.clear();
+	    segmentUseMap.clear();
+	}
 
     }
 
