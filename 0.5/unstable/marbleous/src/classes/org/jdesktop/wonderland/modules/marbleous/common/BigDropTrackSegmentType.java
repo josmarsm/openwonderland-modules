@@ -74,8 +74,8 @@ public class BigDropTrackSegmentType extends TrackSegmentType {
 
         keys[0] = createKeyFrame(0, startPos, 0,0,0, new Vector3f(1,0,0), -finalAngle);
 
-        for(int i=0; i<keys.length; i++)
-            keys[i].debugPrint(""+i);
+//        for(int i=0; i<keys.length; i++)
+//            keys[i].debugPrint(""+i);
 
         endpoint = new Matrix4f();
         endpoint.setTranslation(keys[keys.length-1].position);
