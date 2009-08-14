@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.text.DecimalFormat;
 import javax.swing.AbstractCellEditor;
@@ -56,7 +57,7 @@ public class KnotFrame extends javax.swing.JFrame {
 
 
     /** Creates new form KnotFrame */
-    public KnotFrame(KnotTableModel knotTableModel, TrackCell cell) {
+    public KnotFrame(KnotTableModel knotTableModel, TrackSegment segment, TrackCell cell) {
         tableModel = knotTableModel;
         this.cell = cell;
         initComponents();
@@ -79,6 +80,8 @@ public class KnotFrame extends javax.swing.JFrame {
             }
         });
         knotTable.setRowHeight(25);
+        
+        segmentEditorPanel.add(SegmentEditor.createSegmentEditor(cell, segment), BorderLayout.CENTER);
     }
 
 
@@ -98,6 +101,7 @@ public class KnotFrame extends javax.swing.JFrame {
         knotTable = new javax.swing.JTable();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        segmentEditorPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setAlwaysOnTop(true);
@@ -132,32 +136,40 @@ public class KnotFrame extends javax.swing.JFrame {
             }
         });
 
+        segmentEditorPanel.setMinimumSize(new java.awt.Dimension(388, 122));
+        segmentEditorPanel.setLayout(new java.awt.BorderLayout());
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(segmentEditorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGap(68, 68, 68)
                         .addComponent(okButton)
                         .addGap(59, 59, 59)
-                        .addComponent(cancelButton)))
+                        .addComponent(cancelButton))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(segmentEditorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(okButton)
                     .addComponent(cancelButton))
-                .addContainerGap(9, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
 
         pack();
@@ -199,7 +211,7 @@ public class KnotFrame extends javax.swing.JFrame {
 
             public void run() {
                 TrackSegment segment = new BumpTrackSegmentType().createSegment();
-                new KnotFrame(new KnotTableModel(segment), null).setVisible(true);
+                new KnotFrame(new KnotTableModel(segment), segment, null).setVisible(true);
             }
         });
     }
@@ -209,6 +221,7 @@ public class KnotFrame extends javax.swing.JFrame {
     protected javax.swing.JScrollPane jScrollPane1;
     protected javax.swing.JTable knotTable;
     protected javax.swing.JButton okButton;
+    protected javax.swing.JPanel segmentEditorPanel;
     // End of variables declaration//GEN-END:variables
 
     private void initTable() {

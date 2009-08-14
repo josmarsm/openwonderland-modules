@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.marbleous.common;
 import com.jme.math.Matrix4f;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import java.util.Properties;
 
 /**
  * Represents a type of a segment of roller coaster track.
@@ -32,6 +33,7 @@ public abstract class TrackSegmentType implements Comparable<TrackSegmentType> {
     private String name=null;
     private TCBKeyFrame[] defaultKeyFrames=null;
     protected String imageName = null;
+    private SegmentSettings defaultSettings;
 
     protected TrackSegmentType(String name) {
         this.name = name;
@@ -59,8 +61,16 @@ public abstract class TrackSegmentType implements Comparable<TrackSegmentType> {
         return defaultKeyFrames;
     }
 
+    public SegmentSettings getDefaultSegmentSettings() {
+        return defaultSettings;
+    }
+
     protected void setDefaultKeyFrames(TCBKeyFrame[] defaultKeyFrames) {
         this.defaultKeyFrames = defaultKeyFrames;
+    }
+
+    protected void setDefaultSegmentSettings(SegmentSettings settings) {
+        defaultSettings = settings;
     }
 
     protected TCBKeyFrame createKeyFrame(float knot, Vector3f pos) {
@@ -81,6 +91,9 @@ public abstract class TrackSegmentType implements Comparable<TrackSegmentType> {
      * @return
      */
     abstract Matrix4f getEndpointTransform();
+
+    public void updateSegment(TrackSegment segment, SegmentSettings prop) {
+    }
 
     /**
      * 

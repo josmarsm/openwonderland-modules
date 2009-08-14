@@ -31,10 +31,17 @@ public class LoopTrackSegmentType extends TrackSegmentType {
     public LoopTrackSegmentType() {
         super("Loop");
         imageName = "RampLoop.png";
+        LoopSegmentSettings p = new LoopSegmentSettings();
+        p.setEditorClassname("org.jdesktop.wonderland.modules.marbleous.client.ui.LoopSegmentEditor");
+        p.setRadius(3);
+        setDefaultSegmentSettings(p);
+        setDefaultKeyFrames(generateSpline(((LoopSegmentSettings)getDefaultSegmentSettings())));
+   }
 
+    private TCBKeyFrame[] generateSpline(LoopSegmentSettings settings) {
         int samples = 16;        // Samples per loop
         int loops = 1;
-        float radius=3;
+        float radius=settings.getRadius();
         float finalAngle = (float)Math.PI*2*loops;
         float knot = 0;
         float xStepPerLoop = 2; // Distance between the loops
@@ -59,14 +66,20 @@ public class LoopTrackSegmentType extends TrackSegmentType {
 //          createKeyFrame(1f, new Vector3f(3,0,-10))
 //        };
 
-        setDefaultKeyFrames(keys);
 
         endpoint = new Matrix4f();
         endpoint.setTranslation(3,0,-10);
+
+        return keys;
     }
 
     @Override
     Matrix4f getEndpointTransform() {
         return endpoint;
+    }
+
+    @Override
+    public void updateSegment(TrackSegment segment, SegmentSettings settings) {
+        segment.setKeyFrames(generateSpline((LoopSegmentSettings) settings));
     }
 }

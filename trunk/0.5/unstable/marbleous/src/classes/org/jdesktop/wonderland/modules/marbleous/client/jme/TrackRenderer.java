@@ -192,7 +192,7 @@ public class TrackRenderer extends BasicRenderer {
         Collection<TCBKeyFrame> keyFrames = track.buildTrack();
         RotPosScaleTCBSplinePath spline = new RotPosScaleTCBSplinePath(keyFrames.toArray(new TCBKeyFrame[keyFrames.size()]));
 
-//        drawKnot(spline, trackRoot);
+        drawKnot(spline, trackRoot);
 //        drawSpline(spline, trackRoot);
 
         trackMesh = createTrackMesh(spline);
@@ -380,7 +380,6 @@ public class TrackRenderer extends BasicRenderer {
 
             Vector3f offset = new Vector3f(0,1,0);
             key.quat.multLocal(offset);
-            System.err.println("Rotation offset "+offset);
             offset.addLocal(key.position);
             // Rotation
             Sphere s = new Sphere("knot-up-"+i, offset, 10, 10, 0.1f);
