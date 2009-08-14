@@ -75,37 +75,13 @@ public class TimelineCellFactory implements CellFactorySPI {
             }
         }
 
-        // Setup code for the sample provider. Just used for testing.
+//        // Setup code for the sample provider. Just used for testing.
 //        TimelineProviderServerState providerState = new TimelineProviderServerState();
 //        TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.SampleProvider");
 //        query.getProperties().setProperty("test", "123");
 //        providerState.getQueries().add(query);
 //
 //        state.addComponentServerState(providerState);
-
-//
-//      Date end = new Date();
-//      Calendar c = Calendar.getInstance();
-//      c.set(Calendar.YEAR, 1999);
-//      Date start = c.getTime();
-//
-//      state.getConfig().setDateRange(new TimelineDate(start, end));
-//      state.getConfig().setNumSegments(10);
-//
-//      TimelineProviderServerState tpss = new TimelineProviderServerState();
-//
-//      TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.FlickrProvider");
-//      query.getProperties().setProperty("apiKey", "aa664dbdefb318455a9a07a4245f5ff6");
-//      query.getProperties().setProperty("startDate", String.valueOf(state.getConfig().getDateRange().getMinimum().getTime()));
-//      query.getProperties().setProperty("endDate", String.valueOf(state.getConfig().getDateRange().getMaximum().getTime()));
-//      query.getProperties().setProperty("increments", String.valueOf(state.getConfig().getNumSegments()));
-//      query.getProperties().setProperty("searchText", "automobile");
-//      query.getProperties().setProperty("searchType", "tags");
-//      query.getProperties().setProperty("sort", "relevance");
-//      query.getProperties().setProperty("returnCount", String.valueOf(1));
-//      tpss.getQueries().add(query);
-//
-//      state.addComponentServerState(tpss);
 
         return (T) state;
     }
@@ -117,7 +93,6 @@ public class TimelineCellFactory implements CellFactorySPI {
         creationPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent pe) {
-                logger.info("------- property change event: " + pe);
                 if (pe.getPropertyName().equals("create")) {
                     logger.info("--- create/update timeline");
 
