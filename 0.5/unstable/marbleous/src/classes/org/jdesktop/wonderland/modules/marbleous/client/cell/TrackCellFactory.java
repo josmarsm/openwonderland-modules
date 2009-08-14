@@ -49,7 +49,7 @@ public class TrackCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        URL url = TrackCellFactory.class.getResource("resources/marbelous.jpg");
+        URL url = TrackCellFactory.class.getResource("resources/marbelous.png");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
