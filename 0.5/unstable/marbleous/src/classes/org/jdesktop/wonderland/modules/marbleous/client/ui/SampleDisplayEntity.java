@@ -345,7 +345,7 @@ public class SampleDisplayEntity extends Entity {
             WorldManager wm = ClientContextJME.getWorldManager();
             wm.addRenderUpdater(updater, this);
 
-            System.err.println("Put down: dispMode = " + displayMode);
+            //System.err.println("Put up: dispMode = " + displayMode);
 
             return;
         }
