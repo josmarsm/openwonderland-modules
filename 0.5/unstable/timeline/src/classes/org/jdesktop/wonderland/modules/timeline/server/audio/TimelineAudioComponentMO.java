@@ -66,11 +66,14 @@ import java.io.IOException;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.sun.voip.client.connector.CallStatus;
 //import com.sun.voip.client.connector.CallStatusListener;
+
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 
 /**
  *
@@ -81,6 +84,10 @@ public class TimelineAudioComponentMO extends CellComponentMO {
             Logger.getLogger(TimelineAudioComponentMO.class.getName());
 
     private CellID cellID;
+
+    @UsesCellComponentMO(ChannelComponentMO.class)
+    private ManagedReference<ChannelComponentMO> channelCompRef;
+
 
     public TimelineAudioComponentMO(CellMO cellMO) {
         super(cellMO);
@@ -127,8 +134,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
     public void setLive(boolean live) {
 	super.setLive(live);
 
-        ChannelComponentMO channelComponent = (ChannelComponentMO)
-            cellRef.get().getComponent(ChannelComponentMO.class);
+	ChannelComponentMO channelComponent = channelCompRef.get();
 
 	if (live) {
 	    ComponentMessageReceiverImpl receiver = new ComponentMessageReceiverImpl(cellRef, this);
@@ -322,7 +328,8 @@ public class TimelineAudioComponentMO extends CellComponentMO {
                     url = new URL(new URL(serverURL),
                             "webdav/content/" + path);
 
-                    treatment = url.toString();
+
+                    treatment = URLEncoder.encode(url.toString());
                     System.out.println("Treatment: " + treatment);
                 } catch (MalformedURLException e) {
                     logger.warning("bad url:  " + e.getMessage());
@@ -356,7 +363,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
                         url = new URL(new URL(serverURL),
                             "webdav/content/modules/installed/" + moduleName + "/audio/" + path);
 
-                        treatment = url.toString();
+                        treatment = URLEncoder.encode(url.toString());
                         logger.fine("Treatment: " + treatment);
                     } catch (MalformedURLException e) {
                         logger.warning("bad url:  " + e.getMessage());
