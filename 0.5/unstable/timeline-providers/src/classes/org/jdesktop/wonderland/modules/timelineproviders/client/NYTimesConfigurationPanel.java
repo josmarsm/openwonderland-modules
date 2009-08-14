@@ -17,14 +17,17 @@
  */
 package org.jdesktop.wonderland.modules.timelineproviders.client;
 
-import org.jdesktop.wonderland.modules.timelineproviders.common.FlickrConstants;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
- *
- * @author nsimpson
+ * Configuration panel for the NY Times news provider
+ * @author jkaplan
  */
 public class NYTimesConfigurationPanel extends javax.swing.JPanel {
+
     private boolean ok = false;
+    private PropertyChangeSupport listeners;
 
     public NYTimesConfigurationPanel() {
         initComponents();
@@ -41,14 +44,6 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
 
     public String getAPIKey() {
         return apiKeyField.getText();
-    }
-
-    public void setQueryText(String text) {
-        searchTextField.setText(text);
-    }
-
-    public String getQueryText() {
-        return searchTextField.getText();
     }
 
     public int getResultLimit() {
@@ -83,11 +78,34 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
             returnAllRadioButton.setSelected(true);
         }
     }
-    
+
     public boolean isOK() {
         return ok;
     }
-    
+
+    /**
+     * Adds a bound property listener to the dialog
+     * @param listener a listener for dialog events
+     */
+    @Override
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners == null) {
+            listeners = new PropertyChangeSupport(this);
+        }
+        listeners.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Removes a bound property listener from the dialog
+     * @param listener the listener to remove
+     */
+    @Override
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (listeners != null) {
+            listeners.removePropertyChangeListener(listener);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -102,8 +120,6 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
         searchByButtonGroup = new javax.swing.ButtonGroup();
         returnButtonGroup = new javax.swing.ButtonGroup();
         configurationLabel = new javax.swing.JLabel();
-        searchLabel = new javax.swing.JLabel();
-        searchTextField = new javax.swing.JTextField();
         returnLabel = new javax.swing.JLabel();
         return1RadioButton = new javax.swing.JRadioButton();
         return2RadioButton = new javax.swing.JRadioButton();
@@ -119,14 +135,9 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
         configurationLabel.setFont(configurationLabel.getFont().deriveFont(configurationLabel.getFont().getStyle() | java.awt.Font.BOLD));
         configurationLabel.setText("New York Times Query Configuration");
 
-        searchLabel.setText("Search for: ");
-
-        searchTextField.setText("horses and boats");
-
         returnLabel.setText("Return:");
 
         returnButtonGroup.add(return1RadioButton);
-        return1RadioButton.setSelected(true);
         return1RadioButton.setText("1");
 
         returnButtonGroup.add(return2RadioButton);
@@ -139,6 +150,7 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
         return6RadioButton.setText("6");
 
         returnButtonGroup.add(return8RadioButton);
+        return8RadioButton.setSelected(true);
         return8RadioButton.setText("8");
 
         returnButtonGroup.add(returnAllRadioButton);
@@ -171,21 +183,14 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(configurationLabel)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(configurationLabel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(searchLabel)
-                            .addComponent(apiKeyLabel))
+                        .addComponent(apiKeyLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(searchTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
-                            .addComponent(apiKeyField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)))
+                        .addComponent(apiKeyField, javax.swing.GroupLayout.DEFAULT_SIZE, 263, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(33, 33, 33)
                         .addComponent(returnLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -200,9 +205,9 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(return8RadioButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(returnAllRadioButton))))
+                                .addComponent(returnAllRadioButton)))
+                        .addGap(49, 49, 49))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(146, Short.MAX_VALUE)
                         .addComponent(cancelButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(okButton)))
@@ -210,17 +215,13 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(configurationLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(apiKeyField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(apiKeyLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(searchTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(searchLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -234,26 +235,27 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
                             .addComponent(return6RadioButton)
                             .addComponent(return8RadioButton)))
                     .addComponent(returnLabel))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cancelButton)
-                    .addComponent(okButton))
-                .addGap(74, 74, 74))
+                    .addComponent(okButton)
+                    .addComponent(cancelButton))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         ok = true;
+        listeners.firePropertyChange("ok", new String(""), null);
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         ok = false;
+        listeners.firePropertyChange("cancel", new String(""), null);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void apiKeyFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_apiKeyFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_apiKeyFieldActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField apiKeyField;
     private javax.swing.JLabel apiKeyLabel;
@@ -270,8 +272,6 @@ public class NYTimesConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.ButtonGroup returnButtonGroup;
     private javax.swing.JLabel returnLabel;
     private javax.swing.ButtonGroup searchByButtonGroup;
-    private javax.swing.JLabel searchLabel;
-    private javax.swing.JTextField searchTextField;
     private javax.swing.ButtonGroup tagsOrTextButtonGroup;
     // End of variables declaration//GEN-END:variables
 }
