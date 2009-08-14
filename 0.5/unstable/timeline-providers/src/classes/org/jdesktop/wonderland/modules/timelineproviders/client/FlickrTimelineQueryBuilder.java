@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.timelineproviders.client;
 
+import java.util.List;
 import java.util.Properties;
 import org.jdesktop.wonderland.modules.timeline.client.provider.*;
 import javax.swing.JComboBox;
@@ -33,13 +34,16 @@ import org.jdesktop.wonderland.modules.timelineproviders.common.FlickrConstants;
  * @author nsimpson
  */
 @QueryBuilder
-public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
+public class FlickrTimelineQueryBuilder 
+        implements TimelineQueryBuilder, KeywordConsumer
+{
     private static final String DISPLAY_NAME = "Flickr";
     private static final String QUERY_CLASS = "org.jdesktop.wonderland.modules.timelineproviders.provider.FlickrProvider";
     private TimelineConfiguration config;
     private TimelineQuery query;
     private JComboBox configComboBox;
     private FlickrConfigurationPanel configPanel;
+    private List<String> keywords;
 
     public FlickrTimelineQueryBuilder() {
         configComboBox = createConfigComboBox();
@@ -156,6 +160,10 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
         return configPanel;
     }
 
+    public void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
+    }
+
     /**
      * Get the configured query this builder provides.
      * @return the configured query
@@ -172,6 +180,17 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
         Properties props = query.getProperties();
         props.setProperty(FlickrConstants.SEARCH_TEXT_PROP,
                           (String) configComboBox.getSelectedItem());
+
+        if ((!configPanel.isOK() || configPanel.isUseKeywords()) &&
+                keywords != null)
+        {
+            for (int i = 0; i < keywords.size(); i++) {
+                String keyword = keywords.get(i);
+                if (keyword != null && keyword.trim().length() > 0) {
+                    props.setProperty(FlickrConstants.KEYWORD_PROP + i, keyword);
+                }
+            }
+        }
 
         // set the advanced configuration
         if (configPanel.isOK()) {
@@ -208,8 +227,8 @@ public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
         // set the various dates
         props.setProperty(FlickrConstants.START_DATE_PROP,
                           String.valueOf(config.getDateRange().getMinimum().getTime()));
-        props.setProperty(FlickrConstants.END_DATE_PROP,
-                          String.valueOf(config.getDateRange().getMaximum().getTime()));
+        props.setProperty(FlickrConstants.UNITS_PROP,
+                          String.valueOf(config.getUnits().getCalendarUnit()));
         props.setProperty(FlickrConstants.INCREMENTS_PROP,
                           String.valueOf(config.getNumSegments()));
     }
