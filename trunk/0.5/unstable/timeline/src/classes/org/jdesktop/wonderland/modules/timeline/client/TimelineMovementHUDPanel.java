@@ -44,11 +44,7 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
     public TimelineMovementHUDPanel(TimelineCell cell) {
         this.cell = cell;
 
-	java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-        	initComponents();
-	    }
-	});
+       	initComponents();
     }
 
     /** This method is called from within the constructor to
