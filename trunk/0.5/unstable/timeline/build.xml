@@ -15,6 +15,7 @@
         <path location="${wonderland.dir}/modules/samples/image-viewer/build/server/imageviewer-server.jar"/>
         <path location="${current.dir}/../stickynote/build/server/stickynote-server.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/server/appbase-server.jar"/>
+        <path location="${wonderland.dir}/modules/world/jmecolladaloader/build/server/jmecolladaloader-server.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
@@ -29,6 +30,7 @@
         <path location="${current.dir}/../stickynote/build/client/stickynote-client.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/client/appbase-client-cell.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/client/appbase-client.jar"/>
+        <path location="${wonderland.dir}/modules/world/jmecolladaloader/build/client/jmecolladaloader-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-web.classpath">
