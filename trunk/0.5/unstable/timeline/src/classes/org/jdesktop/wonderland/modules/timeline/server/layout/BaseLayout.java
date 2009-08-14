@@ -148,8 +148,13 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         // have an exception for dated audio, which will return a null cell above.
         // this is a terrible way to structure this, but it's a hack that should
         // work okay for now.
-        if (cell == null && !(obj instanceof DatedAudio)) {
+        if (cell == null) {
             logger.warning("Type " + obj.getClass() + " not supported.");
+            return;
+        }
+
+        // We don't need to layout DatedAudios.
+        if(obj instanceof DatedAudio) {
             return;
         }
 
