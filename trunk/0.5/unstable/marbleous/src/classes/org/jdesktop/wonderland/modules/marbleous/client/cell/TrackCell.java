@@ -248,7 +248,9 @@ public class TrackCell extends Cell {
         }
 
         setSimulationStateInternal(simulationState);
-        playSound(COASTER_STARTED_SOUND);
+        if (simulationState.equals(SimulationState.STARTED)) {
+            playSound(COASTER_STARTED_SOUND);
+        }
         sendCellMessage(new SimulationStateMessage(simulationState));
     }
 
