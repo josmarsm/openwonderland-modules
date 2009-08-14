@@ -145,16 +145,28 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
        ignoreChangeEvents = false;
     }
 
-    public void setStartDate(Date date) {
-        startDateLabel.setText(dateFormatMedium.format(date));
+    public void setStartDate(final Date date) {
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	startDateLabel.setText(dateFormatMedium.format(date));
+	    }
+	});
     }
 
-    public void setEndDate(Date date) {
-        endDateLabel.setText(dateFormatMedium.format(date));
+    public void setEndDate(final Date date) {
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	endDateLabel.setText(dateFormatMedium.format(date));
+	    }
+	});
     }
 
-    public void setDateLabel(TimelineDate date) {
-        curDateLabel.setText(dateFormatLong.format(date.getMiddle()));
+    public void setDateLabel(final TimelineDate date) {
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	curDateLabel.setText(dateFormatLong.format(date.getMiddle()));
+	    }
+	});
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
