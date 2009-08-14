@@ -132,7 +132,7 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
      * 
      * @param position
      */
-    public void setSliderLocation(float position) {
+    public void setSliderLocation(final float position) {
 
        // cheating a bit here - this is only true for min=0, but
        // that's an assumption I think we can make here since we
@@ -140,9 +140,14 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
        
        // we wrap the setValue in these isadjusting calls to avoid
        // triggering an infinite loop of change requests.
-       ignoreChangeEvents = true;
-        this.positionSlider.setValue((int) (positionSlider.getMaximum() * position));
-       ignoreChangeEvents = false;
+
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+       		ignoreChangeEvents = true;
+        	positionSlider.setValue((int) (positionSlider.getMaximum() * position));
+       		ignoreChangeEvents = false;
+	    }
+	});
     }
 
     public void setStartDate(final Date date) {
