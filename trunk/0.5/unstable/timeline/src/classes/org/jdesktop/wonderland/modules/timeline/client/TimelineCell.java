@@ -167,7 +167,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                     if (pe.getPropertyName().equals("create")) {
                         timelineCreationHUD.setVisible(false);
                         // fetch new config information
-                        rebuildClientConfiguration();
+                        // rebuildClientConfiguration();
                     } else if (pe.getPropertyName().equals("update")) {
                         // TODO: handle update case
                     } else if (pe.getPropertyName().equals("cancel")) {
