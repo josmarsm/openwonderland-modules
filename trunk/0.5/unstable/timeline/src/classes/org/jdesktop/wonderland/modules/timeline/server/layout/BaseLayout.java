@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.timeline.server.layout;
 
 import com.jme.math.Quaternion;
@@ -32,11 +31,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
 import org.jdesktop.wonderland.modules.imageviewer.common.cell.ImageViewerCellServerState;
 import org.jdesktop.wonderland.modules.imageviewer.server.cell.ImageViewerCellMO;
-import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.common.cell.StickyNoteCellServerState;
+import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.common.cell.StickyNoteTypes;
+import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.server.cell.StickyNoteCellMO;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedAudio;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedImage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedNews;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
@@ -44,9 +48,12 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
+import org.jdesktop.wonderland.modules.timeline.common.sticky.TimelineStickyServerState;
 import org.jdesktop.wonderland.modules.timeline.server.TimelineCellMO;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMO;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMOListener;
+import org.jdesktop.wonderland.modules.timeline.server.sticky.TimelineStickyCellMO;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
@@ -57,20 +64,14 @@ import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 public class BaseLayout implements TimelineProviderComponentMOListener, LayoutManager, TimelineResultListener, Serializable {
 
     private static final Logger logger =
-        Logger.getLogger(BaseLayout.class.getName());
-
+            Logger.getLogger(BaseLayout.class.getName());
     private Map<TimelineSegment, DatedSet> datedObjectBySegment = new HashMap<TimelineSegment, DatedSet>();
-
     /**
      * Stores already created Cells, along with the DatedObject they were created
      * from. Used to avoid recreating Cells each time we regenerate a layout.
      */
     private Map<DatedObject, ManagedReference<CellMO>> datedObjectToCellMap = new HashMap<DatedObject, ManagedReference<CellMO>>();
-
-
     private Map<TimelineSegment, Set<DatedObject>> segmentToDatedObjects = new HashMap<TimelineSegment, Set<DatedObject>>();
-    
-
     /**
      * The parent cell for this layout.
      */
@@ -79,7 +80,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
     public BaseLayout(TimelineCellMO cellMO) {
 
         this.cellRef = AppContext.getDataManager().createReference(cellMO);
-        
+
         // Set up the necessary listeners.
         TimelineProviderComponentMO providerComponent = cellMO.getComponent(TimelineProviderComponentMO.class);
         providerComponent.addComponentMOListener(this);
@@ -87,7 +88,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         // Grab an initial list of results, if they're there.
         Collection<TimelineResult> results = providerComponent.getResults();
 
-        for(TimelineResult result : results) {
+        for (TimelineResult result : results) {
             result.addResultListener(this);
         }
 
@@ -97,16 +98,15 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
     public void resultAdded(TimelineResult result) {
         logger.info("Got new result from provider: " + result);
-//        result.addResultListener(this)
-//        processResult(result);
-//        doLayout();
+        result.addResultListener(this);
+        processResult(result);
+        doLayout();
     }
 
     public void resultRemoved(TimelineResult result) {
 //        // This needs to be handled differently - write this later.
 //        logger.info("Got a resultRemoved event that we're ignoring for now.");
     }
-
 
     public void added(DatedObject obj) {
         layoutDatedObject(obj);
@@ -117,9 +117,8 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-
     private void processResults(Collection<TimelineResult> results) {
-        for(TimelineResult result : results) {
+        for (TimelineResult result : results) {
             processResult(result);
         }
     }
@@ -129,10 +128,10 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         // Given a result, get all the DatedObject it contains
         // and process them.
 
-        for(DatedObject obj : result.getResultSet()) {
+        for (DatedObject obj : result.getResultSet()) {
             // now with this object, do our little dance.
             layoutDatedObject(obj);
-            
+
         }
     }
 
@@ -152,7 +151,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
         DatedSet segments = this.cellRef.get().getSegments().containsSet(new TimelineDate(obj.getDate().getMiddle()));
 
-        if(segments.size()!=1) {
+        if (segments.size() != 1) {
 //            logger.warning("!!!!! Couldn't find a segment to assign this dated object to.");
 
             DatedObjectComponentMO comp = new DatedObjectComponentMO(cell);
@@ -163,7 +162,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             cell.addComponent(comp);
 
         }
-        
+
         // pick off the first one (which is guaranteed to be the only one, because
         // of the way we generate segments
         TimelineSegment seg = (TimelineSegment) segments.iterator().next();
@@ -188,8 +187,9 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
         // 2.
         DatedSet currentObjects = datedObjectBySegment.get(seg);
-        if(currentObjects==null)
+        if (currentObjects == null) {
             currentObjects = new DatedSet();
+        }
 
         currentObjects.add(obj);
 
@@ -209,7 +209,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         TimelineConfiguration config = cellRef.get().getConfiguration();
 
         logger.info("---------------- STARTING LAYOUT-----------");
-        for(TimelineSegment seg : datedObjectBySegment.keySet()) {
+        for (TimelineSegment seg : datedObjectBySegment.keySet()) {
 
 //            logger.info("Processing layout for: " + seg);
 
@@ -223,14 +223,14 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             // In this first pass we're deciding if we need to do a full layout
             // on this segment, as well as populating a list of cells in this segment
             // to enable us to actually do that layout if we need to.
-            
-            for(DatedObject dObj : datedObjects.descendingSet()) {
+
+            for (DatedObject dObj : datedObjects.descendingSet()) {
                 // we know all of these objects will have an entry
                 // in this map by now.
                 CellMO cell = datedObjectToCellMap.get(dObj).get();
                 DatedObjectComponentMO comp = cell.getComponent(DatedObjectComponentMO.class);
 
-                if(dObj instanceof DatedImage) {
+                if (dObj instanceof DatedImage) {
                     DatedImage dImg = (DatedImage) dObj;
 //                    logger.info("Setting WIDTH AND HEIGHT: " + dImg.getWidth() + "-" + dImg.getHeight());
 
@@ -244,12 +244,14 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
                 // Not sure I need this second test. I think isAddedToTimeline
                 // implies isNeedsLayout, but not 100% sure. For now verge
                 // on the side of more false positives.
-                if(comp.isNeedsLayout() || !comp.isAddedToTimeline())
+                if (comp.isNeedsLayout() || !comp.isAddedToTimeline()) {
                     needsLayout = true;
+                }
 
                 // Really should collapse these if statements at some point.
-                if(!comp.isAssignedToSegment())
+                if (!comp.isAssignedToSegment()) {
                     needsLayout = false;
+                }
 
                 cells.add(cell);
             }
@@ -257,8 +259,9 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 //            logger.info("First pass completed. Built necessary lists. This segment needs layout: " + needsLayout + " (forcing? " + force + ")");
             // If we don't need to layout this segment, move on to the next
             // segment. 
-            if(!needsLayout && !force)
+            if (!needsLayout && !force) {
                 continue;
+            }
 
             // In this second pass, we know we need to run a layout.
             // So loop through each of the cells and set their position
@@ -280,17 +283,17 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             float MIN_CELL_WIDTH = 3.0f;
 
             // first, decide how many cells we can fit within our arc length.
-            float currentSegmentArcLength = (seg.getEndAngle() - seg.getStartAngle())*config.getOuterRadius();
+            float currentSegmentArcLength = (seg.getEndAngle() - seg.getStartAngle()) * config.getOuterRadius();
 //            logger.info("currentArcLength: " + currentSegmentArcLength);
 
             int maxCellsPerRow = (int) Math.floor(currentSegmentArcLength / MIN_CELL_WIDTH);
 
             // calculate the angle increment based on how many columns we think we can
             // fit in. 
-            float angleIncrement = (seg.getEndAngle() - seg.getStartAngle())/maxCellsPerRow;
+            float angleIncrement = (seg.getEndAngle() - seg.getStartAngle()) / maxCellsPerRow;
 
-            int numRows = (int) Math.ceil(numCellsInSegment / (float)maxCellsPerRow);
-            
+            int numRows = (int) Math.ceil(numCellsInSegment / (float) maxCellsPerRow);
+
             float heightIncrement = config.getPitch() / numRows;
 
             int row = 0;
@@ -307,7 +310,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 //            logger.warning("laying out segment. cells/row: " + maxCellsPerRow + "; numRows: " + numRows + "; angleIncrement: " + angleIncrement + "; heightIncrement: " + heightIncrement);
 
             // For each cell in this segment...
-            for(CellMO cell : cells) {
+            for (CellMO cell : cells) {
 //                logger.info("\t " + row + " - " + col);
                 DatedObjectComponentMO doComp = cell.getComponent(DatedObjectComponentMO.class);
                 MovableComponentMO movComp = cell.getComponent(MovableComponentMO.class);
@@ -324,7 +327,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
                 float heightAtThisAngle = (float) ((config.getPitch() / (2 * Math.PI)) * curAngle);
 
-                Vector3f edgePoint = new Vector3f((float) (config.getOuterRadius() * Math.sin(curAngle)), heightAtThisAngle + curHeight, ((float)(config.getOuterRadius() * Math.cos(curAngle))));
+                Vector3f edgePoint = new Vector3f((float) (config.getOuterRadius() * Math.sin(curAngle)), heightAtThisAngle + curHeight, ((float) (config.getOuterRadius() * Math.cos(curAngle))));
                 edgePoint.y += config.getHeight() / config.getNumTurns() / 2;
 
                 // Okay, here's the plan. First, lets just do one image per segment.
@@ -343,7 +346,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
                 float angleBetween = (float) Math.atan2(edgePoint.x, edgePoint.z);
 
-                float[] angles = {0.0f, angleBetween, 0.0f};
+                float[] angles = {0.0f, angleBetween+(float)Math.PI, 0.0f};
 
                 Quaternion q = new Quaternion(angles);
 
@@ -361,7 +364,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
                 // and we can set the scale with movable component, or
                 // they can accept a maxWidth/maxHeight and then size themselves
                 // appropriately.
-                if(cell instanceof ImageViewerCellMO) {
+                if (cell instanceof ImageViewerCellMO) {
 //                    // for image cells, we can get their dimsensions and size them
 //                    // appropriately.
 //                    ImageViewerCellMO imageCell = (ImageViewerCellMO) cell;
@@ -390,7 +393,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
 
 //
-
+                logger.info("Setting position: " + transform);
                 movComp.moveRequest(null, transform);
 
                 // increment the column.
@@ -399,7 +402,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
                 // if we've done as many cells in this row as we think we can
                 // fit, move up to the next row.
-                if(col == maxCellsPerRow) {
+                if (col == maxCellsPerRow) {
                     col = 0;
 
                     row++;
@@ -409,13 +412,44 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
 
 
 
-                if(!doComp.isAddedToTimeline()) {
+                if (!doComp.isAddedToTimeline()) {
                     try {
-                        this.cellRef.getForUpdate().addChild(cell);
-//                        logger.info("Added cell to the timeline: " + cell);
-                        doComp.setNeedsLayout(false);
-                        doComp.setAddedToTimeline(true);
-                        
+
+                        if(cell instanceof StickyNoteCellMO) {
+                            // We have to handle StickyNotes differently. AppBase
+                            // cells don't work properly when children of other
+                            // cells. Their movable components fail for some reason.
+                            // So, convert the cell-local transform we wanted
+                            // to use into a World transform, and add it directly
+                            // to the world.
+                            CellTransform localToWorld = this.cellRef.get().getWorldTransform(null);
+                            localToWorld.invert();
+
+                            CellTransform worldTransform = transform.mul(localToWorld);
+
+                            PositionComponentServerState pos = new PositionComponentServerState();
+                            pos.setTranslation(worldTransform.getTranslation(null));
+                            pos.setRotation(worldTransform.getRotation(null));
+//                            pos.setTranslation(transform.getTranslation(null));
+//                            pos.setRotation(transform.getRotation(null));
+
+                            CellServerState state = cell.getServerState(null);
+                            state.addComponentServerState(pos);
+
+                            cell.setServerState(state);
+
+                            doComp.setNeedsLayout(false);
+                            doComp.setAddedToTimeline(true);
+
+                            WonderlandContext.getCellManager().insertCellInWorld(cell);
+
+                        } else {
+                            this.cellRef.getForUpdate().addChild(cell);
+    //                        logger.info("Added cell to the timeline: " + cell);
+                            doComp.setNeedsLayout(false);
+                            doComp.setAddedToTimeline(true);
+                        }
+
                     } catch (MultipleParentException ex) {
                         Logger.getLogger(BaseLayout.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -434,7 +468,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         // Check and see if we've generated a cell for that object. If we have,
         // use it. (Are we guaranteed the uniqueness of DatedObjects in ResultSets?)
 
-        if(datedObjectToCellMap.get(datedObj)!=null) {
+        if (datedObjectToCellMap.get(datedObj) != null) {
 //            logger.info("=======Found Existing cell for this DO========");
             return datedObjectToCellMap.get(datedObj).get();
         }
@@ -442,19 +476,40 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         CellMO out = null;
 
         // If we don't have that cell yet, run through the list of 
-        if(datedObj instanceof DatedImage) {
+        if (datedObj instanceof DatedImage) {
 
-            DatedImage img = (DatedImage)datedObj;
-            
+            DatedImage img = (DatedImage) datedObj;
+
             out = new ImageViewerCellMO();
             ImageViewerCellServerState state = new ImageViewerCellServerState();
             state.setImageURI(img.getImageURI());
-            
+
 //            logger.info("IMAGE URI: " + img.getImageURI());
             out.setServerState(state);
-        } else if(datedObj instanceof DatedNews) {
+        } else if (datedObj instanceof DatedNews) {
+            DatedNews news = (DatedNews) datedObj;
 
-            StickyNoteCellServerState state = new StickyNoteCellServerState();
+            TimelineStickyServerState state = new TimelineStickyServerState();
+            state.setNoteText(news.getText());
+            state.setNoteType(StickyNoteTypes.GENERIC);
+
+            ViewComponentServerState vccs = new ViewComponentServerState(new CellTransform(new Quaternion(), Vector3f.ZERO));
+            state.addComponentServerState(vccs);
+
+            out = (CellMO) new TimelineStickyCellMO();
+            out.setServerState(state);
+        } else if (datedObj instanceof DatedAudio) {
+
+            // We're not going to make cells here, instead
+            // we're going to send messages to the Audio
+            // subsystem about which segment this audio
+            // file is associated with.
+            DatedAudio audio = (DatedAudio)datedObj;
+
+
+            logger.warning("Not handling audio objects properly yet. Need to refactor some stuff for them to work.");
+//            DatedObjectComponentMO doComp =
+
 
         } else {
             logger.warning("Attempted to make a cell from dated object (" + datedObj + ") but it was an unknown type.");
@@ -462,7 +517,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
         }
 
         // Keep the map up to date.
-        if(out!=null) {
+        if (out != null) {
             // Add a movable component to this cell so it can be
             // positioned programmatically later. 
             out.addComponent(new MovableComponentMO(out));
