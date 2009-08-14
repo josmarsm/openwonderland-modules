@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.modules.timelineproviders.common.NYTimesConstants
 @QueryBuilder
 public class NYTimesQueryBuilder implements TimelineQueryBuilder {
     private static final String DISPLAY_NAME = "New York Times";
-    private static final String QUERY_CLASS = "org.jdesktop.wonderland.modules.timeline.server.provider.NYTimesProvider";
+    private static final String QUERY_CLASS = "org.jdesktop.wonderland.modules.timelineproviders.provider.NYTimesProvider";
     private TimelineConfiguration config;
     private TimelineQuery query;
     private JComboBox configComboBox;
