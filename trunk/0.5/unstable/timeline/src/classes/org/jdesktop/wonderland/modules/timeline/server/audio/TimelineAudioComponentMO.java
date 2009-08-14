@@ -698,6 +698,10 @@ public class TimelineAudioComponentMO extends CellComponentMO {
         }
 
 	public void done() {
+	    if (segmentTreatmentMap == null || segmentTreatmentMap.values() == null) {
+		return;
+	    }
+
             Treatment[] treatments = segmentTreatmentMap.values().toArray(new Treatment[0]);
 
 	    for (int i = 0; i < treatments.length; i++) {
