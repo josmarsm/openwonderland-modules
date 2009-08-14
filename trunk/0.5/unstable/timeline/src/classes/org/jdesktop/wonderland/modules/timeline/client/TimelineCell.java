@@ -158,25 +158,30 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     }
 
     private void createCreationHUD() {
-        creationPanel = new TimelineCreationHUDPanel(config);
-        creationPanel.addPropertyChangeListener(new PropertyChangeListener() {
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+            creationPanel = new TimelineCreationHUDPanel(config);
+            creationPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
-            public void propertyChange(PropertyChangeEvent pe) {
-                if (pe.getPropertyName().equals("create")) {
-                    timelineCreationHUD.setVisible(false);
-                    // fetch new config information
-                    rebuildClientConfiguration();
-                } else if (pe.getPropertyName().equals("update")) {
-                    // TODO: handle update case
-                } else if (pe.getPropertyName().equals("cancel")) {
-                    // timeline creation was canceled
-                    timelineCreationHUD.setVisible(false);
+                public void propertyChange(PropertyChangeEvent pe) {
+                    if (pe.getPropertyName().equals("create")) {
+                        timelineCreationHUD.setVisible(false);
+                        // fetch new config information
+                        rebuildClientConfiguration();
+                    } else if (pe.getPropertyName().equals("update")) {
+                        // TODO: handle update case
+                    } else if (pe.getPropertyName().equals("cancel")) {
+                        // timeline creation was canceled
+                        timelineCreationHUD.setVisible(false);
+                    }
                 }
-            }
-        });
-        timelineCreationHUD = mainHUD.createComponent(creationPanel);
-        timelineCreationHUD.setPreferredLocation(Layout.CENTER);
-        timelineCreationHUD.setName("Create Timeline");
+            });
+
+            timelineCreationHUD = mainHUD.createComponent(creationPanel);
+            timelineCreationHUD.setPreferredLocation(Layout.CENTER);
+            timelineCreationHUD.setName("Create Timeline");
+	    }
+	});
     }
 
     /**
@@ -271,13 +276,13 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                 createCreationHUD();
                 createCurationHUD();
 
-                mainHUD.addComponent(timelineCreationHUD);
-                mainHUD.addComponent(timelineCurationHUD);
-                mainHUD.addComponent(navigationHUD);
-
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
+                	mainHUD.addComponent(timelineCreationHUD);
+                	mainHUD.addComponent(timelineCurationHUD);
+                	mainHUD.addComponent(navigationHUD);
+
                         navigationHUD.setVisible(true);
                     }
                 });
