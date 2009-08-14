@@ -19,10 +19,16 @@ package org.jdesktop.wonderland.modules.timeline.client;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**
  * A panel for curating a Timeline
@@ -149,6 +155,11 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
         artworkLabel.setText("Artwork:");
 
         browseButton.setText("Browse...");
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
 
         artworkHelpLabel.setText("e.g., .jpg, .png, .kmz");
 
@@ -240,6 +251,38 @@ public class TimelineCurationHUDPanel extends javax.swing.JPanel {
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
         listeners.firePropertyChange("done", new String(""), null);
     }//GEN-LAST:event_doneButtonActionPerformed
+
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        final Set<String> extensions = ManualObjectCreator.getExtensions();
+
+        JFileChooser jfc = new JFileChooser("Choose a file");
+        jfc.setFileFilter(new FileFilter() {
+            public boolean accept(File pathname) {
+                if (pathname.isDirectory()) {
+                    return true;
+                }
+
+                for (String extension : extensions) {
+                    if (pathname.getName().endsWith(extension)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public String getDescription() {
+                return "Manual creation files";
+            }
+        });
+
+        int res = jfc.showOpenDialog(JmeClientMain.getFrame().getFrame());
+        if (res == JFileChooser.APPROVE_OPTION) {
+            artworkTextField.setText(jfc.getSelectedFile().getPath());
+        }
+    }//GEN-LAST:event_browseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JLabel addEventLabel;
