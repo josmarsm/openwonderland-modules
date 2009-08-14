@@ -26,10 +26,11 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 public class SimulationStateMessage extends CellMessage {
 
     public enum SimulationState {
-
         STARTED,
-        STOPPED
+        STOPPED,
+        RESET
     };
+
     private SimulationState state;
 
     public SimulationStateMessage(SimulationState state) {

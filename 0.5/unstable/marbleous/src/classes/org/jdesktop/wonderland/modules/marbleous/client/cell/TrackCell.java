@@ -327,14 +327,14 @@ public class TrackCell extends Cell {
 
             if (message instanceof SimulationStateMessage) {
                 if (!fromMe) {
-                    // Turn on/off the simulation
-                    setSimulationStateInternal(((SimulationStateMessage) message).getSimulationState());
+                    SimulationState state = ((SimulationStateMessage)message).getSimulationState();
 
-                    // Since someone else started/stopped the simulation, we
-                    // turn off buttons if running
-                    boolean isEnabled = ((SimulationStateMessage)message).getSimulationState() == SimulationState.STARTED;
-                    ui.externalSimulationEnabled(isEnabled);
-                    
+                    // Turn on/off the simulation
+                    setSimulationStateInternal(state);
+
+                    // Since someone else started/stopped/reset the simulation,
+                    // we turn off buttons if running
+                    ui.externalSimulationState(state);
                 }
             }
         }
