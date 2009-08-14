@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.timelineproviders.client;
 
 import java.util.Properties;
 import org.jdesktop.wonderland.modules.timeline.client.provider.*;
-import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.modules.timeline.client.provider.annotation.QueryBuilder;
@@ -36,7 +35,7 @@ import org.jdesktop.wonderland.modules.timelineproviders.common.FlickrConstants;
 @QueryBuilder
 public class FlickrTimelineQueryBuilder implements TimelineQueryBuilder {
     private static final String DISPLAY_NAME = "Flickr";
-    private static final String QUERY_CLASS = "org.jdesktop.wonderland.modules.timeline.server.provider.FlickrProvider";
+    private static final String QUERY_CLASS = "org.jdesktop.wonderland.modules.timelineproviders.provider.FlickrProvider";
     private TimelineConfiguration config;
     private TimelineQuery query;
     private JComboBox configComboBox;

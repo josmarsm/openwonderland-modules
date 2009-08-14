@@ -30,31 +30,34 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
     private PropertyChangeSupport listeners;
 
     public enum SEARCH_TYPE {
-        TAGS (FlickrConstants.SEARCH_TAGS_KEY),
-        TEXT (FlickrConstants.SEARCH_FULLTEXT_KEY);
 
+        TAGS(FlickrConstants.SEARCH_TAGS_KEY),
+        TEXT(FlickrConstants.SEARCH_FULLTEXT_KEY);
         private String key;
+
         SEARCH_TYPE(String key) {
             this.key = key;
         }
+
         public String getKey() {
             return key;
         }
     };
-    
+
     public enum SORT_TYPE {
-        RELEVANCE (FlickrConstants.SORT_RELEVANCE_KEY),
-        INTEREST  (FlickrConstants.SORT_INTERESTING_KEY);
-        
+
+        RELEVANCE(FlickrConstants.SORT_RELEVANCE_KEY),
+        INTEREST(FlickrConstants.SORT_INTERESTING_KEY);
         private String key;
+
         SORT_TYPE(String key) {
             this.key = key;
         }
+
         public String getKey() {
             return key;
         }
     }
-
     private boolean ok = false;
 
     public FlickrConfigurationPanel() {
@@ -93,7 +96,7 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
     public SEARCH_TYPE getSearchType() {
         return tagsRadioButton.isSelected() ? SEARCH_TYPE.TAGS : SEARCH_TYPE.TEXT;
     }
-    
+
     public void setSortType(SORT_TYPE type) {
         if (type == SORT_TYPE.RELEVANCE) {
             relevanceRadioButton.setSelected(true);
@@ -138,11 +141,11 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
             returnAllRadioButton.setSelected(true);
         }
     }
-    
+
     public void setCreativeCommons(boolean commons) {
         creativeCommonsCheckBox.setSelected(commons);
     }
-    
+
     public boolean isCreativeCommons() {
         return creativeCommonsCheckBox.isSelected();
     }
@@ -151,8 +154,7 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
         return ok;
     }
 
-
-            /**
+    /**
      * Adds a bound property listener to the dialog
      * @param listener a listener for dialog events
      */
@@ -222,11 +224,15 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
         fullTextRadioButton.setText("full text");
 
         searchTextField.setText("horses and boats");
+        searchTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchTextFieldActionPerformed(evt);
+            }
+        });
 
         returnLabel.setText("Return:");
 
         returnButtonGroup.add(return1RadioButton);
-        return1RadioButton.setSelected(true);
         return1RadioButton.setText("1");
 
         returnButtonGroup.add(return2RadioButton);
@@ -239,6 +245,7 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
         return6RadioButton.setText("6");
 
         returnButtonGroup.add(return8RadioButton);
+        return8RadioButton.setSelected(true);
         return8RadioButton.setText("8");
 
         returnButtonGroup.add(returnAllRadioButton);
@@ -267,6 +274,7 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
         interestingnessRadioButton.setText("interestingness");
 
         searchByButtonGroup.add(relevanceRadioButton);
+        relevanceRadioButton.setSelected(true);
         relevanceRadioButton.setText("relevance");
 
         apiKeyLabel.setText("API Key:");
@@ -377,15 +385,21 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         ok = true;
+        listeners.firePropertyChange("ok", new String(""), null);
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         ok = false;
+        listeners.firePropertyChange("cancel", new String(""), null);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void apiKeyFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_apiKeyFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_apiKeyFieldActionPerformed
+
+    private void searchTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_searchTextFieldActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField apiKeyField;
