@@ -318,9 +318,11 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	        return;
             }
 
-            setup.x = location.getX();
-            setup.y = location.getY();
-            setup.z = location.getZ();
+	    if (location != null) {
+                setup.x = location.getX();
+                setup.y = location.getY();
+                setup.z = location.getZ();
+	    }
 
             System.out.println("Starting treatment " + setup.treatment + " at (" + setup.x 
 	        + ":" + setup.y + ":" + setup.z + ")");
