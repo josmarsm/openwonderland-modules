@@ -12,8 +12,8 @@ package org.jdesktop.wonderland.modules.timelineproviders.common;
 public class FlickrConstants {
     public static final String API_KEY_PROP = "apiKey";
     public static final String START_DATE_PROP = "startDate";
-    public static final String END_DATE_PROP = "endDate";
     public static final String INCREMENTS_PROP = "increments";
+    public static final String UNITS_PROP = "units";
 
     public static final String SEARCH_TEXT_PROP = "searchText";
 
@@ -27,4 +27,6 @@ public class FlickrConstants {
 
     public static final String RETURN_COUNT_PROP = "returnCount";
     public static final String CC_PROP = "creativeCommons";
+
+    public static final String KEYWORD_PROP = "keyword";
 }

@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedImage;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDateRange;
 import org.jdesktop.wonderland.modules.timeline.provider.spi.TimelineProvider;
 import org.jdesktop.wonderland.modules.timeline.provider.spi.TimelineProviderContext;
 import org.jdesktop.wonderland.modules.timelineproviders.common.FlickrConstants;
@@ -44,7 +45,8 @@ public class FlickrProvider implements TimelineProvider {
     private String apiKey;
 
     // other config
-    private TimelineDate range;
+    private TimelineDateRange range;
+    private int units;
     private int increments;
     private String text;
     private boolean fullText = false;
@@ -64,9 +66,12 @@ public class FlickrProvider implements TimelineProvider {
         }
 
         Date startDate = new Date(Long.parseLong(props.getProperty(FlickrConstants.START_DATE_PROP)));
-        Date endDate = new Date(Long.parseLong(props.getProperty(FlickrConstants.END_DATE_PROP)));
-        range = new TimelineDate(startDate, endDate);
         increments = Integer.parseInt(props.getProperty(FlickrConstants.INCREMENTS_PROP));
+        units = Integer.parseInt(props.getProperty(FlickrConstants.UNITS_PROP));
+        range = new TimelineDateRange(startDate, increments, units);
+
+        System.out.println("Initialize flickr provider: " +
+                startDate + " " + increments + " " + units);
 
         text = props.getProperty(FlickrConstants.SEARCH_TEXT_PROP);
 
@@ -87,32 +92,39 @@ public class FlickrProvider implements TimelineProvider {
         }
 
         // perform the initial queries
-        long incrementSize = range.getRange() / increments;
-        for (long i = range.getMinimum().getTime();
-                i < range.getMaximum().getTime();
-                i += incrementSize)
-        {
-            // get a new search parameters object
-            SearchParameters sp = getSearchParameters();
+        int increment = 0;
+        for (TimelineDate date : range.getIncrements()) {
+            // get a new search parameters object for the text
+            SearchParameters sp = getSearchParameters(text);
+            if (sp != null) {
 
-            // fill in the date
-            Date start = new Date(i);
-            Date end = new Date(i + incrementSize);
-            sp.setMinTakenDate(start);
-            sp.setMaxTakenDate(end);
+                sp.setMinTakenDate(date.getMinimum());
+                sp.setMaxTakenDate(date.getMaximum());
 
-            System.out.println("Submitting query for search from " + start +
-                               " to " + end);
+                System.out.println("Submitting query for " + text + " range " +
+                                   date);
 
-            // create a task
-            exec.submit(new FlickrQuery(sp, new TimelineDate(start, end)));
+                // create a task
+                exec.submit(new FlickrQuery(sp, date, false));
+            }
+
+            // find keywords
+            String keywords = props.getProperty(FlickrConstants.KEYWORD_PROP + increment);
+            increment++;
+            sp = getSearchParameters(keywords);
+            if (sp != null) {
+                System.out.println("Submitting query for keywords " + keywords);
+                exec.submit(new FlickrQuery(sp, date, true));
+            }
         }
     }
 
     public void shutdown() {
     }
 
-    private void processResults(PhotoList results, TimelineDate range) {
+    private void processResults(PhotoList results, TimelineDate range,
+                                boolean forceDate)
+    {
         System.out.println("Processing " + results.size() + " results");
 
         Set<DatedObject> add = new LinkedHashSet<DatedObject>();
@@ -122,7 +134,7 @@ public class FlickrProvider implements TimelineProvider {
       
             TimelineDate taken;
             Date takenDate = p.getDateTaken();
-            if (takenDate != null) {
+            if (!forceDate && takenDate != null) {
                 taken = new TimelineDate(takenDate);
             } else {
                 taken = range;
@@ -161,7 +173,7 @@ public class FlickrProvider implements TimelineProvider {
     /**
      * Return the search parameters without the dates
      */
-    private SearchParameters getSearchParameters() {
+    private SearchParameters getSearchParameters(String text) {
         SearchParameters sp = new SearchParameters();
 
         Set<String> extras = new LinkedHashSet<String>();
@@ -173,6 +185,10 @@ public class FlickrProvider implements TimelineProvider {
         extras.add(Extras.URL_SQ);
         extras.add(Extras.URL_T);
         sp.setExtras(extras);
+
+        if (text == null || text.trim().length() == 0) {
+            return null;
+        }
 
         if (fullText) {
             sp.setText(text);
@@ -199,10 +215,14 @@ public class FlickrProvider implements TimelineProvider {
     class FlickrQuery implements Runnable {
         private SearchParameters params;
         private TimelineDate range;
+        private boolean forceDate;
 
-        public FlickrQuery(SearchParameters params, TimelineDate range) {
+        public FlickrQuery(SearchParameters params, TimelineDate range, 
+                           boolean forceDate)
+        {
             this.params = params;
             this.range = range;
+            this.forceDate = forceDate;
         }
 
         public void run() {
@@ -212,7 +232,7 @@ public class FlickrProvider implements TimelineProvider {
 
                 System.out.println("found " + results.size() + " results");
 
-                processResults(results, range);
+                processResults(results, range, forceDate);
             } catch (Throwable t) {
                 // report any errors
                 logger.log(Level.WARNING, "Error performing query", t);

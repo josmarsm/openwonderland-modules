@@ -150,6 +150,14 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
         return creativeCommonsCheckBox.isSelected();
     }
 
+    public void setUseKeywords(boolean keywords) {
+        keywordsCheckBox.setSelected(keywords);
+    }
+
+    public boolean isUseKeywords() {
+        return keywordsCheckBox.isSelected();
+    }
+
     public boolean isOK() {
         return ok;
     }
@@ -210,6 +218,7 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
         relevanceRadioButton = new javax.swing.JRadioButton();
         apiKeyLabel = new javax.swing.JLabel();
         apiKeyField = new javax.swing.JTextField();
+        keywordsCheckBox = new javax.swing.JCheckBox();
 
         configurationLabel.setFont(configurationLabel.getFont().deriveFont(configurationLabel.getFont().getStyle() | java.awt.Font.BOLD));
         configurationLabel.setText("Flickr Query Configuration");
@@ -285,40 +294,15 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
             }
         });
 
+        keywordsCheckBox.setSelected(true);
+        keywordsCheckBox.setText("Use keywords");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(32, 32, 32)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(byLabel)
-                            .addComponent(returnLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(creativeCommonsCheckBox)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(tagsRadioButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(fullTextRadioButton))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(relevanceRadioButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(interestingnessRadioButton))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(return1RadioButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(return2RadioButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(return4RadioButton))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(return6RadioButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(return8RadioButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(returnAllRadioButton))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap(146, Short.MAX_VALUE)
                         .addComponent(cancelButton)
@@ -327,15 +311,46 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(configurationLabel))
-                    .addGroup(layout.createSequentialGroup()
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(searchLabel)
-                            .addComponent(apiKeyLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(searchTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
-                            .addComponent(apiKeyField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(26, 26, 26)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(byLabel)
+                                    .addComponent(returnLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(creativeCommonsCheckBox)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(tagsRadioButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(fullTextRadioButton))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(relevanceRadioButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(interestingnessRadioButton))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(return1RadioButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(return2RadioButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(return4RadioButton))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(return6RadioButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(return8RadioButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(returnAllRadioButton))
+                                    .addComponent(keywordsCheckBox)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(searchLabel)
+                                    .addComponent(apiKeyLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(searchTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
+                                    .addComponent(apiKeyField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -343,7 +358,7 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(configurationLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(apiKeyField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(apiKeyLabel))
@@ -375,7 +390,9 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(creativeCommonsCheckBox))
                     .addComponent(returnLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(keywordsCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(okButton)
                     .addComponent(cancelButton))
@@ -410,6 +427,7 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox creativeCommonsCheckBox;
     private javax.swing.JRadioButton fullTextRadioButton;
     private javax.swing.JRadioButton interestingnessRadioButton;
+    private javax.swing.JCheckBox keywordsCheckBox;
     private javax.swing.JButton okButton;
     private javax.swing.JRadioButton relevanceRadioButton;
     private javax.swing.ButtonGroup resultsButtonGroup;
