@@ -234,6 +234,9 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         navigationHUD = mainHUD.createComponent(navigationPanel);
         navigationHUD.setPreferredLocation(Layout.EAST);
         navigationHUD.setName("Navigation");
+        TimelineDate range = config.getDateRange();
+        navigationPanel.setStartDate(range.getMinimum());
+        navigationPanel.setEndDate(range.getMaximum());
     }
 
     private void addCuratedItem(Date date, String text, String file) {
@@ -347,7 +350,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
         if (navigationPanel != null) {
             if (date != null) {
-                navigationPanel.setDateLabel(date.toString());
+                navigationPanel.setDateLabel(date);
             }
 
             navigationPanel.setSliderLocation(getHeightFraction(cell.getWorldTransform().getTranslation(null)));

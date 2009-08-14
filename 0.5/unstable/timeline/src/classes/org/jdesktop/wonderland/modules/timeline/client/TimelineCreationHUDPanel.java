@@ -84,6 +84,10 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
             this.config = new TimelineClientConfiguration();
         }
         initComponents();
+        setDefaults();
+    }
+
+    private void setDefaults() {
     }
 
     public void setMode(Mode mode) {
@@ -205,6 +209,7 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                 final JPanel configPanel = builder.getConfigurationPanel();
                 if (configPanel != null) {
                     JButton configButton = new JButton("Configure...");
+                    configButton.setPreferredSize(new Dimension(83, 29));
                     configButton.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
@@ -221,6 +226,15 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                                     }
                                 }
                             });
+
+                            configPanel.addPropertyChangeListener(new PropertyChangeListener() {
+
+                                public void propertyChange(PropertyChangeEvent pe) {
+                                    logger.info("--- property changed: " + pe);
+                                    configureQueryHUD.setVisible(false);
+                                }
+                            });
+                            
                             mainHUD.addComponent(configureQueryHUD);
                             configureQueryHUD.setVisible(true);
                         }
@@ -379,10 +393,9 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
 
         innerRadiusLabel.setText("Inner Radius:");
 
-    widthSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(5.0f), null, null, Float.valueOf(0.5f)));
-    widthSpinner.setValue(config.getWidth());
+        widthLabel.setText("Width:");
 
-        widthSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(5.0f), null, null, Float.valueOf(0.0f)));
+        widthSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(5.0f), null, null, Float.valueOf(0.5f)));
         widthSpinner.setValue(config.getWidth());
 
         pitchLabel.setText("Pitch:");
@@ -622,6 +635,7 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         listeners.firePropertyChange("cancel", new String(""), null);
     }//GEN-LAST:event_cancelButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addKeywordButton;
     private javax.swing.JButton addProviderButton;
