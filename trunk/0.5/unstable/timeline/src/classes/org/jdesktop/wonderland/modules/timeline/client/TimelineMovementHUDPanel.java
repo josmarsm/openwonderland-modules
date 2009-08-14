@@ -42,9 +42,13 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
 
     /** Creates new form TimelineMovementHUDPanel */
     public TimelineMovementHUDPanel(TimelineCell cell) {
-        initComponents();
-
         this.cell = cell;
+
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	initComponents();
+	    }
+	});
     }
 
     /** This method is called from within the constructor to
