@@ -20,6 +20,7 @@
     <pathconvert property="module-client.classpath">
         <path location="${wonderland.dir}/modules/samples/image-viewer/build/client/imageviewer-client.jar"/>
         <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${wonderland.dir}/modules/world/jmecolladaloader/build/client/jmecolladaloader-client.jar"/>
         <path location="${current.dir}/../stickynote/build/client/stickynote-client.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/client/appbase-client-cell.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/client/appbase-client.jar"/>
@@ -112,9 +113,9 @@
 
             <requires name="imageviewer" version="1"/>
             <requires name="content-repository" version="1"/>
+            <requires name="jmecolladaloader" version="1"/>
             <requires name="stickynote" version="1"/>
             <requires name="appbase" version="1"/>
-
 
             <client dir="${current.dir}/lib">
                 <include name="*.jar"/>

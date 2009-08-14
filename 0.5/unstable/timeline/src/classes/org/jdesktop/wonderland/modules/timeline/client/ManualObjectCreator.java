@@ -18,11 +18,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.modules.contentrepo.client.importer.ContentRepositoryImporter;
 import org.jdesktop.wonderland.modules.imageviewer.client.cell.ImageViewerCell;
+import org.jdesktop.wonderland.modules.jmecolladaloader.client.ModelDndContentImporter;
 import org.jdesktop.wonderland.modules.timeline.client.provider.TimelineProviderClientPlugin;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedAudio;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedImage;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedModel;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 
@@ -51,12 +54,21 @@ public class ManualObjectCreator {
         for (String extension : ic.getExtensions()) {
             creators.put(extension, ic);
         }
+
+        ModelCreator mc = new ModelCreator();
+        for (String extension : mc.getExtensions()) {
+            creators.put(extension, mc);
+        }
     }
 
     public ManualObjectCreator(TimelineDate date, String file, String text) {
         this.date = date;
         this.file = file;
         this.text = text;
+    }
+
+    public static Set<String> getExtensions() {
+        return creators.keySet();
     }
 
     public DatedObject create() {
@@ -153,7 +165,42 @@ public class ManualObjectCreator {
                 logger.log(Level.WARNING, "Unable to form url from " + uri, excp);
             }
 
-            return new DatedImage(date, uri);
+            return di;
+        }
+    }
+
+    static class ModelCreator implements ObjectCreator {
+        private static final Set<String> EXTENSIONS = new LinkedHashSet<String>();
+        static {
+            EXTENSIONS.add("kmz");
+        }
+
+        private DeployedModel dm;
+
+        public Set<String> getExtensions() {
+            return EXTENSIONS;
+        }
+
+        public DatedObject create(TimelineDate date, String file, String extension,
+                                  String text)
+        {
+            ModelDndContentImporter importer =
+                    new ModelDndContentImporter(TimelineProviderClientPlugin.getServerSessionManager(),
+                                                new String[] { "kmz" })
+            {
+                @Override
+                public void createCell(DeployedModel deployedModel) {
+                    // don't creat the cell, just rememer the model
+                    ModelCreator.this.dm = deployedModel;
+                }
+            };
+
+            String uri = importer.importFile(new File(file), extension);
+
+            // get the various configurations for the model
+            return new DatedModel(date, uri, dm.getModelTranslation(),
+                                  dm.getModelScale(), dm.getModelRotation(),
+                                  dm.getModelLoaderClassname());
         }
     }
 }
