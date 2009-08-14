@@ -137,7 +137,7 @@ public class SampleDisplayNode extends BillboardNode {
         this.pinned = pinned;
 
         // set pieces
-        time = "t: " + format(sampleInfo.getTime());
+        time = "Time (t): " + format(sampleInfo.getTime());
         position = getPosition();
         text = getText();
         updateKernel();
@@ -182,7 +182,7 @@ public class SampleDisplayNode extends BillboardNode {
 
     private String getPosition () {
         Vector3f p = sampleInfo.getPosition();
-        return "P: [" + format(p.x) + "," + format(p.y) + "," + format(p.z) + "]";
+        return "Position (X): [" + format(p.x) + "," + format(p.y) + "," + format(p.z) + "]";
     }
 
     private String getText () {
@@ -197,30 +197,30 @@ public class SampleDisplayNode extends BillboardNode {
         float mass = sampleInfo.getMass();
         float g = sampleInfo.getGravity();
 
-        String ret = "V:  [" + format(v.x) + "," + format(v.y) + "," + format(v.z) + "]\n" +
-                     "A:  [" + format(a.x) + "," + format(a.y) + "," + format(a.z) + "]\n";
+        String ret = "Velocity (V):  [" + format(v.x) + "," + format(v.y) + "," + format(v.z) + "]\n" +
+                     "Acceleration (a):  [" + format(a.x) + "," + format(a.y) + "," + format(a.z) + "]\n";
 
         if (mode == DisplayMode.VERBOSE) {
 
-            ret += "F:  mA = " + mass + " x [" + format(a.x) + "," + format(a.y) + "," + format(a.z) + 
+            ret += "Net Force (F): ma = " + mass + " x [" + format(a.x) + "," + format(a.y) + "," + format(a.z) + 
                 "] = [" + format(f.x) + "," + format(f.y) + "," + format(f.z) + "]\n" +
 
-                "M:  mV = " + format(mass) + " x [" + format(v.x) + "," + format(v.y) + "," + format(v.z) + 
+                "Momentum (P):  mV = " + format(mass) + " x [" + format(v.x) + "," + format(v.y) + "," + format(v.z) + 
                 "] = [" + format(m.x) + "," + format(m.y) + "," + format(m.z) + "]\n" +
 
-                "pe: mGy = (" + format(mass) + ") x (" + format(g) + ") x (" + format(p.y) + ") = " +  
+                "Potential Energy (U): mGy = (" + format(mass) + ") x (" + format(g) + ") x (" + format(p.y) + ") = " +  
                 format(pe) + "\n" +
 
-                "ke: (1/2)mV^2 = (" + format(0.5f * mass) + ") x (" + format(v.lengthSquared()) + 
+                "Kinetic Energy (K): (1/2)mV^2 = (" + format(0.5f * mass) + ") x (" + format(v.lengthSquared()) + 
                 ") = " + format(ke) + "\n" +
 
-                "e:  pe + ke = " + format(pe) + " + " + format(ke) + " = " + format(te);
+                "Total Energy (E):  pe + ke = " + format(pe) + " + " + format(ke) + " = " + format(te);
         } else {
-            ret += "F:  [" + format(f.x) + "," + format(f.y) + "," + format(f.z) + "]\n" +
-                "M:  [" + format(m.x) + "," + format(m.y) + "," + format(m.z) + "]\n" +
-                "pe: [" + format(pe) + "]\n" +
-                "ke: [" + format(ke) + "]\n" +
-                "e:  [" + format(te) + "]";
+            ret += "Net Force (F):  [" + format(f.x) + "," + format(f.y) + "," + format(f.z) + "]\n" +
+                "Momentum (P):  [" + format(m.x) + "," + format(m.y) + "," + format(m.z) + "]\n" +
+                "Potential Energy (U): [" + format(pe) + "]\n" +
+                "Kinetic Energy (K): [" + format(ke) + "]\n" +
+                "Total Energy (E):  [" + format(te) + "]";
         }
 
         return ret;
