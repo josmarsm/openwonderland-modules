@@ -34,9 +34,11 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.modules.imageviewer.common.cell.ImageViewerCellServerState;
 import org.jdesktop.wonderland.modules.imageviewer.server.cell.ImageViewerCellMO;
+import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.common.cell.StickyNoteCellServerState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedImage;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedNews;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
@@ -450,6 +452,10 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             
 //            logger.info("IMAGE URI: " + img.getImageURI());
             out.setServerState(state);
+        } else if(datedObj instanceof DatedNews) {
+
+            StickyNoteCellServerState state = new StickyNoteCellServerState();
+
         } else {
             logger.warning("Attempted to make a cell from dated object (" + datedObj + ") but it was an unknown type.");
             out = null;
