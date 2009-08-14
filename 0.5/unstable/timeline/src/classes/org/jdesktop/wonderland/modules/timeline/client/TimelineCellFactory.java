@@ -24,8 +24,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Properties;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -48,8 +51,11 @@ public class TimelineCellFactory implements CellFactorySPI {
 
     private static final Logger logger =
             Logger.getLogger(TimelineCellFactory.class.getName());
+    private TimelineCellServerState state;
     private TimelineCreationHUDPanel creationPanel;
     private HUDComponent timelineCreationHUD;
+    private final Object configLock = new Object();
+    private boolean ready = false;
 
     public String[] getExtensions() {
         return null;
@@ -57,41 +63,52 @@ public class TimelineCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
 
-        TimelineCellServerState state = new TimelineCellServerState();
-        createCreationHUD();
+        state = new TimelineCellServerState();
         state.setConfig(new TimelineConfiguration());
+        createCreationHUD();
 
-        Date end = new Date();
-        Calendar c = Calendar.getInstance();
-        c.set(Calendar.YEAR, 1999);
-        Date start = c.getTime();
+        synchronized (configLock) {
+            while (!ready) {
+                try {
+                    configLock.wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
 
-        state.getConfig().setDateRange(new TimelineDate(start, end));
-        state.getConfig().setNumSegments(10);
+        // Setup code for the sample provider. Just used for testing.
+//        TimelineProviderServerState providerState = new TimelineProviderServerState();
+//        TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.SampleProvider");
+//        query.getProperties().setProperty("test", "123");
+//        providerState.getQueries().add(query);
+//
+//        state.addComponentServerState(providerState);
 
-        TimelineProviderServerState tpss = new TimelineProviderServerState();
+//
+//      Date end = new Date();
+//      Calendar c = Calendar.getInstance();
+//      c.set(Calendar.YEAR, 1999);
+//      Date start = c.getTime();
+//
+//      state.getConfig().setDateRange(new TimelineDate(start, end));
+//      state.getConfig().setNumSegments(10);
+//
+//      TimelineProviderServerState tpss = new TimelineProviderServerState();
+//
+//      TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.FlickrProvider");
+//      query.getProperties().setProperty("apiKey", "aa664dbdefb318455a9a07a4245f5ff6");
+//      query.getProperties().setProperty("startDate", String.valueOf(state.getConfig().getDateRange().getMinimum().getTime()));
+//      query.getProperties().setProperty("endDate", String.valueOf(state.getConfig().getDateRange().getMaximum().getTime()));
+//      query.getProperties().setProperty("increments", String.valueOf(state.getConfig().getNumSegments()));
+//      query.getProperties().setProperty("searchText", "automobile");
+//      query.getProperties().setProperty("searchType", "tags");
+//      query.getProperties().setProperty("sort", "relevance");
+//      query.getProperties().setProperty("returnCount", String.valueOf(1));
+//      tpss.getQueries().add(query);
+//
+//      state.addComponentServerState(tpss);
 
-//        TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.FlickrProvider");
-//        query.getProperties().setProperty("apiKey", "aa664dbdefb318455a9a07a4245f5ff6");
-//        query.getProperties().setProperty("startDate", String.valueOf(state.getConfig().getDateRange().getMinimum().getTime()));
-//        query.getProperties().setProperty("endDate", String.valueOf(state.getConfig().getDateRange().getMaximum().getTime()));
-//        query.getProperties().setProperty("increments", String.valueOf(state.getConfig().getNumSegments()));
-//        query.getProperties().setProperty("searchText", "automobile");
-//        query.getProperties().setProperty("searchType", "tags");
-//        query.getProperties().setProperty("sort", "relevance");
-//        query.getProperties().setProperty("returnCount", String.valueOf(4));
-
-        TimelineQuery query = new TimelineQuery("org.jdesktop.wonderland.modules.timelineproviders.provider.NYTimesProvider");
-        query.getProperties().setProperty("apiKey", "5397ee74814d2427fb24eb880efca778:12:59005926");
-        query.getProperties().setProperty("startDate", String.valueOf(state.getConfig().getDateRange().getMinimum().getTime()));
-        query.getProperties().setProperty("endDate", String.valueOf(state.getConfig().getDateRange().getMaximum().getTime()));
-        query.getProperties().setProperty("increments", String.valueOf(state.getConfig().getNumSegments()));
-        query.getProperties().setProperty("searchText", "International Space Station");
-        query.getProperties().setProperty("returnCount", String.valueOf(4));
-        tpss.getQueries().add(query);
-
-        state.addComponentServerState(tpss);
-        return (T)state;
+        return (T) state;
     }
 
     private void createCreationHUD() {
@@ -101,21 +118,67 @@ public class TimelineCellFactory implements CellFactorySPI {
         creationPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent pe) {
-                if ((pe.getPropertyName().equals("create")) || (pe.getPropertyName().equals("update"))) {
+                logger.info("------- property change event: " + pe);
+                if (pe.getPropertyName().equals("create")) {
                     logger.info("--- create/update timeline");
-                    timelineCreationHUD.setVisible(false);
-                    // TODO: actually create a Timeline!
+
+                    String title = creationPanel.getTitle();
+                    String description = creationPanel.getDescription();
+                    Date start = creationPanel.getStartDate();
+                    Date end = creationPanel.getEndDate();
+                    float scale = creationPanel.getScale();
+                    TimelineConfiguration.TimelineUnits units = creationPanel.getUnits();
+
+                    logger.info("--- title: " + title);
+                    logger.info("--- description: " + description);
+                    logger.info("--- start: " + start);
+                    logger.info("--- end: " + end);
+                    logger.info("--- scale: " + scale);
+                    logger.info("--- units: " + units);
+
+                    state.getConfig().setDateRange(new TimelineDate(start, end));
+                    state.getConfig().setNumSegments(10);
+
+                    List<TimelineQuery> queries = creationPanel.getQueries();
+                    logger.info("------------- queries: " + queries);
+                    if (queries != null) {
+                        TimelineProviderServerState tpss = new TimelineProviderServerState();
+
+                        ListIterator<TimelineQuery> iter = queries.listIterator();
+                        while (iter.hasNext()) {
+                            TimelineQuery query = iter.next();
+                            query.getProperties().setProperty("startDate", String.valueOf(state.getConfig().getDateRange().getMinimum().getTime()));
+                            query.getProperties().setProperty("endDate", String.valueOf(state.getConfig().getDateRange().getMaximum().getTime()));
+                            logger.info("--- adding query: " + query.getQueryClass() + ": " + query.getProperties());
+                            tpss.getQueries().add(query);
+                        }
+
+                        state.addComponentServerState(tpss);
+                    }
+
+                    synchronized (configLock) {
+                        logger.info("--- notifying timeline configuration ready");
+                        ready = true;
+                        configLock.notify();
+                    }
+                } else if (pe.getPropertyName().equals("update")) {
+                    // TODO: handle update case
                 } else if (pe.getPropertyName().equals("cancel")) {
                     // timeline creation was canceled
-                    timelineCreationHUD.setVisible(false);
                 }
+                timelineCreationHUD.setVisible(false);
             }
         });
         timelineCreationHUD = mainHUD.createComponent(creationPanel);
         timelineCreationHUD.setPreferredLocation(Layout.CENTER);
         timelineCreationHUD.setName("Create Timeline");
         mainHUD.addComponent(timelineCreationHUD);
-        timelineCreationHUD.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                timelineCreationHUD.setVisible(true);
+            }
+        });
     }
 
     public String getDisplayName() {
