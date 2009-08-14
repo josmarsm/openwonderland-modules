@@ -79,13 +79,13 @@ public class TimeSliderUI {
      */
     public void setSelectedTime(float selectedTime) {
         // Tell the time slider panel to update itself, make
-        System.err.println("SET SELECTED TIME " + selectedTime);
+        //System.err.println("SET SELECTED TIME " + selectedTime);
         panel.setSelectedTime(selectedTime);
     }
 
     /** Control the visibility of the window. */
     public void setVisible (boolean visible) {
-        System.err.println("***** setVisible = " + visible);
+        //System.err.println("***** setVisible = " + visible);
 
         hudComponent.setVisible(visible);
     }
