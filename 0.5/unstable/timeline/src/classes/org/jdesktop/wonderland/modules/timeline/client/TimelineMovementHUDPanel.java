@@ -19,8 +19,11 @@
 package org.jdesktop.wonderland.modules.timeline.client;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration.TimelineUnits;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 
 /**
@@ -166,10 +169,32 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
 	});
     }
 
-    public void setDateLabel(final TimelineDate date) {
+    public void setDateLabel(final TimelineDate date, final TimelineUnits units) {
+        
 	java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-        	curDateLabel.setText(dateFormatLong.format(date.getMiddle()));
+
+                DateFormat df;
+                switch (units.getCalendarUnit()) {
+                    case Calendar.HOUR:
+                        df = DateFormat.getTimeInstance();
+                        break;
+                    case Calendar.DAY_OF_YEAR:
+                        df = new SimpleDateFormat("dd MMM");
+                        break;
+                    case Calendar.MONTH:
+                        df = new SimpleDateFormat("MMM");
+                        break;
+                    case Calendar.YEAR:
+                        df = new SimpleDateFormat("yyyy");
+                        break;
+                    default:
+                        df = DateFormat.getInstance();
+                        break;
+                }
+
+
+        	curDateLabel.setText(df.format(date.getMiddle()));
 	    }
 	});
     }

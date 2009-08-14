@@ -41,6 +41,7 @@ public class TimelineClientConfiguration extends TimelineConfiguration {
      * NOT used in spiral generation directly, rather, derive the missing radius
      * using the width.
      */
+
     private float width = outerRadius-innerRadius;
 
     private ChannelComponent channel;

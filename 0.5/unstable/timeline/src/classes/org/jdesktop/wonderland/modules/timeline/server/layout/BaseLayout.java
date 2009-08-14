@@ -32,16 +32,19 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.ModelCellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
 import org.jdesktop.wonderland.modules.imageviewer.common.cell.ImageViewerCellServerState;
 import org.jdesktop.wonderland.modules.imageviewer.server.cell.ImageViewerCellMO;
+import org.jdesktop.wonderland.modules.jmecolladaloader.common.cell.state.JmeColladaCellComponentServerState;
 import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.common.cell.StickyNoteTypes;
 import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.server.cell.StickyNoteCellMO;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedAudio;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedImage;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedModel;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedNews;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
@@ -56,6 +59,7 @@ import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProvider
 import org.jdesktop.wonderland.modules.timeline.server.sticky.TimelineStickyCellMO;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.ModelCellMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 
 /**
@@ -549,6 +553,31 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             out = null;
 
 
+        } else if (datedObj instanceof DatedModel) {
+
+            DatedModel model = (DatedModel) datedObj;
+
+            ModelCellMO modelCell = new ModelCellMO();
+
+            // This server state is pretty much empty - the important
+            // model parts live in the model component state.
+            ModelCellServerState state = new ModelCellServerState();
+
+            JmeColladaCellComponentServerState modelState = new JmeColladaCellComponentServerState();
+            modelState.model = model.getModelURI();
+            modelState.modelTranslation = Vector3f.ZERO;
+            modelState.modelRotation = new Quaternion();
+            modelState.modelScale = Vector3f.UNIT_XYZ;
+            modelState.modelAuthor = "timeline";
+            modelState.modelGroup = "group";
+            modelState.setModelLoaderClassname("org.jdesktop.wonderland.modules.kmzloader.client.KmzLoader");
+
+            state.addComponentServerState(modelState);
+
+            modelCell.setServerState(state);
+            
+            out = modelCell;
+           
         } else {
             logger.warning("Attempted to make a cell from dated object (" + datedObj + ") but it was an unknown type.");
             out = null;

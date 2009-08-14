@@ -352,7 +352,8 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
         if (navigationPanel != null) {
             if (date != null) {
-                navigationPanel.setDateLabel(date);
+
+                navigationPanel.setDateLabel(date, config.getUnits());
             }
 
             navigationPanel.setSliderLocation(getHeightFraction(cell.getWorldTransform().getTranslation(null)));
