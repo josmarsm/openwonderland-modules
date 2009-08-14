@@ -204,13 +204,20 @@ public class TimelineConfiguration implements Serializable {
         long dateIncrement = getDateRange().getRange() / getNumSegments();
         long curTime = getDateRange().getMinimum().getTime();
         float radius = getOuterRadius() - getInnerRadius();
+        
+        float angle = 0;
+
         for(int i=0; i< getNumSegments(); i++) {
 
             TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime + dateIncrement)));
 
             Vector3f pos = new Vector3f(((float)(radius * Math.sin(i*getRadsPerSegment()))), i*getHeight()/getNumSegments(),(float) ((float)radius * Math.cos(i*getRadsPerSegment())));
             newSeg.setTransform(new CellTransform(new Quaternion(), pos));
+            newSeg.setStartAngle(angle);
+            newSeg.setEndAngle(angle+getRadsPerSegment());
 
+            angle += getRadsPerSegment();
+            
             out.add(newSeg);
 
             curTime += dateIncrement;

@@ -248,40 +248,51 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             // So loop through each of the cells and set their position
             // appropriately. Add them to the TimelineCell if we need to.
 
-            
+            int numCellsInSegment = cells.size();
+            float angleIncrement = (seg.getEndAngle() - seg.getStartAngle())/numCellsInSegment;
+            int curCellIndex = 0;
+            float curAngle = seg.getStartAngle();
+
+
+            // For each cell in this segment...
             for(CellMO cell : cells) {
                 DatedObjectComponentMO doComp = cell.getComponent(DatedObjectComponentMO.class);
                 MovableComponentMO movComp = cell.getComponent(MovableComponentMO.class);
 
-                // Put smarter layout logic here, but for now just throw the
-                // images in the dead center of the segment.
+                // New plan. Split the segment's arc into numCellsInSegment pieces.
+                // For each angle, place a cell just outside the spiral at that
+                // angle.
+
+                // TODO make this properly height dependent.
+
+                Vector3f edgePoint = new Vector3f((float) (config.getOuterRadius() * Math.sin(curAngle)), seg.getTransform().getTranslation(null).y, ((float)(config.getOuterRadius() * Math.cos(curAngle))));
+                edgePoint.y += config.getHeight() / config.getNumTurns() / 2;
 
                 // Okay, here's the plan. First, lets just do one image per segment.
                 // We're going to make a vector from 0,y,0 to the center segment,
                 // normalize that vector and then scale it to outerradius.
                 // that'll give us a vector to the edge.
 
-                Vector3f segPos = seg.getTransform().getTranslation(null);
-                segPos.y = 0;
-                segPos = segPos.normalize();
-                segPos = segPos.mult(config.getOuterRadius());
-                segPos.y = seg.getTransform().getTranslation(null).y;
+//                Vector3f segPos = seg.getTransform().getTranslation(null);
+//                segPos.y = 0;
+//                segPos = segPos.normalize();
+//                segPos = segPos.mult(config.getOuterRadius());
+//                segPos.y = seg.getTransform().getTranslation(null).y;
+//
+//                // Move it up into the middle of the space in the spiral.
+//                segPos.y += config.getHeight() / config.getNumTurns() / 2;
 
-                // Move it up into the middle of the space in the spiral.
-                segPos.y += config.getHeight() / config.getNumTurns() /2;
 
-
-                float angleBetween = (float) Math.atan2(segPos.x, segPos.z);
+                float angleBetween = (float) Math.atan2(edgePoint.x, edgePoint.z);
 
                 float[] angles = {0.0f, angleBetween, 0.0f};
 
                 Quaternion q = new Quaternion(angles);
 
-
                 logger.info("Setting position to: " + seg.getTransform() + " angle: " + angleBetween);
 
-
-                movComp.moveRequest(null, new CellTransform(q, segPos));
+                movComp.moveRequest(null, new CellTransform(q, edgePoint));
+                curAngle += angleIncrement;
 
                 if(!doComp.isAddedToTimeline()) {
                     try {
