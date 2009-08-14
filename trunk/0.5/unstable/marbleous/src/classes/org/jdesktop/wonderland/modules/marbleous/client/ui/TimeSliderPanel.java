@@ -35,7 +35,6 @@ import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SelectedSa
  */
 public class TimeSliderPanel extends javax.swing.JPanel {
 
-    private static final float SAMPLE_ENTITY_Y_OFFSET = 0.3f;
 
     private TrackCell cell;
 
@@ -265,12 +264,10 @@ public class TimeSliderPanel extends javax.swing.JPanel {
 
 
     private SampleDisplayEntity createSampleEntity (SampleInfo sampleInfo) {
-        SampleDisplayEntity sampleEntity = new SampleDisplayEntity(null/*TODO: should be cell entity*/,
-                                                                 sampleInfo, 0.006f);
         Vector3f position = sampleInfo.getPosition();
-        float y = position.y + marbleRadius + SAMPLE_ENTITY_Y_OFFSET;
-        sampleEntity.setLocalTranslation(new Vector3f(position.x, y, position.z));
-
+        SampleDisplayEntity sampleEntity = 
+            new SampleDisplayEntity(null/*TODO: should be cell entity*/,
+                                    sampleInfo, 0.006f, marbleRadius, position);        
         return sampleEntity;
     }    
 

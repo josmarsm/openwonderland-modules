@@ -86,7 +86,11 @@ public class SampleDisplayEntity extends Entity {
 
     protected static ZBufferState zbuf = null;
 
-    private Vector3f localTranslation = new Vector3f();
+    private float marbleRadius;
+    private Vector3f samplePosition;
+
+    // Transforms the coordinate system of the bubble to the top of the marble
+    private Node transformNode = new Node();
 
     static {
       RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
@@ -102,22 +106,18 @@ public class SampleDisplayEntity extends Entity {
      * @param fontSize initial fontSizeModifier
      */
     // TODO: parentEntity is not yet used. Entity is attached to world, not the cell entity. This is wrong.
-    public SampleDisplayEntity(Entity parentEntity, SampleInfo sampleInfo, float fontSizeModifier) {
+    public SampleDisplayEntity(Entity parentEntity, SampleInfo sampleInfo, float fontSizeModifier,
+                               float marbleRadius, Vector3f samplePosition) {
         super("SampleDisplayEntity for Time " + sampleInfo.getTime());
 
         this.sampleInfo = sampleInfo;
         this.fontSizeModifier = fontSizeModifier;
+        this.marbleRadius = marbleRadius;
+        this.samplePosition = samplePosition;
 
         attachMouseListener(new MouseListener(this));
 
         setDisplayMode(DisplayMode.HIDDEN);
-    }
-
-    public void setLocalTranslation (Vector3f trans) {
-        localTranslation = trans;
-        if (displayMode != DisplayMode.HIDDEN) {
-            node.setLocalTranslation(trans);
-        }
     }
 
     /**
@@ -293,8 +293,10 @@ public class SampleDisplayEntity extends Entity {
             // on the nodes we think we are in the updater thread
             final Node newNode = node;
 
+            transformNode.attachChild(node);
+
             RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-            RenderComponent rComp = rm.createRenderComponent(node);
+            RenderComponent rComp = rm.createRenderComponent(transformNode);
             this.removeComponent(RenderComponent.class);
             this.addComponent(RenderComponent.class, rComp);
 
@@ -302,8 +304,11 @@ public class SampleDisplayEntity extends Entity {
             node.setModelBound(new BoundingBox());
             node.updateModelBound();
 
-            // TODO: I think this is always zero
-            node.setLocalTranslation(localTranslation);
+            System.err.println("******** samplePosition = " + samplePosition);
+            float y = samplePosition.y + marbleRadius;
+            Vector3f trans = new Vector3f(samplePosition.x, y, samplePosition.z);
+            System.err.println("******** trans = " + trans);
+            transformNode.setLocalTranslation(trans);
 
             makeEntityPickable(this, node);
 
@@ -315,7 +320,7 @@ public class SampleDisplayEntity extends Entity {
                         logger.info(" adding entity");
                         ClientContextJME.getWorldManager().addEntity(ent);
                         entityAdded = true;
-                        ClientContextJME.getWorldManager().addToUpdateList(newNode);
+                        ClientContextJME.getWorldManager().addToUpdateList(transformNode);
                     }
                 };
 
