@@ -41,6 +41,7 @@ public class TrackManager {
     private TrackManager() {
         supportedTypes.add(new LoopTrackSegmentType());
         supportedTypes.add(new RightTurnTrackSegmentType());
+        supportedTypes.add(new LeftTurnTrackSegmentType());
         supportedTypes.add(new StraightLevelTrackSegmentType());
         supportedTypes.add(new StraightDropTrackSegmentType());
         supportedTypes.add(new BumpTrackSegmentType());
