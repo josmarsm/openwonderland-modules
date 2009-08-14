@@ -50,7 +50,7 @@ public class TimelineClientConfiguration extends TimelineConfiguration {
         this.channel = channel;
         // TODO matt what does this do?
         this.setDateRange(config.getDateRange());
-        this.setNumSegments(config.getNumSegments());
+        this.setUnits(config.getUnits());
         this.setPitch(config.getPitch());
         this.setRadsPerSegment(config.getRadsPerSegment());
     }

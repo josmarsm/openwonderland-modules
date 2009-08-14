@@ -25,6 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,10 +40,13 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.modules.timeline.client.provider.KeywordConsumer;
 import org.jdesktop.wonderland.modules.timeline.client.provider.TimelineProviderUtils;
 import org.jdesktop.wonderland.modules.timeline.client.provider.TimelineQueryBuilder;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration.TimelineUnits;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDateRange;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQuery;
 
 /**
@@ -605,15 +609,29 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
             });
             mainHUD.addComponent(addCollectionHUD);
         }
+
+        TimelineDateRange range = new TimelineDateRange(getStartDate(),
+                                                        getEndDate(), 
+                                                        getUnits().getCalendarUnit());
+        addCollectionPanel.setDateRange(range);
         addCollectionHUD.setVisible(true);
     }//GEN-LAST:event_addKeywordButtonActionPerformed
 
-    private void buildQuery() {
+    public void buildQuery() {
         queries.clear();
 
         ListIterator<TimelineQueryBuilder> iter = builders.listIterator();
         while (iter.hasNext()) {
             TimelineQueryBuilder builder = iter.next();
+
+            // make sure the configuration is up to date for the builder
+            builder.setTimelineConfiguration(config);
+
+            // see about setting up keywords
+            if (addCollectionPanel != null && builder instanceof KeywordConsumer) {
+                ((KeywordConsumer) builder).setKeywords(addCollectionPanel.getQueries());
+            }
+
             TimelineQuery query = builder.build();
             queries.add(query);
         }
@@ -624,7 +642,19 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     }
 
     private void createButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createButtonActionPerformed
+        logger.info("rebuild client config");
+        logger.info("PREVIOUS client config's pitch:" + config.getPitch());
+        config.setDateRange(new TimelineDate(getStartDate(), getEndDate()));
+        config.setUnitsPerRev(getScale());
+        config.setUnits(getUnits());
+        config.setInnerRadius(getInnerRadius());
+        float width = getSpiralWidth();
+        config.setOuterRadius(width + getInnerRadius());
+        config.setWidth(width);
+        config.setPitch(getPitch());
+        
         buildQuery();
+
         if (mode == Mode.CREATE) {
             listeners.firePropertyChange("create", new String(""), null);
         } else if (mode == Mode.UPDATE) {

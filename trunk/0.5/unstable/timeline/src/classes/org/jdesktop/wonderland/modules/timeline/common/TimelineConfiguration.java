@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.timeline.common;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,6 +28,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDateRange;
 
 /**
  * Basic configuration data common to timelines. This object is both Java
@@ -38,7 +40,7 @@ public class TimelineConfiguration implements Serializable {
     private float radsPerSegment;
 
     /** The total number of segments. */
-    private int numSegments = 8;
+    private int numSegments = -1;
 
     /**
      * The pitch of the helix (which is the vertical distance in meters of one
@@ -51,13 +53,24 @@ public class TimelineConfiguration implements Serializable {
      */
     private TimelineDate dateRange = new TimelineDate();
 
-    public enum TimelineUnits{HOURS, DAYS, WEEKS, MONTHS, YEARS};
+    public enum TimelineUnits{ 
+        HOURS (Calendar.HOUR_OF_DAY), DAYS (Calendar.DAY_OF_YEAR),
+        WEEKS (Calendar.WEEK_OF_YEAR), MONTHS (Calendar.MONTH),
+        YEARS (Calendar.YEAR);
+
+        private int calendarUnit;
+        TimelineUnits(int calendarUnit) {
+            this.calendarUnit = calendarUnit;
+        }
+        public int getCalendarUnit() {
+            return calendarUnit;
+        }
+
+    };
     TimelineUnits units = TimelineUnits.DAYS;
 
     // default to 4 units/rev
     private float unitsPerRev = 4;
-
-
 
     /**
      * The inner radius of the spiral, in meters.
@@ -79,9 +92,12 @@ public class TimelineConfiguration implements Serializable {
 
     public TimelineConfiguration(TimelineConfiguration config) {
         this.dateRange = config.getDateRange();
-        this.numSegments = config.getNumSegments();
+        this.units = config.getUnits();
         this.pitch = config.getPitch();
         this.radsPerSegment = config.getRadsPerSegment();
+
+        calculateNumSegments();
+
 //        calculateRadsPerSegment();
     }
 
@@ -89,8 +105,11 @@ public class TimelineConfiguration implements Serializable {
      * Convenience constructor
      * @param dateRange the range of dates this timeline covers
      */
-    public TimelineConfiguration(TimelineDate dateRange) {
+    public TimelineConfiguration(TimelineDate dateRange, TimelineUnits units) {
         this.dateRange = dateRange;
+        this.units = units;
+
+        calculateNumSegments();
         calculateRadsPerSegment();
     }
 
@@ -114,23 +133,16 @@ public class TimelineConfiguration implements Serializable {
      */
     public void setDateRange(TimelineDate dateRange) {
         this.dateRange = dateRange;
+        calculateNumSegments();
     }
 
     /**
      * Get the number of segments in the timeline
      * @return the number of segments in the timeline
      */
-    @XmlElement
+    @XmlTransient
     public int getNumSegments() {
         return numSegments;
-    }
-
-    /**
-     * Set the number of segments in this timeline
-     * @param numSegments the number of segments
-     */
-    public void setNumSegments(int numSegments) {
-        this.numSegments = numSegments;
     }
 
     /**
@@ -173,6 +185,7 @@ public class TimelineConfiguration implements Serializable {
 
     public void setUnits(TimelineUnits units) {
       this.units = units;
+      calculateNumSegments();
     }
 
     public float getUnitsPerRev() {
@@ -183,7 +196,13 @@ public class TimelineConfiguration implements Serializable {
       this.unitsPerRev = unitsPerRev;
     }
 
-
+    private void calculateNumSegments() {
+        TimelineDateRange range = new TimelineDateRange(getDateRange().getMinimum(),
+                                                        getDateRange().getMaximum(),
+                                                        getUnits().getCalendarUnit());
+        dateRange = new TimelineDate(range.getMinimum(), range.getMaximum());
+        numSegments = range.getIncrementCount();
+    }
 
     /**
      *

@@ -89,6 +89,14 @@ public class TimelineDate implements Comparable, Serializable {
     }
 
     /**
+     * Get the range (in ms) between the dates represented by this TimelineDate.
+     * @return
+     */
+    public long getRange() {
+        return getMaximum().getTime() - getMinimum().getTime();
+    }
+
+    /**
      * Return true if the date range described by this object includes
      * the given date.  This will return true if the given date is greater
      * than or equal to this object's minimum date, and is also strictly less
@@ -157,14 +165,6 @@ public class TimelineDate implements Comparable, Serializable {
 
         TimelineDate tdo = (TimelineDate) o;
         return getMinimum().compareTo(tdo.getMinimum());
-    }
-
-    /**
-     * Get the range (in ms) between the dates represented by this TimelineDate.
-     * @return
-     */
-    public long getRange() {
-        return this.max.getTime() - this.min.getTime();
     }
 
     @Override

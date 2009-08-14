@@ -185,16 +185,6 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      * this will cause the spiral to repaint
      */
     private void rebuildClientConfiguration(){
-      logger.info("rebuild client config");
-      logger.info("PREVIOUS client config's pitch:" + config.getPitch());
-      config.setDateRange(new TimelineDate(creationPanel.getStartDate(), creationPanel.getEndDate()));
-      config.setUnitsPerRev(creationPanel.getScale());
-      config.setUnits(creationPanel.getUnits());
-      config.setInnerRadius(creationPanel.getInnerRadius());
-      float width = creationPanel.getSpiralWidth();
-      config.setOuterRadius(width + config.getInnerRadius());
-      config.setWidth(width);
-      config.setPitch(creationPanel.getPitch());
       logger.info("ADJUSTED client config's pitch:" + config.getPitch());
       logger.info("ADJUSTED client config's inner:" + config.getInnerRadius());
       logger.info("ADJUSTED client config's outer:" + config.getOuterRadius());
