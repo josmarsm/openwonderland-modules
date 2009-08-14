@@ -303,6 +303,9 @@ public class ConstructPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_editButtonActionPerformed
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
+        // First, reset the simulation
+        cell.setSimulationState(SimulationState.RESET);
+
         // Put the buttons in the proper state and reset the marble
         runButton.setEnabled(true);
         stopButton.setEnabled(false);
@@ -312,12 +315,28 @@ public class ConstructPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_resetButtonActionPerformed
 
     /**
-     * Tells the control panel that another client has started/stopped the
+     * Tells the control panel that another client has started/stopped/reset the
      * simulation
      */
-    public void externalSimulationEnabled(boolean isEnabled) {
-        runButton.setEnabled(!isEnabled);
-        stopButton.setEnabled(!isEnabled);
+    public void externalSimulationState(SimulationState state) {
+        System.err.println("EXTERNAL SIM STATE " + state);
+        if (state == SimulationState.STARTED) {
+            runButton.setEnabled(false);
+            stopButton.setEnabled(true);
+            resetButton.setEnabled(false);
+        }
+        else if (state == SimulationState.STOPPED) {
+            runButton.setEnabled(false);
+            stopButton.setEnabled(false);
+            resetButton.setEnabled(true);
+        }
+        else if (state == SimulationState.RESET) {
+            runButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            resetButton.setEnabled(false);
+            cell.resetMarble();
+            uiTimeSlider.setVisible(false);
+        }
     }
 
 
