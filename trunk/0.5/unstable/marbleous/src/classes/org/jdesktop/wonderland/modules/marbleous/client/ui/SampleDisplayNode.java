@@ -75,6 +75,9 @@ public class SampleDisplayNode extends BillboardNode {
 
     private static final float SAMPLE_ENTITY_Y_OFFSET = 0.6f;
 
+    // TODO: shouldn't hard code this here
+    private static final float MARBLE_RADIUS = 0.25f;
+
     // Default Colors
     public static Color DEFAULT_BACKGROUND_COLOR = new Color(0.5f, 0.5f, 0.5f);
     public static Color DEFAULT_FONT_COLOR = Color.BLACK;
@@ -180,7 +183,7 @@ public class SampleDisplayNode extends BillboardNode {
         attachChild(quad);
 
 
-        float descenderHeight = 0.6f;
+        float descenderHeight = SAMPLE_ENTITY_Y_OFFSET + MARBLE_RADIUS;
         Cylinder descender = new Cylinder("Descender cyl", 10, 10, 0.02f, descenderHeight, true);
         Quaternion quat = new Quaternion();
         quat.fromAngleAxis((float)Math.toRadians(90f), new Vector3f(1f, 0, 0 ));
