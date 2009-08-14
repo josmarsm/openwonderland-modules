@@ -18,7 +18,10 @@
 
 package org.jdesktop.wonderland.modules.timeline.client;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 
 /**
  * A simple slider that lets you easily update the avatar's position on the
@@ -34,6 +37,8 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
     private final TimelineCell cell;
 
     private boolean ignoreChangeEvents = false;
+    private DateFormat dateFormatMedium = DateFormat.getDateInstance(DateFormat.MEDIUM);
+    private DateFormat dateFormatLong = DateFormat.getDateInstance(DateFormat.LONG);
 
     /** Creates new form TimelineMovementHUDPanel */
     public TimelineMovementHUDPanel(TimelineCell cell) {
@@ -52,38 +57,63 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         positionSlider = new javax.swing.JSlider();
-        curDate = new javax.swing.JLabel();
+        endDateLabel = new javax.swing.JLabel();
+        startDateLabel = new javax.swing.JLabel();
+        curDateLabel = new javax.swing.JLabel();
 
-        positionSlider.setMaximum(10000);
+        setBackground(new java.awt.Color(0, 0, 0));
+
+        positionSlider.setMinorTickSpacing(10);
         positionSlider.setOrientation(javax.swing.JSlider.VERTICAL);
-        positionSlider.setValue(5000);
+        positionSlider.setPaintLabels(true);
+        positionSlider.setPaintTicks(true);
+        positionSlider.setValue(0);
         positionSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 positionSliderStateChanged(evt);
             }
         });
 
+        endDateLabel.setFont(endDateLabel.getFont().deriveFont(endDateLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        endDateLabel.setForeground(new java.awt.Color(255, 255, 255));
+        endDateLabel.setText("End Date");
+
+        startDateLabel.setFont(startDateLabel.getFont().deriveFont(startDateLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        startDateLabel.setForeground(new java.awt.Color(255, 255, 255));
+        startDateLabel.setText("Start Date");
+
+        curDateLabel.setFont(curDateLabel.getFont().deriveFont(curDateLabel.getFont().getStyle() | java.awt.Font.BOLD));
+        curDateLabel.setForeground(new java.awt.Color(255, 255, 255));
+        curDateLabel.setText("September 88, 2222");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(curDateLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(44, 44, 44)
-                        .add(positionSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(curDate, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)))
+                        .add(positionSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(endDateLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                            .add(startDateLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(positionSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(endDateLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 315, Short.MAX_VALUE)
+                        .add(startDateLabel))
+                    .add(positionSlider, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(curDate, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(curDateLabel)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -115,13 +145,23 @@ public class TimelineMovementHUDPanel extends javax.swing.JPanel {
        ignoreChangeEvents = false;
     }
 
-    public void setDateLabel(String newDateLabel) {
-        this.curDate.setText(newDateLabel);
+    public void setStartDate(Date date) {
+        startDateLabel.setText(dateFormatMedium.format(date));
+    }
+
+    public void setEndDate(Date date) {
+        endDateLabel.setText(dateFormatMedium.format(date));
+    }
+
+    public void setDateLabel(TimelineDate date) {
+        curDateLabel.setText(dateFormatLong.format(date.getMiddle()));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel curDate;
+    private javax.swing.JLabel curDateLabel;
+    private javax.swing.JLabel endDateLabel;
     private javax.swing.JSlider positionSlider;
+    private javax.swing.JLabel startDateLabel;
     // End of variables declaration//GEN-END:variables
 
 }
