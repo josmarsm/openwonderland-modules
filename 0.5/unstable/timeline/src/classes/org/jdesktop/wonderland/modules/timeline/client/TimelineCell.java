@@ -416,13 +416,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      * @return The segment that contains the specified date.
      */
     public TimelineSegment getSegmentByDate(Date date) {
-        System.out.println("Searching " + sortedSegments.size() + " segments for date " + date);
-
         Set<DatedObject> segments = this.sortedSegments.containsSet(new TimelineDate(date));
-
-        for (DatedObject segment : segments) {
-            System.out.println("Found segment " + segment.getDate());
-        }
 
         // because the time ranges of segments are non-overlapping, containsSet
         // will always return a single element.
