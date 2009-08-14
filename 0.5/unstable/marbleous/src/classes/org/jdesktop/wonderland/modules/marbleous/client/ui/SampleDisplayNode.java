@@ -83,6 +83,7 @@ public class SampleDisplayNode extends BillboardNode {
   // TODO: not used
   private Color borderColorTransient = Color.BLACK;
 
+    private Color borderColorCurrentAndPinned = new Color(0, 0.75f, 0.75f);
     private Color borderColorCurrent = new Color(0, 0.75f, 0f);
     private Color borderColorPinned  = new Color(0, 0, 0.75f);
 
@@ -327,7 +328,9 @@ public class SampleDisplayNode extends BillboardNode {
 
         // draw border
         g2d.setStroke(new BasicStroke(BORDER_WIDTH));
-        if (current) {
+        if (current && pinned) {
+            g2d.setColor(borderColorCurrentAndPinned);
+        } else if (current) {
             g2d.setColor(borderColorCurrent);
         } else if (pinned) {
             g2d.setColor(borderColorPinned);
