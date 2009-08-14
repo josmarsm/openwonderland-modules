@@ -64,7 +64,7 @@ public class SegmentEntity extends Entity {
    * how many radians are in each mesh making up this segment
    * default - pi/18 = 10 degrees, get smoother from there as necessary
    */
-  public float radsPerMesh = (float) (Math.PI / 18);
+  
 
   protected static ZBufferState zbuf = null;
   static {
@@ -115,21 +115,13 @@ public class SegmentEntity extends Entity {
   /**
    * @param a the annotation to represent
    * @param cell cell to reference in CellRefComponent, for context menu
-   * @param degrees how far to spiral. Must be in increments of SegmentMesh.DEGREES_PER_MESH
-   * @param climb height increase per 360 degrees. If you set this to 0, will not climb at all.
-   * @param innerRad inner radius of spiral
-   * @param outerRad outer radius of spiral
-   * @param origin where to build this entity's mesh from
-   * @param rotation
-   * @param height
+   * @param config contains almost all parameters necessary for spiral generation
+   * @param radsPerMesh radians per mesh, must be a factor of radians per segment
    */
-  public SegmentEntity(Cell cell, TimelineClientConfiguration config, float rotation, Vector3f target) {
+  public SegmentEntity(Cell cell, TimelineClientConfiguration config, float rotation, Vector3f target, float radsPerMesh) {
     super("timeline segment");
     
     logger.info("creating segment entity");
-
-    // calculate new rads per mesh
-
 
     if(config.getRadsPerSegment()% radsPerMesh > 0){
       logger.severe("[SEG MESH] ERROR: rads per mesh (" + radsPerMesh +

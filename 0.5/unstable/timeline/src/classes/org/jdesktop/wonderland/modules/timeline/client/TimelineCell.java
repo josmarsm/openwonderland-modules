@@ -150,6 +150,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         creationPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent pe) {
+              logger.info("property changed");
                 if ((pe.getPropertyName().equals("create")) || (pe.getPropertyName().equals("update"))) {
                     logger.info("--- create/update timeline event");
                     timelineCreationHUD.setVisible(false);
@@ -178,11 +179,14 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
       config.setUnitsPerRev(creationPanel.getScale());
       config.setUnits(creationPanel.getUnits());
       config.setInnerRadius(creationPanel.getInnerRadius());
-      float width = creationPanel.getWidth();
+      float width = creationPanel.getSpiralWidth();
       config.setOuterRadius(width + config.getInnerRadius());
       config.setWidth(width);
       config.setPitch(creationPanel.getPitch());
       logger.info("ADJUSTED client config's pitch:" + config.getPitch());
+      logger.info("ADJUSTED client config's inner:" + config.getInnerRadius());
+      logger.info("ADJUSTED client config's outer:" + config.getOuterRadius());
+      logger.info("ADJUSTED client config's width:" + config.getWidth());
       this.renderer.buildSegments(config);
     }
 
