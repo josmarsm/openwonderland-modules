@@ -58,13 +58,13 @@ public class BigDropTrackSegmentType extends TrackSegmentType {
 
         TCBKeyFrame[] keys = new TCBKeyFrame[samples+1]; // Plus end & start
         float knot = 1f;
-        float knotInc = 1f/(samples);
+        float knotInc = 1f/(samples)/4;
         for(int i=1; i<=samples; i++) {
             float angle = (finalAngle/(samples))*i;
             float x = 0;
             float y = endHeight+radius-(float)Math.cos(angle)*radius;
             float z = (float)Math.sin(angle)*radius;
-            keys[keys.length-i] = createKeyFrame(knot, new Vector3f(x,y,z), 0,0,0, new Vector3f(1,0,0), 0);
+            keys[keys.length-i] = createKeyFrame(knot, new Vector3f(x,y,z), 1,0,0, new Vector3f(1,0,0), -angle);
             knot -= knotInc;
         }
         Vector3f lastCurvePos = keys[1].position;
@@ -72,7 +72,10 @@ public class BigDropTrackSegmentType extends TrackSegmentType {
         startPos.y=topY;
         startPos.z -= (float) ((topY - lastCurvePos.y) / Math.tan(Math.PI - finalAngle));
 
-        keys[0] = createKeyFrame(0, startPos, 0,0,0, new Vector3f(1,0,0), 0);
+        keys[0] = createKeyFrame(0, startPos, 0,0,0, new Vector3f(1,0,0), -finalAngle);
+
+        for(int i=0; i<keys.length; i++)
+            keys[i].debugPrint(""+i);
 
         endpoint = new Matrix4f();
         endpoint.setTranslation(keys[keys.length-1].position);
