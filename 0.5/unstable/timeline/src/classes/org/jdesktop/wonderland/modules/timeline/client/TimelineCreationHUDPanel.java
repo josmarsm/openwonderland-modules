@@ -88,8 +88,14 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
         } else {
             this.config = new TimelineClientConfiguration();
         }
-        initComponents();
-        setDefaults();
+
+	
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	initComponents();
+        	setDefaults();
+	    }
+	});
     }
 
     private void setDefaults() {
