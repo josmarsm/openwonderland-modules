@@ -90,7 +90,7 @@ public class SampleDisplayEntity extends Entity {
     private Vector3f samplePosition;
 
     // Transforms the coordinate system of the bubble to the top of the marble
-    private Node transformNode = new Node();
+    private Node transformNode;
 
     private static final LinkedList<SampleDisplayEntity> pinnedEntities = 
         new LinkedList<SampleDisplayEntity>();
@@ -298,13 +298,22 @@ public class SampleDisplayEntity extends Entity {
             displayMode = newDisplayMode;
             logger.info(" display mode is now:" + displayMode);
 
+            // First, remove the current from the world
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+                 public void update(Object arg0) {
+                     ClientContextJME.getWorldManager().removeEntity(SampleDisplayEntity.this);
+                     entityAdded = false;
+                }
+            }, null);
+
             // refreshes the node to the new DisplayMode's version
             node = new SampleDisplayNode(sampleInfo, displayMode, fontSizeModifier, current, pinned);
+            transformNode = new Node();
+            transformNode.attachChild(node);
+
             // this is unnecessary but it can't hurt, it guarantees we are operating
             // on the nodes we think we are in the updater thread
             final Node newNode = node;
-
-            transformNode.attachChild(node);
 
             RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
             RenderComponent rComp = rm.createRenderComponent(transformNode);
@@ -326,8 +335,6 @@ public class SampleDisplayEntity extends Entity {
             RenderUpdater updater = new RenderUpdater() {
                     public void update(Object arg0) {
                         SampleDisplayEntity ent = (SampleDisplayEntity)arg0;
-                        ClientContextJME.getWorldManager().removeEntity(ent);
-                        entityAdded = false;
                         logger.info(" adding entity");
                         ClientContextJME.getWorldManager().addEntity(ent);
                         entityAdded = true;
@@ -337,6 +344,8 @@ public class SampleDisplayEntity extends Entity {
 
             WorldManager wm = ClientContextJME.getWorldManager();
             wm.addRenderUpdater(updater, this);
+
+            System.err.println("Put down: dispMode = " + displayMode);
 
             return;
         }
