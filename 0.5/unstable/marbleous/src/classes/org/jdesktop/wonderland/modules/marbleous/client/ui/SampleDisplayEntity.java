@@ -302,6 +302,7 @@ public class SampleDisplayEntity extends Entity {
             node.setModelBound(new BoundingBox());
             node.updateModelBound();
 
+            // TODO: I think this is always zero
             node.setLocalTranslation(localTranslation);
 
             makeEntityPickable(this, node);
