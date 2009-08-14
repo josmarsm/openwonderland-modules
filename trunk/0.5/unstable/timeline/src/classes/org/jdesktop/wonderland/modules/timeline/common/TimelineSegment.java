@@ -38,6 +38,10 @@ public class TimelineSegment implements DatedObject, Serializable {
 
     private String treatment;
 
+    private float startAngle;
+    
+    private float endAngle;
+
     // Just making this up. I imagine we'll change it when we have a better
     // sense of what needs to be here.
     public TimelineSegment(TimelineDate date) {
@@ -64,9 +68,27 @@ public class TimelineSegment implements DatedObject, Serializable {
         this.treatment = treatment;
     }
 
+    public float getEndAngle() {
+        return endAngle;
+    }
+
+    public void setEndAngle(float endAngle) {
+        this.endAngle = endAngle;
+    }
+
+    public float getStartAngle() {
+        return startAngle;
+    }
+
+    public void setStartAngle(float startAngle) {
+        this.startAngle = startAngle;
+    }
+
+
+
     @Override
     public String toString() {
-        return date + " (@" + transform + ")";
+        return "[TimelineSeg " + date + " (@" + transform + ")" + "]";
     }
 
     @Override

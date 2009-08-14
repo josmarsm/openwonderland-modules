@@ -86,7 +86,7 @@ public class TimelineCellFactory implements CellFactorySPI {
       query.getProperties().setProperty("searchText", "automobile");
       query.getProperties().setProperty("searchType", "tags");
       query.getProperties().setProperty("sort", "relevance");
-      query.getProperties().setProperty("returnCount", String.valueOf(1));
+      query.getProperties().setProperty("returnCount", String.valueOf(3));
       tpss.getQueries().add(query);
 
       state.addComponentServerState(tpss);
