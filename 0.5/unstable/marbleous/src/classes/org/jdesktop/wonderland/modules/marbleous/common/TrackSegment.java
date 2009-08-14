@@ -22,6 +22,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JPanel;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -37,7 +40,7 @@ import javax.xml.bind.annotation.XmlType;
 //@XmlType( namespace="marbleous" )
 public class TrackSegment implements Serializable {
     private String segmentTypeClassName;
-    private Properties segmentProperties = new Properties();
+    private SegmentSettings segmentProperties;
     private TCBKeyFrame[] keyFrames = null;
     private String name;
     private Matrix4f endpointTransform;
@@ -52,6 +55,7 @@ public class TrackSegment implements Serializable {
         keyFrames = segmentType.getDefaultKeyFrames();
         name = segmentType.getName();
         endpointTransform = segmentType.getEndpointTransform();
+        segmentProperties = segmentType.getDefaultSegmentSettings();
     }
 
     public String getName () {
@@ -62,8 +66,16 @@ public class TrackSegment implements Serializable {
         return keyFrames;
     }
 
+    void setKeyFrames(TCBKeyFrame[] keyFrames) {
+        this.keyFrames = keyFrames;
+    }
+
     public Matrix4f getEndpointTransform() {
         return endpointTransform;
+    }
+
+    public SegmentSettings getSegmentSettings() {
+        return segmentProperties;
     }
 
     /**

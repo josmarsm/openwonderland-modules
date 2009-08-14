@@ -79,10 +79,10 @@ public class TrackCell extends Cell {
         knotTableModel.setSegment(segment);
         java.awt.EventQueue.invokeLater(new Runnable() {
 
-            public void run() {
-                new KnotFrame(knotTableModel, TrackCell.this).setVisible(true);
-            }
-        });
+                public void run() {
+                    new KnotFrame(knotTableModel, segment, TrackCell.this).setVisible(true);
+                }
+            });
     }
 
     /**
