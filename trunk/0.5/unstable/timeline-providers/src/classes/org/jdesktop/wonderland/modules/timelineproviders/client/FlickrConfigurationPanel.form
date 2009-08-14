@@ -279,9 +279,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="apiKeyField">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="aa664dbdefb318455a9a07a4245f5ff6"/>
-      </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="apiKeyFieldActionPerformed"/>
       </Events>

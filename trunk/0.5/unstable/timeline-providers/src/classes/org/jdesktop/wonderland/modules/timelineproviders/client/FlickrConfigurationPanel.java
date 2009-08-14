@@ -22,7 +22,7 @@ import java.beans.PropertyChangeSupport;
 import org.jdesktop.wonderland.modules.timelineproviders.common.FlickrConstants;
 
 /**
- *
+ * Configuration panel for the Flickr image provider
  * @author nsimpson
  */
 public class FlickrConfigurationPanel extends javax.swing.JPanel {
@@ -272,7 +272,6 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
 
         apiKeyLabel.setText("API Key:");
 
-        apiKeyField.setText("aa664dbdefb318455a9a07a4245f5ff6");
         apiKeyField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 apiKeyFieldActionPerformed(evt);
