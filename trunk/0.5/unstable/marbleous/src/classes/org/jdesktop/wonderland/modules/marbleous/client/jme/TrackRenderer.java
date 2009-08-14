@@ -192,7 +192,7 @@ public class TrackRenderer extends BasicRenderer {
         Collection<TCBKeyFrame> keyFrames = track.buildTrack();
         RotPosScaleTCBSplinePath spline = new RotPosScaleTCBSplinePath(keyFrames.toArray(new TCBKeyFrame[keyFrames.size()]));
 
-        drawKnot(spline, trackRoot);
+//        drawKnot(spline, trackRoot);
 //        drawSpline(spline, trackRoot);
 
         trackMesh = createTrackMesh(spline);

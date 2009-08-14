@@ -27,25 +27,66 @@ import com.jme.math.Vector3f;
 public class BigDropTrackSegmentType extends TrackSegmentType {
 
     private Matrix4f endpoint;
+    private BigDropSegmentSettings settings = new BigDropSegmentSettings();
 
     public BigDropTrackSegmentType() {
         super("BigDrop");
         imageName = "RampDown.png";
-        TCBKeyFrame[] keys = new TCBKeyFrame[] {
-          createKeyFrame(0, new Vector3f(0,15,0)),
-          createKeyFrame(0.7f, new Vector3f(0,5f,-4f), 1, 0, 0, new Vector3f(1,0,0), 0),
-          createKeyFrame(0.8f, new Vector3f(0,2f,-7f), 1, 0, 0, new Vector3f(1,0,0), 0),
-          createKeyFrame(1f, new Vector3f(0,0,-15))
-        };
+        settings.setHeight(9);
+        settings.setRadius(6);
+        settings.setEditorClassname("org.jdesktop.wonderland.modules.marbleous.client.ui.BigDropSegmentEditor");
+        setDefaultSegmentSettings(settings);
+        setDefaultKeyFrames(generateSpline(settings));
+    }
 
-        setDefaultKeyFrames(keys);
+    private TCBKeyFrame[] generateSpline(BigDropSegmentSettings settings) {
+
+        float topY = settings.getHeight();
+        float radius = settings.getRadius();
+        int samples = 8;
+        float finalAngle = (float) Math.toRadians(60);
+        float endHeight=-1;
+
+//        TCBKeyFrame[] keys = new TCBKeyFrame[] {
+//          createKeyFrame(0, new Vector3f(0,14,0)),
+//          createKeyFrame(0.6f, new Vector3f(0,4f,-4f), 1, 0, 0, new Vector3f(1,0,0), 0),
+//          createKeyFrame(0.7f, new Vector3f(0,3f,-6f), 1, 0, 0, new Vector3f(1,0,0), 0),
+//          createKeyFrame(0.8f, new Vector3f(0,2f,-8f), 1, 0, 0, new Vector3f(1,0,0), 0),
+//          createKeyFrame(0.9f, new Vector3f(0,1f,-10f), 1, 0, 0, new Vector3f(1,0,0), 0),
+//          createKeyFrame(1f, new Vector3f(0,-1,-12))
+//        };
+
+        TCBKeyFrame[] keys = new TCBKeyFrame[samples+1]; // Plus end & start
+        float knot = 1f;
+        float knotInc = 1f/(samples);
+        for(int i=1; i<=samples; i++) {
+            float angle = (finalAngle/(samples))*i;
+            float x = 0;
+            float y = endHeight+radius-(float)Math.cos(angle)*radius;
+            float z = (float)Math.sin(angle)*radius;
+            keys[keys.length-i] = createKeyFrame(knot, new Vector3f(x,y,z), 0,0,0, new Vector3f(1,0,0), 0);
+            knot -= knotInc;
+        }
+        Vector3f lastCurvePos = keys[1].position;
+        Vector3f startPos = new Vector3f(lastCurvePos);
+        startPos.y=topY;
+        startPos.z -= (float) ((topY - lastCurvePos.y) / Math.tan(Math.PI - finalAngle));
+
+        keys[0] = createKeyFrame(0, startPos, 0,0,0, new Vector3f(1,0,0), 0);
 
         endpoint = new Matrix4f();
-        endpoint.setTranslation(0,0,-15);
+        endpoint.setTranslation(keys[keys.length-1].position);
+
+        return keys;
     }
 
     @Override
     Matrix4f getEndpointTransform() {
         return endpoint;
+    }
+
+    @Override
+    public void updateSegment(TrackSegment segment, SegmentSettings settings) {
+        segment.setKeyFrames(generateSpline((BigDropSegmentSettings) settings));
     }
 }
