@@ -121,7 +121,7 @@ public class SegmentEntity extends Entity {
   public SegmentEntity(Cell cell, TimelineClientConfiguration config, float rotation, Vector3f target, float radsPerMesh) {
     super("timeline segment");
     
-    logger.info("creating segment entity");
+    logger.fine("creating segment entity");
 
     if(config.getRadsPerSegment()% radsPerMesh > 0){
       logger.severe("[SEG MESH] ERROR: rads per mesh (" + radsPerMesh +
@@ -152,56 +152,56 @@ public class SegmentEntity extends Entity {
 
     change = (trapLargeBase - trapSmallBase) / 2.0f;
     trapHeight = (float) Math.sqrt(Math.pow(trapSide,2) - Math.pow(change,2));
-    logger.info("lsq" + lSq);
-    logger.info("small base, large base, height, change: " + trapSmallBase + " " + trapLargeBase + " " + trapHeight + " " + change);
-    logger.info("Mid on large base:" + ((0.0f - change) + (0.5f * trapLargeBase)));
-    logger.info("climb, climb per mesh: " + config.getPitch() + " " + climbPerMesh);
+    logger.fine("lsq" + lSq);
+    logger.fine("small base, large base, height, change: " + trapSmallBase + " " + trapLargeBase + " " + trapHeight + " " + change);
+    logger.fine("Mid on large base:" + ((0.0f - change) + (0.5f * trapLargeBase)));
+    logger.fine("climb, climb per mesh: " + config.getPitch() + " " + climbPerMesh);
 
     // build meshes
     Vector3f oldV1, newV0;
     oldV1 = target;
     for(int i = 0; i < config.getRadsPerSegment()/radsPerMesh; i++){
       if(oldV1 == null){
-        logger.info("old vert is null at start of mesh " + i);
+        logger.fine("old vert is null at start of mesh " + i);
       }
-      logger.info("[SEG ENT] building mesh " + i);
-      logger.info("[SEG ENT] rotation (deg) and target " + Math.toDegrees(rotation) + " " + target);
+      logger.fine("[SEG ENT] building mesh " + i);
+      logger.fine("[SEG ENT] rotation (deg) and target " + Math.toDegrees(rotation) + " " + target);
       SegmentMesh mesh = buildMesh(rotation);
       // translate so proper trap edges meet... want vert 0 on new
       // to touch vert 1 on old (see diagram in segment mesh)
       newV0 = new Vector3f(mesh.getVertex(0));
-      logger.info("[SEG ENT] BEFORE COMPAREold v1 " + oldV1 + " new v0 " + newV0);
+      logger.fine("[SEG ENT] BEFORE COMPAREold v1 " + oldV1 + " new v0 " + newV0);
       if(oldV1 != null){
         // null on the first mesh (don't need to translate first mesh)
         // where will the rotation put the new v1?
         newV0 = new Vector3f((float)Math.cos(radsPerMesh)*newV0.getX() - (float)Math.sin(radsPerMesh)*newV0.getZ(),
                 0.0f,
                 (float)Math.sin(radsPerMesh)*newV0.getX() + (float)Math.cos(radsPerMesh)*newV0.getZ());
-        logger.info("[SEG ENT] adjusted newv0 " + newV0);
-        logger.info("[SEG ENT] translation " + oldV1.subtract(newV0));
+        logger.fine("[SEG ENT] adjusted newv0 " + newV0);
+        logger.fine("[SEG ENT] translation " + oldV1.subtract(newV0));
         float dx = oldV1.getX() - newV0.getX();
         float dy = oldV1.getY() - newV0.getY();
         float dz = oldV1.getZ() - newV0.getZ();
-        logger.info("[SEG ENT] my dz/dx " + dz + " " + dx);
+        logger.fine("[SEG ENT] my dz/dx " + dz + " " + dx);
         mesh.translatePoints(new Vector3f(dx, dy, dz));
-        logger.info("v0 is now: " + mesh.getVertex(0));
-        logger.info("v1 is now: " + mesh.getVertex(1));
+        logger.fine("v0 is now: " + mesh.getVertex(0));
+        logger.fine("v1 is now: " + mesh.getVertex(1));
       }
       else{
-        logger.info("[SENG ENT] first mesh and first entity, translate so that center of cell is in center of spiral.");
+        logger.fine("[SENG ENT] first mesh and first entity, translate so that center of cell is in center of spiral.");
         mesh.translatePoints(new Vector3f(0.0f, 0.0f, config.getInnerRadius()));
-        logger.info("[SEG ENT] in don't translate: old v1 " + oldV1 + " new v0 " + newV0);
-        logger.info("[SEG ENT] in don't translate: new v1 (getting set to old v1) " + mesh.getVertex(1));
+        logger.fine("[SEG ENT] in don't translate: old v1 " + oldV1 + " new v0 " + newV0);
+        logger.fine("[SEG ENT] in don't translate: new v1 (getting set to old v1) " + mesh.getVertex(1));
       }
       meshes.add(mesh);
-      logger.info("[SEG ENT] after it all, old v1: " + oldV1);
+      logger.fine("[SEG ENT] after it all, old v1: " + oldV1);
       // save for next mesh, if there is one
       oldV1 = mesh.getVertex(1);
       oldV1 = new Vector3f((float)Math.cos(radsPerMesh)*oldV1.getX() - (float)Math.sin(radsPerMesh)*oldV1.getZ(),
                 oldV1.getY(),
                 (float)Math.sin(radsPerMesh)*oldV1.getX() + (float)Math.cos(radsPerMesh)*oldV1.getZ());
 
-      logger.info("[SEG ENT] after set old v1 " + oldV1 + " new v0 " + newV0);
+      logger.fine("[SEG ENT] after set old v1 " + oldV1 + " new v0 " + newV0);
       rotation += radsPerMesh;
     }
 
@@ -231,7 +231,7 @@ public class SegmentEntity extends Entity {
    */
   private synchronized SegmentMesh buildMesh(float rotation) {
 
-    logger.info("[SEG ENT] building mesh");
+    logger.fine("[SEG ENT] building mesh");
     SegmentMesh trap = new SegmentMesh("segmesh", trapSmallBase, trapLargeBase, trapHeight, change, climbPerMesh);
 
     // build rotation, rotate about y axis
