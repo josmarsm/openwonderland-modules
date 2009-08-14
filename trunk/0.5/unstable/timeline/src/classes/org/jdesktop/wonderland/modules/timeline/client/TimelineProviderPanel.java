@@ -110,24 +110,12 @@ public class TimelineProviderPanel extends javax.swing.JPanel {
 
         providerCheckBox = new javax.swing.JCheckBox();
 
-        setLayout(new java.awt.GridLayout());
+        setLayout(new java.awt.BorderLayout());
 
+        providerCheckBox.setSelected(true);
         providerCheckBox.setText("Provider");
-        providerCheckBox.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        providerCheckBox.setMaximumSize(new java.awt.Dimension(379, 23));
-        providerCheckBox.setMinimumSize(new java.awt.Dimension(379, 23));
-        providerCheckBox.setPreferredSize(new java.awt.Dimension(379, 23));
-        providerCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                providerCheckBoxActionPerformed(evt);
-            }
-        });
-        add(providerCheckBox);
+        add(providerCheckBox, java.awt.BorderLayout.LINE_START);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void providerCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_providerCheckBoxActionPerformed
-        // TODO: include this provider in query
-}//GEN-LAST:event_providerCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
