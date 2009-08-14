@@ -30,7 +30,7 @@ public class BigDropTrackSegmentType extends TrackSegmentType {
 
     public BigDropTrackSegmentType() {
         super("BigDrop");
-        imageName = null;
+        imageName = "RampDown.png";
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
           createKeyFrame(0, new Vector3f(0,15,0)),
           createKeyFrame(0.7f, new Vector3f(0,5f,-4f), 1, 0, 0, new Vector3f(1,0,0), 0),

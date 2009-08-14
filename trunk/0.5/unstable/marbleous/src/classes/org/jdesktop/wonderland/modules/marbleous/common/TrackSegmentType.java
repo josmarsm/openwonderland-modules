@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.marbleous.common;
 import com.jme.math.Matrix4f;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import java.awt.Image;
 
 /**
  * Represents a type of a segment of roller coaster track.
@@ -28,7 +27,7 @@ import java.awt.Image;
  * @author Bernard Horan, deronj
  */
 
-public abstract class TrackSegmentType implements Comparable {
+public abstract class TrackSegmentType implements Comparable<TrackSegmentType> {
 
     private String name=null;
     private TCBKeyFrame[] defaultKeyFrames=null;
@@ -92,8 +91,8 @@ public abstract class TrackSegmentType implements Comparable {
         return this.getClass().getSimpleName() + " [" + name + "]";
     }
 
-    public int compareTo(Object anotherType) {
-        return name.compareToIgnoreCase(((TrackSegmentType)anotherType).name);
+    public int compareTo(TrackSegmentType anotherType) {
+        return name.compareToIgnoreCase(anotherType.name);
     }
 
 }
