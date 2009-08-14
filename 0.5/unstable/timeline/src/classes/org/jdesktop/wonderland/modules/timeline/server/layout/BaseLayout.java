@@ -110,6 +110,8 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
     }
 
     public void added(DatedObject obj) {
+        System.out.println("Added object: " + obj);
+
         layoutDatedObject(obj);
         doLayout();
     }
@@ -146,6 +148,8 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             logger.warning("Type " + obj.getClass() + " not supported.");
             return;
         }
+
+        System.out.println("Adding cell of type " + cell);
 
 //        logger.info("got a new cell for this DO: " + cell);
         // now assign this cell to a segment. get the middle date for the object
@@ -199,25 +203,30 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             // Do the normal flow for dated objects that need a real
             // spatial layout.
             DatedObjectComponentMO comp = new DatedObjectComponentMO(cell);
-        comp.setDatedObject(obj);
+            comp.setDatedObject(obj);
 
-        comp.setAddedToTimeline(false);
-        comp.setNeedsLayout(true);
-        comp.setAssignedToSegment(true);
-        cell.addComponent(comp);
+            comp.setAddedToTimeline(false);
+            comp.setNeedsLayout(true);
+            comp.setAssignedToSegment(true);
+            cell.addComponent(comp);
         }
 
 //        logger.info("Added relevant cell components.");
 
+        System.out.println("Getting object for segment " + seg.toString());
+
         // 2.
         DatedSet currentObjects = datedObjectBySegment.get(seg);
         if (currentObjects == null) {
+            System.out.println("Creating new set for segment");
             currentObjects = new DatedSet();
+            datedObjectBySegment.put(seg, currentObjects);
         }
 
+        System.out.println("Adding object size " + currentObjects.size());
         currentObjects.add(obj);
-
-        datedObjectBySegment.put(seg, currentObjects);
+        System.out.println("objects for segment has " + currentObjects.size());
+        
 
 //        logger.info("Added DO to list of DOs attached to this segment.");
     }
@@ -249,7 +258,7 @@ public class BaseLayout implements TimelineProviderComponentMOListener, LayoutMa
             // on this segment, as well as populating a list of cells in this segment
             // to enable us to actually do that layout if we need to.
 
-            for (DatedObject dObj : datedObjects.descendingSet()) {
+            for (DatedObject dObj : datedObjects.descendingList()) {
                 // we know all of these objects will have an entry
                 // in this map by now.
                 if(dObj instanceof DatedAudio) {

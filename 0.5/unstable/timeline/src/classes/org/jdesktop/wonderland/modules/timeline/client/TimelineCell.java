@@ -285,16 +285,16 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                 AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
                 avatar.addTransformChangeListener(this);
 
-                // generate a bunch of fake segments for testing purposes.
-                long msPerSegment = config.getDateRange().getRange() / config.getNumSegments();
-                long curTime = config.getDateRange().getMinimum().getTime();
-                for (int i = 0; i < config.getNumSegments(); i++) {
-                    TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime + msPerSegment)));
-                    newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.config.getHeight() / config.getNumSegments()) * i, 0.0f), 1.0f));
-                    this.addSegment(newSeg);
-
-                    curTime += msPerSegment;
-                }
+//                // generate a bunch of fake segments for testing purposes.
+//                long msPerSegment = config.getDateRange().getRange() / config.getNumSegments();
+//                long curTime = config.getDateRange().getMinimum().getTime();
+//                for (int i = 0; i < config.getNumSegments(); i++) {
+//                    TimelineSegment newSeg = new TimelineSegment(new TimelineDate(new Date(curTime), new Date(curTime + msPerSegment)));
+//                    newSeg.setTransform(new CellTransform(new Quaternion(), new Vector3f(0.0f, (this.config.getHeight() / config.getNumSegments()) * i, 0.0f), 1.0f));
+//                    this.addSegment(newSeg);
+//
+//                    curTime += msPerSegment;
+//                }
 
                 logger.warning("test segments: " + this.sortedSegments);
 
@@ -408,7 +408,13 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      * @return The segment that contains the specified date.
      */
     public TimelineSegment getSegmentByDate(Date date) {
+        System.out.println("Searching " + sortedSegments.size() + " segments for date " + date);
+
         Set<DatedObject> segments = this.sortedSegments.containsSet(new TimelineDate(date));
+
+        for (DatedObject segment : segments) {
+            System.out.println("Found segment " + segment.getDate());
+        }
 
         // because the time ranges of segments are non-overlapping, containsSet
         // will always return a single element.
@@ -484,6 +490,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     }
 
     public void addSegment(TimelineSegment seg) {
+        System.out.println("Adding segment " + seg.getDate());
         this.sortedSegments.add(seg);
 
     }

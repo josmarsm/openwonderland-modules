@@ -18,22 +18,23 @@
 package org.jdesktop.wonderland.modules.timeline.common.provider;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * A set of dated objects.
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public class DatedSet extends TreeSet<DatedObject> {
+public class DatedSet extends LinkedHashSet<DatedObject> {
     /**
      * Create an empty dated set.
      */
     public DatedSet() {
-        super (DatedObjectComparator.INSTANCE);
+        super ();
     }
 
     /**
@@ -56,15 +57,6 @@ public class DatedSet extends TreeSet<DatedObject> {
         super (source);
     }
 
-    @Override
-    public boolean add(DatedObject e) {
-        if (e == null) {
-            throw new IllegalStateException("Null not supported");
-        }
-
-        return super.add(e);
-    }
-
     /**
      * Get all elements in the set within the given date range.  This will
      * return all dates for which the includes() method of the given
@@ -81,14 +73,9 @@ public class DatedSet extends TreeSet<DatedObject> {
     public DatedSet rangeSet(final TimelineDate range) {
         DatedSet out = new DatedSet();
 
-        // first, find all possible objects with a minumum greater then or
-        // equal to the minimum of range and less than the maximum of
-        // range
-        SortedSet<DatedObject> rangeSet = subSet(new SearchDatedObject(range.getMinimum()),
-                                                 new SearchDatedObject(range.getMaximum()));
-        // now go through each object looking for whether the given range
+        // go through each object looking for whether the given range
         // includes that object
-        for (DatedObject d : rangeSet) {
+        for (DatedObject d : this) {
             if (range.contains(d.getDate())) {
                 out.add(d);
             }
@@ -111,21 +98,34 @@ public class DatedSet extends TreeSet<DatedObject> {
     public DatedSet containsSet(final TimelineDate date) {
         DatedSet out = new DatedSet();
 
-        // first, find all possible objects with a minumum less than the
-        // minimum of the given range
-        SortedSet<DatedObject> containsSet = headSet(new SearchDatedObject(date.getMinimum()));
-
-        // now go through each object looking for whether the given range
-        // includes that object.  This checks every possible object with a
-        // minimum less than date's minimum.  An optimization would be to
-        // also look at maximums, but this would require a sorted set
-        // of maximums.
-        for (DatedObject d : containsSet) {
+        // go through each object looking for whether the given range
+        // includes that object.
+        for (DatedObject d : this) {
             if (d.getDate().contains(date)) {
                 out.add(d);
             }
         }
 
+        return out;
+    }
+
+    /**
+     * Get the set of all dates in ascending order.
+     * @return the set of all dates, in descending order
+     */
+    public List<DatedObject> ascendingList() {
+        ArrayList<DatedObject> out = new ArrayList(this);
+        Collections.sort(out, new DatedObjectComparator(true));
+        return out;
+    }
+
+    /**
+     * Get the set of all dates in descending order.
+     * @return the set of all dates, in descending order
+     */
+    public List<DatedObject> descendingList() {
+        ArrayList<DatedObject> out = new ArrayList(this);
+        Collections.sort(out, new DatedObjectComparator(false));
         return out;
     }
 
@@ -136,28 +136,18 @@ public class DatedSet extends TreeSet<DatedObject> {
     private static final class DatedObjectComparator
             implements Comparator<DatedObject>, Serializable
     {
-        public static final DatedObjectComparator INSTANCE =
-                new DatedObjectComparator();
+        private boolean ascending;
+
+        public DatedObjectComparator(boolean ascending) {
+            this.ascending = ascending;
+        }
 
         public int compare(DatedObject o1, DatedObject o2) {
-            return o1.getDate().compareTo(o2.getDate());
+            if (ascending) {
+                return o1.getDate().compareTo(o2.getDate());
+            } else {
+                return o2.getDate().compareTo(o1.getDate());
+            }
         }
     }
-
-    /**
-     * A simple DatedObject that contains a single date, for us in searching
-     * the sorted set
-     */
-    private class SearchDatedObject implements DatedObject {
-        private TimelineDate date;
-
-        public SearchDatedObject(Date date) {
-            this.date = new TimelineDate(date);
-        }
-
-        public TimelineDate getDate() {
-            return this.date;
-        }
-    }
-
 }
