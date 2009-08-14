@@ -377,6 +377,7 @@ public class ConstructPanel extends javax.swing.JPanel {
                     stopButton.setEnabled(false);
                     resetButton.setEnabled(false);
                     uiTimeSlider.setVisible(false);
+                    uiTimeSlider.cleanup();
                 }
             });
             cell.resetMarble();
