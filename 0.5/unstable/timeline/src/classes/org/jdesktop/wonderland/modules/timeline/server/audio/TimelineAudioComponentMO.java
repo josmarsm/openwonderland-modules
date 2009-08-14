@@ -408,6 +408,11 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
 	    Player myPlayer = vm.getPlayer(callID);
 
+	    if (myPlayer == null) {
+		System.out.println("No player for callID " + callID);
+		return;
+	    }
+
 	    for (Treatment treatment : treatments) {
 		Call call = vm.getCall(treatment.getId());
 
@@ -452,6 +457,11 @@ public class TimelineAudioComponentMO extends CellComponentMO {
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	    Player myPlayer = vm.getPlayer(callID);
+
+	    if (myPlayer == null) {
+		System.out.println("No player for callID " + callID);
+		return;
+	    }
 
 	    for (Treatment treatment : treatments) {
 	        Call call = vm.getCall(treatment.getId());
