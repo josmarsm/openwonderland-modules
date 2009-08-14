@@ -82,7 +82,7 @@ public class TimelineConfiguration implements Serializable {
         this.numSegments = config.getNumSegments();
         this.pitch = config.getPitch();
         this.radsPerSegment = config.getRadsPerSegment();
-        calculateRadsPerSegment();
+//        calculateRadsPerSegment();
     }
 
     /**

@@ -40,6 +40,8 @@ import org.jdesktop.wonderland.modules.timeline.client.TimelineClientConfigurati
  */
 public class TimelineCellRenderer extends BasicRenderer {
 
+  // 10 degrees
+  public static final float baseRadsPerMesh = (float) (Math.PI / 18);
 
 private static Logger logger = Logger.getLogger(TimelineCellRenderer.class.getName());
     private ArrayList<SegmentEntity> segments = new ArrayList<SegmentEntity>();
@@ -101,14 +103,19 @@ private static Logger logger = Logger.getLogger(TimelineCellRenderer.class.getNa
     segments.clear();
     float rotation = 0.0f;
     Vector3f nextTarget = null;
+    // ceiling = increase the precision as necessary, don't decrease it
+    float radsPerMesh = (config.getRadsPerSegment()/((float)Math.ceil(config.getRadsPerSegment() / baseRadsPerMesh)));
+//    float radsPerMesh = (config.getRadsPerSegment()/((float)Math.ceil(config.getRadsPerSegment() % baseRadsPerMesh)));
+    logger.info("[TIME REND] rads/seg: " + config.getRadsPerSegment() + " base rads: " + baseRadsPerMesh + " mod: " + config.getRadsPerSegment() % baseRadsPerMesh
+            + " ceil: " + ((float)Math.ceil(config.getRadsPerSegment() % baseRadsPerMesh)) + " rads/mesh: " + radsPerMesh);
     for(int i = 0; i < config.getNumSegments(); i++){
-      logger.info("[TIME CELL] building seg entity " + i);
+      logger.info("[TIME REND] building seg entity " + i);
       // cell, distance in degrees, climb, inner, outer
-      SegmentEntity ent = new SegmentEntity(cell, config, rotation, nextTarget);
+      SegmentEntity ent = new SegmentEntity(cell, config, rotation, nextTarget, radsPerMesh);
       segments.add(ent);
       rotation = ent.getNextRotation();
       nextTarget = ent.getNextTarget();
-      logger.info("[TIME CELL] AFTER building seg entity, target is " + nextTarget);
+      logger.info("[TIME REND] AFTER building seg entity, target is " + nextTarget);
     }
     update();
   }
