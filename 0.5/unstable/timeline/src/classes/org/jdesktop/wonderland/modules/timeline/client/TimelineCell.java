@@ -95,6 +95,10 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     @UsesCellComponent
     private TimelineProviderComponent provider;
 
+    @UsesCellComponent
+    private TimelineAudioComponent audio;
+
+
     public TimelineCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
@@ -143,9 +147,10 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         this.config = new TimelineClientConfiguration(tccs.getConfig(), getComponent(ChannelComponent.class));
 
         logger.warning("client config: " + config.getDateRange() + "; " + config.getHeight() + "; " + config.getNumSegments());
+        logger.warning("client date range: " + config.getDateRange());
 
-        config.setDateRange(new TimelineDate(new Date(0), new Date()));
-        config.sendUpdatedConfiguration();
+//        config.setDateRange(new TimelineDate(new Date(0), new Date()));
+//        config.sendUpdatedConfiguration();
 
         if (this.sortedSegments.size() == 0) {
             this.sortedSegments = config.generateSegments();
@@ -338,10 +343,9 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
                 // Trigger a segment-changed message for the benefit of the
                 // audio system. If there get to be more things that need
                 // this info, will need to convert this into a listener sytem.
-                TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
-
-                if (tac != null) {
-                    tac.changeSegment(curSegment, newSegment);
+                
+                if (audio != null) {
+                    audio.changeSegment(curSegment, newSegment);
                 }
             }
 
@@ -472,7 +476,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
      */
     private float getHeightFraction(Vector3f pos) {
 
-        float minimumHeight = this.getWorldTransform().getTranslation(null).y - (this.config.getHeight() / 2);
+        float minimumHeight = 0;
 
         float avatarHeightRelativeToTimeline = pos.y - minimumHeight;
 
@@ -492,11 +496,6 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     public void addSegment(TimelineSegment seg) {
         this.sortedSegments.add(seg);
 
-        TimelineAudioComponent tac = this.getComponent(TimelineAudioComponent.class);
-
-        if (tac != null) {
-            tac.createSegmentTreatment(seg);
-        }
     }
 
     public void clearSegments() {
