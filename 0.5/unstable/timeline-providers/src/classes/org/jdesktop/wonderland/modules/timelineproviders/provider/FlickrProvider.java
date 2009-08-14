@@ -145,6 +145,10 @@ public class FlickrProvider implements TimelineProvider {
                 image.setHeight(p.getSmallSize().getHeight());
             }
 
+            if (p.getDescription() != null) {
+                image.setDescription(p.getDescription());
+            }
+
             System.out.println("Adding image " + photoURI + " date " +
                                taken.getMinimum() + " - " + taken.getMaximum());
 
