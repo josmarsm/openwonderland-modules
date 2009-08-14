@@ -325,11 +325,12 @@ public class TimelineAudioComponentMO extends CellComponentMO {
                 URL url;
 
                 try {
+		    path = URLEncoder.encode(path);
+
                     url = new URL(new URL(serverURL),
                             "webdav/content/" + path);
 
-
-                    treatment = URLEncoder.encode(url.toString());
+                    treatment = url.toString();
                     System.out.println("Treatment: " + treatment);
                 } catch (MalformedURLException e) {
                     logger.warning("bad url:  " + e.getMessage());
@@ -360,10 +361,12 @@ public class TimelineAudioComponentMO extends CellComponentMO {
                     URL url;
 
                     try {
+			path = URLEncoder.encode(path);
+
                         url = new URL(new URL(serverURL),
                             "webdav/content/modules/installed/" + moduleName + "/audio/" + path);
 
-                        treatment = URLEncoder.encode(url.toString());
+                        treatment = url.toString();
                         logger.fine("Treatment: " + treatment);
                     } catch (MalformedURLException e) {
                         logger.warning("bad url:  " + e.getMessage());
