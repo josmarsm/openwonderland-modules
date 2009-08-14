@@ -126,10 +126,10 @@ public class TimeSliderPanel extends javax.swing.JPanel {
     private void updateMarbleWithTime(float selectedTime) {
         //System.err.println("value = " + value);
         //System.err.println("pct = " + pct);
-        System.err.println("t = " + selectedTime);
+        //System.err.println("t = " + selectedTime);
         SampleInfo sampleInfo = trace.getSampleInfo(selectedTime);
         setCurrentSampleInfo(sampleInfo);
-        System.err.println("********** currentPosition = " + currentPosition);
+        //System.err.println("********** currentPosition = " + currentPosition);
 
         // Assumes that the marble is still attached to the cell
         Entity marbleEntity = cell.getMarbleEntity();

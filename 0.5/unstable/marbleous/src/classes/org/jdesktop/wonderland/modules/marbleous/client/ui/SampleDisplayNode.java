@@ -52,6 +52,7 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.jdesktop.wonderland.modules.marbleous.common.trace.SampleInfo;
@@ -78,6 +79,12 @@ public class SampleDisplayNode extends BillboardNode {
   private Color bgColor = DEFAULT_BACKGROUND_COLOR;
   private Color fontColor = DEFAULT_FONT_COLOR;
   private Color shadowColor = DEFAULT_SHADOW_COLOR;
+
+  // TODO: not used
+  private Color borderColorTransient = Color.BLACK;
+
+    private Color borderColorCurrent = new Color(0, 0.75f, 0f);
+    private Color borderColorPinned  = new Color(0, 0, 0.75f);
 
   /** base font */
   private Font font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
@@ -110,20 +117,27 @@ public class SampleDisplayNode extends BillboardNode {
   private final int MIN_WIDTH = 475;
 
     private SampleInfo sampleInfo;
+    private boolean current;
+    private boolean pinned;
 
     // strings pulled from annotation this node represents
     String time;
     String position;
     String text;
 
-    public SampleDisplayNode(SampleInfo sampleInfo, DisplayMode displayMode, float fontMod){
+    private Quad quad;
+
+    public SampleDisplayNode(SampleInfo sampleInfo, DisplayMode displayMode, float fontMod,
+                             boolean current, boolean pinned){
         super("Sample info display node for time " + sampleInfo.getTime());
         this.sampleInfo = sampleInfo;
         mode = displayMode;
         fontSizeModifier = fontMod;
-    
+        this.current = current;
+        this.pinned = pinned;
+
         // set pieces
-        time = "t: " + sampleInfo.getTime();
+        time = "t: " + format(sampleInfo.getTime());
         position = getPosition();
         text = getText();
         updateKernel();
@@ -133,16 +147,42 @@ public class SampleDisplayNode extends BillboardNode {
             return;
         }
 
+        update();
+    }
+  
+    public void setCurrent (boolean current) {
+        if (this.current == current) return;
+        this.current = current;
+        update();
+    }
+
+    public void setPinned (boolean pinned) {
+        if (this.pinned == pinned) return;
+        this.pinned = pinned;
+        update();
+    }
+
+    private void update () {
         // build child
-        attachChild(getQuad());
+        if (quad != null) {
+            detachChild(quad);
+        }
+        quad = getQuad();
+        attachChild(quad);
         // set bounds to make pickable
         setModelBound(new BoundingBox());
         updateModelBound();
     }
-  
+
+    private static DecimalFormat decimalFormat = new DecimalFormat("#.###");
+
+    private String format (float f) {
+        return decimalFormat.format(f);
+    }
+
     private String getPosition () {
         Vector3f p = sampleInfo.getPosition();
-        return "P: [" + p.x + "," + p.y + "," + p.z + "]";
+        return "P: [" + format(p.x) + "," + format(p.y) + "," + format(p.z) + "]";
     }
 
     private String getText () {
@@ -157,21 +197,30 @@ public class SampleDisplayNode extends BillboardNode {
         float mass = sampleInfo.getMass();
         float g = sampleInfo.getGravity();
 
-        String ret = "V:  [" + v.x + "," + v.y + "," + v.z + "]\n" +
-                     "A:  [" + a.x + "," + a.y + "," + a.z + "]\n";
+        String ret = "V:  [" + format(v.x) + "," + format(v.y) + "," + format(v.z) + "]\n" +
+                     "A:  [" + format(a.x) + "," + format(a.y) + "," + format(a.z) + "]\n";
 
         if (mode == DisplayMode.VERBOSE) {
-            ret += "F:  mA = " + mass + " x [" + a.x + "," + a.y + "," + a.z + "] = [" + f.x + "," + f.y + "," + f.z + "]\n" +
-                   "M:  mV = " + mass + " x [" + v.x + "," + v.y + "," + v.z + "] = [" + m.x + "," + m.y + "," + m.z + "]\n" +
-                   "pe: mGy = (" + mass + ") x (" + g + ") x (" + p.y + ") = " +  ke + "\n" +
-                   "ke: (1/2)mV^2 = (" + 0.5f * mass + ") x (" + v.lengthSquared() + ") = " + ke + "\n" +
-                   "e:  pe + ke = " + pe + " + " + ke + " = " + te;
+
+            ret += "F:  mA = " + mass + " x [" + format(a.x) + "," + format(a.y) + "," + format(a.z) + 
+                "] = [" + format(f.x) + "," + format(f.y) + "," + format(f.z) + "]\n" +
+
+                "M:  mV = " + format(mass) + " x [" + format(v.x) + "," + format(v.y) + "," + format(v.z) + 
+                "] = [" + format(m.x) + "," + format(m.y) + "," + format(m.z) + "]\n" +
+
+                "pe: mGy = (" + format(mass) + ") x (" + format(g) + ") x (" + format(p.y) + ") = " +  
+                format(pe) + "\n" +
+
+                "ke: (1/2)mV^2 = (" + format(0.5f * mass) + ") x (" + format(v.lengthSquared()) + 
+                ") = " + format(ke) + "\n" +
+
+                "e:  pe + ke = " + format(pe) + " + " + format(ke) + " = " + format(te);
         } else {
-            ret += "F:  [" + f.x + "," + f.y + "," + f.z + "]\n" +
-                   "M:  [" + m.x + "," + m.y + "," + m.z + "]\n" +
-                   "pe: [" + pe + "]\n" +
-                   "ke: [" + ke + "]\n" +
-                   "e:  [" + te + "]";
+            ret += "F:  [" + format(f.x) + "," + format(f.y) + "," + format(f.z) + "]\n" +
+                "M:  [" + format(m.x) + "," + format(m.y) + "," + format(m.z) + "]\n" +
+                "pe: [" + format(pe) + "]\n" +
+                "ke: [" + format(ke) + "]\n" +
+                "e:  [" + format(te) + "]";
         }
 
         return ret;
@@ -276,7 +325,14 @@ public class SampleDisplayNode extends BillboardNode {
 
         // draw border
         g2d.setStroke(new BasicStroke(BORDER_WIDTH));
-        g2d.setColor(Color.BLACK);
+        if (current) {
+            g2d.setColor(borderColorCurrent);
+        } else if (pinned) {
+            g2d.setColor(borderColorPinned);
+        } else {
+            g2d.setColor(borderColorTransient);
+        }
+
         g2d.setPaintMode();
         g2d.drawRoundRect(x, y, w, h, arc, arc);
         // The left and right edges of the rectangle are at x and xÊ+Êwidth, respectively.
@@ -298,9 +354,9 @@ public class SampleDisplayNode extends BillboardNode {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2d.setColor(shadowColor);
-        System.out.println("shadow x and y: " + textX + " " + textY);
-        System.out.println("offsets: " + SHADOW_OFFSET_X + " " + SHADOW_OFFSET_Y);
-        System.out.println("desired heights, time subj: " + actualTimeHeight + " " + actualPositionHeight);
+        //System.out.println("shadow x and y: " + textX + " " + textY);
+        //System.out.println("offsets: " + SHADOW_OFFSET_X + " " + SHADOW_OFFSET_Y);
+        //System.out.println("desired heights, time subj: " + actualTimeHeight + " " + actualPositionHeight);
         g2d.drawString(time, textX + SHADOW_OFFSET_X, textY + SHADOW_OFFSET_Y);
 
 
@@ -312,7 +368,7 @@ public class SampleDisplayNode extends BillboardNode {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2d.setColor(fontColor);
-        System.out.println("the TEXT x and y: " + textX + " " + textY);
+        //System.out.println("the TEXT x and y: " + textX + " " + textY);
         g2d.drawString(time, textX, textY);
     
         // draw position string always
