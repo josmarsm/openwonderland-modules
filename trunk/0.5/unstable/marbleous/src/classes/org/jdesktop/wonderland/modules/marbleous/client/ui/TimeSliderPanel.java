@@ -76,6 +76,10 @@ public class TimeSliderPanel extends javax.swing.JPanel {
             ex.printStackTrace();
             throw new RuntimeException("Cannot create time sliderpanel");
         }
+
+        // Initialize the current sample info to t0
+        SampleInfo sampleInfo = trace.getSampleInfo(0);
+        setCurrentSampleInfo(sampleInfo);
     }
 
     /**

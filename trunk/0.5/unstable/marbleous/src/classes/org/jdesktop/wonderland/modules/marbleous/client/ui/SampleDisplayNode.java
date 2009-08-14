@@ -303,6 +303,8 @@ public class SampleDisplayNode extends BillboardNode {
         int h = totalHeight;
         int w = totalWidth;
 
+        // TODO: notyet setLocalTranslation(new Vector3f(0f, 0.6f, 0f));
+
         int arc = 60;
 
         // draw background rectangle
