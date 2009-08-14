@@ -40,6 +40,10 @@ public class DatedObjectComponentMO extends CellComponentMO {
     private boolean needsLayout = true;
     private boolean assignedToSegment = false;
 
+    private float height;
+    private float width;
+
+
     public DatedObjectComponentMO(CellMO cell) {
         super(cell);
     }
@@ -110,5 +114,22 @@ public class DatedObjectComponentMO extends CellComponentMO {
         this.assignedToSegment = assignedToSegment;
     }
 
+    public float getHeight() {
+        return height;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
+    }
+
+    public float getWidth() {
+        return width;
+    }
+
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
+    
     
 }
