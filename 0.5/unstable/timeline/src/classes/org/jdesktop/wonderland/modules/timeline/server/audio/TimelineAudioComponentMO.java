@@ -234,6 +234,8 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
 	private String currentSegmentID;
 
+        private String serverURL;
+
         public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
                 TimelineAudioComponentMO comp) {
 
@@ -244,6 +246,8 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    cellID = cellRef.get().getCellID();
 
             compRef = AppContext.getDataManager().createReference(comp);
+
+	    serverURL = System.getProperty("wonderland.web.server.url");
         }
 
         public void messageReceived(WonderlandClientSender sender, 
@@ -303,6 +307,63 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    FullVolumeSpatializer spatializer = new FullVolumeSpatializer(.01);
 
 	    setup.spatializer = spatializer;
+
+	    String pattern = "wlcontent://";
+
+	    if (treatment.startsWith(pattern)) {
+		/*
+                 * We need to create a URL
+                 */
+                String path = treatment.substring(pattern.length());
+
+                URL url;
+
+                try {
+                    url = new URL(new URL(serverURL),
+                            "webdav/content/" + path);
+
+                    treatment = url.toString();
+                    System.out.println("Treatment: " + treatment);
+                } catch (MalformedURLException e) {
+                    logger.warning("bad url:  " + e.getMessage());
+		    return;
+                }
+	    } else {
+		pattern = "wls://";
+
+	        if (treatment.startsWith(pattern)) {
+                    /*
+                     * We need to create a URL from wls:<module>/path
+                     */
+                    treatment = treatment.substring(pattern.length());
+
+                    int ix = treatment.indexOf("/");
+
+                    if (ix < 0) {
+                        logger.warning("Bad treatment:  " + treatment);
+                        return;
+                    }
+
+                    String moduleName = treatment.substring(0, ix);
+
+                    String path = treatment.substring(ix + 1);
+
+                    logger.fine("Module:  " + moduleName + " treatment " + treatment);
+
+                    URL url;
+
+                    try {
+                        url = new URL(new URL(serverURL),
+                            "webdav/content/modules/installed/" + moduleName + "/audio/" + path);
+
+                        treatment = url.toString();
+                        logger.fine("Treatment: " + treatment);
+                    } catch (MalformedURLException e) {
+                        logger.warning("bad url:  " + e.getMessage());
+                        return;
+                    }
+		}
+	    }
 
             setup.treatment = treatment;
 
