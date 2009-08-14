@@ -75,7 +75,7 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
                 if (increasing) {
 		    channelComp.addMessageReceiver(TimelineTreatmentDoneMessage.class, this);
 
-		    test();
+		    //test();
                 }
                 break;
         }
@@ -91,7 +91,11 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
     private TimelineSegment[] segments = new TimelineSegment[6];
     private int segmentIndex = 0;
 
+    private boolean test;
+
     private void test() {
+	test = true;
+
 	reset();
 
 	TimelineDate date = new TimelineDate(new Date(100, 0, 1));
@@ -151,11 +155,7 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	return segmentID.replaceAll(":", "_");
     }
 
-    public boolean changeSegment = true;
-
     public void createSegmentTreatment(TimelineSegment segment) {
-	changeSegment = false;
-
 	createSegmentTreatment(segment, segment.getTreatment());
     }
 
@@ -219,7 +219,7 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
     }
 
     public void messageReceived(CellMessage message) {
-	if (changeSegment == false) {
+	if (test == false) {
 	    return;
 	}
 
