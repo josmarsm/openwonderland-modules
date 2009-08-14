@@ -81,6 +81,13 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         setCurrentSampleInfo(sampleInfo);
     }
 
+    public void init () {
+        // Initialize the current sample info to t0
+        SampleInfo sampleInfo = trace.getSampleInfo(0);
+        setCurrentSampleInfo(sampleInfo);
+        updateMarbleWithTime(0);
+    }
+
     /**
      * Sets whether the changes being made to the JSlider is doing so
      * programmatically, rather than via a mouse event. This is used to

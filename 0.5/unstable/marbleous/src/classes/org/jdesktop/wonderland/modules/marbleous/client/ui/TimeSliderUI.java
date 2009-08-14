@@ -45,6 +45,8 @@ public class TimeSliderUI {
     /** The HUD component for the panel. */
     private HUDComponent hudComponent;
 
+    private boolean visible;
+
     public TimeSliderUI (final TrackCell cell) {
         this.cell = cell;
 
@@ -85,6 +87,13 @@ public class TimeSliderUI {
 
     /** Control the visibility of the window. */
     public void setVisible (boolean visible) {
+        if (this.visible == visible) return;
+        this.visible = visible;
+
+        if (visible) {
+            panel.init();
+        }
+
         //System.err.println("***** setVisible = " + visible);
 
         hudComponent.setVisible(visible);
