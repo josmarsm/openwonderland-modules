@@ -18,11 +18,10 @@
 package org.jdesktop.wonderland.modules.timeline.client;
 
 import java.awt.Image;
-import java.util.Calendar;
-import java.util.Date;
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Calendar;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
@@ -140,7 +139,7 @@ public class TimelineCellFactory implements CellFactorySPI {
                     state.getConfig().setUnits(units);
 
                     List<TimelineQuery> queries = creationPanel.getQueries();
-                    logger.info("------------- queries: " + queries);
+                    logger.info("--- queries: " + queries);
                     if (queries != null) {
                         TimelineProviderServerState tpss = new TimelineProviderServerState();
 
@@ -186,6 +185,7 @@ public class TimelineCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        return null;
+        URL url = TimelineCellFactory.class.getResource("resources/timeline_preview128x128.png");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }

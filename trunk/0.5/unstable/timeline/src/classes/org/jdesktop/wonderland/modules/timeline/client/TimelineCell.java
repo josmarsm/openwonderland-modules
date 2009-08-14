@@ -146,8 +146,8 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         // Do we need to do a setConfig setup with listeners here? Maybe...
         this.config = new TimelineClientConfiguration(tccs.getConfig(), getComponent(ChannelComponent.class));
 
-        logger.warning("client config: " + config.getDateRange() + "; " + config.getHeight() + "; " + config.getNumSegments());
-        logger.warning("client date range: " + config.getDateRange());
+        logger.info("client config: " + config.getDateRange() + "; " + config.getHeight() + "; " + config.getNumSegments());
+        logger.info("client date range: " + config.getDateRange());
 
 //        config.setDateRange(new TimelineDate(new Date(0), new Date()));
 //        config.sendUpdatedConfiguration();
@@ -163,7 +163,6 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
             public void propertyChange(PropertyChangeEvent pe) {
                 if (pe.getPropertyName().equals("create")) {
-                    logger.info("--- create timeline");
                     timelineCreationHUD.setVisible(false);
                     // fetch new config information
                     rebuildClientConfiguration();
