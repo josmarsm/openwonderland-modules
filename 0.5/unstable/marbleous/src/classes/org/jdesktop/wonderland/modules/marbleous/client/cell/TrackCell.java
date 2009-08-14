@@ -113,6 +113,7 @@ public class TrackCell extends Cell {
     public void modifySegment(TrackSegment segment) {
         trackListModel.modifySegment(segment);
         sendCellMessage(TrackCellMessage.modifySegment(getCellID(), segment));
+        resetMarble();
     }
 
     public void removeSegment(TrackSegment selectedSegment) {
@@ -241,6 +242,7 @@ public class TrackCell extends Cell {
      * @param state The started/stopped state of the simulation
      */
     public void setSimulationState(SimulationState simulationState) {
+        cellRenderer.setSimulationState(simulationState);
 
         logger.warning("New simulation state " + simulationState);
         if (simulationState.equals(getSimulationState())) {

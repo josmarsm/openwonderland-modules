@@ -32,8 +32,8 @@ public class BigDropTrackSegmentType extends TrackSegmentType {
     public BigDropTrackSegmentType() {
         super("BigDrop");
         imageName = "RampDown.png";
-        settings.setHeight(9);
-        settings.setRadius(6);
+        settings.setHeight(20);
+        settings.setRadius(9);
         settings.setEditorClassname("org.jdesktop.wonderland.modules.marbleous.client.ui.BigDropSegmentEditor");
         setDefaultSegmentSettings(settings);
         setDefaultKeyFrames(generateSpline(settings));
