@@ -30,24 +30,18 @@ import com.jme.math.Vector3f;
  */
 public class TimelineRecordMessage extends CellMessage {
 
-    private String segmentID;
     private String callID;
     private String recordingPath;
     private boolean isRecording;
 
-    public TimelineRecordMessage(CellID cellID, String segmentID, String callID,
+    public TimelineRecordMessage(CellID cellID, String callID,
 	    String recordingPath, boolean isRecording) {
 
 	super(cellID);
 
-	this.segmentID = segmentID;
 	this.callID = callID;
 	this.recordingPath = recordingPath;
 	this.isRecording = isRecording;
-    }
-
-    public String getSegmentID() {
-	return segmentID;
     }
 
     public String getCallID() {

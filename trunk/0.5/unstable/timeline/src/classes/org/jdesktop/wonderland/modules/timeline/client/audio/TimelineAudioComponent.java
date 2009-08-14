@@ -194,27 +194,23 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	    currentSegmentID));
     }
 
-    public void playSegmentRecording(TimelineSegment segment, String recordingPath, boolean isPlaying) {
+    public void playRecording(String recordingPath, boolean isPlaying) {
 	String callID = SoftphoneControlImpl.getInstance().getCallID();
 
-	System.out.println("playSegmentRecording " + segment + " path " + recordingPath + " isPlaying "
+	System.out.println("playRecording " + " path " + recordingPath + " isPlaying "
 	    + isPlaying);
 
-	String segmentID = getSegmentID(segment);
-
 	channelComp.send(new TimelinePlayRecordingMessage(cell.getCellID(), 
-	    segmentID, callID, recordingPath, isPlaying));
+	    callID, recordingPath, isPlaying));
     }
 
-    public void record(TimelineSegment segment, String recordingPath, boolean isRecording) {
+    public void record(String recordingPath, boolean isRecording) {
 	String callID = SoftphoneControlImpl.getInstance().getCallID();
 
-	System.out.println("record " + segment + " path " + recordingPath + " isPlaying "
+	System.out.println("record " + " path " + recordingPath + " isPlaying "
 	    + isRecording);
 
-	String segmentID = getSegmentID(segment);
-
-	channelComp.send(new TimelineRecordMessage(cell.getCellID(), segmentID,
+	channelComp.send(new TimelineRecordMessage(cell.getCellID(),
 	    callID, recordingPath, isRecording));
     }
 
