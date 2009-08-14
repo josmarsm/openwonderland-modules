@@ -77,14 +77,6 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
         return apiKeyField.getText();
     }
 
-    public void setQueryText(String text) {
-        searchTextField.setText(text);
-    }
-
-    public String getQueryText() {
-        return searchTextField.getText();
-    }
-
     public void setSearchType(SEARCH_TYPE type) {
         if (type == SEARCH_TYPE.TAGS) {
             tagsRadioButton.setSelected(true);
@@ -202,7 +194,6 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
         searchLabel = new javax.swing.JLabel();
         tagsRadioButton = new javax.swing.JRadioButton();
         fullTextRadioButton = new javax.swing.JRadioButton();
-        searchTextField = new javax.swing.JTextField();
         returnLabel = new javax.swing.JLabel();
         return1RadioButton = new javax.swing.JRadioButton();
         return2RadioButton = new javax.swing.JRadioButton();
@@ -223,7 +214,7 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
         configurationLabel.setFont(configurationLabel.getFont().deriveFont(configurationLabel.getFont().getStyle() | java.awt.Font.BOLD));
         configurationLabel.setText("Flickr Query Configuration");
 
-        searchLabel.setText("Search for: ");
+        searchLabel.setText("Search: ");
 
         tagsOrTextButtonGroup.add(tagsRadioButton);
         tagsRadioButton.setSelected(true);
@@ -231,13 +222,6 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
 
         tagsOrTextButtonGroup.add(fullTextRadioButton);
         fullTextRadioButton.setText("full text");
-
-        searchTextField.setText("horses and boats");
-        searchTextField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchTextFieldActionPerformed(evt);
-            }
-        });
 
         returnLabel.setText("Return:");
 
@@ -288,6 +272,7 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
 
         apiKeyLabel.setText("API Key:");
 
+        apiKeyField.setText("aa664dbdefb318455a9a07a4245f5ff6");
         apiKeyField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 apiKeyFieldActionPerformed(evt);
@@ -303,20 +288,19 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(146, Short.MAX_VALUE)
-                        .addComponent(cancelButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(okButton))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(configurationLabel))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(26, 26, 26)
+                                .addComponent(apiKeyLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(apiKeyField, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(searchLabel)
                                     .addComponent(byLabel)
                                     .addComponent(returnLabel))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -343,33 +327,27 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(returnAllRadioButton))
                                     .addComponent(keywordsCheckBox)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(searchLabel)
-                                    .addComponent(apiKeyLabel))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(cancelButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(searchTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
-                                    .addComponent(apiKeyField, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))))))
-                .addContainerGap())
+                                .addComponent(okButton)))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(configurationLabel)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(apiKeyField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(apiKeyLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(searchTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(searchLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tagsRadioButton)
-                    .addComponent(fullTextRadioButton))
+                    .addComponent(fullTextRadioButton)
+                    .addComponent(searchLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(relevanceRadioButton)
@@ -390,13 +368,13 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(creativeCommonsCheckBox))
                     .addComponent(returnLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(keywordsCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(okButton)
                     .addComponent(cancelButton))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -413,10 +391,6 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
     private void apiKeyFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_apiKeyFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_apiKeyFieldActionPerformed
-
-    private void searchTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchTextFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_searchTextFieldActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField apiKeyField;
@@ -441,7 +415,6 @@ public class FlickrConfigurationPanel extends javax.swing.JPanel {
     private javax.swing.JLabel returnLabel;
     private javax.swing.ButtonGroup searchByButtonGroup;
     private javax.swing.JLabel searchLabel;
-    private javax.swing.JTextField searchTextField;
     private javax.swing.ButtonGroup tagsOrTextButtonGroup;
     private javax.swing.JRadioButton tagsRadioButton;
     // End of variables declaration//GEN-END:variables

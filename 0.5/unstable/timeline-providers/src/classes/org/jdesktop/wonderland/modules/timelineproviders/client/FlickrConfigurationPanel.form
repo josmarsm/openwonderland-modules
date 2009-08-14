@@ -28,22 +28,21 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace pref="146" max="32767" attributes="0"/>
-                      <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="okButton" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace min="6" pref="6" max="6" attributes="0"/>
                       <Component id="configurationLabel" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+                              <Component id="apiKeyLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="apiKeyField" min="-2" pref="263" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="searchLabel" min="-2" max="-2" attributes="0"/>
                                   <Component id="byLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="returnLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -77,21 +76,16 @@
                                   <Component id="keywordsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="searchLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="apiKeyLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace pref="152" max="-2" attributes="0"/>
+                              <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="searchTextField" pref="230" max="32767" attributes="0"/>
-                                  <Component id="apiKeyField" alignment="1" pref="230" max="32767" attributes="0"/>
-                              </Group>
+                              <Component id="okButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -100,20 +94,16 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="configurationLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="apiKeyField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="apiKeyLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="searchTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="searchLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="tagsRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="fullTextRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="searchLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -140,14 +130,14 @@
                   </Group>
                   <Component id="returnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="keywordsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="okButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -165,7 +155,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="searchLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Search for: "/>
+        <Property name="text" type="java.lang.String" value="Search: "/>
       </Properties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="tagsRadioButton">
@@ -184,14 +174,6 @@
         </Property>
         <Property name="text" type="java.lang.String" value="full text"/>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="searchTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="horses and boats"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchTextFieldActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="returnLabel">
       <Properties>
@@ -297,6 +279,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="apiKeyField">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="aa664dbdefb318455a9a07a4245f5ff6"/>
+      </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="apiKeyFieldActionPerformed"/>
       </Events>

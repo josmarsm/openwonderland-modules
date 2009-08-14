@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.timelineproviders.client;
 
+import java.awt.Dimension;
 import java.util.List;
 import java.util.Properties;
 import org.jdesktop.wonderland.modules.timeline.client.provider.*;
@@ -58,7 +59,7 @@ public class FlickrTimelineQueryBuilder
         // TODO: configure the combo box
         JComboBox comboBox = new JComboBox();
         comboBox.setEditable(true);
-        comboBox.addItem("horses and boats");
+        comboBox.setPreferredSize(new Dimension(83, 28));
         return comboBox;
     }
 
