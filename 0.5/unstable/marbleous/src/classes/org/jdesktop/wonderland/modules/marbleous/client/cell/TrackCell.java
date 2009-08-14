@@ -382,6 +382,7 @@ public class TrackCell extends Cell {
                     if (aSegment.equals(knotTableModel.getSegment())) {
                         knotTableModel.setSegment(aSegment);
                     }
+                    break;
                 default:
                     logger.severe("Unknown action type: " + tcm.getAction());
             }
