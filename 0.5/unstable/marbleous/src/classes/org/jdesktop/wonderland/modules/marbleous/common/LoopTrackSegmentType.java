@@ -54,7 +54,7 @@ public class LoopTrackSegmentType extends TrackSegmentType {
             float y = radius-(float)Math.cos(angle)*radius;
             float z = -(float)Math.sin(angle)*radius;
             keys[i] = createKeyFrame(knot, new Vector3f(x,y,z), 0,0,0, new Vector3f(1,0,0), angle);
-            keys[i].debugPrint(""+Math.toDegrees(angle));
+//            keys[i].debugPrint(""+Math.toDegrees(angle));
             knot += knotInc;
         }
 
