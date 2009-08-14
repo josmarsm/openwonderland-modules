@@ -43,21 +43,20 @@ public abstract class SegmentEditor extends JPanel {
      */
     public static SegmentEditor createSegmentEditor(TrackCell cell, TrackSegment segment) {
         SegmentSettings settings = segment.getSegmentSettings();
-        if (settings==null)
-            return null;
-        
-        try {
-            Class<SegmentEditor> segEditorClazz = (Class<SegmentEditor>) Class.forName(settings.getEditorClassname());
-            SegmentEditor editor = segEditorClazz.newInstance();
-            editor.setSegment(segment);
-            editor.setCell(cell);
-            return editor;
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(TrackSegment.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(TrackSegment.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(TrackSegment.class.getName()).log(Level.SEVERE, null, ex);
+        if (settings!=null) {
+             try {
+                Class<SegmentEditor> segEditorClazz = (Class<SegmentEditor>) Class.forName(settings.getEditorClassname());
+                SegmentEditor editor = segEditorClazz.newInstance();
+                editor.setSegment(segment);
+                editor.setCell(cell);
+                return editor;
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(TrackSegment.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InstantiationException ex) {
+                Logger.getLogger(TrackSegment.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(TrackSegment.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         SegmentEditor noEditor = new NoSegmentEditor();
