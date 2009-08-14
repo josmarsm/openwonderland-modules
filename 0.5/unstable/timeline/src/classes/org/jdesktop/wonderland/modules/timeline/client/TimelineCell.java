@@ -224,13 +224,17 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     }
 
     private void createNavigationHUD() {
-        navigationPanel = new TimelineMovementHUDPanel(this);
-        navigationHUD = mainHUD.createComponent(navigationPanel);
-        navigationHUD.setPreferredLocation(Layout.EAST);
-        navigationHUD.setName("Navigation");
-        TimelineDate range = config.getDateRange();
-        navigationPanel.setStartDate(range.getMinimum());
-        navigationPanel.setEndDate(range.getMaximum());
+	java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+        	navigationPanel = new TimelineMovementHUDPanel(TimelineCell.this);
+        	navigationHUD = mainHUD.createComponent(navigationPanel);
+        	navigationHUD.setPreferredLocation(Layout.EAST);
+        	navigationHUD.setName("Navigation");
+        	TimelineDate range = config.getDateRange();
+        	navigationPanel.setStartDate(range.getMinimum());
+        	navigationPanel.setEndDate(range.getMaximum());
+	    }
+	});
     }
 
     private void addCuratedItem(Date date, String text, String file) {
