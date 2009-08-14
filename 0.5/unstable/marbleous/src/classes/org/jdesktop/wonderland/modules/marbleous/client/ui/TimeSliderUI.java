@@ -89,4 +89,8 @@ public class TimeSliderUI {
 
         hudComponent.setVisible(visible);
     }
+
+    public void cleanup () {
+        panel.cleanup();
+    }
 }

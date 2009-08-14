@@ -312,6 +312,7 @@ public class ConstructPanel extends javax.swing.JPanel {
         resetButton.setEnabled(false);
         cell.resetMarble();
         uiTimeSlider.setVisible(false);
+        uiTimeSlider.cleanup();
     }//GEN-LAST:event_resetButtonActionPerformed
 
     /**

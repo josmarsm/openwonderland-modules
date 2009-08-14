@@ -293,4 +293,11 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         currentSampleEntity = sampleEntity;
         currentSampleEntity.setCurrent(true);
     }
+
+    public void cleanup () {
+        currentSampleEntity.dispose();
+        SampleDisplayEntity.disposeAll();
+        currentSampleInfo = null;
+        trace = null;
+    }
 }
