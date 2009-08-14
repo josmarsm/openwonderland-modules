@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.marbleous.client.ui;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.text.DecimalFormat;
 import javax.swing.AbstractCellEditor;
@@ -261,15 +262,17 @@ public class KnotFrame extends javax.swing.JFrame {
             double angleDegrees = Math.toDegrees(angleRadians);
             
             setText(twoDForm.format(angleDegrees));
+            //Workaround for
+            //http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6723524
+            setOpaque(true);
             if (isSelected) {
                 setBackground(table.getSelectionBackground());
-                setForeground(table.getSelectionForeground());
             } else {
-                setBackground(table.getBackground());
-                setForeground(table.getForeground());
+                if (row % 2 == 1)
+                    setBackground(Color.WHITE);
+                else
+                    setBackground(table.getBackground());
             }
-            setEnabled(table.isEnabled());
-            setFont(table.getFont());
             return this;
         }
     }
@@ -287,15 +290,17 @@ public class KnotFrame extends javax.swing.JFrame {
             buffer.append(",");
             buffer.append(position.z);
             setText(buffer.toString());
+            //Workaround for
+            //http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6723524
+            setOpaque(true);
             if (isSelected) {
                 setBackground(table.getSelectionBackground());
-                setForeground(table.getSelectionForeground());
             } else {
-                setBackground(table.getBackground());
-                setForeground(table.getForeground());
+                if (row % 2 == 1)
+                    setBackground(Color.WHITE);
+                else
+                    setBackground(table.getBackground());
             }
-            setEnabled(table.isEnabled());
-            setFont(table.getFont());
             return this;
         }
     }
@@ -308,15 +313,17 @@ public class KnotFrame extends javax.swing.JFrame {
         // This method is called when a cell value is edited by the user.
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int rowIndex, int vColIndex) {
+            //Workaround for
+            //http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6723524
+            textfield.setOpaque(true);
             if (isSelected) {
-                textfield.setBackground(table.getSelectionBackground());
-                textfield.setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
             } else {
-                textfield.setBackground(table.getBackground());
-                textfield.setForeground(table.getForeground());
+                if (rowIndex % 2 == 1)
+                    setBackground(Color.WHITE);
+                else
+                    setBackground(table.getBackground());
             }
-            textfield.setEnabled(table.isEnabled());
-            textfield.setFont(table.getFont());
 
             // Configure the textfield with the specified value
             Quaternion quat = (Quaternion) value;
@@ -409,15 +416,17 @@ public class KnotFrame extends javax.swing.JFrame {
                 boolean isSelected, int rowIndex, int vColIndex) {
             // 'value' is value contained in the cell located at (rowIndex, vColIndex)
 
+            //Workaround for
+            //http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6723524
+            textfield.setOpaque(true);
             if (isSelected) {
-                textfield.setBackground(table.getSelectionBackground());
-                textfield.setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
             } else {
-                textfield.setBackground(table.getBackground());
-                textfield.setForeground(table.getForeground());
+                if (rowIndex % 2 == 1)
+                    setBackground(Color.WHITE);
+                else
+                    setBackground(table.getBackground());
             }
-            textfield.setEnabled(table.isEnabled());
-            textfield.setFont(table.getFont());
 
             Vector3f position = (Vector3f) value;
             StringBuffer buffer = new StringBuffer();
