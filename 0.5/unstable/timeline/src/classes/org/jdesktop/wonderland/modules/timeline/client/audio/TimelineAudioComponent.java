@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineAudioComponentClientState;
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineCallIDMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineResetMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineTreatmentDoneMessage;
 
@@ -139,6 +140,10 @@ public class TimelineAudioComponent extends CellComponent implements ComponentMe
 	    + months[min.getMonth()] + " ,, " + min.getDate() + " ,,,, " + (min.getYear() + 1900)
 	    + ",,,, and the end date is " 
 	    + months[max.getMonth()] + " ,, " + max.getDate() + " ,,,, " + (max.getYear() + 1900);
+    }
+
+    public void setCallID(String callID) {
+	channelComp.send(new TimelineCallIDMessage(cell.getCellID(), callID));
     }
 
     private String getSegmentID(TimelineSegment segment) {

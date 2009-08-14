@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineAudioComponentClientState;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineAudioComponentServerState;
+import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineCallIDMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelinePlayRecordingMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineRecordMessage;
 import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineResetMessage;
@@ -44,6 +45,8 @@ import org.jdesktop.wonderland.modules.timeline.common.audio.TimelineTreatmentDo
 import com.sun.sgs.app.AppContext;
 
 import com.sun.sgs.app.ManagedReference;
+
+import com.sun.sgs.kernel.KernelRunnable;
 
 import com.jme.math.Vector3f;
 
@@ -134,26 +137,93 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    ComponentMessageReceiverImpl receiver = new ComponentMessageReceiverImpl(cellRef, this);
             receiverRef = AppContext.getDataManager().createReference(receiver);
 
-            channelComponent.addMessageReceiver(TimelineSegmentTreatmentMessage.class, receiver);
+            channelComponent.addMessageReceiver(TimelineCallIDMessage.class, receiver);
             channelComponent.addMessageReceiver(TimelineSegmentChangeMessage.class, receiver);
+            channelComponent.addMessageReceiver(TimelinePlayRecordingMessage.class, receiver);
             channelComponent.addMessageReceiver(TimelineRecordMessage.class, receiver);
             channelComponent.addMessageReceiver(TimelineResetMessage.class, receiver);
-            channelComponent.addMessageReceiver(TimelinePlayRecordingMessage.class, receiver);
+            channelComponent.addMessageReceiver(TimelineSegmentTreatmentMessage.class, receiver);
         } else {
-            channelComponent.removeMessageReceiver(TimelineSegmentTreatmentMessage.class);
-            channelComponent.removeMessageReceiver(TimelineSegmentChangeMessage.class);
+            channelComponent.removeMessageReceiver(TimelineCallIDMessage.class);
+            channelComponent.removeMessageReceiver(TimelinePlayRecordingMessage.class);
             channelComponent.removeMessageReceiver(TimelineRecordMessage.class);
             channelComponent.removeMessageReceiver(TimelineResetMessage.class);
-            channelComponent.removeMessageReceiver(TimelinePlayRecordingMessage.class);
+            channelComponent.removeMessageReceiver(TimelineSegmentChangeMessage.class);
+            channelComponent.removeMessageReceiver(TimelineSegmentTreatmentMessage.class);
 
 	    if (receiverRef != null) {
 		receiverRef.get().done();
+		receiverRef = null;
 	    }
         }
     }
 
     protected String getClientClass() {
 	return "org.jdesktop.wonderland.modules.timeline.client.audio.TimelineAudioComponent";
+    }
+
+    private String getSegmentID(String segmentID) {
+        return segmentID.replaceAll(":", "_");
+    }
+
+    public void setupTreatment(String segmentID, String treatment, Vector3f location) {
+	if (receiverRef == null) {
+	    System.out.println("changeSegment:  No Receiver!");
+	    return;
+	}
+
+	receiverRef.get().setupTreatment(getSegmentID(segmentID), treatment, location);
+    }
+
+    public void changeSegment(String callID, String previousSegmentID, String currentSegmentID) {
+	if (receiverRef == null) {
+	    System.out.println("changeSegment:  No Receiver!");
+	    return;
+	}
+
+	if (callID == null) {
+	    System.out.println("changeSegment:  Call ID has not been specified!");
+	    return;
+	}
+
+	receiverRef.get().changeSegment(callID, getSegmentID(previousSegmentID), getSegmentID(currentSegmentID));
+    }
+
+    public void record(String callID, String recordingPath, boolean isRecording) {
+	if (receiverRef == null) {
+	    System.out.println("record:  No Receiver!");
+	    return;
+	}
+
+	if (callID == null) {
+	    System.out.println("record:  Call ID has not been specified!");
+	    return;
+	}
+
+	receiverRef.get().record(callID, recordingPath, isRecording);
+    }
+
+    public void playRecording(String callID, String recordingPath, boolean isPlaying) {
+	if (receiverRef == null) {
+	    System.out.println("playRecording:  No Receiver!");
+	    return;
+	}
+
+	if (callID == null) {
+	    System.out.println("playRecording:  Call ID has not been specified!");
+	    return;
+	}
+
+	receiverRef.get().playRecording(callID, recordingPath, isPlaying);
+    }
+
+    public void reset() {
+	if (receiverRef == null) {
+	    System.out.println("reset:  No Receiver!");
+	    return;
+	}
+
+	receiverRef.get().done();
     }
 
     private static class ComponentMessageReceiverImpl extends AbstractComponentMessageReceiver 
@@ -180,37 +250,43 @@ public class TimelineAudioComponentMO extends CellComponentMO {
         public void messageReceived(WonderlandClientSender sender, 
 	        WonderlandClientID clientID, CellMessage message) {
 
+	    if (message instanceof TimelineCallIDMessage) {
+		return;
+	    }
+
 	    if (message instanceof TimelineSegmentTreatmentMessage) {
-		setupTreatment((TimelineSegmentTreatmentMessage) message);
+		TimelineSegmentTreatmentMessage msg = (TimelineSegmentTreatmentMessage) message;
+		setupTreatment(msg.getSegmentID(), msg.getTreatment(), msg.getLocation());
 		return;
 	    }
 
 	    if (message instanceof TimelineSegmentChangeMessage) {
-		changeSegment((TimelineSegmentChangeMessage) message);
+		TimelineSegmentChangeMessage msg = (TimelineSegmentChangeMessage) message;
+		changeSegment(msg.getCallID(), msg.getPreviousSegmentID(), msg.getCurrentSegmentID());
 		return;
 	    }
 	    
 	    if (message instanceof TimelineRecordMessage) {
-		record((TimelineRecordMessage) message);
+		TimelineRecordMessage msg = (TimelineRecordMessage) message;
+		record(msg.getCallID(), msg.getRecordingPath(), msg.getIsRecording());
+		return;
+	    }
+
+	    if (message instanceof TimelinePlayRecordingMessage) {
+		TimelinePlayRecordingMessage msg = (TimelinePlayRecordingMessage) message;
+		playRecording(msg.getCallID(), msg.getRecordingPath(), msg.getIsPlaying());
 		return;
 	    }
 
 	    if (message instanceof TimelineResetMessage) {
 		done();
 	    }
-
-	    if (message instanceof TimelinePlayRecordingMessage) {
-		playRecording((TimelinePlayRecordingMessage) message);
-		return;
-	    }
         }
 
         private ConcurrentHashMap<String, ArrayList<Treatment>> segmentTreatmentMap = new ConcurrentHashMap();
 
-        private void setupTreatment(TimelineSegmentTreatmentMessage message) {
+        public void setupTreatment(String segmentID, String treatment, Vector3f location) {
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	    String segmentID = message.getSegmentID();
 
 	    AppContext.getManager(VoiceManager.class).addCallStatusListener(this, segmentID);
 
@@ -222,7 +298,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
 	    setup.spatializer = spatializer;
 
-            setup.treatment = message.getTreatment();
+            setup.treatment = treatment;
 
             String treatmentId = segmentID;
 
@@ -232,8 +308,6 @@ public class TimelineAudioComponentMO extends CellComponentMO {
                 System.out.println("Invalid treatment '" + setup.treatment + "'");
 	        return;
             }
-
-            Vector3f location = message.getLocation();
 
             setup.x = location.getX();
             setup.y = location.getY();
@@ -263,8 +337,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
         private ConcurrentHashMap<String, Integer> segmentUseMap = new ConcurrentHashMap();
 
-        private void changeSegment(TimelineSegmentChangeMessage message) {
-	    String currentSegmentID = message.getCurrentSegmentID();
+	private void changeSegment(String callID, String previousSegmentID, String currentSegmentID) {
 
     	    Integer useCount = segmentUseMap.get(currentSegmentID);
 
@@ -273,7 +346,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    ArrayList<Treatment> treatments = segmentTreatmentMap.get(currentSegmentID);
 
 	    if (treatments != null) {
-		startTreatments(message.getCallID(), treatments);
+		startTreatments(callID, treatments);
 	    } else {
 		System.out.println("No treatment in map for seg " + currentSegmentID);
 	    }
@@ -293,8 +366,6 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
 	    segmentUseMap.put(currentSegmentID, useCount);
 
-	    String previousSegmentID = message.getPreviousSegmentID();	
-
 	    if (previousSegmentID == null) {
 		System.out.println("No previous segment");
 	        return;
@@ -306,7 +377,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 		return;
 	    }
 
-	    stopTreatments(message.getCallID(), treatments);
+	    stopTreatments(callID, treatments);
 
 	    useCount = segmentUseMap.get(previousSegmentID);
 
@@ -334,9 +405,10 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	            Player treatmentPlayer = call.getPlayer();
 
 	            if (treatmentPlayer != null) {
+			System.out.println("Setting pm for " + treatmentPlayer);
 		        myPlayer.setPrivateSpatializer(treatmentPlayer, new FullVolumeSpatializer());
 			treatment.restart(false);
-		        //new Fade(myPlayer, treatment, false);
+		        new Fadein(myPlayer, treatmentPlayer);
 	            } else {
 		        System.out.println("Can't find player for " + treatment);
 		    }
@@ -359,85 +431,111 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    Player myPlayer = vm.getPlayer(callID);
 
 	    for (Treatment treatment : treatments) {
-	        //new Fade(myPlayer, treatment, true);
-
 	        Call call = vm.getCall(treatment.getId());
 
 	        Player player;
 
 	        if (call != null) {
-	            player = call.getPlayer();
-	            myPlayer.removePrivateSpatializer(player);
+	            Player treatmentPlayer = call.getPlayer();
+		    new Fadeout(myPlayer, treatmentPlayer);
+
 	        } else {
 		    System.out.println("No call for " + treatment + " setup " + treatment.getSetup());
 	        }
 	    }
 	}
 
-        private class Fade extends Thread {
+        private class Fadein implements KernelRunnable {
 
-	    private static final double fadeinValue = .05;
-	    private static final double fadeoutValue = .1;
+	    private static final double FADEIN_VALUE = .05;
 
 	    private Player myPlayer;
-	    private boolean fadeout;
-	    private Treatment treatment;
+	    private Player treatmentPlayer;
 
-	    public Fade(Player myPlayer, Treatment treatment, boolean fadeout) {
+	    double attenuator = FADEIN_VALUE;
+
+	    public Fadein(Player myPlayer, Player treatmentPlayer) {
 		this.myPlayer = myPlayer;
-	        this.treatment = treatment;
-	        this.fadeout = fadeout;
+		this.treatmentPlayer = treatmentPlayer;
 
-	        start();
+		schedule();
+	    }
+
+            public String getBaseTaskType() {
+                return Fadein.class.getName();
+            }
+
+	    private void schedule() {
+                AppContext.getManager(VoiceManager.class).scheduleTask(this, System.currentTimeMillis() + 100);
 	    }
 
 	    public void run() {	
-	        Spatializer spatializer = treatment.getSetup().spatializer;
+		System.out.println("FADEIN:  Attenuator " + attenuator);
 
-	        double attenuator;
+		Spatializer spatializer = new FullVolumeSpatializer();
+		spatializer.setAttenuator(attenuator);
 
-	        if (fadeout == false) {
-		    attenuator = fadeoutValue;
-	        } else {
-		    attenuator = DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME;
-	        }
+		myPlayer.setPrivateSpatializer(treatmentPlayer, spatializer);
 
-	        while (true) {
-		    System.out.println("Attenuator " + attenuator + " " + treatment);
+		attenuator += FADEIN_VALUE;
 
-	    	    spatializer.setAttenuator(attenuator);
+		if (attenuator >= DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME) {
+		    return;
+		}
 
-		    if (fadeout == true) {
-		        attenuator -= fadeoutValue;
-
-		        if (attenuator <= 0) {
-            		    VoiceManager vm = AppContext.getManager(VoiceManager.class);
-	    		    Player player = vm.getPlayer(treatment.getId());
-			    myPlayer.removePrivateSpatializer(player);
-			    System.out.println("Removing pm for " + player);
-			    break;
-		        }
-		    } else {
-		        attenuator += fadeinValue;
-
-		        if (attenuator >= DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME) {
-			    break;
-		        }
-		    }
-
-		    try {
-		        Thread.sleep(100);
-		    } catch (InterruptedException e) {
-		    }
-	        }
+		schedule();
 	    }
 
         }
 
-        private void record(TimelineRecordMessage message) {
-            VoiceManager vm = AppContext.getManager(VoiceManager.class);
+        private class Fadeout implements KernelRunnable {
 
-	    String callID = message.getCallID();
+	    private static final double FADEOUT_VALUE = .1;
+
+	    private Player myPlayer;
+	    private Player treatmentPlayer;
+
+	    double attenuator = DefaultSpatializer.DEFAULT_MAXIMUM_VOLUME;
+
+	    public Fadeout(Player myPlayer, Player treatmentPlayer) {
+		this.myPlayer = myPlayer;
+		this.treatmentPlayer = treatmentPlayer;
+
+		schedule();
+	    }
+
+            public String getBaseTaskType() {
+                return Fadeout.class.getName();
+            }
+
+	    private void schedule() {
+                AppContext.getManager(VoiceManager.class).scheduleTask(this, System.currentTimeMillis() + 100);
+	    }
+
+	    public void run() {	
+		System.out.println("FADEOUT:  Attenuator " + attenuator);
+
+		Spatializer spatializer = new FullVolumeSpatializer();
+
+	    	spatializer.setAttenuator(attenuator);
+
+		myPlayer.setPrivateSpatializer(treatmentPlayer, spatializer);
+
+		attenuator -= FADEOUT_VALUE;
+
+		if (attenuator <= 0) {
+	            myPlayer.removePrivateSpatializer(treatmentPlayer);
+		    System.out.println("FADEOUT:  Removing pm for " + treatmentPlayer);
+		    return;
+		}
+
+		schedule();
+	    }
+
+        }
+
+        private void record(String callID, String recordingPath, boolean isRecording) {
+            VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
 	    Call call = vm.getCall(callID);
 
@@ -447,17 +545,15 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    }
 
 	    try {
-   	        call.record(message.getRecordingPath(), message.getIsRecording());
+   	        call.record(recordingPath, isRecording);
 	    } catch (IOException e) {
 		System.out.println("Unable to start/stop recording " 
-		    + message.getRecordingPath() + " " + e.getMessage());
+		    + recordingPath + " " + e.getMessage());
 	    }
         }
 
-        private void playRecording(TimelinePlayRecordingMessage message) {
+        private void playRecording(String callID, String recordingPath, boolean isPlaying) {
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-	    String callID = message.getCallID();
 
 	    Call call = vm.getCall(callID);
 
@@ -467,13 +563,13 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    }
 	    
 	    try {
-		if (message.getIsPlaying()) {
-	            call.playTreatment(message.getRecordingPath());
+		if (isPlaying) {
+	            call.playTreatment(recordingPath);
 		} else {
-	            call.stopTreatment(message.getRecordingPath());
+	            call.stopTreatment(recordingPath);
 		}
 	    } catch (IOException e) {
-		System.out.println("Unable to play/stop treatment " + message.getRecordingPath());
+		System.out.println("Unable to play/stop treatment " + recordingPath);
 		return; 
 	    }
         }
