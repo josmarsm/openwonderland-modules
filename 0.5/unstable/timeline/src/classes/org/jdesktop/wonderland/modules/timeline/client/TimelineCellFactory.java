@@ -137,7 +137,7 @@ public class TimelineCellFactory implements CellFactorySPI {
                     logger.info("--- units: " + units);
 
                     state.getConfig().setDateRange(new TimelineDate(start, end));
-                    state.getConfig().setNumSegments(10);
+                    state.getConfig().setUnits(units);
 
                     List<TimelineQuery> queries = creationPanel.getQueries();
                     logger.info("------------- queries: " + queries);

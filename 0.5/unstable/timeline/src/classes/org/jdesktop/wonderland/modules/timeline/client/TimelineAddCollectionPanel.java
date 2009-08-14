@@ -20,7 +20,14 @@ package org.jdesktop.wonderland.modules.timeline.client;
 import java.awt.Dimension;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import javax.swing.table.DefaultTableModel;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDateRange;
 
 /**
  * Panel for adding a keyword collection
@@ -29,6 +36,7 @@ import javax.swing.table.DefaultTableModel;
 public class TimelineAddCollectionPanel extends javax.swing.JPanel {
 
     private PropertyChangeSupport listeners;
+    private TimelineDateRange range;
 
     public TimelineAddCollectionPanel() {
         initComponents();
@@ -57,6 +65,66 @@ public class TimelineAddCollectionPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Set the date range for this dialog
+     * @param range the range of dates to build the dialog for
+     */
+    public void setDateRange(TimelineDateRange range) {
+        if (this.range != null && this.range.equals(range)) {
+            return;
+        }
+
+        this.range = range;
+
+        DateFormat df;
+        switch (range.getUnits()) {
+            case Calendar.HOUR:
+                df = DateFormat.getTimeInstance();
+                break;
+            case Calendar.DAY_OF_YEAR:
+                df = new SimpleDateFormat("dd MMM");
+                break;
+            case Calendar.MONTH:
+                df = new SimpleDateFormat("MMM");
+                break;
+            case Calendar.YEAR:
+                df = new SimpleDateFormat("yyyy");
+                break;
+            default:
+                df = DateFormat.getInstance();
+                break;
+        }
+
+        DefaultTableModel model = (DefaultTableModel) collectionTable.getModel();
+
+        // clear the model
+        for (int i = 0; i < model.getRowCount(); i++) {
+            model.removeRow(i);
+        }
+
+        // add in the new rows
+        for (int i = 0; i < range.getIncrementCount(); i++) {
+            TimelineDate date = range.getIncrement(i);
+
+            System.out.println("Adding date " + df.format(date.getMinimum()));
+
+            model.addRow(new String[] { df.format(date.getMinimum()), "" });
+        }
+    }
+
+    public List<String> getQueries() {
+        List<String> out = new ArrayList<String>();
+        DefaultTableModel model = (DefaultTableModel) collectionTable.getModel();
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            out.add((String) model.getValueAt(i, 1));
+        }
+
+        System.out.println("Returning " + out.size() + " keywords");
+        
+        return out;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -69,7 +137,6 @@ public class TimelineAddCollectionPanel extends javax.swing.JPanel {
         collectionLabel = new javax.swing.JLabel();
         collectionScrollPane = new javax.swing.JScrollPane();
         collectionTable = new javax.swing.JTable();
-        addKeywordButton = new javax.swing.JButton();
         doneButton = new javax.swing.JButton();
 
         collectionLabel.setFont(collectionLabel.getFont().deriveFont(collectionLabel.getFont().getStyle() | java.awt.Font.BOLD));
@@ -90,13 +157,6 @@ public class TimelineAddCollectionPanel extends javax.swing.JPanel {
         collectionTable.setGridColor(new java.awt.Color(204, 204, 204));
         collectionScrollPane.setViewportView(collectionTable);
 
-        addKeywordButton.setText("Add Keyword");
-        addKeywordButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addKeywordButtonActionPerformed(evt);
-            }
-        });
-
         doneButton.setText("Done");
         doneButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -116,11 +176,7 @@ public class TimelineAddCollectionPanel extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(6, 6, 6)
                         .add(collectionLabel))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(addKeywordButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 185, Short.MAX_VALUE)
-                        .add(doneButton)))
+                    .add(doneButton))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -131,29 +187,15 @@ public class TimelineAddCollectionPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(collectionScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addKeywordButton)
-                    .add(doneButton))
+                .add(doneButton)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void addKeywordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addKeywordButtonActionPerformed
-        DefaultTableModel model = (DefaultTableModel) collectionTable.getModel();
-        int rows = collectionTable.getRowCount();
-        model.addRow(new String[2]);
-        collectionTable.setPreferredSize(new Dimension(collectionTable.getWidth(),
-                (rows + 1) * collectionTable.getRowHeight()));
-        this.setPreferredSize(new Dimension((int) getPreferredSize().getWidth(),
-                (int) (getPreferredSize().getHeight() + collectionTable.getRowHeight())));
-        validate();
-    }//GEN-LAST:event_addKeywordButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
         listeners.firePropertyChange("done", new String(""), null);
     }//GEN-LAST:event_doneButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addKeywordButton;
     private javax.swing.JLabel collectionLabel;
     private javax.swing.JScrollPane collectionScrollPane;
     private javax.swing.JTable collectionTable;

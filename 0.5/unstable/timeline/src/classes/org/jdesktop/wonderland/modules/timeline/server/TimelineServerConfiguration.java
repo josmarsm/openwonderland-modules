@@ -48,7 +48,7 @@ public class TimelineServerConfiguration extends TimelineConfiguration {
             this.channelRef = AppContext.getDataManager().createReference(channel);
 
         this.setDateRange(config.getDateRange());
-        this.setNumSegments(config.getNumSegments());
+        this.setUnits(config.getUnits());
         this.setPitch(config.getPitch());
         this.setRadsPerSegment(config.getRadsPerSegment());
     }
