@@ -356,7 +356,7 @@ public class ConstructPanel extends javax.swing.JPanel {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     runButton.setEnabled(false);
-                    stopButton.setEnabled(true);
+                    stopButton.setEnabled(false);
                     resetButton.setEnabled(false);
                 }
             });
