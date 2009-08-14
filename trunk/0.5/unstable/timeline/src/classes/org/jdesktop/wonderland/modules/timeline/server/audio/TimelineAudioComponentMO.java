@@ -235,6 +235,8 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
         private ManagedReference<TimelineAudioComponentMO> compRef;
 
+	private String currentSegmentID;
+
         public ComponentMessageReceiverImpl(ManagedReference<CellMO> cellRef,
                 TimelineAudioComponentMO comp) {
 
@@ -283,6 +285,8 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    }
         }
 
+        private ConcurrentHashMap<String, TreatmentGroup> segmentTreatmentGroupMap = new ConcurrentHashMap();
+
         private ConcurrentHashMap<String, ArrayList<Treatment>> segmentTreatmentMap = new ConcurrentHashMap();
 
         public void setupTreatment(String segmentID, String treatment, Vector3f location) {
@@ -290,7 +294,12 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
 	    AppContext.getManager(VoiceManager.class).addCallStatusListener(this, segmentID);
 
-            TreatmentGroup group = vm.createTreatmentGroup(segmentID);
+            TreatmentGroup group = segmentTreatmentGroupMap.get(segmentID);
+
+	    if (group == null) {
+                group = vm.createTreatmentGroup(segmentID);
+		segmentTreatmentGroupMap.put(segmentID, group);
+	    }
 	
             TreatmentSetup setup = new TreatmentSetup();
 
@@ -366,6 +375,8 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
 	    segmentUseMap.put(currentSegmentID, useCount);
 
+	    this.currentSegmentID = currentSegmentID;
+
 	    if (previousSegmentID == null) {
 		System.out.println("No previous segment");
 	        return;
@@ -413,8 +424,21 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 		        System.out.println("Can't find player for " + treatment);
 		    }
 		} else {
-		    System.out.println("No call for new treatment " + treatment + " setup " + treatment.getSetup());
+		    System.out.println("No call for new treatment " + treatment + " setup " 
+			+ treatment.getSetup());
 		}
+	    }
+	}
+
+	private void pauseCurrentTreatments(boolean isPaused) {
+	    if (currentSegmentID == null) {
+		return;
+	    }
+
+	    ArrayList<Treatment> treatments = segmentTreatmentMap.get(currentSegmentID);
+
+	    if (treatments != null) {
+		pauseTreatments(treatments, isPaused);
 	    }
 	}
 
@@ -544,6 +568,8 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	        return;
 	    }
 
+	    pauseCurrentTreatments(isRecording);
+
 	    try {
    	        call.record(recordingPath, isRecording);
 	    } catch (IOException e) {
@@ -562,6 +588,8 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 		return;
 	    }
 	    
+	    pauseCurrentTreatments(isPlaying);
+
 	    try {
 		if (isPlaying) {
 	            call.playTreatment(recordingPath);
