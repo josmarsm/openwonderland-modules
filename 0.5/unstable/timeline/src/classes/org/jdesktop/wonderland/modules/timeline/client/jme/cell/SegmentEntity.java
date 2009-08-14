@@ -59,12 +59,12 @@ public class SegmentEntity extends Entity {
   // node to display this segment
   Node node;
 
-  // this could be configurable in the future. lower value = smoother curve
+  // err on the side of making these too small
   /**
    * how many radians are in each mesh making up this segment
-   * default - pi/18 = 10 degrees
+   * default - pi/18 = 10 degrees, get smoother from there as necessary
    */
-  public static final float RADS_PER_MESH = (float) (Math.PI / 18);
+  public float radsPerMesh = (float) (Math.PI / 18);
 
   protected static ZBufferState zbuf = null;
   static {
@@ -128,8 +128,11 @@ public class SegmentEntity extends Entity {
     
     logger.info("creating segment entity");
 
-    if(config.getRadsPerSegment()% RADS_PER_MESH > 0){
-      logger.severe("[SEG MESH] ERROR: rads per mesh (" + RADS_PER_MESH + 
+    // calculate new rads per mesh
+
+
+    if(config.getRadsPerSegment()% radsPerMesh > 0){
+      logger.severe("[SEG MESH] ERROR: rads per mesh (" + radsPerMesh +
               ") must be a factor of" + config.getRadsPerSegment());
     }
 
@@ -146,13 +149,13 @@ public class SegmentEntity extends Entity {
 
     // law of cosines to get trapHeight of trap bases
     float lSq = (float) Math.pow(config.getInnerRadius(),2);
-    trapSmallBase = (float) Math.sqrt(2*lSq -2*lSq*Math.cos(RADS_PER_MESH));
+    trapSmallBase = (float) Math.sqrt(2*lSq -2*lSq*Math.cos(radsPerMesh));
 
     // law of cosines to get trapHeight of trap bases
     lSq = (float) Math.pow(config.getOuterRadius(),2);
-    trapLargeBase = (float) Math.sqrt(2*lSq -2*lSq*Math.cos(RADS_PER_MESH));
+    trapLargeBase = (float) Math.sqrt(2*lSq -2*lSq*Math.cos(radsPerMesh));
 
-    climbPerMesh = (RADS_PER_MESH/((float)Math.PI * 2.0f)) * config.getPitch();
+    climbPerMesh = (radsPerMesh/((float)Math.PI * 2.0f)) * config.getPitch();
 
 
     change = (trapLargeBase - trapSmallBase) / 2.0f;
@@ -165,7 +168,7 @@ public class SegmentEntity extends Entity {
     // build meshes
     Vector3f oldV1, newV0;
     oldV1 = target;
-    for(int i = 0; i < config.getRadsPerSegment()/RADS_PER_MESH; i++){
+    for(int i = 0; i < config.getRadsPerSegment()/radsPerMesh; i++){
       if(oldV1 == null){
         logger.info("old vert is null at start of mesh " + i);
       }
@@ -179,9 +182,9 @@ public class SegmentEntity extends Entity {
       if(oldV1 != null){
         // null on the first mesh (don't need to translate first mesh)
         // where will the rotation put the new v1?
-        newV0 = new Vector3f((float)Math.cos(RADS_PER_MESH)*newV0.getX() - (float)Math.sin(RADS_PER_MESH)*newV0.getZ(),
+        newV0 = new Vector3f((float)Math.cos(radsPerMesh)*newV0.getX() - (float)Math.sin(radsPerMesh)*newV0.getZ(),
                 0.0f,
-                (float)Math.sin(RADS_PER_MESH)*newV0.getX() + (float)Math.cos(RADS_PER_MESH)*newV0.getZ());
+                (float)Math.sin(radsPerMesh)*newV0.getX() + (float)Math.cos(radsPerMesh)*newV0.getZ());
         logger.info("[SEG ENT] adjusted newv0 " + newV0);
         logger.info("[SEG ENT] translation " + oldV1.subtract(newV0));
         float dx = oldV1.getX() - newV0.getX();
@@ -202,12 +205,12 @@ public class SegmentEntity extends Entity {
       logger.info("[SEG ENT] after it all, old v1: " + oldV1);
       // save for next mesh, if there is one
       oldV1 = mesh.getVertex(1);
-      oldV1 = new Vector3f((float)Math.cos(RADS_PER_MESH)*oldV1.getX() - (float)Math.sin(RADS_PER_MESH)*oldV1.getZ(),
+      oldV1 = new Vector3f((float)Math.cos(radsPerMesh)*oldV1.getX() - (float)Math.sin(radsPerMesh)*oldV1.getZ(),
                 oldV1.getY(),
-                (float)Math.sin(RADS_PER_MESH)*oldV1.getX() + (float)Math.cos(RADS_PER_MESH)*oldV1.getZ());
+                (float)Math.sin(radsPerMesh)*oldV1.getX() + (float)Math.cos(radsPerMesh)*oldV1.getZ());
 
       logger.info("[SEG ENT] after set old v1 " + oldV1 + " new v0 " + newV0);
-      rotation += RADS_PER_MESH;
+      rotation += radsPerMesh;
     }
 
     this.nextTarget = oldV1;
