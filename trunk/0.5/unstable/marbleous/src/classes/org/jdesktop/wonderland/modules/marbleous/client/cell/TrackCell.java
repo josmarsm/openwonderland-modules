@@ -45,6 +45,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.TrackCellClientState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SelectedSampleMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
+import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage.Type;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
@@ -69,6 +70,9 @@ public class TrackCell extends Cell {
     Track track;
     private static final String COASTER_STARTED_SOUND = "wls://marbleous/start.au";
     private Object savedSegmentState;
+
+    // The simulation trace that is being built by messages from other clients.
+    private SimTrace remoteSimTrace = null;
 
     public TrackCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -262,14 +266,14 @@ public class TrackCell extends Cell {
                 logger.warning("Starting physics system...");
 
                 physicsSystem.setStarted(true);
-                playSound(COASTER_STARTED_SOUND);
+//                playSound(COASTER_STARTED_SOUND);
             } else {
                 physicsSystem.setStarted(false);
             }
         } else {
             logger.warning("Marble physics system not yet initialized!");
         }
-        sendCellMessage(new SimulationStateMessage(simulationState));
+        fireSimulationStateChanged(simulationState);
     }
 
     /**
@@ -297,9 +301,33 @@ public class TrackCell extends Cell {
          */
         @Override
         public void messageReceived(CellMessage message) {
-            SimTrace simTrace = ((SimTraceMessage) message).getSimTrace();
-            uiTimeSlider.setSimTrace(simTrace);
-            uiTimeSlider.setVisible(true);
+            // Get subsets of the simulation trace and form up a SimTrace object
+            SimTraceMessage stm = (SimTraceMessage)message;
+            if (stm.getType() == Type.ONLY) {
+                // This is the only message, so create a SimTrace and send it
+                // off
+                SimTrace simTrace = new SimTrace(MarblePhysicsComponent.G, MarblePhysicsComponent.FREQ);
+                simTrace.fromSubset(stm.getSampleSubset());
+                uiTimeSlider.setSimTrace(simTrace);
+                uiTimeSlider.setVisible(true);
+            }
+            else if (stm.getType() == Type.FIRST) {
+                // This is the first message, so create a SimTrace and send it
+                // off
+                remoteSimTrace = new SimTrace(MarblePhysicsComponent.G, MarblePhysicsComponent.FREQ);
+                remoteSimTrace.fromSubset(stm.getSampleSubset());
+            }
+            else if (stm.getType() == Type.MIDDLE) {
+                // This is the middle message, so add to the existing SimTrace
+                remoteSimTrace.fromSubset(stm.getSampleSubset());
+            }
+            else {
+                // This is the last message, so add to the existing SimTrace
+                // and send it along
+                remoteSimTrace.fromSubset(stm.getSampleSubset());
+                uiTimeSlider.setSimTrace(remoteSimTrace);
+                uiTimeSlider.setVisible(true);
+            }
         }
     }
 

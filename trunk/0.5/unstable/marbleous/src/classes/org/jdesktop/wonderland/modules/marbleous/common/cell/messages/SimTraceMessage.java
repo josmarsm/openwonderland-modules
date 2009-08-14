@@ -18,23 +18,43 @@
 package org.jdesktop.wonderland.modules.marbleous.common.cell.messages;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.modules.marbleous.common.trace.SimTrace;
+import org.jdesktop.wonderland.modules.marbleous.common.trace.SampleSubset;
 
 /**
- * Message giving the simulation trace of the simulation
+ * Message giving the simulation trace of the simulation. There are different
+ * flavors of this: FIRST, giving the first in a subset, MIDDLE, giving some
+ * middle packet, and LAST, giving the final packet
  *
  * @author jslott
  */
 public class SimTraceMessage extends CellMessage {
 
-    // The time series of simulation samples
-    private SimTrace simTrace = null;
+    /**
+     * FIRST: This is the first messages in the block
+     * MIDDLE: This is some intermediate message in the block
+     * LAST: This is the last message in the block
+     * ONLY: This is the only message in the block
+     */
+    public enum Type {
+        FIRST, MIDDLE, LAST, ONLY
+    };
 
-    public SimTraceMessage(SimTrace simTrace) {
-        this.simTrace = simTrace;
+    // The type (first, middle, last)
+    private Type type = Type.FIRST;
+
+    // The time series subset of simulation samples
+    private SampleSubset sampleSubset = null;
+
+    public SimTraceMessage(Type type, SampleSubset sampleSubset) {
+        this.type = type;
+        this.sampleSubset = sampleSubset;
     }
 
-    public SimTrace getSimTrace() {
-        return simTrace;
+    public Type getType() {
+        return type;
+    }
+
+    public SampleSubset getSampleSubset() {
+        return sampleSubset;
     }
 }
