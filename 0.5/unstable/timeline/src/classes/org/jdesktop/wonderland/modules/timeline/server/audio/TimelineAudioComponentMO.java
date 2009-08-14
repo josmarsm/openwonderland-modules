@@ -58,6 +58,8 @@ import com.sun.mpk20.voicelib.app.TreatmentSetup;
 import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 
+import java.util.ArrayList;
+
 import java.util.logging.Logger;
 
 import java.io.IOException;
@@ -203,7 +205,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    }
         }
 
-        private ConcurrentHashMap<String, Treatment> segmentTreatmentMap = new ConcurrentHashMap();
+        private ConcurrentHashMap<String, ArrayList<Treatment>> segmentTreatmentMap = new ConcurrentHashMap();
 
         private void setupTreatment(TimelineSegmentTreatmentMessage message) {
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
@@ -244,7 +246,15 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	        Treatment t = vm.createTreatment(treatmentId, setup);
                 group.addTreatment(t);
 	        t.pause(true);
-	        segmentTreatmentMap.put(segmentID, t);
+
+		ArrayList<Treatment> treatments = segmentTreatmentMap.get(segmentID);
+
+		if (treatments == null) {
+		    treatments = new ArrayList();
+		    segmentTreatmentMap.put(segmentID, treatments);
+		}
+
+	        treatments.add(t);
             } catch (IOException e) {
                 System.out.println("Unable to create treatment " + setup.treatment + e.getMessage());
                 return;
@@ -260,11 +270,64 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 
             VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	    Player myPlayer = vm.getPlayer(message.getCallID());
+	    ArrayList<Treatment> treatments = segmentTreatmentMap.get(currentSegmentID);
 
-	    Treatment treatment = segmentTreatmentMap.get(currentSegmentID);
+	    if (treatments != null) {
+		startTreatments(message.getCallID(), treatments);
+	    } else {
+		System.out.println("No treatment in map for seg " + currentSegmentID);
+	    }
+	    
+	    if (useCount == null) {
+	        if (treatments == null || treatments.size() == 0) {
+		    System.out.println("No treatments for " + currentSegmentID);
+		    return;
+	        }
 
-	    if (treatment != null) {
+	        useCount = new Integer(1);
+
+		pauseTreatments(treatments, false);
+	    } else {
+	        useCount = new Integer(useCount.intValue() + 1);
+	    }
+
+	    segmentUseMap.put(currentSegmentID, useCount);
+
+	    String previousSegmentID = message.getPreviousSegmentID();	
+
+	    if (previousSegmentID == null) {
+		System.out.println("No previous segment");
+	        return;
+	    }
+
+	    treatments = segmentTreatmentMap.get(previousSegmentID);
+
+	    if (treatments == null) {
+		return;
+	    }
+
+	    stopTreatments(message.getCallID(), treatments);
+
+	    useCount = segmentUseMap.get(previousSegmentID);
+
+	    if (useCount == null) {
+	        System.out.println("No use count map entry for " + previousSegmentID);
+	    } else {
+	        int i = useCount.intValue();
+
+	        if (i == 1) {
+		    segmentUseMap.remove(previousSegmentID);
+		    pauseTreatments(treatments, true);
+	        }
+	    }
+        }
+
+	private void startTreatments(String callID, ArrayList<Treatment> treatments) {
+            VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+	    Player myPlayer = vm.getPlayer(callID);
+
+	    for (Treatment treatment : treatments) {
 		Call call = vm.getCall(treatment.getId());
 
 		if (call != null) {
@@ -280,65 +343,36 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 		} else {
 		    System.out.println("No call for new treatment " + treatment + " setup " + treatment.getSetup());
 		}
-	    } else {
-		System.out.println("No treatment in map for seg " + currentSegmentID);
 	    }
-	    
-	    if (useCount == null) {
-	        if (treatment == null) {
-		    System.out.println("No treatment for " + currentSegmentID);
-		    return;
-	        }
+	}
 
-	        useCount = new Integer(1);
-		System.out.println("Unpausing treatment " + treatment);
-		treatment.pause(false);
-	    } else {
-	        useCount = new Integer(useCount.intValue() + 1);
+	private void pauseTreatments(ArrayList<Treatment> treatments, boolean pause) {
+	    for (Treatment treatment : treatments) {
+		System.out.println(pause ? "" : "Un" + "pausing treatment " + treatment);
+		treatment.pause(pause);
 	    }
+	}
 
-	    segmentUseMap.put(currentSegmentID, useCount);
+	private void stopTreatments(String callID, ArrayList<Treatment> treatments) {
+            VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-	    String previousSegmentID = message.getPreviousSegmentID();	
+	    Player myPlayer = vm.getPlayer(callID);
 
-	    if (previousSegmentID == null) {
-		System.out.println("No previous segment");
-	        return;
-	    }
+	    for (Treatment treatment : treatments) {
+	        //new Fade(myPlayer, treatment, true);
 
-	    treatment = segmentTreatmentMap.get(previousSegmentID);
+	        Call call = vm.getCall(treatment.getId());
 
-	    if (treatment == null) {
-		return;
-	    }
+	        Player player;
 
-	    //new Fade(myPlayer, treatment, true);
-
-	    Call call = vm.getCall(treatment.getId());
-
-	    Player player;
-
-	    if (call != null) {
-	        player = call.getPlayer();
-	        myPlayer.removePrivateSpatializer(player);
-	    } else {
-		System.out.println("No call for " + treatment + " setup " + treatment.getSetup());
-	    }
-
-	    useCount = segmentUseMap.get(previousSegmentID);
-
-	    if (useCount == null) {
-	        System.out.println("No use count map entry for " + previousSegmentID);
-	    } else {
-	        int i = useCount.intValue();
-
-	        if (i == 1) {
-		    segmentUseMap.remove(previousSegmentID);
-		    System.out.println("Pausing treatment " + treatment);
-		    treatment.pause(true);
+	        if (call != null) {
+	            player = call.getPlayer();
+	            myPlayer.removePrivateSpatializer(player);
+	        } else {
+		    System.out.println("No call for " + treatment + " setup " + treatment.getSetup());
 	        }
 	    }
-        }
+	}
 
         private class Fade extends Thread {
 
