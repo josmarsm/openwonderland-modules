@@ -97,6 +97,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
 
     public TimelineCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+        mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     }
 
     @Override
@@ -152,17 +153,17 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     }
 
     private void createCreationHUD() {
-        creationPanel = new TimelineCreationHUDPanel(this.config);
+        creationPanel = new TimelineCreationHUDPanel(config);
         creationPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent pe) {
-              logger.info("property changed");
-                if ((pe.getPropertyName().equals("create")) || (pe.getPropertyName().equals("update"))) {
-                    logger.info("--- create/update timeline event");
+                if (pe.getPropertyName().equals("create")) {
+                    logger.info("--- create timeline");
                     timelineCreationHUD.setVisible(false);
-                    logger.info("panel hidden, now rebuild");
                     // fetch new config information
                     rebuildClientConfiguration();
+                } else if (pe.getPropertyName().equals("update")) {
+                    // TODO: handle update case
                 } else if (pe.getPropertyName().equals("cancel")) {
                     // timeline creation was canceled
                     timelineCreationHUD.setVisible(false);
