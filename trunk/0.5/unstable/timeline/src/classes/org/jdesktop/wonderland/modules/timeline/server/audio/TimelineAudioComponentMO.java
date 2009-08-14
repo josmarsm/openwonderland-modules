@@ -433,7 +433,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 		    }
 		} else {
 		    System.out.println("No call for new treatment " + treatment + " setup " 
-			+ treatment.getSetup());
+			+ treatment.getSetup() + " treatment call " + treatment.getCall());
 		}
 	    }
 	}
