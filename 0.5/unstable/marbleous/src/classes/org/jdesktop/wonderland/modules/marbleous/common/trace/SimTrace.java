@@ -19,8 +19,8 @@ package org.jdesktop.wonderland.modules.marbleous.common.trace;
 
 import com.jme.math.Vector3f;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
@@ -34,7 +34,7 @@ public class SimTrace implements Serializable {
     private static Logger logger = Logger.getLogger(SimTrace.class.getName());
 
     // An array of samples
-    private List<SampleInfo> sampleList = new ArrayList();
+    private Vector<SampleInfo> sampleList = new Vector();
 
     // The acceleration due to gravity (g), a negative value in the +y axis
     private float g = 0.0f;
@@ -105,6 +105,15 @@ public class SimTrace implements Serializable {
     }
 
     /**
+     * Returns the number of samples.
+     *
+     * @return The total number of samples
+     */
+    public int getNumberOfSamples() {
+        return sampleList.size();
+    }
+    
+    /**
      * Returns the time of the last sample in the trace.
      *
      * @return The number of seconds represented by the trace.
@@ -131,6 +140,46 @@ public class SimTrace implements Serializable {
      */
     public int getSamplesPerSecond() {
         return samplesPerSecond;
+    }
+
+    /**
+     * Returns a subset of the samples given a starting index and the number
+     * of samples. If the starting sample is negative or if there are more
+     * samples requested than available, returns null.
+     *
+     * @param firstSample The index of the first sample
+     * @param numberSamples The number of samples
+     * @return A subset of the samples
+     */
+    public SampleSubset toSubset(int firstSample, int numberSamples) {
+        // Check to see if we are given a negative first sample or if there
+        // are not enough samples
+        if (firstSample < 0 || (firstSample + numberSamples) > sampleList.size()) {
+            logger.warning("Invalid range given, firstSample=" + firstSample +
+                    ", numberSamples=" + numberSamples + ", sampleList.size=" +
+                    sampleList.size());
+            return null;
+        }
+
+        // Go ahead, create the subset and return
+        SampleSubset subset = new SampleSubset();
+        subset.firstSample = firstSample;
+        subset.numberSamples = numberSamples;
+        subset.sampleSubet = new Vector(sampleList.subList(firstSample, firstSample + numberSamples));
+        return subset;
+    }
+
+    /**
+     * Takes a subset of the samples and updates this trace with those samples.
+     *
+     * @param subset A subset of the samples
+     */
+    public void fromSubset(SampleSubset subset) {
+        // Just loop through and manually set each element
+        sampleList.setSize(subset.firstSample + subset.numberSamples);
+        for (int index = 0; index < subset.numberSamples; index++) {
+            sampleList.set(index + subset.firstSample, subset.sampleSubet.get(index));
+        }
     }
 }
 

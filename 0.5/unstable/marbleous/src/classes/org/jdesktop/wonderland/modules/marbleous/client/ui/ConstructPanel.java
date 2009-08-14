@@ -33,6 +33,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.vecmath.Vector3f;
@@ -48,7 +49,7 @@ import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegmentType;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
-import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
+import org.jdesktop.wonderland.modules.marbleous.common.trace.SampleSubset;
 
 /**
  * Panel used to construct the roller coaster and start it running
@@ -285,8 +286,38 @@ public class ConstructPanel extends javax.swing.JPanel {
             }
         }
 
-        // Send a message to all clients with the simulation trace
-        cell.sendCellMessage(new SimTraceMessage(simTrace));
+        // Loop through the samples we have, break it up into 100 sample chunks
+        // (blocks) and send individually
+        int totalSamples = simTrace.getNumberOfSamples();
+        int numberBlocks = (totalSamples / 100) + 1;
+        for (int block = 0; block < numberBlocks; block++) {
+            // Figure out the starting sample and number of samples to transmit
+            // for each "block". For the last block, we may not have enough
+            // samples, so we only transmit what we have
+            int firstSample = block * 100;
+            int transmitSamples = 100;
+            if (firstSample + transmitSamples > totalSamples) {
+                transmitSamples = totalSamples - firstSample;
+            }
+
+            // Find a subset of the simulation trace, and create a message
+            // with it
+            SampleSubset subset = simTrace.toSubset(firstSample, transmitSamples);
+            SimTraceMessage msg = null;
+            if (block == 0 && numberBlocks == 1) {
+                msg = new SimTraceMessage(SimTraceMessage.Type.ONLY, subset);
+            }
+            else if (block == 0) {
+                msg = new SimTraceMessage(SimTraceMessage.Type.FIRST, subset);
+            }
+            else if (block == numberBlocks - 1) {
+                msg = new SimTraceMessage(SimTraceMessage.Type.LAST, subset);
+            }
+            else {
+                msg = new SimTraceMessage(SimTraceMessage.Type.MIDDLE, subset);
+            }
+            cell.sendCellMessage(msg);
+        }
 
         // Make the run button enabled
         runButton.setEnabled(false);
@@ -322,21 +353,33 @@ public class ConstructPanel extends javax.swing.JPanel {
     public void externalSimulationState(SimulationState state) {
         System.err.println("EXTERNAL SIM STATE " + state);
         if (state == SimulationState.STARTED) {
-            runButton.setEnabled(false);
-            stopButton.setEnabled(true);
-            resetButton.setEnabled(false);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    runButton.setEnabled(false);
+                    stopButton.setEnabled(true);
+                    resetButton.setEnabled(false);
+                }
+            });
         }
         else if (state == SimulationState.STOPPED) {
-            runButton.setEnabled(false);
-            stopButton.setEnabled(false);
-            resetButton.setEnabled(true);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    runButton.setEnabled(false);
+                    stopButton.setEnabled(false);
+                    resetButton.setEnabled(true);
+                }
+            });
         }
         else if (state == SimulationState.RESET) {
-            runButton.setEnabled(true);
-            stopButton.setEnabled(false);
-            resetButton.setEnabled(false);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    runButton.setEnabled(true);
+                    stopButton.setEnabled(false);
+                    resetButton.setEnabled(false);
+                    uiTimeSlider.setVisible(false);
+                }
+            });
             cell.resetMarble();
-            uiTimeSlider.setVisible(false);
         }
     }
 
