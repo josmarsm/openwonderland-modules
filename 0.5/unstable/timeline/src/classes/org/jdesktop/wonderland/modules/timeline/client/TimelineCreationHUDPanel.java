@@ -367,7 +367,7 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
 
     widthLabel.setText("Width:");
 
-    widthSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(5.0f), null, null, Float.valueOf(0.0f)));
+    widthSpinner.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(5.0f), null, null, Float.valueOf(0.5f)));
     widthSpinner.setValue(config.getWidth());
 
     pitchLabel.setText("Pitch:");
