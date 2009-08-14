@@ -30,7 +30,6 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -48,7 +47,6 @@ import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SelectedSa
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimTraceMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
-import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SoundPlaybackMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.TrackCellMessage;
 import org.jdesktop.wonderland.modules.marbleous.common.trace.SimTrace;
 
@@ -59,6 +57,8 @@ public class TrackCell extends Cell {
 
     @UsesCellComponent
     private MarblePhysicsComponent marblePhysicsComponent;
+    @UsesCellComponent
+    private AudioPlaybackComponent audioPlaybackComponent;
     private final Set<SimulationStateChangeListener> simulationStateListeners = new HashSet<SimulationStateChangeListener>();
     private SimulationState simulationState = SimulationState.STOPPED;
     private TrackRenderer cellRenderer = null;
@@ -272,10 +272,12 @@ public class TrackCell extends Cell {
         sendCellMessage(new SimulationStateMessage(simulationState));
     }
 
+    /**
+     * Sends a message to the server to start the given sound.
+     * @param soundURI URI of the sound to play
+     */
     private void playSound(String soundURI) {
-        // Play a sound
-        String callID = SoftphoneControlImpl.getInstance().getCallID();
-        sendCellMessage(new SoundPlaybackMessage(callID, soundURI, true));
+        audioPlaybackComponent.sendPlayMessage(soundURI);
     }
 
     /**
