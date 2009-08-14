@@ -18,13 +18,10 @@
 
 package org.jdesktop.wonderland.modules.timeline.client.jme.cell;
 
-import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.jme.scene.Geometry;
 import com.jme.scene.Node;
-import com.jme.scene.TriMesh;
-import com.jme.scene.shape.Box;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
@@ -36,7 +33,7 @@ import org.jdesktop.wonderland.modules.timeline.client.TimelineClientConfigurati
 
 /**
  *
- *  
+ *
  */
 public class TimelineCellRenderer extends BasicRenderer {
 
@@ -76,6 +73,7 @@ private static Logger logger = Logger.getLogger(TimelineCellRenderer.class.getNa
                      sceneRoot.attachChild(mesh);
                    }
                    meshCount = 0;
+                   sceneRoot.attachChild(s.getDateLabel());
                  }
                  sceneRoot.setModelBound(new BoundingSphere());
                  sceneRoot.updateModelBound();
@@ -85,16 +83,6 @@ private static Logger logger = Logger.getLogger(TimelineCellRenderer.class.getNa
        }, sceneRoot);
      }
 
-//  public void setSegments(ArrayList<SegmentEntity> segments) {
-//    if(segments == null){
-//      logger.severe("[TIME REND] error: cannot set segments to null");
-//      return;
-//    }
-//    logger.info("[TIME REND] set to contain " + segments.size() + " segments");
-//    this.segments = segments;
-//    update();
-//  }
-  
   // TODO matt
   // segments getting generated automatically now
   // make connection between TimelineSegment and this function tomorrow
@@ -103,8 +91,13 @@ private static Logger logger = Logger.getLogger(TimelineCellRenderer.class.getNa
     segments.clear();
     float rotation = 0.0f;
     Vector3f nextTarget = null;
+    logger.info("Build segments; num segments in config is:" + config.getNumSegments() + " start/end/units date in config are: " +
+            config.getDateRange().getMinimum() + " " + config.getDateRange().getMaximum() + " " + config.getUnits());
     // ceiling = increase the precision as necessary, don't decrease it
     float radsPerMesh = (config.getRadsPerSegment()/((float)Math.ceil(config.getRadsPerSegment() / baseRadsPerMesh)));
+    float climbPerSegment = (config.getRadsPerSegment()/((float)Math.PI * 2.0f)) * config.getPitch();
+    logger.fine("[TIME CELL] climb per segment: " + climbPerSegment);
+
 //    float radsPerMesh = (config.getRadsPerSegment()/((float)Math.ceil(config.getRadsPerSegment() % baseRadsPerMesh)));
     logger.fine("[TIME REND] rads/seg: " + config.getRadsPerSegment() + " base rads: " + baseRadsPerMesh + " mod: " + config.getRadsPerSegment() % baseRadsPerMesh
             + " ceil: " + ((float)Math.ceil(config.getRadsPerSegment() % baseRadsPerMesh)) + " rads/mesh: " + radsPerMesh);
@@ -113,24 +106,16 @@ private static Logger logger = Logger.getLogger(TimelineCellRenderer.class.getNa
       // cell, distance in degrees, climb, inner, outer
       SegmentEntity ent = new SegmentEntity(cell, config, rotation, nextTarget, radsPerMesh);
       segments.add(ent);
+      // create date label before updating rotation
+//      Node label = createDateLabel(config, i, rotation, climbPerSegment);
+      ent.createDateLabel(config, i, rotation, climbPerSegment, nextTarget, radsPerMesh);
+
+      // prepare for next iteration
       rotation = ent.getNextRotation();
       nextTarget = ent.getNextTarget();
       logger.fine("[TIME CELL] AFTER building seg entity, target is " + nextTarget);
     }
     update();
   }
-    
-//    @Override
-//    protected Node createSceneGraph(Entity entity) {
-//        TriMesh box = new Box("box", Vector3f.ZERO, 0.5f, 0.5f, 0.5f);
-//
-//        Node root = new Node();
-//        root.attachChild(box);
-//
-//        root.setModelBound(new BoundingBox(Vector3f.ZERO,0.5f, 0.5f, 0.5f));
-//        root.updateModelBound();
-//
-//        return root;
-//    }
 
 }

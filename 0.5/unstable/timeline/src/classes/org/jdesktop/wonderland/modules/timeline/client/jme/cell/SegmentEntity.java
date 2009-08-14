@@ -33,7 +33,10 @@ import com.jme.scene.Node;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ZBufferState;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
@@ -44,7 +47,9 @@ import org.jdesktop.wonderland.client.cell.Cell;
 
 import org.jdesktop.wonderland.client.jme.CellRefComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 import org.jdesktop.wonderland.modules.timeline.client.TimelineClientConfiguration;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDateRange;
 
 
 /**
@@ -64,7 +69,7 @@ public class SegmentEntity extends Entity {
    * how many radians are in each mesh making up this segment
    * default - pi/18 = 10 degrees, get smoother from there as necessary
    */
-  
+
 
   protected static ZBufferState zbuf = null;
   static {
@@ -85,6 +90,8 @@ public class SegmentEntity extends Entity {
   private final float nextRotation;
   private Vector3f nextTarget;
   private final float climbPerMesh;
+  private Node dateLabel;
+//  private Vector3f initialLocation;
 //  private final float nextHeight;
 
 
@@ -120,7 +127,9 @@ public class SegmentEntity extends Entity {
    */
   public SegmentEntity(Cell cell, TimelineClientConfiguration config, float rotation, Vector3f target, float radsPerMesh) {
     super("timeline segment");
-    
+//    if(target != null){
+//      this.initialLocation = new Vector3f(target);
+//    }
     logger.fine("creating segment entity");
 
     if(config.getRadsPerSegment()% radsPerMesh > 0){
@@ -156,6 +165,7 @@ public class SegmentEntity extends Entity {
     logger.fine("small base, large base, height, change: " + trapSmallBase + " " + trapLargeBase + " " + trapHeight + " " + change);
     logger.fine("Mid on large base:" + ((0.0f - change) + (0.5f * trapLargeBase)));
     logger.fine("climb, climb per mesh: " + config.getPitch() + " " + climbPerMesh);
+//    logger.info("initial, target loc " + this.initialLocation + " " + target);
 
     // build meshes
     Vector3f oldV1, newV0;
@@ -190,6 +200,7 @@ public class SegmentEntity extends Entity {
       else{
         logger.fine("[SENG ENT] first mesh and first entity, translate so that center of cell is in center of spiral.");
         mesh.translatePoints(new Vector3f(0.0f, 0.0f, config.getInnerRadius()));
+//        this.initialLocation = new Vector3f(0.0f, 0.0f, config.getInnerRadius());
         logger.fine("[SEG ENT] in don't translate: old v1 " + oldV1 + " new v0 " + newV0);
         logger.fine("[SEG ENT] in don't translate: new v1 (getting set to old v1) " + mesh.getVertex(1));
       }
@@ -207,7 +218,7 @@ public class SegmentEntity extends Entity {
 
     this.nextTarget = oldV1;
     this.nextRotation = rotation;
-    
+
     return;
   }
 
@@ -272,6 +283,75 @@ public class SegmentEntity extends Entity {
 
   public Vector3f getNextTarget() {
     return this.nextTarget;
+  }
+
+  public Node getDateLabel(){
+    return dateLabel;
+  }
+
+  public void setDateLabel(Node label) {
+    dateLabel = label;
+  }
+
+  public void createDateLabel(TimelineClientConfiguration config, int idx, float rotation, float climbPerSegment, Vector3f loc, float radsPerMesh){
+
+//    Vector3f dateLoc = new Vector3f(0.0f, SegmentMesh.THICKNESS + (idx * climbPerSegment), config.getInnerRadius());
+//    Vector3f dateLoc = initialLocation;
+//    dateLoc.add(0.0f, SegmentMesh.THICKNESS, 0.0f);
+    // fetch date
+
+    if(loc == null){
+      logger.info("loc was null!");
+      loc = new Vector3f(0.0f, 0.0f, config.getInnerRadius());
+    }
+
+    float x, y, z, innerX, innerZ, outerX, outerZ;
+
+    innerX = ((float) Math.sin(config.getRadsPerSegment()*idx) * config.getInnerRadius());
+    outerX = ((float) Math.sin(config.getRadsPerSegment()*idx) * config.getOuterRadius());
+    y = idx * climbPerSegment + (SegmentMesh.THICKNESS * 2);
+    innerZ = ((float) Math.cos(config.getRadsPerSegment()*idx) * config.getInnerRadius());
+    outerZ = ((float) Math.cos(config.getRadsPerSegment()*idx) * config.getOuterRadius());
+    x = innerX + (outerX - innerX) * 0.5f;
+    z = innerZ + (outerZ - innerZ) * 0.5f;
+    loc = new Vector3f(x,y,z);
+
+
+    float pct = (float)idx / (float)config.getNumSegments();
+    TimelineDateRange range = new TimelineDateRange(config.getDateRange().getMinimum(),
+                                                        config.getDateRange().getMaximum(),
+                                                        config.getUnits().getCalendarUnit());
+    // duplication from addcolletionpanel
+    DateFormat df;
+    switch (range.getUnits()) {
+        case Calendar.HOUR:
+            df = DateFormat.getTimeInstance();
+            break;
+        case Calendar.DAY_OF_YEAR:
+            df = new SimpleDateFormat("dd MMM");
+            break;
+        case Calendar.MONTH:
+            df = new SimpleDateFormat("MMM");
+            break;
+        case Calendar.YEAR:
+            df = new SimpleDateFormat("yyyy");
+            break;
+        default:
+            df = DateFormat.getInstance();
+            break;
+    }
+
+    Node l = new TextLabel2D(df.format(range.getDate(pct)));
+    l.setLocalTranslation(loc);
+    // build rotation, rotate about y axis (unnecessary if billboarded)
+    Quaternion q = new Quaternion(0, (float)Math.sin(rotation/2), 0, (float)Math.cos(rotation/2));
+    // rotate and translate mesh into appropriate position on spiral
+    l.setLocalRotation(q);
+
+    logger.info("Date range min, max, pct:" + range.getMinimum() + " "  + range.getMaximum() + " " + pct);
+    logger.info("Datefetched: " + range.getDate(pct).toString());
+    logger.info("location for date:" + loc);
+    setDateLabel(l);
   }
 
 }
