@@ -17,9 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.timeline.server.audio;
 
-import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
-import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
-
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
