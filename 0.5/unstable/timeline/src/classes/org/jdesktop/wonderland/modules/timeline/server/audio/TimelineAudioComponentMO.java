@@ -322,7 +322,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 	    }
 
             System.out.println("Starting treatment " + setup.treatment + " at (" + setup.x 
-	        + ":" + setup.y + ":" + setup.z + ")");
+	        + ":" + setup.y + ":" + setup.z + ") for segment " + segmentID);
 
             try {
 	        Treatment t = vm.createTreatment(treatmentId, setup);
@@ -334,6 +334,7 @@ public class TimelineAudioComponentMO extends CellComponentMO {
 		if (treatments == null) {
 		    treatments = new ArrayList();
 		    segmentTreatmentMap.put(segmentID, treatments);
+		    System.out.println("New map entry for " + segmentID);
 		}
 
 	        treatments.add(t);
@@ -346,6 +347,9 @@ public class TimelineAudioComponentMO extends CellComponentMO {
         private ConcurrentHashMap<String, Integer> segmentUseMap = new ConcurrentHashMap();
 
 	private void changeSegment(String callID, String previousSegmentID, String currentSegmentID) {
+
+	    System.out.println("changeSegment:  " + callID + " previous " + previousSegmentID
+		+ " current " + currentSegmentID);
 
     	    Integer useCount = segmentUseMap.get(currentSegmentID);
 
