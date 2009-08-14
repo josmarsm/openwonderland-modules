@@ -33,12 +33,21 @@ import com.jme.scene.Line;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.Geometry;
+import com.jme.scene.Spatial;
+import com.jme.scene.GeometricUpdateListener;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Extrusion;
 import com.jme.scene.shape.Sphere;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.ZBufferState;
+import com.jme.scene.state.BlendState;
+import com.jme.scene.state.TextureState;
+import com.jme.image.Texture;
+import com.jmex.effects.particles.ParticleMesh;
+import com.jmex.effects.particles.ParticleFactory;
+import com.jme.util.TextureManager;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import java.awt.event.MouseEvent;
 import com.jme.scene.state.GLSLShaderObjectsState;
 import java.nio.FloatBuffer;
@@ -57,6 +66,7 @@ import org.jdesktop.mtgame.JBulletPhysicsComponent;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderUpdater;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -69,6 +79,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.MarblePhysicsComponent;
 import org.jdesktop.wonderland.modules.marbleous.client.cell.TrackCell;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 /**
  *
@@ -85,7 +97,8 @@ public class TrackRenderer extends BasicRenderer {
     private final Node trackRoot = new Node("TrackRoot");
 
     // The marble entity and it's root node
-    private Entity marbleEntity = null;;
+    private Entity marbleEntity = null;
+    private Particles particles = null;
 
     private LinkedList<MarbleMouseEventListener> marbleMouseListeners = 
         new LinkedList<MarbleMouseEventListener>();
@@ -118,6 +131,12 @@ public class TrackRenderer extends BasicRenderer {
 
         MarbleMouseListener mouseListener = new MarbleMouseListener();
         mouseListener.addToEntity(marbleEntity);
+    }
+
+    public void stopParticles() {
+        if (particles != null) {
+            particles.setEnable(false);
+        }
     }
 
     @Override
@@ -291,6 +310,9 @@ public class TrackRenderer extends BasicRenderer {
         pos.y += 2;
         marbleRoot.setLocalTranslation(pos);
         marbleRoot.setLocalRotation(new Quaternion());
+
+        particles = new Particles(ClientContextJME.getWorldManager(), marbleRoot, e);
+        
 
         RenderComponent renderComponent = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(marbleRoot);
         e.addComponent(RenderComponent.class, renderComponent);
@@ -647,6 +669,111 @@ public class TrackRenderer extends BasicRenderer {
          */
         public void update(Object o) {
             shaderState.load(vShader, fShader);
+        }
+    }
+
+    public class Particles implements RenderUpdater, GeometricUpdateListener {
+
+        private WorldManager wm = null;
+        ParticleMesh pMesh = null;
+        Node followNode = null;
+        Vector3f trans = new Vector3f();
+        private boolean enable = true;
+        private Entity e = null;
+        private Entity rootEntity = null;
+
+        public Particles(WorldManager wm, Node followModel, Entity rootEntity) {
+            this.wm = wm;
+            URL url = null;
+            followNode = followModel;
+            trans = followNode.getWorldTranslation();
+            this.rootEntity = rootEntity;
+
+            BlendState as1 = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Blend);
+            as1.setBlendEnabled(true);
+            as1.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+            as1.setDestinationFunction(BlendState.DestinationFunction.One);
+            as1.setTestEnabled(true);
+            as1.setTestFunction(BlendState.TestFunction.GreaterThan);
+            as1.setEnabled(true);
+            as1.setEnabled(true);
+
+            try {
+                url = AssetUtils.getAssetURL("wla://marbleous/flaresmall.jpg", getCell());
+            } catch (MalformedURLException e) {
+                System.out.println(e);
+            }
+
+
+            TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
+            ts.setTexture(
+                    TextureManager.loadTexture(
+                    url,
+                    Texture.MinificationFilter.Trilinear,
+                    Texture.MagnificationFilter.Bilinear));
+            ts.setEnabled(true);
+
+            pMesh = ParticleFactory.buildParticles("particles", 300);
+            pMesh.setEmissionDirection(new Vector3f(0, 1, 0));
+            pMesh.setInitialVelocity(.006f);
+            pMesh.setStartSize(2.5f);
+            pMesh.setEndSize(.5f);
+            pMesh.setMinimumLifeTime(1200f);
+            pMesh.setMaximumLifeTime(1400f);
+            pMesh.setStartColor(new ColorRGBA(1, 0, 0, 1.0f));
+            pMesh.setEndColor(new ColorRGBA(0, 1, 0, 0));
+            pMesh.setMaximumAngle((float) Math.toRadians(360));
+            pMesh.getParticleController().setControlFlow(false);
+            pMesh.setParticlesInWorldCoords(true);
+            pMesh.warmUp(60);
+
+            pMesh.setRenderState(ts);
+            pMesh.setRenderState(as1);
+            ZBufferState zstate = (ZBufferState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.ZBuffer);
+            zstate.setEnabled(false);
+            pMesh.setRenderState(zstate);
+            pMesh.setModelBound(new BoundingSphere());
+            pMesh.updateModelBound();
+            pMesh.setLocalScale(0.5f);
+            pMesh.setLocalTranslation(trans.x, trans.y, trans.z);
+
+            followNode.addGeometricUpdateListener(this);
+            wm.addRenderUpdater(this, pMesh);
+
+            e = new Entity("Particles ");
+            RenderComponent sc = wm.getRenderManager().createRenderComponent(pMesh);
+            sc.setLightingEnabled(false);
+            e.addComponent(RenderComponent.class, sc);
+            rootEntity.addEntity(e);
+            //wm.addEntity(e);
+        }
+
+        public void geometricDataChanged(Spatial spatial) {
+            trans = spatial.getWorldTranslation();
+            pMesh.setLocalTranslation(trans.x, trans.y, trans.z);
+        }
+
+        public void setEnable(boolean flag) {
+            if (enable != flag) {
+                enable = flag;
+                if (enable) {
+                    rootEntity.addEntity(e);
+                } else {
+                    rootEntity.removeEntity(e);
+                }
+            }
+        }
+
+        /**
+         * This loads the shader
+         */
+        public void update(Object p) {
+            wm.addToUpdateList((Node)p);
+            wm.addRenderUpdater(this, p);
+        }
+
+        public Entity getEntity() {
+            return (e);
         }
     }
 }
