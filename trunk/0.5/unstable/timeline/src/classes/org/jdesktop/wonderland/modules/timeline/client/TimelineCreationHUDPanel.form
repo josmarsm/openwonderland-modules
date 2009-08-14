@@ -16,33 +16,23 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
-                      <Component id="addProviderButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="addKeywordButton" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="createButton" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="createLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="providersPanel" alignment="0" max="32767" attributes="1"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="createLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="providersPanel" alignment="0" pref="604" max="32767" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Component id="scaleLabel" min="-2" max="-2" attributes="0"/>
                                   <Component id="titleLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="descriptionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="startDateLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="innerRadiusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="providersLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="titleTextField" alignment="0" min="-2" pref="135" max="-2" attributes="1"/>
                                   <Group type="102" alignment="0" attributes="0">
@@ -62,19 +52,69 @@
                                           <Component id="endDateTextField" linkSize="1" min="-2" max="-2" attributes="1"/>
                                       </Group>
                                   </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" attributes="0">
+                                              <Component id="innerRadiusSpinner" min="-2" pref="65" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                                              <Component id="widthLabel" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <EmptySpace min="-2" pref="109" max="-2" attributes="1"/>
+                                              <Component id="numSegmentsLabel" pref="21" max="32767" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="widthSpinner" min="-2" pref="65" max="-2" attributes="0"/>
+                                          <Component id="numSegmentsLabel1" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Group type="102" alignment="1" attributes="0">
+                                              <Component id="numSegmentsLabel2" max="32767" attributes="0"/>
+                                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                                              <Component id="numSegmentsLabel3" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                                              <Component id="numSegmentsLabel4" max="32767" attributes="0"/>
+                                              <EmptySpace min="-2" pref="178" max="-2" attributes="0"/>
+                                          </Group>
+                                          <Group type="102" alignment="0" attributes="0">
+                                              <Component id="pitchLabel" min="-2" max="-2" attributes="0"/>
+                                              <EmptySpace max="-2" attributes="0"/>
+                                              <Component id="pitchSpinner" min="-2" pref="65" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
                               </Group>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="cancelButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="addProviderButton" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="addKeywordButton" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="createButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="60" max="-2" attributes="0"/>
+                      <Component id="segmentsLabel" min="-2" pref="149" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="createLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -102,9 +142,29 @@
                   <Component id="granularitySpinner" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="innerRadiusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="widthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="widthSpinner" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="pitchLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="pitchSpinner" min="-2" max="-2" attributes="0"/>
+                  <Component id="innerRadiusSpinner" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="segmentsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="numSegmentsLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="numSegmentsLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="numSegmentsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="numSegmentsLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="numSegmentsLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
               <Component id="providersLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="providersPanel" pref="10" max="32767" attributes="0"/>
+              <Component id="providersPanel" pref="22" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="addKeywordButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -112,10 +172,10 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="createButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="createButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -172,7 +232,9 @@
     <Component class="javax.swing.JTextField" name="startDateTextField">
       <Properties>
         <Property name="horizontalAlignment" type="int" value="4"/>
-        <Property name="text" type="java.lang.String" value="12/31/09"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="dateFormat.format(cell.getClientConfiguration().getDateRange().getMinimum())" type="code"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="endDateLabel">
@@ -183,7 +245,9 @@
     <Component class="javax.swing.JTextField" name="endDateTextField">
       <Properties>
         <Property name="horizontalAlignment" type="int" value="4"/>
-        <Property name="text" type="java.lang.String" value="9/11/10"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="dateFormat.format(cell.getClientConfiguration().getDateRange().getMaximum())" type="code"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="scaleLabel">
@@ -233,11 +297,11 @@
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
           <SpinnerModel type="list">
-            <ListItem value="Hours"/>
-            <ListItem value="Days"/>
-            <ListItem value="Weeks"/>
-            <ListItem value="Months"/>
-            <ListItem value="Years"/>
+            <ListItem value="HOURS"/>
+            <ListItem value="DAYS"/>
+            <ListItem value="WEEKS"/>
+            <ListItem value="MONTHS"/>
+            <ListItem value="YEARS"/>
           </SpinnerModel>
         </Property>
       </Properties>
@@ -245,7 +309,10 @@
     <Component class="javax.swing.JSpinner" name="scaleSpinner">
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-          <SpinnerModel initial="1" numberType="java.lang.Integer" stepSize="1" type="number"/>
+          <SpinnerModel initial="1.0" numberType="java.lang.Float" stepSize="0.25" type="number"/>
+        </Property>
+        <Property name="value" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="cell.getClientConfiguration().getUnitsPerRev()" type="code"/>
         </Property>
       </Properties>
     </Component>
@@ -256,6 +323,81 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="innerRadiusLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Inner Radius:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="widthLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Width:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSpinner" name="widthSpinner">
+      <Properties>
+        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+          <SpinnerModel initial="5.0" numberType="java.lang.Float" stepSize="0.0" type="number"/>
+        </Property>
+        <Property name="value" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="cell.getClientConfiguration().getWidth()" type="code"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="pitchLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Pitch:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSpinner" name="pitchSpinner">
+      <Properties>
+        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+          <SpinnerModel initial="3.0" numberType="java.lang.Float" stepSize="0.5" type="number"/>
+        </Property>
+        <Property name="value" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="cell.getClientConfiguration().getPitch()" type="code"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="segmentsLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Your settings result in "/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSpinner" name="innerRadiusSpinner">
+      <Properties>
+        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+          <SpinnerModel initial="3.0" numberType="java.lang.Float" stepSize="0.5" type="number"/>
+        </Property>
+        <Property name="value" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="cell.getClientConfiguration().getInnerRadius()" type="code"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="numSegmentsLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="X"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="numSegmentsLabel1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="segments of"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="numSegmentsLabel2">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Y(units)"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="numSegmentsLabel3">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="and"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="numSegmentsLabel4">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Z deg"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

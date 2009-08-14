@@ -57,6 +57,7 @@ import org.jdesktop.wonderland.modules.timeline.client.audio.TimelineAudioCompon
 import org.jdesktop.wonderland.modules.timeline.client.jme.cell.TimelineCellRenderer;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellClientState;
+import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration.TimelineUnits;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineSegment;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
@@ -145,14 +146,16 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
     }
 
     private void createCreationHUD() {
-        creationPanel = new TimelineCreationHUDPanel(this);
+        creationPanel = new TimelineCreationHUDPanel(this.config);
         creationPanel.addPropertyChangeListener(new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent pe) {
                 if ((pe.getPropertyName().equals("create")) || (pe.getPropertyName().equals("update"))) {
-                    logger.info("--- create/update timeline");
+                    logger.info("--- create/update timeline event");
                     timelineCreationHUD.setVisible(false);
-                    // TODO: actually create a Timeline!
+                    logger.info("panel hidden, now rebuild");
+                    // fetch new config information
+                    rebuildClientConfiguration();
                 } else if (pe.getPropertyName().equals("cancel")) {
                     // timeline creation was canceled
                     timelineCreationHUD.setVisible(false);
@@ -162,6 +165,25 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         timelineCreationHUD = mainHUD.createComponent(creationPanel);
         timelineCreationHUD.setPreferredLocation(Layout.CENTER);
         timelineCreationHUD.setName("Create Timeline");
+    }
+
+    /**
+     * rebuild configuration based on creation hud
+     * this will cause the spiral to repaint
+     */
+    private void rebuildClientConfiguration(){
+      logger.info("rebuild client config");
+      logger.info("PREVIOUS client config's pitch:" + config.getPitch());
+      config.setDateRange(new TimelineDate(creationPanel.getStartDate(), creationPanel.getEndDate()));
+      config.setUnitsPerRev(creationPanel.getScale());
+      config.setUnits(creationPanel.getUnits());
+      config.setInnerRadius(creationPanel.getInnerRadius());
+      float width = creationPanel.getWidth();
+      config.setOuterRadius(width + config.getInnerRadius());
+      config.setWidth(width);
+      config.setPitch(creationPanel.getPitch());
+      logger.info("ADJUSTED client config's pitch:" + config.getPitch());
+      this.renderer.buildSegments(config);
     }
 
     private void createCurationHUD() {

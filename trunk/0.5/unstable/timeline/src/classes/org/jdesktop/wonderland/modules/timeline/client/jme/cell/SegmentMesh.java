@@ -53,7 +53,7 @@ public class SegmentMesh extends TriMesh {
     protected float change = 0;
 
     private static final int NUM_POINTS = 10;
-
+    
     
 
     /** how thick this mesh will be */

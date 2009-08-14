@@ -35,9 +35,7 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
  */
 @XmlRootElement(name="timeline-config")
 public class TimelineConfiguration implements Serializable {
-
-    /** Radians per segment. Default is PI / 3 (60 degrees)*/
-    private float radsPerSegment = (float) (Math.PI / 3);
+    private float radsPerSegment;
 
     /** The total number of segments. */
     private int numSegments = 8;
@@ -51,7 +49,15 @@ public class TimelineConfiguration implements Serializable {
     /**
      * The date range this timeline covers.
      */
-    private TimelineDate dateRange;
+    private TimelineDate dateRange = new TimelineDate();
+
+    public enum TimelineUnits{HOURS, DAYS, WEEKS, MONTHS, YEARS};
+    TimelineUnits units = TimelineUnits.DAYS;
+
+    // default to 4 units/rev
+    private float unitsPerRev = 4;
+
+
 
     /**
      * The inner radius of the spiral, in meters.
@@ -68,6 +74,7 @@ public class TimelineConfiguration implements Serializable {
      * Default constructor
      */
     public TimelineConfiguration() {
+      calculateRadsPerSegment();
     }
 
     public TimelineConfiguration(TimelineConfiguration config) {
@@ -75,6 +82,7 @@ public class TimelineConfiguration implements Serializable {
         this.numSegments = config.getNumSegments();
         this.pitch = config.getPitch();
         this.radsPerSegment = config.getRadsPerSegment();
+        calculateRadsPerSegment();
     }
 
     /**
@@ -83,6 +91,12 @@ public class TimelineConfiguration implements Serializable {
      */
     public TimelineConfiguration(TimelineDate dateRange) {
         this.dateRange = dateRange;
+        calculateRadsPerSegment();
+    }
+
+    private void calculateRadsPerSegment() {
+  //    radsPerSegment = (float) (Math.PI / 3);
+      radsPerSegment = ((float) (Math.PI * 2))/unitsPerRev;
     }
 
     /**
@@ -152,6 +166,24 @@ public class TimelineConfiguration implements Serializable {
     public void setRadsPerSegment(float radsPerSegment) {
         this.radsPerSegment = radsPerSegment;
     }
+
+    public TimelineUnits getUnits() {
+      return units;
+    }
+
+    public void setUnits(TimelineUnits units) {
+      this.units = units;
+    }
+
+    public float getUnitsPerRev() {
+      return unitsPerRev;
+    }
+
+    public void setUnitsPerRev(float unitsPerRev) {
+      this.unitsPerRev = unitsPerRev;
+    }
+
+
 
     /**
      *
