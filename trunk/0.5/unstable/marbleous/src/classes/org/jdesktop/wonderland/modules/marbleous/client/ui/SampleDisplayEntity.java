@@ -76,7 +76,7 @@ public class SampleDisplayEntity extends Entity {
     private DisplayMode displayMode;
 
     // The display node
-    private Node node;
+    private SampleDisplayNode node;
 
     /** Whether this entity has been added to the JME manager */
     private boolean entityAdded = false;
@@ -201,6 +201,10 @@ public class SampleDisplayEntity extends Entity {
         //float t = sampleInfo.getTime();
         //System.err.println("********** setPinned: t = " + t + ", pinned = " + pinned);
 
+        if (node != null) {
+            node.setPinned(pinned);
+        }
+
         update();
     }
 
@@ -210,6 +214,10 @@ public class SampleDisplayEntity extends Entity {
 
         //float t = sampleInfo.getTime();
         //System.err.println("********** setCurrent: t = " + t + ", current = " + current);
+
+        if (node != null) {
+            node.setCurrent(current);
+        }
 
         update();
     }
@@ -280,7 +288,7 @@ public class SampleDisplayEntity extends Entity {
             logger.info(" display mode is now:" + displayMode);
 
             // refreshes the node to the new DisplayMode's version
-            node = new SampleDisplayNode(sampleInfo, displayMode, fontSizeModifier);
+            node = new SampleDisplayNode(sampleInfo, displayMode, fontSizeModifier, current, pinned);
             // this is unnecessary but it can't hurt, it guarantees we are operating
             // on the nodes we think we are in the updater thread
             final Node newNode = node;
@@ -353,7 +361,7 @@ public class SampleDisplayEntity extends Entity {
      * to re-calculate bounds, e.g. after node is moved.
      */
     private void revalidateNode(){
-        node = new SampleDisplayNode(sampleInfo, displayMode, fontSizeModifier);
+        node = new SampleDisplayNode(sampleInfo, displayMode, fontSizeModifier, current, pinned);
         logger.info(" revalidate node");
         // this is unnecessary but it can't hurt, it guarantees we are operating
         // on the nodes we think we are in the updater thread
