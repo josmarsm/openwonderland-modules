@@ -1,0 +1,20 @@
+Sticky Note Module
+
+The sticky note module adds two new cell types to the world. The first type is a simple text box where you can write plain text notes. The second is a task sticky note, which tracks the status of a to-do item. To edit either type of sticky note you will have to take control by right clicking on the note and selecting "Take Control". When you are done you can release control by clicking the "Release Control" button in the top right corner of the 3D window. To add quick access to status information you can adjust the color of sticky note notes using the "Change Color" item in the context menu of sticky notes.
+
+The task note has fields for tracking the status of a to-do item. The sticky note has two different view states. The default state is "Collapsed". When the note is collapsed you will only see the task name. You can take control of a sticky note to expand it to view all of the task details. Click the down arrow to expand the note. Note: Only you will see the note has been expanded. You can click the "up" arrow or the "x" to collapse the sticky note back to its original state.
+
+Instructions:
+1) Build the module and insert it according to normal procedures.
+2) Go to Insert->Component
+3) Select either sticky note type
+4) Take control of the note and type away
+5) If the note is a task note, you can click the down arrow to expand the task locally.
+
+
+
+Issues:
+Your mouse must be over the note in order to type text into it.
+
+Contact:
+mymegabyte@dev.java.net
