@@ -91,7 +91,7 @@ public class VisualChangeReceiverThread extends Thread {
             ObjectInputStream fromServer = new ObjectInputStream(connection.getInputStream());
 
             // Notify connection successful.
-            parentCell.markConnected(this);
+            parentCell.updateConnectedState(true, this);
 
             System.out.println("Connected on port " + port);
             while (parentCell.allowsUpdatesFrom(this)) {
@@ -116,7 +116,7 @@ public class VisualChangeReceiverThread extends Thread {
 
         //TODO: Notify the CMUCell about the reason for the disconnect?
         System.out.println("Disconnecting from port " + port);
-        parentCell.markDisconnected(this);
+        parentCell.updateConnectedState(false, this);
     }
 
     private void addObjectToStats(Object object) {
@@ -140,6 +140,3 @@ public class VisualChangeReceiverThread extends Thread {
         }
     }
 }
-
-
-

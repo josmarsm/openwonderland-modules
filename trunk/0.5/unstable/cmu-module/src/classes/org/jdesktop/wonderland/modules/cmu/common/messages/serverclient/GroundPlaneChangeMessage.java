@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
@@ -27,8 +26,8 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 public class GroundPlaneChangeMessage extends CellMessage {
     private boolean groundPlaneShowing;
 
-    public GroundPlaneChangeMessage(CellID cellID, boolean groundPlaneShowing) {
-        super(cellID);
+    public GroundPlaneChangeMessage(boolean groundPlaneShowing) {
+        super();
         setGroundPlaneShowing(groundPlaneShowing);
     }
 

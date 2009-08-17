@@ -47,18 +47,28 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class CMUCellMO extends CellMO {
 
+    // CMU file URI
     private String cmuURI;
+    private final Serializable uriLock = new String();
+
+    // Connection information
     private String hostName;
     private int port;
+    private boolean socketInitialized = false;  // False until a CMU instance informs us with valid socket information.
+    private final Serializable socketLock = new String();
+
+    // Scene title
     private String sceneTitle;
     private final Serializable sceneTitleLock = new String();
+
+    // Playback information
     private boolean playing;
     private float playbackSpeed;
     private final Serializable playbackSpeedLock = new String();
+
+    // Ground plane information
     private boolean groundPlaneShowing;
     private final Serializable groundPlaneLock = new String();
-    private boolean socketInitialized = false;  // False until a CMU instance informs us with valid socket information.
-    private final Serializable socketLock = new String();
 
     /**
      * Receives and processes messages about playback speed change.
@@ -85,30 +95,27 @@ public class CMUCellMO extends CellMO {
             CMUCellMO cellMO = (CMUCellMO) getCell();
 
             // Playback speed change
-            if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
-                PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
-                cellMO.setPlaybackInformation(clientID, change.isPlaying(), change.getPlaybackSpeed());
+            if (message instanceof PlaybackSpeedChangeMessage) {
+                cellMO.setPlaybackInformationFromMessage(clientID, (PlaybackSpeedChangeMessage) message);
             }
 
             // Ground plane visibility change
-            if (GroundPlaneChangeMessage.class.isAssignableFrom(message.getClass())) {
-                GroundPlaneChangeMessage change = (GroundPlaneChangeMessage) message;
-                cellMO.setGroundPlaneShowing(clientID, change.isGroundPlaneShowing());
+            if (message instanceof GroundPlaneChangeMessage) {
+                cellMO.setGroundPlaneShowingFromMessage(clientID, (GroundPlaneChangeMessage) message);
             }
 
             // Scene title change
-            if (SceneTitleChangeMessage.class.isAssignableFrom(message.getClass())) {
-                SceneTitleChangeMessage change = (SceneTitleChangeMessage) message;
-                cellMO.setSceneTitle(clientID, change.getSceneTitle());
+            if (message instanceof SceneTitleChangeMessage) {
+                cellMO.setSceneTitleFromMessage(clientID, (SceneTitleChangeMessage) message);
             }
 
             // Restart program
-            if (RestartProgramMessage.class.isAssignableFrom(message.getClass())) {
+            if (message instanceof RestartProgramMessage) {
                 cellMO.createProgram();
             }
 
             // Mouse button event
-            if (MouseButtonEventMessage.class.isAssignableFrom(message.getClass())) {
+            if (message instanceof MouseButtonEventMessage) {
                 MouseButtonEventMessage mouseMessage = (MouseButtonEventMessage) message;
             //TODO: forward mouse clicks
             }
@@ -118,77 +125,6 @@ public class CMUCellMO extends CellMO {
     /** Default constructor. */
     public CMUCellMO() {
         super();
-    }
-
-    /**
-     * Get the URI of the loaded CMU file.
-     * @return The URI of the loaded CMU file
-     */
-    public String getCmuURI() {
-        return cmuURI;
-    }
-
-    /**
-     * Sets the URI of the CMU file.
-     * @param uri The URI of the CMU file
-     */
-    public void setCmuURI(String uri) {
-        cmuURI = uri;
-    }
-
-    /**
-     * We use two separate forms of playback speed control: a binary play/pause
-     * control, and a many-valued playback speed control.  This method
-     * gets the net result of boht methods.
-     * If the scene is playing, get the stored playback speed; if it is paused,
-     * get the default paused speed.
-     * @return Actual playback speed
-     */
-    private float getActualPlaybackSpeed() {
-        synchronized (playbackSpeedLock) {
-            return (isPlaying() ? this.playbackSpeed : PlaybackDefaults.PAUSE_SPEED);
-        }
-    }
-
-    private void setPlaybackInformation(WonderlandClientID notifier, boolean playing, float playbackSpeed) {
-        synchronized (playbackSpeedLock) {
-            this.playbackSpeed = playbackSpeed;
-            this.playing = playing;
-            // Inform the associated program of the change
-            ProgramConnectionHandlerMO.changePlaybackSpeed(getCellID(), getActualPlaybackSpeed());
-            // Send a message to clients
-            sendCellMessage(notifier, new PlaybackSpeedChangeMessage(this.getCellID(),
-                    this.getPlaybackSpeed(), this.isPlaying()));
-        }
-    }
-
-    /**
-     * Get current playback speed.
-     * @return Current playback speed for the CMU instance.
-     */
-    public float getPlaybackSpeed() {
-        synchronized (playbackSpeedLock) {
-            return this.playbackSpeed;
-        }
-    }
-
-    public boolean isPlaying() {
-        synchronized (playbackSpeedLock) {
-            return playing;
-        }
-    }
-
-    public boolean isGroundPlaneShowing() {
-        synchronized (groundPlaneLock) {
-            return groundPlaneShowing;
-        }
-    }
-
-    public void setGroundPlaneShowing(WonderlandClientID notifier, boolean groundPlaneShowing) {
-        synchronized (groundPlaneLock) {
-            this.groundPlaneShowing = groundPlaneShowing;
-            sendCellMessage(notifier, new GroundPlaneChangeMessage(this.getCellID(), this.isGroundPlaneShowing()));
-        }
     }
 
     /**
@@ -233,8 +169,8 @@ public class CMUCellMO extends CellMO {
 
         CMUCellServerState setup = (CMUCellServerState) serverState;
         setCmuURI(setup.getCmuURI());
-        setGroundPlaneShowing(null, setup.isGroundPlaneShowing());
-        setSceneTitle(null, setup.getSceneTitle());
+        setGroundPlaneShowing(setup.isGroundPlaneShowing());
+        setSceneTitle(setup.getSceneTitle());
 
         createProgram();
     }
@@ -252,12 +188,6 @@ public class CMUCellMO extends CellMO {
         cmuServerState.setGroundPlaneShowing(isGroundPlaneShowing());
         cmuServerState.setSceneTitle(getSceneTitle());
         return super.getServerState(serverState);
-    }
-
-    public void createProgram() {
-        this.setPlaybackInformation(null, PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
-        // Create CMU instance
-        ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
     }
 
     /**
@@ -283,12 +213,144 @@ public class CMUCellMO extends CellMO {
         }
     }
 
+    public void createProgram() {
+        setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
+        // Create CMU instance
+        ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
+    }
+
+    /**
+     * Get the URI of the loaded CMU file.
+     * @return The URI of the loaded CMU file
+     */
+    public String getCmuURI() {
+        synchronized(uriLock) {
+            return cmuURI;
+        }
+    }
+
+    /**
+     * Sets the URI of the CMU file.
+     * @param uri The URI of the CMU file
+     */
+    public void setCmuURI(String uri) {
+        synchronized(uriLock) {
+            cmuURI = uri;
+        }
+    }
+
+    /**
+     * Get current playback speed.
+     * @return Current playback speed for the CMU instance
+     */
+    public float getPlaybackSpeed() {
+        synchronized (playbackSpeedLock) {
+            return this.playbackSpeed;
+        }
+    }
+
+    /**
+     * Get whether the scene is currently playing.
+     * @return The current play/pause state of the scene
+     */
+    public boolean isPlaying() {
+        synchronized (playbackSpeedLock) {
+            return playing;
+        }
+    }
+
+    /**
+     * We use two separate forms of playback speed control: a binary play/pause
+     * control, and a many-valued playback speed control.  This method
+     * gets the net playback speed, taking both controls into account.
+     * If the scene is playing, get the stored playback speed; if it is paused,
+     * get the default paused speed.
+     * @return Actual playback speed
+     */
+    private float getActualPlaybackSpeed() {
+        synchronized (playbackSpeedLock) {
+            return (isPlaying() ? this.playbackSpeed : PlaybackDefaults.PAUSE_SPEED);
+        }
+    }
+
+    /**
+     * Set the play/pause state of the scene, and its playback speed.  Also
+     * send this information to all clients.
+     * @param playing Whether the scene is playing or paused
+     * @param playbackSpeed The playback speed of the scene
+     */
+    public void setPlaybackInformation(boolean playing, float playbackSpeed) {
+        setPlaybackInformationFromMessage(null, new PlaybackSpeedChangeMessage(playbackSpeed, playing));
+    }
+
+    /**
+     * Set the playback information from a PlaybackSpeedChangeMessage,
+     * and send an update to all clients.
+     * @param notifier The client which originally sent this message (null if none)
+     * @param message The playback change message
+     */
+    private void setPlaybackInformationFromMessage(WonderlandClientID notifier, PlaybackSpeedChangeMessage message) {
+        final float actualPlaybackSpeed;
+        synchronized (playbackSpeedLock) {
+            this.playbackSpeed = message.getPlaybackSpeed();
+            this.playing = message.isPlaying();
+            actualPlaybackSpeed = getActualPlaybackSpeed();
+        }
+        // Inform the associated program of the change
+        ProgramConnectionHandlerMO.changePlaybackSpeed(getCellID(), actualPlaybackSpeed);
+        // Send a message to clients
+        sendCellMessage(notifier, message);
+    }
+
+    /**
+     * Find out whether the ground plane of the CMU instance should be shown
+     * by clients.
+     * @return Whether the ground plane should be showing
+     */
+    public boolean isGroundPlaneShowing() {
+        synchronized (groundPlaneLock) {
+            return groundPlaneShowing;
+        }
+    }
+
+    /**
+     * Set whether the ground plane of the CMU instance should be shown by
+     * clients; sends an update to all clients to notify them of the change.
+     * @param groundPlaneShowing Whether the ground plane should be showing
+     */
+    public void setGroundPlaneShowing(boolean groundPlaneShowing) {
+        setGroundPlaneShowingFromMessage(null, new GroundPlaneChangeMessage(groundPlaneShowing));
+    }
+
+    /**
+     * Set the ground-showing state from a GroundPlaneChangeMessage, then
+     * pass the message on to clients.
+     * @param notifier The client who originally sent the message (null if none)
+     * @param message The ground plane change message
+     */
+    private void setGroundPlaneShowingFromMessage(WonderlandClientID notifier, GroundPlaneChangeMessage message) {
+        synchronized (groundPlaneLock) {
+            this.groundPlaneShowing = message.isGroundPlaneShowing();
+        }
+        sendCellMessage(notifier, message);
+    }
+
+    /**
+     * Get the port which clients should connect to in order to receive
+     * scene updates.
+     * @return Port to connect to
+     */
     public int getPort() {
         synchronized (socketLock) {
             return port;
         }
     }
 
+    /**
+     * Get the hostname which clients should connect to in order to receive
+     * scene updates.
+     * @return Host to connect to
+     */
     public String getHostname() {
         synchronized (socketLock) {
             return hostName;
@@ -296,12 +358,16 @@ public class CMUCellMO extends CellMO {
     }
 
     public void setHostnameAndPort(String hostname, int port) {
+        setHostnameAndPortFromMessage(null, new ConnectionChangeMessage(hostname, port));
+    }
+
+    private void setHostnameAndPortFromMessage(WonderlandClientID notifier, ConnectionChangeMessage message) {
         synchronized (socketLock) {
             this.socketInitialized = true;
-            this.hostName = hostname;
-            this.port = port;
-            sendConnectionInformation();
+            this.hostName = message.getHostname();
+            this.port = message.getPort();
         }
+        sendCellMessage(notifier, message);
     }
 
     public String getSceneTitle() {
@@ -310,18 +376,14 @@ public class CMUCellMO extends CellMO {
         }
     }
 
-    public void setSceneTitle(WonderlandClientID notifier, String sceneTitle) {
-        synchronized (sceneTitleLock) {
-            this.sceneTitle = sceneTitle;
-            sendCellMessage(notifier, new SceneTitleChangeMessage(this.getCellID(), this.getSceneTitle()));
-        }
+    public void setSceneTitle(String sceneTitle) {
+        setSceneTitleFromMessage(null, new SceneTitleChangeMessage(sceneTitle));
     }
 
-    private void sendConnectionInformation() {
-        synchronized (socketLock) {
-            synchronized (playbackSpeedLock) {
-                this.sendCellMessage(null, new ConnectionChangeMessage(this.getCellID(), getHostname(), getPort()));
-            }
+    private void setSceneTitleFromMessage(WonderlandClientID notifier, SceneTitleChangeMessage message) {
+        synchronized (sceneTitleLock) {
+            this.sceneTitle = message.getSceneTitle();
         }
+        sendCellMessage(notifier, message);
     }
 }
