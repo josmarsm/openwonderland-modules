@@ -1,0 +1,21 @@
+Clickable Link Module
+
+This module allows you to add a capability to a cell to have the cell launch a web-browser upon receiving a user click.
+
+Instructions:
+1) Build the module and insert it according to normal procedures.
+2) Add a cell to the world. Images are good examples.
+3) Right click the cell, open properties.
+4) Click the "+" sign in the lower left of the properties window.
+5) Select Clickable link from the list
+6) On the left side there is now an entry for "Clickable Link URL". Click it.
+7) Paste the URL you want the cell to go to.
+8) Hit apply and close properties window.
+9) Now just single click the cell in world. A browser should open.
+
+
+Issues:
+The clickable link component does not work with all cells. For example it will not work with the StickyNote cell. That probably means it is reasonable to conclude it will not work with all APP2D cells.
+
+Contact:
+mymegabyte@dev.java.net
