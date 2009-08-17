@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.modules.presentationbase.client.jme.cell.MovingPlatformCellRenderer;
+import org.jdesktop.wonderland.modules.presentationbase.client.jme.cell.PresentationCellRenderer;
 import org.jdesktop.wonderland.modules.presentationbase.common.PresentationCellChangeMessage;
 import org.jdesktop.wonderland.modules.presentationbase.common.PresentationCellServerState;
 
@@ -88,8 +89,10 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
-        // Don't really do anything here.
-            return super.createCellRenderer(rendererType);
+        // attach a standing renderer to help debug my various parent/child issues
+
+//        return super.createCellRenderer(rendererType);
+        return new PresentationCellRenderer(this);
     }
 
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {

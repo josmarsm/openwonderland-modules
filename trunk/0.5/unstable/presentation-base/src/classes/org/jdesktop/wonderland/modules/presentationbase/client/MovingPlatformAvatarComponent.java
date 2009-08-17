@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.modules.presentationbase.client;
 
 import com.jme.math.Vector3f;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.TransformChangeListener;
@@ -78,11 +79,14 @@ public class MovingPlatformAvatarComponent extends CellComponent implements Tran
             logger.warning("avatarLocalToNewPlatform: " + avatarLocalToNewPlatform.getTranslation(Vector3f.ZERO));
 
 //            CellTransform finalTransform = transform(avatarLocalToNewPlatform, platformCell.getWorldTransform(), new CellTransform(null, null));
-            CellTransform finalTransform = avatarLocalToNewPlatform;
+            final CellTransform finalTransform = avatarLocalToNewPlatform;
 
             logger.warning("finalGlobalTransform: " + finalTransform.getTranslation(Vector3f.ZERO));
-
-            ((AvatarCell)this.cell).triggerGoto(finalTransform.getTranslation(null), finalTransform.getRotation(null));
+            SwingUtilities.invokeLater(new Runnable() {
+               public void run() {
+                ((AvatarCell)cell).triggerGoto(finalTransform.getTranslation(null), finalTransform.getRotation(null));
+               }
+            });
             
             currentPlatformTransform = platformCell.getWorldTransform();
 //        }

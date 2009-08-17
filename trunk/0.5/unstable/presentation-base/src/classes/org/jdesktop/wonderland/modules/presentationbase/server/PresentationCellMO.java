@@ -17,12 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.presentationbase.server;
 
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
@@ -84,7 +83,7 @@ public class PresentationCellMO extends CellMO {
      */
     protected Vector3f getPositionForIndex(SlidesCell cell, int i) {
 //        Vector3f newPosition = new Vector3f(0, -1.0f, (cell.getCenterSpacing() * (i-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)/2.0f)*-1)));
-        Vector3f newPosition = new Vector3f((cell.getCenterSpacing() * (i-1)*-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)))/(-2.0f), -1.5f, 8.0f);
+        Vector3f newPosition = new Vector3f((cell.getCenterSpacing() * (i-1)*1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)))/(-2.0f), -1.5f, 8.0f);
         logger.info("returning position for platform: " + newPosition);
         return newPosition;
     }
@@ -108,11 +107,24 @@ public class PresentationCellMO extends CellMO {
             ////////////////////
             CellMO pdfCell = CellManagerMO.getCell(pcsState.getSlidesCellID());
 
+            CellTransform pdfCellTransform = pdfCell.getLocalTransform(null);
+            BoundingVolume pdfBounds = pdfCell.getLocalBounds();
+
+            
+            CellMO slideParent = pdfCell.getParent();
+            if(slideParent==null) {
+                CellManagerMO.getCellManager().removeCellFromWorld(pdfCell);
+            } else {
+                slideParent.removeChild(pdfCell);
+            }
+
 
             // 0. Setup this cell so it's got the same transform that the PDF
             //    cell used to have, but bigger.
-            this.setLocalTransform(pdfCell.getLocalTransform(null));
+            this.setLocalTransform(pdfCellTransform);
+            this.setLocalBounds(pdfBounds);
 
+            
 
             // 1. Reparent the PDF cell to be a child of this cell instead.
             //     (this chunk of code is very similar to
@@ -120,26 +132,31 @@ public class PresentationCellMO extends CellMO {
             //       cell message is implemented. They should probably
             //       be refactored to be the same common utility method.)
 
-            CellMO slideParent = pdfCell.getParent();
-
-            if(slideParent==null) {
-                CellManagerMO.getCellManager().removeCellFromWorld(pdfCell);
-            } else {
-                slideParent.removeChild(pdfCell);
-            }
             try {
+                
+                PositionComponentServerState posState = new PositionComponentServerState();
+                
+                posState.setTranslation(Vector3f.ZERO);
+                posState.setBounds(pdfBounds);
+
+                CellServerState pdfCellState = pdfCell.getServerState(null);
+                pdfCellState.addComponentServerState(posState);
+
+                pdfCell.setServerState(pdfCellState);
+
                 this.addChild(pdfCell);
 
                 // Now move it to 0,0,0 within its new parent cell (which
                 // already moved to the PDF cell's location.
-                MovableComponentMO mc = pdfCell.getComponent(MovableComponentMO.class);
 
-                if(mc!=null)
-                    mc.moveRequest(null, new CellTransform(null, Vector3f.ZERO));
-                else
-                    logger.warning("NO MOVABLE COMPONENT ON THE PDF CELL");
 
-                this.setLocalBounds(pdfCell.getLocalBounds());
+//                MovableComponentMO mc = pdfCell.getComponent(MovableComponentMO.class);
+//
+//                if(mc!=null)
+//                    mc.moveRequest(null, new CellTransform(new Quaternion(), Vector3f.ZERO));
+//                else
+//                    logger.warning("NO MOVABLE COMPONENT ON THE PDF CELL");
+
                 
             } catch (MultipleParentException ex) {
                 logger.info("MultipleParentException while reparenting the slidesCell: " + ex.getLocalizedMessage());
@@ -225,7 +242,7 @@ public class PresentationCellMO extends CellMO {
             if(this.platformCellMORef!=null) {
                 logger.info("Updating platform position.");
                 MovableComponentMO mc = this.platformCellMORef.get().getComponent(MovableComponentMO.class);
-                mc.moveRequest(null, new CellTransform(null, this.getPositionForIndex(this.slidesCellRef.get(), curSlide)));
+                mc.moveRequest(null, new CellTransform(new Quaternion(), this.getPositionForIndex(this.slidesCellRef.get(), curSlide)));
             }
         }
 
