@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
@@ -32,11 +31,10 @@ public class PlaybackSpeedChangeMessage extends CellMessage {
 
     /**
      * Standard constructor.
-     * @param cellID ID of the relevant cell
-     * @param speed
+     * @param speed Playback speed
+     * @param playing Play/pause state
      */
-    public PlaybackSpeedChangeMessage(CellID cellID, float speed, boolean playing) {
-        super(cellID);
+    public PlaybackSpeedChangeMessage(float speed, boolean playing) {
         this.setPlaybackSpeed(speed);
         this.setPlaying(playing);
     }
@@ -57,10 +55,18 @@ public class PlaybackSpeedChangeMessage extends CellMessage {
         this.playbackSpeed = speed;
     }
 
+    /**
+     * Get play/pause state.
+     * @return Play/pause state
+     */
     public boolean isPlaying() {
         return playing;
     }
 
+    /**
+     * Set play/pause state.
+     * @param playing Play/pause state
+     */
     public void setPlaying(boolean playing) {
         this.playing = playing;
     }

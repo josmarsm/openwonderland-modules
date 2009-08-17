@@ -57,7 +57,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     private final ConnectionHandlerThread handlerThread;
 
     /**
-     * A Socket/ObjectOutputStream pair, just used to store these two things
+     * A Socket/ObjectOutputStream pair, used to store these two things
      * together.
      */
     protected class Connection {

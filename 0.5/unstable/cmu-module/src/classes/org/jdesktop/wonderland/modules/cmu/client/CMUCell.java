@@ -17,23 +17,17 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
-import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import com.jme.scene.Node;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
-import org.jdesktop.wonderland.client.hud.HUD;
-import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
-import org.jdesktop.wonderland.client.hud.HUDEventListener;
-import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -62,29 +56,39 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ServerCl
  * Cell to display and interact with a CMU scene.
  * @author kevin
  */
-public class CMUCell extends Cell implements HUDEventListener {
+public class CMUCell extends Cell {
 
-    private CMUCellRenderer renderer;
-    private MouseEventListener mouseListener;
+    // Renderer info
+    private CMUCellRenderer renderer = null;
+    private final VisualParent sceneRoot = new VisualParent();      // We synchronize incoming visual changes and connection changes on this object.
     private boolean sceneLoaded = false;
-    private String sceneTitle;
+
+    // Scene title info
+    private String sceneTitle = null;
     private final Object sceneTitleLock = new Object();
-    private float playbackSpeed;
-    private boolean playing;
+
+    // Playback info
+    private float playbackSpeed = 0.0f;
+    private boolean playing = false;
     private final Object playbackSpeedLock = new Object();
-    private boolean groundPlaneShowing;
+
+    // Ground plane info
+    private boolean groundPlaneShowing = false;
     private final Object groundPlaneLock = new Object();
     private final Collection<NodeID> groundPlaneIDs = new Vector<NodeID>();
-    private final VisualParent sceneRoot = new VisualParent();      // We synchronize incoming visual changes and connection changes on this object.
+
+    // Message receivers/listeners
+    private MouseEventListener mouseListener = null;
     private VisualChangeReceiverThread cmuConnectionThread = null;
     private final CMUCellMessageReceiver messageReceiver = new CMUCellMessageReceiver();
-    private final Collection<PlaybackChangeListener> playbackChangeListeners = new Vector<PlaybackChangeListener>();
-    private final Collection<GroundPlaneChangeListener> groundPlaneChangeListeners = new Vector<GroundPlaneChangeListener>();
-    private final Collection<SceneTitleChangeListener> sceneTitleChangeListeners = new Vector<SceneTitleChangeListener>();
-    private CMUJPanel hudPanel;
-    private HUDComponent hudComponent;
-    private boolean hudShowing = false;
-    private final Object hudShowingLock = new Object();
+
+    // Listener sets
+    private final Set<PlaybackChangeListener> playbackChangeListeners = new HashSet<PlaybackChangeListener>();
+    private final Set<GroundPlaneChangeListener> groundPlaneChangeListeners = new HashSet<GroundPlaneChangeListener>();
+    private final Set<SceneTitleChangeListener> sceneTitleChangeListeners = new HashSet<SceneTitleChangeListener>();
+
+    // HUD Stuff
+    private final HUDControl hudControl = new HUDControl(this);
 
     /**
      * Listener to process mouse click events.
@@ -101,7 +105,7 @@ public class CMUCell extends Cell implements HUDEventListener {
 
         /**
          * Toggle HUD on/off.
-         * {@inheritDoc}
+         * @param event {@inheritDoc}
          */
         @Override
         public void commitEvent(Event event) {
@@ -110,7 +114,7 @@ public class CMUCell extends Cell implements HUDEventListener {
                 return;
             }
 
-            setHUDShowing(!isHUDShowing());
+            hudControl.setHUDShowing(!hudControl.isHUDShowing());
         //sendCellMessage(new MouseButtonEventMessage(getCellID()));//, mbe));
         }
 
@@ -143,14 +147,14 @@ public class CMUCell extends Cell implements HUDEventListener {
             // Socket information message
             if (ConnectionChangeMessage.class.isAssignableFrom(message.getClass())) {
                 ConnectionChangeMessage changeMessage = (ConnectionChangeMessage) message;
-                setHostnameAndPort(changeMessage.getServer(), changeMessage.getPort());
+                setHostnameAndPort(changeMessage.getHostname(), changeMessage.getPort());
             }
 
             // Playback speed message
             if (PlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
                 if (!fromMe) {
                     PlaybackSpeedChangeMessage change = (PlaybackSpeedChangeMessage) message;
-                    setPlaybackInformationWithoutUpdate(change.getPlaybackSpeed(), change.isPlaying());
+                    setPlaybackInformationInternal(change.getPlaybackSpeed(), change.isPlaying());
                 }
             }
 
@@ -158,7 +162,7 @@ public class CMUCell extends Cell implements HUDEventListener {
             if (GroundPlaneChangeMessage.class.isAssignableFrom(message.getClass())) {
                 if (!fromMe) {
                     GroundPlaneChangeMessage change = (GroundPlaneChangeMessage) message;
-                    setGroundPlaneShowingWithoutUpdate(change.isGroundPlaneShowing());
+                    setGroundPlaneShowingInternal(change.isGroundPlaneShowing());
                 }
             }
 
@@ -166,7 +170,7 @@ public class CMUCell extends Cell implements HUDEventListener {
             if (SceneTitleChangeMessage.class.isAssignableFrom(message.getClass())) {
                 if (!fromMe) {
                     SceneTitleChangeMessage change = (SceneTitleChangeMessage) message;
-                    setSceneTitleWithoutUpdate(change.getSceneTitle());
+                    setSceneTitleInternal(change.getSceneTitle());
                 }
             }
         }
@@ -177,6 +181,120 @@ public class CMUCell extends Cell implements HUDEventListener {
      */
     public CMUCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+    }
+
+    /**
+     * Use the client state data to extract port/server information;
+     * if none has been set (i.e. if the CMU instance on the server
+     * has not yet been initialized), we don't do anything, and instead
+     * wait for the CMUCellMO associated with this cell to inform
+     * us explicitly of the socket information.
+     * @param {@inheritDoc}
+     */
+    @Override
+    public void setClientState(CellClientState clientState) {
+        super.setClientState(clientState);
+
+        assert clientState instanceof CMUCellClientState;
+        CMUCellClientState cmuClientState = (CMUCellClientState) clientState;
+        this.setPlaybackInformationInternal(cmuClientState.getPlaybackSpeed(), cmuClientState.isPlaying());
+        if (cmuClientState.isServerAndPortInitialized()) {
+            this.setHostnameAndPort(cmuClientState.getServer(), cmuClientState.getPort());
+        }
+        this.setSceneTitle(cmuClientState.getSceneTitle());
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        if (rendererType == RendererType.RENDERER_JME) {
+            this.renderer = new CMUCellRenderer(this);
+            return this.renderer;
+        } else {
+            return super.createCellRenderer(rendererType);
+        }
+
+    }
+
+    /**
+     * Get the root of the CMU scene represented by this node.
+     * @return The root of the CMU scene as a jME node
+     */
+    public Node getSceneRoot() {
+        return this.sceneRoot;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
+
+        ChannelComponent channel = getComponent(ChannelComponent.class);
+
+        switch (status) {
+            case DISK:
+                // Remove mouse listener.
+                if (mouseListener != null) {
+                    mouseListener.removeFromEntity(renderer.getEntity());
+                    mouseListener = null;
+                }
+
+                if (!increasing) {
+                    // Remove message receivers
+                    if (channel != null) {
+                        for (Class messageClass : ServerClientMessageTypes.MESSAGE_TYPES_TO_RECEIVE) {
+                            channel.removeMessageReceiver(messageClass);
+                        }
+                    }
+
+                    // Clean up HUD and network stuff
+                    hudControl.unloadHUD();
+                    setConnectedState(false);
+                }
+
+                break;
+
+            case INACTIVE:
+                if (increasing) {
+                    // Add message receivers
+                    if (channel != null) {
+                        for (Class messageClass : ServerClientMessageTypes.MESSAGE_TYPES_TO_RECEIVE) {
+                            channel.addMessageReceiver(messageClass, messageReceiver);
+                        }
+                    }
+                }
+
+                break;
+
+            case ACTIVE:
+                // Add mouse listener.
+                if (mouseListener == null) {
+                    mouseListener = new MouseEventListener();
+                    mouseListener.addToEntity(renderer.getEntity());
+                }
+
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /**
+     * We allow only one thread to provide scene graph updates at a time;
+     * this checks whether the parameter is that thread.
+     * @param receiver The thread to check
+     * @return True if that thread is allowed to update this cell
+     */
+    public boolean allowsUpdatesFrom(VisualChangeReceiverThread receiver) {
+        synchronized (this.sceneRoot) {
+            return (this.cmuConnectionThread == receiver);
+        }
     }
 
     /**
@@ -211,7 +329,13 @@ public class CMUCell extends Cell implements HUDEventListener {
         }
     }
 
+    /**
+     * Processes a transformation message by applying it to the node
+     * with the appropriate node ID.
+     * @param message Message to apply
+     */
     private void applyTransformationMessage(TransformationMessage message) {
+        //TODO: Effectively suspend these messages during scene loading
         synchronized (sceneRoot) {
             if (this.isSceneLoaded()) {
                 this.sceneRoot.applyTransformationToChild(message);
@@ -219,116 +343,116 @@ public class CMUCell extends Cell implements HUDEventListener {
         }
     }
 
+    /**
+     * Load a visual message by attaching it to the scene root, and
+     * filtering out the ground plane if desired.
+     * @param message Message to apply
+     */
     private void applyVisualMessage(VisualMessage message) {
         synchronized (sceneRoot) {
             sceneRoot.attachChild(new VisualNode(message));
-
-            // Filter ground plane
-            if (NodeNameClassifier.isGroundPlaneName(message.getName())) {
-                synchronized (this.groundPlaneIDs) {
-                    groundPlaneIDs.add(message.getNodeID());
-                }
+        }
+        // Filter ground plane
+        if (NodeNameClassifier.isGroundPlaneName(message.getName())) {
+            synchronized (this.groundPlaneIDs) {
+                groundPlaneIDs.add(message.getNodeID());
+            }
+            synchronized (sceneRoot) {
                 sceneRoot.applyVisibilityToChild(message.getNodeID(), isGroundPlaneShowing());
             }
         }
     }
 
+    /**
+     * Removes the node referenced by the message.
+     * @param message Message to apply
+     */
     private void applyVisualDeletedMessage(VisualDeletedMessage message) {
-        sceneRoot.removeChild(message);
-    }
-
-    private void applySceneMessage(SceneMessage message) {
         synchronized (sceneRoot) {
-            this.setSceneLoaded(true);
-            for (VisualMessage visual : message.getVisuals()) {
-                applyVisualMessage(visual);
-            }
-        }
-    }
-
-    private void applyUnloadSceneMessage(UnloadSceneMessage message) {
-        synchronized (sceneRoot) {
-            this.disconnect();
+            sceneRoot.removeChild(message);
         }
     }
 
     /**
-     * We allow only one thread to provide scene graph updates at a time;
-     * this checks whether the parameter is that thread.
-     * @param receiver The thread to check
-     * @return True if that thread is allowed to update this cell
+     * Load an entire scene, and mark this scene as loaded.
+     * @param message The scene to load
      */
-    public boolean allowsUpdatesFrom(VisualChangeReceiverThread receiver) {
-        synchronized (this.sceneRoot) {
-            return this.cmuConnectionThread == receiver;
+    private void applySceneMessage(SceneMessage message) {
+        for (VisualMessage visual : message.getVisuals()) {
+            synchronized (sceneRoot) {
+                applyVisualMessage(visual);
+            }
         }
-
+        synchronized (sceneRoot) {
+            this.setSceneLoaded(true);
+        }
     }
 
+    /**
+     * Unload an entire scene, and mark this scene as unloaded.
+     * @param message Message to apply
+     */
+    private void applyUnloadSceneMessage(UnloadSceneMessage message) {
+        // Note: message has no state
+        synchronized (sceneRoot) {
+            setConnectedState(false);
+        }
+    }
+
+    /**
+     * Called by receivers interacting with this cell to mark that their connection
+     * has been obtained or lost.
+     * @param connected True if the connection has been obtained, false if lost
+     * @param receiver The thread for which the connected state aplies
+     */
+    public void updateConnectedState(boolean connected, VisualChangeReceiverThread receiver) {
+        synchronized (sceneRoot) {
+            if (allowsUpdatesFrom(receiver)) {
+                setConnectedState(connected);
+            }
+        }
+    }
+
+    /**
+     * Visually and practically set the connected state of the scene.  If
+     * we're disconnecting, unload the scene visuals, and cut ties with the
+     * current VisualChangeReceiverThread.  If we're connecting, clean up
+     * any disconnect messages to prepare for incoming scene changes.
+     * @param connected Whether we're connecting (true) or disconnecting (false)
+     */
+    private void setConnectedState(boolean connected) {
+        synchronized (this.sceneRoot) {
+            if (connected) {
+                this.sceneRoot.detachAllChildren();
+            } else {
+                this.setSceneLoaded(false);
+                this.cmuConnectionThread = null;
+
+                //TODO: Show something noting that the scene is disconnected.
+                this.sceneRoot.detachAllChildren();
+            }
+        }
+    }
+
+    /**
+     * Determines whether this scene has been fully loaded.
+     * @return True if this scene has been fully loaded, false otherwise
+     */
     public boolean isSceneLoaded() {
         synchronized (sceneRoot) {
             return sceneLoaded;
         }
-
     }
 
-    public void setSceneLoaded(boolean sceneLoaded) {
+    /**
+     * Set the loaded state of the scene.
+     * @param sceneLoaded Whether the scene is loaded
+     */
+    protected void setSceneLoaded(boolean sceneLoaded) {
         synchronized (sceneRoot) {
             this.sceneLoaded = sceneLoaded;
         }
 
-    }
-
-    /**
-     * Called by threads interacting with this cell to mark that their connection
-     * has been lost.
-     * @param receiver The thread whose connection has been lost
-     */
-    public void markDisconnected(VisualChangeReceiverThread receiver) {
-        synchronized (this.sceneRoot) {
-            if (allowsUpdatesFrom(receiver)) {
-                this.disconnect();
-            }
-
-        }
-    }
-
-    /**
-     * Called by threads interacting with this cell to mark that their connection
-     * has been obtained.
-     * @param receiver The thread whose connection has been obtained
-     */
-    public void markConnected(VisualChangeReceiverThread receiver) {
-        synchronized (this.sceneRoot) {
-            if (allowsUpdatesFrom(receiver)) {
-                this.markConnected();
-            }
-
-        }
-    }
-
-    /**
-     * Prevent any further incoming changes from the current connection
-     * thread, and detach the scene which it had set up, replacing it
-     * with a disconnect message.
-     */
-    private void disconnect() {
-        synchronized (this.sceneRoot) {
-            this.setSceneLoaded(false);
-            this.cmuConnectionThread = null;
-
-            //TODO: Show something noting that the scene is disconnected.
-            this.sceneRoot.detachAllChildren();
-        }
-
-    }
-
-    /**
-     * Clean up any disconnect messages that had been placed in the scene,
-     * to prepare for incoming visuals via a valid connection.
-     */
-    private void markConnected() {
-        this.sceneRoot.detachAllChildren();
     }
 
     /**
@@ -338,88 +462,64 @@ public class CMUCell extends Cell implements HUDEventListener {
      * @param server The host address to connect to
      * @param port The port to connect to
      */
-    public void setHostnameAndPort(String server, int port) {
+    public void setHostnameAndPort(String hostname, int port) {
         // Synchronize this on sceneRoot, so that no changes can happen to
         // the scene while this is occurring
         synchronized (this.sceneRoot) {
-            this.disconnect();
-            cmuConnectionThread =
-                    new VisualChangeReceiverThread(this, server, port);
+            // Clear any existing connections
+            this.setConnectedState(false);
+
+            // Set up a new receiver thread
+            cmuConnectionThread = new VisualChangeReceiverThread(this, hostname, port);
             cmuConnectionThread.start();
         }
-
     }
 
+    /**
+     * Get the title of this scene.
+     * @return The title of this scene
+     */
     public String getSceneTitle() {
         synchronized (sceneTitleLock) {
             return sceneTitle;
         }
     }
 
+    /**
+     * Set the title of this scene, and send a message
+     * notifying the server/other cells that this has been done.
+     * @param sceneTitle The new scene title
+     */
     public void setSceneTitle(String sceneTitle) {
         synchronized (sceneTitleLock) {
-            setSceneTitleWithoutUpdate(sceneTitle);
-            sendSceneTitleData();
+            setSceneTitleInternal(sceneTitle);
         }
+        sendCellMessage(new SceneTitleChangeMessage(getSceneTitle()));
     }
 
-    private void setSceneTitleWithoutUpdate(String sceneTitle) {
+    /**
+     * Set the title of this scene locally and notify any listeners, but
+     * don't send an associated cell message.
+     * @param sceneTitle The new scene title
+     */
+    private void setSceneTitleInternal(String sceneTitle) {
         synchronized (sceneTitleLock) {
             this.sceneTitle = sceneTitle;
-            updateHUD();
-            fireSceneTitleChanged();
+            hudControl.updateHUD();
         }
+        fireSceneTitleChanged(new SceneTitleChangeEvent(sceneTitle));
     }
 
     /**
      * Get the stored playback speed, i.e. the playback speed that will
      * be used as long as this scene isn't paused.
-     * @return The speed at which the associated CMU scene is playing.
+     * @return The speed at which the associated CMU scene is playing
      */
     public float getPlaybackSpeed() {
         synchronized (playbackSpeedLock) {
             return this.playbackSpeed;
         }
 
-    }
-
-    public void setPlaybackSpeed(float playbackSpeed) {
-        if (isSceneLoaded()) {
-            synchronized (playbackSpeedLock) {
-                setPlaybackInformationWithoutUpdate(playbackSpeed, this.isPlaying());
-                this.sendPlaybackData();
-            }
-        }
-    }
-
-    /**
-     * Set playback speed and play/pause state without propagating this change
-     * to the server (i.e. to respond to server commands).
-     * @param playbackSpeed The speed at which the associated CMU scene is playing
-     * @param playing The play/pause state of the scene
-     */
-    private void setPlaybackInformationWithoutUpdate(float playbackSpeed, boolean playing) {
-        synchronized (playbackSpeedLock) {
-            this.playing = playing;
-            this.playbackSpeed = playbackSpeed;
-            firePlaybackChanged();
-        }
-
-
-    }
-
-    /**
-     * Change the play/pause state of the scene, and send an update to the server
-     * noting that this has been done.
-     * @param playing The play/pause state of the scene
-     */
-    public void setPlaying(boolean playing) {
-        if (isSceneLoaded()) {
-            synchronized (playbackSpeedLock) {
-                setPlaybackInformationWithoutUpdate(this.getPlaybackSpeed(), playing);
-                this.sendPlaybackData();
-            }
-        }
     }
 
     /**
@@ -435,128 +535,104 @@ public class CMUCell extends Cell implements HUDEventListener {
     }
 
     /**
-     * Get the root of the CMU scene represented by this node.
-     * @return The root of the CMU scene as a jME node
+     * Set the playback speed that will be used as long as this scene isn't
+     * paused, and propagate this change to the server.
+     * @param playbackSpeed New playback speed
      */
-    public Node getSceneRoot() {
-        return this.sceneRoot;
+    public void setPlaybackSpeed(float playbackSpeed) {
+        PlaybackSpeedChangeMessage message = null;
+        if (isSceneLoaded()) {
+            synchronized (playbackSpeedLock) {
+                setPlaybackInformationInternal(playbackSpeed, this.isPlaying());
+                message = new PlaybackSpeedChangeMessage(getPlaybackSpeed(), playing);
+            }
+        }
+        sendCellMessage(message);
     }
 
     /**
-     * Use the client state data to extract port/server information;
-     * if none has been set (i.e. if the CMU instance on the server
-     * has not yet been initialized), we don't do anything, and instead
-     * wait for the CMUCellMO associated with this cell to inform
-     * us explicitly of the socket information.
-     * @param {@inheritDoc}
+     * Change the play/pause state of the scene, and send an update to the server
+     * noting that this has been done.
+     * @param playing The play/pause state of the scene
      */
-    @Override
-    public void setClientState(CellClientState clientState) {
-        super.setClientState(clientState);
-
-        assert clientState instanceof CMUCellClientState;
-        CMUCellClientState cmuClientState = (CMUCellClientState) clientState;
-        this.setPlaybackInformationWithoutUpdate(cmuClientState.getPlaybackSpeed(), cmuClientState.isPlaying());
-        if (cmuClientState.isServerAndPortInitialized()) {
-            this.setHostnameAndPort(cmuClientState.getServer(), cmuClientState.getPort());
+    public void setPlaying(boolean playing) {
+        if (isSceneLoaded()) {
+            PlaybackSpeedChangeMessage message = null;
+            synchronized (playbackSpeedLock) {
+                setPlaybackInformationInternal(this.getPlaybackSpeed(), playing);
+                message = new PlaybackSpeedChangeMessage(getPlaybackSpeed(), playing);
+            }
+            sendCellMessage(message);
         }
-        this.setSceneTitle(cmuClientState.getSceneTitle());
-
     }
 
     /**
-     * {@inheritDoc}
+     * Set playback speed and play/pause state without propagating this change
+     * to the server (i.e. to respond to server commands).
+     * @param playbackSpeed The speed at which the associated CMU scene is playing
+     * @param playing The play/pause state of the scene
      */
-    @Override
-    protected CellRenderer createCellRenderer(RendererType rendererType) {
-        if (rendererType == RendererType.RENDERER_JME) {
-            this.renderer = new CMUCellRenderer(this);
-            return this.renderer;
-        } else {
-            return super.createCellRenderer(rendererType);
+    private void setPlaybackInformationInternal(float playbackSpeed, boolean playing) {
+        synchronized (playbackSpeedLock) {
+            this.playing = playing;
+            this.playbackSpeed = playbackSpeed;
+        }
+        firePlaybackChanged(new PlaybackChangeEvent(playbackSpeed, playing));
+    }
+
+    public boolean isGroundPlaneShowing() {
+        synchronized (groundPlaneLock) {
+            return groundPlaneShowing;
         }
 
+    }
+
+    public void setGroundPlaneShowing(boolean groundPlaneShowing) {
+        synchronized (groundPlaneLock) {
+            this.setGroundPlaneShowingInternal(groundPlaneShowing);
+        }
+        sendCellMessage(new GroundPlaneChangeMessage(groundPlaneShowing));
+    }
+
+    private void setGroundPlaneShowingInternal(boolean groundPlaneShowing) {
+        synchronized (groundPlaneLock) {
+            this.groundPlaneShowing = groundPlaneShowing;
+            synchronized (groundPlaneIDs) {
+                for (NodeID id : groundPlaneIDs) {
+                    sceneRoot.applyVisibilityToChild(id, groundPlaneShowing);
+                }
+            }
+        }
+        fireGroundPlaneChanged(new GroundPlaneChangeEvent(groundPlaneShowing));
     }
 
     /**
-     * {@inheritDoc}
+     * Add a listener for playback changes.
+     * @param listener Listener to add
      */
-    @Override
-    public void setStatus(CellStatus status, boolean increasing) {
-        super.setStatus(status, increasing);
-
-        ChannelComponent channel = getComponent(ChannelComponent.class);
-
-        switch (status) {
-            case DISK:
-                // Remove mouse listener.
-                if (mouseListener != null) {
-                    mouseListener.removeFromEntity(renderer.getEntity());
-                    mouseListener = null;
-                }
-
-                if (!increasing) {
-                    // Remove message receivers
-                    if (channel != null) {
-                        for (Class messageClass : ServerClientMessageTypes.MESSAGE_TYPES_TO_RECEIVE) {
-                            channel.removeMessageReceiver(messageClass);
-                        }
-                    }
-
-                    // Clean up HUD and network stuff
-                    unloadHUD();
-                    disconnect();
-                }
-
-                break;
-
-            case INACTIVE:
-                if (increasing) {
-                    // Add message receivers
-                    if (channel != null) {
-                        for (Class messageClass : ServerClientMessageTypes.MESSAGE_TYPES_TO_RECEIVE) {
-                            channel.addMessageReceiver(messageClass, messageReceiver);
-                        }
-                    }
-                }
-
-                break;
-
-            case ACTIVE:
-                // Add mouse listener.
-                if (mouseListener == null) {
-                    mouseListener = new MouseEventListener();
-                    mouseListener.addToEntity(renderer.getEntity());
-                }
-
-                break;
-
-            default:
-                break;
-        }
-    }
-
     public void addPlaybackChangeListener(PlaybackChangeListener listener) {
         synchronized (this.playbackChangeListeners) {
             playbackChangeListeners.add(listener);
-            listener.playbackChanged(new PlaybackChangeEvent(this.getPlaybackSpeed(), this.isPlaying()));
         }
     }
 
+    /**
+     * Remove a listener for playback changes.
+     * @param listener Listener to remove
+     */
     public void removePlaybackChangeListener(PlaybackChangeListener listener) {
         synchronized (playbackChangeListeners) {
             playbackChangeListeners.remove(listener);
         }
     }
 
-    private void firePlaybackChanged() {
-        PlaybackChangeEvent event;
-        synchronized (playbackSpeedLock) {
-            event = new PlaybackChangeEvent(this.getPlaybackSpeed(), this.isPlaying());
-            synchronized (playbackChangeListeners) {
-                for (PlaybackChangeListener listener : playbackChangeListeners) {
-                    listener.playbackChanged(event);
-                }
+    /**
+     * Send playback information to playback change listeners.
+     */
+    private void firePlaybackChanged(PlaybackChangeEvent event) {
+        synchronized (playbackChangeListeners) {
+            for (PlaybackChangeListener listener : playbackChangeListeners) {
+                listener.playbackChanged(event);
             }
         }
     }
@@ -564,7 +640,6 @@ public class CMUCell extends Cell implements HUDEventListener {
     public void addGroundPlaneChangeListener(GroundPlaneChangeListener listener) {
         synchronized (groundPlaneChangeListeners) {
             groundPlaneChangeListeners.add(listener);
-            listener.groundPlaneChanged(new GroundPlaneChangeEvent(this.isGroundPlaneShowing()));
         }
 
     }
@@ -576,14 +651,10 @@ public class CMUCell extends Cell implements HUDEventListener {
 
     }
 
-    private void fireGroundPlaneChanged() {
-        GroundPlaneChangeEvent event;
-        synchronized (groundPlaneLock) {
-            event = new GroundPlaneChangeEvent(this.isGroundPlaneShowing());
-            synchronized (groundPlaneChangeListeners) {
-                for (GroundPlaneChangeListener listener : groundPlaneChangeListeners) {
-                    listener.groundPlaneChanged(event);
-                }
+    private void fireGroundPlaneChanged(GroundPlaneChangeEvent event) {
+        synchronized (groundPlaneChangeListeners) {
+            for (GroundPlaneChangeListener listener : groundPlaneChangeListeners) {
+                listener.groundPlaneChanged(event);
             }
         }
     }
@@ -601,8 +672,7 @@ public class CMUCell extends Cell implements HUDEventListener {
         }
     }
 
-    private void fireSceneTitleChanged() {
-        SceneTitleChangeEvent event;
+    private void fireSceneTitleChanged(SceneTitleChangeEvent event) {
         synchronized (sceneTitleLock) {
             event = new SceneTitleChangeEvent(this.getSceneTitle());
             synchronized (sceneTitleChangeListeners) {
@@ -613,132 +683,7 @@ public class CMUCell extends Cell implements HUDEventListener {
         }
     }
 
-    public boolean isGroundPlaneShowing() {
-        synchronized (groundPlaneLock) {
-            return groundPlaneShowing;
-        }
-
-    }
-
-    public void setGroundPlaneShowing(boolean groundPlaneShowing) {
-        synchronized (groundPlaneLock) {
-            this.setGroundPlaneShowingWithoutUpdate(groundPlaneShowing);
-            sendGroundPlaneData();
-        }
-    }
-
-    private void setGroundPlaneShowingWithoutUpdate(boolean groundPlaneShowing) {
-        synchronized (groundPlaneLock) {
-            this.groundPlaneShowing = groundPlaneShowing;
-            synchronized (groundPlaneIDs) {
-                for (NodeID id : groundPlaneIDs) {
-                    sceneRoot.applyVisibilityToChild(id, groundPlaneShowing);
-                }
-            }
-            fireGroundPlaneChanged();
-        }
-    }
-
-    private void sendPlaybackData() {
-        sendCellMessage(new PlaybackSpeedChangeMessage(getCellID(), getPlaybackSpeed(), isPlaying()));
-    }
-
-    private void sendGroundPlaneData() {
-        sendCellMessage(new GroundPlaneChangeMessage(getCellID(), isGroundPlaneShowing()));
-    }
-
-    private void sendSceneTitleData() {
-        sendCellMessage(new SceneTitleChangeMessage(getCellID(), getSceneTitle()));
-    }
-
     public void restart() {
-        sendCellMessage(new RestartProgramMessage(getCellID()));
-    }
-
-    private class HUDDisplayer implements Runnable {
-
-        private final boolean showing;
-
-        public HUDDisplayer(boolean showing) {
-            this.showing = showing;
-        }
-
-        @Override
-        public void run() {
-            synchronized (hudShowingLock) {
-                // Set up UI
-                if (showing && hudComponent == null) {
-                    // Create the panel
-                    hudPanel = new CMUJPanel(CMUCell.this);
-
-                    // Create the HUD component
-                    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-                    assert mainHUD != null;
-                    hudComponent = mainHUD.createComponent(hudPanel);
-                    hudComponent.setPreferredTransparency(0.0f);
-                    hudComponent.setName(getSceneTitle());
-                    hudComponent.setPreferredLocation(Layout.NORTHWEST);
-                    hudComponent.addEventListener(CMUCell.this);
-                    mainHUD.addComponent(hudComponent);
-                }
-                if (hudComponent != null) {
-                    hudComponent.setVisible(showing);
-                }
-                hudShowing = showing;
-            }
-        }
-    }
-
-    private class HUDKiller extends HUDDisplayer {
-
-        public HUDKiller() {
-            super(false);
-        }
-
-        @Override
-        public void run() {
-            synchronized (hudShowingLock) {
-                super.run();
-
-                //TODO: Remove from HUD manager?
-                hudComponent = null;
-            }
-        }
-    }
-
-    protected void updateHUD() {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                if (hudComponent != null) {
-                    hudComponent.setName(getSceneTitle());
-                }
-            }
-        });
-    }
-
-    protected void setHUDShowing(boolean showing) {
-        SwingUtilities.invokeLater(new HUDDisplayer(showing));
-    }
-
-    protected boolean isHUDShowing() {
-        synchronized (hudShowingLock) {
-            return hudShowing;
-        }
-    }
-
-    private void unloadHUD() {
-        SwingUtilities.invokeLater(new HUDKiller());
-    }
-
-    public void HUDObjectChanged(HUDEvent event) {
-        synchronized (hudShowingLock) {
-            if (event.getObject().equals(this.hudComponent)) {
-                if (event.getEventType().equals(HUDEventType.DISAPPEARED) || event.getEventType().equals(HUDEventType.CLOSED)) {
-                    this.setHUDShowing(false);
-                }
-            }
-        }
+        sendCellMessage(new RestartProgramMessage());
     }
 }

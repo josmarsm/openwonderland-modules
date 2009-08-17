@@ -5,7 +5,6 @@
 
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
@@ -20,13 +19,12 @@ public class ConnectionChangeMessage extends CellMessage {
 
     /**
      * Standard constructor.
-     * @param cellID ID for the relevant cell
-     * @param server Host address to connect to
+     * @param hostname Host address to connect to
      * @param port Port to connect to
      */
-    public ConnectionChangeMessage(CellID cellID, String server, int port) {
-        super(cellID);
-        this.setServer(server);
+    public ConnectionChangeMessage(String hostname, int port) {
+        super();
+        this.setServer(hostname);
         this.setPort(port);
     }
 
@@ -50,7 +48,7 @@ public class ConnectionChangeMessage extends CellMessage {
      * Get host address to connect to.
      * @return Current host address
      */
-    public String getServer() {
+    public String getHostname() {
         return server;
     }
 
@@ -64,6 +62,6 @@ public class ConnectionChangeMessage extends CellMessage {
 
     @Override
     public String toString() {
-        return "Connection change [Server:" + getServer() + "] [Port:" + getPort() + "]";
+        return "Connection change [Server:" + getHostname() + "] [Port:" + getPort() + "]";
     }
 }

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
@@ -28,8 +27,8 @@ public class SceneTitleChangeMessage extends CellMessage {
 
     String sceneTitle;
 
-    public SceneTitleChangeMessage(CellID cellID, String sceneTitle) {
-        super(cellID);
+    public SceneTitleChangeMessage(String sceneTitle) {
+        super();
         setSceneTitle(sceneTitle);
     }
 

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
-import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
@@ -25,7 +24,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  * @author kevin
  */
 public class RestartProgramMessage extends CellMessage {
-    public RestartProgramMessage(CellID cellID) {
-        super(cellID);
+    public RestartProgramMessage() {
+        super();
     }
 }

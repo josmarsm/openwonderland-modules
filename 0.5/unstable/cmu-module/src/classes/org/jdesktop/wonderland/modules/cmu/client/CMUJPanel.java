@@ -41,7 +41,9 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
         PLAYBACK_MAX = playbackSlider.getMaximum();
         this.cell = cell;
         this.cell.addPlaybackChangeListener(this);
+        this.playbackChanged(new PlaybackChangeEvent(cell.getPlaybackSpeed(), cell.isPlaying()));
         this.cell.addGroundPlaneChangeListener(this);
+        this.groundPlaneChanged(new GroundPlaneChangeEvent(cell.isGroundPlaneShowing()));
     }
 
     /** This method is called from within the constructor to
