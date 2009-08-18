@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player;
 
+import org.jdesktop.wonderland.modules.cmu.player.connections.SceneConnectionHandler;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;

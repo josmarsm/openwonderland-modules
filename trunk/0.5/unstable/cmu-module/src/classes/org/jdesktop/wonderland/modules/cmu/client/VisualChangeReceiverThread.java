@@ -121,9 +121,6 @@ public class VisualChangeReceiverThread extends Thread {
 
     private void addObjectToStats(Object object) {
         synchronized(statsLock) {
-            if (parentCell.getPlaybackSpeed() > 1.1f) {
-                System.out.println("Recieved: " + object);
-            }
             numReads++;
         }
     }

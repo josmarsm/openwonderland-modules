@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Vector;
@@ -26,7 +25,7 @@ import java.util.Vector;
  *
  * @author kevin
  */
-public class SceneMessage implements Serializable {
+public class SceneMessage extends CMUClientMessage {
 
     final Vector<VisualMessage> visuals = new Vector<VisualMessage>();
 

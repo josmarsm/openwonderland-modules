@@ -24,7 +24,6 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Vector;
@@ -38,7 +37,7 @@ import org.jdesktop.wonderland.modules.cmu.common.NodeID;
  * TransformationMessage.  Associated with a unique node ID.
  * @author kevin
  */
-public class VisualMessage implements Serializable {
+public class VisualMessage extends CMUClientMessage {
 
     private static final long serialVersionUID = 1L;
     private final Collection<TriMesh> meshes = new Vector<TriMesh>();

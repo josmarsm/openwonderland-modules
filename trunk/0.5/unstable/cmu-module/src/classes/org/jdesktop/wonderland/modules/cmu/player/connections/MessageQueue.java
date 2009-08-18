@@ -15,11 +15,24 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
+package org.jdesktop.wonderland.modules.cmu.player.connections;
+
+import java.io.Serializable;
+import java.util.LinkedList;
 
 /**
  *
  * @author kevin
  */
-public class UnloadSceneMessage extends CMUClientMessage {
+public class MessageQueue {
+
+    private final LinkedList<Serializable> queue = new LinkedList<Serializable>();
+
+    public int size() {
+        synchronized(queue) {
+            return queue.size();
+        }
+    }
+
+    
 }

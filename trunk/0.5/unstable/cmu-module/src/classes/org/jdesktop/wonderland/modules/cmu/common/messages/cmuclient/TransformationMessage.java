@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
 import com.jme.math.Matrix3f;
 import com.jme.math.Vector3f;
-import java.io.Serializable;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
@@ -27,7 +26,7 @@ import org.jdesktop.wonderland.modules.cmu.common.NodeID;
  * Can be matched with a particular visual by its node ID.
  * @author kevin
  */
-public class TransformationMessage implements Serializable {
+public class TransformationMessage extends CMUClientMessage {
 
     private static final long serialVersionUID = 1L;
     private NodeID nodeID;

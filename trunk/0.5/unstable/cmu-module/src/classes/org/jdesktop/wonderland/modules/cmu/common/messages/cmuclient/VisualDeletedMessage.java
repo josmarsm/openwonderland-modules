@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
-import java.io.Serializable;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
@@ -25,7 +24,7 @@ import org.jdesktop.wonderland.modules.cmu.common.NodeID;
  * removed.
  * @author kevin
  */
-public class VisualDeletedMessage implements Serializable {
+public class VisualDeletedMessage extends CMUClientMessage {
 
     private final static long serialVersionUID = 1L;
     private NodeID nodeID;

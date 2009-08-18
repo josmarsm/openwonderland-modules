@@ -17,9 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
+import java.io.Serializable;
+
 /**
- *
+ * Simple class to categorize messages from CMU players to clients
  * @author kevin
  */
-public class UnloadSceneMessage extends CMUClientMessage {
+public class CMUClientMessage implements Serializable {
+
 }
