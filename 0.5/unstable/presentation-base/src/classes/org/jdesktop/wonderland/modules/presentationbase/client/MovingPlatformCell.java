@@ -25,12 +25,14 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.presentationbase.client.jme.cell.MovingPlatformCellRenderer;
 import org.jdesktop.wonderland.modules.presentationbase.common.MovingPlatformCellClientState;
@@ -66,11 +68,27 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
         if(status==CellStatus.ACTIVE && increasing) {
 //            PresentationToolbarManager.getManager().addPlatform(this);
 
-            this.setLocalBounds(new BoundingBox(Vector3f.ZERO, 10.0f, 20.0f, 10.0f));
+            this.setLocalBounds(new BoundingBox(Vector3f.ZERO, this.platformWidth, 20.0f, this.platformDepth));
 
+            // move it to the same place to trigger a world bounds cache update.
+//            MovableComponent mc = this.getComponent(MovableComponent.class);
+//            mc.localMoveRequest(this.getLocalTransform());
+
+            // Transform these bounds listeners into world coordinates because proximity listeners seem to not
+            // actually check against local coordinates.
+
+//            CellTransform localToWorld = this.getLocalToWorldTransform();
+//            Vector3f boundsCenter = localToWorld.transform(Vector3f.ZERO);
+
+//            BoundingVolume worldBounds = this.getLocalBounds();
+//
+//            localToWorld.transform(worldBounds);
+//
             BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds()};
+
             prox.addProximityListener(this, bounds);
-            logger.warning("Added proximity listener.");
+
+            logger.warning("Added proximity listener, sending: " + bounds[0] + "; local: " + this.getLocalBounds() + " world: " + this.getWorldBounds());
 
         } else if (status==CellStatus.DISK && !increasing) {
 //            PresentationToolbarManager.getManager().removePlatform(this);
@@ -92,6 +110,8 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
         logger.warning("SETTING PLATFORM WIDTH/DEPTH: " + this.platformWidth + "x" + this.platformDepth);
     }
+
+    
 
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
