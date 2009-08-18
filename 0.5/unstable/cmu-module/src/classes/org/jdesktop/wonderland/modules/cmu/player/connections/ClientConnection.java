@@ -83,8 +83,12 @@ public class ClientConnection extends Thread {
             assert numMessagesInBurst > 0;
 
             for (int i = 0; i < numMessagesInBurst; i++) {
-                Serializable nextMessage = queue.getNext();
-                this.writeToOutputStream(nextMessage);
+                CMUClientMessage nextMessage = queue.getNext();
+                try {
+                    this.writeToOutputStream(nextMessage);
+                } catch (SocketException ex) {
+                    parentHandler.handleSocketException(this, ex);
+                }
             }
 
             long elapsed = System.currentTimeMillis() - startTime;
@@ -108,6 +112,8 @@ public class ClientConnection extends Thread {
                 queue.queueVisualMessage((VisualMessage) message);
             } else if (message instanceof VisualDeletedMessage) {
                 queue.queueVisualDeletedMessage((VisualDeletedMessage) message);
+            } else if (message instanceof UnloadSceneMessage) {
+                queue.queueUnloadSceneMessage((UnloadSceneMessage) message);
             } else {
                 logger.warning("Unrecognized message queued: " + message);
             }
@@ -116,7 +122,7 @@ public class ClientConnection extends Thread {
         }
     }
 
-    public void close() {
+    public void close() throws SocketException {
         synchronized (closedLock) {
             closed = true;
         }
@@ -125,6 +131,8 @@ public class ClientConnection extends Thread {
                 this.writeToOutputStream(new UnloadSceneMessage());
                 this.outputStream.close();
                 this.socket.close();
+            } catch (SocketException ex) {
+                throw ex;
             } catch (IOException ex) {
                 // No handling necessary, we're already closing
             }
@@ -138,7 +146,7 @@ public class ClientConnection extends Thread {
     }
 
 //    private int numSent = 0;
-    private void writeToOutputStream(Serializable message) {
+    private void writeToOutputStream(Serializable message) throws SocketException {
         //TODO: add throws clause to avoid infinite loop
         synchronized (socket) {
             try {
@@ -151,8 +159,7 @@ public class ClientConnection extends Thread {
 //                }
 //                numSent++;
             } catch (SocketException ex) {
-                // Tell the connection handler about the exception, let it decide what to do
-                parentHandler.handleSocketException(this, ex);
+                throw ex;
             } catch (IOException ex) {
                 Logger.getLogger(ClientConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -205,6 +212,7 @@ public class ClientConnection extends Thread {
         }
 
         public synchronized void queueVisualMessage(VisualMessage message) {
+            System.out.println("Queueing individual visual message");
             queue.offerFirst(message);
         }
 
@@ -216,7 +224,7 @@ public class ClientConnection extends Thread {
             queue.offerFirst(message);
         }
 
-        public synchronized Serializable getNext() {
+        public synchronized CMUClientMessage getNext() {
             return queue.pollFirst();
         }
     }
