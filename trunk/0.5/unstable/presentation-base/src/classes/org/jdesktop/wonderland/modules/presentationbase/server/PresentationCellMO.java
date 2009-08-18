@@ -145,18 +145,6 @@ public class PresentationCellMO extends CellMO {
                 pdfCell.setServerState(pdfCellState);
 
                 this.addChild(pdfCell);
-
-                // Now move it to 0,0,0 within its new parent cell (which
-                // already moved to the PDF cell's location.
-
-
-//                MovableComponentMO mc = pdfCell.getComponent(MovableComponentMO.class);
-//
-//                if(mc!=null)
-//                    mc.moveRequest(null, new CellTransform(new Quaternion(), Vector3f.ZERO));
-//                else
-//                    logger.warning("NO MOVABLE COMPONENT ON THE PDF CELL");
-
                 
             } catch (MultipleParentException ex) {
                 logger.info("MultipleParentException while reparenting the slidesCell: " + ex.getLocalizedMessage());
