@@ -15,8 +15,9 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.player;
+package org.jdesktop.wonderland.modules.cmu.player.connections;
 
+import org.jdesktop.wonderland.modules.cmu.player.*;
 import edu.cmu.cs.dennisc.scenegraph.Component;
 import edu.cmu.cs.dennisc.scenegraph.Composite;
 import edu.cmu.cs.dennisc.scenegraph.Visual;
@@ -24,14 +25,14 @@ import edu.cmu.cs.dennisc.scenegraph.event.ChildAddedEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.ChildRemovedEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.ChildrenListener;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,83 +52,11 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessa
  */
 public class SceneConnectionHandler implements ChildrenListener, TransformationMessageListener {
 
+    public final int DEFAULT_FPS = 60;
     private Scene sc = null;       // The scene to wrap.
-    private final Collection<Connection> connections = new Vector<Connection>();
-    private final Collection<VisualWrapper> visuals = new Vector<VisualWrapper>();
+    private final Set<ClientConnection> connections = new HashSet<ClientConnection>();
+    private final Set<VisualWrapper> visuals = new HashSet<VisualWrapper>();
     private final ConnectionHandlerThread handlerThread;
-
-    /**
-     * A Socket/ObjectOutputStream pair, used to store these two things
-     * together.
-     */
-    protected class Connection {
-
-        private final Socket socket;
-        private ObjectOutputStream outputStream;
-
-        public Connection(Socket socket) {
-            this.socket = socket;
-            try {
-                this.outputStream = new ObjectOutputStream(socket.getOutputStream());
-            } catch (IOException ex) {
-                Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        private int numSent = 0;
-
-        public void writeToOutputStream(Object message) throws IOException {
-            synchronized (socket) {
-                this.outputStream.writeUnshared(message);
-                this.outputStream.flush();
-                this.outputStream.reset();
-
-                if (numSent > 20000) {
-                    System.out.println("Still sending: " + message);
-                    numSent = 0;
-                }
-                numSent++;
-            }
-        }
-
-        public void close() {
-            synchronized (socket) {
-                try {
-                    this.writeToOutputStream(new UnloadSceneMessage());
-                    this.outputStream.close();
-                    this.socket.close();
-                } catch (IOException ex) {
-                }
-            }
-        }
-
-        @Override
-        public String toString() {
-            return "Connection: " + socket;
-        }
-    }
-
-    private class MessageSenderThread<T extends Serializable> extends Thread {
-
-        private final T message;
-        private final Connection connection;
-
-        public MessageSenderThread(Connection connection, T message) {
-            super("CMU Message Sender " + connection + " " + message.getClass());
-            this.connection = connection;
-            this.message = message;
-        }
-
-        @Override
-        public void run() {
-            try {
-                connection.writeToOutputStream(message);
-            } catch (SocketException ex) {
-                SceneConnectionHandler.this.removeConnection(connection);
-            } catch (IOException ex) {
-                Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
 
     /**
      * Thread to set up a ServerSocket and listen for incoming connections
@@ -290,26 +219,30 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      * @param connection The connection to add
      */
     protected void addConnection(Socket connection) {
+        SceneMessage message = null;
+        ClientConnection newConnection = null;
+
         // Don't add any new visuals until after this connection has been added
-        // to the list and received all the current visuals; otherwise, we could
-        // have visuals sent twice to this connection.
+        // to the list and received all the current visuals; otherwise, this
+        // connection could fail to receive the new visuals added.
         synchronized (visuals) {
             // Create the scene message with all current visuals (might be none)
             Collection<VisualMessage> visualMessages = new Vector<VisualMessage>();
             for (VisualWrapper visual : this.visuals) {
                 visualMessages.add(visual.getVisualMessage());
             }
-            SceneMessage message = new SceneMessage(visualMessages);
+            message = new SceneMessage(visualMessages);
 
-            Connection newConnection = new Connection(connection);
-            // Broadcast setup data to this connection.
-            new MessageSenderThread<SceneMessage>(newConnection, message).start();
-
+            // Store the connection.
+            newConnection = new ClientConnection(this, DEFAULT_FPS, connection);
             synchronized (connections) {
-                // Store the connection and the associated stream.
                 connections.add(newConnection);
             }
+            newConnection.start();
         }
+
+        // Broadcast setup data to this connection.
+        newConnection.queueMessage(message);
     }
 
     /**
@@ -317,26 +250,11 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      * and perform any necessary cleanup.
      * @param connection The connection to remove
      */
-    protected void removeConnection(Connection connection) {
+    protected void handleSocketException(ClientConnection connection, SocketException ex) {
+        connection.close();
         synchronized (connections) {
-            connection.close();
             connections.remove(connection);
         }
-
-    }
-
-    /**
-     * Synchronously remove the last Connection which the iterator pointed
-     * to, and perform any necessary cleanup.  Provided as a convenience
-     * for removing connections while iterating over them.
-     * @param iterator
-     */
-    protected void removeConnection(Iterator<Connection> iterator, Connection connection) {
-        synchronized (connections) {
-            connection.close();
-            iterator.remove();
-        }
-
     }
 
     /**
@@ -355,44 +273,35 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 // Broadcast it to each connected client.  Don't allow new
                 // connections to be created during this process; this
                 // would have this visual sent twice to these connections.
-                Iterator<Connection> iterator = connections.iterator();
+                Iterator<ClientConnection> iterator = connections.iterator();
                 while (iterator.hasNext()) {
-                    Connection connection = iterator.next();
-                    new MessageSenderThread<VisualMessage>(connection, visualWrapper.getVisualMessage()).start();
+                    ClientConnection connection = iterator.next();
+                    connection.queueMessage(visualWrapper.getVisualMessage());
                 }
             }
         }
     }
+
     /**
      * {@inheritDoc}
      */
-    private int numTransformsChanged = 0;
-
+//    private int numTransformsChanged = 0;
     @Override
     public void transformationMessageChanged(TransformationMessage message) {
         synchronized (connections) {
-
-            if (numTransformsChanged > 10000) {
-                System.out.println("Transforms still changing");
-                numTransformsChanged = 0;
-            }
-            numTransformsChanged++;
-            if (numTransformsChanged % 50 != 0) {
-                //return;
-            }
-            Iterator<Connection> iterator = connections.iterator();
+//            if (numTransformsChanged > 10000) {
+//                System.out.println("Transforms still changing");
+//                numTransformsChanged = 0;
+//            }
+//            numTransformsChanged++;
+//            if (numTransformsChanged % 50 != 0) {
+//                //return;
+//            }
+            Iterator<ClientConnection> iterator = connections.iterator();
             while (iterator.hasNext()) {
-                Connection connection = iterator.next();
-                try {
-                    connection.writeToOutputStream(message);
-                } catch (SocketException ex) {
-                    System.out.println(ex);
-                    removeConnection(iterator, connection);
-                } catch (IOException ex) {
-                    Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                ClientConnection connection = iterator.next();
+                connection.queueMessage(message);
             }
-
         }
     }
 
@@ -411,19 +320,12 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 // Remove visuals collectively
                 visuals.clear();
                 synchronized (connections) {
-                    Iterator<Connection> iterator = connections.iterator();
+                    Iterator<ClientConnection> iterator = connections.iterator();
                     while (iterator.hasNext()) {
-                        Connection connection = iterator.next();
-                        try {
-                            connection.writeToOutputStream(new UnloadSceneMessage());
-                        } catch (SocketException ex) {
-                            removeConnection(iterator, connection);
-                        } catch (IOException ex) {
-                            Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        ClientConnection connection = iterator.next();
+                        connection.queueMessage(new UnloadSceneMessage());
                     }
                 }
-
             }
         }
     }
