@@ -251,8 +251,13 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      * @param connection The connection to remove
      */
     protected void handleSocketException(ClientConnection connection, SocketException ex) {
-        connection.close();
+        try {
+            connection.close();
+        } catch (SocketException ex1) {
+            // No action, we're already closing
+        }
         synchronized (connections) {
+            System.out.println("Closing connection: " + connection);
             connections.remove(connection);
         }
     }
@@ -276,6 +281,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 Iterator<ClientConnection> iterator = connections.iterator();
                 while (iterator.hasNext()) {
                     ClientConnection connection = iterator.next();
+                    //TODO: make a copy
                     connection.queueMessage(visualWrapper.getVisualMessage());
                 }
             }
