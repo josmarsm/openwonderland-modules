@@ -90,6 +90,17 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
             logger.warning("Added proximity listener, sending: " + bounds[0] + "; local: " + this.getLocalBounds() + " world: " + this.getWorldBounds());
 
+
+            // check to see if we have a parent. If we do, phone home.
+            if(this.getParent()!=null) {
+                if(this.getParent() instanceof PresentationCell) {
+                    PresentationCell presentationCell = (PresentationCell)this.getParent();
+
+                    presentationCell.setPlatformCell(this);
+                }
+            }
+
+
         } else if (status==CellStatus.DISK && !increasing) {
 //            PresentationToolbarManager.getManager().removePlatform(this);
         }

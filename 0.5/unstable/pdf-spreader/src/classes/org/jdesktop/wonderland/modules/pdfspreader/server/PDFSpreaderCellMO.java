@@ -159,12 +159,15 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
         float interslideSpacing = this.spacing - this.slideWidth;
 
         if(interslideSpacing < 0)
-            return 0.0f;
+            interslideSpacing = 0.0f;
+
+        logger.info("InterslideSpacing: " + interslideSpacing);
 
         return interslideSpacing;
     }
 
     public float getCenterSpacing() {
+        logger.info("centerSpacing: " + this.spacing);
         return this.spacing;
     }
 
