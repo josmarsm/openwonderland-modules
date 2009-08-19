@@ -24,15 +24,12 @@
             </folders>
             <ide-actions>
                 <action name="build">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>dist</target>
                 </action>
                 <action name="clean">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>clean</target>
                 </action>
                 <action name="rebuild">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>clean</target>
                     <target>dist</target>
                 </action>
@@ -53,7 +50,6 @@
             <export>
                 <type>jar</type>
                 <location>dist/pdfviewer.jar</location>
-                <script>nbproject/nbjdk.xml</script>
                 <build-target>dist</build-target>
             </export>
             <view>
