@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath" 
- * exception as provided by Sun in the License file that accompanied 
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.topcamera.client.jme.camera;
@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * A very simplistic top camera model.
- * 
+ *
  * @author paulby
  * @author Jordan Slott <jslott@dev.java.net>
  */
@@ -65,11 +65,12 @@ public class TopPersonCameraProcessor implements CameraController {
 
     private Vector3f avatarPos = new Vector3f();
     private Quaternion avatarRot = new Quaternion();
-    
+    private Vector3f cameraTranslation = new Vector3f();
+
     public TopPersonCameraProcessor() {
         wm = ClientContextJME.getWorldManager();
     }
-    
+
     public void compute() {
     }
 
@@ -86,7 +87,7 @@ public class TopPersonCameraProcessor implements CameraController {
     public void viewMoved(CellTransform worldTransform) {
         avatarPos = worldTransform.getTranslation(avatarPos);
         avatarRot = worldTransform.getRotation(avatarRot);
-        update(avatarPos, avatarRot );
+        update(avatarPos, avatarRot);
     }
 
     private void update(Vector3f tIn, Quaternion rIn) {
@@ -96,62 +97,64 @@ public class TopPersonCameraProcessor implements CameraController {
         viewTranslation.set(translation);
 
         Vector3f cameraTrans = rotation.mult(offset);
-//            System.out.println("Camera trans "+cameraTrans );
+        cameraTrans.addLocal(cameraTranslation);
         translation.addLocal(cameraTrans);
 
         rotation.lookAt(rotation.mult(cameraLook), yUp);
-        commitRequired=true;
+        commitRequired = true;
     }
 
     public void setEnabled(boolean enabled, CameraNode cameraNode) {
-        if (this.enabled==enabled)
+        if (this.enabled == enabled) {
             return;
+        }
         this.enabled = enabled;
 
         // Called on the compute thread, therefore does not need to be synchronized
         this.cameraNode = cameraNode;
         if (enabled) {
-            if (listener==null) {
+            if (listener == null) {
                 listener = new EventClassFocusListener() {
+
                     @Override
-                    public Class[] eventClassesToConsume () {
-                        return new Class[] { KeyEvent3D.class, MouseEvent3D.class };
+                    public Class[] eventClassesToConsume() {
+                        return new Class[]{KeyEvent3D.class, MouseEvent3D.class};
                     }
 
                     @Override
-                    public void commitEvent (Event event) {
+                    public void commitEvent(Event event) {
                         if (event instanceof KeyEvent3D) {
-                            KeyEvent key = (KeyEvent) ((KeyEvent3D)event).getAwtEvent();
-                            if (key.getKeyCode()==KeyEvent.VK_EQUALS) {
-                                offset.z += cameraZoom;
+                            KeyEvent key = (KeyEvent) ((KeyEvent3D) event).getAwtEvent();
+                            if (key.getKeyCode() == KeyEvent.VK_EQUALS) {
+                                offset.y += cameraZoom;
                                 viewMoved(new CellTransform(viewRot, viewTranslation));
-                            } else if (key.getKeyCode()==KeyEvent.VK_MINUS) {
-                                offset.z -= cameraZoom;
+                            } else if (key.getKeyCode() == KeyEvent.VK_MINUS) {
+                                offset.y -= cameraZoom;
                                 viewMoved(new CellTransform(viewRot, viewTranslation));
                             }
                         } else if (event instanceof MouseEvent3D) {
-                            MouseEvent mouse = (MouseEvent)((MouseEvent3D)event).getAwtEvent();
+                            MouseEvent mouse = (MouseEvent) ((MouseEvent3D) event).getAwtEvent();
                             if (mouse instanceof MouseWheelEvent) {
-                                int clicks = ((MouseWheelEvent)mouse).getWheelRotation();
+                                int clicks = ((MouseWheelEvent) mouse).getWheelRotation();
                                 offset.y += cameraZoom * clicks;
                                 viewMoved(new CellTransform(viewRot, viewTranslation));
-                            } else if (mouse.isControlDown()) {
-                                int diffX = mouse.getX() - mouseX;
-                                int diffY = mouse.getY() - mouseY;
+                            } else if (mouse.isControlDown() && mouse.getID() == MouseEvent.MOUSE_DRAGGED) {
+                                float diffz = (mouse.getY() - mouseY) * .04f;
+                                float diffx =  (mouse.getX() - mouseX) * .04f;
 
-                                elevation += Math.toRadians(diffY)/4f;
-                                if (elevation>Math.PI/2)
-                                    elevation = (float)Math.PI/2;
-                                else if (elevation<-Math.PI/2)
-                                    elevation = -(float)Math.PI/2;
-
-                                cameraLook.set(0, (float)Math.sin(elevation), 1);
-                                cameraLook.normalize();
+                                cameraTranslation.x += diffx;
+                                cameraTranslation.z += diffz;
 
                                 mouseX = mouse.getX();
                                 mouseY = mouse.getY();
-                                update(avatarPos, avatarRot);
-                            } else {
+
+                                viewMoved(new CellTransform(viewRot, viewTranslation));
+                            } else if (mouse.isControlDown() && mouse.getButton() == MouseEvent.BUTTON3) {
+                                offset = new Vector3f(0.0f, 10.0f, 0.0f);
+                                cameraTranslation.zero();
+                                viewMoved(new CellTransform(viewRot, viewTranslation));
+                            }
+                            else {
                                 mouseX = mouse.getX();
                                 mouseY = mouse.getY();
                             }
