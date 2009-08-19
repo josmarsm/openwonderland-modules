@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.whiteboard.client.cell;
 
+import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.modules.whiteboard.client.*;
 import java.awt.Point;
 import java.math.BigInteger;
@@ -93,6 +94,10 @@ public class WhiteboardCell extends App2DCell {
 
                     // this cell displays the app
                     whiteboardApp.addDisplayer(this);
+
+                    float placementHeight = clientState.getPreferredHeight() + 200/*TODO*/;
+                    placementHeight *= clientState.getPixelScale().y;
+                    setInitialPlacementSize(new Vector2f(0f, placementHeight));
 
                     // This app only has one WhiteboardWindow, so it is always top-level
                     try {
