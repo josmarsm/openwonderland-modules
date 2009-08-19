@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir=".." name="pdfviewer-module-IDE">
-    <property file="nbproject/nbjdk.properties"/>
     <property location="${netbeans.user}/build.properties" name="user.properties.file"/>
     <property file="${user.properties.file}"/>
-    <import file="jdk.xml"/>
     <!-- TODO: edit the following target according to your needs -->
     <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
     <target depends="-jdk-init" name="run-selected-file-in-classes">
