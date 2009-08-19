@@ -19,11 +19,9 @@ package org.jdesktop.wonderland.modules.chatzones.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
-import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.comms.ClientConnection;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -31,8 +29,10 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.chatzones.common.ChatZonesCellServerState;
 import org.jdesktop.wonderland.modules.presentationbase.client.PresentationToolbarManager;
+import org.jdesktop.wonderland.modules.presentationbase.client.PresentationsManager;
 
 /**
  * Client-side plugin for the ChatZones system.
@@ -84,21 +84,62 @@ public class ChatZonesClientPlugin extends BaseClientPlugin implements ActionLis
             ClientConnection sender = this.getSessionManager().getPrimarySession().getConnection(CellEditConnectionType.CLIENT_TYPE);
 
             // parent id, server state
-            Collection<Cell> rootCells = ClientContext.getCellCache(this.getSessionManager().getPrimarySession()).getRootCells();
+//            Collection<Cell> rootCells = ClientContext.getCellCache(this.getSessionManager().getPrimarySession()).getRootCells();
 
             // Loop through the list of root cells and take the first one that's not an avatar.
+//            logger.warning("got rootCells. total: " + rootCells.size() + ": " + rootCells);
 
-            logger.warning("got rootCells. total: " + rootCells.size() + ": " + rootCells);
+            // figure out which platform we should be a child of (if any) by getting all
+            // the presentation cells in the
+            Cell parent = PresentationsManager.getPresentationsManager().getParentCellByPosition(currentAvatarTransform.getTranslation(null));
 
+            logger.warning("found a parent cell for this chat zone? parent: " + parent);
+            CellTransform finalChatZoneTransform;
+            if(parent!=null) {
+                // Transform the avatar's position into platform (or pres-cell) local
+                // coordinates.
+                finalChatZoneTransform = transform(currentAvatarTransform, new CellTransform(), parent.getWorldTransform());
+            } else
+                finalChatZoneTransform = currentAvatarTransform;
+
+            logger.warning("final chat zone position: " + finalChatZoneTransform);
             ChatZonesCellServerState state = new ChatZonesCellServerState();
-            state.setInitialCellTransform(currentAvatarTransform);
-            
-            CellCreateMessage msg = new CellCreateMessage(null, state);
+            PositionComponentServerState posState = new PositionComponentServerState();
+            posState.setTranslation(finalChatZoneTransform.getTranslation(null));
+            posState.setRotation(finalChatZoneTransform.getRotation(null));
+            posState.setScaling(finalChatZoneTransform.getScaling(null));
+//            state.setInitialCellTransform(currentAvatarTransform);
 
+            state.addComponentServerState(posState);
+            CellCreateMessage msg;
+            
+            // if we found a platform to attach to, include that parent's cellID
+            // in the creat message so we're created as a child of that cell. 
+            if(parent==null)
+                msg = new CellCreateMessage(null, state);
+            else
+                msg = new CellCreateMessage(parent.getCellID(), state);
 
             // Is this really right? 
             this.getSessionManager().getPrimarySession().getConnection(CellEditConnectionType.CLIENT_TYPE).getSession().send(sender, msg);
 
         }
     }
+  
+  /**
+    * A utility routine to convert the given transform from world coordinates
+    * to another reference system. Typically, the given transform is the
+    * initial transform of the Cell in world coordinates and we want to
+    * transform with respect to some Cell in the world.
+    *
+    */
+   private static CellTransform transform(CellTransform transform,
+           CellTransform fromReferenceSystem, CellTransform toReferenceSystem) {
+
+       CellTransform newTransform = toReferenceSystem.clone(null);
+       newTransform.invert();
+       newTransform.mul(fromReferenceSystem);
+       newTransform.mul(transform);
+       return newTransform;
+   }
 }

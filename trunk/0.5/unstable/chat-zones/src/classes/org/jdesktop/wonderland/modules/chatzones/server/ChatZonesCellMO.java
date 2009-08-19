@@ -25,6 +25,7 @@ import com.jme.math.LineSegment;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -90,12 +91,6 @@ public class ChatZonesCellMO extends CellMO {
         
         this.group = ((ChatZonesCellServerState)state).getChatGroup();
         this.numAvatarsInZone = ((ChatZonesCellServerState)state).getNumAvatarsInZone();
-
-        // Get the initial position from the state, if it's set. It shoudld
-        // be set in situations where the client is requesting a chatcell created
-        // at their current position, not via insert-component menu item.
-        if(((ChatZonesCellServerState)state).getInitialTransform()!=null)
-            this.setLocalTransform(((ChatZonesCellServerState)state).getInitialTransform());
     }
 
     @Override
@@ -106,7 +101,6 @@ public class ChatZonesCellMO extends CellMO {
 
         ((ChatZonesCellServerState)state).setChatGroup(group);
         ((ChatZonesCellServerState)state).setNumAvatarsInZone(numAvatarsInZone);
-        ((ChatZonesCellServerState)state).setInitialCellTransform(this.getLocalTransform(null));
         
         return super.getServerState(state);
     }

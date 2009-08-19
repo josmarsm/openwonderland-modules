@@ -63,6 +63,8 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
     protected static final String NEXT_SLIDE_ACTION = "next_slide";
     protected static final String PREV_SLIDE_ACTION = "prev_slide";
 
+    private MovingPlatformCell platform;
+
     public PresentationCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
@@ -82,8 +84,12 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
             prox.addProximityListener(this, bounds);
             logger.warning("Added proximity listener.");
 
+            // register with the global list of presentation cells.
+            PresentationsManager.getPresentationsManager().addPresentationCell(this);
+
         } else if (status==CellStatus.DISK && !increasing) {
             prox.removeProximityListener(this);
+            PresentationsManager.getPresentationsManager().removePresentationCell(this);
         }
     }
 
@@ -182,5 +188,34 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
             msg.setSlideIncrement(-1);
             this.sendCellMessage(msg);
         }
+    }
+
+    /**
+     *
+     * @param pos The position to test for a potential moving platform parent. Specified in world coordinates.
+     * @return A MovingPlatformCell object that contains the specified point, or null if this PresentationCell's MovingPlatformCell doesn't contain that position.
+     */
+    public Cell getParentCellByPosition(Vector3f pos) {
+        // This may have troubles until issue 497 is resolved, but I assume
+        // a setLocalTransform will get called.
+
+        if(this.platform==null)
+            return null;
+
+        logger.warning("Checking to see if " + pos + " is within our platform cell: " + this.platform.getWorldBounds());
+
+        logger.warning("Alternatively, is it in our presentation cell? " + this.getWorldBounds());
+
+        if(this.platform.getWorldBounds().contains(pos))
+            return this.platform;
+        else {
+            if(this.getWorldBounds().contains(pos))
+                return this;
+            return null;
+        }
+    }
+
+    public void setPlatformCell(MovingPlatformCell platform) {
+        this.platform = platform;
     }
 }

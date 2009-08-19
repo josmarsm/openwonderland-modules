@@ -32,6 +32,7 @@ public class ChatZonesCellFactory implements CellFactorySPI{
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+
         return (T)new ChatZonesCellServerState();
     }
 
