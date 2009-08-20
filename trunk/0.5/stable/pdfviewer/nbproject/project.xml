@@ -66,6 +66,10 @@
                     <ide-action name="build"/>
                     <ide-action name="rebuild"/>
                     <ide-action name="clean"/>
+                    <action>
+                        <label>Deploy to Server</label>
+                        <target>deploy</target>
+                    </action>
                 </context-menu>
             </view>
             <subprojects/>
