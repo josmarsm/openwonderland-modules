@@ -40,9 +40,9 @@ import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
- * A server cell associated with a Swing test.
+ * A server cell associated with a PDF viewer
  *
- * @author nsimpson,deronj
+ * @author nsimpson
  */
 @ExperimentalAPI
 public class PDFViewerCellMO extends App2DCellMO implements SharedMapListenerSrv {
