@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.server;
 
+import com.jme.bounding.BoundingBox;
+
 /**
  * Utility interface so presentation-base doesn't have to depend on the PDF
  * spreading module, but can still call into tha object to get data out of it.
@@ -46,4 +48,8 @@ public interface SlidesCell {
     public String getCreatorName();
 
     public float getMaxSlideWidth();
+
+    public float getScale();
+
+    public BoundingBox getPDFBounds();
 }

@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.presentationbase.server;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -86,7 +88,12 @@ public class MovingPlatformCellMO extends CellMO {
         // our existence with said cell.
         if(this.getParent() instanceof PresentationCellMO)
             ((PresentationCellMO)this.getParent()).setPlatformCellMO(this);
-        
+
+        if(live) {
+            BoundingBox box = new BoundingBox(Vector3f.ZERO, this.platformWidth, 20.0f, this.platformDepth);
+            this.setLocalBounds(box);
+        }
+
         super.setLive(live);
     }
 }

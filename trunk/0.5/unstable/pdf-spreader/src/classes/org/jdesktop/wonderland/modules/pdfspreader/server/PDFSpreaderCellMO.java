@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.pdfspreader.server;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.ManagedReference;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -57,11 +59,10 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
     @UsesCellComponentMO(MovableComponentMO.class)
     private ManagedReference<MovableComponentMO> moveRef;
 
+    private BoundingBox pdfBounds;
+
     public PDFSpreaderCellMO () {
         super();
-
-        // Need to do this before the Cell goes live.
-        // this.setLocalBounds(new BoundingCapsule(new Vector3f(), new LineSegment(new Vector3f(0, 0, -10), new Vector3f(0, 0, 10)), 1));
     }
 
     @Override
@@ -122,6 +123,14 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
         this.scale = scale;
     }
 
+    public float getScale() {
+        return this.scale;
+    }
+
+    public BoundingBox getPDFBounds() {
+        return this.pdfBounds;
+    }
+
     public void setSpacing(float spacing) {
         this.spacing = spacing;
     }
@@ -129,6 +138,7 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
     @Override
     protected void setLive(boolean live) {
         super.setLive(live);
+
 
         logger.info("Setting PDFSpreaderCellMO live: " + live);
 
@@ -190,7 +200,26 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
     public float getMaxSlideWidth() {
         return this.slideWidth;
     }
-    
+
+    private void updateBounds() {
+    // Using the latest data, figure out what our bounds should be.
+        if(isDocumentSetup()) {
+            // This formula is of course different for different layouts, but we're only going to implement LINEAR now and use it for everything.
+            // we're also going to aim way high on the bounds, because it's better
+            // to be too high than too low.
+            float width = this.numPages * (this.getMaxSlideWidth() + this.getInterslideSpacing());
+            width *= this.scale;
+            
+            float height = 2*this.getMaxSlideWidth(); // there's absolutely no reason to believe this is true, except that it's guaranteed to be bigger than pretty much any reasonable aspect ratio. Plus, height isn't that important here anyway, as long as the ground is included.
+            height *= this.scale;
+            
+            float depth = 20;
+
+            logger.warning("Setting bounds: w " + width + "; h " + height + "; d " + depth);
+            this.pdfBounds = (new BoundingBox(new Vector3f(0f, 0f, 0f), width, height, depth));
+        }
+    }
+
     private static class PDFSpreaderCellMessageReceiver extends AbstractComponentMessageReceiver {
         public PDFSpreaderCellMessageReceiver(PDFSpreaderCellMO cellMO) {
             super(cellMO);
@@ -213,7 +242,6 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
                 cellMO.setSlideWidth(msg.getSlideWidth());
                 logger.warning("Setting document data. numpages: " + msg.getNumPages() + "; slideWidth: " + msg.getSlideWidth());
                 }
-
             } else if(msg.getType() == MessageType.LAYOUT) {
                 cellMO.setSpacing(msg.getSpacing());
                 cellMO.setScale(msg.getScale());
@@ -230,6 +258,7 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
                 sender.send(clients, message);
             }
 
+            cellMO.updateBounds();
         }
     }
 

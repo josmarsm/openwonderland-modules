@@ -83,7 +83,15 @@ public class PresentationCellMO extends CellMO {
      */
     protected Vector3f getPositionForIndex(SlidesCell cell, int i) {
 //        Vector3f newPosition = new Vector3f(0, -1.0f, (cell.getCenterSpacing() * (i-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)/2.0f)*-1)));
-        Vector3f newPosition = new Vector3f((cell.getCenterSpacing() * (i-1)*1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)))/(-2.0f), -1.5f, 8.0f);
+        Vector3f newPosition = new Vector3f((cell.getCenterSpacing() * (i-1)*1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)))/(-2.0f), -1.5f, 0.0f);
+        logger.info("scaling by " + cell.getScale());
+        
+        newPosition = newPosition.mult(cell.getScale());
+
+        // make this larger to push the platform further back from the slides.
+        // this isn't a function of the scale
+        newPosition.z = 9.0f;
+
         logger.info("returning position for platform: " + newPosition);
         return newPosition;
     }
@@ -108,7 +116,6 @@ public class PresentationCellMO extends CellMO {
             CellMO pdfCell = CellManagerMO.getCell(pcsState.getSlidesCellID());
 
             CellTransform pdfCellTransform = pdfCell.getLocalTransform(null);
-            BoundingVolume pdfBounds = pdfCell.getLocalBounds();
 
             
             CellMO slideParent = pdfCell.getParent();
@@ -118,11 +125,17 @@ public class PresentationCellMO extends CellMO {
                 slideParent.removeChild(pdfCell);
             }
 
+            SlidesCell slidesCell = (SlidesCell)pdfCell;
 
             // 0. Setup this cell so it's got the same transform that the PDF
             //    cell used to have, but bigger.
-            this.setLocalTransform(pdfCellTransform);
+            BoundingVolume pdfBounds = slidesCell.getPDFBounds();
             this.setLocalBounds(pdfBounds);
+
+            logger.warning("pdf bounds are: " + pdfBounds);
+
+            this.setLocalTransform(pdfCellTransform);
+            
 
             
 
@@ -154,8 +167,7 @@ public class PresentationCellMO extends CellMO {
             //    so it is as wide as the slide + the inter-slide space. Parent to
             //    the new PresentationCell.
 
-            SlidesCell slidesCell = (SlidesCell)pdfCell;
-
+            
             logger.info("numpages: " + slidesCell.getNumSlides() + " created by: " + slidesCell.getCreatorName());
             
             // The width of the presentation platform is the width of the slide + one spacing distance.
