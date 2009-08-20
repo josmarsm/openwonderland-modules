@@ -15,18 +15,11 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-/*
- * WhiteboardControlPanel.java
- *
- * Created on Jan 29, 2009, 4:55:50 PM
- */
 package org.jdesktop.wonderland.modules.pdfviewer.client;
 
+import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -45,13 +38,12 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
     protected Border border;
     protected Map toolMappings;
     protected Map colorMappings;
-//    protected WhiteboardDragGestureListener gestureListener;
     protected PDFViewerWindow window;
+    protected PDFViewerDragGestureListener gestureListener;
 
     public PDFViewerControlPanel(PDFViewerWindow window) {
         this.window = window;
         initComponents();
-        initButtonMaps();
         initListeners();
         border = javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED);
     }
@@ -64,27 +56,11 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
         cellMenuListeners.remove(listener);
     }
 
-    private void initButtonMaps() {
-        toolMappings = Collections.synchronizedMap(new HashMap());
-//        toolMappings.put(WhiteboardTool.SELECTOR, selectButton);
-//        toolMappings.put(WhiteboardTool.LINE, lineButton);
-//        toolMappings.put(WhiteboardTool.RECT, rectangleButton);
-//        toolMappings.put(WhiteboardTool.ELLIPSE, ellipseButton);
-//        toolMappings.put(WhiteboardTool.TEXT, textButton);
-//
-//        colorMappings = Collections.synchronizedMap(new HashMap());
-//        colorMappings.put(WhiteboardColor.RED, colorRedButton);
-//        colorMappings.put(WhiteboardColor.GREEN, colorGreenButton);
-//        colorMappings.put(WhiteboardColor.BLUE, colorBlueButton);
-//        colorMappings.put(WhiteboardColor.BLACK, colorBlackButton);
-//        colorMappings.put(WhiteboardColor.WHITE, colorWhiteButton);
-    }
-
     private void initListeners() {
         DragSource ds = DragSource.getDefaultDragSource();
-//        gestureListener = new WhiteboardDragGestureListener(window);
-//        ds.createDefaultDragGestureRecognizer(dragButton,
-//                DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+        gestureListener = new PDFViewerDragGestureListener(window);
+        ds.createDefaultDragGestureRecognizer(dragHUDButton,
+                DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
     }
 
     /**

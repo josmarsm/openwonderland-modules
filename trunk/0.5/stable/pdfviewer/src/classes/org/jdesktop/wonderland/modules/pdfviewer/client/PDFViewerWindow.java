@@ -135,6 +135,10 @@ public class PDFViewerWindow extends WindowSwing {
         pdfPanel.openDocument(documentURI);
     }
 
+    public String getDocumentURI() {
+        return pdfPanel.getDocumentURI();
+    }
+
     public void firstPage() {
         pdfPanel.firstPage();
     }
@@ -207,10 +211,10 @@ public class PDFViewerWindow extends WindowSwing {
     public void sync(boolean syncing) {
         if ((syncing == false) && (synced == true)) {
             synced = false;
-            logger.info("whiteboard: unsynced");
+            logger.info("PDF viewer: unsynced");
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
-            logger.info("whiteboard: synced");
+            logger.info("PDF viewer: synced");
         }
     }
 

@@ -69,7 +69,7 @@ public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {
     }
 
     /**
-     * Initialize the whiteboard with parameters from the server.
+     * Initialize the PDF viewer with parameters from the server.
      *
      * @param clientState the client state to initialize the cell with
      */
