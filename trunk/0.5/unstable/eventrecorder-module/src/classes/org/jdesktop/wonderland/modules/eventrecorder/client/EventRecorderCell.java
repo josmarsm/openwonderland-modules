@@ -86,7 +86,18 @@ public class EventRecorderCell extends Cell {
         super(cellID, cellCache);
         isRecording = false;
         createTapeModels();
-        reelForm = new ReelForm(this);
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                public void run() {
+                    reelForm = new ReelForm(EventRecorderCell.this);
+                }
+            });
+        } catch (InterruptedException ex) {
+            eventRecorderLogger.log(Level.SEVERE, "Failed to create reel form", ex);
+        } catch (InvocationTargetException ex) {
+            eventRecorderLogger.log(Level.SEVERE, "Failed to create reel form", ex);
+        }
     }
 
     /**

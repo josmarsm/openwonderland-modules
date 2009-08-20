@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType( namespace="eventrecorder" )
-public class Tape implements Serializable, Comparable {
+public class Tape implements Serializable, Comparable<Tape> {
 
     private String tapeName;
     private boolean isFresh;
@@ -63,8 +63,7 @@ public class Tape implements Serializable, Comparable {
         return isFresh;
     }
 
-    public int compareTo(Object o) {
-        Tape t = (Tape) o;
+    public int compareTo(Tape t) {
         return tapeName.compareToIgnoreCase(t.tapeName);
     }
     
@@ -101,4 +100,6 @@ public class Tape implements Serializable, Comparable {
         hash = 59 * hash + (this.isFresh ? 1 : 0);
         return hash;
     }
+
+    
 }
