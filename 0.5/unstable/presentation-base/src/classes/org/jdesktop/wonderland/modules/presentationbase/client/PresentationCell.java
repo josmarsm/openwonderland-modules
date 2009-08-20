@@ -78,9 +78,10 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
         // on status changes.
         if(status==CellStatus.ACTIVE && increasing) {
 
-            this.setLocalBounds(new BoundingBox(Vector3f.ZERO, 10.0f, 20.0f, 10.0f));
+//            this.setLocalBounds(new BoundingBox(Vector3f.ZERO, 10.0f, 20.0f, 10.0f));
 
-            BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds()};
+            logger.warning("About to init proximity listener to bounds: " + this.getLocalBounds());
+            BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds().clone(null)};
             prox.addProximityListener(this, bounds);
             logger.warning("Added proximity listener.");
 

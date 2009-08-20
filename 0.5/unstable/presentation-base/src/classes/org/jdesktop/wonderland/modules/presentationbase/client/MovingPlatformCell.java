@@ -68,7 +68,7 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
         if(status==CellStatus.ACTIVE && increasing) {
 //            PresentationToolbarManager.getManager().addPlatform(this);
 
-            this.setLocalBounds(new BoundingBox(Vector3f.ZERO, this.platformWidth, 20.0f, this.platformDepth));
+            BoundingBox box = new BoundingBox(Vector3f.ZERO, this.platformWidth, 20.0f, this.platformDepth);
 
             // move it to the same place to trigger a world bounds cache update.
 //            MovableComponent mc = this.getComponent(MovableComponent.class);
@@ -84,11 +84,13 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 //
 //            localToWorld.transform(worldBounds);
 //
-            BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds()};
+
+
+            BoundingVolume[] bounds = new BoundingVolume[]{box.clone(null)};
 
             prox.addProximityListener(this, bounds);
 
-            logger.warning("Added proximity listener, sending: " + bounds[0] + "; local: " + this.getLocalBounds() + " world: " + this.getWorldBounds());
+//            logger.warning("Added proximity listener, sending: " + bounds[0] + "; local: " + this.getLocalBounds() + " world: " + this.getWorldBounds());
 
 
             // check to see if we have a parent. If we do, phone home.
