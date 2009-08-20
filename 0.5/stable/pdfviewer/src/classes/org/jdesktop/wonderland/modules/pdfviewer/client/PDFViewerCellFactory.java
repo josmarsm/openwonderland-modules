@@ -47,7 +47,7 @@ public class PDFViewerCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        URL url = PDFViewerCellFactory.class.getResource("resources/PDFviewerApp32x32.png");
+        URL url = PDFViewerCellFactory.class.getResource("resources/PDFviewerApp128x128.png");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
