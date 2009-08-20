@@ -56,7 +56,7 @@ public class WhiteboardCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        URL url = WhiteboardCellFactory.class.getResource("resources/svgwhiteboard_preview.png");
+        URL url = WhiteboardCellFactory.class.getResource("resources/WhiteboardApp128x128.png");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
 }
