@@ -29,7 +29,7 @@ import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.wfs.CellList;
 import org.jdesktop.wonderland.common.wfs.CellList.Cell;
-import org.jdesktop.wonderland.common.wfs.WorldRoot;
+import org.jdesktop.wonderland.modules.eventplayer.server.RecordingRoot;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 import org.jdesktop.wonderland.server.wfs.importer.CellImporterUtils;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
@@ -60,7 +60,7 @@ public class RecordingLoaderUtils {
      */
     public static CellMap<CellImportEntry> loadCellMap(String tapeName) throws JAXBException, IOException {
         //logger.info("tapeName: " + tapeName);
-        WorldRoot recordingRoot = getRecordingRoot(tapeName);
+        RecordingRoot recordingRoot = getRecordingRoot(tapeName);
         //logger.info("recordingRoot: " + recordingRoot);
         String recordingName = recordingRoot.getRootPath();
         //logger.info("recordingName: " + recordingName);
@@ -181,18 +181,18 @@ public class RecordingLoaderUtils {
     }
 
     /**
-     * Get the worldRoot object for a recording
+     * Get the recordingRoot object for a recording
      * @param tapeName the name of the recording
-     * @return a world root object that identifies the path of the recording
+     * @return a recording root object that identifies the path of the recording
      * @throws javax.xml.bind.JAXBException
      * @throws java.io.IOException
      */
-    public static WorldRoot getRecordingRoot(String tapeName) throws JAXBException, IOException {
+    public static RecordingRoot getRecordingRoot(String tapeName) throws JAXBException, IOException {
         //logger.info("tapeName: " + tapeName);
         String encodedName = URLEncoder.encode(tapeName, "UTF-8");
         URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "getrecording/" + encodedName);
         //logger.info("url: " + url);
-        return WorldRoot.decode(new InputStreamReader(url.openStream()));
+        return RecordingRoot.decode(new InputStreamReader(url.openStream()));
     }
 
     /**
@@ -228,6 +228,8 @@ public class RecordingLoaderUtils {
 
         return new InputStreamReader(url.openStream());
     }
+
+
 
 
     /** An entry holding details about a cell to export */

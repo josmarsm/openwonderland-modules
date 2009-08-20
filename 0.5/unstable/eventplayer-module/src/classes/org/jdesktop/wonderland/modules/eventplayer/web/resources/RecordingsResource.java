@@ -31,6 +31,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
+import org.jdesktop.wonderland.modules.eventplayer.server.RecordingRoot;
 import org.jdesktop.wonderland.web.wfs.WFSManager;
 import org.jdesktop.wonderland.web.wfs.WFSRecording;
 
@@ -51,16 +52,16 @@ import org.jdesktop.wonderland.web.wfs.WFSRecording;
 public class RecordingsResource {
 
     /**
-     * Returns the JAXB XML serialization of the WorldRoot for the given
+     * Returns the JAXB XML serialization of the RecordingRoot for the given
      * recording. Returns
      * the XML via an HTTP GET request. The format of the URI is:
      * <p>
-     * http://<machine>:<port>eventplayer/eventplayer/resources/getrecording/{recording_name}
+     * http://<machine>:<port>/eventplayer/eventplayer/resources/getrecording/{recording_name}
      * <p>
      * Returns BAD_REQUEST to the HTTP connection upon error
      *
      * @param encodedName the encoded name of the recording
-     * @return The XML serialization of the WorldRoot of the recording via HTTP GET
+     * @return The XML serialization of the RecordingRoot of the recording via HTTP GET
      */
 
     @GET
@@ -89,10 +90,34 @@ public class RecordingsResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         // Form the root path of the wfs: "recordings/<name>/world-wfs"
-        WorldRoot worldRoot = new WorldRoot(recording.getRootPath());
+        RecordingRoot recordingRoot = new RecordingRoot(recording.getRootPath());
+
+        BufferedReader reader = null;
+        StringBuffer sb = new StringBuffer();
+        try {
+            reader = new BufferedReader(new FileReader(recording.getPositionFile()));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+                sb.append("\n");
+            }
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, "[EventPlayer] Failed to read position info", ex);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, "[EventPlayer] failed to close reader", ex);
+            }
+        }
+
+        String positionInfo = sb.toString();
+        recordingRoot.setPositionInfo(positionInfo);
 
         /* Send the serialized recording to the client */
-        return Response.ok(worldRoot).build();
+        return Response.ok(recordingRoot).build();
     }
 
 

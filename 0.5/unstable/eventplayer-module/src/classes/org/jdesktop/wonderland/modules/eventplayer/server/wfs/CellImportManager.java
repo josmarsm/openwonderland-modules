@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.eventplayer.server.wfs;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.eventplayer.server.RecordingRoot;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 
@@ -27,6 +28,17 @@ import org.jdesktop.wonderland.server.wfs.importer.CellMap;
  * @author Bernard Horan
  */
 public interface CellImportManager {
+
+    /**
+     * Load a named recording. This method will contact a remote web service
+     * to load the recording, then call the given listener with the result
+     * of loading the recording
+     * @param name the name of the recording to load
+     * @param listener a recording loaded listener that will be notified of the
+     * result of this call
+     */
+    public void loadRecording(String name, RecordingLoadedListener listener);
+
     /**
      * Retrieve cells from a named recording. This method will contact a remote
      * web service to retrieve the cells, then call the given listener with the
@@ -36,6 +48,22 @@ public interface CellImportManager {
      * the result of this call
      */
     public void retrieveCells(String name, CellRetrievalListener listener);
+
+    /**
+     * A listener that will be notified of the result of loading a recording.
+     * Implementations of RecordingLoadedListener
+     * must be either a ManagedObject or Serializable.
+     */
+    public interface RecordingLoadedListener {
+
+        /**
+         * Notification that a recording has been loaded
+         * @param root the recording root of the recording
+         * @param ex if non-null, the loading has failed
+         */
+        public void recordingLoaded(RecordingRoot root, Exception ex);
+        
+    }
 
     /**
      * A listener that will be notified of the success or failure of
