@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.eventplayer.client;
 
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,7 +94,18 @@ public class EventPlayerCell extends Cell {
         isPaused = false;
         replayedChildren = 0;
         createTapeModels();
-        reelForm = new ReelForm(this);
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                public void run() {
+                    reelForm = new ReelForm(EventPlayerCell.this);
+                }
+            });
+        } catch (InterruptedException ex) {
+            eventPlayerLogger.log(Level.SEVERE, "Failed to create reel form", ex);
+        } catch (InvocationTargetException ex) {
+            eventPlayerLogger.log(Level.SEVERE, "Failed to create reel form", ex);
+        }
     }
 
     /**
