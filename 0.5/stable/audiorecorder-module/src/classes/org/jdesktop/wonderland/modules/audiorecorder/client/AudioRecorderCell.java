@@ -127,14 +127,14 @@ public class AudioRecorderCell extends Cell {
     public void setClientState(CellClientState cellClientState) {
         super.setClientState(cellClientState);
 
-        Set<Tape> tapes = ((AudioRecorderCellClientState)cellClientState).getTapes();
-        Tape selectedTape = ((AudioRecorderCellClientState)cellClientState).getSelectedTape();
+        Set<Tape> tapes = ((AudioRecorderCellClientState) cellClientState).getTapes();
+        Tape selectedTape = ((AudioRecorderCellClientState) cellClientState).getSelectedTape();
         createTapeModels(tapes, selectedTape);
 
-        isPlaying = ((AudioRecorderCellClientState)cellClientState).isPlaying();
-        isRecording = ((AudioRecorderCellClientState)cellClientState).isRecording();
-        userName = ((AudioRecorderCellClientState)cellClientState).getUserName();
-        if(isPlaying | isRecording) {
+        isPlaying = ((AudioRecorderCellClientState) cellClientState).isPlaying();
+        isRecording = ((AudioRecorderCellClientState) cellClientState).isRecording();
+        userName = ((AudioRecorderCellClientState) cellClientState).getUserName();
+        if (isPlaying | isRecording) {
             if (userName == null) {
                 logger.warning("userName should not be null");
             }
@@ -144,7 +144,13 @@ public class AudioRecorderCell extends Cell {
                 logger.warning("userName should be null");
             }
         }
-        reelForm = new ReelForm(this);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                reelForm = new ReelForm(AudioRecorderCell.this);
+            }
+        });
+
     }
 
     private ChannelComponent getChannel() {
