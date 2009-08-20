@@ -29,6 +29,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.wfs.WorldRoot;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangesFileCloseListener;
@@ -42,6 +44,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MessageRecordingListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.MetadataRecordingListener;
+import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.PositionRecordedListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.UnloadedCellsRecordingListener;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.CellExportListener;
@@ -54,7 +57,7 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager.RecordingCr
  * @author Bernard Horan
  */
 public class EventRecorderImpl implements ManagedObject, EventRecorder, RecordingCreationListener,
-        CellExportListener, ChangesFileCloseListener, MessageRecordingListener, MetadataRecordingListener, LoadedCellRecordingListener, UnloadedCellsRecordingListener, Serializable {
+        CellExportListener, PositionRecordedListener, ChangesFileCloseListener, MessageRecordingListener, MetadataRecordingListener, LoadedCellRecordingListener, UnloadedCellsRecordingListener, Serializable {
 
     private static final Logger logger = Logger.getLogger(EventRecorderImpl.class.getName());
     /*The reference to the cell that is the event recorder in the world */
@@ -227,6 +230,16 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
         tapeName = null;
     }
 
+    private void recordPosition() {
+        EventRecorderCellMO cellMO = (EventRecorderCellMO) CellManagerMO.getCell(eventRecorderCellID);
+        CellServerState cellServerState = cellMO.getServerState(null);
+        PositionComponentServerState positionState = (PositionComponentServerState) cellServerState.getComponentServerState(PositionComponentServerState.class);
+        EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
+        //Write the position info
+        //On success I receive a recordPositionResult() method
+        mgr.recordPosition(tapeName, positionState, this);
+    }
+
     private void createChangesFile() {
         //logger.info("opening changes file");
         EventRecordingManager mgr = AppContext.getManager(EventRecordingManager.class);
@@ -292,8 +305,8 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
             logger.severe("Failed to export any cells to the recording, terminating recording");
             return;
         }
-        //We've succeeded in exporting the cells (if there were any), so create the changes file to record the messages
-        createChangesFile();
+        //We've succeeded in exporting the cells (if there were any), so record the position
+        recordPosition();
     }
 
     public boolean isRecording() {
@@ -350,6 +363,21 @@ public class EventRecorderImpl implements ManagedObject, EventRecorder, Recordin
             logger.log(Level.SEVERE, "Failed to record unloaded cell  id: " + cellID , exception);
         } else {
             //logger.info("recorded unloadCell: " + cellID);
+        }
+    }
+
+    /**
+     * The result of recording the position of the event recorder
+     * @param exception an exception, if any, which would cause this procedure to terminate
+     */
+    public void recordPositionResult(Exception exception) {
+        if (exception != null) {
+            logger.log(Level.SEVERE, "Failed to record position", exception);
+            return;
+        } else {
+            //We've succeeded in recording the position, so create the changes file to record the messages
+            //logger.info("Recorded the position, so create the changes file");
+            createChangesFile();
         }
     }
 }

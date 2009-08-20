@@ -21,17 +21,28 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
- * A service for recording events/changes in Wonderland.  This service provides a set of
- * asynchronous mechanisms for creating and closing a changes file, and writing changes to that
- * file.  Callers will be notified if the file creation/closure succeeds or fails and also the result of
+ * A service for recording position data and events/changes in Wonderland.  This service provides a set of
+ * asynchronous mechanisms for recording position data in a file, creating and closing a changes file, and writing changes to that
+ * file.  Callers will be notified if the recording of position or file creation/closure succeeds or fails and also the result of
  * writing a change to the file.
  * @author Bernard Horan
  */
 public interface EventRecordingManager {
+
+    /**
+     * Record the position of a cell on a file. This method will contact the
+     * remote web service to create the file, write the position data to it
+     * and then call the given listner with the result of that call.
+     * @param tapeName the name of the recording for which to record the position
+     * @param positionState the position data, including translation, rotation, scale and bounds
+     * @param listener a position recording listener that will be notfified of the result of this call
+     */
+    public void recordPosition(String tapeName, PositionComponentServerState positionState, PositionRecordedListener listener);
     /**
      * Create a file to record changes. This method will contact
      * the remote web service to create a the file, and then call the
@@ -47,6 +58,7 @@ public interface EventRecordingManager {
      * Record the details of a loaded cell onto the changes file.
      * @param tapeName the name of the recording to which the change should be recorded
      * @param cellID the id of the cell that has been loaded
+     * @param parentID the id of the parent cell
      * @param listener a loaded cell recording listener that will be notified of the result of this call
      */
     public void recordLoadedCell(String tapeName, CellID cellID, CellID parentID, LoadedCellRecordingListener listener);
@@ -92,6 +104,21 @@ public interface EventRecordingManager {
      * @param listener a changes file close listener that will be notified with the result of this call
      */
     public void closeChangesFile(String tapeName, ChangesFileCloseListener listener);
+
+    /**
+     * A listener that will be notified when the position of the event recorder
+     * has been recorded. Implementations of PositionRecordedListener
+     * must be either a ManagedObject or Serializable.
+     */
+    public interface PositionRecordedListener {
+
+        /**
+         * Notification that a position has been recorded
+         * @param exception if non-null the recording of the position has failed
+         */
+        public void recordPositionResult(Exception exception);
+        
+    }
 
     /**
      * A listener that will be notified of the success or failure of
@@ -218,6 +245,8 @@ public interface EventRecordingManager {
 
 
     }
+
+    
 
 
 }
