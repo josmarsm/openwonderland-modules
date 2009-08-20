@@ -47,6 +47,7 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
 public class PDFViewerPanel extends JPanel {
 
     private static final Logger logger = Logger.getLogger(PDFViewerPanel.class.getName());
+    private String documentURI;
     private PDFDocumentLoader loader;
     private PDFFile currentDocument;
     private PDFPage currentPage;
@@ -103,6 +104,7 @@ public class PDFViewerPanel extends JPanel {
 
     public void openDocument(final String documentURI) {
         URL documentURL;
+        this.documentURI = documentURI;
 
         // reset state
         currentDocument = null;
@@ -154,6 +156,10 @@ public class PDFViewerPanel extends JPanel {
             }
         });
         new Thread(loader).start();
+    }
+
+    public String getDocumentURI() {
+        return documentURI;
     }
 
     private void resizeToFit() {

@@ -49,7 +49,7 @@ public class PDFViewerApp extends App2D implements ControlChangeListener {
 
     /**
      * Set the app's window
-     * @param whiteboardWindow the window
+     * @param pdfViewerWindow the PDF viewer window
      */
     public void setWindow(PDFViewerWindow pdfViewerWindow) {
         this.pdfViewerWindow = pdfViewerWindow;
