@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -34,6 +35,10 @@ public class EventRecordingManagerImpl implements EventRecordingManager {
 
     public EventRecordingManagerImpl(EventRecordingService service) {
         this.service = service;
+    }
+
+    public void recordPosition(String tapeName, PositionComponentServerState positionState, PositionRecordedListener listener) {
+        service.recordPosition(tapeName, positionState, listener);
     }
 
     public void createChangesFile(String tapeName, ChangesFileCreationListener listener) {
@@ -59,5 +64,7 @@ public class EventRecordingManagerImpl implements EventRecordingManager {
     public void recordMetadata(String tapeName, MessageID messageID, String metadata, MetadataRecordingListener listener) {
         service.recordMetadata(tapeName, messageID, metadata, listener);
     }
+
+
 
 }

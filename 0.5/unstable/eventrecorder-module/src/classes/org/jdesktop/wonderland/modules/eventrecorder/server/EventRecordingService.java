@@ -21,6 +21,7 @@ package org.jdesktop.wonderland.modules.eventrecorder.server;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.LoadedCellRecordingListener;
 import org.jdesktop.wonderland.modules.eventrecorder.server.EventRecordingManager.ChangeRecordingResult;
 import com.sun.sgs.impl.util.AbstractService;
@@ -157,6 +158,28 @@ public class EventRecordingService extends AbstractService implements EventRecor
     }
 
     /**
+     * Record the position of the event recorder
+     * @param tapeName the name of the recording and hence the name of the directory into which the position is recorded
+     * @param listener to be informed of the success or failure of the operation
+     */
+    public void recordPosition(String tapeName, PositionComponentServerState positionState, PositionRecordedListener listener) {
+
+        if (!(listener instanceof ManagedObject)) {
+            listener = new ManagedPositionRecordedWrapper(listener);
+        }
+
+        // create a reference to the listener
+        ManagedReference<PositionRecordedListener> scl =
+                dataService.createReference(listener);
+
+        // now add the file creation request to the transaction.  On commit
+        // this request will be passed on to the executor for long-running
+        // tasks
+        RecordPosition rp = new RecordPosition(tapeName, positionState, scl.getId());
+        ctxFactory.joinTransaction().add(rp);
+    }
+
+    /**
      * Open the file into which changes will be recorded
      * @param tapeName the name of the recording and hence the name of the directory into which the changes are recorded
      * @param listener to be informed of the success or failure of the operation
@@ -272,6 +295,75 @@ public class EventRecordingService extends AbstractService implements EventRecor
     }
 
 
+
+    /**
+     * A task that records the position of the event recorder, and then notifies the position recorded
+     * listener identified by managed reference id.
+     */
+    private class RecordPosition implements Runnable {
+        private String tapeName;
+        private BigInteger listenerID;
+        PositionComponentServerState positionState;
+
+        private RecordPosition(String tapeName, PositionComponentServerState positionState, BigInteger id) {
+            this.tapeName = tapeName;
+            this.positionState = positionState;
+            this.listenerID = id;
+        }
+
+        public void run() {
+            Exception ex = null;
+
+            try {
+                //logger.getLogger().info("tapeName: " + tapeName);
+                EventRecorderUtils.recordPosition(tapeName, positionState);
+            } catch (Exception ex2) {
+                ex = ex2;
+            }
+
+            // notify the listener
+            NotifyPositionRecordedListener notify =
+                    new NotifyPositionRecordedListener(listenerID, ex);
+            try {
+                transactionScheduler.runTask(notify, taskOwner);
+            } catch (Exception ex2) {
+                logger.logThrow(Level.WARNING, ex2, "Error calling listener");
+            }
+        }
+    }
+
+    /**
+     * A task to notify a PositionRecordedListener
+     */
+    private class NotifyPositionRecordedListener implements KernelRunnable {
+        private BigInteger listenerID;
+        private Exception exception;
+
+         private NotifyPositionRecordedListener(BigInteger listenerID, Exception ex) {
+            this.listenerID = listenerID;
+            this.exception = ex;
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".POSITION_RECORDED_LISTENER";
+        }
+
+        public void run() throws Exception {
+            ManagedReference<?> lr =
+                    dataService.createReferenceForId(listenerID);
+            PositionRecordedListener l =
+                    (PositionRecordedListener) lr.get();
+
+            try {
+                l.recordPositionResult(exception);
+            } finally {
+                // clean up
+                if (l instanceof ManagedPositionRecordedWrapper) {
+                    dataService.removeObject(l);
+                }
+            }
+        }
+    }
 
     /**
      * A task that creates a new changes file, and then notifies the changes file
@@ -594,6 +686,28 @@ public class EventRecordingService extends AbstractService implements EventRecor
                 logger.logThrow(Level.WARNING, ex2, "Error calling listener");
             }
         }
+    }
+
+    /**
+     * A wrapper around the ChangesFileCreationListener as a managed object.
+     * This assumes a serializable ChangesFileCreationListener
+     */
+    private static class ManagedPositionRecordedWrapper
+            implements PositionRecordedListener, ManagedObject, Serializable
+    {
+        private PositionRecordedListener wrapped;
+
+        public ManagedPositionRecordedWrapper(PositionRecordedListener listener)
+        {
+            wrapped = listener;
+        }
+
+        public void recordPositionResult(Exception exception) {
+            wrapped.recordPositionResult(exception);
+        }
+
+        
+
     }
 
     /**

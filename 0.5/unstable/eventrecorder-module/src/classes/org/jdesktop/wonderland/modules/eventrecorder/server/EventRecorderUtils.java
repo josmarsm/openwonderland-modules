@@ -32,6 +32,7 @@ import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -50,6 +51,41 @@ public class EventRecorderUtils {
     private static final Logger logger = Logger.getLogger(EventRecorderUtils.class.getName());
 
     final private static BASE64Encoder BASE_64_ENCODER = new BASE64Encoder();
+
+    /**
+     * Record the position of the event recorder.
+     * @param tapeName the name of the recording for which the position should be recorded
+     * @param positionState the position data, including rotation, translation, bounds and scale
+     * @throws java.io.IOException if we fail to call the web service correctly (or if it's down)
+     * @throws javax.xml.bind.JAXBException if the XML-isation fails
+     */
+    static void recordPosition(String tapeName, PositionComponentServerState positionState) throws IOException, JAXBException {
+        PositionDescriptor positionDescriptor = new PositionDescriptor(tapeName, positionState);
+        // Open an output connection to the URL, pass along any exceptions
+        URL url = new URL(CellExporterUtils.getWebServerURL(), WEB_SERVICE_PREFIX + "recordPosition");
+
+        URLConnection connection = url.openConnection();
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        connection.setUseCaches(false);
+        connection.setRequestProperty("Content-Type", "application/xml");
+        OutputStreamWriter w = new OutputStreamWriter(connection.getOutputStream());
+
+        // Write out the class as an XML stream to the output connection
+        positionDescriptor.encode(w);
+        w.close();
+
+        // For some reason, we need to read in the input for the HTTP POST to
+        // work
+        InputStreamReader r = new InputStreamReader(connection.getInputStream());
+        while (r.read() != -1) {
+            // Do nothing
+        }
+        r.close();
+    }
+
+
+
     /**
      * Creates a new changes file
      * @param name the name of the recording for which the changes file should be created
