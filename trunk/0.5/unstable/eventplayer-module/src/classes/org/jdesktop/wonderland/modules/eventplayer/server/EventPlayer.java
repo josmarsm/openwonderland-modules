@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.eventplayer.server;
 
+import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
@@ -28,10 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -40,6 +43,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.modules.eventplayer.server.EventPlayingManager.ChangeReplayingListener;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.CellRetrievalListener;
+import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.RecordingLoadedListener;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -50,7 +54,7 @@ import org.jdesktop.wonderland.server.wfs.importer.CellMap;
  * An implementation of an event player that loads a recorded state of a world and replays messages to that world.
  * @author Bernard Horan
  */
-public class EventPlayer implements ManagedObject, CellRetrievalListener, ChangeReplayingListener, Serializable {
+public class EventPlayer implements ManagedObject, RecordingLoadedListener, CellRetrievalListener, ChangeReplayingListener, Serializable {
 
     private static final Logger logger = Logger.getLogger(EventPlayer.class.getName());
     /*The name of the tape representing the recording
@@ -75,6 +79,10 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
      *the reference fo the event player cell
      */
     private ManagedReference<EventPlayerCellMO> playerCellMORef;
+    /*
+     * The original position of the event recorder
+     */
+    private PositionComponentServerState originalRecorderPosition;
     
 
 
@@ -147,9 +155,11 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         //then replay messages
         CellImportManager im = AppContext.getManager(CellImportManager.class);
 
-        // first, create a new recording.  The remainder of the export procedure will happen
-        // in the cellsRetrieved() method of the listener
-        im.retrieveCells(tapeName, this);
+        //First load the recording. The remainder of the import will be
+        //via recordingLoaded()
+        im.loadRecording(tapeName, this);
+
+        
     }
 
     /**
@@ -178,6 +188,34 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         logger.log(Level.SEVERE, reason, cause);
     }
 
+    /**
+     * The recording has been loaded
+     * @param root the root of the recording
+     * @param ex if non-null, the loading of the recording failed
+     */
+    public void recordingLoaded(RecordingRoot root, Exception ex) {
+        if (ex != null) {
+            logger.log(Level.SEVERE, "Failed to load recording", ex);
+            return;
+        }
+        if (root == null) {
+            logger.severe("Root is null!");
+            return;
+        }
+        //logger.info("Root: " + root);
+        //logger.info("Position Info: " + root.getPositionInfo());
+        try {
+            originalRecorderPosition = root.getPosition();
+        } catch (JAXBException ex1) {
+            logger.log(Level.SEVERE, "Failed to retrieve player position", ex1);
+            return;
+        }
+        CellImportManager im = AppContext.getManager(CellImportManager.class);
+        // first, create a new recording.  The remainder of the export procedure will happen
+        // in the cellsRetrieved() method of the listener
+        im.retrieveCells(tapeName, this);
+    }
+
     public void cellsRetrieved(CellMap<CellImportEntry> cellRetrievalMap, CellMap<CellID> cellPathMap) {
         Set<String> keys = cellRetrievalMap.keySet();
         for (String key : keys) {
@@ -187,6 +225,7 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
             CellID parentID = cellPathMap.get(entry.getRelativePath());
 
             CellServerState setup = entry.getServerState();
+            translateServerState(setup);
             //logger.info(setup.toString());
             
 
@@ -312,78 +351,79 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
     }
 
     public void loadCell(CellServerState setup, CellID parentID) {
-            /*
-             * Create the cell and pass it the setup information
-             */
-            String className = setup.getServerClassName();
-            //logger.getLogger().info("className: " + className);
-            CellMO cellMO = null;
-            try {
-                cellMO = CellMOFactory.loadCellMO(className);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Failed to load cell: " + className, e);
-                return;
-            }
-            //logger.getLogger().info("created cellMO: " + cellMO);
-            if (cellMO == null) {
-                /* Log a warning and move onto the next cell */
-                logger.severe("Unable to load cell MO: " + className);
-                return;
-            }
-            /* Call the cell's setup method */
-            try {
-                cellMO.setServerState(setup);
-            } catch (ClassCastException cce) {
-                logger.log(Level.WARNING, "Error setting up new cell " +
-                        cellMO.getName() + " of type " +
-                        cellMO.getClass(), cce);
-                return;
-            }
-            try {
-                if (parentID != null) {
-                    //Need to add the cellMO to the right parent
-                    CellMO parent = CellManagerMO.getCell(parentID);
-                    logger.info("parent: " + parent);
-                    parent.addChild(cellMO);
-                    logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
-                    Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
-                    Iterator<ManagedReference<CellMO>> it = refs.iterator();
-                    while (it.hasNext() == true) {
-                        logger.info("[EventPlayer] Child Cell=" + it.next().get().getCellID().toString());
-                    }
-                    logger.info("[EventPlayer] Cell Live: " + cellMO.isLive());
-
-                } else {
-                    //Add it to the player's cell
-                    EventPlayerCellMO parent = playerCellMORef.get();
-                    logger.info("parent: " + parent);
-                    parent.addReplayedChild(cellMO);
-                    logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
-                    Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
-                    Iterator<ManagedReference<CellMO>> it = refs.iterator();
-                    while (it.hasNext() == true) {
-                        logger.info("[EventPlayer] Child Cell=" + it.next().get().getCellID().toString());
-                    }
-                    logger.info("[EventPlayer] Cell Live: " + cellMO.isLive());
-                }
-            } catch (MultipleParentException ex) {
-                logger.log(Level.SEVERE, "A cell cannot have multiple parents", ex);
-            }
-            String idString = setup.getMetaData().get("CellID");
-            logger.info("Old cellID value: " + idString);
-            long id = Long.valueOf(idString);
-            logger.info("Old cellID id: " + id);
-            CellID oldCellID = new CellID(id);
-            logger.info("Old cellID: " + oldCellID);
-            CellID newCellID = cellMO.getCellID();
-            logger.info("New cellID: " + newCellID);
-            if (cellMap.get(oldCellID) != null) {
-            throw new RuntimeException("Failed trying to add new cellId to cellmap where cellID already exists");
-            }
-
-            cellMap.put(oldCellID, newCellID);
-            logger.info("new cellID from map: " + cellMap.get(oldCellID));
+        translateServerState(setup);
+        /*
+         * Create the cell and pass it the setup information
+         */
+        String className = setup.getServerClassName();
+        //logger.getLogger().info("className: " + className);
+        CellMO cellMO = null;
+        try {
+            cellMO = CellMOFactory.loadCellMO(className);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to load cell: " + className, e);
+            return;
         }
+        //logger.getLogger().info("created cellMO: " + cellMO);
+        if (cellMO == null) {
+            /* Log a warning and move onto the next cell */
+            logger.severe("Unable to load cell MO: " + className);
+            return;
+        }
+        /* Call the cell's setup method */
+        try {
+            cellMO.setServerState(setup);
+        } catch (ClassCastException cce) {
+            logger.log(Level.WARNING, "Error setting up new cell " +
+                    cellMO.getName() + " of type " +
+                    cellMO.getClass(), cce);
+            return;
+        }
+        try {
+            if (parentID != null) {
+                //Need to add the cellMO to the right parent
+                CellMO parent = CellManagerMO.getCell(parentID);
+                logger.info("parent: " + parent);
+                parent.addChild(cellMO);
+                logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
+                Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
+                Iterator<ManagedReference<CellMO>> it = refs.iterator();
+                while (it.hasNext() == true) {
+                    logger.info("[EventPlayer] Child Cell=" + it.next().get().getCellID().toString());
+                }
+                logger.info("[EventPlayer] Cell Live: " + cellMO.isLive());
+
+            } else {
+                //Add it to the player's cell
+                EventPlayerCellMO parent = playerCellMORef.get();
+                logger.info("parent: " + parent);
+                parent.addReplayedChild(cellMO);
+                logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
+                Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
+                Iterator<ManagedReference<CellMO>> it = refs.iterator();
+                while (it.hasNext() == true) {
+                    logger.info("[EventPlayer] Child Cell=" + it.next().get().getCellID().toString());
+                }
+                logger.info("[EventPlayer] Cell Live: " + cellMO.isLive());
+            }
+        } catch (MultipleParentException ex) {
+            logger.log(Level.SEVERE, "A cell cannot have multiple parents", ex);
+        }
+        String idString = setup.getMetaData().get("CellID");
+        logger.info("Old cellID value: " + idString);
+        long id = Long.valueOf(idString);
+        logger.info("Old cellID id: " + id);
+        CellID oldCellID = new CellID(id);
+        logger.info("Old cellID: " + oldCellID);
+        CellID newCellID = cellMO.getCellID();
+        logger.info("New cellID: " + newCellID);
+        if (cellMap.get(oldCellID) != null) {
+            throw new RuntimeException("Failed trying to add new cellId to cellmap where cellID already exists");
+        }
+
+        cellMap.put(oldCellID, newCellID);
+        logger.info("new cellID from map: " + cellMap.get(oldCellID));
+    }
 
     
 
@@ -403,6 +443,26 @@ public class EventPlayer implements ManagedObject, CellRetrievalListener, Change
         //remove the unloaded cell from the map
         cellMap.remove(oldCellID);
     }
+
+    private void translateServerState(CellServerState cellServerState) {
+        PositionComponentServerState cellPositionState = (PositionComponentServerState) cellServerState.getComponentServerState(PositionComponentServerState.class);
+        if (cellPositionState == null) {
+            logger.severe("Cell has no position state");
+            return;
+        }
+        //Subtract the translation of the recorder from the translation of the cell
+        Vector3f cellTranslation = cellPositionState.getTranslation();
+        Vector3f recorderTranslation = originalRecorderPosition.getTranslation();
+        Vector3f newTranslation = cellTranslation.subtract(recorderTranslation);
+        cellPositionState.setTranslation(newTranslation);
+
+//        Quaternion cellQuat = cellPositionState.getRotation();
+//        Quaternion playerQuat = originalRecorderPosition.getRotation();
+//        Quaternion newQuat = cellQuat.subtract(playerQuat);
+//        cellPositionState.setRotation(newQuat);
+    }
+
+
 
     
 

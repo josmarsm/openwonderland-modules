@@ -39,12 +39,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.eventplayer.server.RecordingRoot;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.CellRetrievalListener;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 
 /**
- * A service for importing cells
+ * A service for loading recordings and importing cells
  * @author kaplanj
  * @author bernard horan
  */
@@ -150,7 +151,7 @@ public class CellImportService extends AbstractService implements CellImportMana
     public void retrieveCells(String name, CellRetrievalListener listener) {
         //logger.getLogger().info("name: " + name);
         if (!(listener instanceof ManagedObject)) {
-            listener = new ManagedRecordingLoadingWrapper(listener);
+            listener = new ManagedCellRetrievalWrapper(listener);
         }
 
         // create a reference to the listener
@@ -164,7 +165,85 @@ public class CellImportService extends AbstractService implements CellImportMana
         ctxFactory.joinTransaction().add(cr);
     }
 
-    
+    public void loadRecording(String name, RecordingLoadedListener listener) {
+        //logger.getLogger().info("name: " + name);
+        if (!(listener instanceof ManagedObject)) {
+            listener = new ManagedRecordingLoadedWrapper(listener);
+        }
+
+        // create a reference to the listener
+        ManagedReference<RecordingLoadedListener> scl =
+                dataService.createReference(listener);
+
+        // now add the recording request to the transaction.  On commit
+        // this request will be passed on to the executor for long-running
+        // tasks
+        LoadRecording lr = new LoadRecording(name, scl.getId());
+        ctxFactory.joinTransaction().add(lr);
+    }
+
+    private class LoadRecording implements Runnable {
+
+        private String name;
+        private BigInteger listenerID;
+
+        public LoadRecording(String name, BigInteger listenerID) {
+            this.name = name;
+            this.listenerID = listenerID;
+        }
+
+        public void run() {
+            Exception ex = null;
+            RecordingRoot root = null;
+            try {
+                root = RecordingLoaderUtils.getRecordingRoot(name);
+            } catch (Exception ex2) {
+                ex = ex2;
+            }
+            NotifyRecordingLoadedListener notify =
+                    new NotifyRecordingLoadedListener(listenerID, root, ex);
+            try {
+                transactionScheduler.runTask(notify, taskOwner);
+            } catch (Exception ex2) {
+                logger.logThrow(Level.WARNING, ex2, "Error calling listener");
+            }
+        }
+    }
+
+    /**
+     * A task to notify a RecordingLoadedListener
+     */
+    private class NotifyRecordingLoadedListener implements KernelRunnable {
+        private BigInteger listenerID;
+        private Exception ex;
+        private RecordingRoot root;
+
+        private NotifyRecordingLoadedListener(BigInteger listenerID, RecordingRoot root, Exception ex) {
+            this.listenerID = listenerID;
+            this.root = root;
+            this.ex = ex;
+        }
+
+        public String getBaseTaskType() {
+            return NAME + ".RECORDING_LOADED_LISTENER";
+        }
+
+        public void run() throws Exception {
+            ManagedReference<?> lr =
+                    dataService.createReferenceForId(listenerID);
+            RecordingLoadedListener l =
+                    (RecordingLoadedListener) lr.get();
+
+            try {
+                l.recordingLoaded(root, ex);
+            } finally {
+                // clean up
+                if (l instanceof ManagedRecordingLoadedWrapper) {
+                    dataService.removeObject(l);
+                }
+            }
+        }
+    }
 
 
     /**
@@ -288,7 +367,7 @@ public class CellImportService extends AbstractService implements CellImportMana
                 }
             } finally {
                 // clean up
-                if (l instanceof ManagedRecordingLoadingWrapper) {
+                if (l instanceof ManagedCellRetrievalWrapper) {
                     dataService.removeObject(l);
                 }
             }
@@ -296,19 +375,38 @@ public class CellImportService extends AbstractService implements CellImportMana
     }
 
     
+/**
+     * A wrapper around the RecordingLoadedListener as a managed object.
+     * This assumes a serializable RecordingLoadedListener
+     */
+    private static class ManagedRecordingLoadedWrapper
+            implements RecordingLoadedListener, ManagedObject, Serializable
+    {
+        private RecordingLoadedListener wrapped;
 
+        public ManagedRecordingLoadedWrapper(RecordingLoadedListener listener)
+        {
+            wrapped = listener;
+        }
+
+        public void recordingLoaded(RecordingRoot root, Exception ex) {
+            wrapped.recordingLoaded(root, ex);
+        }
+
+        
+    }
     
 
     /**
      * A wrapper around the CellRetrievalListener as a managed object.
      * This assumes a serializable CellRetrievalListener
      */
-    private static class ManagedRecordingLoadingWrapper
+    private static class ManagedCellRetrievalWrapper
             implements CellRetrievalListener, ManagedObject, Serializable
     {
         private CellRetrievalListener wrapped;
 
-        public ManagedRecordingLoadingWrapper(CellRetrievalListener listener)
+        public ManagedCellRetrievalWrapper(CellRetrievalListener listener)
         {
             wrapped = listener;
         }

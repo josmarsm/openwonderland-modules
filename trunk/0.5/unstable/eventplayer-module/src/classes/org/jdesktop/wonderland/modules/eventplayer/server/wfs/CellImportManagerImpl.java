@@ -32,4 +32,8 @@ public class CellImportManagerImpl implements CellImportManager {
     public void retrieveCells(String tapeName, CellRetrievalListener listener) {
         service.retrieveCells(tapeName, listener);
     }
+
+    public void loadRecording(String name, RecordingLoadedListener listener) {
+        service.loadRecording(name, listener);
+    }
 }
