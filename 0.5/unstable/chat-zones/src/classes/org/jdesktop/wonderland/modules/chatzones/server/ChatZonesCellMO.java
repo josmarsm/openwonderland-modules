@@ -23,9 +23,13 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.LineSegment;
 import com.jme.math.Vector3f;
+import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
+import java.io.Serializable;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -40,9 +44,11 @@ import org.jdesktop.wonderland.modules.grouptextchat.server.TextChatConnectionHa
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
+import org.jdesktop.wonderland.server.cell.TransformChangeListenerSrv;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -64,7 +70,7 @@ public class ChatZonesCellMO extends CellMO {
 
     private ChatZoneProximityListener proxListener;
 
-
+    private CellID parentID;
 
     public ChatZonesCellMO () {
         super();
@@ -91,6 +97,7 @@ public class ChatZonesCellMO extends CellMO {
         
         this.group = ((ChatZonesCellServerState)state).getChatGroup();
         this.numAvatarsInZone = ((ChatZonesCellServerState)state).getNumAvatarsInZone();
+        this.parentID = new CellID(Long.parseLong(((ChatZonesCellServerState)state).getParentID()));
     }
 
     @Override
@@ -101,6 +108,7 @@ public class ChatZonesCellMO extends CellMO {
 
         ((ChatZonesCellServerState)state).setChatGroup(group);
         ((ChatZonesCellServerState)state).setNumAvatarsInZone(numAvatarsInZone);
+        ((ChatZonesCellServerState)state).setParentID(parentID.toString());
         
         return super.getServerState(state);
     }
@@ -144,12 +152,78 @@ public class ChatZonesCellMO extends CellMO {
 
             group = handler.createChatGroup();
             logger.info("Setting up Chat Zone, got chat group: " + group);
+
+            // REMOVE THIS WHEN YOU TURN REPARENTING BACK ON
+            // Now setup the transform changed listener on my parent cell.
+            CellMO parentCell = CellManagerMO.getCell(this.parentID);
+            CellTransform originalTransform = parentCell.getWorldTransform(null);
+            parentCell.addTransformChangeListener(new MyTransformChangedListener(originalTransform, this));
         }
         else {
             channel.removeMessageReceiver(ChatZonesCellChangeMessage.class);
             proxRef.getForUpdate().removeProximityListener(proxListener);
         }
     }
+
+
+    // REMOVE THIS WHEN YOU TURN REPARENTING BACK ON
+    private static class MyTransformChangedListener implements TransformChangeListenerSrv {
+        private ManagedReference imageRef;
+        private CellTransform originalTransform;
+
+        public MyTransformChangedListener(CellTransform originalTransform, ChatZonesCellMO cellMO) {
+            this.originalTransform = originalTransform;
+            imageRef = AppContext.getDataManager().createReference(cellMO);
+        }
+
+        public void transformChanged(ManagedReference<CellMO> cellRef,
+                CellTransform localTransform, CellTransform worldTransform) {
+
+            Logger logger = Logger.getLogger(MyTransformChangedListener.class.getName());
+            logger.warning("CELL " + worldTransform.getTranslation(null).toString());
+
+            // From the last know position, take find the amount that the Cell
+            // has been moved.
+            Vector3f newPosition = worldTransform.getTranslation(null);
+            Vector3f diff = newPosition.subtract(originalTransform.getTranslation(null));
+            originalTransform = worldTransform.clone(null);
+
+            AppContext.getTaskManager().scheduleTask(new MyTask(imageRef, diff));
+        }
+        }
+
+    // REMOVE THIS WHEN YOU TURN REPARENTING BACK ON
+    private static class MyTask implements Task, Serializable {
+
+        private ManagedReference imageRef;
+        private Vector3f diff;
+
+        public MyTask(ManagedReference imageRef, Vector3f diff) {
+            this.imageRef = imageRef;
+            this.diff = diff;
+        }
+
+        public void run() {
+             // Add that to the current position of this Cell
+            CellTransform transform = ((ChatZonesCellMO)imageRef.get()).getLocalTransform(null);
+            Vector3f thisPosition = transform.getTranslation(null);
+            thisPosition = thisPosition.add(diff);
+            transform.setTranslation(thisPosition);
+
+            ChatZonesCellMO imageMO = (ChatZonesCellMO)imageRef.get();
+            imageMO.move(transform);
+        }
+
+        public void cancel() {
+            
+        }
+    }
+
+    // REMOVE THIS WHEN YOU TURN REPARENTING BACK ON
+    public void move(CellTransform transform) {
+        moveRef.getForUpdate().moveRequest(null, transform);
+    }
+
 
 //    public updateGroupLabel(String label) {
 //        group.setLabel(label);
