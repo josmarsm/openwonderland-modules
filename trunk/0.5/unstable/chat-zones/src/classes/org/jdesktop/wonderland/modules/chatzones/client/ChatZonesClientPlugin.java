@@ -93,17 +93,27 @@ public class ChatZonesClientPlugin extends BaseClientPlugin implements ActionLis
             // the presentation cells in the
             Cell parent = PresentationsManager.getPresentationsManager().getParentCellByPosition(currentAvatarTransform.getTranslation(null));
 
+
+            // To turn off this non-reparenting solution, just do a revert on ChatZonesClientPlugin
+            // and ChatZonesCellMO to r1022 to take all this junk out in one fell swoop. That version
+            // did reparenting properly.
+            ChatZonesCellServerState state = new ChatZonesCellServerState();
+
+
             logger.warning("found a parent cell for this chat zone? parent: " + parent);
-            CellTransform finalChatZoneTransform;
+            CellTransform finalChatZoneTransform = currentAvatarTransform;
             if(parent!=null) {
                 // Transform the avatar's position into platform (or pres-cell) local
                 // coordinates.
-                finalChatZoneTransform = transform(currentAvatarTransform, new CellTransform(), parent.getWorldTransform());
-            } else
+//                finalChatZoneTransform = transform(currentAvatarTransform, new CellTransform(), parent.getWorldTransform());
+                state.setParentID(parent.getCellID().toString());
+            } else {
                 finalChatZoneTransform = currentAvatarTransform;
-
+            }
+            
             logger.warning("final chat zone position: " + finalChatZoneTransform);
-            ChatZonesCellServerState state = new ChatZonesCellServerState();
+
+
             PositionComponentServerState posState = new PositionComponentServerState();
             posState.setTranslation(finalChatZoneTransform.getTranslation(null));
             posState.setRotation(finalChatZoneTransform.getRotation(null));
@@ -115,10 +125,10 @@ public class ChatZonesClientPlugin extends BaseClientPlugin implements ActionLis
             
             // if we found a platform to attach to, include that parent's cellID
             // in the creat message so we're created as a child of that cell. 
-            if(parent==null)
+//            if(parent==null)
                 msg = new CellCreateMessage(null, state);
-            else
-                msg = new CellCreateMessage(parent.getCellID(), state);
+//            else
+//                msg = new CellCreateMessage(parent.getCellID(), state);
 
             // Is this really right? 
             this.getSessionManager().getPrimarySession().getConnection(CellEditConnectionType.CLIENT_TYPE).getSession().send(sender, msg);

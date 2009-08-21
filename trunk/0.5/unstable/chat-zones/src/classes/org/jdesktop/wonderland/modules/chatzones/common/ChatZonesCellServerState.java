@@ -40,6 +40,9 @@ public class ChatZonesCellServerState extends CellServerState {
     @XmlElement(name="transform")
     private CellTransform transform;
 
+    @XmlElement(name="parentID")
+    private String parentID;
+
     public ChatZonesCellServerState() {
     }
 
@@ -51,6 +54,11 @@ public class ChatZonesCellServerState extends CellServerState {
 
     @XmlTransient public CellTransform getInitialTransform() { return this.transform; }
     public void setInitialCellTransform(CellTransform transform) { this.transform = transform; }
+
+    @XmlTransient public String getParentID() { return this.parentID; }
+    public void setParentID(String parentID) {
+        this.parentID = parentID;
+    }
 
     @Override
     public String getServerClassName() {
