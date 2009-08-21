@@ -349,7 +349,6 @@ public class WhiteboardWindow extends Window2D {
     private class Dismisser extends TimerTask {
 
         public void run() {
-            System.err.println("--- dismissing message");
             messageComponent.setVisible(false);
         }
     }
