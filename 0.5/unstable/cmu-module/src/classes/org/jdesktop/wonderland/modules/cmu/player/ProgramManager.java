@@ -37,7 +37,9 @@ import org.jdesktop.wonderland.client.login.ProgrammaticLogin;
 import org.jdesktop.wonderland.common.ContentURI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.modules.cmu.common.LoginDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
+import org.jdesktop.wonderland.modules.cmu.player.connections.VisualUploadManager;
 
 /**
  * Processes messages sent to control CMU programs.
@@ -66,9 +68,9 @@ public class ProgramManager {
         // Log in to the server
         System.out.println("Logging in to " + serverURL + " as " + username);
         WonderlandSession session = login.login(username, passwordFile);
+        VisualUploadManager.initialize(session.getSessionManager());
 
         // Initialize the connection
-        System.out.println("Initiating program connection");
         session.connect(new ProgramConnection(this));
     }
 
@@ -160,14 +162,17 @@ public class ProgramManager {
      * @param args server URL, username, [password]
      */
     public static void main(String[] args) {
-        if (args.length < 2 || args.length > 3) {
+        if (args.length < 1 || args.length > 3) {
             System.out.println("Usage: ProgramManager serverURL" +
-                    " username [password]");
+                    " [username [password]]");
             System.exit(-1);
         }
 
         String serverURL = args[0];
-        String username = args[1];
+        String username = LoginDefaults.LOGIN_NAME;
+        if (args.length > 1) {
+            username = args[1];
+        }
         File passwordFile = null;
 
         // if there is an optional password, write it to a file to use during

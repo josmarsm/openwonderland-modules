@@ -28,17 +28,20 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
 
     private final static String PLAYBUTTON_PATH = "/org/jdesktop/wonderland/modules/cmu/client/resources/control_play.png";
     private final static String PAUSEBUTTON_PATH = "/org/jdesktop/wonderland/modules/cmu/client/resources/control_pause.png";
-    private final int PLAYBACK_MIN;
-    private final int PLAYBACK_MAX;
+    private final static float PLAYBACK_MAX = 10.0f;
+    private final static float PLAYBACK_MIN = 0.1f;
+    private final static int SLIDER_DEFAULT = 0;
+    private final int SLIDER_MIN;
+    private final int SLIDER_MAX;
     private boolean playing;
     private transient final Object playbackLock = new Object();
     private final CMUCell cell;
 
-    /** Creates new form CMUHUD */
+    /** Creates new form CMUJPanel */
     public CMUJPanel(CMUCell cell) {
         initComponents();
-        PLAYBACK_MIN = playbackSlider.getMinimum();
-        PLAYBACK_MAX = playbackSlider.getMaximum();
+        SLIDER_MIN = playbackSlider.getMinimum();
+        SLIDER_MAX = playbackSlider.getMaximum();
         this.cell = cell;
         this.cell.addPlaybackChangeListener(this);
         this.playbackChanged(new PlaybackChangeEvent(cell.getPlaybackSpeed(), cell.isPlaying()));
@@ -70,12 +73,13 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
             }
         });
 
-        playbackSlider.setFont(new java.awt.Font("DejaVu Sans", 0, 1));
+        playbackSlider.setFont(new java.awt.Font("DejaVu Sans", 0, 1)); // NOI18N
         playbackSlider.setMaximum(10);
+        playbackSlider.setMinimum(-10);
         playbackSlider.setPaintTrack(false);
         playbackSlider.setSnapToTicks(true);
         playbackSlider.setToolTipText("Playback speed");
-        playbackSlider.setValue(1);
+        playbackSlider.setValue(0);
         playbackSlider.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         playbackSlider.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -106,7 +110,7 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
             }
         });
 
-        speedResetButton.setText("Reset speed");
+        speedResetButton.setText(" Reset speed ");
         speedResetButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         speedResetButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -126,19 +130,19 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(speedFixedLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(speedLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(speedResetButton, javax.swing.GroupLayout.DEFAULT_SIZE, 90, Short.MAX_VALUE))
-                    .addComponent(playbackSlider, 0, 0, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(playPauseButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(restartButton, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(groundVisibleBox)))
-                .addGap(25, 25, 25))
+                        .addComponent(groundVisibleBox))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(speedFixedLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(speedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(4, 4, 4)
+                        .addComponent(speedResetButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(playbackSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -165,7 +169,7 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
     }//GEN-LAST:event_playPauseButtonMouseReleased
 
     private void playbackSliderMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_playbackSliderMouseReleased
-        cell.setPlaybackSpeed((float) playbackSlider.getValue());
+        cell.setPlaybackSpeed(sliderPosToPlaybackSpeed(playbackSlider.getValue()));
     }//GEN-LAST:event_playbackSliderMouseReleased
 
     private void playbackSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_playbackSliderStateChanged
@@ -173,7 +177,7 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
 
             @Override
             public void run() {
-                speedLabel.setText(playbackSlider.getValue() + "x");
+                speedLabel.setText(sliderPosToPlaybackSpeed(playbackSlider.getValue()) + "x");
             }
         });
     }//GEN-LAST:event_playbackSliderStateChanged
@@ -199,6 +203,12 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
     private javax.swing.JButton speedResetButton;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Update the displayed play/pause state and playback speed of the panel;
+     * don't notify the cell of these changes (this should be called in
+     * response to changes on the cell).
+     * @param e {@inheritDoc}
+     */
     public void playbackChanged(PlaybackChangeEvent e) {
         synchronized (this.playbackLock) {
             // Set play/pause appropriately
@@ -209,13 +219,20 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
         }
     }
 
+    /**
+     * Update the playback slider with the given playback speed, positioning
+     * it according to the scaling functions.  Doesn't do anything to notify
+     * the cell explicitly; this is should be called in response to changes on
+     * the cell.
+     * @param fPlaybackSpeed Exact playback speed
+     */
     private void setPlaybackSpeed(float fPlaybackSpeed) {
-        int playbackSpeed = (int) fPlaybackSpeed;
-        if (playbackSpeed < PLAYBACK_MIN) {
-            playbackSpeed = PLAYBACK_MIN;
+        int playbackSpeed = playbackSpeedToSliderPos(fPlaybackSpeed);
+        if (playbackSpeed < SLIDER_MIN) {
+            playbackSpeed = SLIDER_MIN;
         }
-        if (playbackSpeed > PLAYBACK_MAX) {
-            playbackSpeed = PLAYBACK_MAX;
+        if (playbackSpeed > SLIDER_MAX) {
+            playbackSpeed = SLIDER_MAX;
         }
 
         final int playbackSpeedCopy = playbackSpeed;
@@ -230,12 +247,22 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
         });
     }
 
+    /**
+     * Get the play/pause state of this panel (should correspond almost exactly
+     * with the appearance of the play/pause button).
+     * @return Whether we're playing (true) or paused (false)
+     */
     private boolean isPlaying() {
         synchronized (this.playbackLock) {
             return playing;
         }
     }
 
+    /**
+     * Update the state of the play/pause button.  Doesn't notify the cell of
+     * this change; this should be called in response to changes on the cell.
+     * @param playing Whether we're playing (true) or paused (false)
+     */
     private void setPlaying(boolean playing) {
         synchronized (this.playbackLock) {
             if (playing != this.playing) {
@@ -255,6 +282,12 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
         });
     }
 
+    /**
+     * Update the selected state of the ground plane checkbox.  Doesn't notify
+     * the cell of this change; should be called in response to changes
+     * on the cell.
+     * @param e {@inheritDoc}
+     */
     public void groundPlaneChanged(GroundPlaneChangeEvent e) {
         final boolean selected = e.isShowingPlane();
         SwingUtilities.invokeLater(new Runnable() {
@@ -264,5 +297,69 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
                 groundVisibleBox.setSelected(selected);
             }
         });
+    }
+
+    /**
+     * Converts a slider position to a playback speed by scaling linearly
+     * in two separate ranges (to enable finer control of slow-motion playback,
+     * but coarser control of speeding up).
+     * @param sliderPos The integral slider position
+     * @return The floating point playback speed corresponding to the slider position
+     */
+    protected float sliderPosToPlaybackSpeed(int sliderPos) {
+        float toReturn = 0.0f;
+
+        // From SLIDER_DEFAULT to SLIDER_MAX, scale linearly from default speed to PLAYBACK_MAX
+        if (sliderPos >= SLIDER_DEFAULT) {
+            //System.out.println("Making positive playback speed");
+            toReturn = linearScale((float) sliderPos, (float) SLIDER_DEFAULT,
+                    (float) SLIDER_MAX, PlaybackDefaults.DEFAULT_START_SPEED, PLAYBACK_MAX);
+        } // From SLIDER_MIN to SLIDER_DEFAULT, scale linearly from PLAYBACK_MIN to default speed
+        else {
+            //System.out.println("Making negative playback speed");
+            toReturn = linearScale((float) sliderPos, (float) SLIDER_MIN,
+                    (float) SLIDER_DEFAULT, PLAYBACK_MIN, PlaybackDefaults.DEFAULT_START_SPEED);
+        }
+
+        // Round to nearest hundredth
+        int scaledReturn = (int) (toReturn * 100.0f);
+        toReturn = (float) scaledReturn / 100.0f;
+
+        return toReturn;
+    }
+
+    /**
+     * Translate floating point playback speed to a slider value; inverts
+     * the sliderPosToPlaybackSpeed translation.
+     * @param playbackSpeed The actual playback speed
+     * @return Slider position corresponding to the playback speed
+     */
+    protected int playbackSpeedToSliderPos(float playbackSpeed) {
+        int toReturn = 0;
+
+        // From default speed to PLAYBACK_MAX, scale linearly from SLIDER_DEFAULT to SLIDER_MAX
+        if (playbackSpeed >= PlaybackDefaults.DEFAULT_START_SPEED) {
+            toReturn = (int) linearScale(playbackSpeed, PlaybackDefaults.DEFAULT_START_SPEED,
+                    PLAYBACK_MAX, (float) SLIDER_DEFAULT, (float) SLIDER_MAX);
+        } else {
+            toReturn = (int) linearScale(playbackSpeed, PLAYBACK_MIN,
+                    PlaybackDefaults.DEFAULT_START_SPEED, (float) SLIDER_MIN, (float) SLIDER_DEFAULT);
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * Convenience method to convert units from one scale to another.
+     * @param value The current value in unit type 1
+     * @param minValue A minimum value in unit type 1
+     * @param maxValue A maximum value in unit type 1
+     * @param minResult The corresponding minimum value in unit type 2
+     * @param maxResult The corresponding maximum value in unit type 2
+     * @return The corresponding current value in unit type 2
+     */
+    protected static final float linearScale(float value, float minValue,
+            float maxValue, float minResult, float maxResult) {
+        return minResult + (((value - minValue) / (maxValue - minValue)) * (maxResult - minResult));
     }
 }

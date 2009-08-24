@@ -39,6 +39,9 @@ public class VisualParent extends Node {
      * @param transformation The transformation to be applied to a matching child
      */
     public synchronized void applyTransformationToChild(TransformationMessage transformation) {
+        if (this.getChildren() == null) {
+            return;
+        }
         for (Spatial child : this.getChildren()) {
             if (VisualParent.class.isAssignableFrom(child.getClass())) {
                 ((VisualParent) child).applyTransformationToChild(transformation);
@@ -57,7 +60,7 @@ public class VisualParent extends Node {
 
     public synchronized boolean removeChild(NodeID id) {
         Iterator<Spatial> it = this.getChildren().iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             Spatial child = it.next();
             if (VisualParent.class.isAssignableFrom(child.getClass())) {
                 if (((VisualParent) child).removeChild(id)) {
@@ -69,6 +72,9 @@ public class VisualParent extends Node {
     }
 
     public synchronized void applyVisibilityToChild(NodeID nodeID, boolean visible) {
+        if (this.getChildren() == null) {
+            return;
+        }
         for (Spatial child : this.getChildren()) {
             if (VisualParent.class.isAssignableFrom(child.getClass())) {
                 ((VisualParent) child).applyVisibilityToChild(nodeID, visible);

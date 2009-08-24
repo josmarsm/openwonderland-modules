@@ -24,13 +24,17 @@ import com.jme.scene.Spatial;
 import com.jme.scene.TriMesh;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
+import com.jme.util.TextureKey;
 import com.jme.util.TextureManager;
 import java.awt.Image;
+import java.util.HashMap;
+import java.util.Map;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
+import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
+import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
 
 /**
  * Node encapsulating a visual element of the CMU scene.  These nodes are
@@ -42,10 +46,12 @@ public class VisualNode extends VisualParent {
 
     private final NodeID nodeID;     // Unique ID for this node
     private BoundingBox bound = null;
+    private static final Map<VisualRepoIdentifier, TextureKey> keyMap = new HashMap<VisualRepoIdentifier, TextureKey>();
 
     /**
-     * Basic constructor, generally not used.
-     * @param nodeID Unique ID for this node
+     * Constructs this visual with the properties
+     * contained in the given VisualMessage.
+     * @param message The message to be used in creating this node
      */
     public VisualNode(NodeID nodeID) {
         super();
@@ -53,24 +59,14 @@ public class VisualNode extends VisualParent {
     }
 
     /**
-     * Constructs this visual with the properties
-     * contained in the given VisualMessage.
-     * @param message The message to be used in creating this node
-     */
-    public VisualNode(VisualMessage message) {
-        this(message.getNodeID());
-        applyVisual(message);
-    }
-
-    /**
      * Apply the properties contained in this VisualMessage (i.e.
      * geometries, textures, etc.) to this node.
      * @param message The message to apply
      */
-    protected void applyVisual(VisualMessage message) {
+    public void applyVisual(VisualAttributes attributes) {
         // Apply geometries, compute bounding box
         bound = null;
-        for (TriMesh mesh : message.getMeshes()) {
+        for (TriMesh mesh : attributes.getMeshes()) {
             this.attachChild(mesh);
 
             // Merge this bounding box with the cumulative bound
@@ -90,10 +86,7 @@ public class VisualNode extends VisualParent {
         }
 
         // Apply texture
-        this.applyTexture(message.getTexture());
-
-        // Apply transformation
-        this.applyTransformation(message.getTransformation());
+        this.applyTexture(attributes);
     }
 
     /**
@@ -168,13 +161,35 @@ public class VisualNode extends VisualParent {
      * Apply the given texture to this node.
      * @param texture The texture to apply, as a standard Image
      */
-    protected void applyTexture(Image texture) {
+    protected void applyTexture(VisualAttributes attributes) {
         TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
-        Texture t = null;
-        t = TextureManager.loadTexture(texture, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
+        Texture t = getTexture(attributes);
         t.setWrap(Texture.WrapMode.Repeat);
         ts.setTexture(t);
         ts.setEnabled(true);
         this.setRenderState(ts);
+    }
+
+    /**
+     * Get the texture associated with the given attributes; uses TextureKey's
+     * in a map to take advantage of the TextureManager's built-in caching.
+     * @param attributes The VisualAttributes to extract a texture from
+     * @return The extracted texture
+     */
+    private static Texture getTexture(VisualAttributes attributes) {
+        //TODO: clean up textures
+        synchronized (keyMap) {
+            Texture toReturn = null;
+            if (keyMap.containsKey(attributes.getID())) {
+                toReturn = TextureManager.loadTexture(keyMap.get(attributes.getID()));
+            }
+            if (toReturn == null) {
+                Image textureImage = attributes.getTexture();
+                toReturn = null;
+                toReturn = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
+                keyMap.put(attributes.getID(), toReturn.getTextureKey());
+            }
+            return toReturn;
+        }
     }
 }
