@@ -74,8 +74,8 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
         });
 
         playbackSlider.setFont(new java.awt.Font("DejaVu Sans", 0, 1)); // NOI18N
-        playbackSlider.setMaximum(10);
-        playbackSlider.setMinimum(-10);
+        playbackSlider.setMaximum(45);
+        playbackSlider.setMinimum(-18);
         playbackSlider.setPaintTrack(false);
         playbackSlider.setSnapToTicks(true);
         playbackSlider.setToolTipText("Playback speed");

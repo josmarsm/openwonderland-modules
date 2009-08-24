@@ -1,0 +1,16 @@
+This module can load scenes from CMU's educational IDE Alice into the
+virtual world.
+
+REQUIREMENTS:
+The Alice 3 gallery must be placed in a directory called "gallery" in the
+top-level directory of this module.  To obtain the gallery, install Alice 3
+(http://kenai.com/projects/alice/downloads) on the server to which the
+module will be deployed, and copy the "gallery" directory from the Alice 3
+install to the module directory.
+
+INSTALLATION:
+With a properly configured cmu.module.properties and a running virtual world server,
+run 'ant deploy' in the module directory and restart the server.  This installs
+the module along with a server component called "CMU Runner," which should start
+automatically, and can also be monitored from the Server Status page on the
+server web interface.
