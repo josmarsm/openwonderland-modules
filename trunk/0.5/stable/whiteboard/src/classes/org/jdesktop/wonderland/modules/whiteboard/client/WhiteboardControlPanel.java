@@ -406,7 +406,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         });
 
         dragButton.setBackground(new java.awt.Color(231, 230, 230));
-        dragButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDrag32x32.png.png"))); // NOI18N
+        dragButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDrag32x32.png"))); // NOI18N
         dragButton.setBorderPainted(false);
         dragButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         dragButton.setMaximumSize(new java.awt.Dimension(38, 38));
