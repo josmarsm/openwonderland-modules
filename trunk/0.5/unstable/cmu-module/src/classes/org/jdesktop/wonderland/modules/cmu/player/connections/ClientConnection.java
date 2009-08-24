@@ -147,7 +147,6 @@ public class ClientConnection extends Thread {
 
 //    private int numSent = 0;
     private void writeToOutputStream(Serializable message) throws SocketException {
-        //TODO: add throws clause to avoid infinite loop
         synchronized (socket) {
             try {
                 this.outputStream.writeUnshared(message);

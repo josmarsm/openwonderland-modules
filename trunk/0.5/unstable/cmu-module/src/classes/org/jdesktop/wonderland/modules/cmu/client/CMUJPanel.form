@@ -19,14 +19,6 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="1">
-                      <Component id="speedFixedLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="speedLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="speedResetButton" pref="90" max="32767" attributes="0"/>
-                  </Group>
-                  <Component id="playbackSlider" alignment="0" min="0" pref="0" max="32767" attributes="1"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="playPauseButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -34,8 +26,16 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="groundVisibleBox" min="-2" max="-2" attributes="1"/>
                   </Group>
+                  <Group type="102" alignment="0" attributes="1">
+                      <Component id="speedFixedLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="speedLabel" min="-2" pref="38" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+                      <Component id="speedResetButton" max="32767" attributes="0"/>
+                  </Group>
+                  <Component id="playbackSlider" alignment="0" min="-2" pref="182" max="-2" attributes="1"/>
               </Group>
-              <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -76,10 +76,11 @@
           <Font name="DejaVu Sans" size="1" style="0"/>
         </Property>
         <Property name="maximum" type="int" value="10"/>
+        <Property name="minimum" type="int" value="-10"/>
         <Property name="paintTrack" type="boolean" value="false"/>
         <Property name="snapToTicks" type="boolean" value="true"/>
         <Property name="toolTipText" type="java.lang.String" value="Playback speed"/>
-        <Property name="value" type="int" value="1"/>
+        <Property name="value" type="int" value="0"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder/>
@@ -125,7 +126,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="speedResetButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Reset speed"/>
+        <Property name="text" type="java.lang.String" value=" Reset speed "/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
             <EmptyBorder/>

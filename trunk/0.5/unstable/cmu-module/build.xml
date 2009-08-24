@@ -34,6 +34,8 @@
 
     <pathconvert property="cmu-player.classpath">
         <path location="${current.dir}/lib/cmu-module.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar"/>
     </pathconvert>
        
     <target name="build" depends="-module-init, -module-compile-common,
@@ -62,7 +64,6 @@
             </compile-classes>
             <compile-classpath>
                 <pathelement path="${cmu-player.classpath}"/>
-                <!-- TODO: is this needed? -->
                 <pathelement path="${core-client.classpath}"/>
             </compile-classpath>
         </wl-compile>
@@ -85,10 +86,19 @@
             <zipfileset file="${current.dir}/${cmu-player.build.dir}/cmu-player.jar" prefix="lib"/>
             <!-- include the full player -->
             <zipfileset file="${current.dir}/lib/cmu-module.jar" prefix="lib"/>
-            <!-- include additional libraries -->
+            <!-- include content repository stuff -->
+            <zipfileset file="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar" prefix="modules"/>
+            <zipfileset file="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar" prefix="modules"/>
+            <zipfileset dir="${wonderland.dir}/modules/tools/webdav/lib/" prefix="modules">
+                <include name="*.jar"/>
+            </zipfileset>
+            <!-- include necessary core libraries -->
             <zipfileset dir="${wonderland.dir}/core/ext/common/" prefix="core/lib/common">
                 <include name="derby.jar"/>
                 <include name="stun.jar"/>
+<!--                <include name="commons-httpclient*.jar"/>
+                <include name="commons-codec*.jar"/>
+                <include name="commons-logging*.jar"/> -->
             </zipfileset>
             <zipfileset dir="${wonderland.dir}/core/ext/" prefix="core/lib">
                 <include name="linux/**"/>
@@ -106,6 +116,9 @@
         
         <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="${module.description}" builddir="${build.dir}">
+
+            <requires name="content-repository" version="1"/>
+            <requires name="webdav" version="1"/>
 
             <client>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">

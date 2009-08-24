@@ -274,6 +274,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 VisualWrapper visualWrapper = new VisualWrapper(visual);
                 this.visuals.add(visualWrapper);
                 visualWrapper.addTransformationMessageListener(this);
+                VisualUploadManager.uploadVisual(visualWrapper.getVisualAttributes());
 
                 // Broadcast it to each connected client.  Don't allow new
                 // connections to be created during this process; this

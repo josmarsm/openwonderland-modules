@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.CMUCellRenderer;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
+import org.jdesktop.wonderland.modules.cmu.client.web.VisualDownloadManager;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
@@ -51,6 +52,8 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPl
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.SceneTitleChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ServerClientMessageTypes;
+import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
+import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
 
 /**
  * Cell to display and interact with a CMU scene.
@@ -335,7 +338,6 @@ public class CMUCell extends Cell {
      * @param message Message to apply
      */
     private void applyTransformationMessage(TransformationMessage message) {
-        //TODO: Effectively suspend these messages during scene loading
         synchronized (sceneRoot) {
             if (this.isSceneLoaded()) {
                 this.sceneRoot.applyTransformationToChild(message);
@@ -349,16 +351,30 @@ public class CMUCell extends Cell {
      * @param message Message to apply
      */
     private void applyVisualMessage(VisualMessage message) {
-        synchronized (sceneRoot) {
-            sceneRoot.attachChild(new VisualNode(message));
+        //TODO: thread this?
+        VisualNode visualNode = new VisualNode(message.getNodeID());
+        VisualRepoIdentifier visualID = message.getVisualID();
+        NodeID nodeID = message.getNodeID();
+
+        VisualAttributes attributes = VisualDownloadManager.downloadVisual(visualID, this);
+        if (attributes == null) {
+            return;
         }
+        visualNode.applyVisual(attributes);
+
+        synchronized (sceneRoot) {
+            sceneRoot.attachChild(visualNode);
+            sceneRoot.applyTransformationToChild(message.getTransformation());
+        }
+
+
         // Filter ground plane
-        if (NodeNameClassifier.isGroundPlaneName(message.getName())) {
-            synchronized (this.groundPlaneIDs) {
-                groundPlaneIDs.add(message.getNodeID());
+        if (NodeNameClassifier.isGroundPlaneName(attributes.getName())) {
+            synchronized (groundPlaneIDs) {
+                groundPlaneIDs.add(nodeID);
             }
             synchronized (sceneRoot) {
-                sceneRoot.applyVisibilityToChild(message.getNodeID(), isGroundPlaneShowing());
+                sceneRoot.applyVisibilityToChild(nodeID, isGroundPlaneShowing());
             }
         }
     }
