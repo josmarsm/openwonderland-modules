@@ -4,7 +4,7 @@
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderland-${module.name}-module}"/>
 
-    <property file="${current.dir}/my.module.properties"/>
+    <property file="${current.dir}/cmu.module.properties"/>
 
     <property name="modules.dir" location="${wonderland.dir}/modules"/>
 

@@ -234,6 +234,7 @@ public class CMUCell extends Cell {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
