@@ -15,17 +15,12 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common;
+package org.jdesktop.wonderland.modules.cmu.client.events;
 
 /**
  *
  * @author kevin
  */
-public class LoginDefaults {
-
-    public static final String LOGIN_NAME = "cmu-player";
-
-    private LoginDefaults() {
-        
-    }
+public interface SceneTitleChangeListener {
+    public void sceneTitleChanged(SceneTitleChangeEvent e);
 }

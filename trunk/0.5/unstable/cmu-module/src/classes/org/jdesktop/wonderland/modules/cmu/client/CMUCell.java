@@ -17,12 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
+import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.GroundPlaneChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.GroundPlaneChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.hud.HUDControl;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import com.jme.scene.Node;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
@@ -30,6 +38,7 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -38,11 +47,11 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.CMUCellRenderer;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode;
+import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode.VisualType;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
 import org.jdesktop.wonderland.modules.cmu.client.web.VisualDownloadManager;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
-import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
@@ -78,7 +87,6 @@ public class CMUCell extends Cell {
     // Ground plane info
     private boolean groundPlaneShowing = false;
     private final Object groundPlaneLock = new Object();
-    private final Collection<NodeID> groundPlaneIDs = new Vector<NodeID>();
 
     // Message receivers/listeners
     private MouseEventListener mouseListener = null;
@@ -92,6 +100,9 @@ public class CMUCell extends Cell {
 
     // HUD Stuff
     private final HUDControl hudControl = new HUDControl(this);
+
+    // Content repository information
+    private String visualUsername = null;
 
     /**
      * Listener to process mouse click events.
@@ -293,7 +304,7 @@ public class CMUCell extends Cell {
      * We allow only one thread to provide scene graph updates at a time;
      * this checks whether the parameter is that thread.
      * @param receiver The thread to check
-     * @return True if that thread is allowed to update this cell
+     * @return True if the thread is allowed to update this cell
      */
     public boolean allowsUpdatesFrom(VisualChangeReceiverThread receiver) {
         synchronized (this.sceneRoot) {
@@ -327,7 +338,7 @@ public class CMUCell extends Cell {
                     this.applyUnloadSceneMessage((UnloadSceneMessage) message);
                 } // Unknown message
                 else {
-                    System.out.println("CMUCell WARNING: UNKOWN MESSAGE: " + message);
+                    Logger.getLogger(CMUCell.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
                 }
             }
         }
@@ -338,10 +349,16 @@ public class CMUCell extends Cell {
      * with the appropriate node ID.
      * @param message Message to apply
      */
-    private void applyTransformationMessage(TransformationMessage message) {
+    private void applyTransformationMessage(final TransformationMessage message) {
         synchronized (sceneRoot) {
             if (this.isSceneLoaded()) {
-                this.sceneRoot.applyTransformationToChild(message);
+                ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                    public void update(Object arg0) {
+                        VisualNode visualNode = sceneRoot.applyTransformationToChild(message);
+                        ClientContextJME.getWorldManager().addToUpdateList(visualNode);
+                    }
+                }, null);
             }
         }
     }
@@ -351,32 +368,27 @@ public class CMUCell extends Cell {
      * filtering out the ground plane if desired.
      * @param message Message to apply
      */
-    private void applyVisualMessage(VisualMessage message) {
-        //TODO: thread this?
-        VisualNode visualNode = new VisualNode(message.getNodeID());
+    private void applyVisualMessage(final VisualMessage message) {
+        final VisualNode visualNode = new VisualNode(message.getNodeID());
         VisualRepoIdentifier visualID = message.getVisualID();
-        NodeID nodeID = message.getNodeID();
 
-        VisualAttributes attributes = VisualDownloadManager.downloadVisual(visualID, this);
+        final VisualAttributes attributes = VisualDownloadManager.downloadVisual(visualID, getVisualUsername(), this);
         if (attributes == null) {
             return;
         }
-        visualNode.applyVisual(attributes);
 
         synchronized (sceneRoot) {
-            sceneRoot.attachChild(visualNode);
-            sceneRoot.applyTransformationToChild(message.getTransformation());
-        }
+            visualNode.applyVisual(attributes);
+            final boolean partOfWorld = getVisibility(visualNode);
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
-
-        // Filter ground plane
-        if (NodeNameClassifier.isGroundPlaneName(attributes.getName())) {
-            synchronized (groundPlaneIDs) {
-                groundPlaneIDs.add(nodeID);
-            }
-            synchronized (sceneRoot) {
-                sceneRoot.applyVisibilityToChild(nodeID, isGroundPlaneShowing());
-            }
+                public void update(Object arg0) {
+                    sceneRoot.attachChild(visualNode);
+                    sceneRoot.applyTransformationToChild(message.getTransformation());
+                    visualNode.setPartOfWorld(partOfWorld);
+                    ClientContextJME.getWorldManager().addToUpdateList(visualNode);
+                }
+            }, null);
         }
     }
 
@@ -384,9 +396,15 @@ public class CMUCell extends Cell {
      * Removes the node referenced by the message.
      * @param message Message to apply
      */
-    private void applyVisualDeletedMessage(VisualDeletedMessage message) {
+    private void applyVisualDeletedMessage(final VisualDeletedMessage message) {
         synchronized (sceneRoot) {
-            sceneRoot.removeChild(message);
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                public void update(Object arg0) {
+                    sceneRoot.removeChild(message);
+                    ClientContextJME.getWorldManager().addToUpdateList(sceneRoot);
+                }
+            }, null);
         }
     }
 
@@ -395,6 +413,7 @@ public class CMUCell extends Cell {
      * @param message The scene to load
      */
     private void applySceneMessage(SceneMessage message) {
+        setVisualUsername(message.getUsername());
         for (VisualMessage visual : message.getVisuals()) {
             synchronized (sceneRoot) {
                 applyVisualMessage(visual);
@@ -414,6 +433,24 @@ public class CMUCell extends Cell {
         synchronized (sceneRoot) {
             setConnectedState(false);
         }
+    }
+
+    /**
+     * Find out whether the given node should currently be visible, based on
+     * whether it's a ground plane node, and whether the scene is loaded
+     * (this allows nodes to be displayed "all at once" after a scene is
+     * loaded).
+     * @param node The node to check
+     * @return The current visibility of the node
+     */
+    protected boolean getVisibility(VisualNode node) {
+        if (!isSceneLoaded()) {
+            return false;
+        }
+        if (node.isType(VisualType.GROUND)) {
+            return isGroundPlaneShowing();
+        }
+        return true;
     }
 
     /**
@@ -440,13 +477,27 @@ public class CMUCell extends Cell {
     private void setConnectedState(boolean connected) {
         synchronized (this.sceneRoot) {
             if (connected) {
-                this.sceneRoot.detachAllChildren();
+                ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                    public void update(Object arg0) {
+
+                        sceneRoot.detachAllChildren();
+                        ClientContextJME.getWorldManager().addToUpdateList(sceneRoot);
+                    }
+                }, null);
             } else {
                 this.setSceneLoaded(false);
                 this.cmuConnectionThread = null;
 
                 //TODO: Show something noting that the scene is disconnected.
-                this.sceneRoot.detachAllChildren();
+                ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                    public void update(Object arg0) {
+
+                        sceneRoot.detachAllChildren();
+                        ClientContextJME.getWorldManager().addToUpdateList(sceneRoot);
+                    }
+                }, null);
             }
         }
     }
@@ -468,8 +519,18 @@ public class CMUCell extends Cell {
     protected void setSceneLoaded(boolean sceneLoaded) {
         synchronized (sceneRoot) {
             this.sceneLoaded = sceneLoaded;
-        }
 
+            // Set node visibility appropriately
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                public void update(Object arg0) {
+                    sceneRoot.applyVisibilityToChild(VisualType.ANY_VISUAL, true);
+                    sceneRoot.applyVisibilityToChild(VisualType.GROUND, isGroundPlaneShowing());
+                    ClientContextJME.getWorldManager().addToUpdateList(sceneRoot);
+                }
+            }, null);
+
+        }
     }
 
     /**
@@ -597,6 +658,10 @@ public class CMUCell extends Cell {
         firePlaybackChanged(new PlaybackChangeEvent(playbackSpeed, playing));
     }
 
+    public void restart() {
+        sendCellMessage(new RestartProgramMessage());
+    }
+
     public boolean isGroundPlaneShowing() {
         synchronized (groundPlaneLock) {
             return groundPlaneShowing;
@@ -611,16 +676,30 @@ public class CMUCell extends Cell {
         sendCellMessage(new GroundPlaneChangeMessage(groundPlaneShowing));
     }
 
-    private void setGroundPlaneShowingInternal(boolean groundPlaneShowing) {
+    private void setGroundPlaneShowingInternal(final boolean groundPlaneShowing) {
         synchronized (groundPlaneLock) {
             this.groundPlaneShowing = groundPlaneShowing;
-            synchronized (groundPlaneIDs) {
-                for (NodeID id : groundPlaneIDs) {
-                    sceneRoot.applyVisibilityToChild(id, groundPlaneShowing);
+            ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+
+                public void update(Object arg0) {
+                    sceneRoot.applyVisibilityToChild(VisualType.GROUND, groundPlaneShowing);
+                    ClientContextJME.getWorldManager().addToUpdateList(sceneRoot);
                 }
-            }
+            }, null);
         }
         fireGroundPlaneChanged(new GroundPlaneChangeEvent(groundPlaneShowing));
+    }
+
+    private void setVisualUsername(String username) {
+        synchronized (sceneRoot) {
+            this.visualUsername = username;
+        }
+    }
+
+    private String getVisualUsername() {
+        synchronized (sceneRoot) {
+            return visualUsername;
+        }
     }
 
     /**
@@ -698,9 +777,5 @@ public class CMUCell extends Cell {
                 }
             }
         }
-    }
-
-    public void restart() {
-        sendCellMessage(new RestartProgramMessage());
     }
 }

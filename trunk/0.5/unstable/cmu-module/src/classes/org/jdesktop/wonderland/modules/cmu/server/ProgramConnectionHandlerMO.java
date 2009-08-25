@@ -49,13 +49,6 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
      * This class should never be externally instantiated.
      */
     private ProgramConnectionHandlerMO() {
-        //TODO: Decide which of these methods is better.
-
-        /*
-        connectionHandler = new ProgramConnectionHandler();
-        WonderlandContext.getCommsManager().registerClientHandler(connectionHandler);
-         */
-
         connectionHandler = (ProgramConnectionHandler) WonderlandContext.getCommsManager().getClientHandler(ProgramConnectionType.TYPE);
         assert connectionHandler != null;
     }

@@ -41,6 +41,7 @@ import org.jdesktop.wonderland.modules.webdav.client.WebdavClientPlugin;
 public class VisualUploadManager {
 
     static private ServerSessionManager manager = null;
+    static private String username = null;
 
     // Should never be instantiated
     private VisualUploadManager() {
@@ -51,7 +52,7 @@ public class VisualUploadManager {
      * the content repository, and creates a collection for CMU visual data.
      * @param manager
      */
-    static public void initialize(ServerSessionManager manager) {
+    static public void initialize(ServerSessionManager manager, String username) {
         if (!isInitialized()) {
             WebdavClientPlugin plugin = new WebdavClientPlugin();
             plugin.initialize(manager);
@@ -64,7 +65,14 @@ public class VisualUploadManager {
             } catch (ContentRepositoryException ex) {
                 Logger.getLogger(VisualUploadManager.class.getName()).log(Level.SEVERE, null, ex);
             }
+            VisualUploadManager.username = username;
+        } else {
+            Logger.getLogger(VisualUploadManager.class.getName()).log(Level.SEVERE, "Double initializabion of VisualUploadManager!");
         }
+    }
+
+    static public String getUsername() {
+        return username;
     }
 
     /**
@@ -82,7 +90,6 @@ public class VisualUploadManager {
                         getRepository(manager).getUserRoot().getChild(VisualRepoIdentifier.REPO_COLLECTION_NAME);
 
                 // Upload this data if it hasn't already been uploaded.
-                //TODO: Base this on something more than just visual name?
                 if (collection.getChild(id.getContentNodeName()) == null) {
                     ContentResource resource = (ContentResource) collection.createChild(id.getContentNodeName(), ContentNode.Type.RESOURCE);
 

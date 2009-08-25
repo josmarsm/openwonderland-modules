@@ -40,15 +40,21 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessa
 public class VisualAttributes implements Serializable {
 
     private final Collection<TriMesh> meshes = new Vector<TriMesh>();
-    private final String name;
+    private String name = null;
     private int[] texturePixels;
     private int textureWidth,  textureHeight;
 
     /**
-     * Basic constructor; takes only the name of the visual.
-     * @param name The name of the visual
+     * Basic constructor.
      */
-    public VisualAttributes(String name) {
+    public VisualAttributes() {
+    }
+
+    /**
+     * Set the visual name.
+     * @param name Name of this visual
+     */
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -130,7 +136,6 @@ public class VisualAttributes implements Serializable {
      * share the same identifiers.  This allows resources to be efficiently
      * stored in and accessed from content repositories.
      */
-    //TODO: should this be a separate class?
     public static class VisualRepoIdentifier implements Serializable {
 
         public static final String REPO_COLLECTION_NAME = "visuals";

@@ -52,7 +52,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessa
  */
 public class SceneConnectionHandler implements ChildrenListener, TransformationMessageListener {
 
-    public final int DEFAULT_FPS = 60;
+    public final int DEFAULT_FPS = 30;
     private Scene sc = null;       // The scene to wrap.
     private final Set<ClientConnection> connections = new HashSet<ClientConnection>();
     private final Set<VisualWrapper> visuals = new HashSet<VisualWrapper>();
@@ -231,7 +231,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
             for (VisualWrapper visual : this.visuals) {
                 visualMessages.add(visual.getVisualMessage());
             }
-            message = new SceneMessage(visualMessages);
+            message = new SceneMessage(visualMessages, VisualUploadManager.getUsername());
 
             // Store the connection.
             newConnection = new ClientConnection(this, DEFAULT_FPS, connection);
@@ -282,7 +282,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 Iterator<ClientConnection> iterator = connections.iterator();
                 while (iterator.hasNext()) {
                     ClientConnection connection = iterator.next();
-                    //TODO: make a copy
                     connection.queueMessage(visualWrapper.getVisualMessage());
                 }
             }
@@ -292,18 +291,9 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     /**
      * {@inheritDoc}
      */
-//    private int numTransformsChanged = 0;
     @Override
     public void transformationMessageChanged(TransformationMessage message) {
         synchronized (connections) {
-//            if (numTransformsChanged > 10000) {
-//                System.out.println("Transforms still changing");
-//                numTransformsChanged = 0;
-//            }
-//            numTransformsChanged++;
-//            if (numTransformsChanged % 50 != 0) {
-//                //return;
-//            }
             Iterator<ClientConnection> iterator = connections.iterator();
             while (iterator.hasNext()) {
                 ClientConnection connection = iterator.next();

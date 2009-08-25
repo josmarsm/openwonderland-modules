@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
-import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.AppearanceConverter;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.GeometryConverter;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.OrthogonalMatrix3x3Converter;
@@ -44,7 +43,7 @@ public class VisualWrapper implements AbsoluteTransformationListener {
 
     private static long numNodes = 0;        // Used to assign unique IDs to each node.
     private final Visual cmuVisual;         // The wrapped visual.
-    private final VisualAttributes visualAttributes;     // The serializable data for this visual.
+    private final VisualAttributes visualAttributes;     // The serializable attributes for this visual.
     private final TransformationMessage transformation;
     private final Set<TransformationMessageListener> transformationListeners = new HashSet<TransformationMessageListener>();
     protected final NodeID nodeID;             // Unique ID for this visual.
@@ -64,7 +63,7 @@ public class VisualWrapper implements AbsoluteTransformationListener {
      */
     public VisualWrapper(Visual v) {
         cmuVisual = v;
-        visualAttributes = new VisualAttributes(v.getName());
+        visualAttributes = new VisualAttributes();
         transformation = new TransformationMessage(getNodeID());
         loadVisual();
     }
@@ -104,6 +103,10 @@ public class VisualWrapper implements AbsoluteTransformationListener {
         return this.transformation;
     }
 
+    /**
+     * Get the serializable attributes of this visual.
+     * @return VisualAttributes associated with this visual
+     */
     public VisualAttributes getVisualAttributes() {
         return this.visualAttributes;
     }
@@ -141,7 +144,7 @@ public class VisualWrapper implements AbsoluteTransformationListener {
         assert cmuVisual != null;
         synchronized (visualAttributes) {
             // Set name.
-            System.out.println("Visual named: " + cmuVisual.getName());
+            visualAttributes.setName(cmuVisual.getName());
 
             // Get meshes.
             for (Geometry g : cmuVisual.geometries.getValue()) {

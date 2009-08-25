@@ -15,35 +15,14 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client;
+package org.jdesktop.wonderland.modules.cmu.client.events;
 
 /**
  *
  * @author kevin
  */
-public class PlaybackChangeEvent {
+public interface PlaybackChangeListener {
 
-    private float playbackSpeed;
-    private boolean playing;
-    
-    public PlaybackChangeEvent(float playbackSpeed, boolean isPlaying) {
-        setPlaybackSpeed(playbackSpeed);
-        setPlaying(isPlaying);
-    }
+    public void playbackChanged(PlaybackChangeEvent e);
 
-    public float getPlaybackSpeed() {
-        return playbackSpeed;
-    }
-
-    public void setPlaybackSpeed(float playbackSpeed) {
-        this.playbackSpeed = playbackSpeed;
-    }
-
-    public boolean isPlaying() {
-        return playing;
-    }
-
-    public void setPlaying(boolean playing) {
-        this.playing = playing;
-    }
 }

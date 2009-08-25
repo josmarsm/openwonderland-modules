@@ -145,18 +145,12 @@ public class ClientConnection extends Thread {
         }
     }
 
-//    private int numSent = 0;
     private void writeToOutputStream(Serializable message) throws SocketException {
         synchronized (socket) {
             try {
                 this.outputStream.writeUnshared(message);
                 this.outputStream.flush();
                 this.outputStream.reset();
-//                if (numSent > 20000) {
-//                    System.out.println("Still sending: " + message);
-//                    numSent = 0;
-//                }
-//                numSent++;
             } catch (SocketException ex) {
                 throw ex;
             } catch (IOException ex) {
@@ -194,7 +188,6 @@ public class ClientConnection extends Thread {
                 CMUClientMessage nextMessage = li.next();
                 if (nextMessage instanceof TransformationMessage && ((TransformationMessage) nextMessage).getNodeID().equals(message.getNodeID())) {
                     li.set(message);
-                    //System.out.println("Overwriting transformation");
                     alreadyInQueue = true;
                     break;
                 }
@@ -211,7 +204,6 @@ public class ClientConnection extends Thread {
         }
 
         public synchronized void queueVisualMessage(VisualMessage message) {
-            System.out.println("Queueing individual visual message");
             queue.offerFirst(message);
         }
 

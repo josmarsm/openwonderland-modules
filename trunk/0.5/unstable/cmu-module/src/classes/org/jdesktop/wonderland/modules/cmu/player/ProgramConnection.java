@@ -44,7 +44,6 @@ public class ProgramConnection extends BaseConnection {
         super();
         assert programManager != null;
         this.programManager = programManager;
-        System.out.println("ProgramConnection created.");
     }
 
     /**
@@ -54,12 +53,9 @@ public class ProgramConnection extends BaseConnection {
      */
     @Override
     public void handleMessage(Message message) {
-        System.out.println("Message received: " + message);
-
         // Create program
         if (CreateProgramMessage.class.isAssignableFrom(message.getClass())) {
             ResponseMessage response = handleCreateProgram((CreateProgramMessage) message);
-            System.out.println("Sending response: " + response);
             this.send(response);
         }
 
@@ -70,7 +66,7 @@ public class ProgramConnection extends BaseConnection {
 
         // Delete program
         if (DeleteProgramMessage.class.isAssignableFrom(message.getClass())) {
-            handleDeleteProgram((DeleteProgramMessage)message);
+            handleDeleteProgram((DeleteProgramMessage) message);
         }
     }
 

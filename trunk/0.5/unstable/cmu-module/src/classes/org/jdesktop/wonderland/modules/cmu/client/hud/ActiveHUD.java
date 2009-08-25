@@ -15,8 +15,13 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client;
+package org.jdesktop.wonderland.modules.cmu.client.hud;
 
+import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.GroundPlaneChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.GroundPlaneChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.*;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 
@@ -24,7 +29,7 @@ import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
  *
  * @author kevin
  */
-public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListener, GroundPlaneChangeListener {
+public class ActiveHUD extends javax.swing.JPanel implements PlaybackChangeListener, GroundPlaneChangeListener {
 
     private final static String PLAYBUTTON_PATH = "/org/jdesktop/wonderland/modules/cmu/client/resources/control_play.png";
     private final static String PAUSEBUTTON_PATH = "/org/jdesktop/wonderland/modules/cmu/client/resources/control_pause.png";
@@ -38,7 +43,7 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
     private final CMUCell cell;
 
     /** Creates new form CMUJPanel */
-    public CMUJPanel(CMUCell cell) {
+    public ActiveHUD(CMUCell cell) {
         initComponents();
         SLIDER_MIN = playbackSlider.getMinimum();
         SLIDER_MAX = playbackSlider.getMaximum();
@@ -73,7 +78,7 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
             }
         });
 
-        playbackSlider.setFont(new java.awt.Font("DejaVu Sans", 0, 1)); // NOI18N
+        playbackSlider.setFont(new java.awt.Font("DejaVu Sans", 0, 1));
         playbackSlider.setMaximum(45);
         playbackSlider.setMinimum(-18);
         playbackSlider.setPaintTrack(false);
@@ -311,12 +316,10 @@ public class CMUJPanel extends javax.swing.JPanel implements PlaybackChangeListe
 
         // From SLIDER_DEFAULT to SLIDER_MAX, scale linearly from default speed to PLAYBACK_MAX
         if (sliderPos >= SLIDER_DEFAULT) {
-            //System.out.println("Making positive playback speed");
             toReturn = linearScale((float) sliderPos, (float) SLIDER_DEFAULT,
                     (float) SLIDER_MAX, PlaybackDefaults.DEFAULT_START_SPEED, PLAYBACK_MAX);
         } // From SLIDER_MIN to SLIDER_DEFAULT, scale linearly from PLAYBACK_MIN to default speed
         else {
-            //System.out.println("Making negative playback speed");
             toReturn = linearScale((float) sliderPos, (float) SLIDER_MIN,
                     (float) SLIDER_DEFAULT, PLAYBACK_MIN, PlaybackDefaults.DEFAULT_START_SPEED);
         }

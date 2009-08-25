@@ -15,24 +15,12 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client;
+package org.jdesktop.wonderland.modules.cmu.client.events;
 
 /**
  *
  * @author kevin
  */
-public class GroundPlaneChangeEvent {
-    private boolean showingPlane;
-
-    public GroundPlaneChangeEvent(boolean showingPlane) {
-        setShowingPlane(showingPlane);
-    }
-
-    public boolean isShowingPlane() {
-        return showingPlane;
-    }
-
-    public void setShowingPlane(boolean showingPlane) {
-        this.showingPlane = showingPlane;
-    }
+public interface GroundPlaneChangeListener {
+    public void groundPlaneChanged(GroundPlaneChangeEvent e);
 }

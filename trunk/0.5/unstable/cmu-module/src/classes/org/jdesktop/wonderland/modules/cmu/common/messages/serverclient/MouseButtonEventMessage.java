@@ -25,7 +25,6 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  * pass them on to the relevant CMU program.
  * @author kevin
  */
-//TODO: Figure out how best to serialize these events
 public class MouseButtonEventMessage extends CellMessage {
 
     private final static long serialVersionUID = 1L;

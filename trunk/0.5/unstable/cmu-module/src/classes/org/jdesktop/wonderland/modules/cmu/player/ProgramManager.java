@@ -37,7 +37,6 @@ import org.jdesktop.wonderland.client.login.ProgrammaticLogin;
 import org.jdesktop.wonderland.common.ContentURI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
-import org.jdesktop.wonderland.modules.cmu.common.LoginDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.player.connections.VisualUploadManager;
 
@@ -66,12 +65,12 @@ public class ProgramManager {
         login = new ProgrammaticLogin<WonderlandSession>(serverURL);
 
         // Log in to the server
-        System.out.println("Logging in to " + serverURL + " as " + username);
         WonderlandSession session = login.login(username, passwordFile);
-        VisualUploadManager.initialize(session.getSessionManager());
+        VisualUploadManager.initialize(session.getSessionManager(), username);
 
         // Initialize the connection
         session.connect(new ProgramConnection(this));
+        System.out.println("Connected to " + serverURL + " as " + username);
     }
 
     /**
@@ -95,7 +94,7 @@ public class ProgramManager {
                 newProgram = new ProgramPlayer(a.getLocalCacheFile());
                 addProgram(cellID, newProgram);
             } else {
-                System.out.println("Couldn't load asset: " + a);
+                Logger.getLogger(ProgramManager.class.getName()).log(Level.SEVERE, "Couldn't load asset: " + a);
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
@@ -121,12 +120,16 @@ public class ProgramManager {
         }
     }
 
+    /**
+     * Stop playback of the program associated with the given cell and send
+     * a message to connected clients noting that this has happened.
+     * @param cellID The cell whose program is to be deleted
+     */
     public void deleteProgram(CellID cellID) {
         synchronized (programs) {
             ProgramPlayer program = programs.get(cellID);
             if (program != null) {
                 program.destroy();
-                //TODO: Make sure this performs necessary cleanup
                 programs.remove(cellID);
             }
         }
@@ -162,21 +165,17 @@ public class ProgramManager {
      * @param args server URL, username, [password]
      */
     public static void main(String[] args) {
-        if (args.length < 1 || args.length > 3) {
-            System.out.println("Usage: ProgramManager serverURL" +
-                    " [username [password]]");
+        if (args.length < 2 || args.length > 3) {
+            System.out.println("Usage: ProgramManager serverURL username [password]");
             System.exit(-1);
         }
 
         String serverURL = args[0];
-        String username = LoginDefaults.LOGIN_NAME;
-        if (args.length > 1) {
-            username = args[1];
-        }
+        String username = args[1];
+
         File passwordFile = null;
 
-        // if there is an optional password, write it to a file to use during
-        // login
+        // if there is an optional password, write it to a file to use during login
         if (args.length == 3) {
             String password = args[2];
 
