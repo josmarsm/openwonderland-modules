@@ -10,7 +10,13 @@ install to the module directory.
 
 INSTALLATION:
 With a properly configured cmu.module.properties and a running virtual world server,
-run 'ant deploy' in the module directory and restart the server.  This installs
-the module along with a server component called "CMU Runner," which should start
-automatically, and can also be monitored from the Server Status page on the
-server web interface.
+run 'ant deploy' in the module directory.  From the server administration page on
+the web interface, click "edit" on the Server Status page, then "Add Component."
+Enter the following:
+
+     Component Name: CMU Runner
+     Component Class: org.jdesktop.wonderland.modules.cmu.weblib.CMUPlayerRunner
+     Location: Local
+
+Choose OK, then Save.  Restart the server to enable drag and drop of Alice 3
+files into the world.

@@ -38,6 +38,7 @@
             </classpath>
             <jvmarg value="-Djava.library.path=${current.dir}/core/lib/${ostype}/native/"/>
             <arg value="${wonderland.web.server.url}"/>
+	    <arg value="cmu-player"/>
         </java>
     </target>
 </project>
