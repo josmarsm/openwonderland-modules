@@ -29,7 +29,6 @@ import com.jme.util.TextureManager;
 import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
-import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
@@ -47,6 +46,15 @@ public class VisualNode extends VisualParent {
     private final NodeID nodeID;     // Unique ID for this node
     private BoundingBox bound = null;
     private static final Map<VisualRepoIdentifier, TextureKey> keyMap = new HashMap<VisualRepoIdentifier, TextureKey>();
+    private static final String[] groundPlaneNames = {
+        "Ground.m_sgVisual", // Suffixes
+        "Surface.m_sgVisual"};
+
+    public enum VisualType {
+
+        ANY_VISUAL,
+        GROUND,
+    }
 
     /**
      * Constructs this visual with the properties
@@ -58,12 +66,29 @@ public class VisualNode extends VisualParent {
         this.nodeID = nodeID;
     }
 
+    public boolean isType(VisualType type) {
+        if (type == VisualType.ANY_VISUAL) {
+            return true;
+        } else if (type == VisualType.GROUND) {
+            for (String planeName : groundPlaneNames) {
+                if (this.getName().endsWith(planeName)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
     /**
      * Apply the properties contained in this VisualMessage (i.e.
      * geometries, textures, etc.) to this node.
      * @param message The message to apply
      */
     public void applyVisual(VisualAttributes attributes) {
+        // Set name
+        this.setName(attributes.getName());
+
         // Apply geometries, compute bounding box
         bound = null;
         for (TriMesh mesh : attributes.getMeshes()) {
@@ -103,11 +128,13 @@ public class VisualNode extends VisualParent {
      * @param transformation {@inheritDoc}
      */
     @Override
-    public synchronized void applyTransformationToChild(TransformationMessage transformation) {
+    public synchronized VisualNode applyTransformationToChild(TransformationMessage transformation) {
         if (transformation.getNodeID().equals(this.getNodeID())) {
             this.applyTransformation(transformation);
+            return this;
+        } else {
+            return super.applyTransformationToChild(transformation);
         }
-        super.applyTransformationToChild(transformation);
     }
 
     /**
@@ -125,14 +152,14 @@ public class VisualNode extends VisualParent {
     }
 
     @Override
-    public synchronized void applyVisibilityToChild(NodeID nodeID, boolean visible) {
-        super.applyVisibilityToChild(nodeID, visible);
-        if (nodeID.equals(this.getNodeID())) {
+    public synchronized void applyVisibilityToChild(VisualType type, boolean visible) {
+        super.applyVisibilityToChild(type, visible);
+        if (this.isType(type)) {
             this.setPartOfWorld(visible);
         }
     }
 
-    private synchronized void setPartOfWorld(boolean partOfWorld) {
+    public synchronized void setPartOfWorld(boolean partOfWorld) {
         setVisible(partOfWorld);
         setModelBound(partOfWorld ? bound : null);
     }
@@ -142,19 +169,13 @@ public class VisualNode extends VisualParent {
      * node.
      * @param transformation The transformation to be applied
      */
-    protected void applyTransformation(final TransformationMessage transformation) {
+    protected void applyTransformation(TransformationMessage transformation) {
 
-        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-
-            public void update(Object arg0) {
-                for (Spatial mesh : VisualNode.this.getChildren()) {
-                    mesh.setLocalScale(transformation.getScale());
-                    mesh.setLocalTranslation(transformation.getTranslation());
-                    mesh.setLocalRotation(transformation.getRotation());
-                }
-            }
-        }, null);
-        ClientContextJME.getWorldManager().addToUpdateList(this);
+        for (Spatial mesh : VisualNode.this.getChildren()) {
+            mesh.setLocalScale(transformation.getScale());
+            mesh.setLocalTranslation(transformation.getTranslation());
+            mesh.setLocalRotation(transformation.getRotation());
+        }
     }
 
     /**

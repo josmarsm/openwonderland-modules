@@ -25,7 +25,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
-import org.jdesktop.wonderland.modules.cmu.common.LoginDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
 
@@ -45,10 +44,9 @@ public class VisualDownloadManager {
      * @param id The ID defining the visual
      * @return The visual downloaded from the repository
      */
-    public static VisualAttributes downloadVisual(VisualRepoIdentifier id, Cell cell) {
+    public static VisualAttributes downloadVisual(VisualRepoIdentifier id, String username, Cell cell) {
         VisualAttributes attr = null;
-        //TODO: allow for non-default login names
-        String visualURI = "wlcontent://users/" + LoginDefaults.LOGIN_NAME + "/" + VisualRepoIdentifier.REPO_COLLECTION_NAME + "/" + id.getContentNodeName();
+        String visualURI = "wlcontent://users/" + username + "/" + VisualRepoIdentifier.REPO_COLLECTION_NAME + "/" + id.getContentNodeName();
         try {
             URL visualURL = AssetUtils.getAssetURL(visualURI, cell);
             InputStream urlStream = visualURL.openStream();

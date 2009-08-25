@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.cmu.client;
 
 import java.io.EOFException;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.SocketException;
@@ -57,8 +56,8 @@ public class VisualChangeReceiverThread extends Thread {
         public MonitorThread() {
             super("CMU Message Statistics Monitor " + hostname + ":" + port);
         }
-
         private static final long PAUSE_TIME = 5000;
+
         @Override
         public void run() {
             while (VisualChangeReceiverThread.this.isAlive()) {
@@ -68,11 +67,11 @@ public class VisualChangeReceiverThread extends Thread {
                     Logger.getLogger(VisualChangeReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 long currNumReads;
-                synchronized(statsLock) {
-                   currNumReads = getNumReads();
-                   resetStats();
+                synchronized (statsLock) {
+                    currNumReads = getNumReads();
+                    resetStats();
                 }
-                System.out.println(currNumReads + "messages in last " + PAUSE_TIME / 1000 + "s");
+                System.out.println(currNumReads + " messages in last " + PAUSE_TIME / 1000 + "s");
             }
         }
     }
@@ -93,7 +92,6 @@ public class VisualChangeReceiverThread extends Thread {
             // Notify connection successful.
             parentCell.updateConnectedState(true, this);
 
-            System.out.println("Connected on port " + port);
             while (parentCell.allowsUpdatesFrom(this)) {
                 // Read messages as long as they're being sent
                 Object received = fromServer.readUnshared();
@@ -102,37 +100,33 @@ public class VisualChangeReceiverThread extends Thread {
             }
             fromServer.close();
             connection.close();
-        } catch (ClassNotFoundException ex) {
-            System.out.println("Disconnecting: " + ex);
-        } catch (SocketException ex) {
-            System.out.println("Disconnecting: " + ex);
+        } // For many exception types, we just assume they happened as a result of a deliberate disconnect
+        catch (SocketException ex) {
         } catch (UnknownHostException ex) {
-            System.out.println("Disconnecting: " + ex);
         } catch (EOFException ex) {
-            System.out.println("Disconnecting: " + ex);
-        } catch (IOException ex) {
+        } // Otherwise, there's actually something funny happening
+        catch (Exception ex) {
             Logger.getLogger(VisualChangeReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         //TODO: Notify the CMUCell about the reason for the disconnect?
-        System.out.println("Disconnecting from port " + port);
         parentCell.updateConnectedState(false, this);
     }
 
     private void addObjectToStats(Object object) {
-        synchronized(statsLock) {
+        synchronized (statsLock) {
             numReads++;
         }
     }
 
     public long getNumReads() {
-        synchronized(statsLock) {
+        synchronized (statsLock) {
             return numReads;
         }
     }
 
     public void resetStats() {
-        synchronized(statsLock) {
+        synchronized (statsLock) {
             numReads = 0;
         }
     }

@@ -15,8 +15,10 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client;
+package org.jdesktop.wonderland.modules.cmu.client.hud;
 
+import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeEvent;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -25,6 +27,7 @@ import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 
 /**
  *
@@ -35,7 +38,7 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
     private final CMUCell parentCell;
 
     // UI stuff
-    private CMUJPanel hudPanel = null;
+    private ActiveHUD hudPanel = null;
     private HUDComponent hudComponent = null;
     private boolean hudShowing = false;
     private final Object hudShowingLock = new Object();
@@ -59,7 +62,7 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
                 // Set up UI
                 if (showing && hudComponent == null) {
                     // Create the panel
-                    hudPanel = new CMUJPanel(parentCell);
+                    hudPanel = new ActiveHUD(parentCell);
 
                     // Create the HUD component
                     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
@@ -96,7 +99,7 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         }
     }
 
-    protected void updateHUD() {
+    public void updateHUD() {
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override

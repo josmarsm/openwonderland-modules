@@ -157,7 +157,6 @@ public class ProgramPlayer extends Program {
 
     @Override
     public void destroy() {
-        System.out.println("Destroying scene: " + this.getPort());
         this.cmuScene.unloadScene();
         super.destroy();
     }

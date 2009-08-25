@@ -27,9 +27,10 @@ import java.util.Vector;
  */
 public class SceneMessage extends CMUClientMessage {
 
-    final Vector<VisualMessage> visuals = new Vector<VisualMessage>();
+    private final Vector<VisualMessage> visuals = new Vector<VisualMessage>();
+    private final String username;
 
-    public SceneMessage(Collection<VisualMessage> visuals) {
+    public SceneMessage(Collection<VisualMessage> visuals, String username) {
         if (visuals != null) {
             synchronized (this.visuals) {
                 for (VisualMessage visual : visuals) {
@@ -37,6 +38,7 @@ public class SceneMessage extends CMUClientMessage {
                 }
             }
         }
+        this.username = username;
     }
 
     private void addVisual(VisualMessage visual) {
@@ -49,5 +51,9 @@ public class SceneMessage extends CMUClientMessage {
         synchronized (visuals) {
             return Collections.unmodifiableCollection(visuals);
         }
+    }
+
+    public String getUsername() {
+        return username;
     }
 }

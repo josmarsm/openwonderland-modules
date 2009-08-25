@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import java.util.Iterator;
+import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode.VisualType;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
@@ -38,15 +39,19 @@ public class VisualParent extends Node {
      * baserd on the transformation.
      * @param transformation The transformation to be applied to a matching child
      */
-    public synchronized void applyTransformationToChild(TransformationMessage transformation) {
+    public synchronized VisualNode applyTransformationToChild(TransformationMessage transformation) {
         if (this.getChildren() == null) {
-            return;
+            return null;
         }
         for (Spatial child : this.getChildren()) {
             if (VisualParent.class.isAssignableFrom(child.getClass())) {
-                ((VisualParent) child).applyTransformationToChild(transformation);
+                VisualNode node = ((VisualParent) child).applyTransformationToChild(transformation);
+                if (node != null) {
+                    return node;
+                }
             }
         }
+        return null;
     }
 
     /**
@@ -71,22 +76,14 @@ public class VisualParent extends Node {
         return false;
     }
 
-    public synchronized void applyVisibilityToChild(NodeID nodeID, boolean visible) {
+    public synchronized void applyVisibilityToChild(VisualType type, boolean visible) {
         if (this.getChildren() == null) {
             return;
         }
         for (Spatial child : this.getChildren()) {
             if (VisualParent.class.isAssignableFrom(child.getClass())) {
-                ((VisualParent) child).applyVisibilityToChild(nodeID, visible);
+                ((VisualParent) child).applyVisibilityToChild(type, visible);
             }
         }
-    }
-
-    @Override
-    public int attachChild(Spatial child) {
-        int retVal = super.attachChild(child);
-        //TODO: Make nodes show up on load consistently
-        //ClientContextJME.getWorldManager().addToUpdateList(this);
-        return retVal;
     }
 }
