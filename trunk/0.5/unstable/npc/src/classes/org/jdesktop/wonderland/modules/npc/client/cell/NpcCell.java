@@ -20,9 +20,9 @@ package org.jdesktop.wonderland.modules.npc.client.cell;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import imi.character.CharacterMotionListener;
-import imi.character.CharacterSteeringHelm;
+import imi.character.behavior.CharacterBehaviorManager;
+import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
-import imi.character.steering.GoTo;
 import imi.scene.PMatrix;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,7 +32,6 @@ import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
@@ -61,59 +60,53 @@ public class NpcCell extends Cell {
     boolean menuAdded = false;
     private AvatarImiJME renderer;
     @UsesCellComponent
-    private ProximityComponent proximity;
+    private ProximityComponent proximityComp;
     @UsesCellComponent
     private MovableAvatarComponent movableAvatar;
-    private proximityListener1 listenerProx;
-    private BoundingVolume[] boundingVolume;
+    private NPCProximityListener listenerProx;
     private Vector3f npcPosition;
     private GoTo myGoTo;
 
     public NpcCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
+        logger.warning("NPC CELL Constructor");
+        
+        // Create a menu item to control the NPC
         menuItem = new JMenuItem("NPC " + cellID + " controls...");
         menuItem.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 NpcControllerFrame ncf = new NpcControllerFrame(NpcCell.this,
                         renderer.getAvatarCharacter());
                 ncf.setVisible(true);
             }
         });
+
+        // Create a proximity listener that will be added in setStatus()
+        listenerProx = new NPCProximityListener();
     }
 
     @Override
-    public boolean setStatus(CellStatus status) {
-        boolean res = super.setStatus(status);
-        ChannelComponent channel = getComponent(ChannelComponent.class);
-        switch (status) {
-            case BOUNDS:
-                if (!menuAdded) {
-                    JmeClientMain.getFrame().addToEditMenu(menuItem, Integer.MAX_VALUE);
-                    menuAdded = true;
-                }
-                break;
-            case DISK:
-                if (menuAdded) {
-                    JmeClientMain.getFrame().removeFromEditMenu(menuItem);
-                    menuAdded = false;
-                }
-                break;
-            case ACTIVE:
-                if (listenerProx == null) {
-                    boundingVolume = new BoundingVolume[1];
-                    boundingVolume[0] = this.getLocalBounds();
-                    listenerProx = new proximityListener1();
+    protected void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
-                    proximity.addProximityListener(listenerProx, boundingVolume);
-
-                }
-                channel.addMessageReceiver(NpcCellChangeMessage.class, new NpcCellMessageReceiver());
-                break;
+        logger.warning("HPC Cell SET STATUS " + status + " " + increasing);
+        
+        // If the Cell is being made active and increasing, then add the menu
+        // item. Also add the proximity listener
+        if (status == CellStatus.ACTIVE && increasing == true) {
+            JmeClientMain.getFrame().addToEditMenu(menuItem, -1);
+            BoundingVolume bv[] = new BoundingVolume[] { getLocalBounds() };
+            proximityComp.addProximityListener(listenerProx, bv);
+            return;
         }
 
-        return res;
+        // if the Cell is being brought back down through the ACTIVE state,
+        // then remove the menu item
+        if (status == CellStatus.ACTIVE && increasing == false) {
+            JmeClientMain.getFrame().removeFromEditMenu(menuItem);
+            return;
+        }
     }
 
     @Override
@@ -155,7 +148,7 @@ public class NpcCell extends Cell {
             public void transformUpdate(Vector3f translation, PMatrix rotation) {
                 //Check if NPC has reached his destination
                 if (!myGoTo.verify()) {
-                    CellTransform transform = new CellTransform(renderer.getAvatarCharacter().getQuaternion(), npcPosition, null);
+                    CellTransform transform = new CellTransform(rotation.getRotationJME(), translation);
                     movableAvatar.localMoveRequest(transform, 0, false, null, null);
                 }
             }
@@ -166,7 +159,7 @@ public class NpcCell extends Cell {
 
     public void goTo() {
         GameContext context = renderer.getAvatarCharacter().getContext();
-        CharacterSteeringHelm helm = context.getSteering();
+        CharacterBehaviorManager helm = context.getBehaviorManager();
         myGoTo = new GoTo(npcPosition, context);
         helm.clearTasks();
         helm.setEnable(true);
@@ -174,7 +167,7 @@ public class NpcCell extends Cell {
 
     }
 
-    class NpcCellMessageReceiver implements ComponentMessageReceiver {
+    private class NpcCellMessageReceiver implements ComponentMessageReceiver {
 
         public void messageReceived(CellMessage message) {
             NpcCellChangeMessage sccm = (NpcCellChangeMessage) message;
@@ -183,25 +176,20 @@ public class NpcCell extends Cell {
                 npcPosition = sccm.getCellTransform().getTranslation(null);
                 goTo();
             }
-
-            proximity.removeProximityListener(listenerProx);
-
-            listenerProx = null;
-            boundingVolume = null;
-
-            boundingVolume = new BoundingVolume[1];
-            boundingVolume[0] = NpcCell.this.getWorldBounds();
-
-            listenerProx = new proximityListener1();
-            proximity.addProximityListener(listenerProx, boundingVolume);
-
         }
     }
 
-    class proximityListener1 implements ProximityListener {
+    /**
+     * A class that notifies when avatars have moved within proximity of the
+     * NPC Cell.
+     */
+    private class NPCProximityListener implements ProximityListener {
 
-        public void viewEnterExit(boolean entered,
-                Cell cell, CellID viewCellID, com.jme.bounding.BoundingVolume proximityVolume, int proximityIndex) {
+        /**
+         * {@inheritDoc}
+         */
+        public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID,
+                BoundingVolume proximityVolume, int proximityIndex) {
             if (entered) {
                 //Do here whatever you want
                 System.out.println("*****IN");

@@ -208,12 +208,14 @@ public class NpcControllerFrame extends javax.swing.JFrame {
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
         ChannelComponent cc = cell.getComponent(ChannelComponent.class);
         try {
+            // Fetch the annotated URL given the current session of the Cell
             WonderlandSession session = cell.getCellCache().getSession();
             ServerSessionManager manager = session.getSessionManager();
             String serverHostAndPort = manager.getServerNameAndPort();
-            URL avatarConfigURL = AssetUtils.getAssetURL("wla://avatarbaseart@" + serverHostAndPort + "/" +
-                                                         avatarComboBox.getSelectedItem(), cell);
-            cc.send(AvatarConfigMessage.newRequestMessage(avatarConfigURL));
+            String url = "wla://avatarbaseart/" + avatarComboBox.getSelectedItem();
+            URL configURL = AssetUtils.getAssetURL(url, cell);
+            // XXX
+            cc.send(AvatarConfigMessage.newRequestMessage(null));
             dispose();
         } catch (MalformedURLException ex) {
             Logger.getLogger(NpcControllerFrame.class.getName()).log(Level.SEVERE, null, ex);

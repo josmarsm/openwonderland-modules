@@ -15,53 +15,91 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.npc.client.cell;
 
 import javax.swing.JPanel;
-import org.jdesktop.wonderland.client.cell.properties.annotation.CellProperties;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
-import org.jdesktop.wonderland.client.cell.properties.spi.CellPropertiesSPI;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigComponentServerState;
 import org.jdesktop.wonderland.modules.npc.common.NpcCellServerState;
 
 /**
- * A property sheet for the sample cell type
+ * A property sheet for the NPC Cell.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@CellProperties
-public class NpcCellProperties extends javax.swing.JPanel implements CellPropertiesSPI {
+@PropertiesFactory(NpcCellServerState.class)
+public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
+    // The cell property editor panel, used to indicate clean/dirty state
     CellPropertiesEditor editor = null;
 
+    // The original value of the selected configuration relative URL
+    private String originalConfigURL = null;
+    
     /** Creates new form SampleCellProperties */
     public NpcCellProperties() {
         initComponents();
+    }
 
-        // Listen for when the Browse... button is selected and display a
-        // GUI to browser the content repository. Wait until OK has been
-        // selected and fill in the text field with the URI
-//        browseButton.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                // Fetch the browser for the webdav protocol and display it.
-//                // Add a listener for the result and update the value of the
-//                // text field for the URI
-//                ContentBrowserManager manager = ContentBrowserManager.getContentBrowserManager();
-//                final ContentBrowserSPI browser = manager.getDefaultContentBrowser();
-//                browser.addContentBrowserListener(new ContentBrowserListener() {
-//                    public void okAction(String uri) {
-//                        uriTextField.setText(uri);
-//                        browser.removeContentBrowserListener(this);
-//                    }
-//
-//                    public void cancelAction() {
-//                        browser.removeContentBrowserListener(this);
-//                    }
-//                });
-//                browser.setVisible(true);
-//            }
-//        });
+    /**
+     * @inheritDoc()
+     */
+    public String getDisplayName() {
+        return "NPC Cell";
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public JPanel getPropertiesJPanel() {
+        return this;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
+        // Fetch the current state from the cell's server state and update
+        // the GUI.
+        CellServerState state = editor.getCellServerState();
+        if (state != null) {
+            originalConfigURL = ((NpcCellServerState)state).getRelativeConfigURL();
+            avatarComboBox.setSelectedItem(originalConfigURL);
+        }
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void close() {
+        // Do nothing for now.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
+        // Take the value from the configuration URL and populate the server
+        // state with it.
+        String url = (String) avatarComboBox.getSelectedItem();
+        CellServerState state = editor.getCellServerState();
+        ((NpcCellServerState)state).setRelativeConfigURL(url);
+        editor.addToUpdateList(state);
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void restore() {
+        avatarComboBox.setSelectedItem(originalConfigURL);
     }
 
     /** This method is called from within the constructor to
@@ -79,6 +117,11 @@ public class NpcCellProperties extends javax.swing.JPanel implements CellPropert
         jLabel1.setText("Choose Avatar:");
 
         avatarComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/FemaleD_AZ_00_bin.xml", "assets/configurations/FemaleD_CA_00_bin.xml", "assets/configurations/FemaleFG_AA_01_bin.xml", "assets/configurations/FemaleFG_AA_02_bin.xml", "assets/configurations/FemaleFG_AA_03_bin.xml", "assets/configurations/FemaleFG_CA_00_bin.xml", "assets/configurations/FemaleFG_CA_01_bin.xml", "assets/configurations/FemaleFG_CA_02_bin.xml", "assets/configurations/FemaleFG_CA_03_bin.xml", "assets/configurations/FemaleFG_CA_04_bin.xml", "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/MaleFG_AA_00_bin.xml", "assets/configurations/MaleFG_AA_01_bin.xml", "assets/configurations/MaleFG_CA_01_bin.xml", "assets/configurations/MaleFG_CA_03_bin.xml", "assets/configurations/MaleFG_CA_04_bin.xml", "assets/configurations/MaleMeso_00.xml", "assets/configurations/MaleMeso_01.xml" }));
+        avatarComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                avatarComboBoxActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -102,41 +145,20 @@ public class NpcCellProperties extends javax.swing.JPanel implements CellPropert
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void avatarComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_avatarComboBoxActionPerformed
+                // If the shape type has changed since the initial value, then
+        // set the dirty bit to try
+        String newShapeType = (String)avatarComboBox.getSelectedItem();
+        if (originalConfigURL != null && originalConfigURL.equals(newShapeType) == false) {
+            editor.setPanelDirty(NpcCellProperties.class, true);
+        }
+        else {
+            editor.setPanelDirty(NpcCellProperties.class, false);
+        }
+    }//GEN-LAST:event_avatarComboBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox avatarComboBox;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
-
-    public Class getServerCellStateClass() {
-       return NpcCellServerState.class;
-    }
-
-    public String getDisplayName() {
-        return "NPC Cell";
-    }
-
-    public JPanel getPropertiesJPanel(CellPropertiesEditor editor) {
-        this.editor = editor;
-        editor.setPanelDirty(getServerCellStateClass(), true);
-        return this;
-    }
-
-    public <T extends CellServerState> void updateGUI(T cellServerState) {
-    }
-
-    public <T extends CellServerState> void getCellServerState(T state) {
-        if (state == null) {
-            state = (T) new NpcCellServerState();
-        }
-
-        AvatarConfigComponentServerState acc = 
-                (AvatarConfigComponentServerState) state.getComponentServerState(AvatarConfigComponentServerState.class);
-        if (acc == null) {
-            acc = new AvatarConfigComponentServerState();
-            state.addComponentServerState(acc);
-        }
-  
-        acc.setAvatarConfigURL((String) avatarComboBox.getSelectedItem());
-    }
 }

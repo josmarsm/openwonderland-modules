@@ -17,36 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.npc.common;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- * Represents the server-side configuration information for the NPC cell.
- * Has JAXB annotations so that it can be serialized to XML.
- * <p>
- * Keeps the relative URL of the NPC avatar configuration file.
+ * The client state for the NPC Cell.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
-@XmlRootElement(name = "npc-cell")
-@ServerState
-public class NpcCellServerState extends CellServerState {
-    @XmlElement(name = "relative-config-url")
+public class NpcCellClientState extends CellClientState {
     private String relativeConfigURL = null;
 
     /** Default constructor */
-    public NpcCellServerState() {
+    public NpcCellClientState() {
     }
 
-    @Override
-    public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.npc.server.cell.NpcCellMO";
-    }
-
-    @XmlTransient
     public String getRelativeConfigURL() {
         return relativeConfigURL;
     }
