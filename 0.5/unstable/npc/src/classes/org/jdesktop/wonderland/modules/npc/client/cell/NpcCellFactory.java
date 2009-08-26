@@ -24,7 +24,9 @@ import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigComponentServerState;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.npc.common.NpcCellServerState;
 
 /**
@@ -41,9 +43,15 @@ public class NpcCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         NpcCellServerState state = new NpcCellServerState();
-        AvatarConfigComponentServerState astate = new AvatarConfigComponentServerState();
-        astate.setAvatarConfigURL("assets/configurations/MaleMeso_01.xml");
-        state.addComponentServerState(astate);
+
+        // Attach an avatar config component to the server state. This will help
+        // configure the appearance of the NPC.
+        AvatarConfigComponentServerState accss = new AvatarConfigComponentServerState();
+        String url = "wla://avatarbaseart/assets/configurations/MaleMeso_01.xml";
+        String className = ImiAvatarLoaderFactory.class.getName();
+        AvatarConfigInfo info = new AvatarConfigInfo(url, className);
+        accss.setAvatarConfigInfo(info);
+        state.addComponentServerState(accss);
 
         return (T)state;
     }

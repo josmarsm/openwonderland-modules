@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.npc.server.cell;
 
+import com.jme.bounding.BoundingBox;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.logging.Level;
@@ -24,6 +25,10 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
+import org.jdesktop.wonderland.modules.npc.common.NpcCellServerState;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 
@@ -31,41 +36,42 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
  *
  * @author paulby
  */
+@Plugin
 public class NpcPluginSrv implements ServerPlugin {
 
     private String[] npcs = new String[] {
 //        "assets/configurations/ObamaTest.xml",
-        "assets/configurations/MaleD_CA_00_bin.xml",
-        "assets/configurations/MaleD_CA_01_bin.xml",
-        "assets/configurations/FemaleD_AZ_00_bin.xml",
-        "assets/configurations/FemaleD_CA_00_bin.xml",
-        "assets/configurations/FemaleFG_AA_01_bin.xml",
-        "assets/configurations/FemaleFG_AA_02_bin.xml",
-        "assets/configurations/FemaleFG_AA_03_bin.xml",
+//        "assets/configurations/MaleD_CA_00_bin.xml",
+//        "assets/configurations/MaleD_CA_01_bin.xml",
+//        "assets/configurations/FemaleD_AZ_00_bin.xml",
+//        "assets/configurations/FemaleD_CA_00_bin.xml",
+//        "assets/configurations/FemaleFG_AA_01_bin.xml",
+//        "assets/configurations/FemaleFG_AA_02_bin.xml",
+//        "assets/configurations/FemaleFG_AA_03_bin.xml",
 //        "assets/configurations/FemaleFG_AA_04_bin.xml",
 //        "assets/configurations/FemaleFG_AA_05_bin.xml",
 //        "assets/configurations/FemaleFG_AA_06_bin.xml",
-        "assets/configurations/FemaleFG_CA_00_bin.xml",
-        "assets/configurations/FemaleFG_CA_01_bin.xml",
-        "assets/configurations/FemaleFG_CA_02_bin.xml",
-        "assets/configurations/FemaleFG_CA_03_bin.xml",
-        "assets/configurations/FemaleFG_CA_04_bin.xml",
+//        "assets/configurations/FemaleFG_CA_00_bin.xml",
+//        "assets/configurations/FemaleFG_CA_01_bin.xml",
+//        "assets/configurations/FemaleFG_CA_02_bin.xml",
+//        "assets/configurations/FemaleFG_CA_03_bin.xml",
+//        "assets/configurations/FemaleFG_CA_04_bin.xml",
 //        "assets/configurations/FemaleFG_CA_05_bin.xml",
 //        "assets/configurations/FemaleFG_CA_06_bin.xml",
 //        "assets/configurations/FemaleFG_CA_07_bin.xml",
-        "assets/configurations/MaleD_CA_00_bin.xml",
-        "assets/configurations/MaleD_CA_01_bin.xml",
-        "assets/configurations/MaleFG_AA_00_bin.xml",
-        "assets/configurations/MaleFG_AA_01_bin.xml",
+//        "assets/configurations/MaleD_CA_00_bin.xml",
+//        "assets/configurations/MaleD_CA_01_bin.xml",
+//        "assets/configurations/MaleFG_AA_00_bin.xml",
+//        "assets/configurations/MaleFG_AA_01_bin.xml",
 //        "assets/configurations/MaleFG_AA_02_bin.xml",
 //        "assets/configurations/MaleFG_AA_03_bin.xml",
 //        "assets/configurations/MaleFG_AA_04_bin.xml",
-        "assets/configurations/MaleFG_CA_01_bin.xml",
-        "assets/configurations/MaleFG_CA_03_bin.xml",
-        "assets/configurations/MaleFG_CA_04_bin.xml",
+//        "assets/configurations/MaleFG_CA_01_bin.xml",
+//        "assets/configurations/MaleFG_CA_03_bin.xml",
+//        "assets/configurations/MaleFG_CA_04_bin.xml",
 //        "assets/configurations/MaleFG_CA_05_bin.xml",
 //        "assets/configurations/MaleFG_CA_06_bin.xml",
-        "assets/configurations/MaleMeso_00.xml",
+//        "assets/configurations/MaleMeso_00.xml",
         "assets/configurations/MaleMeso_01.xml"
     };
 
@@ -74,13 +80,37 @@ public class NpcPluginSrv implements ServerPlugin {
     }
 
     private void createDemoAvatars() {
-        for(int i=0; i<npcs.length; i++) {
-            NpcCellMO cellMO = new NpcCellMO(npcs[i], calcTransform(i));
+        Logger.getLogger(NpcPluginSrv.class.getName()).warning("# of avatars " + npcs.length);
+        
+        for (int i = 0; i < npcs.length; i++) {
+            // Create the server state that describes the NPC.
+            NpcCellServerState state = new NpcCellServerState();
+
+            PositionComponentServerState pcss = new PositionComponentServerState();
+            CellTransform transform = calcTransform(i);
+            pcss.setTranslation(transform.getTranslation(null));
+            pcss.setRotation(transform.getRotation(null));
+            pcss.setScaling(transform.getScaling(null));
+            pcss.setBounds(new BoundingBox(new Vector3f(0, 1, 0), 1, 2, 1));
+            state.addComponentServerState(pcss);
+
+            AvatarConfigComponentServerState accss = new AvatarConfigComponentServerState();
+            String url = "wla://avatarbaseart@localhost:8080/" + npcs[i];
+            String className = "org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory";
+            AvatarConfigInfo avatarConfigInfo = new AvatarConfigInfo(url, className);
+            accss.setAvatarConfigInfo(avatarConfigInfo);
+            state.addComponentServerState(accss);
+
+            state.setRelativeConfigURL(npcs[i]);
+            NpcCellMO cellMO = new NpcCellMO();
+            cellMO.setServerState(state);
+
             try {
                 CellManagerMO.getCellManager().insertCellInWorld(cellMO);
             } catch (MultipleParentException ex) {
                 Logger.getLogger(NpcPluginSrv.class.getName()).log(Level.SEVERE, null, ex);
             }
+            Logger.getLogger(NpcPluginSrv.class.getName()).warning("Inserting NPC into world " + npcs[i]);
         }
     }
 
