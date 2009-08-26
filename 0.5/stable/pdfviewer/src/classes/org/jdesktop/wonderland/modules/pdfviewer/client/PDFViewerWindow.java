@@ -101,14 +101,14 @@ public class PDFViewerWindow extends WindowSwing {
             openDialogComponent.addPropertyChangeListener(new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent e) {
-                    if (e.getPropertyName().equals("text")) {
-                        String url = openDialogComponent.getValueText();
+                    if (e.getPropertyName().equals("ok")) {
+                        String url = openDialogComponent.getValue();
                         if ((url != null) && (url.length() > 0)) {
                             SwingUtilities.invokeLater(new Runnable() {
 
                                 public void run() {
                                     openDialogComponent.setVisible(false);
-                                    openDocument(openDialogComponent.getValueText());
+                                    openDocument(openDialogComponent.getValue());
                                 }
                             });
                         }

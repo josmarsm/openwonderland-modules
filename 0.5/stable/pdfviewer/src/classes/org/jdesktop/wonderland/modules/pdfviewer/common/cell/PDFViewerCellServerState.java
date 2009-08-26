@@ -25,7 +25,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
 
 /**
- * The WFS server state class for PDFViewerCellMO.
+ * The WFS server state class for PDFViewerCellMO
  * 
  * @author nsimpson
  */
@@ -33,6 +33,12 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
 @ServerState
 public class PDFViewerCellServerState extends App2DCellServerState implements Serializable {
 
+    // the URI of the PDF document
+    @XmlElement(name = "documentURI")
+    public String documentURI = "https://lg3d-wonderland.dev.java.net/presentations/TrainForSucess-July2008.pdf";
+    // the current page (default to the first page)
+    @XmlElement(name = "currentPage")
+    public int currentPage = 1;
     // the preferred width of the PDF viewer (default to 4:3 aspect ratio)
     @XmlElement(name = "preferredWidth")
     public int preferredWidth = 640;
@@ -48,6 +54,24 @@ public class PDFViewerCellServerState extends App2DCellServerState implements Se
 
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.pdfviewer.server.cell.PDFViewerCellMO";
+    }
+
+    public void setDocumentURI(String documentURI) {
+        this.documentURI = documentURI;
+    }
+
+    @XmlTransient
+    public String getDocumentURI() {
+        return documentURI;
+    }
+
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    @XmlTransient
+    public int getCurrentPage() {
+        return currentPage;
     }
 
     public void setPreferredWidth(int preferredWidth) {
