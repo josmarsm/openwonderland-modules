@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
  *
  * @author kevin
  */
-public class ActiveHUD extends javax.swing.JPanel implements PlaybackChangeListener, GroundPlaneChangeListener {
+public class ActiveHUD extends CMUPanel implements PlaybackChangeListener, GroundPlaneChangeListener {
 
     private final static String PLAYBUTTON_PATH = "/org/jdesktop/wonderland/modules/cmu/client/resources/control_play.png";
     private final static String PAUSEBUTTON_PATH = "/org/jdesktop/wonderland/modules/cmu/client/resources/control_pause.png";
@@ -350,19 +350,5 @@ public class ActiveHUD extends javax.swing.JPanel implements PlaybackChangeListe
         }
 
         return toReturn;
-    }
-
-    /**
-     * Convenience method to convert units from one scale to another.
-     * @param value The current value in unit type 1
-     * @param minValue A minimum value in unit type 1
-     * @param maxValue A maximum value in unit type 1
-     * @param minResult The corresponding minimum value in unit type 2
-     * @param maxResult The corresponding maximum value in unit type 2
-     * @return The corresponding current value in unit type 2
-     */
-    protected static final float linearScale(float value, float minValue,
-            float maxValue, float minResult, float maxResult) {
-        return minResult + (((value - minValue) / (maxValue - minValue)) * (maxResult - minResult));
     }
 }
