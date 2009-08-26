@@ -214,7 +214,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
                         if (dialog.isWorldVisible()) {
                             dialog.setWorldVisible(false);
                         }
-                        dialog.setValueText("");
+                        dialog.setValue("");
                         dialog.removePropertyChangeListener(this);
                         dialog = null;
                     }
