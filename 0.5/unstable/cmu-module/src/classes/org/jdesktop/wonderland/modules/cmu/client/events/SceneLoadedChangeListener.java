@@ -15,13 +15,14 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
-
-import java.io.Serializable;
+package org.jdesktop.wonderland.modules.cmu.client.events;
 
 /**
- * Simple class to categorize messages from CMU players to clients
+ *
  * @author kevin
  */
-public abstract class CMUClientMessage implements Serializable {
+public interface SceneLoadedChangeListener {
+
+    public void sceneLoadedChanged(SceneLoadedChangeEvent e);
+
 }

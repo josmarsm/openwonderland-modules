@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
+import org.jdesktop.wonderland.modules.cmu.client.CMUCell.ConnectionState;
 
 /**
  *
@@ -38,9 +39,10 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
     private final CMUCell parentCell;
 
     // UI stuff
-    private ActiveHUD hudPanel = null;
+    private CMUPanel hudPanel = null;
     private HUDComponent hudComponent = null;
     private boolean hudShowing = false;
+    private ConnectionState connectionState = ConnectionState.DISCONNECTED;
     private final Object hudShowingLock = new Object();
 
     public HUDControl(CMUCell parentCell) {
@@ -62,7 +64,14 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
                 // Set up UI
                 if (showing && hudComponent == null) {
                     // Create the panel
-                    hudPanel = new ActiveHUD(parentCell);
+                    if (connectionState == ConnectionState.DISCONNECTED) {
+                        hudPanel = new DisconnectedHUD();
+                    } else if (connectionState == ConnectionState.WAITING ||
+                            connectionState == ConnectionState.LOADING) {
+                        hudPanel = new LoadingHUD(parentCell);
+                    } else if (connectionState == ConnectionState.LOADED) {
+                        hudPanel = new ActiveHUD(parentCell);
+                    }
 
                     // Create the HUD component
                     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
@@ -99,24 +108,42 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         }
     }
 
-    public void updateHUD() {
-        SwingUtilities.invokeLater(new Runnable() {
+    public void setConnectionState(ConnectionState state) {
+        synchronized (hudShowingLock) {
+            // Make sure the state is actually changing in a relevant
+            // way to update the HUD
+            if (state != this.connectionState &&
+                    !(state == ConnectionState.LOADING &&
+                    this.connectionState == ConnectionState.WAITING)) {
+                System.out.println("CONNECTION STATE CHANGE: " + state);
+                this.connectionState = state;
+                SwingUtilities.invokeLater(new Runnable() {
 
-            @Override
-            public void run() {
-                if (hudComponent != null) {
-                    hudComponent.setName(parentCell.getSceneTitle());
-                }
+                    @Override
+                    public void run() {
+                        synchronized (hudShowingLock) {
+                            boolean prevHUDShowing = isHUDShowing();
+                            new HUDKiller().run();
+                            new HUDDisplayer(prevHUDShowing).run();
+                        }
+                    }
+                });
             }
-        });
+        }
     }
 
     public void setHUDShowing(boolean showing) {
-        SwingUtilities.invokeLater(new HUDDisplayer(showing));
+        synchronized (hudShowingLock) {
+            System.out.println("SET HUD SHOWING: " + showing);
+            if (showing != isHUDShowing() || hudComponent == null) {
+                SwingUtilities.invokeLater(new HUDDisplayer(showing));
+            }
+        }
     }
 
     public boolean isHUDShowing() {
         synchronized (hudShowingLock) {
+            System.out.println("IS HUD SHOWING: " + hudShowing);
             return hudShowing;
         }
     }
@@ -129,13 +156,29 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         synchronized (hudShowingLock) {
             if (event.getObject().equals(this.hudComponent)) {
                 if (event.getEventType().equals(HUDEventType.DISAPPEARED) || event.getEventType().equals(HUDEventType.CLOSED)) {
-                    this.setHUDShowing(false);
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (!hudComponent.isVisible()) {
+                                new HUDDisplayer(false).run();
+                            }
+                        }
+                    });
                 }
             }
         }
     }
-    
+
     public void sceneTitleChanged(SceneTitleChangeEvent e) {
-        updateHUD();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                if (hudComponent != null) {
+                    hudComponent.setName(parentCell.getSceneTitle());
+                }
+            }
+        });
     }
 }
