@@ -38,10 +38,9 @@ import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.pdfviewer.client.cell.PDFViewerCell;
 
 /**
+ * The window for the PDF viewer.
  *
- * The window for the Swing test.
- *
- * @author deronj
+ * @author nsimpson
  */
 @ExperimentalAPI
 public class PDFViewerWindow extends WindowSwing {
@@ -82,7 +81,7 @@ public class PDFViewerWindow extends WindowSwing {
 
         setComponent(pdfPanel);
 
-        setDisplayMode(DisplayMode.HUD);
+        setDisplayMode(DisplayMode.WORLD);
         showControls(false);
     }
 
@@ -245,6 +244,7 @@ public class PDFViewerWindow extends WindowSwing {
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
+                logger.info("show controls: " + visible);
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
                 if (controlComponent == null) {
@@ -273,12 +273,14 @@ public class PDFViewerWindow extends WindowSwing {
                             }
                             controlComponent.setVisible(visible);
                         } else {
-                            controlComponent.setWorldLocation(new Vector3f(0.0f, 2.0f, 0.1f));
+                            controlComponent.setWorldLocation(new Vector3f(0.0f, -3.2f, 0.1f));
                             if (controlComponent.isVisible()) {
                                 controlComponent.setVisible(false);
                             }
                             controlComponent.setWorldVisible(visible); // show world view
                         }
+
+                        updateControls();
                     }
                 });
             }
@@ -287,5 +289,11 @@ public class PDFViewerWindow extends WindowSwing {
 
     public boolean showingControls() {
         return ((controlComponent != null) && (controlComponent.isVisible() || controlComponent.isWorldVisible()));
+    }
+
+    protected void updateControls() {
+        controls.setSynced(isSynced());
+
+        controls.setOnHUD(!toolManager.isOnHUD());
     }
 }

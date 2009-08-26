@@ -25,7 +25,7 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
 /**
  * Container for PDF viewer client state data
  *
- * @author nsimpson,deronj
+ * @author nsimpson
  */
 @ExperimentalAPI
 public class PDFViewerCellClientState extends App2DCellClientState {
