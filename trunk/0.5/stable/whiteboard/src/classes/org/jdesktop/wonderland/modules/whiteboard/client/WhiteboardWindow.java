@@ -128,9 +128,6 @@ public class WhiteboardWindow extends Window2D {
         setDisplayMode(DisplayMode.WORLD);
         showControls(false);
         wbSurface = (WhiteboardDrawingSurface) getSurface();
-        // Parent to Wonderland main window for proper focus handling
-        //JmeClientMain.getFrame().getCanvas3DPanel().add(wbSurface);
-        //setComponent(wbSurface);
 
         whiteboardDocument = new WhiteboardDocument(this);
         addEventListeners();
@@ -218,21 +215,26 @@ public class WhiteboardWindow extends Window2D {
                     mainHUD.addComponent(controlComponent);
                 }
 
-                // change visibility of controls
-                if (getDisplayMode() == DisplayMode.HUD) {
-                    if (controlComponent.isWorldVisible()) {
-                        controlComponent.setWorldVisible(false);
-                    }
-                    controlComponent.setVisible(visible);
-                } else {
-                    controlComponent.setWorldLocation(new Vector3f(0.0f, -3.7f, 0.1f));
-                    if (controlComponent.isVisible()) {
-                        controlComponent.setVisible(false);
-                    }
-                    controlComponent.setWorldVisible(visible); // show world view
-                }
+                SwingUtilities.invokeLater(new Runnable() {
 
-                updateMenu();
+                    public void run() {
+                        // change visibility of controls
+                        if (getDisplayMode() == DisplayMode.HUD) {
+                            if (controlComponent.isWorldVisible()) {
+                                controlComponent.setWorldVisible(false);
+                            }
+                            controlComponent.setVisible(visible);
+                        } else {
+                            controlComponent.setWorldLocation(new Vector3f(0.0f, -3.7f, 0.1f));
+                            if (controlComponent.isVisible()) {
+                                controlComponent.setVisible(false);
+                            }
+                            controlComponent.setWorldVisible(visible); // show world view
+                        }
+
+                        updateMenu();
+                    }
+                });
             }
         });
 

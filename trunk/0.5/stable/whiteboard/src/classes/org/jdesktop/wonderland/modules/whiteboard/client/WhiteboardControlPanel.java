@@ -58,7 +58,6 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     public WhiteboardControlPanel(WhiteboardWindow window) {
         this.window = window;
         initComponents();
-        //makeTransparent(); Does not work on Ubuntu Java 5u10 - jslott
         initButtonMaps();
         initListeners();
         border = javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED);
@@ -102,36 +101,6 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
 
     public WhiteboardColor getSelectedColor() {
         return WhiteboardColor.BLACK;
-    }
-
-    /**
-     * Make the dialog transparent
-     *
-     * This method from:
-     * http://blog.keilly.com/2008/05/creating-swing-widget-part-3.html
-     */
-    private void makeTransparent() {
-        //setUndecorated(true); // remove the window controls
-        //setResizable(false);  // remove the resize control
-
-        // OSX transparency
-        setBackground(new Color(0.933f, 0.933f, 0.933f, 1.0f));
-
-        // Non-reflection version for Java 6 SE u10:
-        // AWTUtilities.setWindowOpaque(this, false);
-        //
-        // Reflection version (to compile on Java 1.5):
-        try {
-            Class clazz = Class.forName("com.sun.awt.AWTUtilities");
-            Method method = clazz.getMethod("setWindowOpaque",
-                    new Class[]{Window.class, Boolean.TYPE});
-            method.invoke(clazz, new Object[]{this, false});
-        } catch (ClassNotFoundException e) {
-            // Oh well, not Java 6 u10
-        } catch (NoSuchMethodException e) {
-        } catch (IllegalAccessException e) {
-        } catch (InvocationTargetException e) {
-        }
     }
 
     /**
