@@ -36,13 +36,12 @@ import org.jdesktop.wonderland.modules.pdfviewer.client.PDFViewerApp;
 import org.jdesktop.wonderland.modules.pdfviewer.client.PDFViewerWindow;
 import org.jdesktop.wonderland.modules.pdfviewer.common.PDFViewerConstants;
 import org.jdesktop.wonderland.modules.pdfviewer.common.cell.PDFViewerCellClientState;
-import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
 
 /**
- * Client cell for the swing test.
+ * Client cell for the PDF viewer.
  *
- * @author deronj
+ * @author nsimpson
  */
 @ExperimentalAPI
 public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {

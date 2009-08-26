@@ -17,15 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.pdfviewer.client;
 
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
-import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
 
 /**
- * Class to manage the selected tool
- * @author bhoran
+ * Class to manage the selected tool.
+ * 
  * @author nsimpson
  */
 public class PDFViewerToolManager implements PDFViewerToolListener {
@@ -44,20 +41,12 @@ public class PDFViewerToolManager implements PDFViewerToolListener {
         this.pdfViewerWindow = pdfViewerWindow;
     }
 
-    // PDFViewerMenuListener methods
+    // PDFViewerToolListener methods
     public void toggleHUD() {
-        if (component == null) {
-            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-            component = mainHUD.createComponent(pdfViewerWindow);
-            component.setPreferredLocation(Layout.CENTER);
-            mainHUD.addComponent(component);
-        }
         if (pdfViewerWindow.getDisplayMode().equals(DisplayMode.HUD)) {
             pdfViewerWindow.setDisplayMode(DisplayMode.WORLD);
-            component.setVisible(false);
         } else {
             pdfViewerWindow.setDisplayMode(DisplayMode.HUD);
-            component.setVisible(true);
         }
         pdfViewerWindow.showControls(true);
     }

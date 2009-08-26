@@ -340,7 +340,11 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void toggleHUDButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleHUDButtonActionPerformed
-        // TODO: anything?
+        Iterator<PDFViewerToolListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            PDFViewerToolListener listener = iter.next();
+            listener.toggleHUD();
+        }
 }//GEN-LAST:event_toggleHUDButtonActionPerformed
 
     private void openHUDButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openHUDButtonActionPerformed

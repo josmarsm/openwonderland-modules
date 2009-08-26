@@ -47,7 +47,7 @@ public class PDFViewerCellServerState extends App2DCellServerState implements Se
     public int preferredHeight = 480;
     // whether to decorate the window with a frame
     @XmlElement(name = "decorated")
-    public boolean decorated = false;
+    public boolean decorated = true;
 
     public PDFViewerCellServerState() {
     }
