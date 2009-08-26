@@ -37,8 +37,6 @@ import java.awt.geom.Rectangle2D;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.apache.batik.bridge.BridgeContext;
@@ -89,7 +87,6 @@ public class WhiteboardWindow extends Window2D {
     private WhiteboardControlPanel controls;
     private WindowSwing window;
     protected final Object actionLock = new Object();
-
     // drawing variables
     private float strokeWeight = 3;
     private Overlay drawingOverlay = new DrawingOverlay();
@@ -103,7 +100,6 @@ public class WhiteboardWindow extends Window2D {
     private WhiteboardMouseListener svgMouseListener;
     private WhiteboardSelection selection = null;
     private JSVGCanvas svgCanvas;
-
     // HUD components
     private HUDComponent controlComponent;
     private HUDComponent windowComponent;
@@ -346,13 +342,6 @@ public class WhiteboardWindow extends Window2D {
         showHUDMessage(message, 1000);
     }
 
-    private class Dismisser extends TimerTask {
-
-        public void run() {
-            messageComponent.setVisible(false);
-        }
-    }
-
     /**
      * Show a status message in the HUD and remove it after a timeout
      * @param message the string to display in the message
@@ -365,29 +354,9 @@ public class WhiteboardWindow extends Window2D {
                 logger.info(this.getClass().getName() + ": " + message);
                 ((HUDMessage) messageComponent).setMessage(message);
                 messageComponent.setVisible(true);
-                Timer t = new Timer();
-                t.schedule(new Dismisser(), (long) timeout);
+                messageComponent.setVisible(false, timeout);
             }
         });
-
-
-//        URL[] imgURLs = {HUD.SIMPLE_BOX_IMAGE_URL,
-//            EventController.class.getResource("resources/preferences-system-windows.png")
-//        };
-//
-//        Point[] imagePoints = {new Point(), new Point(10, 10)};
-//
-//        // dismiss currently active HUD message
-//        if ((msgButton != null) && msgButton.isActive()) {
-//            hideHUDMessage(true);
-//        }
-//
-//        // display a new HUD message
-//        msgButton = HUDFactory.getHUD().addHUDMultiImageButton(imgURLs,
-//                imagePoints, message, new Point(50, 25),
-//                Font.decode("dialog" + "-BOLD-14"),
-//                -300, 50, 300, 50,
-//                timeout, true);
     }
 
     /**
@@ -399,12 +368,6 @@ public class WhiteboardWindow extends Window2D {
         if (messageComponent.isVisible()) {
             messageComponent.setVisible(false);
         }
-//        if (msgButton != null) {
-//            if (!immediately) {
-//                msgButton.changeLocation(new Point(-45, 50));
-//            }
-//            msgButton.setActive(false);
-//        }
     }
 
     public boolean isSynced() {
