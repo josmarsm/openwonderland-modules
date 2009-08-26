@@ -58,11 +58,11 @@ public class PDFViewerCellMO extends App2DCellMO implements SharedMapListenerSrv
     // whether to decorate the window with a frame
     private boolean decorated;
     // the currently loaded document
-    private String documentURI = "https://lg3d-wonderland.dev.java.net/presentations/TrainForSucess-July2008.pdf";
+    private String documentURI;
     // the current page
-    private int currentPage = 1;        // first page
+    private int currentPage;
     // the scroll position
-    private int scrollPosition = 0;     // not scrolled
+    private int scrollPosition;
     // slide show mode
     private boolean slideShow = false;  // not in a slide show
 
@@ -79,6 +79,9 @@ public class PDFViewerCellMO extends App2DCellMO implements SharedMapListenerSrv
         return "org.jdesktop.wonderland.modules.pdfviewer.client.cell.PDFViewerCell";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void setLive(boolean live) {
         super.setLive(live);
@@ -120,6 +123,11 @@ public class PDFViewerCellMO extends App2DCellMO implements SharedMapListenerSrv
         if (state == null) {
             state = new PDFViewerCellServerState();
         }
+        ((PDFViewerCellServerState) state).setDocumentURI(documentURI);
+        ((PDFViewerCellServerState) state).setCurrentPage(currentPage);
+        ((PDFViewerCellServerState) state).setDecorated(decorated);
+        ((PDFViewerCellServerState) state).setPreferredWidth(preferredWidth);
+        ((PDFViewerCellServerState) state).setPreferredHeight(preferredHeight);
 
         return super.getServerState(state);
     }
@@ -131,6 +139,9 @@ public class PDFViewerCellMO extends App2DCellMO implements SharedMapListenerSrv
     public void setServerState(CellServerState serverState) {
         super.setServerState(serverState);
         PDFViewerCellServerState state = (PDFViewerCellServerState) serverState;
+
+        documentURI = state.getDocumentURI();
+        currentPage = state.getCurrentPage();
         preferredWidth = state.getPreferredWidth();
         preferredHeight = state.getPreferredHeight();
         decorated = state.getDecorated();
