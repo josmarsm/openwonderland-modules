@@ -123,6 +123,7 @@ public class WhiteboardWindow extends Window2D {
         logger.info("creating whiteboard with size: " + width + "x" + height);
         this.cell = cell;
         this.commComponent = commComponent;
+        setTitle("Whiteboard");
         initCanvas(width, height);
         initHUD();
         setDisplayMode(DisplayMode.WORLD);
@@ -131,9 +132,6 @@ public class WhiteboardWindow extends Window2D {
 
         whiteboardDocument = new WhiteboardDocument(this);
         addEventListeners();
-
-        // For debug
-        setTitle("WHITEBOARD WINDOW");
     }
 
     private void initCanvas(int width, int height) {
