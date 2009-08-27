@@ -17,6 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.hud;
 
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JPanel;
 import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeEvent;
 import javax.swing.SwingUtilities;
@@ -40,7 +45,12 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
 
     // UI stuff
     private CMUPanel hudPanel = null;
+    private final JPanel hudContainer = new JPanel();
+    private final ActiveHUD activePanel;
+    private final DisconnectedHUD disconnectedPanel;
+    private final LoadingHUD loadingPanel;
     private HUDComponent hudComponent = null;
+    private boolean componentSizeSet = false;
     private boolean hudShowing = false;
     private ConnectionState connectionState = ConnectionState.DISCONNECTED;
     private final Object hudShowingLock = new Object();
@@ -48,6 +58,13 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
     public HUDControl(CMUCell parentCell) {
         this.parentCell = parentCell;
         parentCell.addSceneTitleChangeListener(this);
+
+        activePanel = new ActiveHUD(parentCell);
+        disconnectedPanel = new DisconnectedHUD();
+        loadingPanel = new LoadingHUD(parentCell);
+
+        hudContainer.setLayout(new GridLayout());
+        hudContainer.add(activePanel);
     }
 
     private class HUDDisplayer implements Runnable {
@@ -62,21 +79,34 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         public void run() {
             synchronized (hudShowingLock) {
                 // Set up UI
-                if (showing && hudComponent == null) {
-                    // Create the panel
-                    if (connectionState == ConnectionState.DISCONNECTED) {
-                        hudPanel = new DisconnectedHUD();
-                    } else if (connectionState == ConnectionState.WAITING ||
-                            connectionState == ConnectionState.LOADING) {
-                        hudPanel = new LoadingHUD(parentCell);
-                    } else if (connectionState == ConnectionState.LOADED) {
-                        hudPanel = new ActiveHUD(parentCell);
-                    }
 
+                final CMUPanel oldHUDPanel = hudPanel;
+                // Choose the panel
+                if (connectionState == ConnectionState.DISCONNECTED) {
+                    hudPanel = disconnectedPanel;
+                } else if (connectionState == ConnectionState.WAITING ||
+                        connectionState == ConnectionState.LOADING ||
+                        connectionState == ConnectionState.RECONNECTING) {
+                    hudPanel = loadingPanel;
+                } else if (connectionState == ConnectionState.LOADED) {
+                    hudPanel = activePanel;
+                } else {
+                    Logger.getLogger(HUDControl.HUDDisplayer.class.getName()).
+                            log(Level.SEVERE, "Unrecognized connection state: " + connectionState);
+                }
+
+                // Reload HUD if necessary
+                if (oldHUDPanel != hudPanel) {
+                    hudContainer.removeAll();
+                    hudContainer.add(hudPanel);
+                    hudContainer.repaint();
+                }
+
+                if (showing && hudComponent == null) {
                     // Create the HUD component
                     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
                     assert mainHUD != null;
-                    hudComponent = mainHUD.createComponent(hudPanel);
+                    hudComponent = mainHUD.createComponent(hudContainer);
                     hudComponent.setPreferredTransparency(0.0f);
                     hudComponent.setName(parentCell.getSceneTitle());
                     hudComponent.setPreferredLocation(Layout.NORTHWEST);
@@ -87,6 +117,11 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
                     hudComponent.setVisible(showing);
                 }
                 hudShowing = showing;
+
+                if (!componentSizeSet && hudPanel == activePanel && hudShowing) {
+                    hudContainer.setPreferredSize(new Dimension(hudContainer.getWidth(), hudContainer.getHeight()));
+                    componentSizeSet = true;
+                }
             }
         }
     }
@@ -110,24 +145,8 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
 
     public void setConnectionState(ConnectionState state) {
         synchronized (hudShowingLock) {
-            // Make sure the state is actually changing in a relevant
-            // way to update the HUD
-            if (state != this.connectionState &&
-                    !(state == ConnectionState.LOADING &&
-                    this.connectionState == ConnectionState.WAITING)) {
-                this.connectionState = state;
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        synchronized (hudShowingLock) {
-                            boolean prevHUDShowing = isHUDShowing();
-                            new HUDKiller().run();
-                            new HUDDisplayer(prevHUDShowing).run();
-                        }
-                    }
-                });
-            }
+            this.connectionState = state;
+            SwingUtilities.invokeLater(new HUDDisplayer(isHUDShowing()));
         }
     }
 
@@ -141,7 +160,7 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
 
     public boolean isHUDShowing() {
         synchronized (hudShowingLock) {
-           return hudShowing;
+            return hudShowing;
         }
     }
 

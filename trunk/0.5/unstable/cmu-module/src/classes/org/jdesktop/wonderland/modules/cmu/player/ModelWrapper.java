@@ -93,7 +93,7 @@ public class ModelWrapper implements AbsoluteTransformationListener {
      * @return The VisualMessage associated with this visual
      */
     public VisualMessage getVisualMessage() {
-        synchronized(transformation) {
+        synchronized (transformation) {
             return new VisualMessage(visualAttributes.getID(), new TransformationMessage(transformation));
         }
     }
@@ -114,25 +114,41 @@ public class ModelWrapper implements AbsoluteTransformationListener {
         return this.visualAttributes;
     }
 
+    /**
+     * Simulate a mouse click on this node, passing the click in to
+     * all listeners at or above the node.  Simulate these clicks in
+     * a new thread.
+     */
     public void click() {
-        MouseButtonEventFromWorld mouseEvent = new MouseButtonEventFromWorld(this);
-        Composite currentComposite = this.model;
+        final MouseButtonEventFromWorld mouseEvent = new MouseButtonEventFromWorld(ModelWrapper.this);
+        Composite currentComposite = model;
 
         // Walk up the scene graph and apply the mouse click to all containing composites.
         while (currentComposite != null) {
+            String threadName = "Mouse click " + this + " " + currentComposite;
             if (currentComposite instanceof Model) {
-                Model currentModel = (Model)currentComposite;
+                Model currentModel = (Model) currentComposite;
                 for (MouseButtonListener listener : currentModel.getMouseButtonListeners()) {
-                    listener.mouseButtonClicked(mouseEvent);
+                    final MouseButtonListener finalListener = listener;
+                    new Thread(new Runnable() {
+                        public void run() {
+                            finalListener.mouseButtonClicked(mouseEvent);
+                        }
+                    }, threadName).start();
                 }
                 currentComposite = currentModel.getVehicle();
             } else if (currentComposite instanceof Scene) {
-                for (MouseButtonListener listener : ((Scene)currentComposite).getMouseButtonListeners()) {
-                    listener.mouseButtonClicked(mouseEvent);
+                for (MouseButtonListener listener : ((Scene) currentComposite).getMouseButtonListeners()) {
+                    final MouseButtonListener finalListener = listener;
+                    new Thread(new Runnable() {
+                        public void run() {
+                            finalListener.mouseButtonClicked(mouseEvent);
+                        }
+                    }, threadName).start();
                 }
                 currentComposite = null;
             } else if (currentComposite instanceof Transformable) {
-                currentComposite = ((Transformable)currentComposite).getVehicle();
+                currentComposite = ((Transformable) currentComposite).getVehicle();
             } else {
                 currentComposite = null;
             }
