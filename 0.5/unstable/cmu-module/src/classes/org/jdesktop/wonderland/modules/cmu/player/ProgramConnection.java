@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
@@ -24,6 +26,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.MouseClickMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 
 /**
@@ -54,19 +57,20 @@ public class ProgramConnection extends BaseConnection {
     @Override
     public void handleMessage(Message message) {
         // Create program
-        if (CreateProgramMessage.class.isAssignableFrom(message.getClass())) {
+        if (message instanceof CreateProgramMessage) {
             ResponseMessage response = handleCreateProgram((CreateProgramMessage) message);
             this.send(response);
-        }
-
-        // Change program playback speed
-        if (ProgramPlaybackSpeedChangeMessage.class.isAssignableFrom(message.getClass())) {
+        } // Change program playback speed
+        else if (message instanceof ProgramPlaybackSpeedChangeMessage) {
             handlePlaybackSpeedChange((ProgramPlaybackSpeedChangeMessage) message);
-        }
-
-        // Delete program
-        if (DeleteProgramMessage.class.isAssignableFrom(message.getClass())) {
+        } // Mouse click
+        else if (message instanceof MouseClickMessage) {
+            handleMouseClick((MouseClickMessage) message);
+        } // Delete program
+        else if (message instanceof DeleteProgramMessage) {
             handleDeleteProgram((DeleteProgramMessage) message);
+        } else {
+            Logger.getLogger(ProgramConnection.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
         }
     }
 
@@ -97,5 +101,9 @@ public class ProgramConnection extends BaseConnection {
 
     protected void handleDeleteProgram(DeleteProgramMessage message) {
         programManager.deleteProgram(message.getCellID());
+    }
+
+    protected void handleMouseClick(MouseClickMessage message) {
+        programManager.click(message.getCellID(), message.getNodeID());
     }
 }

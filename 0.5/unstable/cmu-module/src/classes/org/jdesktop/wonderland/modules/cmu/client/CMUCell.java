@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeEvent;
 import org.jdesktop.wonderland.modules.cmu.client.hud.HUDControl;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import com.jme.scene.Node;
+import com.jme.scene.TriMesh;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -60,6 +61,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Connecti
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPlaneChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.SceneTitleChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ServerClientMessageTypes;
@@ -128,13 +130,27 @@ public class CMUCell extends Cell {
          */
         @Override
         public void commitEvent(Event event) {
+            assert event instanceof MouseButtonEvent3D;
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
-            if (mbe.isClicked() == false || mbe.getButton() != ButtonId.BUTTON1) {
-                return;
-            }
 
-            hudControl.setHUDShowing(true);
-        //sendCellMessage(new MouseButtonEventMessage(getCellID()));//, mbe));
+            // We only process left clicks
+            if (mbe.isClicked() && mbe.getButton() == ButtonId.BUTTON1) {
+                hudControl.setHUDShowing(true);
+                TriMesh clickedMesh = mbe.getPickDetails().getTriMesh();
+
+                // Walk up the scene graph until we find the VisualNode that was clicked
+                Node clickedNode = clickedMesh.getParent();
+                while (clickedNode != null && !(clickedNode instanceof VisualNode)) {
+                    clickedNode = clickedNode.getParent();
+                }
+
+                if (clickedNode != null) {
+                    VisualNode clickedVisual = (VisualNode) clickedNode;
+                    sendCellMessage(new MouseButtonEventMessage(clickedVisual.getNodeID()));
+                } else {
+                    Logger.getLogger(CMUCell.MouseEventListener.class.getName()).log(Level.SEVERE, "Couldn't resolve mouse click");
+                }
+            }
         }
 
         /**

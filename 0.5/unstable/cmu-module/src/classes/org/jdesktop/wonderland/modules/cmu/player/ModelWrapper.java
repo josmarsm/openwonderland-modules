@@ -26,6 +26,11 @@ import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationListener;
 import java.util.HashSet;
 import java.util.Set;
+import org.alice.apis.moveandturn.Composite;
+import org.alice.apis.moveandturn.Model;
+import org.alice.apis.moveandturn.Scene;
+import org.alice.apis.moveandturn.Transformable;
+import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.AppearanceConverter;
@@ -35,13 +40,14 @@ import org.jdesktop.wonderland.modules.cmu.player.conversions.Point3Converter;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.ScaleConverter;
 
 /**
- * Wraps/serializes a CMU visual node, and listens for transformation updates,
+ * Wraps/serializes a CMU scene graph visual, and listens for transformation updates,
  * then passes them on to anyone who is listening.
  * @author kevin
  */
-public class VisualWrapper implements AbsoluteTransformationListener {
+public class ModelWrapper implements AbsoluteTransformationListener {
 
     private static long numNodes = 0;        // Used to assign unique IDs to each node.
+    private final Model model;
     private final Visual cmuVisual;         // The wrapped visual.
     private final VisualAttributes visualAttributes;     // The serializable attributes for this visual.
     private final TransformationMessage transformation;
@@ -61,19 +67,12 @@ public class VisualWrapper implements AbsoluteTransformationListener {
      * Constructor; attach this node to a CMU Visual.
      * @param v The CMU visual to attach
      */
-    public VisualWrapper(Visual v) {
-        cmuVisual = v;
+    public ModelWrapper(Model m) {
+        model = m;
+        cmuVisual = m.getSGVisual();
         visualAttributes = new VisualAttributes();
         transformation = new TransformationMessage(getNodeID());
         loadVisual();
-    }
-
-    /**
-     * Get the associated CMU visual.
-     * @return The associated CMU visual
-     */
-    public Visual getVisual() {
-        return cmuVisual;
     }
 
     /**
@@ -82,6 +81,10 @@ public class VisualWrapper implements AbsoluteTransformationListener {
      */
     public NodeID getNodeID() {
         return nodeID;
+    }
+
+    public Model getModel() {
+        return model;
     }
 
     /**
@@ -109,6 +112,31 @@ public class VisualWrapper implements AbsoluteTransformationListener {
      */
     public VisualAttributes getVisualAttributes() {
         return this.visualAttributes;
+    }
+
+    public void click() {
+        MouseButtonEventFromWorld mouseEvent = new MouseButtonEventFromWorld(this);
+        Composite currentComposite = this.model;
+
+        // Walk up the scene graph and apply the mouse click to all containing composites.
+        while (currentComposite != null) {
+            if (currentComposite instanceof Model) {
+                Model currentModel = (Model)currentComposite;
+                for (MouseButtonListener listener : currentModel.getMouseButtonListeners()) {
+                    listener.mouseButtonClicked(mouseEvent);
+                }
+                currentComposite = currentModel.getVehicle();
+            } else if (currentComposite instanceof Scene) {
+                for (MouseButtonListener listener : ((Scene)currentComposite).getMouseButtonListeners()) {
+                    listener.mouseButtonClicked(mouseEvent);
+                }
+                currentComposite = null;
+            } else if (currentComposite instanceof Transformable) {
+                currentComposite = ((Transformable)currentComposite).getVehicle();
+            } else {
+                currentComposite = null;
+            }
+        }
     }
 
     /**

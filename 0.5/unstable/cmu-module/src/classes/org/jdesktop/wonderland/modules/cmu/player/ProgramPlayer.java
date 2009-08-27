@@ -22,6 +22,9 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.alice.apis.moveandturn.Program;
+import org.alice.apis.moveandturn.event.MouseButtonListener;
+import org.alice.stageide.apis.moveandturn.event.MouseButtonAdapter;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
  * A standard CMU program which can access its scene graph via a
@@ -36,7 +39,7 @@ public class ProgramPlayer extends Program {
     private edu.cmu.cs.dennisc.alice.virtualmachine.VirtualMachine vm;
     private edu.cmu.cs.dennisc.alice.ast.AbstractType sceneType;
     private Object scene;
-    private final SceneConnectionHandler cmuScene;
+    private final SceneConnectionHandler sceneConnectionHandler;
     private boolean started = false;        // True once the program has begun to execute.
     private float elapsed = 0;              // The total amount of "time" this program has been executing.
     private float playbackSpeed = 0;        // The current playback speed.
@@ -49,7 +52,7 @@ public class ProgramPlayer extends Program {
      */
     public ProgramPlayer(File sceneFile) {
         super();
-        this.cmuScene = new SceneConnectionHandler();
+        this.sceneConnectionHandler = new SceneConnectionHandler();
         this.timeOfLastSpeedChange = System.currentTimeMillis();
         this.setFile(sceneFile);
     }
@@ -75,7 +78,7 @@ public class ProgramPlayer extends Program {
      * @return The port used to connect to this program
      */
     public int getPort() {
-        return this.cmuScene.getPort();
+        return this.sceneConnectionHandler.getPort();
     }
 
     /**
@@ -83,7 +86,11 @@ public class ProgramPlayer extends Program {
      * @return The server used to connect to this program
      */
     public String getHostname() {
-        return this.cmuScene.getHostname();
+        return this.sceneConnectionHandler.getHostname();
+    }
+
+    public void click(NodeID id) {
+        this.sceneConnectionHandler.click(id);
     }
 
     /**
@@ -95,18 +102,17 @@ public class ProgramPlayer extends Program {
         edu.cmu.cs.dennisc.alice.ast.AbstractType programType = project.getProgramType();
 
         this.vm = new edu.cmu.cs.dennisc.alice.virtualmachine.ReleaseVirtualMachine();
-
         this.sceneType = programType.getDeclaredFields().get(0).getValueType();
         this.scene = this.vm.createInstanceEntryPoint(this.sceneType);
 
-        Object o = ((edu.cmu.cs.dennisc.alice.virtualmachine.InstanceInAlice) this.scene).getInstanceInJava();
+        Object sceneInstance = ((edu.cmu.cs.dennisc.alice.virtualmachine.InstanceInAlice) this.scene).getInstanceInJava();
 
-        this.setScene((org.alice.apis.moveandturn.Scene) o);
+        vm.registerAnonymousAdapter(MouseButtonListener.class, MouseButtonAdapter.class);
+        
+        this.setScene((org.alice.apis.moveandturn.Scene) sceneInstance);
 
         this.init();
     }
-
-    
 
     /**
      * If this program's elapsed time is shorter than time, "fast-forward"
@@ -120,7 +126,7 @@ public class ProgramPlayer extends Program {
 
     /**
      * If this program's elapsed time is shorter than time, "fast-forward"
-     * to reach the specified time.  Note that this method is not thread-safe,
+     * to reach the specified time.  Note that this method is not thread-correct,
      * in the sense that program speed can still be freely changed during the
      * "fast-forward" period.
      * @param time The time (in milliseconds) we should fast-forward to
@@ -156,8 +162,11 @@ public class ProgramPlayer extends Program {
     }
 
     @Override
+    /**
+     * Sever ties with the loaded scene, and destroy the player.
+     */
     public void destroy() {
-        this.cmuScene.unloadScene();
+        this.sceneConnectionHandler.unloadScene();
         super.destroy();
     }
 
@@ -204,14 +213,6 @@ public class ProgramPlayer extends Program {
     }
 
     /**
-     * Check whether the program is playing.
-     * @return true if the program is playing at any speed
-     *
-    public boolean isPlaying() {
-        return (this.getPlaybackSpeed() != PlaybackDefaults.PAUSE_SPEED);
-    }*/
-
-    /**
      * Start this scene and mark that this has been done; should be
      * used instead of start().
      */
@@ -235,6 +236,6 @@ public class ProgramPlayer extends Program {
     @Override
     public void setScene(org.alice.apis.moveandturn.Scene sc) {
         super.setScene(sc);
-        cmuScene.setScene(sc);
+        sceneConnectionHandler.setScene(sc);
     }
 }

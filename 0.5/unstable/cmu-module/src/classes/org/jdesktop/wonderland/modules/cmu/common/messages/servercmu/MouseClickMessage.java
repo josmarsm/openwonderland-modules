@@ -15,23 +15,28 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
+package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
 
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
- * Message to forward mouse button events to a CMUCellMO, which can then
- * pass them on to the relevant CMU program.
+ *
  * @author kevin
  */
-public class MouseButtonEventMessage extends CellMessage {
+public class MouseClickMessage extends Message {
 
-    private final static long serialVersionUID = 1L;
-    private final NodeID nodeID;
+    private CellID cellID;
+    private NodeID nodeID;
 
-    public MouseButtonEventMessage(NodeID nodeID) {
+    public MouseClickMessage(CellID cellID, NodeID nodeID) {
+        this.cellID = cellID;
         this.nodeID = nodeID;
+    }
+
+    public CellID getCellID() {
+        return cellID;
     }
 
     public NodeID getNodeID() {

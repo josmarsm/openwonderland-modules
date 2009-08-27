@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.client.login.ProgrammaticLogin;
 import org.jdesktop.wonderland.common.ContentURI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.player.connections.VisualUploadManager;
 
@@ -117,6 +118,13 @@ public class ProgramManager {
         ProgramPlayer program = getProgram(cellID);
         if (program != null) {
             program.setPlaybackSpeed(playbackSpeed);
+        }
+    }
+
+    public void click(CellID cellID, NodeID nodeID) {
+        ProgramPlayer program = getProgram(cellID);
+        if (program != null) {
+            program.click(nodeID);
         }
     }
 
