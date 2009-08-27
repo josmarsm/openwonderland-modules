@@ -24,7 +24,7 @@
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${modules.dir}/foundation/hud/build/client/hud-client.jar"/>
-        <path location="${current.dir}/lib/PDFRenderer.jar"/>
+        <path location="${current.dir}/lib/jmc.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
