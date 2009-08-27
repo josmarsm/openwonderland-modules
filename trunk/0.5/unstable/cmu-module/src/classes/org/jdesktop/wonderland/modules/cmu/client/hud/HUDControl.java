@@ -146,7 +146,17 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
     public void setConnectionState(ConnectionState state) {
         synchronized (hudShowingLock) {
             this.connectionState = state;
-            SwingUtilities.invokeLater(new HUDDisplayer(isHUDShowing()));
+            
+            // Make a specific runnable, so that we make sure we've got the
+            // correct showing state.
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    synchronized (hudShowingLock) {
+                        new HUDDisplayer(isHUDShowing()).run();
+                    }
+                }
+            });
         }
     }
 

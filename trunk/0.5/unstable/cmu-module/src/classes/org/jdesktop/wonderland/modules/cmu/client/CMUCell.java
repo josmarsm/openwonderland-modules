@@ -247,8 +247,8 @@ public class CMUCell extends Cell {
         if (cmuClientState.isServerAndPortInitialized()) {
             this.setHostnameAndPort(cmuClientState.getServer(), cmuClientState.getPort());
         }
+        this.setGroundPlaneShowingInternal(cmuClientState.isGroundPlaneShowing());
         this.setSceneTitle(cmuClientState.getSceneTitle());
-
     }
 
     /**
