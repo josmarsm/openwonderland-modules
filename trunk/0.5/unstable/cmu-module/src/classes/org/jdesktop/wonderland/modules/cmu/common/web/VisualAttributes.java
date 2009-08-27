@@ -41,8 +41,8 @@ public class VisualAttributes implements Serializable {
 
     private final Collection<TriMesh> meshes = new Vector<TriMesh>();
     private String name = null;
-    private int[] texturePixels;
-    private int textureWidth,  textureHeight;
+    private int[] texturePixels = null;
+    private int textureWidth = 0,  textureHeight = 0;
 
     /**
      * Basic constructor.
@@ -118,6 +118,10 @@ public class VisualAttributes implements Serializable {
                 texturePixels, 0, textureWidth);
         Toolkit tk = Toolkit.getDefaultToolkit();
         return tk.createImage(mis);
+    }
+
+    public boolean hasTexture() {
+        return texturePixels != null;
     }
 
     /**
