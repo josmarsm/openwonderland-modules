@@ -34,7 +34,6 @@
                       <Component id="speedResetButton" max="32767" attributes="0"/>
                   </Group>
                   <Component id="playbackSlider" alignment="0" pref="182" max="32767" attributes="1"/>
-                  <Component id="jProgressBar1" alignment="0" pref="182" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -57,8 +56,6 @@
                   <Component id="restartButton" min="-2" max="-2" attributes="1"/>
                   <Component id="groundVisibleBox" alignment="0" min="-2" pref="18" max="-2" attributes="1"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jProgressBar1" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -153,8 +150,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="1x"/>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JProgressBar" name="jProgressBar1">
     </Component>
   </SubComponents>
 </Form>

@@ -215,7 +215,8 @@ public class CMUCell extends Cell {
      */
     public enum ConnectionState {
 
-        DISCONNECTED, // Not loaded or loading
+        DISCONNECTED, // Connection lost for unknown reasons
+        RECONNECTING, // Connection lost, expecting to reconnect
         WAITING, // Waiting to load
         LOADING, // Partially loaded
         LOADED,         // Fully loaded
@@ -442,12 +443,12 @@ public class CMUCell extends Cell {
     }
 
     /**
-     * Unload an entire scene, and mark this scene as unloaded.
+     * Unload an entire scene, and mark this scene as reconnecting.
      * @param message Message to apply
      */
     private void applyUnloadSceneMessage(UnloadSceneMessage message) {
         // Note: message has no state
-        setConnectionState(ConnectionState.DISCONNECTED);
+        setConnectionState(ConnectionState.RECONNECTING);
     }
 
     /**
@@ -490,7 +491,7 @@ public class CMUCell extends Cell {
      * @return Whether this cell is connected to a CMU scene
      */
     private boolean isConnected() {
-        return getConnectionState() != ConnectionState.DISCONNECTED;
+        return (getConnectionState() != ConnectionState.DISCONNECTED && getConnectionState() != ConnectionState.RECONNECTING);
     }
 
     /**
@@ -516,10 +517,10 @@ public class CMUCell extends Cell {
         synchronized (sceneRoot) {
             this.connectionState = connectionState;
 
-            if (connectionState == ConnectionState.DISCONNECTED) {
+            if (!isConnected()) {
                 this.cmuConnectionThread = null;
+                fireSceneLoadedChanged(new SceneLoadedChangeEvent(0.0f));
 
-                //TODO: Show something noting that the scene is disconnected.
                 ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
                     public void update(Object arg0) {

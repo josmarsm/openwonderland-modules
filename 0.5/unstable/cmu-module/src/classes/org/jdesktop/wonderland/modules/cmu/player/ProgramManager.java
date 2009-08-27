@@ -85,7 +85,10 @@ public class ProgramManager {
      * created program.
      */
     public CreateProgramResponseMessage createProgram(MessageID messageID, CellID cellID, String assetURI) {
-        // Load local cache file, and send it to the program.
+        // Delete the existing program (if any) first
+        deleteProgram(cellID);
+
+        // Load local cache file, and send it to the program
         System.out.println("Creating program: " + assetURI);
         ProgramPlayer newProgram = null;
         try {

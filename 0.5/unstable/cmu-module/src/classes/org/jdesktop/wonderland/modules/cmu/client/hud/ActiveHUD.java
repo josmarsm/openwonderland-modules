@@ -70,7 +70,6 @@ public class ActiveHUD extends CMUPanel implements PlaybackChangeListener, Groun
         speedResetButton = new javax.swing.JButton();
         javax.swing.JLabel speedFixedLabel = new javax.swing.JLabel();
         speedLabel = new javax.swing.JLabel();
-        jProgressBar1 = new javax.swing.JProgressBar();
 
         groundVisibleBox.setText("Ground visible?");
         groundVisibleBox.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -147,8 +146,7 @@ public class ActiveHUD extends CMUPanel implements PlaybackChangeListener, Groun
                         .addComponent(speedLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(4, 4, 4)
                         .addComponent(speedResetButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(playbackSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE))
+                    .addComponent(playbackSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 182, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -166,8 +164,6 @@ public class ActiveHUD extends CMUPanel implements PlaybackChangeListener, Groun
                     .addComponent(playPauseButton)
                     .addComponent(restartButton)
                     .addComponent(groundVisibleBox, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -205,7 +201,6 @@ public class ActiveHUD extends CMUPanel implements PlaybackChangeListener, Groun
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox groundVisibleBox;
-    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JButton playPauseButton;
     private javax.swing.JSlider playbackSlider;
     private javax.swing.JButton restartButton;

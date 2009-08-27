@@ -108,7 +108,7 @@ public class ProgramPlayer extends Program {
         Object sceneInstance = ((edu.cmu.cs.dennisc.alice.virtualmachine.InstanceInAlice) this.scene).getInstanceInJava();
 
         vm.registerAnonymousAdapter(MouseButtonListener.class, MouseButtonAdapter.class);
-        
+
         this.setScene((org.alice.apis.moveandturn.Scene) sceneInstance);
 
         this.init();
@@ -161,10 +161,10 @@ public class ProgramPlayer extends Program {
     public void initialize() {
     }
 
-    @Override
     /**
      * Sever ties with the loaded scene, and destroy the player.
      */
+    @Override
     public void destroy() {
         this.sceneConnectionHandler.unloadScene();
         super.destroy();

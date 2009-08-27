@@ -190,7 +190,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         if (sc != null) {
             this.sc = sc;
             this.processModel(sc);
-            //this.processNode(sc.getSGComposite(), 0);
         }
     }
 
@@ -205,11 +204,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         assert c != null;
 
         if (c instanceof Model) {
-            synchronized(connections) {
-                addModel((Model)c);
+            synchronized (connections) {
+                addModel((Model) c);
             }
         }
-
         for (Transformable child : c.getComponents()) {
             processModel(child);
         }
@@ -310,6 +308,11 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      */
     public void unloadScene() {
         if (this.getScene() != null) {
+            synchronized (connections) {
+                for (ClientConnection connection : connections) {
+                    connection.queueMessage(new UnloadSceneMessage());
+                }
+            }
             synchronized (visuals) {
                 for (ModelWrapper visual : visuals.values()) {
                     // Clean up visuals individually
@@ -318,13 +321,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 }
                 // Remove visuals collectively
                 visuals.clear();
-                synchronized (connections) {
-                    Iterator<ClientConnection> iterator = connections.iterator();
-                    while (iterator.hasNext()) {
-                        ClientConnection connection = iterator.next();
-                        connection.queueMessage(new UnloadSceneMessage());
-                    }
-                }
             }
         }
     }
