@@ -62,6 +62,11 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerDock32x32.png"/>
         </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
+            <BevelBorder bevelType="1"/>
+          </Border>
+        </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, -4, 0, -4]"/>
@@ -88,6 +93,11 @@
         </Property>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerOpen32x32.png"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
+            <BevelBorder bevelType="1"/>
+          </Border>
         </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -116,6 +126,11 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerSkipRev32x32.png"/>
         </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
+            <BevelBorder bevelType="1"/>
+          </Border>
+        </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, -4, 0, -4]"/>
@@ -142,6 +157,11 @@
         </Property>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerStop32x32.png"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
+            <BevelBorder bevelType="1"/>
+          </Border>
         </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -170,6 +190,11 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerPlay32x32.png"/>
         </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
+            <BevelBorder bevelType="1"/>
+          </Border>
+        </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, -4, 0, -4]"/>
@@ -196,6 +221,11 @@
         </Property>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerSkipFwd32x32.png"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
+            <BevelBorder bevelType="1"/>
+          </Border>
         </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
@@ -224,6 +254,11 @@
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerSyncedYes32x32.png"/>
         </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
+            <BevelBorder bevelType="1"/>
+          </Border>
+        </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, -4, 0, -4]"/>
@@ -250,6 +285,11 @@
         </Property>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
           <Image iconType="3" name="/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerDrag32x32.png"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.SoftBevelBorderInfo">
+            <BevelBorder bevelType="1"/>
+          </Border>
         </Property>
         <Property name="borderPainted" type="boolean" value="false"/>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
