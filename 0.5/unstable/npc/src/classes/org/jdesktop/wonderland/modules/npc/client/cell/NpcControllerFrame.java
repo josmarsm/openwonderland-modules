@@ -18,16 +18,14 @@
 package org.jdesktop.wonderland.modules.npc.client.cell;
 
 import imi.character.avatar.AvatarContext.TriggerNames;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
-import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
 
 /**
@@ -36,6 +34,8 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarCon
  * @author david <dmaroto@it.uc3m.es> UC3M - "Project España Virtual"
  */
 public class NpcControllerFrame extends javax.swing.JFrame {
+
+    private static Logger logger = Logger.getLogger(NpcControllerFrame.class.getName());
     private Cell cell;
     private WlAvatarCharacter avatar;
 
@@ -213,19 +213,22 @@ public class NpcControllerFrame extends javax.swing.JFrame {
 
     private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
         ChannelComponent cc = cell.getComponent(ChannelComponent.class);
+
+        // From the partial URI, add the module prefix
+        String uri = "wla://avatarbaseart/" + avatarComboBox.getSelectedItem();
+        String urlString = null;
         try {
-            // Fetch the annotated URL given the current session of the Cell
-            WonderlandSession session = cell.getCellCache().getSession();
-            ServerSessionManager manager = session.getSessionManager();
-            String serverHostAndPort = manager.getServerNameAndPort();
-            String url = "wla://avatarbaseart/" + avatarComboBox.getSelectedItem();
-            URL configURL = AssetUtils.getAssetURL(url, cell);
-            // XXX
-            cc.send(AvatarConfigMessage.newRequestMessage(null));
-            dispose();
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(NpcControllerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            urlString = AssetUtils.getAssetURL(uri, cell).toExternalForm();
+        } catch (java.net.MalformedURLException excp) {
+            logger.log(Level.WARNING, "Unable to form URL from " + uri, excp);
+            return;
         }
+
+        // Form up a message and send
+        String className = ImiAvatarLoaderFactory.class.getName();
+        AvatarConfigInfo info = new AvatarConfigInfo(urlString, className);
+        cc.send(AvatarConfigMessage.newRequestMessage(info));
+        dispose();
     }//GEN-LAST:event_applyButtonActionPerformed
 
     private void forwardButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_forwardButtonMousePressed
