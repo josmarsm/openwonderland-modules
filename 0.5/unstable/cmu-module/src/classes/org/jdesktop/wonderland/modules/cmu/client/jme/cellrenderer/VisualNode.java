@@ -184,12 +184,14 @@ public class VisualNode extends VisualParent {
      * @param texture The texture to apply, as a standard Image
      */
     protected void applyTexture(VisualAttributes attributes) {
-        TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
         Texture t = getTexture(attributes);
-        t.setWrap(Texture.WrapMode.Repeat);
-        ts.setTexture(t);
-        ts.setEnabled(true);
-        this.setRenderState(ts);
+        if (t != null) {
+            TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
+            t.setWrap(Texture.WrapMode.Repeat);
+            ts.setTexture(t);
+            ts.setEnabled(true);
+            this.setRenderState(ts);
+        }
     }
 
     /**
@@ -202,14 +204,15 @@ public class VisualNode extends VisualParent {
         //TODO: clean up textures
         synchronized (keyMap) {
             Texture toReturn = null;
-            if (keyMap.containsKey(attributes.getID())) {
-                toReturn = TextureManager.loadTexture(keyMap.get(attributes.getID()));
-            }
-            if (toReturn == null) {
-                Image textureImage = attributes.getTexture();
-                toReturn = null;
-                toReturn = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
-                keyMap.put(attributes.getID(), toReturn.getTextureKey());
+            if (attributes.hasTexture()) {
+                if (keyMap.containsKey(attributes.getID())) {
+                    toReturn = TextureManager.loadTexture(keyMap.get(attributes.getID()));
+                }
+                if (toReturn == null) {
+                    Image textureImage = attributes.getTexture();
+                    toReturn = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
+                    keyMap.put(attributes.getID(), toReturn.getTextureKey());
+                }
             }
             return toReturn;
         }

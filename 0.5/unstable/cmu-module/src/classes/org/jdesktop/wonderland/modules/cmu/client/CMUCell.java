@@ -434,9 +434,7 @@ public class CMUCell extends Cell {
         int visualNum = 0;
         fireSceneLoadedChanged(new SceneLoadedChangeEvent((float) visualNum / (float) message.getVisuals().size()));
         for (VisualMessage visual : message.getVisuals()) {
-            synchronized (sceneRoot) {
-                applyVisualMessage(visual);
-            }
+            applyVisualMessage(visual);
             visualNum++;
             fireSceneLoadedChanged(new SceneLoadedChangeEvent((float) visualNum / (float) message.getVisuals().size()));
         }
