@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
+import org.jdesktop.wonderland.modules.sharedstate.server.SharedMapEventSrv;
 import org.jdesktop.wonderland.modules.sharedstate.server.SharedMapListenerSrv;
 import org.jdesktop.wonderland.modules.sharedstate.server.SharedMapSrv;
 import org.jdesktop.wonderland.modules.sharedstate.server.SharedStateComponentMO;
@@ -148,10 +149,11 @@ public class VideoPlayerCellMO extends App2DCellMO implements SharedMapListenerS
     /**
      * {@inheritDoc}
      */
-    public boolean propertyChanged(SharedMapSrv map, WonderlandClientID sourceID,
-            String key, SharedData oldData, SharedData newData) {
+    public boolean propertyChanged(SharedMapEventSrv event) {
+        SharedMapSrv map = event.getMap();
         if (map.getName().equals(VideoPlayerConstants.STATUS_MAP)) {
-            return handleStatusChange(sourceID, key, oldData, newData);
+            return handleStatusChange(event.getSenderID(), event.getPropertyName(),
+                                      event.getOldValue(), event.getNewValue());
         } else {
             logger.warning("unrecognized shared map: " + map.getName());
             return true;
