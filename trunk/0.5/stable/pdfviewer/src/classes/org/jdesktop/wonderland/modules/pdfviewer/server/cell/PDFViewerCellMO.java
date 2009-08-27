@@ -36,8 +36,12 @@ import org.jdesktop.wonderland.modules.pdfviewer.common.cell.PDFViewerCellClient
 import org.jdesktop.wonderland.modules.pdfviewer.common.cell.PDFViewerCellServerState;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
+import org.jdesktop.wonderland.modules.sharedstate.server.SharedMapEventSrv;
+import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 
 /**
  * A server cell associated with a PDF viewer
@@ -148,25 +152,38 @@ public class PDFViewerCellMO extends App2DCellMO implements SharedMapListenerSrv
         pixelScale = new Vector2f(state.getPixelScaleX(), state.getPixelScaleY());
     }
 
-    public boolean propertyChanged(SharedMapSrv map, WonderlandClientID sourceID,
-            String key, SharedData oldData, SharedData newData) {
+    public boolean propertyChanged(SharedMapEventSrv event) {
+        SharedMapSrv map = event.getMap();
         if (map.getName().equals(PDFViewerConstants.STATUS_MAP)) {
-            return handleStatusChange(sourceID, key, oldData, newData);
+            return handleStatusChange(event);
         } else {
             logger.warning("unrecognized shared map: " + map.getName());
             return true;
         }
     }
 
-    private boolean handleStatusChange(WonderlandClientID sourceID,
-            String key, SharedData oldData, SharedData newData) {
+    private boolean handleStatusChange(SharedMapEventSrv event) {
+        String key = event.getPropertyName();
+
+        SharedData newData = event.getNewValue();
+
+        RecorderManager rManager = RecorderManager.getDefaultManager();
+        boolean isRecording = rManager.isRecording();
+
+        String provenance = "";
+        if (isRecording) {
+            UserMO user = UserManager.getUserManager().getUser(event.getSenderID());
+            provenance = " initiated by " + user.getUsername() + "[" + user.getIdentity().getFullName() + "]";
+        }
 
         if (key.equals(PDFViewerConstants.DOCUMENT_URI)) {
             // a new media file
             documentURI = ((SharedString) newData).getValue();
+            rManager.recordMetadata(event.getSourceMessage(), "new documentURI: " + documentURI + provenance);
         } else if (key.equals(PDFViewerConstants.PAGE_NUMBER)) {
             // page has changed
             currentPage = ((SharedInteger) newData).getValue();
+            rManager.recordMetadata(event.getSourceMessage(), "new page: " + currentPage + provenance);
         } else if (key.equals(PDFViewerConstants.PAGE_POSITION)) {
             // page has scrolled
             scrollPosition = ((SharedInteger) newData).getValue();

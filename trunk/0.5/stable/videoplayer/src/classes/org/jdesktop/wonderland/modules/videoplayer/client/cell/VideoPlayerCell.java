@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
+import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
@@ -151,8 +152,8 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
         }
     }
 
-    public void propertyChanged(SharedMapCli map, BigInteger senderID,
-            String key, SharedData oldData, SharedData newData) {
+    public void propertyChanged(SharedMapEventCli event) {
+        SharedMapCli map = event.getMap();
         if (map.getName().equals(VideoPlayerConstants.STATUS_MAP)) {
             // there's only one map, a map containing the state of the viewer,
             // its key determines what changed:
@@ -164,7 +165,8 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
             // newData specifies the new value of the key
             // note that there's only one property change processed at a time
 
-            handleStatusChange(key, oldData, newData);
+            handleStatusChange(event.getPropertyName(), event.getOldValue(),
+                               event.getNewValue());
         } else {
             logger.warning("unrecognized shared map: " + map.getName());
         }
