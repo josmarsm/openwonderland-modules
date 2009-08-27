@@ -123,6 +123,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         toggleHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerDock32x32.png"))); // NOI18N
+        toggleHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         toggleHUDButton.setBorderPainted(false);
         toggleHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         toggleHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -137,6 +138,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         openHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         openHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerOpen32x32.png"))); // NOI18N
+        openHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         openHUDButton.setBorderPainted(false);
         openHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         openHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -151,6 +153,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         firstPageHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         firstPageHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerPageFirst32x32.png"))); // NOI18N
+        firstPageHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         firstPageHUDButton.setBorderPainted(false);
         firstPageHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         firstPageHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -165,6 +168,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         previousPageHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         previousPageHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerPagePrev32x32.png"))); // NOI18N
+        previousPageHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         previousPageHUDButton.setBorderPainted(false);
         previousPageHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         previousPageHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -179,6 +183,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         nextPageHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         nextPageHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerPageNext32x32.png"))); // NOI18N
+        nextPageHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         nextPageHUDButton.setBorderPainted(false);
         nextPageHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         nextPageHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -193,6 +198,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         lastPageHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         lastPageHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerPageLast32x32.png"))); // NOI18N
+        lastPageHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         lastPageHUDButton.setBorderPainted(false);
         lastPageHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         lastPageHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -207,6 +213,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         playHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         playHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerPlay32x32.png"))); // NOI18N
+        playHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         playHUDButton.setBorderPainted(false);
         playHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         playHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -221,6 +228,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         zoomInHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         zoomInHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerZoomIn32x32.png"))); // NOI18N
+        zoomInHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         zoomInHUDButton.setBorderPainted(false);
         zoomInHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         zoomInHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -235,6 +243,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         zoomOutHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         zoomOutHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerZoomOut32x32.png"))); // NOI18N
+        zoomOutHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         zoomOutHUDButton.setBorderPainted(false);
         zoomOutHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         zoomOutHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -249,6 +258,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         syncHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         syncHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerSyncedYes32x32.png"))); // NOI18N
+        syncHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         syncHUDButton.setBorderPainted(false);
         syncHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         syncHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -263,6 +273,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         dragHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         dragHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerDrag32x32.png"))); // NOI18N
+        dragHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         dragHUDButton.setBorderPainted(false);
         dragHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         dragHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -277,6 +288,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
 
         gotoHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         gotoHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerPageGoto32x32.png"))); // NOI18N
+        gotoHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         gotoHUDButton.setBorderPainted(false);
         gotoHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         gotoHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
