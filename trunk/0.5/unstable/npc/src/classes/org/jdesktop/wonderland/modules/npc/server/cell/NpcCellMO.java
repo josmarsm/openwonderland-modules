@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.npc.server.cell;
 
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.modules.avatarbase.server.cell.*;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -46,8 +45,8 @@ public class NpcCellMO extends CellMO {
     @UsesCellComponentMO(MovableAvatarComponentMO.class)
     private ManagedReference<MovableAvatarComponentMO> avatarMovableComp;
 
-    @UsesCellComponentMO(AvatarConfigComponentMO.class)
-    private ManagedReference<AvatarConfigComponentMO> avatarConfigComp;
+//    @UsesCellComponentMO(NpcAvatarConfigComponentMO.class)
+//    private ManagedReference<NpcAvatarConfigComponentMO> avatarConfigComp;
     
     // The relative avatar configuration URL
     private String relativeConfigURL = null;
@@ -83,7 +82,6 @@ public class NpcCellMO extends CellMO {
         if (state == null) {
             state = new NpcCellServerState();
         }
-        ((NpcCellServerState)state).setRelativeConfigURL(relativeConfigURL);
         return super.getServerState(state);
     }
 
@@ -93,9 +91,6 @@ public class NpcCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState state) {
         super.setServerState(state);
-
-        // Fetch the relative configuration URL from the server state
-        relativeConfigURL = ((NpcCellServerState)state).getRelativeConfigURL();
     }
 
 
@@ -110,7 +105,6 @@ public class NpcCellMO extends CellMO {
         if (state == null) {
             state = new NpcCellClientState();
         }
-        ((NpcCellClientState)state).setRelativeConfigURL(relativeConfigURL);
         return super.getClientState(state, clientID, capabilities);
     }
 
@@ -121,7 +115,6 @@ public class NpcCellMO extends CellMO {
     protected void setLive(boolean live) {
         super.setLive(live);
 
-        logger.warning("NPC CELL MO SET LIVE " + live);
         // Either add or remove the message receiver depending upon the live
         // state.
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);

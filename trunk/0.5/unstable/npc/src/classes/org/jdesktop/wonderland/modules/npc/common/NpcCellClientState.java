@@ -25,17 +25,4 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class NpcCellClientState extends CellClientState {
-    private String relativeConfigURL = null;
-
-    /** Default constructor */
-    public NpcCellClientState() {
-    }
-
-    public String getRelativeConfigURL() {
-        return relativeConfigURL;
-    }
-
-    public void setRelativeConfigURL(String relativeConfigURL) {
-        this.relativeConfigURL = relativeConfigURL;
-    }
 }
