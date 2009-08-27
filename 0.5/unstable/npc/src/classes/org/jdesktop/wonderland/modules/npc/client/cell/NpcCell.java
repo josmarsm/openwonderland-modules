@@ -69,8 +69,6 @@ public class NpcCell extends Cell {
 
     public NpcCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-
-        logger.warning("NPC CELL Constructor");
         
         // Create a menu item to control the NPC
         menuItem = new JMenuItem("NPC " + cellID + " controls...");
@@ -89,8 +87,6 @@ public class NpcCell extends Cell {
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
-
-        logger.warning("HPC Cell SET STATUS " + status + " " + increasing);
         
         // If the Cell is being made active and increasing, then add the menu
         // item. Also add the proximity listener

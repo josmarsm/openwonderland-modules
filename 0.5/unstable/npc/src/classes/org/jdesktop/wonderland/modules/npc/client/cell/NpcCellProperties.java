@@ -24,6 +24,8 @@ import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.npc.common.NpcCellServerState;
 
+// XXX NOT TESTED XXX
+
 /**
  * A property sheet for the NPC Cell.
  *
@@ -36,7 +38,7 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
 
     // The original value of the selected configuration relative URL
     private String originalConfigURL = null;
-    
+
     /** Creates new form SampleCellProperties */
     public NpcCellProperties() {
         initComponents();
@@ -69,11 +71,12 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     public void open() {
         // Fetch the current state from the cell's server state and update
         // the GUI.
-        CellServerState state = editor.getCellServerState();
-        if (state != null) {
-            originalConfigURL = ((NpcCellServerState)state).getRelativeConfigURL();
-            avatarComboBox.setSelectedItem(originalConfigURL);
-        }
+        // XXX DOESN'T WORK XXX
+//        CellServerState state = editor.getCellServerState();
+//        if (state != null) {
+//            originalConfigURL = ((NpcCellServerState)state).getRelativeConfigURL();
+//            avatarComboBox.setSelectedItem(originalConfigURL);
+//        }
     }
 
     /**
@@ -89,10 +92,11 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     public void apply() {
         // Take the value from the configuration URL and populate the server
         // state with it.
-        String url = (String) avatarComboBox.getSelectedItem();
-        CellServerState state = editor.getCellServerState();
-        ((NpcCellServerState)state).setRelativeConfigURL(url);
-        editor.addToUpdateList(state);
+        // XXX DOESN"T WORK XXX
+//        String url = (String) avatarComboBox.getSelectedItem();
+//        CellServerState state = editor.getCellServerState();
+//        ((NpcCellServerState)state).setRelativeConfigURL(url);
+//        editor.addToUpdateList(state);
     }
 
     /**
