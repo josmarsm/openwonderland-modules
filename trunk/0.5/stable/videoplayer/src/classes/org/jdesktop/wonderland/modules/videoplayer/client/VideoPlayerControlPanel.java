@@ -29,6 +29,7 @@ import javax.swing.border.Border;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerState;
 
 /**
+ * Video player control panel
  *
  * @author nsimpson
  */
@@ -37,7 +38,6 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger(VideoPlayerControlPanel.class.getName());
     protected boolean fillMode = false;
     protected ArrayList<VideoPlayerToolListener> cellMenuListeners = new ArrayList();
-    protected Border border;
     protected Map toolMappings;
     protected Map colorMappings;
     protected VideoPlayerWindow window;
@@ -51,7 +51,6 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
         initListeners();
         playIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerPlay32x32.png"));
         pauseIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerPause32x32.png"));
-        border = javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED);
     }
 
     public void addCellMenuListener(VideoPlayerToolListener listener) {
@@ -139,6 +138,7 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
 
         toggleHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerDock32x32.png"))); // NOI18N
+        toggleHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         toggleHUDButton.setBorderPainted(false);
         toggleHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         toggleHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -153,6 +153,7 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
 
         openHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         openHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerOpen32x32.png"))); // NOI18N
+        openHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         openHUDButton.setBorderPainted(false);
         openHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         openHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -167,6 +168,7 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
 
         rewindHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         rewindHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerSkipRev32x32.png"))); // NOI18N
+        rewindHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         rewindHUDButton.setBorderPainted(false);
         rewindHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         rewindHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -181,6 +183,7 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
 
         stopHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         stopHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerStop32x32.png"))); // NOI18N
+        stopHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         stopHUDButton.setBorderPainted(false);
         stopHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         stopHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -195,6 +198,7 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
 
         playHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         playHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerPlay32x32.png"))); // NOI18N
+        playHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         playHUDButton.setBorderPainted(false);
         playHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         playHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -209,6 +213,7 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
 
         fastforwardHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         fastforwardHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerSkipFwd32x32.png"))); // NOI18N
+        fastforwardHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         fastforwardHUDButton.setBorderPainted(false);
         fastforwardHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         fastforwardHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -223,6 +228,7 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
 
         syncHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         syncHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerSyncedYes32x32.png"))); // NOI18N
+        syncHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         syncHUDButton.setBorderPainted(false);
         syncHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         syncHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
@@ -237,6 +243,7 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
 
         dragHUDButton.setBackground(new java.awt.Color(231, 230, 230));
         dragHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerDrag32x32.png"))); // NOI18N
+        dragHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         dragHUDButton.setBorderPainted(false);
         dragHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
         dragHUDButton.setMaximumSize(new java.awt.Dimension(38, 38));
