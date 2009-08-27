@@ -115,7 +115,6 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
             if (state != this.connectionState &&
                     !(state == ConnectionState.LOADING &&
                     this.connectionState == ConnectionState.WAITING)) {
-                System.out.println("CONNECTION STATE CHANGE: " + state);
                 this.connectionState = state;
                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -134,7 +133,6 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
 
     public void setHUDShowing(boolean showing) {
         synchronized (hudShowingLock) {
-            System.out.println("SET HUD SHOWING: " + showing);
             if (showing != isHUDShowing() || hudComponent == null) {
                 SwingUtilities.invokeLater(new HUDDisplayer(showing));
             }
@@ -143,8 +141,7 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
 
     public boolean isHUDShowing() {
         synchronized (hudShowingLock) {
-            System.out.println("IS HUD SHOWING: " + hudShowing);
-            return hudShowing;
+           return hudShowing;
         }
     }
 

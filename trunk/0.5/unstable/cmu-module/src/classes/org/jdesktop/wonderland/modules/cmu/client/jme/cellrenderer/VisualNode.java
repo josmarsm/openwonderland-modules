@@ -170,11 +170,12 @@ public class VisualNode extends VisualParent {
      * @param transformation The transformation to be applied
      */
     protected void applyTransformation(TransformationMessage transformation) {
-
-        for (Spatial mesh : VisualNode.this.getChildren()) {
-            mesh.setLocalScale(transformation.getScale());
-            mesh.setLocalTranslation(transformation.getTranslation());
-            mesh.setLocalRotation(transformation.getRotation());
+        if (getChildren() != null) {
+            for (Spatial mesh : getChildren()) {
+                mesh.setLocalScale(transformation.getScale());
+                mesh.setLocalTranslation(transformation.getTranslation());
+                mesh.setLocalRotation(transformation.getRotation());
+            }
         }
     }
 

@@ -25,9 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.MouseClickMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
@@ -111,10 +113,22 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
         getInstance().sendMessage(new ProgramPlaybackSpeedChangeMessage(cellID, playbackSpeed));
     }
 
+    static public void sendClick(CellID cellID, NodeID nodeID) {
+        getInstance().sendMessage(new MouseClickMessage(cellID, nodeID));
+    }
+
+    /**
+     * Destroy a particular program.
+     * @param cellID The cell connected to the program
+     */
     static public void removeProgram(CellID cellID) {
         getInstance().deleteProgram(cellID);
     }
 
+    /**
+     * Destroy a particular program.
+     * @param cellID The cell connected to the program
+     */
     private void deleteProgram(CellID cellID) {
         synchronized(this.programsCreated) {
             programsCreated.remove(cellID);
@@ -122,10 +136,17 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
         sendMessage(new DeleteProgramMessage(cellID));
     }
 
+    /**
+     * Restart all programs stored by the programsCreated Map.
+     */
     static public void reconnect() {
         getInstance().recreatePrograms();
     }
 
+    /**
+     * Tell all cells registered with the handler to restart their
+     * programs.
+     */
     private void recreatePrograms() {
         synchronized (this.programsCreated) {
             for (CellID cellID : programsCreated.keySet()) {

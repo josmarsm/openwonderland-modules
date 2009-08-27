@@ -30,14 +30,21 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.alice.apis.moveandturn.Model;
 import org.alice.apis.moveandturn.Scene;
+import org.alice.apis.moveandturn.Transformable;
+import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.jdesktop.wonderland.common.NetworkAddress;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
@@ -55,7 +62,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     public final int DEFAULT_FPS = 30;
     private Scene sc = null;       // The scene to wrap.
     private final Set<ClientConnection> connections = new HashSet<ClientConnection>();
-    private final Set<VisualWrapper> visuals = new HashSet<VisualWrapper>();
+    private final Map<NodeID, ModelWrapper> visuals = new HashMap<NodeID, ModelWrapper>();
     private final ConnectionHandlerThread handlerThread;
 
     /**
@@ -124,7 +131,6 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 assert socketListener != null;
                 try {
                     return NetworkAddress.getPrivateLocalAddress().getHostAddress();
-                //return InetAddress.getLocalHost().getHostAddress();
                 } catch (UnknownHostException ex) {
                     Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                     return null;
@@ -183,33 +189,29 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         this.unloadScene();
         if (sc != null) {
             this.sc = sc;
-            this.processNode(sc.getSGComposite());
+            this.processModel(sc);
+            //this.processNode(sc.getSGComposite(), 0);
         }
     }
 
-    /**
-     * Check this node and its children to see if visual data can be extracted,
-     * and if so, create visual wrappers as appropriate.
-     * @param c The component to parse
-     */
-    private synchronized void processNode(Component c) {
+    public void click(NodeID id) {
+        ModelWrapper model = visuals.get(id);
+        if (model != null) {
+            model.click();
+        }
+    }
+
+    private synchronized void processModel(org.alice.apis.moveandturn.Composite c) {
         assert c != null;
 
-        // Check to see if it's a visual element, and if so, parse it and add it to the collection.
-        if (Visual.class.isAssignableFrom(c.getClass())) {
-            // Create the visual wrapper and fill it with the current connections,
-            // not allowing new connections to be added while this is happening.
-            synchronized (connections) {
-                addVisual((Visual) c);
+        if (c instanceof Model) {
+            synchronized(connections) {
+                addModel((Model)c);
             }
         }
 
-        // Process this node's children.
-        if (Composite.class.isAssignableFrom(c.getClass())) {
-            ((Composite) c).addChildrenListener(this);
-            for (Component child : ((Composite) c).accessComponents()) {
-                processNode(child);
-            }
+        for (Transformable child : c.getComponents()) {
+            processModel(child);
         }
     }
 
@@ -228,7 +230,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         synchronized (visuals) {
             // Create the scene message with all current visuals (might be none)
             Collection<VisualMessage> visualMessages = new Vector<VisualMessage>();
-            for (VisualWrapper visual : this.visuals) {
+            for (ModelWrapper visual : this.visuals.values()) {
                 visualMessages.add(visual.getVisualMessage());
             }
             message = new SceneMessage(visualMessages, VisualUploadManager.getUsername());
@@ -265,14 +267,14 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     /**
      * Create a wrapper for the given CMU visual, and broadcast its addition
      * to any connected clients.
-     * @param visual The CMU visual to add
+     * @param model The CMU visual to add
      */
-    protected void addVisual(Visual visual) {
+    protected void addModel(Model model) {
         synchronized (visuals) {
             synchronized (connections) {
                 // Create and store a wrapper for this Visual.
-                VisualWrapper visualWrapper = new VisualWrapper(visual);
-                this.visuals.add(visualWrapper);
+                ModelWrapper visualWrapper = new ModelWrapper(model);
+                this.visuals.put(visualWrapper.getNodeID(), visualWrapper);
                 visualWrapper.addTransformationMessageListener(this);
                 VisualUploadManager.uploadVisual(visualWrapper.getVisualAttributes());
 
@@ -309,7 +311,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     public void unloadScene() {
         if (this.getScene() != null) {
             synchronized (visuals) {
-                for (VisualWrapper visual : visuals) {
+                for (ModelWrapper visual : visuals.values()) {
                     // Clean up visuals individually
                     visual.unload();
                     visual.removeTransformationMessageListener(this);

@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.cmu.server;
 
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -25,6 +27,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellServerState;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPlaneChangeMessage;
@@ -97,27 +100,22 @@ public class CMUCellMO extends CellMO {
             // Playback speed change
             if (message instanceof PlaybackSpeedChangeMessage) {
                 cellMO.setPlaybackInformationFromMessage(clientID, (PlaybackSpeedChangeMessage) message);
-            }
-
-            // Ground plane visibility change
-            if (message instanceof GroundPlaneChangeMessage) {
+            } // Ground plane visibility change
+            else if (message instanceof GroundPlaneChangeMessage) {
                 cellMO.setGroundPlaneShowingFromMessage(clientID, (GroundPlaneChangeMessage) message);
-            }
-
-            // Scene title change
-            if (message instanceof SceneTitleChangeMessage) {
+            } // Scene title change
+            else if (message instanceof SceneTitleChangeMessage) {
                 cellMO.setSceneTitleFromMessage(clientID, (SceneTitleChangeMessage) message);
-            }
-
-            // Restart program
-            if (message instanceof RestartProgramMessage) {
+            } // Restart program
+            else if (message instanceof RestartProgramMessage) {
                 cellMO.createProgram();
-            }
-
-            // Mouse button event
-            if (message instanceof MouseButtonEventMessage) {
+            } // Mouse button event
+            else if (message instanceof MouseButtonEventMessage) {
                 MouseButtonEventMessage mouseMessage = (MouseButtonEventMessage) message;
-            //TODO: forward mouse clicks
+                cellMO.sendMouseClick(((MouseButtonEventMessage)message).getNodeID());
+            } // Unknown message
+            else {
+                Logger.getLogger(CMUCellMO.CMUCellMessageReceiver.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
             }
         }
     }
@@ -219,12 +217,16 @@ public class CMUCellMO extends CellMO {
         ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
     }
 
+    public void sendMouseClick(NodeID nodeID) {
+        ProgramConnectionHandlerMO.sendClick(getCellID(), nodeID);
+    }
+
     /**
      * Get the URI of the loaded CMU file.
      * @return The URI of the loaded CMU file
      */
     public String getCmuURI() {
-        synchronized(uriLock) {
+        synchronized (uriLock) {
             return cmuURI;
         }
     }
@@ -234,7 +236,7 @@ public class CMUCellMO extends CellMO {
      * @param uri The URI of the CMU file
      */
     public void setCmuURI(String uri) {
-        synchronized(uriLock) {
+        synchronized (uriLock) {
             cmuURI = uri;
         }
     }

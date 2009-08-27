@@ -41,6 +41,7 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
     /**
      * {@inheritDoc}
      */
+    @Override
     public ConnectionType getConnectionType() {
         return ProgramConnectionType.TYPE;
     }
@@ -50,6 +51,7 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
      * of this connection type.
      * @param sender {@inheritDoc}
      */
+    @Override
     public void registered(WonderlandClientSender sender) {
         this.clientSender = sender;
     }
@@ -61,6 +63,7 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
      * @param clientID {@inheritDoc}
      * @param properties {@inheritDoc}
      */
+    @Override
     public void clientConnected(WonderlandClientSender sender, WonderlandClientID clientID, Properties properties) {
         ProgramConnectionHandlerMO.reconnect();
     }
@@ -68,6 +71,7 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
     /**
      * {@inheritDoc}
      */
+    @Override
     public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, Message message) {
         // Create new program response
         if (CreateProgramResponseMessage.class.isAssignableFrom(message.getClass())) {
@@ -78,6 +82,7 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
         // No action.
     }
