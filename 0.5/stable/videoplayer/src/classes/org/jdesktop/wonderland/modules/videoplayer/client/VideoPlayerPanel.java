@@ -50,8 +50,6 @@ public class VideoPlayerPanel extends JPanel {
 
     private static final Logger logger = Logger.getLogger(VideoPlayerPanel.class.getName());
     private String mediaURI;
-    private BufferedImage frameImage;
-    private float zoom = 1.0f;
     private boolean synced = true;
     private WindowSwing window;
     private HUDMessage messageComponent;
@@ -355,7 +353,7 @@ public class VideoPlayerPanel extends JPanel {
         g2.fillRect(0, 0, w, h);
 
         if ((provider != null) && (vrc != null)) {
-            g2.setComposite(AlphaComposite.SrcOver.derive(0.85f));
+            //g2.setComposite(AlphaComposite.SrcOver.derive(0.85f));
             vrc.paintVideoFrame(g2, new Rectangle(0, 0, w, h));
         }
 
