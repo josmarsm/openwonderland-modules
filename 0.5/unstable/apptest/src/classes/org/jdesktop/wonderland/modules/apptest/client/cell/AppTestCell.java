@@ -21,11 +21,11 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
-import org.jdesktop.wonderland.modules.apptest.common.cell.ApptestCellClientState;
+import org.jdesktop.wonderland.modules.apptest.common.cell.AppTestCellClientState;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.modules.apptest.client.ApptestApp;
-import org.jdesktop.wonderland.modules.apptest.client.ApptestWindow;
+import org.jdesktop.wonderland.modules.apptest.client.AppTestApp;
+import org.jdesktop.wonderland.modules.apptest.client.AppTestWindow;
 
 /**
  * Client cell for the app test.

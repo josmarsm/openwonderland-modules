@@ -28,6 +28,8 @@ public class TestPanel extends javax.swing.JPanel {
 
     private JFrame frame;
 
+    private AppTest appTest;
+
     /** Creates new form TestPanel */
     public TestPanel() {
         initComponents();
@@ -56,8 +58,7 @@ public class TestPanel extends javax.swing.JPanel {
         });
         setLayout(new java.awt.GridBagLayout());
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/apptest/client/Bundle"); // NOI18N
-        jButton2.setText(bundle.getString("TestPanel.jButton2.text")); // NOI18N
+        jButton2.setText("Start Test"); 
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -75,7 +76,10 @@ public class TestPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_formFocusGained
 
 private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-    System.err.println("Button pressed");
+    if (appTest == null) {
+        appTest = new AppTest();
+    }
+    appTest.start();
 }//GEN-LAST:event_jButton2ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;

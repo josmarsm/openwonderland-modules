@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.apptest.client;
 
 import com.jme.math.Vector2f;
-import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -36,8 +35,6 @@ import org.jdesktop.wonderland.modules.apptest.client.cell.AppTestCell;
 @ExperimentalAPI
 public class AppTestWindow extends WindowSwing {
 
-    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/apptest/client/Bundle");
     /** The logger used by this class. */
     private static final Logger logger =
             Logger.getLogger(AppTestWindow.class.getName());
@@ -60,7 +57,7 @@ public class AppTestWindow extends WindowSwing {
         super(app, width, height, decorated, pixelScale);
         this.cell = cell;
 
-        setTitle(BUNDLE.getString("AppTest"));
+        setTitle("App Test");
 
         TestPanel testPanel = new TestPanel();
 

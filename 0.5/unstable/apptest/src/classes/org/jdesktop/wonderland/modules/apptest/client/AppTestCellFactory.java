@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.apptest.client;
 
 import java.awt.Image;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -34,9 +33,6 @@ import org.jdesktop.wonderland.modules.apptest.common.cell.AppTestCellServerStat
  */
 @CellFactory
 public class AppTestCellFactory implements CellFactorySPI {
-
-    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/apptest/client/Bundle");
 
     public String[] getExtensions() {
         return new String[]{};
@@ -53,7 +49,7 @@ public class AppTestCellFactory implements CellFactorySPI {
     }
 
     public String getDisplayName() {
-        return BUNDLE.getString("App_Test");
+        return "AppTest";
     }
 
     public Image getPreviewImage() {
