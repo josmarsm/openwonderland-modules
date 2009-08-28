@@ -17,89 +17,28 @@
  */
 package org.jdesktop.wonderland.modules.apptest.client;
 
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.registry.CellRegistry;
-import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
-import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
-import org.jdesktop.wonderland.client.cell.utils.CellUtils;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.apptest.client.cell.AppTestCell;
 
 @ExperimentalAPI
-public class AppTest implements Runnable {
+public class AppTest {
 
     private static final Logger logger = Logger.getLogger(AppTest.class.getName());
 
     private LinkedList<App> apps = new LinkedList<App>();
+    private HashMap<String,AppLauncher> appLaunchers = new HashMap<String,AppLauncher>();
+    
+    private AppTestCell cell;
 
-    private Thread thread;
-    private boolean stop;
+    private boolean testIsRunning;
 
-    private class App {
-        private String displayName;
-        private int takeDownSecs;
-        private Timer takeDownTimer = new Timer();
-        private Cell appCell;
+    public AppTest (AppTestCell cell) {
+        this.cell = cell;
 
-        private App (String displayName, int takeDownSecs) {
-            this.displayName = displayName;
-            this.takeDownSecs = takeDownSecs;
-        }
-
-        private void launch () {
-            createCell();
-            if (appCell == null) {
-                logger.severe("Could not launch app " + displayName);
-                return;
-            }
-
-            startTakeDownTimer();
-        }
-
-        // Derived from CellPalette.createActionPerformed
-        private void createCell () {
-            CellRegistry registry = CellRegistry.getCellRegistry();
-            Set<CellFactorySPI> factorySet = registry.getAllCellFactories();
-            for (CellFactorySPI spi : factorySet) {
-                String spiDisplayName = spi.getDisplayName();
-                if (spiDisplayName != null && spiDisplayName.equals(displayName)) {
-                    CellServerState state = spi.getDefaultCellServerState(null);
-                    try {
-                        CellUtils.createCell(state);
-                    } catch (CellCreationException ex) {
-                        appCell = null;
-                        return;
-                    }
-                }
-            } 
-
-            // TODO: how do I get the cell?
-            appCell = null;
-        }
-
-        private void startTakeDownTimer () {
-            takeDownTimer.schedule(new TimerTask() {
-                public void run() {
-                    App.this.deleteCell();
-                }
-            }, takeDownSecs * 1000);
-        }
-
-        private void stopTakeDownTimer () {
-            takeDownTimer.cancel();
-        }
-
-        private synchronized void deleteCell () {
-            if (appCell == null) return;
-        }
-    }
-
-    public AppTest () {
         boolean isMaster = determineMaster();
         if (!isMaster) {
             // Do nothing;
@@ -107,28 +46,39 @@ public class AppTest implements Runnable {
         }
 
         // Initialize the list of apps to be launched during the test
+        // NOTE: in this test, the display names of the apps must be unique.
         apps.add(new App("gt", 20));
     }
 
-    /** Start the test. */
-    public synchronized void start () {
-        logger.warning("AppTest started.");
-        stop = false;
+    /** 
+     * Spawn a unique thread to repeatedly launch ach of the apps in the list. The test will run
+     * until stopTest is called.
+     */
+    // TODO: need to make sure that another person doesn't try to start a test which is already running
+    public synchronized void startTest () {
+        testIsRunning = true;
 
-        // Start the thread
-        thread = new Thread(this, "App Test Thread");
-        thread.start();
+        for (App app : apps) {
+            AppLauncher appLauncher = new AppLauncher(app);
+            appLaunchers.put(app.getDisplayName(), appLauncher);
+            appLauncher.startTest();
+        }
+
+        logger.warning("AppTest started for all apps.");
     }
 
 
     /** Stop the test. */
-    public synchronized void stop () {
-        stop = true;
-        try {
-            thread.join();
-        } catch (InterruptedException ex) {
-           logger.warning("AppTest stopped.");
+    public synchronized void stopTest () {
+        if (!testIsRunning) return;
+
+        for (String displayName : appLaunchers.keySet()) {
+            AppLauncher appLauncher = appLaunchers.get(displayName);
+            appLauncher.stopTest();
+            appLaunchers.remove(displayName);
         }
+
+        logger.warning("AppTest terminated for all apps.");
     }
     
     // TODO: make this ask the server who is the master
@@ -137,28 +87,13 @@ public class AppTest implements Runnable {
         return true;
     }
 
-    public void run () {
-        while (!stop) {
-            test();
-            testCleanup();
+    public void registerLaunchedCell (String displayName, Cell cell) {
+        AppLauncher appLauncher = appLaunchers.get(displayName);
+        if (appLauncher == null) {
+            logger.severe("Cannot register launched app " + displayName);
+            return;
         }
-    }
 
-    /** 
-     * Launch one of each of the apps in the list. For each app launched, a timer of the specified
-     * duration is started which will take the app down when it expires.
-     */
-    public void test () {
-        for (App app : apps) {
-            app.launch();
-        }
+        appLauncher.registerLaunchedCell(cell);
     }
-
-    public void testCleanup () {
-        for (App app : apps) {
-            app.stopTakeDownTimer();
-            app.deleteCell();
-        }
-    }
-    
 }
