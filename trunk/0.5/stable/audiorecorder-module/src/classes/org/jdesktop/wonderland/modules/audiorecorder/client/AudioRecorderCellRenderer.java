@@ -22,30 +22,17 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Cylinder;
-import com.jme.scene.shape.Quad;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.CullState;
 import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState;
 import com.jme.scene.state.RenderState.StateType;
-import com.jme.scene.state.TextureState;
-import com.jme.util.geom.BufferUtils;
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import com.sun.scenario.animation.Animation;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Clip.RepeatBehavior;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.Buffer;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -61,21 +48,13 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 
 
-import java.nio.ByteBuffer;
-import javax.media.opengl.GL;
-import org.jdesktop.mtgame.CameraComponent;
-import org.jdesktop.mtgame.RenderBuffer;
-import org.jdesktop.mtgame.TextureRenderBuffer;
-import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.util.FrameBufferCapture;
-import org.jdesktop.mtgame.util.FrameBufferCapture.FrameBufferListener;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 
 /**
- *
- * @author bh37721
+ * Renderer for the AudioRecorder Cell
+ * @author Bernard Horan
  */
-public class AudioRecorderCellRenderer extends BasicRenderer implements FrameBufferListener {
+public class AudioRecorderCellRenderer extends BasicRenderer {
 
     private static final Logger rendererLogger = Logger.getLogger(AudioRecorderCellRenderer.class.getName());
 
@@ -97,13 +76,9 @@ public class AudioRecorderCellRenderer extends BasicRenderer implements FrameBuf
     private Button stopButton;
     private Button playButton;
     private Set<Animation> animations = new HashSet<Animation>();
-    FrameBufferCapture renderCapture;
-    int imageCounter = 1000000;
-    private static final String imageDirectory = "/tmp/WonderlandRecording";
 
     public AudioRecorderCellRenderer(Cell cell) {
         super(cell);
-        new File(imageDirectory).mkdirs();
     }
 
     protected Node createSceneGraph(Entity entity) {
@@ -132,7 +107,6 @@ public class AudioRecorderCellRenderer extends BasicRenderer implements FrameBuf
         entity.addEntity(createRecordButton(device, new Vector3f(-(WIDTH - (BUTTON_WIDTH)), HEIGHT + BUTTON_HEIGHT, 0f)));
         entity.addEntity(createStopButton(device, new Vector3f(0, HEIGHT + BUTTON_HEIGHT, 0f)));
         entity.addEntity(createPlayButton(device, new Vector3f(WIDTH - BUTTON_WIDTH, HEIGHT + BUTTON_HEIGHT, 0f)));
-        entity.addEntity(createLCDPanel(device));
     }
 
     private void addOuterCasing(Node device) {
@@ -157,64 +131,6 @@ public class AudioRecorderCellRenderer extends BasicRenderer implements FrameBuf
         casing.setRenderState(cs);
         device.attachChild(casing);
         
-    }
-
-    private Entity createLCDPanel(Node device) {
-        float aspect = 300/400;
-        WorldManager wm = ClientContextJME.getWorldManager();
-        //Node for the quad
-        Node quadNode = new Node();
-        //Geometric
-        Quad quadGeo = new Quad("Ortho", 2 * WIDTH, 2 * HEIGHT);
-        //Entity for the quad
-        Entity quadEntity = new Entity("Ortho ");
-        //Attach the geometric to the node
-        quadNode.attachChild(quadGeo);
-        //Set the quad node position at the +Z of the audio recorder
-        quadNode.setLocalTranslation(0.0f, 0.0f, 1.5f * DEPTH);
-        //Create a render buffer
-        RenderBuffer rb = wm.getRenderManager().createRenderBuffer(RenderBuffer.Target.TEXTURE_2D, 640, 480);
-        //Create a camera node
-        CameraNode cn = new CameraNode("MyCamera", null);
-        //Create a node for the camera
-        Node cameraSG = new Node();
-        //Attach the camera to the node
-        cameraSG.attachChild(cn);
-        //Set the location of the camera to be at the -Z of the audio recorder
-        cameraSG.setLocalTranslation(0.0f, 0.0f, 0 - (2 * DEPTH));
-        //Create a camera component
-        //NOT SURE ABOUT THE FRONT AND BACK CLIPPING
-        CameraComponent cc = wm.getRenderManager().createCameraComponent(cameraSG, cn,
-                640, 480, 90.0f, aspect, 2.0f, 1000.0f, true);
-        //Set the camera for the render buffer
-        rb.setCameraComponent(cc);
-        //Add the render buffer to the render manager
-        wm.getRenderManager().addRenderBuffer(rb);
-        //set the render updater so that we can catch frames
-        int size = 640 * 480 * 3;
-        ByteBuffer buffer = BufferUtils.createByteBuffer(size);
-        
-        renderCapture = new FrameBufferCapture(wm, rb, this, buffer, GL.GL_BGR);
-        rb.setRenderUpdater(renderCapture);
-
-        //Add the camera component to the quad entity
-        quadEntity.addComponent(CameraComponent.class, cc);
-
-        //Create a texture state
-        TextureState ts = (TextureState) wm.getRenderManager().createRendererState(RenderState.StateType.Texture);
-        ts.setEnabled(true);
-        //??Set its texture to be the texture of the render buffer??
-        ts.setTexture(((TextureRenderBuffer)rb).getTexture());
-        quadGeo.setRenderState(ts);
-
-        RenderComponent quadRC = wm.getRenderManager().createRenderComponent(quadNode);
-        //quadRC.setOrtho(false);
-        //quadRC.setLightingEnabled(false);
-        quadEntity.addComponent(RenderComponent.class, quadRC);
-
-        device.attachChild(quadNode);
-        device.attachChild(cameraSG);
-        return quadEntity;
     }
 
     private Entity createReel(Node device, Vector3f position) {
@@ -314,32 +230,6 @@ public class AudioRecorderCellRenderer extends BasicRenderer implements FrameBuf
             CollisionComponent cc = collisionSystem.createCollisionComponent(node);
             entity.addComponent(CollisionComponent.class, cc);
         }
-
-    public void update(Buffer arg0) {
-        if (((AudioRecorderCell) cell).isRecording()) {
-                System.err.println("recording");
-                BufferedImage outputImage = renderCapture.getBufferedImage();
-                System.err.println("image: " + outputImage);
-                // write to disk....
-            try {
-
-                FileOutputStream outputFile = new FileOutputStream(imageDirectory + File.separator + imageCounter + ".jpg");
-                JPEGImageEncoder jpegEncoder = JPEGCodec.createJPEGEncoder(outputFile);
-                JPEGEncodeParam jpegParam = jpegEncoder.getDefaultJPEGEncodeParam(outputImage);
-                jpegParam.setQuality(0.9f,false); // 90% quality JPEG
-
-                jpegEncoder.setJPEGEncodeParam(jpegParam);
-                jpegEncoder.encode(outputImage);
-                outputFile.close();
-            } catch ( IOException e ) {
-                System.err.println("I/O exception in postSwap: " + e);
-                e.printStackTrace();
-                ((AudioRecorderCell) cell).stop();
-            }
-
-            imageCounter++;
-        }
-    }
 
     class Button {
 
