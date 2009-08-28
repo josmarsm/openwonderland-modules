@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.apptest.client.cell;
 
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -101,5 +102,9 @@ public class AppTestCell extends App2DCell {
                 }
                 break;
         }
+    }
+
+    public void registerLaunchedCell (String displayName, Cell cell) {
+        window.registerLaunchedCell(displayName, cell);
     }
 }

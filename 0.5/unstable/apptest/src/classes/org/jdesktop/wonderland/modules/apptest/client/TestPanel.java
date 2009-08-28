@@ -28,11 +28,20 @@ public class TestPanel extends javax.swing.JPanel {
 
     private JFrame frame;
 
-    private AppTest appTest;
+    private Container container;
+
+    public interface Container {
+        public void startTest();
+        public void stopTest();
+    }
 
     /** Creates new form TestPanel */
     public TestPanel() {
         initComponents();
+    }
+
+    public void setContainer (Container container) {
+        this.container = container;
     }
 
     public void setFrame(JFrame frame) {
@@ -76,10 +85,9 @@ public class TestPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_formFocusGained
 
 private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-    if (appTest == null) {
-        appTest = new AppTest();
+    if (container != null) {
+        container.startTest();
     }
-    appTest.start();
 }//GEN-LAST:event_jButton2ActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.apptest.client;
 
 import com.jme.math.Vector2f;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
@@ -33,13 +34,17 @@ import org.jdesktop.wonderland.modules.apptest.client.cell.AppTestCell;
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
 @ExperimentalAPI
-public class AppTestWindow extends WindowSwing {
+public class AppTestWindow extends WindowSwing implements TestPanel.Container {
 
     /** The logger used by this class. */
     private static final Logger logger =
             Logger.getLogger(AppTestWindow.class.getName());
+
     /** The cell in which this window is displayed. */
     private AppTestCell cell;
+
+    private AppTest appTest;
+
 
     /**
      * Create a new instance of AppTestWindow.
@@ -60,10 +65,32 @@ public class AppTestWindow extends WindowSwing {
         setTitle("App Test");
 
         TestPanel testPanel = new TestPanel();
+        testPanel.setContainer(this);
 
         // Parent to Wonderland main window for proper focus handling
         JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
 
         setComponent(testPanel);
+    }
+
+    /** TODO: Only one client should start. THIS IS CURRENTLY NOT ENFORCED. */
+    public void startTest() {
+        if (appTest == null) {
+            appTest = new AppTest(cell);
+        }
+        appTest.startTest();
+    }
+
+    public void stopTest() {
+        if (appTest != null) {
+            appTest.stopTest();
+        }
+        appTest = null;
+    }
+
+    public void registerLaunchedCell (String displayName, Cell cell) {
+        if (appTest != null) {
+            appTest.registerLaunchedCell(displayName, cell);
+        }
     }
 }
