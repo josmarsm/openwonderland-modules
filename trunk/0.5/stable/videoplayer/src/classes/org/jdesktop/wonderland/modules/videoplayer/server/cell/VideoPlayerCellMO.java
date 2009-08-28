@@ -36,8 +36,11 @@ import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerConstants;
 import org.jdesktop.wonderland.modules.videoplayer.common.cell.VideoPlayerCellClientState;
 import org.jdesktop.wonderland.modules.videoplayer.common.cell.VideoPlayerCellServerState;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerState;
+import org.jdesktop.wonderland.server.UserMO;
+import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 
 /**
  * A server cell associated with a video player
@@ -152,8 +155,7 @@ public class VideoPlayerCellMO extends App2DCellMO implements SharedMapListenerS
     public boolean propertyChanged(SharedMapEventSrv event) {
         SharedMapSrv map = event.getMap();
         if (map.getName().equals(VideoPlayerConstants.STATUS_MAP)) {
-            return handleStatusChange(event.getSenderID(), event.getPropertyName(),
-                                      event.getOldValue(), event.getNewValue());
+            return handleStatusChange(event);
         } else {
             logger.warning("unrecognized shared map: " + map.getName());
             return true;
@@ -163,17 +165,31 @@ public class VideoPlayerCellMO extends App2DCellMO implements SharedMapListenerS
     /**
      * {@inheritDoc}
      */
-    private boolean handleStatusChange(WonderlandClientID sourceID,
-            String key, SharedData oldData, SharedData newData) {
+    private boolean handleStatusChange(SharedMapEventSrv event) {
+         String key = event.getPropertyName();
+
+        SharedData newData = event.getNewValue();
+
+        RecorderManager rManager = RecorderManager.getDefaultManager();
+        boolean isRecording = rManager.isRecording();
+
+        String provenance = "";
+        if (isRecording) {
+            UserMO user = UserManager.getUserManager().getUser(event.getSenderID());
+            provenance = " initiated by " + user.getUsername() + "[" + user.getIdentity().getFullName() + "]";
+        }
 
         if (key.equals(VideoPlayerConstants.MEDIA_STATE)) {
             String statusStr = ((SharedString) newData).getValue();
             playerState = VideoPlayerState.valueOf(statusStr);
+            rManager.recordMetadata(event.getSourceMessage(), "new player state: " + playerState + provenance);
         } else if (key.equals(VideoPlayerConstants.MEDIA_URI)) {
             mediaURI = ((SharedString) newData).getValue();
+            rManager.recordMetadata(event.getSourceMessage(), "new mediaURI: " + mediaURI + provenance);
         } else if (key.equals(VideoPlayerConstants.MEDIA_POSITION)) {
             String position = ((SharedString) newData).getValue();
             mediaPosition = Double.valueOf(position);
+            rManager.recordMetadata(event.getSourceMessage(), "new media position: " + mediaPosition + provenance);
         }
 
         return true;
