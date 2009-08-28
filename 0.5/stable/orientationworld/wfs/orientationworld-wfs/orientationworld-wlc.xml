@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<jme-collada-cell>
+<model-cell>
+    <name>OrientationWorld</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://orientationworld/OrientationWorld.mtg.dep</deployedModelURL>
+    </model-cell-component>
     <position-component>
-        <origin>
+        <translation>
             <x>0.0</x>
             <y>0.0</y>
             <z>0.0</z>
-        </origin>
+        </translation>
         <bounds>
             <type>BOX</type>
             <radius>500.0</radius>
@@ -22,11 +27,4 @@
             <angle>0.0</angle>
         </rotation>
     </position-component>
-    <model-group>wla://orientationworld/worldConfig.mtg</model-group>
-    <geometry-rotation>
-        <x>-1</x>
-        <y>0.0</y>
-        <z>0.0</z>
-        <angle>1.5707963705062866</angle>
-    </geometry-rotation>
-</jme-collada-cell>
+</model-cell>
