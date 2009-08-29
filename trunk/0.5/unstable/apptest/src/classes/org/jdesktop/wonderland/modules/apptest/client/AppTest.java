@@ -32,12 +32,12 @@ public class AppTest {
     private LinkedList<App> apps = new LinkedList<App>();
     private HashMap<String,AppLauncher> appLaunchers = new HashMap<String,AppLauncher>();
     
-    private AppTestCell cell;
+    private AppTestCell appTestCell;
 
     private boolean testIsRunning;
 
-    public AppTest (AppTestCell cell) {
-        this.cell = cell;
+    public AppTest (AppTestCell appTestCell) {
+        this.appTestCell = appTestCell;
 
         boolean isMaster = determineMaster();
         if (!isMaster) {
@@ -47,7 +47,8 @@ public class AppTest {
 
         // Initialize the list of apps to be launched during the test
         // NOTE: in this test, the display names of the apps must be unique.
-        apps.add(new App("gt", 20));
+        //apps.add(new App(appTestCell, "gt", 20));
+        apps.add(new App(appTestCell, "gt", 5));
     }
 
     /** 
