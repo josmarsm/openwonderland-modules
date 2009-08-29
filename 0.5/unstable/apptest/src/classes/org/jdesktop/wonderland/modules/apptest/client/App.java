@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.apptest.common.cell.AppTestCellComponentServerState;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.apptest.client.cell.AppTestCell;
 
 public class App {
 
@@ -37,6 +38,8 @@ public class App {
 
     public enum State { NOT_RUNNING, LAUNCHED, LAUNCH_COMPLETE };
 
+    private AppTestCell appTestCell;
+
     private String displayName;
     private int takeDownSecs;
     private AppLauncher launcher;
@@ -44,10 +47,11 @@ public class App {
     private State state = State.NOT_RUNNING;
     private App2DCell cell;
 
-    private Timer launchTimer = new Timer();
-    private Timer runningTimer = new Timer();
+    private Timer launchTimer;
+    private Timer runningTimer;
 
-    public App (String displayName, int takeDownSecs) {
+    public App (AppTestCell appTestCell, String displayName, int takeDownSecs) {
+        this.appTestCell = appTestCell;
         this.displayName = displayName;
         this.takeDownSecs = takeDownSecs;
     }
@@ -66,8 +70,9 @@ public class App {
                 CellServerState serverState = spi.getDefaultCellServerState(null);
 
                 // Arrange for cell to be automatically deleted 
+                logger.info("cell = " + cell);
                 AppTestCellComponentServerState comp = 
-                    new AppTestCellComponentServerState(cell.getCellID(), displayName);
+                    new AppTestCellComponentServerState(appTestCell.getCellID(), displayName);
                 serverState.addComponentServerState(comp);
 
                 try {
@@ -120,13 +125,13 @@ public class App {
         switch (state) {
 
         case LAUNCHED:
-            if (state != State.NOT_RUNNING) {
+            if (this.state != State.NOT_RUNNING) {
                 valid = false;
             }
             break;
 
         case LAUNCH_COMPLETE:
-            if (state != State.LAUNCHED) {
+            if (this.state != State.LAUNCHED) {
                 valid = false;
             }
             break;
@@ -145,8 +150,11 @@ public class App {
     }
 
     private void startLaunchTimer () {
+        logger.info("Start launch timer");
+        launchTimer = new Timer();
         launchTimer.schedule(new TimerTask() {
             public void run() {
+                logger.info("Launch timer triggered");
                 synchronized (App.this) {
                     if (state == State.LAUNCHED) {
                         logger.warning("App " + displayName + " took too long to launch.");
@@ -158,12 +166,16 @@ public class App {
     }
 
     private void stopLaunchTimer () {
+        logger.info("Stop launch timer");
         launchTimer.cancel();
     }
 
     private void startRunningTimer () {
-        launchTimer.schedule(new TimerTask() {
+        logger.info("Start running timer");
+        runningTimer = new Timer();
+        runningTimer.schedule(new TimerTask() {
             public void run() {
+                logger.info("Running timer triggered");
                 synchronized (App.this) {
                     if (state != State.NOT_RUNNING) {
                         logger.info("Taking down app " + displayName);
@@ -175,6 +187,7 @@ public class App {
     }
 
     private void stopRunningTimer () {
+        logger.info("Stop running timer");
         runningTimer.cancel();
     }
 

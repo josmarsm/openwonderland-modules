@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.apptest.client;
 
 import javax.swing.JWindow;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 /**
  * The JPanel for the App Test.
@@ -29,6 +30,8 @@ public class TestPanel extends javax.swing.JPanel {
     private JFrame frame;
 
     private Container container;
+
+    private boolean started;
 
     public interface Container {
         public void startTest();
@@ -55,10 +58,9 @@ public class TestPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        jButton2 = new javax.swing.JButton();
+        startStopButton = new javax.swing.JButton();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -67,16 +69,13 @@ public class TestPanel extends javax.swing.JPanel {
         });
         setLayout(new java.awt.GridBagLayout());
 
-        jButton2.setText("Start Test"); 
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        startStopButton.setText("Start Test");
+        startStopButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                startStopButtonActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        add(jButton2, gridBagConstraints);
+        add(startStopButton, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
 
     private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
@@ -84,14 +83,35 @@ public class TestPanel extends javax.swing.JPanel {
         //System.out.println("Panel focus Gained");
     }//GEN-LAST:event_formFocusGained
 
-private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-    if (container != null) {
-        container.startTest();
-    }
-}//GEN-LAST:event_jButton2ActionPerformed
+    private void startStopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startStopButtonActionPerformed
+        if (!started) {
+            // Start test
+            started = true;
+            startStopButton.setText("Stop Test");
+            if (container != null) {
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        container.startTest();
+                    }
+                });
+            }
+        } else {
+            // Stop test
+            started = false;
+            startStopButton.setText("Start Test");
+            if (container != null) {
+                SwingUtilities.invokeLater(new Runnable () {
+                    public void run () {
+                        container.stopTest();
+                    }
+                });
+            }
+        }
+    }//GEN-LAST:event_startStopButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton startStopButton;
     // End of variables declaration//GEN-END:variables
 
     public static void main(String args[]) {
