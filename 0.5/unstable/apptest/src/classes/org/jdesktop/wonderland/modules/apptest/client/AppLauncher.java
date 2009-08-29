@@ -33,6 +33,7 @@ public class AppLauncher implements Runnable{
     private Thread thread;
     private boolean appIsRunning;
     private boolean testStopped;
+    private int numLaunches;
 
     public AppLauncher (App app) {
         this.app = app;
@@ -41,6 +42,7 @@ public class AppLauncher implements Runnable{
 
     public void startTest () {
         testStopped = false;
+        numLaunches = 0;
         thread.start();
     }        
 
@@ -65,7 +67,8 @@ public class AppLauncher implements Runnable{
             // Launch the app
             app.launch(this);
             appIsRunning = true;
-            logger.warning("AppLauncher for app " + app.getDisplayName()  + ": App launched");
+            logger.warning("AppLauncher for app " + app.getDisplayName()  + ": App launch " + 
+                           (++numLaunches));
 
             // Wait until app is stopped or the launch attempt is abandonned.
             while (!testStopped && appIsRunning) {
@@ -77,7 +80,7 @@ public class AppLauncher implements Runnable{
                 }
             }
 
-            logger.warning("AppLauncher for app " + app.getDisplayName() + ": App is no longer running");
+            logger.info("AppLauncher for app " + app.getDisplayName() + ": App is no longer running");
         }
 
         logger.warning("AppLauncher for app " + app.getDisplayName() + ": Test stopped.");
@@ -90,6 +93,6 @@ public class AppLauncher implements Runnable{
         }
         app.setCell((App2DCell)cell);
         app.setState(App.State.LAUNCH_COMPLETE);
-        logger.warning("The launched app " + app.getDisplayName() + " has registered with AppTest.");
+        logger.info("The launched app " + app.getDisplayName() + " has registered with AppTest.");
     }
 }
