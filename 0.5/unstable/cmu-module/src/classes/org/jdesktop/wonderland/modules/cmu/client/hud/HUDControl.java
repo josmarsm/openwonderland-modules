@@ -36,7 +36,9 @@ import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell.ConnectionState;
 
 /**
- *
+ * Class to manage the HUD for a CMU Cell; the cell can notify the control
+ * of changes in its connection state, and the control will update the
+ * HUD accordingly.
  * @author kevin
  */
 public class HUDControl implements HUDEventListener, SceneTitleChangeListener {

@@ -383,15 +383,16 @@ public class CMUCell extends Cell {
      * Load a visual message by attaching it to the scene root, and
      * filtering out the ground plane if desired.
      * @param message Message to apply
+     * @return Whether the load was successful
      */
-    private void applyVisualMessage(final VisualMessage message) {
-        final VisualNode visualNode = new VisualNode(message.getNodeID());
+    private boolean applyVisualMessage(final VisualMessage message) {
         VisualRepoIdentifier visualID = message.getVisualID();
 
         final VisualAttributes attributes = VisualDownloadManager.downloadVisual(visualID, getVisualUsername(), this);
         if (attributes == null) {
-            return;
+            return false;
         }
+        final VisualNode visualNode = new VisualNode(message.getNodeID());
 
         synchronized (sceneRoot) {
             visualNode.applyVisual(attributes);
@@ -406,6 +407,7 @@ public class CMUCell extends Cell {
                 }
             }, null);
         }
+        return true;
     }
 
     /**
@@ -435,9 +437,13 @@ public class CMUCell extends Cell {
         int visualNum = 0;
         fireSceneLoadedChanged(new SceneLoadedChangeEvent((float) visualNum / (float) message.getVisuals().size()));
         for (VisualMessage visual : message.getVisuals()) {
-            applyVisualMessage(visual);
-            visualNum++;
-            fireSceneLoadedChanged(new SceneLoadedChangeEvent((float) visualNum / (float) message.getVisuals().size()));
+            if (applyVisualMessage(visual)) {
+                visualNum++;
+                fireSceneLoadedChanged(new SceneLoadedChangeEvent((float) visualNum / (float) message.getVisuals().size()));
+            } else {
+                setConnectionState(ConnectionState.DISCONNECTED);
+                return;
+            }
         }
         this.setConnectionState(ConnectionState.LOADED);
     }
