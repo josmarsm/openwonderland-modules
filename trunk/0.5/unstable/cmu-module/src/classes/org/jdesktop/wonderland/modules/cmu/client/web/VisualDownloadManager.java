@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.web;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -56,6 +57,11 @@ public class VisualDownloadManager {
             urlStream.close();
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(VisualDownloadManager.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NullPointerException ex) {
+            // File not properly uploaded
+            attr = null;
+        } catch (EOFException ex) {
+            attr = null;
         } catch (IOException ex) {
             Logger.getLogger(VisualDownloadManager.class.getName()).log(Level.SEVERE, null, ex);
         }

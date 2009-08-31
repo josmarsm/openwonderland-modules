@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player;
 
+import edu.cmu.cs.dennisc.property.event.PropertyEvent;
+import edu.cmu.cs.dennisc.property.event.PropertyListener;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 import edu.cmu.cs.dennisc.scenegraph.Appearance;
@@ -44,7 +46,7 @@ import org.jdesktop.wonderland.modules.cmu.player.conversions.ScaleConverter;
  * then passes them on to anyone who is listening.
  * @author kevin
  */
-public class ModelWrapper implements AbsoluteTransformationListener {
+public class ModelWrapper implements AbsoluteTransformationListener, PropertyListener {
 
     private static long numNodes = 0;        // Used to assign unique IDs to each node.
     private final Model model;
@@ -131,6 +133,7 @@ public class ModelWrapper implements AbsoluteTransformationListener {
                 for (MouseButtonListener listener : currentModel.getMouseButtonListeners()) {
                     final MouseButtonListener finalListener = listener;
                     new Thread(new Runnable() {
+
                         public void run() {
                             finalListener.mouseButtonClicked(mouseEvent);
                         }
@@ -141,6 +144,7 @@ public class ModelWrapper implements AbsoluteTransformationListener {
                 for (MouseButtonListener listener : ((Scene) currentComposite).getMouseButtonListeners()) {
                     final MouseButtonListener finalListener = listener;
                     new Thread(new Runnable() {
+
                         public void run() {
                             finalListener.mouseButtonClicked(mouseEvent);
                         }
@@ -162,7 +166,22 @@ public class ModelWrapper implements AbsoluteTransformationListener {
     @Override
     public void absoluteTransformationChanged(AbsoluteTransformationEvent e) {
         updateTransformation();
-        fireTransformationMessageChanged();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void propertyChanging(PropertyEvent e) {
+    }
+
+    /**
+     * Callback function when a CMU property (in our case, the only
+     * property of concern is scale, for transformation update purposes)
+     * is updated.
+     * @param e {@inheritDoc}
+     */
+    public void propertyChanged(PropertyEvent e) {
+        updateTransformation();
     }
 
     /**
@@ -176,6 +195,7 @@ public class ModelWrapper implements AbsoluteTransformationListener {
             transformation.setTranslation(new Point3Converter(cmuVisual.getTranslation(cmuVisual.getRoot())).getVector3f());
             transformation.setRotation(new OrthogonalMatrix3x3Converter(cmuVisual.getTransformation(cmuVisual.getRoot()).orientation).getMatrix3f());
         }
+        fireTransformationMessageChanged();
     }
 
     /**
@@ -204,6 +224,7 @@ public class ModelWrapper implements AbsoluteTransformationListener {
             }
 
             cmuVisual.addAbsoluteTransformationListener(this);
+            cmuVisual.addPropertyListener(this);
             updateTransformation();
         }
     }
