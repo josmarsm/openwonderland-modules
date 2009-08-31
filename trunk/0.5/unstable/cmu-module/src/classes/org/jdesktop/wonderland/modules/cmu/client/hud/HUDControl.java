@@ -182,11 +182,14 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         synchronized (hudShowingLock) {
             if (event.getObject().equals(this.hudComponent)) {
                 if (event.getEventType().equals(HUDEventType.DISAPPEARED) || event.getEventType().equals(HUDEventType.CLOSED)) {
+                    // Invoke a specific runnable to unload the HUD; otherwise 
+                    // the visibility state can change between the time this is
+                    // called and the time the runnable actually executes
                     SwingUtilities.invokeLater(new Runnable() {
 
                         @Override
                         public void run() {
-                            if (!hudComponent.isVisible()) {
+                            if (hudComponent != null && !hudComponent.isVisible()) {
                                 new HUDDisplayer(false).run();
                             }
                         }
