@@ -17,10 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellServerState;
 
@@ -55,6 +59,9 @@ public class CMUCellFactory implements CellFactorySPI {
             state.setSceneTitle(uri.substring(uri.lastIndexOf('/') + 1));
         }
         state.setGroundPlaneShowing(false);
+        BoundingBox defaultBounds = new BoundingBox();
+        defaultBounds.yExtent = 0;
+        state.setBoundingVolumeHint(new BoundingVolumeHint(true, defaultBounds));
 
         return (T) state;
     }

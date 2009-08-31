@@ -115,7 +115,7 @@ public class ClientConnection extends Thread {
             } else if (message instanceof UnloadSceneMessage) {
                 queue.queueUnloadSceneMessage((UnloadSceneMessage) message);
             } else {
-                logger.warning("Unrecognized message queued: " + message);
+                logger.severe("Unrecognized message queued: " + message);
             }
 
             queue.notifyAll();

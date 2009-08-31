@@ -71,7 +71,7 @@ public class ProgramManager {
 
         // Initialize the connection
         session.connect(new ProgramConnection(this));
-        System.out.println("Connected to " + serverURL + " as " + username);
+        Logger.getLogger(ProgramManager.class.getName()).info("Connected to " + serverURL + " as " + username);
     }
 
     /**
@@ -85,7 +85,7 @@ public class ProgramManager {
      * created program.
      */
     public CreateProgramResponseMessage createProgram(MessageID messageID, CellID cellID, String assetURI) {
-        System.out.println("Creating program: " + assetURI);
+        Logger.getLogger(ProgramManager.class.getName()).info("Creating program: " + assetURI);
 
         // Delete the existing program (if any) first
         deleteProgram(cellID);
@@ -106,6 +106,10 @@ public class ProgramManager {
         } catch (URISyntaxException ex) {
             Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        Logger.getLogger(ProgramManager.class.getName()).info(assetURI +
+                " accepting connections on " + newProgram.getHostname() +
+                ":" + newProgram.getPort());
 
         // Create and send response message.
         return new CreateProgramResponseMessage(messageID, cellID, newProgram.getHostname(), newProgram.getPort());

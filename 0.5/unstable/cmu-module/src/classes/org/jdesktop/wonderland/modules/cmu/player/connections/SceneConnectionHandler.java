@@ -98,7 +98,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 while (true) {
                     // Accept client connections and add them.
                     incomingConnection = socketListener.accept();
-                    System.out.println("Connection accepted: " + incomingConnection);
+                    Logger.getLogger(SceneConnectionHandler.class.getName()).info("Connection accepted: " + incomingConnection);
                     addConnection(incomingConnection);
                 }
             } catch (IOException ex) {
@@ -256,8 +256,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
             // No action, we're already closing
         }
         synchronized (connections) {
-            System.out.println("Closing connection: " + connection);
-            connections.remove(connection);
+            if (connections.contains(connection)) {
+                Logger.getLogger(SceneConnectionHandler.class.getName()).info("Closing connection: " + connection);
+                connections.remove(connection);
+            }
         }
     }
 
