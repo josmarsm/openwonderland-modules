@@ -18,9 +18,6 @@
 package org.jdesktop.wonderland.modules.cmu.player.connections;
 
 import org.jdesktop.wonderland.modules.cmu.player.*;
-import edu.cmu.cs.dennisc.scenegraph.Component;
-import edu.cmu.cs.dennisc.scenegraph.Composite;
-import edu.cmu.cs.dennisc.scenegraph.Visual;
 import edu.cmu.cs.dennisc.scenegraph.event.ChildAddedEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.ChildRemovedEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.ChildrenListener;
@@ -33,7 +30,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -42,7 +38,6 @@ import java.util.logging.Logger;
 import org.alice.apis.moveandturn.Model;
 import org.alice.apis.moveandturn.Scene;
 import org.alice.apis.moveandturn.Transformable;
-import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
@@ -202,6 +197,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
 
     private synchronized void processModel(org.alice.apis.moveandturn.Composite c) {
         assert c != null;
+
+        System.out.println("Process model: " + c);
+
+        //TODO: Process camera
 
         if (c instanceof Model) {
             synchronized (connections) {

@@ -235,7 +235,7 @@ public class CMUCell extends Cell {
      * has not yet been initialized), we don't do anything, and instead
      * wait for the CMUCellMO associated with this cell to inform
      * us explicitly of the socket information.
-     * @param {@inheritDoc}
+     * @param clientState {@inheritDoc}
      */
     @Override
     public void setClientState(CellClientState clientState) {

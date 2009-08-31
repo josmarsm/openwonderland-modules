@@ -158,6 +158,15 @@ public class VisualAttributes implements Serializable {
             if (attributes.getMeshes() != null) {
                 for (TriMesh mesh : attributes.getMeshes()) {
                     nodeName += "_" + mesh.getMeshAsTriangles(null).length;
+                    if (attributes.texturePixels != null) {
+                        long total = 0;
+                        for (int i = 0; i < attributes.texturePixels.length; i++) {
+                            total += attributes.texturePixels[i];
+                        }
+                        nodeName += "_" + total;
+                        nodeName += "_" + attributes.textureWidth;
+                        nodeName += "_" + attributes.textureHeight;
+                    }
                 }
             }
             contentNodeName = nodeName;

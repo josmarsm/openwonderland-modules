@@ -109,7 +109,6 @@ public class VisualChangeReceiverThread extends Thread {
             Logger.getLogger(VisualChangeReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        //TODO: Notify the CMUCell about the reason for the disconnect?
         parentCell.updateConnectedState(false, this);
     }
 
