@@ -34,6 +34,7 @@ import org.alice.apis.moveandturn.Scene;
 import org.alice.apis.moveandturn.Transformable;
 import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.AppearanceConverter;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.GeometryConverter;
@@ -53,7 +54,9 @@ public class ModelWrapper implements AbsoluteTransformationListener, PropertyLis
     private final Visual cmuVisual;         // The wrapped visual.
     private final VisualAttributes visualAttributes;     // The serializable attributes for this visual.
     private final TransformationMessage transformation;
+    private final ModelPropertyMessage properties;
     private final Set<TransformationMessageListener> transformationListeners = new HashSet<TransformationMessageListener>();
+    private final Set<ModelPropertyMessageListener> propertyListeners = new HashSet<ModelPropertyMessageListener>();
     protected final NodeID nodeID;             // Unique ID for this visual.
 
 
@@ -74,6 +77,7 @@ public class ModelWrapper implements AbsoluteTransformationListener, PropertyLis
         cmuVisual = m.getSGVisual();
         visualAttributes = new VisualAttributes();
         transformation = new TransformationMessage(getNodeID());
+        properties = new ModelPropertyMessage(getNodeID());
         loadVisual();
     }
 
@@ -96,7 +100,7 @@ public class ModelWrapper implements AbsoluteTransformationListener, PropertyLis
      */
     public VisualMessage getVisualMessage() {
         synchronized (transformation) {
-            return new VisualMessage(visualAttributes.getID(), new TransformationMessage(transformation));
+            return new VisualMessage(visualAttributes.getID(), new TransformationMessage(transformation), new ModelPropertyMessage(properties));
         }
     }
 
@@ -106,6 +110,10 @@ public class ModelWrapper implements AbsoluteTransformationListener, PropertyLis
      */
     public TransformationMessage getTransformationMessage() {
         return this.transformation;
+    }
+
+    public ModelPropertyMessage getModelPropertyMessage() {
+        return this.properties;
     }
 
     /**
@@ -172,6 +180,7 @@ public class ModelWrapper implements AbsoluteTransformationListener, PropertyLis
      * {@inheritDoc}
      */
     public void propertyChanging(PropertyEvent e) {
+        // No action
     }
 
     /**
@@ -181,7 +190,7 @@ public class ModelWrapper implements AbsoluteTransformationListener, PropertyLis
      * @param e {@inheritDoc}
      */
     public void propertyChanged(PropertyEvent e) {
-        updateTransformation();
+        updateProperties();
     }
 
     /**
@@ -191,11 +200,18 @@ public class ModelWrapper implements AbsoluteTransformationListener, PropertyLis
      */
     protected void updateTransformation() {
         synchronized (transformation) {
-            transformation.setScale(new ScaleConverter(cmuVisual.scale.getCopy(cmuVisual)).getScale());
             transformation.setTranslation(new Point3Converter(cmuVisual.getTranslation(cmuVisual.getRoot())).getVector3f());
             transformation.setRotation(new OrthogonalMatrix3x3Converter(cmuVisual.getTransformation(cmuVisual.getRoot()).orientation).getMatrix3f());
         }
-        fireTransformationMessageChanged();
+        fireTransformationMessageChanged(new TransformationMessage(getTransformationMessage()));
+    }
+
+    protected void updateProperties() {
+        synchronized (properties) {
+            properties.setScale(new ScaleConverter(cmuVisual.scale.getCopy(cmuVisual)).getScale());
+            properties.setVisible(cmuVisual.isShowing.getValue().booleanValue());
+        }
+        firePropertiesMessageChanged(new ModelPropertyMessage(getModelPropertyMessage()));
     }
 
     /**
@@ -226,6 +242,7 @@ public class ModelWrapper implements AbsoluteTransformationListener, PropertyLis
             cmuVisual.addAbsoluteTransformationListener(this);
             cmuVisual.addPropertyListener(this);
             updateTransformation();
+            updateProperties();
         }
     }
 
@@ -261,14 +278,31 @@ public class ModelWrapper implements AbsoluteTransformationListener, PropertyLis
     /**
      * Notify listeners that the transformation has changed.
      */
-    private void fireTransformationMessageChanged() {
+    private void fireTransformationMessageChanged(TransformationMessage message) {
         synchronized (this.transformationListeners) {
             for (TransformationMessageListener listener : this.transformationListeners) {
-                synchronized (this.getTransformationMessage()) {
-                    listener.transformationMessageChanged(new TransformationMessage(this.getTransformationMessage()));
-                }
+                listener.transformationMessageChanged(message);
             }
+        }
+    }
 
+    public void addPropertiesMessageListener(ModelPropertyMessageListener listener) {
+        synchronized (this.propertyListeners) {
+            this.propertyListeners.add(listener);
+        }
+    }
+
+    public void removePropertiesMessageListener(ModelPropertyMessageListener listener) {
+        synchronized (this.propertyListeners) {
+            this.propertyListeners.remove(listener);
+        }
+    }
+
+    private void firePropertiesMessageChanged(ModelPropertyMessage message) {
+        synchronized (this.propertyListeners) {
+            for (ModelPropertyMessageListener listener : this.propertyListeners) {
+                listener.modelPropertyMessageChanged(message);
+            }
         }
     }
 }

@@ -20,9 +20,8 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import java.util.Iterator;
-import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode.VisualType;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SingleNodeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 
 /**
@@ -39,13 +38,13 @@ public class VisualParent extends Node {
      * baserd on the transformation.
      * @param transformation The transformation to be applied to a matching child
      */
-    public synchronized VisualNode applyTransformationToChild(TransformationMessage transformation) {
+    public synchronized VisualParent applyMessageToChild(SingleNodeMessage message) {
         if (this.getChildren() == null) {
             return null;
         }
         for (Spatial child : this.getChildren()) {
-            if (VisualParent.class.isAssignableFrom(child.getClass())) {
-                VisualNode node = ((VisualParent) child).applyTransformationToChild(transformation);
+            if (child instanceof VisualParent) {
+                VisualParent node = ((VisualParent) child).applyMessageToChild(message);
                 if (node != null) {
                     return node;
                 }
@@ -63,7 +62,7 @@ public class VisualParent extends Node {
         removeChild(deleted.getNodeID());
     }
 
-    public synchronized boolean removeChild(NodeID id) {
+    protected synchronized boolean removeChild(NodeID id) {
         Iterator<Spatial> it = this.getChildren().iterator();
         while (it.hasNext()) {
             Spatial child = it.next();
@@ -76,13 +75,12 @@ public class VisualParent extends Node {
         return false;
     }
 
-    public synchronized void applyVisibilityToChild(VisualType type, boolean visible) {
-        if (this.getChildren() == null) {
-            return;
-        }
-        for (Spatial child : this.getChildren()) {
-            if (VisualParent.class.isAssignableFrom(child.getClass())) {
-                ((VisualParent) child).applyVisibilityToChild(type, visible);
+    public synchronized void updateVisibility() {
+        if (this.getChildren() != null) {
+            for (Spatial child : this.getChildren()) {
+                if (child instanceof VisualParent) {
+                    ((VisualParent)child).updateVisibility();
+                }
             }
         }
     }

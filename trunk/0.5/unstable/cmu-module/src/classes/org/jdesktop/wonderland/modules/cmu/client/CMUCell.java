@@ -55,7 +55,9 @@ import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
 import org.jdesktop.wonderland.modules.cmu.client.web.VisualDownloadManager;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SingleNodeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
@@ -339,19 +341,22 @@ public class CMUCell extends Cell {
     public void applyMessage(Object message, VisualChangeReceiverThread receiver) {
         if (allowsUpdatesFrom(receiver)) {
             // Transformation for existing visual
-            if (TransformationMessage.class.isAssignableFrom(message.getClass())) {
+            if (message instanceof TransformationMessage) {
                 this.applyTransformationMessage((TransformationMessage) message);
+            } // Property change for existing visual
+            else if (message instanceof ModelPropertyMessage) {
+                this.applyModelPropertyMessage((ModelPropertyMessage) message);
             } // New visual
-            else if (VisualMessage.class.isAssignableFrom(message.getClass())) {
+            else if (message instanceof VisualMessage) {
                 this.applyVisualMessage((VisualMessage) message);
             } // Visual deleted
-            else if (VisualDeletedMessage.class.isAssignableFrom(message.getClass())) {
+            else if (message instanceof VisualDeletedMessage) {
                 this.applyVisualDeletedMessage((VisualDeletedMessage) message);
             } // Load entire scene
-            else if (SceneMessage.class.isAssignableFrom(message.getClass())) {
+            else if (message instanceof SceneMessage) {
                 this.applySceneMessage((SceneMessage) message);
             } // Unload scene
-            else if (UnloadSceneMessage.class.isAssignableFrom(message.getClass())) {
+            else if (message instanceof UnloadSceneMessage) {
                 this.applyUnloadSceneMessage((UnloadSceneMessage) message);
             } // Unknown message
             else {
@@ -365,13 +370,21 @@ public class CMUCell extends Cell {
      * with the appropriate node ID.
      * @param message Message to apply
      */
-    private void applyTransformationMessage(final TransformationMessage message) {
+    private void applyTransformationMessage(TransformationMessage message) {
+        applyNodeUpdateMessage(message);
+    }
+
+    private void applyModelPropertyMessage(ModelPropertyMessage message) {
+        applyNodeUpdateMessage(message);
+    }
+
+    private void applyNodeUpdateMessage(final SingleNodeMessage message) {
         synchronized (sceneRoot) {
             if (this.getConnectionState() == ConnectionState.LOADED) {
                 ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
                     public void update(Object arg0) {
-                        VisualNode visualNode = sceneRoot.applyTransformationToChild(message);
+                        VisualParent visualNode = sceneRoot.applyMessageToChild(message);
                         ClientContextJME.getWorldManager().addToUpdateList(visualNode);
                     }
                 }, null);
@@ -392,17 +405,17 @@ public class CMUCell extends Cell {
         if (attributes == null) {
             return false;
         }
-        final VisualNode visualNode = new VisualNode(message.getNodeID());
+        final VisualNode visualNode = new VisualNode(message.getNodeID(), this);
 
         synchronized (sceneRoot) {
             visualNode.applyVisual(attributes);
-            final boolean partOfWorld = getVisibility(visualNode);
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
                 public void update(Object arg0) {
                     sceneRoot.attachChild(visualNode);
-                    sceneRoot.applyTransformationToChild(message.getTransformation());
-                    visualNode.setPartOfWorld(partOfWorld);
+                    sceneRoot.applyMessageToChild(message.getTransformation());
+                    sceneRoot.applyMessageToChild(message.getProperties());
+                    visualNode.updateVisibility();
                     ClientContextJME.getWorldManager().addToUpdateList(visualNode);
                 }
             }, null);
@@ -465,7 +478,7 @@ public class CMUCell extends Cell {
      * @param node The node to check
      * @return The current visibility of the node
      */
-    protected boolean getVisibility(VisualNode node) {
+    public boolean isVisibleInCell(VisualNode node) {
         if (getConnectionState() != ConnectionState.LOADED) {
             return false;
         }
@@ -543,8 +556,7 @@ public class CMUCell extends Cell {
 
                     public void update(Object arg0) {
                         synchronized (sceneRoot) {
-                            sceneRoot.applyVisibilityToChild(VisualType.ANY_VISUAL, true);
-                            sceneRoot.applyVisibilityToChild(VisualType.GROUND, isGroundPlaneShowing());
+                            sceneRoot.updateVisibility();
                         }
                         ClientContextJME.getWorldManager().addToUpdateList(sceneRoot);
                     }
@@ -717,7 +729,7 @@ public class CMUCell extends Cell {
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
                 public void update(Object arg0) {
-                    sceneRoot.applyVisibilityToChild(VisualType.GROUND, groundPlaneShowing);
+                    sceneRoot.updateVisibility();
                     ClientContextJME.getWorldManager().addToUpdateList(sceneRoot);
                 }
             }, null);

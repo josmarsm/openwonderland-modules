@@ -26,27 +26,17 @@ import org.jdesktop.wonderland.modules.cmu.common.NodeID;
  * Can be matched with a particular visual by its node ID.
  * @author kevin
  */
-public class TransformationMessage extends CMUClientMessage {
+public class TransformationMessage extends SingleNodeMessage {
 
-    private static final long serialVersionUID = 1L;
-    private NodeID nodeID;
-    private float scale;
-    private Vector3f translation;
-    private Matrix3f rotation;
-
-    /**
-     * Basic constructor.
-     */
-    public TransformationMessage() {
-    }
+    private Vector3f translation = null;
+    private Matrix3f rotation = null;
 
     /**
      * Constructor with ID.
      * @param nodeID The ID of the node to which this transformation applies
      */
     public TransformationMessage(NodeID nodeID) {
-        this();
-        this.setNodeID(nodeID);
+        super(nodeID);
     }
 
     /**
@@ -54,44 +44,11 @@ public class TransformationMessage extends CMUClientMessage {
      * @param toCopy The message to copy.
      */
     public TransformationMessage(TransformationMessage toCopy) {
-        synchronized(toCopy) {
-            setNodeID(toCopy.getNodeID());
-            setScale(toCopy.getScale());
+        super(toCopy);
+        synchronized (toCopy) {
             setTranslation(toCopy.getTranslation());
             setRotation(toCopy.getRotation());
         }
-    }
-
-    /**
-     * Set the node ID to which this transformation applies.
-     * @param nodeID New node ID
-     */
-    public synchronized void setNodeID(NodeID nodeID) {
-        this.nodeID = nodeID;
-    }
-
-    /**
-     * Get the node ID to which this transformation applies.
-     * @return Revelant node ID
-     */
-    public synchronized NodeID getNodeID() {
-        return this.nodeID;
-    }
-
-    /**
-     * Set the scale at which the relevant visual node is drawn.
-     * @param scale New scale
-     */
-    public synchronized void setScale(float scale) {
-        this.scale = scale;
-    }
-
-    /**
-     * Get the scale at which the relevant visual node is drawn.
-     * @return Current scale
-     */
-    public synchronized float getScale() {
-        return this.scale;
     }
 
     /**
@@ -129,7 +86,6 @@ public class TransformationMessage extends CMUClientMessage {
     @Override
     public synchronized String toString() {
         String retVal = "Transformation message\n[NodeID:" + getNodeID() + "]\n";
-        retVal += "[Scale:" + getScale() + "]\n";
         retVal += "[Translation:" + getTranslation() + "]\n";
         retVal += "[Rotation:" + getRotation() + "]\n";
         return retVal;

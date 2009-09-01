@@ -15,24 +15,14 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
+package org.jdesktop.wonderland.modules.cmu.player;
 
-import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
 
 /**
- * Serializable message to inform that a particular visual should be
- * removed.
+ *
  * @author kevin
  */
-public class VisualDeletedMessage extends SingleNodeMessage {
-
-    private NodeID nodeID;
-
-    /**
-     * Constructor with ID.
-     * @param nodeID ID of the visual to delete
-     */
-    public VisualDeletedMessage(NodeID nodeID) {
-        super(nodeID);
-    }
+public interface ModelPropertyMessageListener {
+    public void modelPropertyMessageChanged(ModelPropertyMessage message);
 }

@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
-import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
 
 /**
@@ -26,27 +25,19 @@ import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRep
  * TransformationMessage.  Associated with a unique node ID.
  * @author kevin
  */
-public class VisualMessage extends CMUClientMessage {
+public class VisualMessage extends SingleNodeMessage {
 
     private static final long serialVersionUID = 1L;
     private final TransformationMessage transformation;
+    private final ModelPropertyMessage properties;
     private final VisualRepoIdentifier id;
 
-    /**
-     * Constructor with ID.
-     * @param nodeID The node ID of the relevant visual
-     */
-    public VisualMessage(VisualRepoIdentifier id, TransformationMessage initialTransform) {
+    public VisualMessage(VisualRepoIdentifier id, TransformationMessage initialTransform, ModelPropertyMessage initialProperties) {
+        super(initialTransform.getNodeID());
+        assert initialTransform.getNodeID().equals(initialProperties.getNodeID());
         this.transformation = initialTransform;
         this.id = id;
-    }
-
-    /**
-     * Get the node ID of the relevant visual.
-     * @return Current ID
-     */
-    public NodeID getNodeID() {
-        return this.transformation.getNodeID();
+        this.properties = initialProperties;
     }
 
     /**
@@ -56,6 +47,10 @@ public class VisualMessage extends CMUClientMessage {
      */
     public TransformationMessage getTransformation() {
         return this.transformation;
+    }
+
+    public ModelPropertyMessage getProperties() {
+        return this.properties;
     }
 
     public VisualRepoIdentifier getVisualID() {
