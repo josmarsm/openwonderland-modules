@@ -1,5 +1,5 @@
-DataDir file:/Users/paulby/Desktop/OrientationWorld
-TextureDir file:/Users/paulby/Desktop/OrientationWorld/textures
+DataDir 
+TextureDir /textures
 
 Geometry geometries_0-Material28
 	Shader DiffuseMapAO
