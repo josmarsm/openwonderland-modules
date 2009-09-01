@@ -24,7 +24,6 @@ import edu.cmu.cs.dennisc.scenegraph.Appearance;
 import edu.cmu.cs.dennisc.texture.BufferedImageTexture;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.util.logging.Logger;
 
 /**
  * Extracts jME-compatible properties from a CMU Appearance object.
@@ -34,34 +33,26 @@ public class AppearanceConverter implements PropertyListener {
 
     final static private String[] TEXTURE_PROPERTIES = {
         "diffuseColorTexture",
-        "bumpTexture",
-    };
-    final private BufferedImage texture;
+        "bumpTexture",};
+    private Appearance appearance;
+    private BufferedImage texture = null;
 
     /**
      * Standard constructor.
      * @param app The Appearance object to translate
      */
-    public AppearanceConverter(Appearance app) {
-        // Set texture properties.
-        edu.cmu.cs.dennisc.texture.Texture cmuText = null;
-        for (int i = 0; i < TEXTURE_PROPERTIES.length && cmuText == null; i++) {
-            cmuText = (edu.cmu.cs.dennisc.texture.Texture) (app.getPropertyNamed(TEXTURE_PROPERTIES[i]).getValue(app));
-        }
+    public AppearanceConverter(Appearance appearance) {
 
-        if (cmuText != null && BufferedImageTexture.class.isAssignableFrom(cmuText.getClass())) {
-            texture = ((BufferedImageTexture) cmuText).getBufferedImage();
-        } else {
-            texture = null;
-        }
+        this.appearance = appearance;
+        appearance.addPropertyListener(this);
+
 
         //TODO: Handle other appearance properties.
-        for (Property p : app.getProperties()) {
+        for (Property p : appearance.getProperties()) {
             //System.out.println("APPEARANCE PROPERTY for " + app.getName() + ": " + p.getName() + ", " + p.getValue(app));
             //System.out.println(p);
         }
 
-        app.addPropertyListener(this);
     }
 
     /**
@@ -69,6 +60,7 @@ public class AppearanceConverter implements PropertyListener {
      * @return Appearance texture
      */
     public Image getTexture() {
+        loadTexture();
         return texture;
     }
 
@@ -77,6 +69,7 @@ public class AppearanceConverter implements PropertyListener {
      * @return Texture height
      */
     public int getTextureHeight() {
+        loadTexture();
         return texture.getHeight();
     }
 
@@ -85,7 +78,24 @@ public class AppearanceConverter implements PropertyListener {
      * @return Texture width
      */
     public int getTextureWidth() {
+        loadTexture();
         return texture.getWidth();
+    }
+
+    protected void loadTexture() {
+        if (texture == null) {
+            // Set texture properties.
+            edu.cmu.cs.dennisc.texture.Texture cmuText = null;
+            for (int i = 0; i < TEXTURE_PROPERTIES.length && cmuText == null; i++) {
+                cmuText = (edu.cmu.cs.dennisc.texture.Texture) (appearance.getPropertyNamed(TEXTURE_PROPERTIES[i]).getValue(appearance));
+            }
+
+            if (cmuText != null && cmuText instanceof BufferedImageTexture) {
+                texture = ((BufferedImageTexture) cmuText).getBufferedImage();
+            } else {
+                texture = null;
+            }
+        }
     }
 
     public void propertyChanging(PropertyEvent e) {
