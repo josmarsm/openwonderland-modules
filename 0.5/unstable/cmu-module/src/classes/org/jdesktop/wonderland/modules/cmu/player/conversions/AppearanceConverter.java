@@ -17,20 +17,25 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player.conversions;
 
+import edu.cmu.cs.dennisc.property.Property;
+import edu.cmu.cs.dennisc.property.event.PropertyEvent;
+import edu.cmu.cs.dennisc.property.event.PropertyListener;
 import edu.cmu.cs.dennisc.scenegraph.Appearance;
 import edu.cmu.cs.dennisc.texture.BufferedImageTexture;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.util.logging.Logger;
 
 /**
  * Extracts jME-compatible properties from a CMU Appearance object.
  * @author kevin
  */
-public class AppearanceConverter {
+public class AppearanceConverter implements PropertyListener {
 
-    final static private String TEXTURE_PROPERTY = "diffuseColorTexture";
-    final static private String TEXTURE_PROPERTY_ALTERNATE = "bumpTexture";
-
+    final static private String[] TEXTURE_PROPERTIES = {
+        "diffuseColorTexture",
+        "bumpTexture",
+    };
     final private BufferedImage texture;
 
     /**
@@ -39,23 +44,24 @@ public class AppearanceConverter {
      */
     public AppearanceConverter(Appearance app) {
         // Set texture properties.
-        edu.cmu.cs.dennisc.texture.Texture cmuText = (edu.cmu.cs.dennisc.texture.Texture) (app.getPropertyNamed(TEXTURE_PROPERTY).getValue(app));
-        if (cmuText == null) {
-            cmuText = (edu.cmu.cs.dennisc.texture.Texture) (app.getPropertyNamed(TEXTURE_PROPERTY_ALTERNATE).getValue(app));
+        edu.cmu.cs.dennisc.texture.Texture cmuText = null;
+        for (int i = 0; i < TEXTURE_PROPERTIES.length && cmuText == null; i++) {
+            cmuText = (edu.cmu.cs.dennisc.texture.Texture) (app.getPropertyNamed(TEXTURE_PROPERTIES[i]).getValue(app));
         }
 
         if (cmuText != null && BufferedImageTexture.class.isAssignableFrom(cmuText.getClass())) {
             texture = ((BufferedImageTexture) cmuText).getBufferedImage();
-        }
-        else {
+        } else {
             texture = null;
         }
 
         //TODO: Handle other appearance properties.
-        //for (Property p : app.getProperties()) {
-        //    System.out.println("APPEARANCE PROPERTY: " + p);
-        //    System.out.println(p.getValue(app));
-        //}
+        for (Property p : app.getProperties()) {
+            //System.out.println("APPEARANCE PROPERTY for " + app.getName() + ": " + p.getName() + ", " + p.getValue(app));
+            //System.out.println(p);
+        }
+
+        app.addPropertyListener(this);
     }
 
     /**
@@ -80,5 +86,13 @@ public class AppearanceConverter {
      */
     public int getTextureWidth() {
         return texture.getWidth();
+    }
+
+    public void propertyChanging(PropertyEvent e) {
+        // No action
+    }
+
+    public void propertyChanged(PropertyEvent e) {
+        //Logger.getLogger(AppearanceConverter.class.getName()).severe("Appearance property changed at runtime: " + e);
     }
 }

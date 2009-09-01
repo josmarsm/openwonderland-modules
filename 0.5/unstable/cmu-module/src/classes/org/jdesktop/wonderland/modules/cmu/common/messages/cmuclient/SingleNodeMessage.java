@@ -20,19 +20,22 @@ package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
- * Serializable message to inform that a particular visual should be
- * removed.
+ *
  * @author kevin
  */
-public class VisualDeletedMessage extends SingleNodeMessage {
+public abstract class SingleNodeMessage extends CMUClientMessage {
 
-    private NodeID nodeID;
+    private final NodeID nodeID;
 
-    /**
-     * Constructor with ID.
-     * @param nodeID ID of the visual to delete
-     */
-    public VisualDeletedMessage(NodeID nodeID) {
-        super(nodeID);
+    public SingleNodeMessage(NodeID nodeID) {
+        this.nodeID = nodeID;
+    }
+
+    public SingleNodeMessage(SingleNodeMessage other) {
+        this(other.getNodeID());
+    }
+
+    public NodeID getNodeID() {
+        return nodeID;
     }
 }

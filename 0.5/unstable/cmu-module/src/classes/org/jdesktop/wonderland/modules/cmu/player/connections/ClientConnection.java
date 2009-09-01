@@ -27,6 +27,7 @@ import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.CMUClientMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
@@ -106,6 +107,8 @@ public class ClientConnection extends Thread {
         synchronized (queue) {
             if (message instanceof TransformationMessage) {
                 queue.queueTransformationMessage((TransformationMessage) message);
+            } else if (message instanceof ModelPropertyMessage) {
+                queue.queueModelPropertyMessage((ModelPropertyMessage)message);
             } else if (message instanceof SceneMessage) {
                 queue.queueSceneMessage((SceneMessage) message);
             } else if (message instanceof VisualMessage) {
@@ -187,6 +190,26 @@ public class ClientConnection extends Thread {
             while (li.hasNext()) {
                 CMUClientMessage nextMessage = li.next();
                 if (nextMessage instanceof TransformationMessage && ((TransformationMessage) nextMessage).getNodeID().equals(message.getNodeID())) {
+                    li.set(message);
+                    alreadyInQueue = true;
+                    break;
+                }
+            }
+
+            // Add to queue if necessary
+            if (!alreadyInQueue) {
+                queue.offerLast(message);
+            }
+        }
+
+        public synchronized void queueModelPropertyMessage(ModelPropertyMessage message) {
+            // Check to see if the properties for this node are
+            // already in the queue; if so, overwrite them
+            boolean alreadyInQueue = false;
+            ListIterator<CMUClientMessage> li = queue.listIterator();
+            while (li.hasNext()) {
+                CMUClientMessage nextMessage = li.next();
+                if (nextMessage instanceof ModelPropertyMessage && ((ModelPropertyMessage) nextMessage).getNodeID().equals(message.getNodeID())) {
                     li.set(message);
                     alreadyInQueue = true;
                     break;

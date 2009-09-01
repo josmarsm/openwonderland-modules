@@ -29,8 +29,12 @@ import com.jme.util.TextureManager;
 import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SingleNodeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
@@ -44,11 +48,14 @@ import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRep
 public class VisualNode extends VisualParent {
 
     private final NodeID nodeID;     // Unique ID for this node
+    private final CMUCell parentCell;
+    private boolean visibleInCMU = false;
     private BoundingBox bound = null;
     private static final Map<VisualRepoIdentifier, TextureKey> keyMap = new HashMap<VisualRepoIdentifier, TextureKey>();
     private static final String[] groundPlaneNames = {
-        "Ground.m_sgVisual", // Suffixes
-        "Surface.m_sgVisual"};
+        // Suffixes
+        "Ground.m_sgVisual",
+        "Surface.m_sgVisual",};
 
     public enum VisualType {
 
@@ -61,9 +68,10 @@ public class VisualNode extends VisualParent {
      * contained in the given VisualMessage.
      * @param message The message to be used in creating this node
      */
-    public VisualNode(NodeID nodeID) {
+    public VisualNode(NodeID nodeID, CMUCell parentCell) {
         super();
         this.nodeID = nodeID;
+        this.parentCell = parentCell;
     }
 
     public boolean isType(VisualType type) {
@@ -122,18 +130,32 @@ public class VisualNode extends VisualParent {
         return this.nodeID;
     }
 
+    public boolean isVisibleInCMU() {
+        return visibleInCMU;
+    }
+
+    public void setVisibleInCMU(boolean visibleInCMU) {
+        this.visibleInCMU = visibleInCMU;
+    }
+
     /**
      * Apply the given transformation to this node if it matches this node's
      * ID.  Call this function recursively on this node's children.
      * @param transformation {@inheritDoc}
      */
     @Override
-    public synchronized VisualNode applyTransformationToChild(TransformationMessage transformation) {
-        if (transformation.getNodeID().equals(this.getNodeID())) {
-            this.applyTransformation(transformation);
+    public synchronized VisualParent applyMessageToChild(SingleNodeMessage message) {
+        if (message.getNodeID().equals(this.getNodeID())) {
+            if (message instanceof TransformationMessage) {
+                this.applyTransformation((TransformationMessage) message);
+            } else if (message instanceof ModelPropertyMessage) {
+                this.applyProperties((ModelPropertyMessage) message);
+            } else {
+                Logger.getLogger(VisualNode.class.getName()).severe("Unknown message: " + message);
+            }
             return this;
         } else {
-            return super.applyTransformationToChild(transformation);
+            return super.applyMessageToChild(message);
         }
     }
 
@@ -143,7 +165,7 @@ public class VisualNode extends VisualParent {
      * @return True if this node should be deleted
      */
     @Override
-    public synchronized boolean removeChild(NodeID nodeID) {
+    protected synchronized boolean removeChild(NodeID nodeID) {
         super.removeChild(nodeID);
         if (nodeID.equals(this.getNodeID())) {
             return true;
@@ -152,11 +174,9 @@ public class VisualNode extends VisualParent {
     }
 
     @Override
-    public synchronized void applyVisibilityToChild(VisualType type, boolean visible) {
-        super.applyVisibilityToChild(type, visible);
-        if (this.isType(type)) {
-            this.setPartOfWorld(visible);
-        }
+    public synchronized void updateVisibility() {
+        super.updateVisibility();
+        setPartOfWorld(isVisibleInCMU() && parentCell.isVisibleInCell(this));
     }
 
     public synchronized void setPartOfWorld(boolean partOfWorld) {
@@ -172,11 +192,19 @@ public class VisualNode extends VisualParent {
     protected void applyTransformation(TransformationMessage transformation) {
         if (getChildren() != null) {
             for (Spatial mesh : getChildren()) {
-                mesh.setLocalScale(transformation.getScale());
                 mesh.setLocalTranslation(transformation.getTranslation());
                 mesh.setLocalRotation(transformation.getRotation());
             }
         }
+    }
+
+    protected void applyProperties(ModelPropertyMessage properties) {
+        if (getChildren() != null) {
+            for (Spatial mesh : getChildren()) {
+                mesh.setLocalScale(properties.getScale());
+            }
+        }
+        setVisibleInCMU(properties.isVisible());
     }
 
     /**
