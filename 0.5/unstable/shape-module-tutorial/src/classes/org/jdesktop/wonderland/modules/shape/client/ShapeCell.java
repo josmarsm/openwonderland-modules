@@ -26,10 +26,18 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.shape.common.ShapeCellChangeMessage;
@@ -41,6 +49,9 @@ public class ShapeCell extends Cell {
     private String textureURI = null;
     private ShapeCellRenderer renderer = null;
     private MouseEventListener listener = null;
+
+    @UsesCellComponent private ContextMenuComponent contextComp = null;
+    private ContextMenuFactorySPI menuFactory = null;
 
     public ShapeCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -71,6 +82,11 @@ public class ShapeCell extends Cell {
 
             ChannelComponent channel = getComponent(ChannelComponent.class);
             channel.removeMessageReceiver(ShapeCellChangeMessage.class);
+
+            if (menuFactory != null) {
+                contextComp.removeContextMenuFactory(menuFactory);
+                menuFactory = null;
+            }
         }
         else if (status == CellStatus.RENDERING && increasing == true) {
             listener = new MouseEventListener();
@@ -79,6 +95,18 @@ public class ShapeCell extends Cell {
             ShapeCellMessageReceiver recv = new ShapeCellMessageReceiver();
             ChannelComponent channel = getComponent(ChannelComponent.class);
             channel.addMessageReceiver(ShapeCellChangeMessage.class, recv);
+
+            if (menuFactory == null) {
+                final MenuItemListener l = new MenuItemListener();
+                menuFactory = new ContextMenuFactorySPI() {
+                    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                        return new ContextMenuItem[]{
+                                    new SimpleContextMenuItem("Change Shape", l)
+                                };
+                    }
+                };
+                contextComp.addContextMenuFactory(menuFactory);
+            }
         }
     }
 
@@ -90,6 +118,16 @@ public class ShapeCell extends Cell {
         }
         else {
             return super.createCellRenderer(rendererType);
+        }
+    }
+
+    class MenuItemListener implements ContextMenuActionListener {
+        public void actionPerformed(ContextMenuItemEvent event) {
+            shapeType = (shapeType.equals("BOX") == true) ? "SPHERE" : "BOX";
+            renderer.updateShape();
+
+            ShapeCellChangeMessage msg = new ShapeCellChangeMessage(getCellID(), shapeType);
+            sendCellMessage(msg);
         }
     }
 
