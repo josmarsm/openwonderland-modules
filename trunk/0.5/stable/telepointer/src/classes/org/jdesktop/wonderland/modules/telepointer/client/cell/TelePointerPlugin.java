@@ -72,8 +72,11 @@ public class TelePointerPlugin extends BaseClientPlugin
                 comp.setEnabled(false);
         }
 
-        TelePointerComponent comp = newViewCell.getComponent(TelePointerComponent.class);
-        if (comp!=null)
-            comp.setEnabled(telepointerMI.isSelected());
+        if (newViewCell!=null) {
+            TelePointerComponent comp = newViewCell.getComponent(TelePointerComponent.class);
+            if (comp!=null) {
+                comp.setEnabled(telepointerMI.isSelected());
+            }
+        }
     }
 }
