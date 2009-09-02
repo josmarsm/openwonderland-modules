@@ -96,8 +96,11 @@ public class SessionTestClientPlugin extends BaseClientPlugin
      * @inheritDoc()
      */
     public void primarySession(WonderlandSession session) {
-        logger.warning("SESSION TEST: SESSION IS PRIMARY " + session.toString());
-        session.addSessionStatusListener(this);
+        logger.warning("SESSION TEST: SESSION IS PRIMARY " + session);
+        if (session==null) {
+        } else {
+            session.addSessionStatusListener(this);
+        }
     }
 
     /**
