@@ -19,9 +19,12 @@ package org.jdesktop.wonderland.modules.sessiontest.client;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
@@ -33,7 +36,8 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  */
 @Plugin
 public class SessionTestClientPlugin extends BaseClientPlugin
-        implements SessionLifecycleListener, SessionStatusListener {
+        implements SessionLifecycleListener, SessionStatusListener,
+        ViewManagerListener {
 
     private static Logger logger =
             Logger.getLogger(SessionTestClientPlugin.class.getName());
@@ -56,6 +60,9 @@ public class SessionTestClientPlugin extends BaseClientPlugin
     protected void activate() {
         logger.warning("SESSION TEST: ACTIVATE PRIMARY SESSION MANAGER " +
                 getSessionManager().toString());
+        logger.warning("SESSION TEST: PRIMARY VIEW CELL " +
+                ViewManager.getViewManager().getPrimaryViewCell());
+        ViewManager.getViewManager().addViewManagerListener(this);
     }
 
     /**
@@ -65,6 +72,7 @@ public class SessionTestClientPlugin extends BaseClientPlugin
     protected void deactivate() {
         logger.warning("SESSION TEST: DEACTIVATE PRIMARY SESSION MANAGER " +
                 getSessionManager().toString());
+        ViewManager.getViewManager().removeViewManagerListener(this);
     }
 
     /**
@@ -98,5 +106,10 @@ public class SessionTestClientPlugin extends BaseClientPlugin
     public void sessionStatusChanged(WonderlandSession session, Status status) {
         logger.warning("SESSION TEST: SESSION STATUS CHANGED " +
                 session.toString() + " TO " + status);
+    }
+
+    public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
+        logger.warning("SESSION TEST: PRIMARY VIEW CHANGED FROM " +
+                oldViewCell + " TO " + newViewCell);
     }
 }
