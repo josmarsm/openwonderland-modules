@@ -43,6 +43,8 @@ public class VisualDownloadManager {
     /**
      * Get the visual from the repository which is defined by the given ID.
      * @param id The ID defining the visual
+     * @param username The user which uploaded the visuals to the content repository
+     * @param cell The cell which wishes to accesss the visual assets
      * @return The visual downloaded from the repository
      */
     public static VisualAttributes downloadVisual(VisualRepoIdentifier id, String username, Cell cell) {

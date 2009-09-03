@@ -15,15 +15,10 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-/*
- * DisconnectedHUD.java
- *
- * Created on Aug 25, 2009, 12:07:38 PM
- */
 package org.jdesktop.wonderland.modules.cmu.client.hud;
 
 /**
- *
+ * HUD panel to represent a disconnected CMU scene.
  * @author kevin
  */
 public class DisconnectedHUD extends CMUPanel {

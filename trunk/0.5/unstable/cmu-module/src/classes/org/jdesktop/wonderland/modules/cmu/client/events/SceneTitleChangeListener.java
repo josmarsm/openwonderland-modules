@@ -18,9 +18,13 @@
 package org.jdesktop.wonderland.modules.cmu.client.events;
 
 /**
- *
+ * Interface to listen for changes in the title of a scene.
  * @author kevin
  */
 public interface SceneTitleChangeListener {
+    /**
+     * Callback function when a scene title is changed.
+     * @param e Event representing the change in title
+     */
     public void sceneTitleChanged(SceneTitleChangeEvent e);
 }

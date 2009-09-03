@@ -18,11 +18,16 @@
 package org.jdesktop.wonderland.modules.cmu.client.events;
 
 /**
- *
+ * Listener for changes in the amount of a scene which has been loaded.
  * @author kevin
  */
 public interface SceneLoadedChangeListener {
 
+    /**
+     * Callback function when the amount of a scene which has been loaded
+     * changes.
+     * @param e The event representing the change in loaded amount
+     */
     public void sceneLoadedChanged(SceneLoadedChangeEvent e);
 
 }

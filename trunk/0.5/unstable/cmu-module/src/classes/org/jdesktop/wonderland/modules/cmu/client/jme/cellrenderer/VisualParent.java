@@ -33,18 +33,19 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDelet
 public class VisualParent extends Node {
 
     /**
-     * Recursively pass the transformation down to each child node which
-     * can process it; VisualNode overrides this method to do actual computation
-     * baserd on the transformation.
-     * @param transformation The transformation to be applied to a matching child
+     * Recursively pass the update down to this node's children stopping when
+     * one of them processes the message.
+     * @param message The message to be applied
+     * @return The node which processed the message, or null if none of
+     * our children could process it
      */
-    public synchronized VisualParent applyMessageToChild(NodeUpdateMessage message) {
+    public VisualParent applyUpdateToDescendant(NodeUpdateMessage message) {
         if (this.getChildren() == null) {
             return null;
         }
         for (Spatial child : this.getChildren()) {
             if (child instanceof VisualParent) {
-                VisualParent node = ((VisualParent) child).applyMessageToChild(message);
+                VisualParent node = ((VisualParent) child).applyUpdateToDescendant(message);
                 if (node != null) {
                     return node;
                 }
@@ -54,20 +55,17 @@ public class VisualParent extends Node {
     }
 
     /**
-     * Recursively pass the removal message down to child nodes, who should
-     * remove themselves if it applies to them.
-     * @param deleted The deletion message to be applied to a matching child
+     * Recursively pass the removal message down to child nodes, removing
+     * any who report that the message applies to them.
+     * @param visualDeletedMessage The deletion message to be applied to relevant children
+     * @return Whether the message applies to this node
      */
-    public synchronized void removeChild(VisualDeletedMessage deleted) {
-        removeChild(deleted.getNodeID());
-    }
-
-    protected synchronized boolean removeChild(NodeID id) {
+    public boolean removeDescendant(VisualDeletedMessage visualDeletedMessage) {
         Iterator<Spatial> it = this.getChildren().iterator();
         while (it.hasNext()) {
             Spatial child = it.next();
             if (child instanceof VisualParent) {
-                if (((VisualParent) child).removeChild(id)) {
+                if (((VisualParent) child).removeDescendant(visualDeletedMessage)) {
                     it.remove();
                 }
             }
@@ -75,11 +73,16 @@ public class VisualParent extends Node {
         return false;
     }
 
-    public synchronized void updateVisibility() {
+    /**
+     * Recursively update the visibility of our descendants; in the case
+     * of a VisualParent, there is no visibility to update, so we don't
+     * perform any actions on ourself.
+     */
+    public void updateVisibility() {
         if (this.getChildren() != null) {
             for (Spatial child : this.getChildren()) {
                 if (child instanceof VisualParent) {
-                    ((VisualParent)child).updateVisibility();
+                    ((VisualParent) child).updateVisibility();
                 }
             }
         }

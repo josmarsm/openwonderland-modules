@@ -42,12 +42,13 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.AppearanceP
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
 
 /**
  * Node encapsulating a visual element of the CMU scene.  These nodes are
- * assigned unique IDs so that transformation updates can be sent by the CMU
+ * assigned unique IDs so that updates can be applied appropriately by the CMU
  * program player.
  * @author kevin
  */
@@ -56,6 +57,7 @@ public class VisualNode extends VisualParent {
     private final NodeID nodeID;     // Unique ID for this node
     private final CMUCell parentCell;
     private boolean visibleInCMU = false;
+    private final Object visibleInCMULock = new Object();
     private BoundingBox bound = null;
     private static final Map<VisualRepoIdentifier, TextureKey> keyMap = new HashMap<VisualRepoIdentifier, TextureKey>();
     private static final String[] groundPlaneNames = {
@@ -63,28 +65,40 @@ public class VisualNode extends VisualParent {
         "Ground.m_sgVisual",
         "Surface.m_sgVisual",};
 
+    /**
+     * Enumeration to represent different categories of visuals in a
+     * scene.
+     */
     public enum VisualType {
 
+        /**
+         * Category containing all visuals.
+         */
         ANY_VISUAL,
+        /**
+         * Category containing ground-plane visuals.
+         */
         GROUND,
     }
 
     /**
-     * Constructs this visual with the properties
-     * contained in the given VisualMessage.
-     * @param message The message to be used in creating this node
+     * Standard constructor; no visual properties loaded.
+     * @param nodeID The unique ID for this visual
+     * @param parentCell The CMU cell which is the parent of this visual
      */
     public VisualNode(NodeID nodeID, CMUCell parentCell) {
         super();
         this.nodeID = nodeID;
         this.parentCell = parentCell;
 
+        // Add light state
         LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Light);
         lightState.setEnabled(true);
 
         this.setRenderState(lightState);
         this.updateRenderState();
 
+        // Add material state
         MaterialState materialState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
         materialState.setEnabled(true);
 
@@ -93,6 +107,7 @@ public class VisualNode extends VisualParent {
         this.setRenderState(materialState);
         this.updateRenderState();
 
+        // Add blend state
         BlendState alphaState = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Blend);
         alphaState.setBlendEnabled(true);
         alphaState.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
@@ -105,9 +120,16 @@ public class VisualNode extends VisualParent {
         this.setRenderState(alphaState);
         this.updateRenderState();
 
+        // Enable transparency
         this.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
     }
 
+    /**
+     * Find out whether the visual represented by this node fits into a
+     * particular visual category.
+     * @param type The visual category to check
+     * @return Whether this node is in the given category
+     */
     public boolean isType(VisualType type) {
         if (type == VisualType.ANY_VISUAL) {
             return true;
@@ -123,9 +145,9 @@ public class VisualNode extends VisualParent {
     }
 
     /**
-     * Apply the properties contained in this VisualMessage (i.e.
+     * Apply the properties contained in this VisualAttributes (i.e.
      * geometries, textures, etc.) to this node.
-     * @param message The message to apply
+     * @param attributes The attributes to apply
      */
     public void applyVisual(VisualAttributes attributes) {
         // Set name
@@ -164,26 +186,41 @@ public class VisualNode extends VisualParent {
         return this.nodeID;
     }
 
+    /**
+     * Find out whether this node is visible in the CMU scene (note that
+     * this is independent of its visibility in the CMU cell, i.e. a ground
+     * plane may be showing in the CMU scene but not in the cell).
+     * @return Whether this node is visible in the CMU scene
+     */
     public boolean isVisibleInCMU() {
-        return visibleInCMU;
-    }
-
-    public void setVisibleInCMU(boolean visibleInCMU) {
-        this.visibleInCMU = visibleInCMU;
+        synchronized (visibleInCMULock) {
+            return visibleInCMU;
+        }
     }
 
     /**
-     * Apply the given transformation to this node if it matches this node's
+     * Notify this node of its visibility in the CMU scene.
+     * @param visibleInCMU Whether this node is visible in the CMU scene
+     */
+    public void setVisibleInCMU(boolean visibleInCMU) {
+        synchronized (visibleInCMULock) {
+            this.visibleInCMU = visibleInCMU;
+        }
+    }
+
+    /**
+     * Apply the given update to this node if it matches this node's
      * ID.  Call this function recursively on this node's children.
-     * @param transformation {@inheritDoc}
+     * @param message {@inheritDoc}
+     * @return {@inheritDoc}
      */
     @Override
-    public synchronized VisualParent applyMessageToChild(NodeUpdateMessage message) {
+    public VisualParent applyUpdateToDescendant(NodeUpdateMessage message) {
         if (message.getNodeID().equals(this.getNodeID())) {
             if (message instanceof TransformationMessage) {
                 this.applyTransformation((TransformationMessage) message);
             } else if (message instanceof VisualPropertyMessage) {
-                this.applyModelProperties((VisualPropertyMessage) message);
+                this.applyVisualProperties((VisualPropertyMessage) message);
             } else if (message instanceof AppearancePropertyMessage) {
                 this.applyAppearanceProperties((AppearancePropertyMessage) message);
             } else {
@@ -191,38 +228,47 @@ public class VisualNode extends VisualParent {
             }
             return this;
         } else {
-            return super.applyMessageToChild(message);
+            return super.applyUpdateToDescendant(message);
         }
     }
 
     /**
-     * Recursively remove the node with ID given by the VisualDeletedMessage.
-     * @param deleted Message specifying the node to remove.
-     * @return True if this node should be deleted
+     * {@inheritDoc}
      */
     @Override
-    protected synchronized boolean removeChild(NodeID nodeID) {
-        super.removeChild(nodeID);
-        if (nodeID.equals(this.getNodeID())) {
+    public boolean removeDescendant(VisualDeletedMessage visualDeletedMessage) {
+        super.removeDescendant(visualDeletedMessage);
+        if (visualDeletedMessage.getNodeID().equals(this.getNodeID())) {
             return true;
         }
         return false;
     }
 
+    /**
+     * Recursively update the visibility of this node's children; also determine
+     * the current actual visibility of this node (based on its visibility in
+     * both the CMU scene and its CMU cell), and set its visibility accordingly.
+     */
     @Override
-    public synchronized void updateVisibility() {
+    public void updateVisibility() {
         super.updateVisibility();
+
+        // Check visibility in both CMU and the associated cell
         setPartOfWorld(isVisibleInCMU() && parentCell.isVisibleInCell(this));
     }
 
-    public synchronized void setPartOfWorld(boolean partOfWorld) {
+    /**
+     * Set the visibility of this node, as well as its bounds (so that
+     * collision detection happens on and only on visible nodes).
+     * @param partOfWorld Whether this node should be visible in the world
+     */
+    public void setPartOfWorld(boolean partOfWorld) {
         setVisible(partOfWorld);
         setModelBound(partOfWorld ? bound : null);
     }
 
     /**
-     * Schedule the transformation to be applied in a RenderUpdater to this
-     * node.
+     * Apply the given transformation to this node.
      * @param transformation The transformation to be applied
      */
     protected void applyTransformation(TransformationMessage transformation) {
@@ -234,7 +280,11 @@ public class VisualNode extends VisualParent {
         }
     }
 
-    protected void applyModelProperties(VisualPropertyMessage properties) {
+    /**
+     * Apply the given visual properties from the CMU scene to this node.
+     * @param properties The properties to be applied
+     */
+    protected void applyVisualProperties(VisualPropertyMessage properties) {
         if (getChildren() != null) {
             for (Spatial mesh : getChildren()) {
                 mesh.setLocalScale(properties.getScale());
@@ -243,6 +293,10 @@ public class VisualNode extends VisualParent {
         setVisibleInCMU(properties.isVisible());
     }
 
+    /**
+     * Apply the given appearance properties from the CMU scene to this node.
+     * @param appearanceProperties The properties to be applied
+     */
     protected void applyAppearanceProperties(AppearancePropertyMessage appearanceProperties) {
         //TODO: Handle diffuse color with texture
         MaterialState materialState = (MaterialState) this.getRenderState(StateType.Material);
@@ -259,7 +313,7 @@ public class VisualNode extends VisualParent {
 
     /**
      * Apply the given texture to this node.
-     * @param texture The texture to apply, as a standard Image
+     * @param attributes The VisualAttributes obejct containing the texture
      */
     protected void applyTexture(VisualAttributes attributes) {
         Texture t = getTexture(attributes);

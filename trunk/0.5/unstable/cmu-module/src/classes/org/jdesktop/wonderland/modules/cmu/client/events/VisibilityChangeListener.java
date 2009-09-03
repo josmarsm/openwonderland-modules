@@ -18,21 +18,15 @@
 package org.jdesktop.wonderland.modules.cmu.client.events;
 
 /**
- *
+ * Interface to listen for changes in visibility of particular visual node
+ * types.
  * @author kevin
  */
-public class GroundPlaneChangeEvent {
-    private boolean showingPlane;
+public interface VisibilityChangeListener {
 
-    public GroundPlaneChangeEvent(boolean showingPlane) {
-        setShowingPlane(showingPlane);
-    }
-
-    public boolean isShowingPlane() {
-        return showingPlane;
-    }
-
-    public void setShowingPlane(boolean showingPlane) {
-        this.showingPlane = showingPlane;
-    }
+    /**
+     * Callback function when the visibility of a visual type is changed.
+     * @param e The event representing the change in visibility
+     */
+    public void visibilityChanged(VisibilityChangeEvent e);
 }

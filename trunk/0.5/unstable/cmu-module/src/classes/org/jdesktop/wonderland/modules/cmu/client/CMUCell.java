@@ -19,12 +19,9 @@ package org.jdesktop.wonderland.modules.cmu.client;
 
 import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeEvent;
 import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeListener;
-import org.jdesktop.wonderland.modules.cmu.client.events.GroundPlaneChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.GroundPlaneChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeEvent;
 import org.jdesktop.wonderland.modules.cmu.client.hud.HUDControl;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import java.util.HashSet;
@@ -46,8 +43,12 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.cmu.client.events.ConnectionStateChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.ConnectionStateChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.events.SceneLoadedChangeEvent;
 import org.jdesktop.wonderland.modules.cmu.client.events.SceneLoadedChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.CMUCellRenderer;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode.VisualType;
@@ -55,7 +56,6 @@ import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
 import org.jdesktop.wonderland.modules.cmu.client.web.VisualDownloadManager;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
@@ -103,9 +103,10 @@ public class CMUCell extends Cell {
 
     // Listener sets
     private final Set<PlaybackChangeListener> playbackChangeListeners = new HashSet<PlaybackChangeListener>();
-    private final Set<GroundPlaneChangeListener> groundPlaneChangeListeners = new HashSet<GroundPlaneChangeListener>();
+    private final Set<VisibilityChangeListener> visibilityChangeListeners = new HashSet<VisibilityChangeListener>();
     private final Set<SceneTitleChangeListener> sceneTitleChangeListeners = new HashSet<SceneTitleChangeListener>();
     private final Set<SceneLoadedChangeListener> sceneLoadedChangeListeners = new HashSet<SceneLoadedChangeListener>();
+    private final Set<ConnectionStateChangeListener> connectionStateChangeListeners = new HashSet<ConnectionStateChangeListener>();
 
     // HUD Stuff
     private final HUDControl hudControl = new HUDControl(this);
@@ -390,7 +391,7 @@ public class CMUCell extends Cell {
                 ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
                     public void update(Object arg0) {
-                        VisualParent visualNode = sceneRoot.applyMessageToChild(message);
+                        VisualParent visualNode = sceneRoot.applyUpdateToDescendant(message);
                         ClientContextJME.getWorldManager().addToUpdateList(visualNode);
                     }
                 }, null);
@@ -419,9 +420,9 @@ public class CMUCell extends Cell {
 
                 public void update(Object arg0) {
                     sceneRoot.attachChild(visualNode);
-                    sceneRoot.applyMessageToChild(message.getTransformation());
-                    sceneRoot.applyMessageToChild(message.getModelProperties());
-                    sceneRoot.applyMessageToChild(message.getAppearanceProperties());
+                    sceneRoot.applyUpdateToDescendant(message.getTransformation());
+                    sceneRoot.applyUpdateToDescendant(message.getModelProperties());
+                    sceneRoot.applyUpdateToDescendant(message.getAppearanceProperties());
                     visualNode.updateVisibility();
                     ClientContextJME.getWorldManager().addToUpdateList(visualNode);
                 }
@@ -439,7 +440,7 @@ public class CMUCell extends Cell {
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
                 public void update(Object arg0) {
-                    sceneRoot.removeChild(message);
+                    sceneRoot.removeDescendant(message);
                     ClientContextJME.getWorldManager().addToUpdateList(sceneRoot);
                 }
             }, null);
@@ -455,11 +456,11 @@ public class CMUCell extends Cell {
         setVisualUsername(message.getUsername());
 
         int visualNum = 0;
-        fireSceneLoadedChanged(new SceneLoadedChangeEvent((float) visualNum / (float) message.getVisuals().size()));
+        fireSceneLoadedChanged(new SceneLoadedChangeEvent(this, (float) visualNum / (float) message.getVisuals().size()));
         for (VisualMessage visual : message.getVisuals()) {
             if (applyVisualMessage(visual)) {
                 visualNum++;
-                fireSceneLoadedChanged(new SceneLoadedChangeEvent((float) visualNum / (float) message.getVisuals().size()));
+                fireSceneLoadedChanged(new SceneLoadedChangeEvent(this, (float) visualNum / (float) message.getVisuals().size()));
             } else {
                 setConnectionState(ConnectionState.DISCONNECTED);
                 return;
@@ -478,10 +479,11 @@ public class CMUCell extends Cell {
     }
 
     /**
-     * Find out whether the given node should currently be visible, based on
-     * whether it's a ground plane node, and whether the scene is loaded
-     * (this allows nodes to be displayed "all at once" after a scene is
-     * loaded).
+     * Find out whether the given node should currently be visible in the cell,
+     * based on its visual type, and on the connection state of the scene.
+     * Note that this may be separate from the node's visibility in the CMU
+     * scene (i.e. ground plane nodes may be visible in the scene, but not in
+     * the cell).
      * @param node The node to check
      * @return The current visibility of the node
      */
@@ -540,13 +542,12 @@ public class CMUCell extends Cell {
      */
     protected void setConnectionState(ConnectionState connectionState) {
         //TODO: finer control of connected/disconnected states
-        hudControl.setConnectionState(connectionState);
         synchronized (sceneRoot) {
             this.connectionState = connectionState;
 
             if (!isConnected()) {
                 this.cmuConnectionThread = null;
-                fireSceneLoadedChanged(new SceneLoadedChangeEvent(0.0f));
+                fireSceneLoadedChanged(new SceneLoadedChangeEvent(this, 0.0f));
 
                 ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
@@ -571,6 +572,8 @@ public class CMUCell extends Cell {
                 }, null);
             }
         }
+
+        fireConnectionStateChanged(new ConnectionStateChangeEvent(this, connectionState));
     }
 
     /**
@@ -625,7 +628,7 @@ public class CMUCell extends Cell {
         synchronized (sceneTitleLock) {
             this.sceneTitle = sceneTitle;
         }
-        fireSceneTitleChanged(new SceneTitleChangeEvent(sceneTitle));
+        fireSceneTitleChanged(new SceneTitleChangeEvent(this, sceneTitle));
     }
 
     /**
@@ -694,7 +697,7 @@ public class CMUCell extends Cell {
             this.playing = playing;
             this.playbackSpeed = playbackSpeed;
         }
-        firePlaybackChanged(new PlaybackChangeEvent(playbackSpeed, playing));
+        firePlaybackChanged(new PlaybackChangeEvent(this, playbackSpeed, playing));
     }
 
     /**
@@ -742,7 +745,7 @@ public class CMUCell extends Cell {
                 }
             }, null);
         }
-        fireGroundPlaneChanged(new GroundPlaneChangeEvent(groundPlaneShowing));
+        fireVisibilityChanged(new VisibilityChangeEvent(this, VisualType.GROUND, groundPlaneShowing));
     }
 
     /**
@@ -804,9 +807,9 @@ public class CMUCell extends Cell {
      * Add a listener for ground plane changes.
      * @param listener Listener to add
      */
-    public void addGroundPlaneChangeListener(GroundPlaneChangeListener listener) {
-        synchronized (groundPlaneChangeListeners) {
-            groundPlaneChangeListeners.add(listener);
+    public void addGroundPlaneChangeListener(VisibilityChangeListener listener) {
+        synchronized (visibilityChangeListeners) {
+            visibilityChangeListeners.add(listener);
         }
     }
 
@@ -814,9 +817,9 @@ public class CMUCell extends Cell {
      * Remove a listener for ground plane changes.
      * @param listener Listener to remove
      */
-    public void removeGroundPlaneChangeListener(PlaybackChangeListener listener) {
+    public void removeVisibilityChangeListener(VisibilityChangeListener listener) {
         synchronized (playbackChangeListeners) {
-            playbackChangeListeners.remove(listener);
+            visibilityChangeListeners.remove(listener);
         }
     }
 
@@ -824,10 +827,10 @@ public class CMUCell extends Cell {
      * Send ground plane information to ground plane change listeners.
      * @param event The change event
      */
-    private void fireGroundPlaneChanged(GroundPlaneChangeEvent event) {
-        synchronized (groundPlaneChangeListeners) {
-            for (GroundPlaneChangeListener listener : groundPlaneChangeListeners) {
-                listener.groundPlaneChanged(event);
+    private void fireVisibilityChanged(VisibilityChangeEvent event) {
+        synchronized (visibilityChangeListeners) {
+            for (VisibilityChangeListener listener : visibilityChangeListeners) {
+                listener.visibilityChanged(event);
             }
         }
     }
@@ -892,6 +895,38 @@ public class CMUCell extends Cell {
         synchronized (sceneLoadedChangeListeners) {
             for (SceneLoadedChangeListener listener : sceneLoadedChangeListeners) {
                 listener.sceneLoadedChanged(event);
+            }
+        }
+    }
+
+    /**
+     * Add a listener for connection state changes.
+     * @param listener Listener to add
+     */
+    public void addConnectionStateChangeListener(ConnectionStateChangeListener listener) {
+        synchronized (connectionStateChangeListeners) {
+            connectionStateChangeListeners.add(listener);
+        }
+    }
+
+    /**
+     * Remove a listener for connection state changes.
+     * @param listener Listener to remove
+     */
+    public void removeConnectionStateChangeListener(ConnectionStateChangeListener listener) {
+        synchronized (connectionStateChangeListeners) {
+            connectionStateChangeListeners.remove(listener);
+        }
+    }
+
+    /**
+     * Send connection state information to state listeners.
+     * @param event The change event
+     */
+    private void fireConnectionStateChanged(ConnectionStateChangeEvent event) {
+        synchronized (connectionStateChangeListeners) {
+            for (ConnectionStateChangeListener listener : connectionStateChangeListeners) {
+                listener.connectionStateChanged(event);
             }
         }
     }
