@@ -383,8 +383,10 @@ public class PDFViewerWindow extends WindowSwing {
     }
 
     protected void updateControls() {
-        controls.setSynced(isSynced());
-        controls.setOnHUD(!toolManager.isOnHUD());
-        controls.setMode(isPlaying() ? PDFViewerState.PLAYING : PDFViewerState.PAUSED);
+        if (controls != null) {
+            controls.setSynced(isSynced());
+            controls.setOnHUD(!toolManager.isOnHUD());
+            controls.setMode(isPlaying() ? PDFViewerState.PLAYING : PDFViewerState.PAUSED);
+        }
     }
 }
