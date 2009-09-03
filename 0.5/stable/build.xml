@@ -8,11 +8,37 @@
         <include name="*/**/build.xml"/>
     </fileset> 
 
-    <target name="dist">
+    <target name="dist" depends="-modules-stable-dist-build, 
+                                 -modules-stable-dist-copy-selected,
+                                 -modules-stable-dist-copy-all"/>
+    <target name="-modules-stable-dist-build">
         <!-- build all projects -->
         <build-subprojects fileset="all.projects" target="dist"/>
-     
-        <!-- copy the modules into a common dist directory -->
+
+        <!-- create the dist directory that is used by the wonderland project
+             build scripts to find modules to include in a core build
+        -->
+        <mkdir dir="dist"/>
+    </target>
+
+    <!--
+         copy only the selected modules to the dist directory.  This is the
+         default action, unless the modules.include.all property is set
+    -->
+    <target name="-modules-stable-dist-copy-selected" unless="modules.include.all">
+        <copy todir="dist">
+            <filelist dir=".">
+                <file name="orientationworld/dist/orientationworld.jar"/>
+                <file name="pdfviewer/dist/pdfviewer.jar"/>
+                <file name="telepointer/dist/telepointer.jar"/>
+                <file name="whiteboard/dist/whiteboard.jar"/>
+            </filelist>
+            <mapper type="flatten"/>
+        </copy>
+    </target>
+
+    <!-- copy all the modules into a common dist directory -->
+    <target name="-modules-stable-dist-copy-all" if="modules.include.all">
         <mkdir dir="dist"/>
         <copy todir="dist">
             <fileset dir=".">
