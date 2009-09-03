@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.modules.pdfviewer.client.PDFViewerApp;
 import org.jdesktop.wonderland.modules.pdfviewer.client.PDFViewerWindow;
 import org.jdesktop.wonderland.modules.pdfviewer.common.PDFViewerConstants;
 import org.jdesktop.wonderland.modules.pdfviewer.common.cell.PDFViewerCellClientState;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
 
 /**
@@ -103,7 +104,7 @@ public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {
 
                     // this app has only one window, so it is always top-level
                     try {
-                        pdfViewerWindow = new PDFViewerWindow(this, pdfViewerApp, 
+                        pdfViewerWindow = new PDFViewerWindow(this, pdfViewerApp,
                                 clientState.getPreferredWidth(), clientState.getPreferredHeight(),
                                 true, clientState.getPixelScale());
                         pdfViewerWindow.setDecorated(clientState.getDecorated());
@@ -169,7 +170,7 @@ public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {
             // note that there's only one property change processed at a time
 
             handleStatusChange(event.getPropertyName(), event.getOldValue(),
-                               event.getNewValue());
+                    event.getNewValue());
         } else {
             logger.warning("unrecognized shared map: " + map.getName());
         }
@@ -203,7 +204,7 @@ public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {
     private void handlePageChange(String media, SharedData oldData, SharedData newData) {
         if (newData != null) {
             Integer page = ((SharedInteger) newData).getValue();
-            pdfViewerWindow.gotoPage(page, false);
+            pdfViewerWindow.showPage(page);
         }
     }
 
@@ -215,7 +216,12 @@ public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {
 
     private void handleSlideShowMode(String media, SharedData oldData, SharedData newData) {
         if (newData != null) {
-            // TODO: is there anything to do here when entering slide mode?
+            Boolean playing = ((SharedBoolean) newData).getValue();
+            if (playing) {
+                pdfViewerWindow.play();
+            } else {
+                pdfViewerWindow.pause();
+            }
         }
     }
 }

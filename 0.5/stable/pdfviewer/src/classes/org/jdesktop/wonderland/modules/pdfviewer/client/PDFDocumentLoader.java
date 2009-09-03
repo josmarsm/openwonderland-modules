@@ -93,7 +93,7 @@ public class PDFDocumentLoader extends Thread {
     @Override
     public void run() {
         if (url != null) {
-            logger.info("loading PDF from: " + url);
+            logger.info("loading PDF: " + url);
             loadInProgress = true;
             PDFFile loadingFile = null;
             pdfFile = null;
@@ -104,7 +104,7 @@ public class PDFDocumentLoader extends Thread {
                 loadingFile = new PDFFile(getDocumentData(url));
                 Date now = new Date();
 
-                logger.info("PDF loaded in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
+                logger.info("loaded PDF in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
             } catch (Exception e) {
                 logger.warning("failed to open: " + url + ": " + e);
                 notifyListeners(url, false, e);

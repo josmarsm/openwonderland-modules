@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.pdfviewer.common;
 
 /**
+ * PDF viewer shared state keys.
  *
  * @author nsimpson
  */

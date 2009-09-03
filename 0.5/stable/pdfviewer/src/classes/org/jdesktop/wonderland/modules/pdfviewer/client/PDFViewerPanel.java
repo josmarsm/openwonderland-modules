@@ -28,21 +28,17 @@ import java.net.URL;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.pdfviewer.client.PDFDocumentLoader.PDFDocumentLoaderListener;
-import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
-import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
-import org.jdesktop.wonderland.modules.pdfviewer.common.PDFViewerConstants;
-import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
-import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
 
 /**
  * A panel for displaying images from PDF documents
+ *
+ * @author nsimpson
  */
 public class PDFViewerPanel extends JPanel {
 
@@ -59,58 +55,25 @@ public class PDFViewerPanel extends JPanel {
     private WindowSwing window;
     private HUDComponent messageComponent;
 
-    public enum VIEW_MODE {
-
-        PAGE, GRID
-    };
-    private VIEW_MODE mode = VIEW_MODE.PAGE;
-
-    public interface Container {
-
-        public void validate();
-
-        public void setHud(boolean enable);
-    }
-    // shared state
-    @UsesCellComponent
-    private SharedStateComponent ssc;
-    private SharedMapCli statusMap;
-
     public PDFViewerPanel(WindowSwing window) {
         this.window = window;
         initComponents();
         loader = new PDFDocumentLoader();
     }
 
-    public void setSSC(SharedStateComponent ssc) {
-        this.ssc = ssc;
-        // load the PDF viewer's status map
-        statusMap = ssc.get(PDFViewerConstants.STATUS_MAP);
+    public void openDocument(String documentURI) {
+        openDocument(documentURI, 1);
     }
 
-    public void setViewMode(VIEW_MODE mode) {
-        if (this.mode != mode) {
-            this.mode = mode;
-            // TODO: trigger mode change
-        }
-    }
-
-    public VIEW_MODE getViewMode() {
-        return mode;
-    }
-
-    public void toggleHUD() {
-    }
-
-    public void openDocument(final String documentURI) {
+    public void openDocument(final String documentURI, final int pageNumber) {
         URL documentURL;
         this.documentURI = documentURI;
+        this.pageNumber = pageNumber;
 
         // reset state
         currentDocument = null;
         currentPage = null;
         viewImage = null;
-        pageNumber = 1;
         zoom = 1.0f;
 
         try {
@@ -147,6 +110,7 @@ public class PDFViewerPanel extends JPanel {
                 if (loaded) {
                     logger.info("successfully loaded: " + url);
                     currentDocument = loader.getPDFFile();
+                    gotoPage(pageNumber);
                     resizeToFit();
                     repaint();
                 } else {
@@ -202,13 +166,8 @@ public class PDFViewerPanel extends JPanel {
         gotoPage(currentDocument.getNumPages());
     }
 
-    public void gotoPage(int page, boolean notify) {
-        // update shared state
-        if (isSynced() && notify) {
-            statusMap.put(PDFViewerConstants.PAGE_NUMBER,
-                    SharedInteger.valueOf(page));
-        }
-        showPage(page);
+    public int getPageCount() {
+        return currentDocument.getNumPages();
     }
 
     /**
@@ -216,23 +175,7 @@ public class PDFViewerPanel extends JPanel {
      * @param page the page to display
      */
     public void gotoPage(int page) {
-        gotoPage(page, true);
-    }
-
-    public void play() {
-        if (isSynced() && !playing) {
-            playing = true;
-            statusMap.put(PDFViewerConstants.SLIDE_SHOW_MODE,
-                    SharedBoolean.valueOf(playing));
-        }
-    }
-
-    public void pause() {
-        if (isSynced() && playing) {
-            playing = false;
-            statusMap.put(PDFViewerConstants.SLIDE_SHOW_MODE,
-                    SharedBoolean.valueOf(playing));
-        }
+        showPage(page);
     }
 
     public void zoomIn() {
@@ -246,16 +189,6 @@ public class PDFViewerPanel extends JPanel {
             zoom = 1.0f;
         }
         repaint();
-    }
-
-    public void sync() {
-    }
-
-    public void unsync() {
-    }
-
-    public boolean isSynced() {
-        return synced;
     }
 
     /**
@@ -314,6 +247,7 @@ public class PDFViewerPanel extends JPanel {
      * @param p the page to display
      */
     public void showPage(int p) {
+        logger.info("showing page: " + p);
         if (isValidPage(p)) {
             viewImage = getPageImage(p, getWidth(), getHeight());
             repaint();
@@ -367,22 +301,6 @@ public class PDFViewerPanel extends JPanel {
         return image;
     }
 
-    public BufferedImage getGridImage(int width, int height) {
-        return null;
-    }
-
-    public BufferedImage getImage(int width, int height) {
-        BufferedImage image = null;
-
-        if (mode == VIEW_MODE.PAGE) {
-            image = getPageImage(pageNumber, width, height);
-        } else if (mode == VIEW_MODE.GRID) {
-            image = getGridImage(width, height);
-        }
-
-        return image;
-    }
-
     @Override
     public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -392,7 +310,7 @@ public class PDFViewerPanel extends JPanel {
         double appHeight = (double) this.getHeight();
 
         if (viewImage == null) {
-            viewImage = getImage(getWidth(), getHeight());
+            viewImage = getPageImage(pageNumber, getWidth(), getHeight());
         }
 
         if (viewImage != null) {
