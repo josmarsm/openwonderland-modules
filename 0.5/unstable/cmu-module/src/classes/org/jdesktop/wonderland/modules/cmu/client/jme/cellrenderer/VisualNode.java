@@ -38,13 +38,14 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import org.jdesktop.wonderland.modules.cmu.common.VisualType;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.AppearancePropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
-import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
+import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualAttributesIdentifier;
 
 /**
  * Node encapsulating a visual element of the CMU scene.  These nodes are
@@ -59,27 +60,11 @@ public class VisualNode extends VisualParent {
     private boolean visibleInCMU = false;
     private final Object visibleInCMULock = new Object();
     private BoundingBox bound = null;
-    private static final Map<VisualRepoIdentifier, TextureKey> keyMap = new HashMap<VisualRepoIdentifier, TextureKey>();
+    private static final Map<VisualAttributesIdentifier, TextureKey> keyMap = new HashMap<VisualAttributesIdentifier, TextureKey>();
     private static final String[] groundPlaneNames = {
         // Suffixes
         "Ground.m_sgVisual",
         "Surface.m_sgVisual",};
-
-    /**
-     * Enumeration to represent different categories of visuals in a
-     * scene.
-     */
-    public enum VisualType {
-
-        /**
-         * Category containing all visuals.
-         */
-        ANY_VISUAL,
-        /**
-         * Category containing ground-plane visuals.
-         */
-        GROUND,
-    }
 
     /**
      * Standard constructor; no visual properties loaded.

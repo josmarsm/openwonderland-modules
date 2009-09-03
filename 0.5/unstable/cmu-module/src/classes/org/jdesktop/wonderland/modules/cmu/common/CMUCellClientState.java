@@ -34,10 +34,18 @@ public class CMUCellClientState extends CellClientState {
     private int port;
     private String sceneTitle;
 
+    /**
+     * Get the title of the scene.
+     * @return Title of the scene
+     */
     public synchronized String getSceneTitle() {
         return sceneTitle;
     }
 
+    /**
+     * Set hte title of the scene.
+     * @param sceneTitle Title of the scene
+     */
     public synchronized void setSceneTitle(String sceneTitle) {
         this.sceneTitle = sceneTitle;
     }
@@ -97,21 +105,35 @@ public class CMUCellClientState extends CellClientState {
         return serverAndPortInitialized;
     }
 
+    /**
+     * Get the play/pause state of the scene.
+     * @return True if playing, false if paused
+     */
     public synchronized boolean isPlaying() {
         return playing;
     }
 
+    /**
+     * Set the play/pause state of the scene.
+     * @param playing True if playing, false if paused
+     */
     public synchronized void setPlaying(boolean playing) {
         this.playing = playing;
     }
 
+    /**
+     * Find out whether the ground plane is showing in this cell.
+     * @return Whether the ground plane is showing
+     */
     public boolean isGroundPlaneShowing() {
         return groundPlaneShowing;
     }
 
+    /**
+     * Set the ground plane visibility for this cell.
+     * @param groundPlaneShowing Whether the ground plane is showing
+     */
     public void setGroundPlaneShowing(boolean groundPlaneShowing) {
         this.groundPlaneShowing = groundPlaneShowing;
     }
-
-
 }

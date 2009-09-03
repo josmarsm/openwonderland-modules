@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.cmu.client.events;
 
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
-import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode.VisualType;
+import org.jdesktop.wonderland.modules.cmu.common.VisualType;
 
 /**
  * Event representing a change in visibility for a particular visual node type.

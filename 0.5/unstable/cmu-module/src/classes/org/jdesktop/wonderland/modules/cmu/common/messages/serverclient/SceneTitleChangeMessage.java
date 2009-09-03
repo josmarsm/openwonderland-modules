@@ -20,22 +20,34 @@ package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- *
+ * Message to notify the server/clients that a scene's title has changed.
  * @author kevin
  */
 public class SceneTitleChangeMessage extends CellMessage {
 
-    String sceneTitle;
+    private String sceneTitle;
 
+    /**
+     * Standard constructor.
+     * @param sceneTitle The new title of the scene
+     */
     public SceneTitleChangeMessage(String sceneTitle) {
         super();
         setSceneTitle(sceneTitle);
     }
 
+    /**
+     * Get the new title of the scene.
+     * @return Title of the scene
+     */
     public String getSceneTitle() {
         return sceneTitle;
     }
 
+    /**
+     * Set the new title of the scene.
+     * @param sceneTitle Title of the scene
+     */
     public void setSceneTitle(String sceneTitle) {
         this.sceneTitle = sceneTitle;
     }

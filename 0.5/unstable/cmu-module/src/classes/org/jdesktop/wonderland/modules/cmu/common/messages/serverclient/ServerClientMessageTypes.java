@@ -29,7 +29,7 @@ public final class ServerClientMessageTypes {
      */
     public static final Class[] MESSAGE_TYPES_TO_RECEIVE = {
         ConnectionChangeMessage.class,
-        GroundPlaneChangeMessage.class,
+        VisibilityChangeMessage.class,
         MouseButtonEventMessage.class,
         PlaybackSpeedChangeMessage.class,
         RestartProgramMessage.class,

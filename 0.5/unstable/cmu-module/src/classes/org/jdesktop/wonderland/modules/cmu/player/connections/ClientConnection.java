@@ -147,7 +147,7 @@ public class ClientConnection extends Thread {
         }
     }
 
-    private void writeToOutputStream(Serializable message) throws SocketException {
+    protected void writeToOutputStream(Serializable message) throws SocketException {
         synchronized (socket) {
             try {
                 this.outputStream.writeUnshared(message);
@@ -166,7 +166,7 @@ public class ClientConnection extends Thread {
         return "Connection: " + socket;
     }
 
-    private static class MessageQueue {
+    protected static class MessageQueue {
 
         private final LinkedList<CMUClientMessage> queue = new LinkedList<CMUClientMessage>();
 

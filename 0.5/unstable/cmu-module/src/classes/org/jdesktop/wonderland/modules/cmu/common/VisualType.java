@@ -15,27 +15,21 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
-
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+package org.jdesktop.wonderland.modules.cmu.common;
 
 /**
- *
+ * Enumeration to represent different categories of visuals in a
+ * scene.
  * @author kevin
  */
-public class GroundPlaneChangeMessage extends CellMessage {
-    private boolean groundPlaneShowing;
+public enum VisualType {
 
-    public GroundPlaneChangeMessage(boolean groundPlaneShowing) {
-        super();
-        setGroundPlaneShowing(groundPlaneShowing);
-    }
-
-    public boolean isGroundPlaneShowing() {
-        return groundPlaneShowing;
-    }
-
-    public void setGroundPlaneShowing(boolean groundPlaneShowing) {
-        this.groundPlaneShowing = groundPlaneShowing;
-    }
+    /**
+     * Category containing all visuals.
+     */
+    ANY_VISUAL,
+    /**
+     * Category containing ground-plane visuals.
+     */
+    GROUND,
 }

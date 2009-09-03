@@ -52,7 +52,7 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      * representing successful program creation.
      * @param messageID The message ID of the CreateProgramMessage that this is in response to
      * @param cellID The relevant cell ID
-     * @param server The host address to connect to
+     * @param hostname The host to connect to
      * @param port The port to connect to
      */
     public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String hostname, int port) {
@@ -114,10 +114,5 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      */
     public boolean isCreationSuccessful() {
         return this.creationSuccessful;
-    }
-    
-    @Override
-    public String toString() {
-        return "Program created [Cell:"+ cellID + "] [Server:" + hostname + "] [Port:" + port + "]";
     }
 }

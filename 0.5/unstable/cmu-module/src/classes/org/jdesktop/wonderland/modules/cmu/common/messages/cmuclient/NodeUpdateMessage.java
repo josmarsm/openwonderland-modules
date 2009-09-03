@@ -20,16 +20,28 @@ package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
- *
+ * Message representing an update for the properties of a particular node -
+ * transformation, visual properties, etc.  This differs from other
+ * types of SingleNodeMessage's in that the message should be able to be
+ * applied directly to the node (with no notion of context), rather than
+ * simply being <i>about</i> the node.
  * @author kevin
  */
 public abstract class NodeUpdateMessage extends SingleNodeMessage {
 
+    /**
+     * Standard constructor.
+     * @param nodeID ID for the node to which this message applies
+     */
     public NodeUpdateMessage(NodeID nodeID) {
         super(nodeID);
     }
 
-    public NodeUpdateMessage(SingleNodeMessage other) {
-        this(other.getNodeID());
+    /**
+     * Copy constructor.
+     * @param toCopy Message to copy
+     */
+    public NodeUpdateMessage(NodeUpdateMessage toCopy) {
+        this(toCopy.getNodeID());
     }
 }

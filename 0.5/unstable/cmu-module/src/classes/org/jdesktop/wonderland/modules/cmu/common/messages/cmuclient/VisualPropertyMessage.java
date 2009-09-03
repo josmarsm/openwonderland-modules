@@ -21,19 +21,27 @@ import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
- *
+ * Message containing basic properties for a CMU visual (i.e. scale,
+ * whether the visual is currently visible).
  * @author kevin
  */
 public class VisualPropertyMessage extends NodeUpdateMessage {
 
     private Vector3f scale = null;
-    private float opacity = 0.0f;
     private boolean visible = false;
 
+    /**
+     * Standard constructor.
+     * @param nodeID The ID corresponding to this visual
+     */
     public VisualPropertyMessage(NodeID nodeID) {
         super(nodeID);
     }
 
+    /**
+     * Copy constructor.
+     * @param toCopy The message to copy
+     */
     public VisualPropertyMessage(VisualPropertyMessage toCopy) {
         super(toCopy);
         setScale(toCopy.getScale());
@@ -42,7 +50,7 @@ public class VisualPropertyMessage extends NodeUpdateMessage {
 
     /**
      * Set the scale at which the relevant visual node is drawn.
-     * @param scale New scale
+     * @param scale Scale at which to draw the node
      */
     public synchronized void setScale(Vector3f scale) {
         this.scale = scale;
@@ -56,10 +64,18 @@ public class VisualPropertyMessage extends NodeUpdateMessage {
         return this.scale;
     }
 
+    /**
+     * Find out whether the visual is visible in the scene.
+     * @return Whether the visual is currently visible
+     */
     public synchronized boolean isVisible() {
         return visible;
     }
 
+    /**
+     * Set the visibility of the visual in the scene.
+     * @param visible Whether the visual is currently visible
+     */
     public synchronized void setVisible(boolean visible) {
         this.visible = visible;
     }
