@@ -15,19 +15,21 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
-package org.jdesktop.wonderland.modules.cmu.player;
-
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
+import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
- * Interface to listen for transformation changes.
+ *
  * @author kevin
  */
-public interface TransformationMessageListener {
-    /**
-     * Called when a listened-to transformation has been updated.
-     * @param message The updated transformation
-     */
-    public void transformationMessageChanged(TransformationMessage message);
+public abstract class NodeUpdateMessage extends SingleNodeMessage {
+
+    public NodeUpdateMessage(NodeID nodeID) {
+        super(nodeID);
+    }
+
+    public NodeUpdateMessage(SingleNodeMessage other) {
+        this(other.getNodeID());
+    }
 }

@@ -15,33 +15,33 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.player.conversions;
+package org.jdesktop.wonderland.modules.cmu.player.conversions.math;
 
 import com.jme.math.Vector3f;
-import edu.cmu.cs.dennisc.math.Point3;
-
+import edu.cmu.cs.dennisc.math.Matrix3x3;
 
 /**
- * Simple converter from a CMU Point3 object to a jME vector.
+ * Simple converter from a CMU scale matrix to a scalar for use in
+ * jME scaling.
  * @author kevin
  */
-public class Point3Converter {
+public class ScaleConverter {
 
-    private Vector3f point;
+    private final Vector3f scale;
 
     /**
      * Standard constructor.
-     * @param point The point to translate
+     * @param scale The matrix to translate
      */
-    public Point3Converter(Point3 point) {
-        this.point = new Vector3f((float)point.x, (float)point.y, (float)point.z);
+    public ScaleConverter(Matrix3x3 scale) {
+        this.scale = new Vector3f((float)scale.right.x, (float)scale.up.y, (float)scale.backward.z);
     }
 
     /**
-     * Get the jME vector equivalent to the point provided.
-     * @return The equivalent jME vector
+     * Get the scalar scale represented by the provided matrix.
+     * @return Scale represented by the matrix
      */
-    public Vector3f getVector3f() {
-        return this.point;
+    public Vector3f getScale() {
+        return this.scale;
     }
 }

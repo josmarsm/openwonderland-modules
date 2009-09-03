@@ -17,22 +17,24 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
  *
  * @author kevin
  */
-public class ModelPropertyMessage extends SingleNodeMessage {
+public class VisualPropertyMessage extends NodeUpdateMessage {
 
-    private float scale = 0.0f;
+    private Vector3f scale = null;
+    private float opacity = 0.0f;
     private boolean visible = false;
 
-    public ModelPropertyMessage(NodeID nodeID) {
+    public VisualPropertyMessage(NodeID nodeID) {
         super(nodeID);
     }
 
-    public ModelPropertyMessage(ModelPropertyMessage toCopy) {
+    public VisualPropertyMessage(VisualPropertyMessage toCopy) {
         super(toCopy);
         setScale(toCopy.getScale());
         setVisible(toCopy.isVisible());
@@ -42,7 +44,7 @@ public class ModelPropertyMessage extends SingleNodeMessage {
      * Set the scale at which the relevant visual node is drawn.
      * @param scale New scale
      */
-    public synchronized void setScale(float scale) {
+    public synchronized void setScale(Vector3f scale) {
         this.scale = scale;
     }
 
@@ -50,7 +52,7 @@ public class ModelPropertyMessage extends SingleNodeMessage {
      * Get the scale at which the relevant visual node is drawn.
      * @return Current scale
      */
-    public synchronized float getScale() {
+    public synchronized Vector3f getScale() {
         return this.scale;
     }
 

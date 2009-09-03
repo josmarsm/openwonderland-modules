@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.player.conversions;
+package org.jdesktop.wonderland.modules.cmu.player.conversions.math;
 
 import com.jme.math.Matrix3f;
 import edu.cmu.cs.dennisc.math.OrthogonalMatrix3x3;

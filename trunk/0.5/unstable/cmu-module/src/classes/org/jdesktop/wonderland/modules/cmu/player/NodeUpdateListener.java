@@ -15,14 +15,20 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+
 package org.jdesktop.wonderland.modules.cmu.player;
 
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 
 /**
- *
+ * Interface to listen for updates to a Node's transformation, visual properties,
+ * etc.
  * @author kevin
  */
-public interface ModelPropertyMessageListener {
-    public void modelPropertyMessageChanged(ModelPropertyMessage message);
+public interface NodeUpdateListener {
+    /**
+     * Called when a listened-to transformation has been updated.
+     * @param message The updated transformation
+     */
+    public void modelUpdated(NodeUpdateMessage message);
 }

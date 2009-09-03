@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.modules.cmu.common.NodeID;
  * Can be matched with a particular visual by its node ID.
  * @author kevin
  */
-public class TransformationMessage extends SingleNodeMessage {
+public class TransformationMessage extends NodeUpdateMessage {
 
     private Vector3f translation = null;
     private Matrix3f rotation = null;

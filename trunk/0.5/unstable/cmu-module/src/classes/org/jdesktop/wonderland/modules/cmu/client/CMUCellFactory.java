@@ -46,6 +46,7 @@ public class CMUCellFactory implements CellFactorySPI {
 
     /**
      * {@inheritDoc}
+     * @param <T> {@inheritDoc}
      */
     @Override
     @SuppressWarnings("unchecked")

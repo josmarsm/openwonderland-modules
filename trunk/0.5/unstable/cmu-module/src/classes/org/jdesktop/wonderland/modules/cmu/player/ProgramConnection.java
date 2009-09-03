@@ -55,23 +55,31 @@ public class ProgramConnection extends BaseConnection {
      * @param message The message to pass on
      */
     @Override
-    public void handleMessage(Message message) {
-        // Create program
-        if (message instanceof CreateProgramMessage) {
-            ResponseMessage response = handleCreateProgram((CreateProgramMessage) message);
-            this.send(response);
-        } // Change program playback speed
-        else if (message instanceof ProgramPlaybackSpeedChangeMessage) {
-            handlePlaybackSpeedChange((ProgramPlaybackSpeedChangeMessage) message);
-        } // Mouse click
-        else if (message instanceof MouseClickMessage) {
-            handleMouseClick((MouseClickMessage) message);
-        } // Delete program
-        else if (message instanceof DeleteProgramMessage) {
-            handleDeleteProgram((DeleteProgramMessage) message);
-        } else {
-            Logger.getLogger(ProgramConnection.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
-        }
+    public void handleMessage(final Message message) {
+        new Thread(new Runnable() {
+
+            public void run() {
+                //TODO: Handle messages in threads
+                // Create program
+                if (message instanceof CreateProgramMessage) {
+
+                    ResponseMessage response = handleCreateProgram((CreateProgramMessage) message);
+                    send(response);
+
+                } // Change program playback speed
+                else if (message instanceof ProgramPlaybackSpeedChangeMessage) {
+                    handlePlaybackSpeedChange((ProgramPlaybackSpeedChangeMessage) message);
+                } // Mouse click
+                else if (message instanceof MouseClickMessage) {
+                    handleMouseClick((MouseClickMessage) message);
+                } // Delete program
+                else if (message instanceof DeleteProgramMessage) {
+                    handleDeleteProgram((DeleteProgramMessage) message);
+                } else {
+                    Logger.getLogger(ProgramConnection.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
+                }
+            }
+        }, "Respond to message: " + message).start();
     }
 
     /**

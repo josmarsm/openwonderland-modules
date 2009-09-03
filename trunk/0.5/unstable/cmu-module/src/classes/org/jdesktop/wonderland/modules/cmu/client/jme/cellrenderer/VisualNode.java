@@ -20,9 +20,14 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 import com.jme.bounding.BoundingBox;
 import com.jme.image.Texture;
 import com.jme.math.Triangle;
+import com.jme.renderer.Renderer;
 import com.jme.scene.Spatial;
 import com.jme.scene.TriMesh;
+import com.jme.scene.state.BlendState;
+import com.jme.scene.state.LightState;
+import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
+import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.TextureState;
 import com.jme.util.TextureKey;
 import com.jme.util.TextureManager;
@@ -33,8 +38,9 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SingleNodeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.AppearancePropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
@@ -72,6 +78,34 @@ public class VisualNode extends VisualParent {
         super();
         this.nodeID = nodeID;
         this.parentCell = parentCell;
+
+        LightState lightState = (LightState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Light);
+        lightState.setEnabled(true);
+
+        this.setRenderState(lightState);
+        this.updateRenderState();
+
+        MaterialState materialState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
+        materialState.setEnabled(true);
+
+        materialState.setMaterialFace(MaterialState.MaterialFace.FrontAndBack);
+
+        this.setRenderState(materialState);
+        this.updateRenderState();
+
+        BlendState alphaState = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Blend);
+        alphaState.setBlendEnabled(true);
+        alphaState.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+        alphaState.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
+        alphaState.setTestEnabled(true);
+        alphaState.setTestFunction(BlendState.TestFunction.GreaterThan);
+
+        alphaState.setEnabled(true);
+
+        this.setRenderState(alphaState);
+        this.updateRenderState();
+
+        this.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
     }
 
     public boolean isType(VisualType type) {
@@ -144,12 +178,14 @@ public class VisualNode extends VisualParent {
      * @param transformation {@inheritDoc}
      */
     @Override
-    public synchronized VisualParent applyMessageToChild(SingleNodeMessage message) {
+    public synchronized VisualParent applyMessageToChild(NodeUpdateMessage message) {
         if (message.getNodeID().equals(this.getNodeID())) {
             if (message instanceof TransformationMessage) {
                 this.applyTransformation((TransformationMessage) message);
-            } else if (message instanceof ModelPropertyMessage) {
-                this.applyProperties((ModelPropertyMessage) message);
+            } else if (message instanceof VisualPropertyMessage) {
+                this.applyModelProperties((VisualPropertyMessage) message);
+            } else if (message instanceof AppearancePropertyMessage) {
+                this.applyAppearanceProperties((AppearancePropertyMessage) message);
             } else {
                 Logger.getLogger(VisualNode.class.getName()).severe("Unknown message: " + message);
             }
@@ -198,13 +234,27 @@ public class VisualNode extends VisualParent {
         }
     }
 
-    protected void applyProperties(ModelPropertyMessage properties) {
+    protected void applyModelProperties(VisualPropertyMessage properties) {
         if (getChildren() != null) {
             for (Spatial mesh : getChildren()) {
                 mesh.setLocalScale(properties.getScale());
             }
         }
         setVisibleInCMU(properties.isVisible());
+    }
+
+    protected void applyAppearanceProperties(AppearancePropertyMessage appearanceProperties) {
+        //TODO: Handle diffuse color with texture
+        MaterialState materialState = (MaterialState) this.getRenderState(StateType.Material);
+        materialState.setAmbient(appearanceProperties.getAmbientColor());
+        materialState.setDiffuse(appearanceProperties.getDiffuseColor());
+        materialState.setSpecular(appearanceProperties.getSpecularColor());
+        materialState.setEmissive(appearanceProperties.getEmissiveColor());
+        materialState.getDiffuse().a = appearanceProperties.getOpacity();
+
+        this.setRenderState(materialState);
+
+        this.updateRenderState();
     }
 
     /**

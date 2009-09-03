@@ -97,6 +97,7 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
                             log(Level.SEVERE, "Unrecognized connection state: " + connectionState);
                 }
 
+                //TOOD: Fix deadlock here
                 // Reload HUD if necessary
                 if (oldHUDPanel != hudPanel) {
                     hudContainer.removeAll();

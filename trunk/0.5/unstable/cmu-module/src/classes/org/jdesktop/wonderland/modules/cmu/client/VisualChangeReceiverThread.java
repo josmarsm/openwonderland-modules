@@ -41,8 +41,9 @@ public class VisualChangeReceiverThread extends Thread {
 
     /**
      * Standard constructor.
-     * @param server The server on which the CMU instance is running.
-     * @param port The port on which the CMU instance is running.
+     * @param parentCell The cell which this thread should update
+     * @param hostname The server on which the CMU instance is running
+     * @param port The port on which the CMU instance is running
      */
     public VisualChangeReceiverThread(CMUCell parentCell, String hostname, int port) {
         super("CMU Message Receiver " + hostname + ":" + port);
@@ -112,18 +113,30 @@ public class VisualChangeReceiverThread extends Thread {
         parentCell.updateConnectedState(false, this);
     }
 
+    /**
+     * Mark that the given object has been read, for statistical purposes.
+     * @param object Object to pass in to statistics
+     */
     private void addObjectToStats(Object object) {
         synchronized (statsLock) {
             numReads++;
         }
     }
 
+    /**
+     * Get the number of objects that have been read since the last reset,
+     * for statistics purposes.
+     * @return Number of reads since the last reset
+     */
     public long getNumReads() {
         synchronized (statsLock) {
             return numReads;
         }
     }
 
+    /**
+     * Reset the statistics for this thread.
+     */
     public void resetStats() {
         synchronized (statsLock) {
             numReads = 0;

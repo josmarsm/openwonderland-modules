@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player;
 
+import org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.ModelConverter;
 import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import org.alice.apis.moveandturn.Model;
@@ -28,21 +29,21 @@ import org.alice.apis.moveandturn.event.MouseButtonEvent;
  */
 public class MouseButtonEventFromWorld extends MouseButtonEvent {
 
-    private final ModelWrapper modelWrapper;
+    private final ModelConverter modelWrapper;
     private static final JPanel DUMMY_PANEL = new JPanel();
 
-    public MouseButtonEventFromWorld(ModelWrapper modelWrapper) {
-        super(new MouseEvent(DUMMY_PANEL, 0, 0, 0, 0, 0, 0, false), modelWrapper.getModel().getScene());
+    public MouseButtonEventFromWorld(ModelConverter modelWrapper) {
+        super(new MouseEvent(DUMMY_PANEL, 0, 0, 0, 0, 0, 0, false), modelWrapper.getTransformable().getScene());
         this.modelWrapper = modelWrapper;
     }
 
     @Override
     public Model getModelAtMouseLocation() {
-        return modelWrapper.getModel();
+        return modelWrapper.getTransformable();
     }
 
     @Override
     public Model getPartAtMouseLocation() {
-        return modelWrapper.getModel();
+        return modelWrapper.getTransformable();
     }
 }
