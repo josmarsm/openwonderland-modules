@@ -100,10 +100,9 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener, C
          */
         @Override
         public void run() {
-            synchronized (hudShowingLock) {
-                // Set up UI
+            final CMUPanel oldHUDPanel = hudPanel;
 
-                final CMUPanel oldHUDPanel = hudPanel;
+            synchronized (hudShowingLock) {
                 // Choose the panel
                 if (connectionState == ConnectionState.DISCONNECTED) {
                     hudPanel = disconnectedPanel;
@@ -117,35 +116,42 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener, C
                     Logger.getLogger(HUDControl.HUDDisplayer.class.getName()).
                             log(Level.SEVERE, "Unrecognized connection state: " + connectionState);
                 }
+            }
 
-                //TOOD: Fix deadlock here
-                // Reload HUD if necessary
-                if (oldHUDPanel != hudPanel) {
-                    hudContainer.removeAll();
-                    hudContainer.add(hudPanel);
-                    hudContainer.repaint();
-                }
-
-                if (showing && hudComponent == null) {
-                    // Create the HUD component
-                    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-                    assert mainHUD != null;
-                    hudComponent = mainHUD.createComponent(hudContainer);
-                    hudComponent.setPreferredTransparency(0.0f);
-                    hudComponent.setName(parentCell.getSceneTitle());
-                    hudComponent.setPreferredLocation(Layout.NORTHWEST);
-                    hudComponent.addEventListener(HUDControl.this);
-                    mainHUD.addComponent(hudComponent);
-                }
-                if (hudComponent != null) {
-                    hudComponent.setVisible(showing);
-                }
+            // Reload HUD if necessary
+            if (oldHUDPanel != hudPanel) {
+                hudContainer.removeAll();
+                hudContainer.add(hudPanel);
+                hudContainer.repaint();
+            }
+            boolean hudComponentNull = false;
+            synchronized (hudShowingLock) {
+                hudComponentNull = (hudComponent == null);
+            }
+            if (showing && hudComponentNull) {
+                // Create the HUD component
+                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+                assert mainHUD != null;
+                hudComponent = mainHUD.createComponent(hudContainer);
+                hudComponent.setPreferredTransparency(0.0f);
+                hudComponent.setName(parentCell.getSceneTitle());
+                hudComponent.setPreferredLocation(Layout.NORTHWEST);
+                hudComponent.addEventListener(HUDControl.this);
+                mainHUD.addComponent(hudComponent);
+            }
+            synchronized (hudShowingLock) {
+                hudComponentNull = (hudComponent == null);
+            }
+            if (!hudComponentNull) {
+                hudComponent.setVisible(showing);
+            }
+            synchronized (hudShowingLock) {
                 hudShowing = showing;
+            }
 
-                if (!componentSizeSet && hudPanel == activePanel && hudShowing) {
-                    hudContainer.setPreferredSize(new Dimension(hudContainer.getWidth(), hudContainer.getHeight()));
-                    componentSizeSet = true;
-                }
+            if (!componentSizeSet && hudPanel == activePanel && showing) {
+                hudContainer.setPreferredSize(new Dimension(hudContainer.getWidth(), hudContainer.getHeight()));
+                componentSizeSet = true;
             }
         }
     }

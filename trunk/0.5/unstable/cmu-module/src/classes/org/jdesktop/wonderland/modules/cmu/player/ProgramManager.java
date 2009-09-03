@@ -129,6 +129,11 @@ public class ProgramManager {
         }
     }
 
+    /**
+     * Simulate a mouse click in a particular program on a particular node.
+     * @param cellID ID for the cell associated with the program receiving the click
+     * @param nodeID ID for the node which received the click
+     */
     public void click(CellID cellID, NodeID nodeID) {
         ProgramPlayer program = getProgram(cellID);
         if (program != null) {

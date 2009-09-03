@@ -28,7 +28,6 @@ import org.jdesktop.wonderland.modules.cmu.common.VisualType;
  */
 public class VisibilityChangeEvent extends CMUChangeEvent {
 
-    //TODO: Generalize this in common messages
     private VisualType visualType;
     private boolean showing;
 

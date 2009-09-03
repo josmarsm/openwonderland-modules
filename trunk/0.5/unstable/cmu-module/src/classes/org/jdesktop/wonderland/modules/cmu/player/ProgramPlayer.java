@@ -89,6 +89,11 @@ public class ProgramPlayer extends Program {
         return this.sceneConnectionHandler.getHostname();
     }
 
+    /**
+     * Simulate a mouse click on a particular node.  Only left-click is
+     * supported.
+     * @param id ID for the node receiving the click
+     */
     public void click(NodeID id) {
         this.sceneConnectionHandler.click(id);
     }

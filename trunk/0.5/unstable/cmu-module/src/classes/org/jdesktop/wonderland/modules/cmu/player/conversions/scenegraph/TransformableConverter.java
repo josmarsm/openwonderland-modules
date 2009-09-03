@@ -30,7 +30,14 @@ import org.jdesktop.wonderland.modules.cmu.player.conversions.math.OrthogonalMat
 import org.jdesktop.wonderland.modules.cmu.player.conversions.math.Point3Converter;
 
 /**
- *
+ * Converter for a CMU Transformable; listens to transformation updates,
+ * and allows listeners to register to receive updates for the Transformable
+ * which is being wrapped.
+ * @param <TransformableType> The class of the Transformable which is being
+ * wrapped.  Making this generic allows subclasses to force the
+ * <code>getTransformable()</code> method to return a particular subclass of
+ * Transformable, allowing for more flexible wrapping of subclasses of
+ * Transformable without having to duplicate data.
  * @author kevin
  */
 public abstract class TransformableConverter<TransformableType extends org.alice.apis.moveandturn.Transformable>
@@ -50,6 +57,10 @@ public abstract class TransformableConverter<TransformableType extends org.alice
     private final Set<NodeUpdateListener> updateListeners = new HashSet<NodeUpdateListener>();
 
 
+    /**
+     * Standard constructor.
+     * @param transformable The Transformable to wrap
+     */
     public TransformableConverter(TransformableType transformable) {
         this.nodeID = NodeID.generateNewID();
         this.transformable = transformable;

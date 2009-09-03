@@ -43,6 +43,10 @@ import org.jdesktop.wonderland.modules.cmu.player.MouseButtonEventFromWorld;
  * with them as one and the same thing.  Thus, we handle mouse click
  * functionality, geometry parsing, transformation updates, and visible
  * property updates using one object for each Model.
+ * @param <ModelType> The class of the CMU Model which we're wrapping;
+ * defining this generically allows subclasses of this wrapper to safely
+ * (i.e. independently of superclass implementation) override the
+ * <code>getTransformable()</code> method to return a subclass of Model.
  * @author kevin
  */
 public class ModelConverter<ModelType extends Model> extends TransformableConverter<ModelType> {
@@ -62,8 +66,8 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
     private final AppearancePropertyMessage appearanceProperties;
 
     /**
-     * Constructor; attach this node to a CMU Visual.
-     * @param v The CMU visual to attach
+     * Standard constructor.
+     * @param model The CMU Model to wrap
      */
     public ModelConverter(ModelType model) {
         super(model);
@@ -154,7 +158,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
      * a new thread.
      */
     public void click() {
-        final MouseButtonEventFromWorld mouseEvent = new MouseButtonEventFromWorld(ModelConverter.this);
+        final MouseButtonEventFromWorld mouseEvent = new MouseButtonEventFromWorld(getTransformable());
         Composite currentComposite = getTransformable();
 
         // Walk up the scene graph and apply the mouse click to all containing composites.
@@ -195,6 +199,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
 
     /**
      * {@inheritDoc}
+     * @param e {@inheritDoc}
      */
     public void propertyChanging(PropertyEvent e) {
         // No action
