@@ -51,7 +51,8 @@ public class VisualUploadManager {
     /**
      * Must be called before content can be uploaded.  Initializes
      * the content repository, and creates a collection for CMU visual data.
-     * @param manager
+     * @param manager The manager for this session
+     * @param username The username with which the program manager is connected
      */
     static public void initialize(ServerSessionManager manager, String username) {
         if (!isInitialized()) {
@@ -59,6 +60,7 @@ public class VisualUploadManager {
             plugin.initialize(manager);
             VisualUploadManager.manager = manager;
             try {
+                //TODO: Handle NPE when user collection isn't there
                 ContentCollection collection = ContentRepositoryRegistry.getInstance().getRepository(manager).getUserRoot();
                 if (collection.getChild(REPO_COLLECTION_NAME) == null) {
                     collection.createChild(REPO_COLLECTION_NAME, ContentNode.Type.COLLECTION);
@@ -72,6 +74,10 @@ public class VisualUploadManager {
         }
     }
 
+    /**
+     *
+     * @return
+     */
     static public String getRepoRoot() {
         return "wlcontent://users/" + username + "/" + REPO_COLLECTION_NAME + "/";
     }

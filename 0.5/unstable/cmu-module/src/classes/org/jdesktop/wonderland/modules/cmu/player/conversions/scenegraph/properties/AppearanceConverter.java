@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  * Extracts jME-compatible properties from a CMU Appearance object.
  * @author kevin
  */
-public class AppearanceConverter implements PropertyListener {
+public class AppearanceConverter {
 
     // Property identifiers
     final static private String[] TEXTURE_PROPERTIES = {
@@ -56,12 +56,11 @@ public class AppearanceConverter implements PropertyListener {
 
     /**
      * Standard constructor.
-     * @param app The Appearance object to translate
+     * @param appearance The CMU Appearance to convert
      */
     public AppearanceConverter(Appearance appearance) {
 
         this.appearance = appearance;
-        appearance.addPropertyListener(this);
 
         //DEBUG: Make sure we're not missing any properties
         for (Property p : appearance.getProperties()) {
@@ -72,6 +71,12 @@ public class AppearanceConverter implements PropertyListener {
 
     }
 
+    /**
+     * Debugging function to ensure that a particular property is recognized
+     * by the converter.
+     * @param p The property to check
+     * @return Whether the converter knows about the property
+     */
     private static boolean propertyRecognized(Property p) {
         List<String> recognizedNames = new ArrayList<String>();
         recognizedNames.add(AMBIENT_COLOR);
@@ -95,26 +100,47 @@ public class AppearanceConverter implements PropertyListener {
         return false;
     }
 
+    /**
+     * Get the ambient color associated with this Appearance.
+     * @return Ambient color associated with this Appearance
+     */
     public ColorRGBA getAmbientColor() {
         Color4f ambientColor = (Color4f) appearance.getPropertyNamed(AMBIENT_COLOR).getValue(appearance);
         return new ColorRGBA(ambientColor.red, ambientColor.green, ambientColor.blue, ambientColor.alpha);
     }
 
+    /**
+     * Get the diffuse color associated with this Appearance.
+     * @return Diffuse color associated with this Appearance
+     */
     public ColorRGBA getDiffuseColor() {
         Color4f diffuseColor = (Color4f) appearance.getPropertyNamed(DIFFUSE_COLOR).getValue(appearance);
         return new ColorRGBA(diffuseColor.red, diffuseColor.green, diffuseColor.blue, diffuseColor.alpha);
     }
 
+    /**
+     * Get the specular color associated with this Appearance.
+     * @return Specular color associated with this Appearance
+     */
     public ColorRGBA getSpecularColor() {
         Color4f specularColor = (Color4f) appearance.getPropertyNamed(SPECULAR_HIGHLIGHT_COLOR).getValue(appearance);
         return new ColorRGBA(specularColor.red, specularColor.green, specularColor.blue, specularColor.alpha);
     }
 
+    /**
+     * Get the emissive color associated with this Appearance.
+     * @return Emissive color associated with this Appearance
+     */
     public ColorRGBA getEmissiveColor() {
         Color4f emissiveColor = (Color4f) appearance.getPropertyNamed(EMISSIVE_COLOR).getValue(appearance);
         return new ColorRGBA(emissiveColor.red, emissiveColor.green, emissiveColor.blue, emissiveColor.alpha);
     }
 
+    /**
+     * Get the opacity associated with this Appearance (as a float between 0
+     * and 1).
+     * @return Opacity for this Appearance
+     */
     public float getOpacity() {
         return ((FloatProperty) appearance.getPropertyNamed(OPACITY)).getValue(appearance);
     }
@@ -124,7 +150,7 @@ public class AppearanceConverter implements PropertyListener {
      * @return Appearance texture
      */
     public Image getTexture() {
-        loadTexture();
+        loadTextureIfNecessary();
         return texture;
     }
 
@@ -133,7 +159,7 @@ public class AppearanceConverter implements PropertyListener {
      * @return Texture height
      */
     public int getTextureHeight() {
-        loadTexture();
+        loadTextureIfNecessary();
         return texture.getHeight();
     }
 
@@ -142,11 +168,14 @@ public class AppearanceConverter implements PropertyListener {
      * @return Texture width
      */
     public int getTextureWidth() {
-        loadTexture();
+        loadTextureIfNecessary();
         return texture.getWidth();
     }
 
-    protected void loadTexture() {
+    /**
+     * Load the texture associated with this visual, if it hasn't been already.
+     */
+    protected void loadTextureIfNecessary() {
         if (texture == null) {
             // Set texture properties.
             edu.cmu.cs.dennisc.texture.Texture cmuText = null;
@@ -160,13 +189,5 @@ public class AppearanceConverter implements PropertyListener {
                 texture = null;
             }
         }
-    }
-
-    public void propertyChanging(PropertyEvent e) {
-        // No action
-    }
-
-    public void propertyChanged(PropertyEvent e) {
-        //Logger.getLogger(AppearanceConverter.class.getName()).warning("Appearance property changed at runtime: " + e);
     }
 }

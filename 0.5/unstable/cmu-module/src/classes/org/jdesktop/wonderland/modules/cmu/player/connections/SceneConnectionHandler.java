@@ -57,7 +57,6 @@ import org.jdesktop.wonderland.modules.cmu.player.NodeUpdateListener;
  */
 public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListener {
 
-    public final int DEFAULT_FPS = 30;
     private Scene sc = null;       // The scene to wrap.
     private final Set<ClientConnection> connections = new HashSet<ClientConnection>();
     private final Map<NodeID, ModelConverter> visuals = new HashMap<NodeID, ModelConverter>();
@@ -191,6 +190,11 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
         }
     }
 
+    /**
+     * Simulate a click in this scene on the given node.  Only left-clicks
+     * are supported.
+     * @param id ID representing the node which has been clicked
+     */
     public void click(NodeID id) {
         ModelConverter model = null;
         synchronized(visuals) {
@@ -201,7 +205,13 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
         }
     }
 
-    private synchronized void processModel(org.alice.apis.moveandturn.Composite c) {
+    /**
+     * Recursively process a CMU Composite and its descendants, creating
+     * wrappers as appropriate and sending parsed data to any clients which
+     * are already connected.
+     * @param c The Composite to process
+     */
+    protected synchronized void processModel(org.alice.apis.moveandturn.Composite c) {
         assert c != null;
 
         //TODO: Process camera
@@ -240,7 +250,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
             message = new SceneMessage(visualMessages, VisualUploadManager.getRepoRoot());
 
             // Store the connection.
-            newConnection = new ClientConnection(this, DEFAULT_FPS, connection);
+            newConnection = new ClientConnection(this, connection);
             synchronized (connections) {
                 connections.add(newConnection);
             }
@@ -252,9 +262,10 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
     }
 
     /**
-     * Synchronously remove the given connection from our collection,
-     * and perform any necessary cleanup.
-     * @param connection The connection to remove
+     * Respond to a SocketException thrown by a client connection
+     * by closing the connection.
+     * @param connection The connection which threw the exception
+     * @param ex The ex The exception which was thrown
      */
     protected void handleSocketException(ClientConnection connection, SocketException ex) {
         try {
@@ -309,17 +320,6 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public void modelPropertyMessageChanged(VisualPropertyMessage message) {
-        synchronized (connections) {
-            for (ClientConnection connection : connections) {
-                connection.queueMessage(message);
-            }
-        }
-    }
-
-    /**
      * Unload the current scene, and inform all connected clients that this
      * is happening.
      */
@@ -343,11 +343,19 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
     }
 
     //TODO: Listen for scene graph changes.
+    /**
+     * {@inheritDoc}
+     * @param childrenEvent {@inheritDoc}
+     */
     public void childAdded(ChildAddedEvent childrenEvent) {
         printChildWarning();
         System.out.println("added: " + childrenEvent);
     }
 
+    /**
+     * {@inheritDoc}
+     * @param childrenEvent {@inheritDoc}
+     */
     public void childRemoved(ChildRemovedEvent childrenEvent) {
         printChildWarning();
         System.out.println("removed: " + childrenEvent);

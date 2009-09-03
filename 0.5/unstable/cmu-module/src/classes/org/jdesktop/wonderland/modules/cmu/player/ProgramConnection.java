@@ -37,6 +37,9 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlay
  */
 public class ProgramConnection extends BaseConnection {
 
+    /**
+     * The manager associated with this connection.
+     */
     protected final ProgramManager programManager;
 
     /**
@@ -59,7 +62,6 @@ public class ProgramConnection extends BaseConnection {
         new Thread(new Runnable() {
 
             public void run() {
-                //TODO: Handle messages in threads
                 // Create program
                 if (message instanceof CreateProgramMessage) {
 
@@ -107,10 +109,18 @@ public class ProgramConnection extends BaseConnection {
         programManager.setPlaybackSpeed(message.getCellID(), message.getPlaybackSpeed());
     }
 
+    /**
+     * Tell the program manager to dispose of a particular program.
+     * @param message The message pointing to the program to delete
+     */
     protected void handleDeleteProgram(DeleteProgramMessage message) {
         programManager.deleteProgram(message.getCellID());
     }
 
+    /**
+     * Tell the program manager to forward a mouse click to a particular program.
+     * @param message Message containing click information
+     */
     protected void handleMouseClick(MouseClickMessage message) {
         programManager.click(message.getCellID(), message.getNodeID());
     }

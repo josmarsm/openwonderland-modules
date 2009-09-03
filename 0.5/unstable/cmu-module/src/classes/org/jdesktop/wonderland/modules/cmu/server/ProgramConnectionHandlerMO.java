@@ -113,6 +113,11 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
         getInstance().sendMessage(new ProgramPlaybackSpeedChangeMessage(cellID, playbackSpeed));
     }
 
+    /**
+     * Forward a click for a particular program and visible node.
+     * @param cellID ID for the cell whose program has received the click
+     * @param nodeID ID for the node which has been clicked
+     */
     static public void sendClick(CellID cellID, NodeID nodeID) {
         getInstance().sendMessage(new MouseClickMessage(cellID, nodeID));
     }

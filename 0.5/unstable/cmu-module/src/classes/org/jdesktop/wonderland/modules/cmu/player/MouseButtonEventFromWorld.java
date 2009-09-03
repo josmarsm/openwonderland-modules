@@ -17,33 +17,45 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player;
 
-import org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.ModelConverter;
 import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import org.alice.apis.moveandturn.Model;
 import org.alice.apis.moveandturn.event.MouseButtonEvent;
 
 /**
- *
+ * A CMU MouseButtonEvent which the model at mouse location is already known
+ * based on in-world calculations.  Avoids additional computation.
  * @author kevin
  */
 public class MouseButtonEventFromWorld extends MouseButtonEvent {
 
-    private final ModelConverter modelWrapper;
+    private final Model model;
     private static final JPanel DUMMY_PANEL = new JPanel();
 
-    public MouseButtonEventFromWorld(ModelConverter modelWrapper) {
-        super(new MouseEvent(DUMMY_PANEL, 0, 0, 0, 0, 0, 0, false), modelWrapper.getTransformable().getScene());
-        this.modelWrapper = modelWrapper;
+    /**
+     * Standard constructor.
+     * @param model The Model which received the click
+     */
+    public MouseButtonEventFromWorld(Model model) {
+        super(new MouseEvent(DUMMY_PANEL, 0, 0, 0, 0, 0, 0, false), model.getScene());
+        this.model = model;
     }
 
+    /**
+     * Get the node which was clicked.
+     * @return Node which was clicked
+     */
     @Override
     public Model getModelAtMouseLocation() {
-        return modelWrapper.getTransformable();
+        return model;
     }
 
+    /**
+     * Get the node which was clicked.
+     * @return Node which was clicked
+     */
     @Override
     public Model getPartAtMouseLocation() {
-        return modelWrapper.getTransformable();
+        return model;
     }
 }

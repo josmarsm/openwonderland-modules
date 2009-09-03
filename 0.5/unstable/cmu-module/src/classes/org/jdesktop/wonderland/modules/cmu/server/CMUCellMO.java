@@ -128,6 +128,9 @@ public class CMUCellMO extends CellMO {
 
     /**
      * {@inheritDoc}
+     * @param clientID {@inheritDoc}
+     * @param capabilities {@inheritDoc}
+     * @return {@inheritDoc}
      */
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
@@ -136,14 +139,15 @@ public class CMUCellMO extends CellMO {
 
     /**
      * {@inheritDoc}
+     * @return {@inheritDoc}
      */
     @Override
-    public CellClientState getClientState(CellClientState clientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
-        if (clientState == null) {
-            clientState = new CMUCellClientState();
+    public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
+        if (cellClientState == null) {
+            cellClientState = new CMUCellClientState();
         }
 
-        CMUCellClientState cmuClientState = ((CMUCellClientState) clientState);
+        CMUCellClientState cmuClientState = ((CMUCellClientState) cellClientState);
         synchronized (playbackSpeedLock) {
             cmuClientState.setPlaying(isPlaying());
             cmuClientState.setPlaybackSpeed(getPlaybackSpeed());
@@ -156,17 +160,16 @@ public class CMUCellMO extends CellMO {
         }
         cmuClientState.setSceneTitle(this.getSceneTitle());
 
-        return super.getClientState(clientState, clientID, capabilities);
+        return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setServerState(CellServerState serverState) {
-        super.setServerState(serverState);
-
-        CMUCellServerState setup = (CMUCellServerState) serverState;
+    public void setServerState(CellServerState state) {
+        super.setServerState(state);
+        CMUCellServerState setup = (CMUCellServerState) state;
         setCmuURI(setup.getCmuURI());
         setGroundPlaneShowing(setup.isGroundPlaneShowing());
         setSceneTitle(setup.getSceneTitle());
@@ -178,15 +181,15 @@ public class CMUCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    public CellServerState getServerState(CellServerState serverState) {
-        if (serverState == null) {
-            serverState = new CMUCellServerState();
+    public CellServerState getServerState(CellServerState setup) {
+        if (setup == null) {
+            setup = new CMUCellServerState();
         }
-        CMUCellServerState cmuServerState = (CMUCellServerState) serverState;
+        CMUCellServerState cmuServerState = (CMUCellServerState) setup;
         cmuServerState.setCmuURI(getCmuURI());
         cmuServerState.setGroundPlaneShowing(isGroundPlaneShowing());
         cmuServerState.setSceneTitle(getSceneTitle());
-        return super.getServerState(serverState);
+        return super.getServerState(setup);
     }
 
     /**
@@ -212,12 +215,20 @@ public class CMUCellMO extends CellMO {
         }
     }
 
+    /**
+     * Apply playback defaults to this cell, and then send a message to the CMU
+     * program manager notifying it to create a program with this cell's URI.
+     */
     public void createProgram() {
         setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
         // Create CMU instance
         ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
     }
 
+    /**
+     * Forward a mouse click on the given node to the appropriate CMU program.
+     * @param nodeID ID for the node which has been clicked
+     */
     public void sendMouseClick(NodeID nodeID) {
         ProgramConnectionHandlerMO.sendClick(getCellID(), nodeID);
     }
@@ -360,29 +371,45 @@ public class CMUCellMO extends CellMO {
         }
     }
 
+    /**
+     * Set the connection information for this cell to receive scene information
+     * and updates, and propagate this information to connected clients.
+     * @param hostname The hostname to connect to
+     * @param port The port to connect to
+     */
     public void setHostnameAndPort(String hostname, int port) {
-        setHostnameAndPortFromMessage(null, new ConnectionChangeMessage(hostname, port));
-    }
-
-    private void setHostnameAndPortFromMessage(WonderlandClientID notifier, ConnectionChangeMessage message) {
         synchronized (socketLock) {
             this.socketInitialized = true;
-            this.hostName = message.getHostname();
-            this.port = message.getPort();
+            this.hostName = hostname;
+            this.port = port;
         }
-        sendCellMessage(notifier, message);
+        sendCellMessage(null, new ConnectionChangeMessage(hostname, port));
     }
 
+    /**
+     * Get the title of this scene.
+     * @return Title of this scene
+     */
     public String getSceneTitle() {
         synchronized (sceneTitleLock) {
             return sceneTitle;
         }
     }
 
+    /**
+     * Set the title of this scene.
+     * @param sceneTitle Title of this scene
+     */
     public void setSceneTitle(String sceneTitle) {
         setSceneTitleFromMessage(null, new SceneTitleChangeMessage(sceneTitle));
     }
 
+    /**
+     * Set the scene title internally, as a response to a scene title change
+     * message.
+     * @param notifier The client who sent the message
+     * @param message The scene title change message
+     */
     private void setSceneTitleFromMessage(WonderlandClientID notifier, SceneTitleChangeMessage message) {
         synchronized (sceneTitleLock) {
             this.sceneTitle = message.getSceneTitle();
