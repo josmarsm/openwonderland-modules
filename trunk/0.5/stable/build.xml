@@ -32,6 +32,7 @@
                 <file name="pdfviewer/dist/pdfviewer.jar"/>
                 <file name="telepointer/dist/telepointer.jar"/>
                 <file name="whiteboard/dist/whiteboard.jar"/>
+                <file name="image-viewer/dist/imageviewer.jar"/>
             </filelist>
             <mapper type="flatten"/>
         </copy>
