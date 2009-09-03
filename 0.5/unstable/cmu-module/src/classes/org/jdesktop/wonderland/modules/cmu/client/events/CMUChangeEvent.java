@@ -17,16 +17,39 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.events;
 
+import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
+
 /**
- * Interface to listen for changes in playback status (i.e. playback
- * speed, play/pause status) for a particular cell.
+ * Event representing a change in a particular CMU scene (i.e. a particular
+ * CMU cell).
  * @author kevin
  */
-public interface PlaybackChangeListener {
+public abstract class CMUChangeEvent {
+
+    private CMUCell cell;
 
     /**
-     * Callback function when scene playback status is changed.
-     * @param e The event representing the playback change
+     * Standard constructor.
+     * @param cell The CMU cell which has changed
      */
-    public void playbackChanged(PlaybackChangeEvent e);
+    public CMUChangeEvent(CMUCell cell) {
+        setCell(cell);
+    }
+
+    /**
+     * Get the cell which has changed.
+     * @return The CMU cell which has changed
+     */
+    public CMUCell getCell() {
+        return cell;
+    }
+
+    /**
+     * Set the cell which has changed.
+     * @param cell The CMU cell which has changed
+     */
+    public void setCell(CMUCell cell) {
+        this.cell = cell;
+    }
+
 }

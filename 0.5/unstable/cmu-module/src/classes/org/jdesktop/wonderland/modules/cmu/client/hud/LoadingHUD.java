@@ -36,7 +36,10 @@ public class LoadingHUD extends CMUPanel implements SceneLoadedChangeListener {
     private final int LOAD_MIN;
     private final int LOAD_MAX;
 
-    /** Creates new form WaitingHUD */
+    /** 
+     * Creates new form LoadingHUD
+     * @param parentCell The cell with which this HUD panel is associated
+     */
     public LoadingHUD(CMUCell parentCell) {
         initComponents();
         LOAD_MIN = loadProgress.getMinimum();

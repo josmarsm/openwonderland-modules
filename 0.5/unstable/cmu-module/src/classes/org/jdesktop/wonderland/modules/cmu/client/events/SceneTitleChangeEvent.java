@@ -17,22 +17,38 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.events;
 
+import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
+
 /**
- *
+ * Event representing a change in a scene's title.
  * @author kevin
  */
-public class SceneTitleChangeEvent {
+public class SceneTitleChangeEvent extends CMUChangeEvent {
 
     private String sceneTitle;
 
-    public SceneTitleChangeEvent(String sceneTitle) {
+    /**
+     * Standard constructor.
+     * @param cell The cell whose title has changed
+     * @param sceneTitle The new title for the scene
+     */
+    public SceneTitleChangeEvent(CMUCell cell, String sceneTitle) {
+        super(cell);
         setSceneTitle(sceneTitle);
     }
     
+    /**
+     * Get the new title for the scene.
+     * @return The new title for the scene
+     */
     public String getSceneTitle() {
         return sceneTitle;
     }
 
+    /**
+     * Set the new title for the scene.
+     * @param sceneTitle The new title for the scene
+     */
     public void setSceneTitle(String sceneTitle) {
         this.sceneTitle = sceneTitle;
     }

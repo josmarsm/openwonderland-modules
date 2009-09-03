@@ -19,17 +19,18 @@ package org.jdesktop.wonderland.modules.cmu.client.hud;
 
 import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeEvent;
 import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeListener;
-import org.jdesktop.wonderland.modules.cmu.client.events.GroundPlaneChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.GroundPlaneChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.*;
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode.VisualType;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 
 /**
  *
  * @author kevin
  */
-public class ActiveHUD extends CMUPanel implements PlaybackChangeListener, GroundPlaneChangeListener {
+public class ActiveHUD extends CMUPanel implements PlaybackChangeListener, VisibilityChangeListener {
 
     private final static String PLAYBUTTON_PATH = "/org/jdesktop/wonderland/modules/cmu/client/resources/control_play.png";
     private final static String PAUSEBUTTON_PATH = "/org/jdesktop/wonderland/modules/cmu/client/resources/control_pause.png";
@@ -42,16 +43,19 @@ public class ActiveHUD extends CMUPanel implements PlaybackChangeListener, Groun
     private transient final Object playbackLock = new Object();
     private final CMUCell cell;
 
-    /** Creates new form CMUJPanel */
+    /** 
+     * Creates new form CMUJPanel
+     * @param cell The CMU cell to which this HUD is attached
+     */
     public ActiveHUD(CMUCell cell) {
         initComponents();
         SLIDER_MIN = playbackSlider.getMinimum();
         SLIDER_MAX = playbackSlider.getMaximum();
         this.cell = cell;
         this.cell.addPlaybackChangeListener(this);
-        this.playbackChanged(new PlaybackChangeEvent(cell.getPlaybackSpeed(), cell.isPlaying()));
+        this.playbackChanged(new PlaybackChangeEvent(cell, cell.getPlaybackSpeed(), cell.isPlaying()));
         this.cell.addGroundPlaneChangeListener(this);
-        this.groundPlaneChanged(new GroundPlaneChangeEvent(cell.isGroundPlaneShowing()));
+        this.visibilityChanged(new VisibilityChangeEvent(cell, VisualType.GROUND, cell.isGroundPlaneShowing()));
     }
 
     /** This method is called from within the constructor to
@@ -288,20 +292,22 @@ public class ActiveHUD extends CMUPanel implements PlaybackChangeListener, Groun
     }
 
     /**
-     * Update the selected state of the ground plane checkbox.  Doesn't notify
-     * the cell of this change; should be called in response to changes
-     * on the cell.
+     * Update the selected state of the ground plane checkbox if appropriate.
+     * Doesn't notify the cell of this change; should be called in response to
+     * changes on the cell.
      * @param e {@inheritDoc}
      */
-    public void groundPlaneChanged(GroundPlaneChangeEvent e) {
-        final boolean selected = e.isShowingPlane();
-        SwingUtilities.invokeLater(new Runnable() {
+    public void visibilityChanged(VisibilityChangeEvent e) {
+        if (e.getVisualType().equals(VisualType.GROUND)) {
+            final boolean selected = e.isShowing();
+            SwingUtilities.invokeLater(new Runnable() {
 
-            @Override
-            public void run() {
-                groundVisibleBox.setSelected(selected);
-            }
-        });
+                @Override
+                public void run() {
+                    groundVisibleBox.setSelected(selected);
+                }
+            });
+        }
     }
 
     /**

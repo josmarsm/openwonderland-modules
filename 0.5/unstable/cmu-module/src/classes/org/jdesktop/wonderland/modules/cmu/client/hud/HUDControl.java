@@ -34,14 +34,15 @@ import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell.ConnectionState;
+import org.jdesktop.wonderland.modules.cmu.client.events.ConnectionStateChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.ConnectionStateChangeListener;
 
 /**
- * Class to manage the HUD for a CMU Cell; the cell can notify the control
- * of changes in its connection state, and the control will update the
- * HUD accordingly.
+ * Class to manage the HUD for a CMU Cell; listens to changes in
+ * the cell's connection state, and updates the HUD accordingly.
  * @author kevin
  */
-public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
+public class HUDControl implements HUDEventListener, SceneTitleChangeListener, ConnectionStateChangeListener {
 
     private final CMUCell parentCell;
 
@@ -54,12 +55,19 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
     private HUDComponent hudComponent = null;
     private boolean componentSizeSet = false;
     private boolean hudShowing = false;
-    private ConnectionState connectionState = ConnectionState.DISCONNECTED;
+    private ConnectionState connectionState = null;
     private final Object hudShowingLock = new Object();
 
+    /**
+     * Standard constructor.
+     * @param parentCell The cell whose HUD this object is controlling
+     */
     public HUDControl(CMUCell parentCell) {
         this.parentCell = parentCell;
         parentCell.addSceneTitleChangeListener(this);
+        parentCell.addConnectionStateChangeListener(this);
+
+        connectionState = parentCell.getConnectionState();
 
         activePanel = new ActiveHUD(parentCell);
         disconnectedPanel = new DisconnectedHUD();
@@ -69,14 +77,27 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         hudContainer.add(activePanel);
     }
 
-    private class HUDDisplayer implements Runnable {
+    /**
+     * Runnable to set the showing state of the HUD according to the current
+     * connection state of the cell which this HUDControl is controlling.
+     */
+    protected class HUDDisplayer implements Runnable {
 
         private final boolean showing;
 
+        /**
+         * Standard constructor.
+         * @param showing The visibility which this HUDDisplayer should enforce
+         */
         public HUDDisplayer(boolean showing) {
             this.showing = showing;
         }
 
+        /**
+         * Load the appropriate panel into the HUD based on the current
+         * connection state of the HUDControl, and set the HUD visibility
+         * appropriately.
+         */
         @Override
         public void run() {
             synchronized (hudShowingLock) {
@@ -129,12 +150,22 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         }
     }
 
-    private class HUDKiller extends HUDDisplayer {
+    /**
+     * Unload the HUD and perform necessary cleanup to get rid of it.
+     */
+    protected class HUDKiller extends HUDDisplayer {
 
+        /**
+         * Standard constructor.
+         */
         public HUDKiller() {
             super(false);
         }
 
+        /**
+         * Make the HUD invisible, and sever ties with the current
+         * HUD component of this HUDControl.
+         */
         @Override
         public void run() {
             synchronized (hudShowingLock) {
@@ -146,12 +177,26 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void connectionStateChanged(ConnectionStateChangeEvent e) {
+        if (e.getCell().equals(this.parentCell)) {
+            setConnectionState(e.getConnectionState());
+        }
+    }
+
+    /**
+     * Set the connection state and update the HUD accordingly.
+     * @param state The new connection state
+     */
     public void setConnectionState(ConnectionState state) {
         synchronized (hudShowingLock) {
             this.connectionState = state;
-            
-            // Make a specific runnable, so that we make sure we've got the
-            // correct showing state.
+
+            // Make an explicit runnable, so that we make sure we've got the
+            // correct showing state once the runnable is run.
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
@@ -163,6 +208,10 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         }
     }
 
+    /**
+     * Turn the HUD visibility on or off.
+     * @param showing Whether the HUD is visible
+     */
     public void setHUDShowing(boolean showing) {
         synchronized (hudShowingLock) {
             if (showing != isHUDShowing() || hudComponent == null) {
@@ -171,27 +220,40 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         }
     }
 
+    /**
+     * Find out whether the HUD is showing.
+     * @return Whether the HUD is showing
+     */
     public boolean isHUDShowing() {
         synchronized (hudShowingLock) {
             return hudShowing;
         }
     }
 
+    /**
+     * Destroy the HUD and stop listening for changes from the CMU cell.
+     */
     public void unloadHUD() {
+        parentCell.removeConnectionStateChangeListener(this);
+        parentCell.removeSceneTitleChangeListener(this);
         SwingUtilities.invokeLater(new HUDKiller());
     }
 
+    /**
+     * If the HUD has been closed, mark that this is the case with a HUDDisplayer.
+     * @param event {@inheritDoc}
+     */
     public void HUDObjectChanged(HUDEvent event) {
         synchronized (hudShowingLock) {
             if (event.getObject().equals(this.hudComponent)) {
                 if (event.getEventType().equals(HUDEventType.DISAPPEARED) || event.getEventType().equals(HUDEventType.CLOSED)) {
-                    // Invoke a specific runnable to unload the HUD; otherwise 
-                    // the visibility state can change between the time this is
-                    // called and the time the runnable actually executes
                     SwingUtilities.invokeLater(new Runnable() {
 
                         @Override
                         public void run() {
+                            // Check to make sure the HUD is still not visible;
+                            // this might have changed between the time the HUD
+                            // was closed and the time the runnable executes
                             if (hudComponent != null && !hudComponent.isVisible()) {
                                 new HUDDisplayer(false).run();
                             }
@@ -202,6 +264,10 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void sceneTitleChanged(SceneTitleChangeEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
 

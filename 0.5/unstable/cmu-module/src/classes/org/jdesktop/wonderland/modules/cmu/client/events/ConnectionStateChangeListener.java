@@ -18,9 +18,14 @@
 package org.jdesktop.wonderland.modules.cmu.client.events;
 
 /**
- *
+ * Interface to listen for changes in a CMU cell's connection state.
  * @author kevin
  */
-public interface GroundPlaneChangeListener {
-    public void groundPlaneChanged(GroundPlaneChangeEvent e);
+public interface ConnectionStateChangeListener {
+
+    /**
+     * Callback function when the connection state of a cell has changed.
+     * @param e The event representing the change in connection state
+     */
+    public void connectionStateChanged(ConnectionStateChangeEvent e);
 }
