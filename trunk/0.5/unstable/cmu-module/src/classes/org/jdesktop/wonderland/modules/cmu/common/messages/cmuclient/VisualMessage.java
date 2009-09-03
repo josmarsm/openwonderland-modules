@@ -17,57 +17,91 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
-import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
+import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualAttributesIdentifier;
 
 /**
- * Serializable information about a CMU visual; stores geometry and texture
- * information, as well as transformation information (as a complete
- * TransformationMessage.  Associated with a unique node ID.
+ * Serializable information about a CMU visual; stores initial transformation
+ * and property information, as well as an identifier which can be used
+ * to access full visual attributes from the content repository (given an
+ * appropriate repository root, which is normally sent in the SceneMessage
+ * used to initialize a scene).
  * @author kevin
  */
 public class VisualMessage extends SingleNodeMessage {
 
-    private static final long serialVersionUID = 1L;
     private final TransformationMessage transformation;
-    private final VisualPropertyMessage modelProperties;
+    private final VisualPropertyMessage visualProperties;
     private final AppearancePropertyMessage appearanceProperties;
-    private final VisualRepoIdentifier id;
+    private VisualAttributesIdentifier visualID;
 
-    public VisualMessage(VisualRepoIdentifier id, TransformationMessage initialTransform,
-            VisualPropertyMessage initialModelProperties, AppearancePropertyMessage initialAppearanceProperties) {
+    /**
+     * Standard constructor, with initial transformation/properties.
+     * @param id Identifier for this visual, used to find the visual in the
+     * content repository (along with an appropriate repository root)
+     * @param initialTransform The initial transformation for the visual
+     * @param initialVisualProperties The initial visual properties for the visual
+     * @param initialAppearanceProperties The initial appearance properties for the visual
+     */
+    public VisualMessage(VisualAttributesIdentifier id, TransformationMessage initialTransform,
+            VisualPropertyMessage initialVisualProperties, AppearancePropertyMessage initialAppearanceProperties) {
         super(initialTransform.getNodeID());
-        assert initialTransform.getNodeID().equals(initialModelProperties.getNodeID());
+        assert initialTransform.getNodeID().equals(initialVisualProperties.getNodeID());
         assert initialTransform.getNodeID().equals(initialAppearanceProperties.getNodeID());
 
-        this.id = id;
+        this.visualID = id;
         this.transformation = initialTransform;
-        this.modelProperties = initialModelProperties;
+        this.visualProperties = initialVisualProperties;
         this.appearanceProperties = initialAppearanceProperties;
     }
 
     /**
-     * Get transformation info as a TransformationMessage, which can be updated
-     * directly.
+     * Get initial transformation info as a TransformationMessage.
      * @return Updatable transformation information
      */
     public TransformationMessage getTransformation() {
         return this.transformation;
     }
 
-    public VisualPropertyMessage getModelProperties() {
-        return this.modelProperties;
+    /**
+     * Get the initial visual properties for this visual.
+     * @return Visual properties for this visual
+     */
+    public VisualPropertyMessage getVisualProperties() {
+        return this.visualProperties;
     }
 
+    /**
+     * Get the initial appearance properties for this visual.
+     * @return Appearance properties for this visual
+     */
     public AppearancePropertyMessage getAppearanceProperties() {
         return appearanceProperties;
     }
 
-    public VisualRepoIdentifier getVisualID() {
-        return this.id;
+    /**
+     * Get the identifier for this visual, used in conjunction with a
+     * repository root to find the full visual data in the content repository.
+     * @return ID for this visual
+     */
+    public VisualAttributesIdentifier getVisualID() {
+        return this.visualID;
     }
 
+
+    /**
+     * Set the identifier for this visual.
+     * @param visualID ID for this visual
+     */
+    public void setVisualID(VisualAttributesIdentifier visualID) {
+        this.visualID = visualID;
+    }
+
+    /**
+     * Get a String representation of the message, with debug info.
+     * @return String representation of the message
+     */
     @Override
     public String toString() {
-        return "Visual message: [NodeID:" + getNodeID() + "]";
+        return super.toString() + "[visualID:" + getVisualID() + "]";
     }
 }

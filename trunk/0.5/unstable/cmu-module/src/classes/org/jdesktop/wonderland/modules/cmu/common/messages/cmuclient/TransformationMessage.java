@@ -83,11 +83,15 @@ public class TransformationMessage extends NodeUpdateMessage {
         return this.rotation;
     }
 
+    /**
+     * Get a String representation of the message, containing debug info.
+     * @return String representation of the message
+     */
     @Override
     public synchronized String toString() {
-        String retVal = "Transformation message\n[NodeID:" + getNodeID() + "]\n";
-        retVal += "[Translation:" + getTranslation() + "]\n";
-        retVal += "[Rotation:" + getRotation() + "]\n";
+        String retVal = super.toString();
+        retVal += "[translation=" + getTranslation() + "]";
+        retVal += "[rotation=" + getRotation() + "]";
         return retVal;
     }
 }

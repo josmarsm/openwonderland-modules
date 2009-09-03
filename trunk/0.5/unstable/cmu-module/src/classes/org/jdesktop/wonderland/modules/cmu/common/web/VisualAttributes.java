@@ -34,7 +34,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessa
  * Set of serializable attributes for a CMU visual.  IDs can be generated which
  * are unique to each set of attributes (not unique to a VisualAttributes instance,
  * however), and which can be used to identify a particular visual in a content
- * repository.
+ * repository directory.
  * @author kevin
  */
 public class VisualAttributes implements Serializable {
@@ -114,12 +114,19 @@ public class VisualAttributes implements Serializable {
      * @return Texture for this visual
      */
     public Image getTexture() {
-        MemoryImageSource mis = new MemoryImageSource(textureWidth, textureHeight,
-                texturePixels, 0, textureWidth);
-        Toolkit tk = Toolkit.getDefaultToolkit();
-        return tk.createImage(mis);
+        if (hasTexture()) {
+            MemoryImageSource mis = new MemoryImageSource(textureWidth, textureHeight,
+                    texturePixels, 0, textureWidth);
+            Toolkit tk = Toolkit.getDefaultToolkit();
+            return tk.createImage(mis);
+        }
+        return null;
     }
 
+    /**
+     * Find out whether this visual has an associated texture.
+     * @return True if the visual has an associated texture, false otherwise.
+     */
     public boolean hasTexture() {
         return texturePixels != null;
     }
@@ -128,8 +135,8 @@ public class VisualAttributes implements Serializable {
      * Get the repository identifier for this visual.
      * @return Repository identifier
      */
-    public VisualRepoIdentifier getID() {
-        return new VisualRepoIdentifier(this);
+    public VisualAttributesIdentifier getID() {
+        return new VisualAttributesIdentifier(this);
     }
 
     /**
@@ -140,9 +147,8 @@ public class VisualAttributes implements Serializable {
      * share the same identifiers.  This allows resources to be efficiently
      * stored in and accessed from content repositories.
      */
-    public static class VisualRepoIdentifier implements Serializable {
+    public static class VisualAttributesIdentifier implements Serializable {
 
-        public static final String REPO_COLLECTION_NAME = "visuals";
         private static final String NAME_PREFIX = "cmu_";
         private final String contentNodeName;
 
@@ -152,7 +158,7 @@ public class VisualAttributes implements Serializable {
          * them to exist.
          * @param attributes The set of attributes to identify
          */
-        protected VisualRepoIdentifier(VisualAttributes attributes) {
+        protected VisualAttributesIdentifier(VisualAttributes attributes) {
             String nodeName = NAME_PREFIX;
             nodeName += attributes.getName();
             if (attributes.getMeshes() != null) {
@@ -182,18 +188,28 @@ public class VisualAttributes implements Serializable {
             return contentNodeName;
         }
 
+        /**
+         * Compare this identifier to another object.
+         * @param other The other object to compare
+         * @return True if the other object is another identifier which
+         * would point to the same file in a content repository
+         */
         @Override
         public boolean equals(Object other) {
             if (super.equals(other)) {
                 return true;
             }
-            if (other instanceof VisualRepoIdentifier &&
-                    getContentNodeName().equals(((VisualRepoIdentifier) other).getContentNodeName())) {
+            if (other instanceof VisualAttributesIdentifier &&
+                    getContentNodeName().equals(((VisualAttributesIdentifier) other).getContentNodeName())) {
                 return true;
             }
             return false;
         }
 
+        /**
+         * Generate a hash code for the identifier.
+         * @return Hash code for the identifier
+         */
         @Override
         public int hashCode() {
             int hash = 5;

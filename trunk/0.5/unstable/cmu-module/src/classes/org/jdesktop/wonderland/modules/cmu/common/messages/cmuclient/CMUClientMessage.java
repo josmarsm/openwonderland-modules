@@ -24,4 +24,14 @@ import java.io.Serializable;
  * @author kevin
  */
 public abstract class CMUClientMessage implements Serializable {
+
+    /**
+     * Get the String representation of this message, containing
+     * debugging information.
+     * @return Message as String
+     */
+    @Override
+    public String toString() {
+        return this.getClass().getName();
+    }
 }

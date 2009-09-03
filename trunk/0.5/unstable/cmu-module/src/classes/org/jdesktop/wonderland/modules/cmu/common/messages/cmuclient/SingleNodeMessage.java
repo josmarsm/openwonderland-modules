@@ -20,18 +20,43 @@ package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
- *
+ * A message which applies to a single CMU node, referenced by node ID.
  * @author kevin
  */
 public abstract class SingleNodeMessage extends CMUClientMessage {
 
-    private final NodeID nodeID;
+    private NodeID nodeID;
 
+    /**
+     * Standard constructor.
+     * @param nodeID ID for the node to which this message applies
+     */
     public SingleNodeMessage(NodeID nodeID) {
+        setNodeID(nodeID);
+    }
+
+    /**
+     * Get the ID for the node to which this message applies.
+     * @return ID for the node to which this message applies
+     */
+    public NodeID getNodeID() {
+        return nodeID;
+    }
+
+    /**
+     * Set the ID for the node to which this message applies.
+     * @param nodeID ID for the node to which this message applies
+     */
+    public void setNodeID(NodeID nodeID) {
         this.nodeID = nodeID;
     }
 
-    public NodeID getNodeID() {
-        return nodeID;
+    /**
+     * Get a String representation of the message, containing debugging info.
+     * @return String representation of the message
+     */
+    @Override
+    public String toString() {
+        return super.toString() + "[nodeID=" + getNodeID() + "]";
     }
 }

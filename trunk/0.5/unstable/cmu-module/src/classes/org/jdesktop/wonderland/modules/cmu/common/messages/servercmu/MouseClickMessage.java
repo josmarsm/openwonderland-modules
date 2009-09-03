@@ -18,28 +18,41 @@
 package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
 
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 
 /**
- *
+ * Message to inform the CMU program manager that a mouse click
+ * has occurred, and to provide information about the click.  Only
+ * left-clicks are processed.
  * @author kevin
  */
-public class MouseClickMessage extends Message {
+public class MouseClickMessage extends ServerCMUMessage {
 
-    private CellID cellID;
     private NodeID nodeID;
 
+    /**
+     * Standard constructor.
+     * @param cellID The cell whose program has received the mouse click
+     * @param nodeID The particular node which has received the mouse click
+     */
     public MouseClickMessage(CellID cellID, NodeID nodeID) {
-        this.cellID = cellID;
+        super(cellID);
         this.nodeID = nodeID;
     }
 
-    public CellID getCellID() {
-        return cellID;
-    }
-
+    /**
+     * Get the ID of the node which has received the mouse click.
+     * @return ID of the node which has been clicked
+     */
     public NodeID getNodeID() {
         return nodeID;
+    }
+
+    /**
+     * Set the ID of the node which has received the mouse click.
+     * @param nodeID ID of the node which has been clicked
+     */
+    public void setNodeID(NodeID nodeID) {
+        this.nodeID = nodeID;
     }
 }

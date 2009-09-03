@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.cmu.common;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -25,24 +24,22 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
- * Server state for the CMU cell; doesn't store much.
+ * Server state for the CMU cell; store the URI of the file, the title of
+ * the scene, and basic visibility settings.
  * @author kevin
  */
-
-@XmlRootElement(name="cmu-cell")
+@XmlRootElement(name = "cmu-cell")
 @ServerState
 public class CMUCellServerState extends CellServerState {
 
     /** The URI of the CMU file. */
-    @XmlElement(name="cmu-uri")
+    @XmlElement(name = "cmu-uri")
     private String cmuURI = null;
-
     /** Whether to show the ground plane when loading this CMU file. */
-    @XmlElement(name="groundplane-visible")
+    @XmlElement(name = "groundplane-visible")
     private boolean groundPlaneShowing = false;
-
     /** The title of the scene. */
-    @XmlElement(name="scene-title")
+    @XmlElement(name = "scene-title")
     private String sceneTitle = null;
 
     /**
@@ -56,7 +53,8 @@ public class CMUCellServerState extends CellServerState {
      * Get the URI to load.
      * @return The URI of the loaded CMU file
      */
-    @XmlTransient public String getCmuURI() {
+    @XmlTransient
+    public String getCmuURI() {
         return cmuURI;
     }
 
@@ -68,18 +66,36 @@ public class CMUCellServerState extends CellServerState {
         cmuURI = uri;
     }
 
-    @XmlTransient public boolean isGroundPlaneShowing() {
+    /**
+     * Find out whether the ground plane is showing in this cell.
+     * @return Whether the ground plane is showing
+     */
+    @XmlTransient
+    public boolean isGroundPlaneShowing() {
         return groundPlaneShowing;
     }
 
+    /**
+     * Set the ground plane visibility for this cell.
+     * @param showing Whether the ground plane is showing
+     */
     public void setGroundPlaneShowing(boolean showing) {
         groundPlaneShowing = showing;
     }
 
-    @XmlTransient public String getSceneTitle() {
+    /**
+     * Get the title of this scene.
+     * @return The title of this scene
+     */
+    @XmlTransient
+    public String getSceneTitle() {
         return sceneTitle;
     }
 
+    /**
+     * Set the title of this scene.
+     * @param sceneTitle The title of this scene
+     */
     public void setSceneTitle(String sceneTitle) {
         this.sceneTitle = sceneTitle;
     }

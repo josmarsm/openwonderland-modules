@@ -51,24 +51,24 @@ import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeEvent;
 import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.CMUCellRenderer;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode;
-import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode.VisualType;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
 import org.jdesktop.wonderland.modules.cmu.client.web.VisualDownloadManager;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
+import org.jdesktop.wonderland.modules.cmu.common.VisualType;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPlaneChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.VisibilityChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.SceneTitleChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ServerClientMessageTypes;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
-import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
+import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualAttributesIdentifier;
 
 /**
  * Cell to display and interact with a CMU scene.
@@ -112,7 +112,7 @@ public class CMUCell extends Cell {
     private final HUDControl hudControl = new HUDControl(this);
 
     // Content repository information
-    private String visualUsername = null;
+    private String visualRepoRoot = null;
 
     /**
      * Listener to process mouse click events.
@@ -193,10 +193,15 @@ public class CMUCell extends Cell {
                     setPlaybackInformationInternal(change.getPlaybackSpeed(), change.isPlaying());
                 }
             } // Ground plane visibility change message
-            else if (message instanceof GroundPlaneChangeMessage) {
+            else if (message instanceof VisibilityChangeMessage) {
                 if (!fromMe) {
-                    GroundPlaneChangeMessage change = (GroundPlaneChangeMessage) message;
-                    setGroundPlaneShowingInternal(change.isGroundPlaneShowing());
+                    VisibilityChangeMessage change = (VisibilityChangeMessage) message;
+                    if (change.getType().equals(VisualType.GROUND)) {
+                        setGroundPlaneShowingInternal(change.isShowing());
+                    } else {
+                        Logger.getLogger(CMUCell.CMUCellMessageReceiver.class.getName()).
+                                severe("Unrecognized visual type: " + change.getType());
+                    }
                 }
             } // Scene title change message
             else if (message instanceof SceneTitleChangeMessage) {
@@ -406,9 +411,9 @@ public class CMUCell extends Cell {
      * @return Whether the load was successful
      */
     private boolean applyVisualMessage(final VisualMessage message) {
-        VisualRepoIdentifier visualID = message.getVisualID();
+        VisualAttributesIdentifier visualID = message.getVisualID();
 
-        final VisualAttributes attributes = VisualDownloadManager.downloadVisual(visualID, getVisualUsername(), this);
+        final VisualAttributes attributes = VisualDownloadManager.downloadVisual(visualID, getVisualRepoRoot(), this);
         if (attributes == null) {
             return false;
         }
@@ -421,7 +426,7 @@ public class CMUCell extends Cell {
                 public void update(Object arg0) {
                     sceneRoot.attachChild(visualNode);
                     sceneRoot.applyUpdateToDescendant(message.getTransformation());
-                    sceneRoot.applyUpdateToDescendant(message.getModelProperties());
+                    sceneRoot.applyUpdateToDescendant(message.getVisualProperties());
                     sceneRoot.applyUpdateToDescendant(message.getAppearanceProperties());
                     visualNode.updateVisibility();
                     ClientContextJME.getWorldManager().addToUpdateList(visualNode);
@@ -453,7 +458,7 @@ public class CMUCell extends Cell {
      */
     private void applySceneMessage(SceneMessage message) {
         this.setConnectionState(ConnectionState.LOADING);
-        setVisualUsername(message.getUsername());
+        setVisualRepoRoot(message.getRepoRoot());
 
         int visualNum = 0;
         fireSceneLoadedChanged(new SceneLoadedChangeEvent(this, (float) visualNum / (float) message.getVisuals().size()));
@@ -726,7 +731,7 @@ public class CMUCell extends Cell {
         synchronized (groundPlaneLock) {
             this.setGroundPlaneShowingInternal(groundPlaneShowing);
         }
-        sendCellMessage(new GroundPlaneChangeMessage(groundPlaneShowing));
+        sendCellMessage(new VisibilityChangeMessage(VisualType.GROUND, groundPlaneShowing));
     }
 
     /**
@@ -749,25 +754,25 @@ public class CMUCell extends Cell {
     }
 
     /**
-     * Set the username which should be used to download visuals from
+     * Set the root which should be used to download visuals from
      * the server; this information is attached to a SceneMessage when
      * a scene is loaded.
-     * @param username The username to use
+     * @param visualRepoRoot The root to use
      */
-    private void setVisualUsername(String username) {
+    private void setVisualRepoRoot(String visualRepoRoot) {
         synchronized (sceneRoot) {
-            this.visualUsername = username;
+            this.visualRepoRoot = visualRepoRoot;
         }
     }
 
     /**
-     * Get the username which should be used to download visuals from
+     * Get the repo root which should be used to download visuals from
      * the server.
-     * @return The username to use
+     * @return The root to use
      */
-    private String getVisualUsername() {
+    private String getVisualRepoRoot() {
         synchronized (sceneRoot) {
-            return visualUsername;
+            return visualRepoRoot;
         }
     }
 

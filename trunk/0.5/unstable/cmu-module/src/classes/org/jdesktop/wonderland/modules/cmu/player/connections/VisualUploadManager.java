@@ -25,7 +25,7 @@ import org.jdesktop.wonderland.modules.cmu.common.web.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
+import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualAttributesIdentifier;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
@@ -40,6 +40,7 @@ import org.jdesktop.wonderland.modules.webdav.client.WebdavClientPlugin;
  */
 public class VisualUploadManager {
 
+    static private final String REPO_COLLECTION_NAME = "visuals";
     static private ServerSessionManager manager = null;
     static private String username = null;
 
@@ -59,8 +60,8 @@ public class VisualUploadManager {
             VisualUploadManager.manager = manager;
             try {
                 ContentCollection collection = ContentRepositoryRegistry.getInstance().getRepository(manager).getUserRoot();
-                if (collection.getChild(VisualRepoIdentifier.REPO_COLLECTION_NAME) == null) {
-                    collection.createChild(VisualRepoIdentifier.REPO_COLLECTION_NAME, ContentNode.Type.COLLECTION);
+                if (collection.getChild(REPO_COLLECTION_NAME) == null) {
+                    collection.createChild(REPO_COLLECTION_NAME, ContentNode.Type.COLLECTION);
                 }
             } catch (ContentRepositoryException ex) {
                 Logger.getLogger(VisualUploadManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -71,8 +72,8 @@ public class VisualUploadManager {
         }
     }
 
-    static public String getUsername() {
-        return username;
+    static public String getRepoRoot() {
+        return "wlcontent://users/" + username + "/" + REPO_COLLECTION_NAME + "/";
     }
 
     /**
@@ -83,11 +84,11 @@ public class VisualUploadManager {
     static public void uploadVisual(VisualAttributes visual) {
         assert isInitialized();
         if (isInitialized()) {
-            VisualRepoIdentifier id = visual.getID();
+            VisualAttributesIdentifier id = visual.getID();
             try {
                 // Get the top-level collection of CMU resources
                 ContentCollection collection = (ContentCollection) ContentRepositoryRegistry.getInstance().
-                        getRepository(manager).getUserRoot().getChild(VisualRepoIdentifier.REPO_COLLECTION_NAME);
+                        getRepository(manager).getUserRoot().getChild(REPO_COLLECTION_NAME);
 
                 // Upload this data if it hasn't already been uploaded.
                 if (collection.getChild(id.getContentNodeName()) == null) {

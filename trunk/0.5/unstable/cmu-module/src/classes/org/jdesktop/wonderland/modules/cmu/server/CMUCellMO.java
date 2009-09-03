@@ -30,7 +30,8 @@ import org.jdesktop.wonderland.modules.cmu.common.CMUCellServerState;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
-import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.GroundPlaneChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.VisualType;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.VisibilityChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.SceneTitleChangeMessage;
@@ -101,8 +102,8 @@ public class CMUCellMO extends CellMO {
             if (message instanceof PlaybackSpeedChangeMessage) {
                 cellMO.setPlaybackInformationFromMessage(clientID, (PlaybackSpeedChangeMessage) message);
             } // Ground plane visibility change
-            else if (message instanceof GroundPlaneChangeMessage) {
-                cellMO.setGroundPlaneShowingFromMessage(clientID, (GroundPlaneChangeMessage) message);
+            else if (message instanceof VisibilityChangeMessage) {
+                cellMO.setGroundPlaneShowingFromMessage(clientID, (VisibilityChangeMessage) message);
             } // Scene title change
             else if (message instanceof SceneTitleChangeMessage) {
                 cellMO.setSceneTitleFromMessage(clientID, (SceneTitleChangeMessage) message);
@@ -112,7 +113,7 @@ public class CMUCellMO extends CellMO {
             } // Mouse button event
             else if (message instanceof MouseButtonEventMessage) {
                 MouseButtonEventMessage mouseMessage = (MouseButtonEventMessage) message;
-                cellMO.sendMouseClick(((MouseButtonEventMessage)message).getNodeID());
+                cellMO.sendMouseClick(((MouseButtonEventMessage) message).getNodeID());
             } // Unknown message
             else {
                 Logger.getLogger(CMUCellMO.CMUCellMessageReceiver.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
@@ -321,7 +322,7 @@ public class CMUCellMO extends CellMO {
      * @param groundPlaneShowing Whether the ground plane should be showing
      */
     public void setGroundPlaneShowing(boolean groundPlaneShowing) {
-        setGroundPlaneShowingFromMessage(null, new GroundPlaneChangeMessage(groundPlaneShowing));
+        setGroundPlaneShowingFromMessage(null, new VisibilityChangeMessage(VisualType.GROUND, groundPlaneShowing));
     }
 
     /**
@@ -330,9 +331,9 @@ public class CMUCellMO extends CellMO {
      * @param notifier The client who originally sent the message (null if none)
      * @param message The ground plane change message
      */
-    private void setGroundPlaneShowingFromMessage(WonderlandClientID notifier, GroundPlaneChangeMessage message) {
+    private void setGroundPlaneShowingFromMessage(WonderlandClientID notifier, VisibilityChangeMessage message) {
         synchronized (groundPlaneLock) {
-            this.groundPlaneShowing = message.isGroundPlaneShowing();
+            this.groundPlaneShowing = message.isShowing();
         }
         sendCellMessage(notifier, message);
     }

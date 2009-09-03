@@ -36,8 +36,7 @@ import org.jdesktop.wonderland.modules.cmu.player.conversions.math.Point3Convert
 public abstract class TransformableConverter<TransformableType extends org.alice.apis.moveandturn.Transformable>
         implements AbsoluteTransformationListener, PropertyListener {
 
-    // Used to assign unique IDs to each transformable
-    private static long numNodes = 0;
+    // Unique ID
     private final NodeID nodeID;
 
     // Scene graph objects
@@ -51,15 +50,8 @@ public abstract class TransformableConverter<TransformableType extends org.alice
     private final Set<NodeUpdateListener> updateListeners = new HashSet<NodeUpdateListener>();
 
 
-    {
-        // Set node ID in every constructor.
-        synchronized (this.getClass()) {
-            this.nodeID = new NodeID(numNodes);
-            numNodes++;
-        }
-    }
-
     public TransformableConverter(TransformableType transformable) {
+        this.nodeID = NodeID.generateNewID();
         this.transformable = transformable;
         this.sgTransformable = transformable.getSGTransformable();
         this.sgTransformable.addAbsoluteTransformationListener(this);

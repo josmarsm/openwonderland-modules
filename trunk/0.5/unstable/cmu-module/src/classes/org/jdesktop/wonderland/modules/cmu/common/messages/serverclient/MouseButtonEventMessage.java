@@ -27,14 +27,29 @@ import org.jdesktop.wonderland.modules.cmu.common.NodeID;
  */
 public class MouseButtonEventMessage extends CellMessage {
 
-    private final static long serialVersionUID = 1L;
-    private final NodeID nodeID;
+    private NodeID nodeID;
 
+    /**
+     * Standard constructor.
+     * @param nodeID The ID of the node which has been clicked.
+     */
     public MouseButtonEventMessage(NodeID nodeID) {
-        this.nodeID = nodeID;
+        setNodeID(nodeID);
     }
 
+    /**
+     * Get the ID for the node which has been clicked.
+     * @return ID for the node which has been clicked
+     */
     public NodeID getNodeID() {
         return nodeID;
+    }
+
+    /**
+     * Set the ID for the node which has been clicked.
+     * @param nodeID ID for the node which has been clicked
+     */
+    public void setNodeID(NodeID nodeID) {
+        this.nodeID = nodeID;
     }
 }

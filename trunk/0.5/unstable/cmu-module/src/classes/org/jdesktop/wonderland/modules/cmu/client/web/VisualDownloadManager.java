@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
-import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualRepoIdentifier;
+import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualAttributesIdentifier;
 
 /**
  * Manager to download CMU visual attributes from the content repository based
@@ -43,13 +43,13 @@ public class VisualDownloadManager {
     /**
      * Get the visual from the repository which is defined by the given ID.
      * @param id The ID defining the visual
-     * @param username The user which uploaded the visuals to the content repository
+     * @param repoRoot The directory in which visuals reside in the content repository
      * @param cell The cell which wishes to accesss the visual assets
      * @return The visual downloaded from the repository
      */
-    public static VisualAttributes downloadVisual(VisualRepoIdentifier id, String username, Cell cell) {
+    public static VisualAttributes downloadVisual(VisualAttributesIdentifier id, String repoRoot, Cell cell) {
         VisualAttributes attr = null;
-        String visualURI = "wlcontent://users/" + username + "/" + VisualRepoIdentifier.REPO_COLLECTION_NAME + "/" + id.getContentNodeName();
+        String visualURI = repoRoot + id.getContentNodeName();
         try {
             URL visualURL = AssetUtils.getAssetURL(visualURI, cell);
             InputStream urlStream = visualURL.openStream();

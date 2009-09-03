@@ -18,25 +18,19 @@
 package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
 
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.messages.Message;
 
 /**
- *
+ * Message to inform the CMU program manager that a particular program
+ * should be destroyed.
  * @author kevin
  */
-public class DeleteProgramMessage extends Message {
-    private CellID cellID;
+public class DeleteProgramMessage extends ServerCMUMessage {
 
+    /**
+     * Standard constructor.
+     * @param cellID The ID of the cell whose program is to be deleted
+     */
     public DeleteProgramMessage(CellID cellID) {
-        super();
-        setCellID(cellID);
-    }
-
-    public CellID getCellID() {
-        return cellID;
-    }
-
-    public void setCellID(CellID cellID) {
-        this.cellID = cellID;
+        super(cellID);
     }
 }

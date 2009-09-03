@@ -20,10 +20,14 @@ package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- *
+ * Message to notify a CMUCellMO that its associated program needs to be
+ * restarted.
  * @author kevin
  */
 public class RestartProgramMessage extends CellMessage {
+    /**
+     * Standard constructor; no state necessary.
+     */
     public RestartProgramMessage() {
         super();
     }
