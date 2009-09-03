@@ -23,10 +23,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.border.Border;
+import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.modules.pdfviewer.common.PDFViewerState;
 
 /**
+ * HUD control panel for PDF viewer.
  *
  * @author nsimpson
  */
@@ -35,17 +38,22 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger(PDFViewerControlPanel.class.getName());
     protected boolean fillMode = false;
     protected ArrayList<PDFViewerToolListener> cellMenuListeners = new ArrayList();
-    protected Border border;
     protected Map toolMappings;
     protected Map colorMappings;
     protected PDFViewerWindow window;
     protected PDFViewerDragGestureListener gestureListener;
+    private ImageIcon playIcon;
+    private ImageIcon pauseIcon;
+    private ImageIcon syncIcon;
+    private ImageIcon unsyncIcon;
+    private ImageIcon dockedIcon;
+    private ImageIcon undockedIcon;
 
     public PDFViewerControlPanel(PDFViewerWindow window) {
         this.window = window;
         initComponents();
+        initIcons();
         initListeners();
-        border = javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED);
     }
 
     public void addCellMenuListener(PDFViewerToolListener listener) {
@@ -56,11 +64,67 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
         cellMenuListeners.remove(listener);
     }
 
+    private void initIcons() {
+        playIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerPlay32x32.png"));
+        pauseIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerPause32x32.png"));
+        syncIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerSyncedYes32x32.png"));
+        unsyncIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerSyncedNo32x32.png"));
+        dockedIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerDock32x32.png"));
+        undockedIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerUndock32x32.png"));
+    }
+
     private void initListeners() {
         DragSource ds = DragSource.getDefaultDragSource();
         gestureListener = new PDFViewerDragGestureListener(window);
         ds.createDefaultDragGestureRecognizer(dragHUDButton,
                 DnDConstants.ACTION_COPY_OR_MOVE, gestureListener);
+    }
+
+    public void setMode(final PDFViewerState state) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                switch (state) {
+                    case PLAYING:
+                        playHUDButton.setIcon(pauseIcon);
+                        break;
+                    case PAUSED:
+                        playHUDButton.setIcon(playIcon);
+                        break;
+                    case STOPPED:
+                        playHUDButton.setIcon(playIcon);
+                        break;
+                }
+                validate();
+            }
+        });
+    }
+
+    public void setOnHUD(final boolean onHUD) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                if (onHUD) {
+                    toggleHUDButton.setIcon(dockedIcon);
+                } else {
+                    toggleHUDButton.setIcon(undockedIcon);
+                }
+            }
+        });
+    }
+
+    public void setSynced(final boolean synced) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                if (synced) {
+                    syncHUDButton.setIcon(syncIcon);
+                } else {
+                    syncHUDButton.setIcon(unsyncIcon);
+                }
+            }
+        });
+
     }
 
     /**
@@ -79,22 +143,6 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
      */
     public void depressButton(JButton button, boolean depress) {
         button.setBorderPainted(depress);
-    }
-
-    public void setOnHUD(boolean onHUD) {
-        if (onHUD) {
-            toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerDock32x32.png")));
-        } else {
-            toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerUndock32x32.png")));
-        }
-    }
-
-    public void setSynced(boolean synced) {
-        if (synced == true) {
-            syncHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerSyncedYes32x32.png")));
-        } else {
-            syncHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/pdfviewer/client/resources/PDFviewerSyncedNo32x32.png")));
-        }
     }
 
     /** This method is called from within the constructor to
@@ -403,7 +451,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
         Iterator<PDFViewerToolListener> iter = cellMenuListeners.iterator();
         while (iter.hasNext()) {
             PDFViewerToolListener listener = iter.next();
-            listener.play();
+            listener.togglePlay();
         }
     }//GEN-LAST:event_playHUDButtonActionPerformed
 
@@ -427,7 +475,7 @@ public class PDFViewerControlPanel extends javax.swing.JPanel {
         Iterator<PDFViewerToolListener> iter = cellMenuListeners.iterator();
         while (iter.hasNext()) {
             PDFViewerToolListener listener = iter.next();
-            listener.sync();
+            listener.toggleSync();
         }
     }//GEN-LAST:event_syncHUDButtonActionPerformed
 

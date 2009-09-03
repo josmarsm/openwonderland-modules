@@ -36,6 +36,12 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.pdfviewer.client.cell.PDFViewerCell;
+import org.jdesktop.wonderland.modules.pdfviewer.common.PDFViewerConstants;
+import org.jdesktop.wonderland.modules.pdfviewer.common.PDFViewerState;
+import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 
 /**
  * The window for the PDF viewer.
@@ -55,6 +61,7 @@ public class PDFViewerWindow extends WindowSwing {
     private HUDComponent controlComponent;
     private HUDDialog openDialogComponent;
     private SharedStateComponent ssc;
+    private SharedMapCli statusMap;
     private boolean synced = true;
     private DisplayMode displayMode;
 
@@ -87,7 +94,7 @@ public class PDFViewerWindow extends WindowSwing {
 
     public void setSSC(SharedStateComponent ssc) {
         this.ssc = ssc;
-        pdfPanel.setSSC(ssc);
+        statusMap = ssc.get(PDFViewerConstants.STATUS_MAP);
     }
 
     public void openDocument() {
@@ -107,7 +114,13 @@ public class PDFViewerWindow extends WindowSwing {
 
                                 public void run() {
                                     openDialogComponent.setVisible(false);
-                                    openDocument(openDialogComponent.getValue());
+                                    if (isSynced()) {
+                                        // update the shared state
+                                        statusMap.put(PDFViewerConstants.DOCUMENT_URI, SharedString.valueOf(openDialogComponent.getValue()));
+                                    } else {
+                                        // just open the document privately
+                                        pdfPanel.openDocument(openDialogComponent.getValue());
+                                    }
                                 }
                             });
                         }
@@ -131,43 +144,99 @@ public class PDFViewerWindow extends WindowSwing {
     }
 
     public void openDocument(String documentURI) {
-        pdfPanel.openDocument(documentURI);
+        openDocument(documentURI, 1);
+    }
+
+    public void openDocument(String documentURI, int pageNumber) {
+        if (isSynced()) {
+            pdfPanel.openDocument(documentURI, pageNumber);
+        }
     }
 
     public String getDocumentURI() {
         return pdfPanel.getDocumentURI();
     }
 
+    /**
+     * Display the first page in the document
+     */
     public void firstPage() {
-        pdfPanel.firstPage();
+        gotoPage(1);
     }
 
-    public void previousPage() {
-        pdfPanel.previousPage();
-    }
-
-    public void nextPage() {
-        pdfPanel.nextPage();
-    }
-
+    /**
+     * Display the last page in the document
+     */
     public void lastPage() {
-        pdfPanel.lastPage();
+        gotoPage(pdfPanel.getPageCount());
     }
 
-    public void gotoPage(int page, boolean notify) {
-        pdfPanel.gotoPage(page, notify);
+    /**
+     * Display the next page after the currently selected page
+     */
+    public void nextPage() {
+        gotoPage(pdfPanel.getNextPage());
     }
 
+    /**
+     * Display the previous page to the currently selected page
+     */
+    public void previousPage() {
+        gotoPage(pdfPanel.getPreviousPage());
+    }
+
+    /**
+     * Go to the specified page
+     * @param page the number of the page to go to
+     */
     public void gotoPage(int page) {
-        pdfPanel.gotoPage(page);
+        if (isSynced()) {
+            // notify all clients
+            statusMap.put(PDFViewerConstants.PAGE_NUMBER, SharedInteger.valueOf(page));
+        } else {
+            // show the page privately in this client
+            pdfPanel.showPage(page);
+        }
+    }
+
+    /**
+     * Display a page
+     * @param page the page to display
+     */
+    public void showPage(int page) {
+        if (isSynced()) {
+            pdfPanel.showPage(page);
+        }
+    }
+
+    public void togglePlay() {
+        if (isSynced()) {
+            statusMap.put(PDFViewerConstants.SLIDE_SHOW_MODE, SharedBoolean.valueOf(!isPlaying()));
+        }
     }
 
     public void play() {
-        pdfPanel.play();
+        if (isSynced()) {
+            logger.info("play");
+            updateControls();
+        }
     }
 
     public void pause() {
-        pdfPanel.pause();
+        if (isSynced()) {
+            logger.info("pause");
+            updateControls();
+        }
+    }
+
+    public boolean isPlaying() {
+        boolean playing = false;
+
+        if (statusMap != null) {
+            playing = ((SharedBoolean) statusMap.get(PDFViewerConstants.SLIDE_SHOW_MODE)).getValue();
+        }
+
+        return playing;
     }
 
     public void zoomIn() {
@@ -178,12 +247,8 @@ public class PDFViewerWindow extends WindowSwing {
         pdfPanel.zoomOut();
     }
 
-    public void sync() {
-        pdfPanel.sync();
-    }
-
-    public void unsync() {
-        pdfPanel.unsync();
+    public void toggleSync() {
+        sync(!synced);
     }
 
     public boolean isSynced() {
@@ -209,12 +274,38 @@ public class PDFViewerWindow extends WindowSwing {
 
     public void sync(boolean syncing) {
         if ((syncing == false) && (synced == true)) {
+            // unsyncing
             synced = false;
-            logger.info("PDF viewer: unsynced");
+            logger.info("unsynced");
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
-            logger.info("PDF viewer: synced");
+            // syncing with shared state
+            int page = ((SharedInteger) statusMap.get(PDFViewerConstants.PAGE_NUMBER)).getValue();
+
+            // open the document
+            String currentDocument = getDocumentURI();
+            String newDocument = ((SharedString) statusMap.get(PDFViewerConstants.DOCUMENT_URI)).getValue();
+            if (newDocument != null) {
+                if ((currentDocument == null) || !newDocument.equals(currentDocument)) {
+                    // opening a new document
+                    openDocument(newDocument, page);
+                } else {
+                    // re-opening the current document, just show the correct
+                    // page
+                    showPage(page);
+                }
+            }
+
+            boolean playing = ((SharedBoolean) statusMap.get(PDFViewerConstants.SLIDE_SHOW_MODE)).getValue();
+            if (playing) {
+                play();
+            } else {
+                pause();
+            }
+
+            logger.info("synced");
         }
+        updateControls();
     }
 
     /**
@@ -293,7 +384,7 @@ public class PDFViewerWindow extends WindowSwing {
 
     protected void updateControls() {
         controls.setSynced(isSynced());
-
         controls.setOnHUD(!toolManager.isOnHUD());
+        controls.setMode(isPlaying() ? PDFViewerState.PLAYING : PDFViewerState.PAUSED);
     }
 }

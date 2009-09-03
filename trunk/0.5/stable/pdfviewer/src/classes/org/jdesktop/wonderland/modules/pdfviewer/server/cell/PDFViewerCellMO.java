@@ -44,7 +44,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 
 /**
- * A server cell associated with a PDF viewer
+ * A server cell associated with a PDF viewer.
  *
  * @author nsimpson
  */

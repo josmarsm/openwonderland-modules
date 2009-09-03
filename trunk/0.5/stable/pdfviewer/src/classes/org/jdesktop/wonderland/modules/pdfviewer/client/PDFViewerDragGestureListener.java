@@ -26,6 +26,7 @@ import java.awt.dnd.DragSource;
 import java.util.logging.Logger;
 
 /**
+ * A listener for drag events.
  *
  * @author nsimpson
  */

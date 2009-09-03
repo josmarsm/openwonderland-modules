@@ -15,34 +15,14 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.pdfviewer.client;
+package org.jdesktop.wonderland.modules.pdfviewer.common;
 
 /**
- * Listener methods for PDF viewer control panel buttons.
+ * PDF viewer slide show states.
  *
  * @author nsimpson
  */
-public interface PDFViewerToolListener {
+public enum PDFViewerState {
 
-    public void toggleHUD();
-
-    public void openDocument();
-
-    public void firstPage();
-
-    public void previousPage();
-
-    public void nextPage();
-
-    public void lastPage();
-
-    public void gotoPage(int page);
-
-    public void togglePlay();
-
-    public void zoomIn();
-
-    public void zoomOut();
-
-    public void toggleSync();
+    PLAYING, PAUSED, STOPPED
 }

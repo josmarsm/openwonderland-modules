@@ -79,12 +79,8 @@ public class PDFViewerToolManager implements PDFViewerToolListener {
         pdfViewerWindow.gotoPage(page);
     }
 
-    public void play() {
-        pdfViewerWindow.play();
-    }
-
-    public void pause() {
-        pdfViewerWindow.pause();
+    public void togglePlay() {
+        pdfViewerWindow.togglePlay();
     }
 
     public void zoomIn() {
@@ -95,12 +91,8 @@ public class PDFViewerToolManager implements PDFViewerToolListener {
         pdfViewerWindow.zoomOut();
     }
 
-    public void sync() {
-        pdfViewerWindow.sync(!pdfViewerWindow.isSynced());
-    }
-
-    public void unsync() {
-        pdfViewerWindow.sync(!pdfViewerWindow.isSynced());
+    public void toggleSync() {
+        pdfViewerWindow.toggleSync();
     }
 
     public boolean isOnHUD() {
