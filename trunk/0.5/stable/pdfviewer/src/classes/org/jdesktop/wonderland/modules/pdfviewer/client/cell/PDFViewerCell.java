@@ -123,21 +123,16 @@ public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {
                     SharedString documentURI = statusMap.get(PDFViewerConstants.DOCUMENT_URI,
                             SharedString.class);
                     handleLoadDocument(null, null, documentURI);
-
-//                    // get the page number
-//                    SharedInteger page = statusMap.get(PDFViewerConstants.PAGE_NUMBER,
-//                            SharedInteger.class);
-//                    handlePageChange(null, null, page);
 //
 //                    // get the scroll position
 //                    SharedInteger scroll = statusMap.get(PDFViewerConstants.PAGE_POSITION,
 //                            SharedInteger.class);
 //                    handleScrolled(null, null, scroll);
-//
-//                    // get the slide show mode
-//                    SharedBoolean slideshow = statusMap.get(PDFViewerConstants.SLIDE_SHOW_MODE,
-//                            SharedBoolean.class);
-//                    handleSlideShowMode(null, null, slideshow);
+
+                    // get the slide show mode
+                    SharedBoolean slideshow = statusMap.get(PDFViewerConstants.SLIDE_SHOW_MODE,
+                            SharedBoolean.class);
+                    handleSlideShowMode(null, null, slideshow);
 
 
                     // both the app and the user want this window to be visible
@@ -196,8 +191,11 @@ public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {
 
     private void handleLoadDocument(String media, SharedData oldData, SharedData newData) {
         if (newData != null) {
+            // get the page number
+            int page = ((SharedInteger) statusMap.get(PDFViewerConstants.PAGE_NUMBER)).getValue();
+
             String documentURI = ((SharedString) newData).getValue();
-            pdfViewerWindow.openDocument(documentURI);
+            pdfViewerWindow.openDocument(documentURI, page);
         }
     }
 
