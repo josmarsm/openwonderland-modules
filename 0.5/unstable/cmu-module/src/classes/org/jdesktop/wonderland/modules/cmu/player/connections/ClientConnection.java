@@ -27,7 +27,8 @@ import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.CMUClientMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
@@ -105,10 +106,8 @@ public class ClientConnection extends Thread {
 
     public void queueMessage(CMUClientMessage message) {
         synchronized (queue) {
-            if (message instanceof TransformationMessage) {
-                queue.queueTransformationMessage((TransformationMessage) message);
-            } else if (message instanceof ModelPropertyMessage) {
-                queue.queueModelPropertyMessage((ModelPropertyMessage)message);
+            if (message instanceof NodeUpdateMessage) {
+                queue.queueNodeUpdateMessage((NodeUpdateMessage) message);
             } else if (message instanceof SceneMessage) {
                 queue.queueSceneMessage((SceneMessage) message);
             } else if (message instanceof VisualMessage) {
@@ -181,41 +180,21 @@ public class ClientConnection extends Thread {
             return size() == 0;
         }
 
-        public synchronized void queueTransformationMessage(TransformationMessage message) {
+        public synchronized void queueNodeUpdateMessage(NodeUpdateMessage message) {
 
-            // Check to see if the transformation for this node is
+            // Check to see if an update of this type for this node is
             // already in the queue; if so, overwrite it
             boolean alreadyInQueue = false;
             ListIterator<CMUClientMessage> li = queue.listIterator();
             while (li.hasNext()) {
                 CMUClientMessage nextMessage = li.next();
-                if (nextMessage instanceof TransformationMessage && ((TransformationMessage) nextMessage).getNodeID().equals(message.getNodeID())) {
+                if (nextMessage.getClass().isAssignableFrom(message.getClass()) && ((NodeUpdateMessage) nextMessage).getNodeID().equals(message.getNodeID())) {
                     li.set(message);
                     alreadyInQueue = true;
                     break;
                 }
             }
-
-            // Add to queue if necessary
-            if (!alreadyInQueue) {
-                queue.offerLast(message);
-            }
-        }
-
-        public synchronized void queueModelPropertyMessage(ModelPropertyMessage message) {
-            // Check to see if the properties for this node are
-            // already in the queue; if so, overwrite them
-            boolean alreadyInQueue = false;
-            ListIterator<CMUClientMessage> li = queue.listIterator();
-            while (li.hasNext()) {
-                CMUClientMessage nextMessage = li.next();
-                if (nextMessage instanceof ModelPropertyMessage && ((ModelPropertyMessage) nextMessage).getNodeID().equals(message.getNodeID())) {
-                    li.set(message);
-                    alreadyInQueue = true;
-                    break;
-                }
-            }
-
+            
             // Add to queue if necessary
             if (!alreadyInQueue) {
                 queue.offerLast(message);

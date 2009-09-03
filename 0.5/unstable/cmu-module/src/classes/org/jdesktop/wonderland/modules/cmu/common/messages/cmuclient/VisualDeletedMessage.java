@@ -25,9 +25,7 @@ import org.jdesktop.wonderland.modules.cmu.common.NodeID;
  * @author kevin
  */
 public class VisualDeletedMessage extends SingleNodeMessage {
-
-    private NodeID nodeID;
-
+    
     /**
      * Constructor with ID.
      * @param nodeID ID of the visual to delete

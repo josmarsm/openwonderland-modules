@@ -21,7 +21,7 @@ import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import java.util.Iterator;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SingleNodeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 
 /**
@@ -38,7 +38,7 @@ public class VisualParent extends Node {
      * baserd on the transformation.
      * @param transformation The transformation to be applied to a matching child
      */
-    public synchronized VisualParent applyMessageToChild(SingleNodeMessage message) {
+    public synchronized VisualParent applyMessageToChild(NodeUpdateMessage message) {
         if (this.getChildren() == null) {
             return null;
         }
@@ -66,7 +66,7 @@ public class VisualParent extends Node {
         Iterator<Spatial> it = this.getChildren().iterator();
         while (it.hasNext()) {
             Spatial child = it.next();
-            if (VisualParent.class.isAssignableFrom(child.getClass())) {
+            if (child instanceof VisualParent) {
                 if (((VisualParent) child).removeChild(id)) {
                     it.remove();
                 }

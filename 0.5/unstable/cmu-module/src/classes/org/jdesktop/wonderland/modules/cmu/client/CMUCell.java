@@ -55,9 +55,9 @@ import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
 import org.jdesktop.wonderland.modules.cmu.client.web.VisualDownloadManager;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SingleNodeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
@@ -211,21 +211,38 @@ public class CMUCell extends Cell {
     }
 
     /**
-     * Enumeration to represent the connection state of a scene - it can be
-     * completely disconnected, connected but waiting for scene date,
-     * in the process of loading, or fully loaded.
+     * Enumeration to represent the connection/loading state of a scene.
      */
     public enum ConnectionState {
 
-        DISCONNECTED, // Connection lost for unknown reasons
-        RECONNECTING, // Connection lost, expecting to reconnect
-        WAITING, // Waiting to load
-        LOADING, // Partially loaded
-        LOADED,         // Fully loaded
+        /**
+         * Connection lost (for unknown reasons, or not expecting to
+         * reconnect).
+         */
+        DISCONNECTED,
+        /**
+         * Connection lost, expecting to reconnect.
+         */
+        RECONNECTING,
+        /**
+         * Connected, waiting to load (i.e. waiting to receive a scene
+         * message).
+         */
+        WAITING,
+        /**
+         * Connected, partially loaded.
+         */
+        LOADING,
+        /**
+         * Connected, fully loaded.
+         */
+        LOADED,
     }
 
     /**
      * Standard constructor.
+     * @param cellID ID of this cell
+     * @param cellCache Cache for this cell
      */
     public CMUCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -340,12 +357,9 @@ public class CMUCell extends Cell {
      */
     public void applyMessage(Object message, VisualChangeReceiverThread receiver) {
         if (allowsUpdatesFrom(receiver)) {
-            // Transformation for existing visual
-            if (message instanceof TransformationMessage) {
-                this.applyTransformationMessage((TransformationMessage) message);
-            } // Property change for existing visual
-            else if (message instanceof ModelPropertyMessage) {
-                this.applyModelPropertyMessage((ModelPropertyMessage) message);
+            // Property/transformation update for existing visual
+            if (message instanceof NodeUpdateMessage) {
+                this.applyNodeUpdateMessage((NodeUpdateMessage) message);
             } // New visual
             else if (message instanceof VisualMessage) {
                 this.applyVisualMessage((VisualMessage) message);
@@ -370,15 +384,7 @@ public class CMUCell extends Cell {
      * with the appropriate node ID.
      * @param message Message to apply
      */
-    private void applyTransformationMessage(TransformationMessage message) {
-        applyNodeUpdateMessage(message);
-    }
-
-    private void applyModelPropertyMessage(ModelPropertyMessage message) {
-        applyNodeUpdateMessage(message);
-    }
-
-    private void applyNodeUpdateMessage(final SingleNodeMessage message) {
+    private void applyNodeUpdateMessage(final NodeUpdateMessage message) {
         synchronized (sceneRoot) {
             if (this.getConnectionState() == ConnectionState.LOADED) {
                 ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
@@ -414,7 +420,8 @@ public class CMUCell extends Cell {
                 public void update(Object arg0) {
                     sceneRoot.attachChild(visualNode);
                     sceneRoot.applyMessageToChild(message.getTransformation());
-                    sceneRoot.applyMessageToChild(message.getProperties());
+                    sceneRoot.applyMessageToChild(message.getModelProperties());
+                    sceneRoot.applyMessageToChild(message.getAppearanceProperties());
                     visualNode.updateVisibility();
                     ClientContextJME.getWorldManager().addToUpdateList(visualNode);
                 }
@@ -529,9 +536,10 @@ public class CMUCell extends Cell {
      * current VisualChangeReceiverThread.  If we're connecting, clean up
      * any disconnect messages to prepare for incoming scene changes.  Update
      * the HUD appropriately.
-     * @param sceneLoaded The loaded state of the scene
+     * @param connectionState The connection/loading state of the scene
      */
     protected void setConnectionState(ConnectionState connectionState) {
+        //TODO: finer control of connected/disconnected states
         hudControl.setConnectionState(connectionState);
         synchronized (sceneRoot) {
             this.connectionState = connectionState;
@@ -569,7 +577,7 @@ public class CMUCell extends Cell {
      * Set the server and port that will be used to connect to a CMU instance.
      * If we are already connected somewhere, disconnect and reestablish the
      * connection at the new location.
-     * @param server The host address to connect to
+     * @param hostname The host address to connect to
      * @param port The port to connect to
      */
     public void setHostnameAndPort(String hostname, int port) {

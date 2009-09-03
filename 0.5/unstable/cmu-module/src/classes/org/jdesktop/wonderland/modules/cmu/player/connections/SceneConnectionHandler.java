@@ -40,14 +40,13 @@ import org.alice.apis.moveandturn.Scene;
 import org.alice.apis.moveandturn.Transformable;
 import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.ModelPropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
-import org.jdesktop.wonderland.modules.cmu.player.ModelPropertyMessageListener;
-import org.jdesktop.wonderland.modules.cmu.player.ModelWrapper;
-import org.jdesktop.wonderland.modules.cmu.player.TransformationMessageListener;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.ModelConverter;
+import org.jdesktop.wonderland.modules.cmu.player.NodeUpdateListener;
 
 /**
  * Wraps a CMU Scene object to extract transformation/geometry information
@@ -56,12 +55,12 @@ import org.jdesktop.wonderland.modules.cmu.player.TransformationMessageListener;
  * as necessary.
  * @author kevin
  */
-public class SceneConnectionHandler implements ChildrenListener, TransformationMessageListener, ModelPropertyMessageListener {
+public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListener {
 
     public final int DEFAULT_FPS = 30;
     private Scene sc = null;       // The scene to wrap.
     private final Set<ClientConnection> connections = new HashSet<ClientConnection>();
-    private final Map<NodeID, ModelWrapper> visuals = new HashMap<NodeID, ModelWrapper>();
+    private final Map<NodeID, ModelConverter> visuals = new HashMap<NodeID, ModelConverter>();
     private final ConnectionHandlerThread handlerThread;
 
     /**
@@ -193,7 +192,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     }
 
     public void click(NodeID id) {
-        ModelWrapper model = visuals.get(id);
+        ModelConverter model = null;
+        synchronized(visuals) {
+            model = visuals.get(id);
+        }
         if (model != null) {
             model.click();
         }
@@ -232,7 +234,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         synchronized (visuals) {
             // Create the scene message with all current visuals (might be none)
             Collection<VisualMessage> visualMessages = new Vector<VisualMessage>();
-            for (ModelWrapper visual : this.visuals.values()) {
+            for (ModelConverter visual : this.visuals.values()) {
                 visualMessages.add(visual.getVisualMessage());
             }
             message = new SceneMessage(visualMessages, VisualUploadManager.getUsername());
@@ -277,10 +279,9 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
         synchronized (visuals) {
             synchronized (connections) {
                 // Create and store a wrapper for this Visual.
-                ModelWrapper visualWrapper = new ModelWrapper(model);
+                ModelConverter visualWrapper = new ModelConverter(model);
                 this.visuals.put(visualWrapper.getNodeID(), visualWrapper);
-                visualWrapper.addTransformationMessageListener(this);
-                visualWrapper.addPropertiesMessageListener(this);
+                visualWrapper.addNodeUpdateListener(this);
                 VisualUploadManager.uploadVisual(visualWrapper.getVisualAttributes());
 
                 // Broadcast it to each connected client.  Don't allow new
@@ -299,7 +300,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
      * {@inheritDoc}
      */
     @Override
-    public void transformationMessageChanged(TransformationMessage message) {
+    public void modelUpdated(NodeUpdateMessage message) {
         synchronized (connections) {
             for (ClientConnection connection : connections) {
                 connection.queueMessage(message);
@@ -310,7 +311,7 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
     /**
      * {@inheritDoc}
      */
-    public void modelPropertyMessageChanged(ModelPropertyMessage message) {
+    public void modelPropertyMessageChanged(VisualPropertyMessage message) {
         synchronized (connections) {
             for (ClientConnection connection : connections) {
                 connection.queueMessage(message);
@@ -330,11 +331,10 @@ public class SceneConnectionHandler implements ChildrenListener, TransformationM
                 }
             }
             synchronized (visuals) {
-                for (ModelWrapper visual : visuals.values()) {
+                for (ModelConverter visual : visuals.values()) {
                     // Clean up visuals individually
                     visual.unload();
-                    visual.removeTransformationMessageListener(this);
-                    visual.removePropertiesMessageListener(this);
+                    visual.removeNodeUpdateListener(this);
                 }
                 // Remove visuals collectively
                 visuals.clear();

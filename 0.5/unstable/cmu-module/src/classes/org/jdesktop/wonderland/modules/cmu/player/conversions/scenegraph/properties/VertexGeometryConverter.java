@@ -15,14 +15,14 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.player.conversions;
+package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.properties;
 
 import com.jme.scene.TexCoords;
 import com.jme.scene.TriMesh;
 import com.jme.util.geom.BufferUtils;
 import edu.cmu.cs.dennisc.math.Point3;
-import edu.cmu.cs.dennisc.scenegraph.Geometry;
 import edu.cmu.cs.dennisc.scenegraph.Vertex;
+import edu.cmu.cs.dennisc.scenegraph.VertexGeometry;
 import edu.cmu.cs.dennisc.texture.TextureCoordinate2f;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -31,7 +31,7 @@ import java.nio.IntBuffer;
  * Extracts a jME-compatible mesh from a CMU Geometry object.
  * @author kevin
  */
-public class GeometryConverter {
+public class VertexGeometryConverter {
 
     final static private int PER_VERTEX = 3;
     final static private int PER_TEX_COORD = 2;
@@ -44,7 +44,7 @@ public class GeometryConverter {
      * Standard constructor.
      * @param g The Geometry to translate
      */
-    public GeometryConverter(Geometry g) {
+    public VertexGeometryConverter(VertexGeometry g) {
 
         // Get vertex data.
         Vertex[] vertices = (Vertex[]) g.getPropertyNamed(VERTICES_PROPERTY_NAME).getValue(g);

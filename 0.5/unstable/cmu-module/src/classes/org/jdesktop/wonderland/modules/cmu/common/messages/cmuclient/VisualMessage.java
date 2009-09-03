@@ -29,15 +29,20 @@ public class VisualMessage extends SingleNodeMessage {
 
     private static final long serialVersionUID = 1L;
     private final TransformationMessage transformation;
-    private final ModelPropertyMessage properties;
+    private final VisualPropertyMessage modelProperties;
+    private final AppearancePropertyMessage appearanceProperties;
     private final VisualRepoIdentifier id;
 
-    public VisualMessage(VisualRepoIdentifier id, TransformationMessage initialTransform, ModelPropertyMessage initialProperties) {
+    public VisualMessage(VisualRepoIdentifier id, TransformationMessage initialTransform,
+            VisualPropertyMessage initialModelProperties, AppearancePropertyMessage initialAppearanceProperties) {
         super(initialTransform.getNodeID());
-        assert initialTransform.getNodeID().equals(initialProperties.getNodeID());
-        this.transformation = initialTransform;
+        assert initialTransform.getNodeID().equals(initialModelProperties.getNodeID());
+        assert initialTransform.getNodeID().equals(initialAppearanceProperties.getNodeID());
+
         this.id = id;
-        this.properties = initialProperties;
+        this.transformation = initialTransform;
+        this.modelProperties = initialModelProperties;
+        this.appearanceProperties = initialAppearanceProperties;
     }
 
     /**
@@ -49,8 +54,12 @@ public class VisualMessage extends SingleNodeMessage {
         return this.transformation;
     }
 
-    public ModelPropertyMessage getProperties() {
-        return this.properties;
+    public VisualPropertyMessage getModelProperties() {
+        return this.modelProperties;
+    }
+
+    public AppearancePropertyMessage getAppearanceProperties() {
+        return appearanceProperties;
     }
 
     public VisualRepoIdentifier getVisualID() {

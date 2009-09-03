@@ -31,10 +31,6 @@ public abstract class SingleNodeMessage extends CMUClientMessage {
         this.nodeID = nodeID;
     }
 
-    public SingleNodeMessage(SingleNodeMessage other) {
-        this(other.getNodeID());
-    }
-
     public NodeID getNodeID() {
         return nodeID;
     }
