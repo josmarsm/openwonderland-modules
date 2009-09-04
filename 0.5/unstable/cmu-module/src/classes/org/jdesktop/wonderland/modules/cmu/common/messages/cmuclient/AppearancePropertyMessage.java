@@ -29,7 +29,10 @@ import org.jdesktop.wonderland.modules.cmu.common.NodeID;
  */
 public class AppearancePropertyMessage extends NodeUpdateMessage {
 
+    // Default color used for sanitization
+    private static final ColorRGBA DEFAULT_COLOR = new ColorRGBA(0.0f, 0.0f, 0.0f, 1.0f);
     private float opacity = 0.0f;
+    private float specularExponent = 0.0f;
     private ColorRGBA ambientColor = null;
     private ColorRGBA diffuseColor = null;
     private ColorRGBA specularColor = null;
@@ -50,6 +53,7 @@ public class AppearancePropertyMessage extends NodeUpdateMessage {
     public AppearancePropertyMessage(AppearancePropertyMessage toCopy) {
         super(toCopy);
         setOpacity(toCopy.getOpacity());
+        setSpecularExponent(toCopy.getSpecularExponent());
         setAmbientColor(toCopy.getAmbientColor());
         setDiffuseColor(toCopy.getDiffuseColor());
         setEmissiveColor(toCopy.getEmissiveColor());
@@ -73,11 +77,27 @@ public class AppearancePropertyMessage extends NodeUpdateMessage {
     }
 
     /**
+     * Get the exponent for the specular highlight.
+     * @return Specular highlight exponent
+     */
+    public float getSpecularExponent() {
+        return specularExponent;
+    }
+
+    /**
+     * Set the exponent for the specular highlight.
+     * @param specularExponent Specular highlight exponent
+     */
+    public void setSpecularExponent(float specularExponent) {
+        this.specularExponent = specularExponent;
+    }
+
+    /**
      * Get the ambient color for the model.
      * @return Ambient color for the model
      */
     public ColorRGBA getAmbientColor() {
-        return ambientColor;
+        return getSaneColor(ambientColor);
     }
 
     /**
@@ -93,7 +113,7 @@ public class AppearancePropertyMessage extends NodeUpdateMessage {
      * @return Diffuse color for the model
      */
     public ColorRGBA getDiffuseColor() {
-        return diffuseColor;
+        return getSaneColor(diffuseColor);
     }
 
     /**
@@ -109,7 +129,7 @@ public class AppearancePropertyMessage extends NodeUpdateMessage {
      * @return Emissive color for the model
      */
     public ColorRGBA getEmissiveColor() {
-        return emissiveColor;
+        return getSaneColor(emissiveColor);
     }
 
     /**
@@ -125,7 +145,7 @@ public class AppearancePropertyMessage extends NodeUpdateMessage {
      * @return Specular color for the model
      */
     public ColorRGBA getSpecularColor() {
-        return specularColor;
+        return getSaneColor(specularColor);
     }
 
     /**
@@ -134,5 +154,19 @@ public class AppearancePropertyMessage extends NodeUpdateMessage {
      */
     public void setSpecularColor(ColorRGBA specularColor) {
         this.specularColor = specularColor;
+    }
+
+    /**
+     * Return a "sanitized" (i.e. with values guaranteed to be sanely initialized)
+     * version of the given color.  This safeguards against colors provided
+     * by CMU programs which have not been initialized.
+     * @param color The color to sanitize
+     * @return The given color if it's already sane, or the default color if not
+     */
+    private ColorRGBA getSaneColor(ColorRGBA color) {
+        if (java.lang.Float.isNaN(color.r)) {
+            return DEFAULT_COLOR;
+        }
+        return color;
     }
 }

@@ -24,6 +24,7 @@ import edu.cmu.cs.dennisc.property.event.PropertyEvent;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 import edu.cmu.cs.dennisc.scenegraph.Appearance;
 import edu.cmu.cs.dennisc.scenegraph.Geometry;
+import edu.cmu.cs.dennisc.scenegraph.Text;
 import edu.cmu.cs.dennisc.scenegraph.VertexGeometry;
 import edu.cmu.cs.dennisc.scenegraph.Visual;
 import java.util.logging.Logger;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.AppearanceP
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
 import org.jdesktop.wonderland.modules.cmu.player.MouseButtonEventFromWorld;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.properties.TextConverter;
 
 /**
  * Wraps a CMU Model and its associated scene graph Visual.  Note that we're
@@ -88,8 +90,11 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
         // Get meshes
         for (Geometry g : visual.geometries.getValue()) {
             if (g instanceof VertexGeometry) {
-                visualAttributes.addMesh(new VertexGeometryConverter((VertexGeometry) g).getMesh());
-            } else {
+                visualAttributes.addGeometry(new VertexGeometryConverter((VertexGeometry) g).getJMEGeometry());
+            } else if (g instanceof Text) {
+                visualAttributes.addGeometry(new TextConverter((Text) g).getJMEGeometry());
+            }
+            else {
                 Logger.getLogger(ModelConverter.class.getName()).severe("Unrecognized geometry: " + g);
             }
         }
@@ -246,6 +251,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
             appearanceProperties.setEmissiveColor(visualAppearance.getEmissiveColor());
             appearanceProperties.setSpecularColor(visualAppearance.getSpecularColor());
             appearanceProperties.setOpacity(visualAppearance.getOpacity());
+            appearanceProperties.setSpecularExponent(visualAppearance.getSpecularExponent());
             newProperties = new AppearancePropertyMessage(appearanceProperties);
         }
         fireNodeUpdated(newProperties);

@@ -19,10 +19,9 @@ package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.proper
 
 import com.jme.renderer.ColorRGBA;
 import edu.cmu.cs.dennisc.color.Color4f;
+import edu.cmu.cs.dennisc.color.property.Color4fProperty;
 import edu.cmu.cs.dennisc.property.FloatProperty;
 import edu.cmu.cs.dennisc.property.Property;
-import edu.cmu.cs.dennisc.property.event.PropertyEvent;
-import edu.cmu.cs.dennisc.property.event.PropertyListener;
 import edu.cmu.cs.dennisc.scenegraph.Appearance;
 import edu.cmu.cs.dennisc.texture.BufferedImageTexture;
 import java.awt.Image;
@@ -105,7 +104,7 @@ public class AppearanceConverter {
      * @return Ambient color associated with this Appearance
      */
     public ColorRGBA getAmbientColor() {
-        Color4f ambientColor = (Color4f) appearance.getPropertyNamed(AMBIENT_COLOR).getValue(appearance);
+        Color4f ambientColor = ((Color4fProperty) appearance.getPropertyNamed(AMBIENT_COLOR)).getValue();
         return new ColorRGBA(ambientColor.red, ambientColor.green, ambientColor.blue, ambientColor.alpha);
     }
 
@@ -114,7 +113,7 @@ public class AppearanceConverter {
      * @return Diffuse color associated with this Appearance
      */
     public ColorRGBA getDiffuseColor() {
-        Color4f diffuseColor = (Color4f) appearance.getPropertyNamed(DIFFUSE_COLOR).getValue(appearance);
+        Color4f diffuseColor = ((Color4fProperty) appearance.getPropertyNamed(DIFFUSE_COLOR)).getValue();
         return new ColorRGBA(diffuseColor.red, diffuseColor.green, diffuseColor.blue, diffuseColor.alpha);
     }
 
@@ -123,7 +122,7 @@ public class AppearanceConverter {
      * @return Specular color associated with this Appearance
      */
     public ColorRGBA getSpecularColor() {
-        Color4f specularColor = (Color4f) appearance.getPropertyNamed(SPECULAR_HIGHLIGHT_COLOR).getValue(appearance);
+        Color4f specularColor = ((Color4fProperty) appearance.getPropertyNamed(SPECULAR_HIGHLIGHT_COLOR)).getValue();
         return new ColorRGBA(specularColor.red, specularColor.green, specularColor.blue, specularColor.alpha);
     }
 
@@ -132,7 +131,7 @@ public class AppearanceConverter {
      * @return Emissive color associated with this Appearance
      */
     public ColorRGBA getEmissiveColor() {
-        Color4f emissiveColor = (Color4f) appearance.getPropertyNamed(EMISSIVE_COLOR).getValue(appearance);
+        Color4f emissiveColor = ((Color4fProperty) appearance.getPropertyNamed(EMISSIVE_COLOR)).getValue();
         return new ColorRGBA(emissiveColor.red, emissiveColor.green, emissiveColor.blue, emissiveColor.alpha);
     }
 
@@ -142,7 +141,15 @@ public class AppearanceConverter {
      * @return Opacity for this Appearance
      */
     public float getOpacity() {
-        return ((FloatProperty) appearance.getPropertyNamed(OPACITY)).getValue(appearance);
+        return ((FloatProperty) appearance.getPropertyNamed(OPACITY)).getValue();
+    }
+
+    /**
+     * Get the exponent for the specular highlight color.
+     * @return Specular highlight exponent
+     */
+    public float getSpecularExponent() {
+        return ((FloatProperty) appearance.getPropertyNamed(SPECULAR_HIGHLIGHT_EXPONENT)).getValue();
     }
 
     /**

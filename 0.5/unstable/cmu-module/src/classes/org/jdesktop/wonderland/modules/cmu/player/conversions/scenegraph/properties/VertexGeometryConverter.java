@@ -28,27 +28,28 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 /**
- * Extracts a jME-compatible mesh from a CMU Geometry object.
+ * Extracts a jME-compatible mesh from a CMU VertexGeometry object.
  * @author kevin
  */
-public class VertexGeometryConverter {
+public class VertexGeometryConverter<VertexGeometryType extends VertexGeometry>
+        extends GeometryConverter<VertexGeometryType> {
 
     final static private int PER_VERTEX = 3;
     final static private int PER_TEX_COORD = 2;
     final static private String VERTICES_PROPERTY_NAME = "vertices";
     final static private String INDICES_PROPERTY_NAME = "polygonData";
-
     final private TriMesh mesh;
 
     /**
      * Standard constructor.
      * @param g The Geometry to translate
      */
-    public VertexGeometryConverter(VertexGeometry g) {
+    public VertexGeometryConverter(VertexGeometryType vertexGeometry) {
+        super(vertexGeometry);
 
         // Get vertex data.
-        Vertex[] vertices = (Vertex[]) g.getPropertyNamed(VERTICES_PROPERTY_NAME).getValue(g);
-        int[] indices = (int[]) g.getPropertyNamed(INDICES_PROPERTY_NAME).getValue(g);
+        Vertex[] vertices = (Vertex[]) vertexGeometry.getPropertyNamed(VERTICES_PROPERTY_NAME).getValue(vertexGeometry);
+        int[] indices = (int[]) vertexGeometry.getPropertyNamed(INDICES_PROPERTY_NAME).getValue(vertexGeometry);
 
         float[] fVertices = new float[vertices.length * PER_VERTEX];
         float[] fTexCoords = new float[vertices.length * PER_TEX_COORD];
@@ -72,10 +73,20 @@ public class VertexGeometryConverter {
     }
 
     /**
+     * Get the geometry being wrapped.
+     * @return The geometry for this object
+     */
+    @Override
+    public VertexGeometryType getCMUGeometry() {
+        return super.getCMUGeometry();
+    }
+
+    /**
      * Get the mesh described by this Geometry.
      * @return The Geometry's mesh
      */
-    public TriMesh getMesh() {
+    @Override
+    public TriMesh getJMEGeometry() {
         return mesh;
     }
 }

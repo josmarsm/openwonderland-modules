@@ -18,11 +18,13 @@
 package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingVolume;
 import com.jme.image.Texture;
-import com.jme.math.Triangle;
+import com.jme.renderer.ColorRGBA;
 import com.jme.renderer.Renderer;
+import com.jme.scene.Geometry;
 import com.jme.scene.Spatial;
-import com.jme.scene.TriMesh;
+import com.jme.scene.Text;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
@@ -59,7 +61,9 @@ public class VisualNode extends VisualParent {
     private final CMUCell parentCell;
     private boolean visibleInCMU = false;
     private final Object visibleInCMULock = new Object();
-    private BoundingBox bound = null;
+    private boolean partOfWorld = false;
+    private final Object partOfWorldLock = new Object();
+    private BoundingVolume bound = null;
     private static final Map<VisualAttributesIdentifier, TextureKey> keyMap = new HashMap<VisualAttributesIdentifier, TextureKey>();
     private static final String[] groundPlaneNames = {
         // Suffixes
@@ -140,27 +144,45 @@ public class VisualNode extends VisualParent {
 
         // Apply geometries, compute bounding box
         bound = null;
-        for (TriMesh mesh : attributes.getMeshes()) {
-            this.attachChild(mesh);
-
-            // Merge this bounding box with the cumulative bound
-            Triangle[] tris = new Triangle[mesh.getTriangleCount()];
-
-            BoundingBox currentBound = new BoundingBox();
-            currentBound.computeFromTris(mesh.getMeshAsTriangles(tris), 0, tris.length);
-
-            if (bound == null) {
-                bound = currentBound;
-            } else {
-                bound.mergeLocal(currentBound);
-            }
-        }
-        if (bound != null) {
-            this.setModelBound(bound);
+        for (Geometry geometry : attributes.getGeometries()) {
+            addGeometry(geometry);
         }
 
         // Apply texture
         this.applyTexture(attributes);
+    }
+
+    /**
+     * Add a geometry to this node, and update bounds appropriately.
+     * @param geometry The geometry to add.
+     */
+    protected void addGeometry(Geometry geometry) {
+        this.attachChild(geometry);
+
+        System.out.println("Adding geometry: " + geometry);
+
+        if (geometry instanceof Text) {
+            Text text = (Text) geometry;
+            text.setCullHint(Spatial.CullHint.Never);
+            text.setRenderState(Text.getDefaultFontTextureState());
+            text.setRenderState(Text.getFontBlend());
+            text.setTextColor(ColorRGBA.black);
+
+            text.updateRenderState();
+        }
+
+        // Merge this bounding box with the cumulative bound
+        BoundingBox currentBound = new BoundingBox();
+        currentBound.computeFromPoints(geometry.getVertexBuffer());
+
+        if (bound == null) {
+            bound = currentBound;
+        } else {
+            bound.mergeLocal(currentBound);
+        }
+        if (isPartOfWorld()) {
+            this.setModelBound(bound);
+        }
     }
 
     /**
@@ -248,8 +270,21 @@ public class VisualNode extends VisualParent {
      * @param partOfWorld Whether this node should be visible in the world
      */
     public void setPartOfWorld(boolean partOfWorld) {
+        synchronized (partOfWorldLock) {
+            this.partOfWorld = partOfWorld;
+        }
         setVisible(partOfWorld);
         setModelBound(partOfWorld ? bound : null);
+    }
+
+    /**
+     * Find out whether this node is visible and bounded in the world.
+     * @return Whether this node is part of the world
+     */
+    public boolean isPartOfWorld() {
+        synchronized (partOfWorldLock) {
+            return partOfWorld;
+        }
     }
 
     /**
@@ -283,12 +318,15 @@ public class VisualNode extends VisualParent {
      * @param appearanceProperties The properties to be applied
      */
     protected void applyAppearanceProperties(AppearancePropertyMessage appearanceProperties) {
-        //TODO: Handle diffuse color with texture
+
         MaterialState materialState = (MaterialState) this.getRenderState(StateType.Material);
         materialState.setAmbient(appearanceProperties.getAmbientColor());
         materialState.setDiffuse(appearanceProperties.getDiffuseColor());
         materialState.setSpecular(appearanceProperties.getSpecularColor());
         materialState.setEmissive(appearanceProperties.getEmissiveColor());
+
+        materialState.setShininess(appearanceProperties.getSpecularExponent());
+
         materialState.getDiffuse().a = appearanceProperties.getOpacity();
 
         this.setRenderState(materialState);
@@ -305,9 +343,11 @@ public class VisualNode extends VisualParent {
         if (t != null) {
             TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
             t.setWrap(Texture.WrapMode.Repeat);
+//            t.setApply(ApplyMode.Blend);
             ts.setTexture(t);
             ts.setEnabled(true);
             this.setRenderState(ts);
+            this.updateRenderState();
         }
     }
 
