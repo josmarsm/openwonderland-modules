@@ -50,9 +50,9 @@ import org.w3c.dom.Element;
  */
 public class WhiteboardUtils {
 
-    public static String svgNS = SVGDOMImplementation.SVG_NAMESPACE_URI;
-    public static DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
-    public static SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
+    public static final String svgNS = SVGDOMImplementation.SVG_NAMESPACE_URI;
+    public static final DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
+    public static final SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
 
     public static Document newDocument() {
         return impl.createDocument(svgNS, "svg", null);
@@ -112,21 +112,24 @@ public class WhiteboardUtils {
 
         String wrapperElementName = SVGConstants.SVG_SVG_TAG;
 
-        String wrapperElementOpen = "<" + wrapperElementName;
+        StringBuffer wrapperElementOpen = new StringBuffer("<" + wrapperElementName);
 
         // Copy the prefixes from the prefixes map to the wrapper element
-        wrapperElementOpen += " ";
+        wrapperElementOpen.append(" ");
         Set keySet = prefixes.keySet();
         Iterator iter = keySet.iterator();
         while (iter.hasNext()) {
             String currentKey = (String) iter.next();
             String currentValue = (String) prefixes.get(currentKey);
-            wrapperElementOpen += currentKey + "=\"" + currentValue + "\" ";
+            wrapperElementOpen.append(currentKey);
+            wrapperElementOpen.append("=\"");
+            wrapperElementOpen.append(currentValue);
+            wrapperElementOpen.append("\" ");
         }
 
-        wrapperElementOpen += ">";
+        wrapperElementOpen.append(">");
 
-        String wrapperElementClose = "</" + wrapperElementName + ">";
+        StringBuffer wrapperElementClose = new StringBuffer("</" + wrapperElementName + ">");
 
         String wrappedXMLString = wrapperElementOpen + xmlString + wrapperElementClose;
 

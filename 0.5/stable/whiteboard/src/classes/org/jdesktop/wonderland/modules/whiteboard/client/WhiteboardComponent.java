@@ -97,6 +97,8 @@ public class WhiteboardComponent extends CellComponent {
                 }
                 channelComp = null;
                 break;
+            default:
+                break;
         }
     }
 

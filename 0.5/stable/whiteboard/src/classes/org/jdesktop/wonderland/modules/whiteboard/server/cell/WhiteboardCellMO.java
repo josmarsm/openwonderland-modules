@@ -424,6 +424,8 @@ public class WhiteboardCellMO extends App2DCellMO {
                     case SET_ZOOM:
                         setZoom(messageReceived.getZoom());
                         break;
+                    default:
+                        break;
                 }
 
                 setControllingCell(null);

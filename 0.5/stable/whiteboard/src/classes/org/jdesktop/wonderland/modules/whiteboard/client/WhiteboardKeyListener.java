@@ -29,12 +29,10 @@ import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.W
 public class WhiteboardKeyListener implements KeyListener {
 
     private static final int DELTA = 10;
-    private WhiteboardDocument whiteboardDocument;
     private WhiteboardWindow whiteboardWindow;
 
-    WhiteboardKeyListener(WhiteboardWindow whiteboardWindow, WhiteboardDocument whiteboardDocument) {
+    WhiteboardKeyListener(WhiteboardWindow whiteboardWindow) {
         this.whiteboardWindow = whiteboardWindow;
-        this.whiteboardDocument = whiteboardDocument;
     }
 
     /**
@@ -81,6 +79,8 @@ public class WhiteboardKeyListener implements KeyListener {
                 if (currentTool == WhiteboardTool.SELECTOR && selection != null) {
                     moveSelection(selection, 0, DELTA);
                 }
+                break;
+            default:
                 break;
         }
     //svgCanvas.dispatchEvent(evt);
