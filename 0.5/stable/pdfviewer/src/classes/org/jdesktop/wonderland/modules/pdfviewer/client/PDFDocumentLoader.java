@@ -77,14 +77,19 @@ public class PDFDocumentLoader extends Thread {
             // create a buffer to load the document into
             int docSize = conn.getContentLength();
             byte[] data = new byte[docSize];
+            DataInputStream is = null;
 
-            // create a buffered stream for reading the document
-            DataInputStream is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
+            try {
+                // create a buffered stream for reading the document
+                is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
 
-            // read the document into the buffer
-            is.readFully(data, 0, docSize);
+                // read the document into the buffer
+                is.readFully(data, 0, docSize);
 
-            buf = ByteBuffer.wrap((byte[]) data, 0, ((byte[]) data).length);
+                buf = ByteBuffer.wrap((byte[]) data, 0, ((byte[]) data).length);
+            } finally {
+                is.close();
+            }
         }
 
         return buf;

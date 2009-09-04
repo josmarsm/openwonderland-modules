@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.pdfviewer.client;
 
-import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
 
 /**
@@ -27,14 +26,10 @@ import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
  */
 public class PDFViewerToolManager implements PDFViewerToolListener {
 
-    private boolean hudState = false;
-    private HUDComponent component;
-
     public enum PDFViewerTool {
 
         NEW, FIRST, PREVIOUS, NEXT, LAST, GOTO, PLAY, PAUSE, ZOOM_IN, ZOOM_OUT, SYNC, UNSYNC
     }
-    private PDFViewerTool currentTool = null;
     private PDFViewerWindow pdfViewerWindow;
 
     PDFViewerToolManager(PDFViewerWindow pdfViewerWindow) {
@@ -97,12 +92,5 @@ public class PDFViewerToolManager implements PDFViewerToolListener {
 
     public boolean isOnHUD() {
         return (pdfViewerWindow.getDisplayMode().equals(DisplayMode.HUD));
-    }
-
-    /**
-     * @return the currentTool
-     */
-    public PDFViewerTool getTool() {
-        return currentTool;
     }
 }
