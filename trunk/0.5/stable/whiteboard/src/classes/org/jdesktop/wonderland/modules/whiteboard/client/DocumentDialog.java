@@ -61,10 +61,10 @@ public class DocumentDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Open Document");
 
-        descriptionLabel.setFont(new java.awt.Font("Dialog", 1, 12));
+        descriptionLabel.setFont(descriptionLabel.getFont().deriveFont(descriptionLabel.getFont().getStyle() | java.awt.Font.BOLD, descriptionLabel.getFont().getSize()-1));
         descriptionLabel.setText("Enter the URL of the SVG Document:");
 
-        documentLabel.setFont(new java.awt.Font("Dialog", 1, 12));
+        documentLabel.setFont(documentLabel.getFont().deriveFont(documentLabel.getFont().getStyle() | java.awt.Font.BOLD, documentLabel.getFont().getSize()-1));
         documentLabel.setText("Document URL:");
 
         documentTextField.setText("http://");

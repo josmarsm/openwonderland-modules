@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.border.Border;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardColor;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 

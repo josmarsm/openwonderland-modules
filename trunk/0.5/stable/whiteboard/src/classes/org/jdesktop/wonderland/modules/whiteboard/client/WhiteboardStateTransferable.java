@@ -63,28 +63,30 @@ public class WhiteboardStateTransferable implements Transferable {
     }
 
     public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+        Object data = null;
+
         if (flavors.contains(flavor) == false) {
             logger.warning("drag and drop: flavor: " + flavor + " not supported");
             throw new UnsupportedFlavorException(flavor);
         }
 
-        File tmpFile = null;
         try {
-            tmpFile = File.createTempFile("whiteboard", ".svg");
+            File tmpFile = File.createTempFile("whiteboard", ".svg");
             DataOutputStream dstream = new DataOutputStream(new FileOutputStream(tmpFile));
             dstream.writeBytes(WhiteboardUtils.documentToXMLString(document));
             dstream.close();
+
+            if (flavor.equals(DataFlavor.javaFileListFlavor) == true) {
+                List<File> fileList = new LinkedList();
+                fileList.add(tmpFile);
+                data = fileList;
+            } else {
+                data = tmpFile.toURI() + "\r\n";
+            }
         } catch (IOException e) {
             logger.warning("failed to create drop file for whiteboard: " + e);
-            return null;
         }
 
-        if (flavor.equals(DataFlavor.javaFileListFlavor) == true) {
-            List<File> fileList = new LinkedList();
-            fileList.add(tmpFile);
-            return fileList;
-        } else {
-            return tmpFile.toURI() + "\r\n";
-        }
+        return data;
     }
 }

@@ -25,7 +25,7 @@ import org.apache.batik.util.XMLResourceDescriptor;
 import org.jdesktop.wonderland.client.assetmgr.Asset;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager; 
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.AssetURI;
 import org.w3c.dom.Document;
 
@@ -35,7 +35,7 @@ import org.w3c.dom.Document;
  */
 public class WhiteboardClientUtils {
 
-    public static SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
+    public static final SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
     private static final Logger logger = Logger.getLogger(WhiteboardClientUtils.class.getName());
 
     public static Document openDocument(String uri) {
@@ -47,22 +47,22 @@ public class WhiteboardClientUtils {
         // of the server.
         AssetURI assetURI = AssetURI.uriFactory(uri);
         Asset asset = AssetManager.getAssetManager().getAsset(assetURI);
+
         if (asset == null) {
-          logger.warning("Null AssetURI for " + uri);
-          return null;
-        }
-        WhiteboardClientUtils.annotateURI(assetURI);
-     
-        // Fetch the asset and wait for it to download
-        if (AssetManager.getAssetManager().waitForAsset(asset) == false) {
-            return null;
+            logger.warning("Null AssetURI for " + uri);
+        } else {
+            WhiteboardClientUtils.annotateURI(assetURI);
+
+            // Fetch the asset and wait for it to download
+            if (AssetManager.getAssetManager().waitForAsset(asset) == true) {
+                try {
+                    doc = factory.createDocument(null, new FileReader(asset.getLocalCacheFile()));
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            }
         }
 
-        try {
-            doc = factory.createDocument(null, new FileReader(asset.getLocalCacheFile()));
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
         logger.fine("SVG doc: " + doc);
         return doc;
     }
@@ -74,18 +74,17 @@ public class WhiteboardClientUtils {
      * @param uri The asset URI
      */
     public static void annotateURI(AssetURI uri) {
-
         // Use the primary login session to determine the server host and port
         // name
         ServerSessionManager manager = LoginManager.getPrimary();
         if (manager == null) {
             logger.warning("No primary login session for " + uri);
+        } else {
+            String serverHostAndPort = manager.getServerNameAndPort();
+
+            // Annotate the URI with the host name and port from the session and
+            // return as a URL
+            uri.setServerHostAndPort(serverHostAndPort);
         }
-        String serverHostAndPort = manager.getServerNameAndPort();
-
-        // Annotate the URI with the host name and port from the session and
-        // return as a URL
-        uri.setServerHostAndPort(serverHostAndPort);
     }
-
 }

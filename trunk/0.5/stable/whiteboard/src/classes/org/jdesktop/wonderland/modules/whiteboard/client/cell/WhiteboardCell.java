@@ -126,6 +126,8 @@ public class WhiteboardCell extends App2DCell {
                     whiteboardWin = null;
                 }
                 break;
+            default:
+                break;
         }
     }
 
@@ -140,7 +142,6 @@ public class WhiteboardCell extends App2DCell {
      */
     public void processMessage(WhiteboardCellMessage msg) {
         String msgUID = msg.getCellID().toString();
-        WhiteboardCellMessage fscm = null;
 
         if (isSynced()) {
             logger.fine("whiteboard: " + msgUID + " received message: " + msg);

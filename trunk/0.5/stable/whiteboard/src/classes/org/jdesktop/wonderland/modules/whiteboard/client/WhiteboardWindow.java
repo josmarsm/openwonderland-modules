@@ -102,7 +102,6 @@ public class WhiteboardWindow extends Window2D {
     private JSVGCanvas svgCanvas;
     // HUD components
     private HUDComponent controlComponent;
-    private HUDComponent windowComponent;
     private HUDComponent messageComponent;
     private DisplayMode displayMode;
 
@@ -156,7 +155,7 @@ public class WhiteboardWindow extends Window2D {
         addMouseWheelListener(svgMouseListener);
         addMouseMotionListener(svgMouseListener);
         addMouseListener(svgMouseListener);
-        addKeyListener(new WhiteboardKeyListener(this, whiteboardDocument));
+        addKeyListener(new WhiteboardKeyListener(this));
     }
 
     /**

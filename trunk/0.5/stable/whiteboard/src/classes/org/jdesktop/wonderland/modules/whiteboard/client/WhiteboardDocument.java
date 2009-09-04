@@ -31,6 +31,7 @@ import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDDialog.MESSAGE_TYPE;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
 import org.jdesktop.wonderland.modules.hud.client.HUDDialogComponent;
@@ -92,26 +93,35 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     }
 
     public Element createElement(WhiteboardTool currentTool, Point pressedPoint, Point releasedPoint) {
+        Element element = null;
+
         switch (currentTool) {
             case LINE:
-                return this.createLineElement(pressedPoint, releasedPoint, whiteboardWindow.getCurrentColor(), whiteboardWindow.getStrokeWeight());
+                element = createLineElement(pressedPoint, releasedPoint, whiteboardWindow.getCurrentColor(), whiteboardWindow.getStrokeWeight());
+                break;
             case RECT:
-                return this.createRectElement(pressedPoint, releasedPoint, whiteboardWindow.getToolManager().isFilled());
+                element = createRectElement(pressedPoint, releasedPoint, whiteboardWindow.getToolManager().isFilled());
+                break;
             case ELLIPSE:
-                return this.createEllipseElement(pressedPoint, releasedPoint, whiteboardWindow.getToolManager().isFilled());
+                element = createEllipseElement(pressedPoint, releasedPoint, whiteboardWindow.getToolManager().isFilled());
+                break;
             case TEXT:
-                return this.createTextElement(releasedPoint);
+                element = createTextElement(releasedPoint);
+                break;
+            default:
+                break;
         }
-        return null;
+
+        return element;
     }
 
     public Element createLineElement(Point start, Point end, Color lineColor, Float strokeWeight) {
         //Create the line element
         Element line = svgDocument.createElementNS(WhiteboardUtils.svgNS, "line");
-        line.setAttributeNS(null, "x1", new Integer(start.x).toString());
-        line.setAttributeNS(null, "y1", new Integer(start.y).toString());
-        line.setAttributeNS(null, "x2", new Integer(end.x).toString());
-        line.setAttributeNS(null, "y2", new Integer(end.y).toString());
+        line.setAttributeNS(null, "x1", Integer.valueOf(start.x).toString());
+        line.setAttributeNS(null, "y1", Integer.valueOf(start.y).toString());
+        line.setAttributeNS(null, "x2", Integer.valueOf(end.x).toString());
+        line.setAttributeNS(null, "y2", Integer.valueOf(end.y).toString());
         line.setAttributeNS(null, "stroke", WhiteboardUtils.constructRGBString(lineColor));
         line.setAttributeNS(null, "stroke-width", Float.toString(strokeWeight));
 
@@ -127,10 +137,10 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
         // Create the rectangle element
         Element rectangle = svgDocument.createElementNS(WhiteboardUtils.svgNS, "rect");
-        rectangle.setAttributeNS(null, "x", new Integer(rect.x).toString());
-        rectangle.setAttributeNS(null, "y", new Integer(rect.y).toString());
-        rectangle.setAttributeNS(null, "width", new Integer(rect.width).toString());
-        rectangle.setAttributeNS(null, "height", new Integer(rect.height).toString());
+        rectangle.setAttributeNS(null, "x", Integer.valueOf(rect.x).toString());
+        rectangle.setAttributeNS(null, "y", Integer.valueOf(rect.y).toString());
+        rectangle.setAttributeNS(null, "width", Integer.valueOf(rect.width).toString());
+        rectangle.setAttributeNS(null, "height", Integer.valueOf(rect.height).toString());
         rectangle.setAttributeNS(null, "stroke", WhiteboardUtils.constructRGBString(whiteboardWindow.getCurrentColor()));
         rectangle.setAttributeNS(null, "stroke-width", Float.toString(whiteboardWindow.getStrokeWeight()));
         rectangle.setAttributeNS(null, "fill", WhiteboardUtils.constructRGBString(whiteboardWindow.getCurrentColor()));
@@ -154,8 +164,8 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
         // Create the ellipse element
         Element ellipse = svgDocument.createElementNS(WhiteboardUtils.svgNS, "ellipse");
-        ellipse.setAttributeNS(null, "cx", new Integer(centreX).toString());
-        ellipse.setAttributeNS(null, "cy", new Integer(centreY).toString());
+        ellipse.setAttributeNS(null, "cx", Integer.valueOf(centreX).toString());
+        ellipse.setAttributeNS(null, "cy", Integer.valueOf(centreY).toString());
         ellipse.setAttributeNS(null, "rx", new Double(radiusX).toString());
         ellipse.setAttributeNS(null, "ry", new Double(radiusY).toString());
         ellipse.setAttributeNS(null, "stroke", WhiteboardUtils.constructRGBString(whiteboardWindow.getCurrentColor()));
@@ -174,24 +184,19 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     private class TextGetter implements Runnable {
 
         private Point position;
-        private boolean onHUD = false;
 
         public TextGetter(Point position) {
             this.position = position;
-            this.onHUD = true;
-        }
-
-        public TextGetter(Point position, boolean onHUD) {
-            this.position = position;
-            this.onHUD = onHUD;
         }
 
         public void run() {
             if (dialog == null) {
                 // create a HUD text dialog
                 dialog = new HUDDialogComponent(whiteboardWindow.getCell());
-                dialog.setPreferredLocation(Layout.SOUTH);
-                dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.2f));
+                dialog.setMessage("Enter text:");
+                dialog.setType(MESSAGE_TYPE.QUERY);
+                dialog.setPreferredLocation(Layout.CENTER);
+                dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.5f));
 
                 // add the text dialog to the HUD
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
@@ -200,7 +205,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
                 PropertyChangeListener plistener = new PropertyChangeListener() {
 
                     public void propertyChange(PropertyChangeEvent pe) {
-                        if (pe.getPropertyName().equals("text")) {
+                        if (pe.getPropertyName().equals("ok")) {
                             String value = (String) pe.getNewValue();
                             if ((value != null) && (value.length() > 0)) {
                                 logger.info("creating text element: " + value + " at " + position);
@@ -228,7 +233,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     };
 
     public Element createTextElement(Point end) {
-        TextGetter getter = new TextGetter(end, false);
+        TextGetter getter = new TextGetter(end);
         new Thread(getter).start();
 
         return null;
@@ -237,8 +242,8 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     public Element createTextElement(Point end, String text) {
         // Create the text element
         Element textElement = svgDocument.createElementNS(WhiteboardUtils.svgNS, "text");
-        textElement.setAttributeNS(null, "x", new Integer(end.x).toString());
-        textElement.setAttributeNS(null, "y", new Integer(end.y).toString());
+        textElement.setAttributeNS(null, "x", Integer.valueOf(end.x).toString());
+        textElement.setAttributeNS(null, "y", Integer.valueOf(end.y).toString());
         textElement.setAttributeNS(null, "fill", WhiteboardUtils.constructRGBString(whiteboardWindow.getCurrentColor()));
         textElement.setAttributeNS(null, "font-size", String.valueOf(TEXT_FONT_SIZE));
         textElement.setTextContent(text);
@@ -386,11 +391,14 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     }
 
     public Element importNode(Element importedNode, boolean deep) {
-        if (svgDocument != null) {//Because it may not yet have been received from the server
-            return (Element) svgDocument.importNode(importedNode, deep);
-        } else {
-            return null;
+        Element element = null;
+
+        if (svgDocument != null) {
+            // because it may not yet have been received from the server
+            element = (Element) svgDocument.importNode(importedNode, deep);
         }
+
+        return element;
     }
 
     public Node appendChild(Element e) {
