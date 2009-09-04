@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.web;
 
+import com.jme.scene.Geometry;
 import com.jme.scene.TriMesh;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -34,12 +35,14 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessa
  * Set of serializable attributes for a CMU visual.  IDs can be generated which
  * are unique to each set of attributes (not unique to a VisualAttributes instance,
  * however), and which can be used to identify a particular visual in a content
- * repository directory.
+ * repository directory.  We use VisualAttributes objects to store large-scale
+ * persistent data about a visual (mesh geometries, textures, etc.), and then
+ * send smaller-scale updates directly via messages to a cell.
  * @author kevin
  */
 public class VisualAttributes implements Serializable {
 
-    private final Collection<TriMesh> meshes = new Vector<TriMesh>();
+    private final Collection<Geometry> geometries = new Vector<Geometry>();
     private String name = null;
     private int[] texturePixels = null;
     private int textureWidth = 0,  textureHeight = 0;
@@ -67,24 +70,22 @@ public class VisualAttributes implements Serializable {
     }
 
     /**
-     * Get the TriMesh'es associated with this visual (generally one per
-     * CMU geometry).
-     * @return Collection of TriMesh'es
+     * Get the geometries associated with this visual.  
+     * @return Geometries for this visual
      */
-    public Collection<TriMesh> getMeshes() {
-        synchronized (this.meshes) {
-            return Collections.unmodifiableCollection(meshes);
+    public Collection<Geometry> getGeometries() {
+        synchronized (this.geometries) {
+            return Collections.unmodifiableCollection(geometries);
         }
     }
 
     /**
-     * Add a mesh to this visual (generally one mesh per CMU geometry
-     * is added).
-     * @param mesh The mesh to add
+     * Add a geometry to this visual.
+     * @param geometry The geometry to add
      */
-    public void addMesh(TriMesh mesh) {
-        synchronized (this.meshes) {
-            this.meshes.add(mesh);
+    public void addGeometry(Geometry geometry) {
+        synchronized (this.geometries) {
+            this.geometries.add(geometry);
         }
     }
 
@@ -161,9 +162,9 @@ public class VisualAttributes implements Serializable {
         protected VisualAttributesIdentifier(VisualAttributes attributes) {
             String nodeName = NAME_PREFIX;
             nodeName += attributes.getName();
-            if (attributes.getMeshes() != null) {
-                for (TriMesh mesh : attributes.getMeshes()) {
-                    nodeName += "_" + mesh.getMeshAsTriangles(null).length;
+            if (attributes.getGeometries() != null) {
+                for (Geometry mesh : attributes.getGeometries()) {
+                    nodeName += "_" + mesh.getVertexCount();
                     if (attributes.texturePixels != null) {
                         long total = 0;
                         for (int i = 0; i < attributes.texturePixels.length; i++) {
