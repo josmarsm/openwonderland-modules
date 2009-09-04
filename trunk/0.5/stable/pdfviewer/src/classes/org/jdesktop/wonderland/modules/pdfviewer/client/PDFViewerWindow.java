@@ -103,6 +103,7 @@ public class PDFViewerWindow extends WindowSwing {
 
             openDialogComponent = mainHUD.createDialog("Open PDF:");
             openDialogComponent.setPreferredLocation(Layout.CENTER);
+            openDialogComponent.setType(HUDDialog.MESSAGE_TYPE.QUERY);
             mainHUD.addComponent(openDialogComponent);
             openDialogComponent.addPropertyChangeListener(new PropertyChangeListener() {
 

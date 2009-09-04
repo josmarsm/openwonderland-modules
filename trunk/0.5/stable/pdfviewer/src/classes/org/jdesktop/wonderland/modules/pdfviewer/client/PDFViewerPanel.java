@@ -275,6 +275,7 @@ public class PDFViewerPanel extends JPanel {
                 currentPage = currentDocument.getPage(p, true);
                 double pw = currentPage.getWidth();
                 double ph = currentPage.getHeight();
+                logger.fine("page size: " + pw + "x" + ph);
 
                 // request a page that fits the width of the viewer and has
                 // the correct aspect ratio
@@ -286,13 +287,12 @@ public class PDFViewerPanel extends JPanel {
                 if (img != null) {
                     // convert the page image into a buffered image
                     image = new BufferedImage(rw, rh, BufferedImage.TYPE_INT_ARGB);
+                    logger.fine("image size: " + image.getWidth() + "x" + image.getHeight());
                     Graphics2D g2 = image.createGraphics();
                     g2.drawImage(img, 0, 0, rw, rh, null);
                 } else {
                     logger.warning("PDF viewer failed to get image for page: " + p);
                 }
-                logger.fine("page size: " + pw + "x" + ph);
-                logger.fine("image size: " + image.getWidth() + "x" + image.getHeight());
             }
         } catch (Exception e) {
             logger.severe("PDF viewer failed to get page image: " + e);
