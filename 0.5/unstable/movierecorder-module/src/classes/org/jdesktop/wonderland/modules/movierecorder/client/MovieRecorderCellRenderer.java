@@ -87,18 +87,8 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
     public static final float WIDTH = 0.6f; //x-extent
     public static final float HEIGHT = WIDTH /2 ; //y-extent was 0.3f
     public static final float DEPTH = 0.05f; //z-extent
-    private static final float BUTTON_WIDTH = WIDTH / 2; //x
-    private static final float BUTTON_HEIGHT = 0.05f; //y
-    private static final float BUTTON_DEPTH = DEPTH; //z
-    private static final ColorRGBA RECORD_BUTTON_DEFAULT = new ColorRGBA(0.5f, 0, 0, 1f);
-    private static final ColorRGBA RECORD_BUTTON_SELECTED = ColorRGBA.red.clone();
-    private static final ColorRGBA STOP_BUTTON_DEFAULT = new ColorRGBA(0.2f, 0.2f, 0.2f, 1f);
-    private static final ColorRGBA STOP_BUTTON_SELECTED = ColorRGBA.black.clone();
     private static final int IMAGE_HEIGHT = 480;
     private static final int IMAGE_WIDTH = 640;
-    private Node root = null;
-    private Button recordButton;
-    private Button stopButton;
     /**
      *Counter for naming images
      **/
@@ -108,7 +98,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
      **/
     private int frameCounter;
 
-    private Vector3f cPos = new Vector3f(0.0f, 2.0f, -1.0f);
+    private Vector3f cPos = new Vector3f(0.0f, 2.0f, -1.0f); //z should be negative DEPTH
     private Vector3f cUp = new Vector3f(0.0f, 1.0f, 0.0f);
     private Vector3f cLook = new Vector3f(0.0f, 2.0f, 0.0f);
     TextureRenderBuffer textureBuffer = null;
@@ -121,17 +111,13 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
 
     protected Node createSceneGraph(Entity entity) {
         /* Create the scene graph object*/
-        root = new Node();
+        Node root = new Node();
         attachRecordingDevice(root, entity);
         root.setModelBound(new BoundingBox());
         root.updateModelBound();
         //Set the name of the buttonRoot node
         root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
 
-        //Set the state of the buttons
-        boolean isRecording = ((MovieRecorderCell) cell).isRecording();
-        setRecording(isRecording);
-        stopButton.setSelected(!(isRecording));
         return root;
     }
 
@@ -145,8 +131,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
 
     private void attachRecordingDevice(Node device, Entity entity) {
         addOuterCasing(device);
-        entity.addEntity(createRecordButton(device, new Vector3f(-(WIDTH - (BUTTON_WIDTH)), HEIGHT + BUTTON_HEIGHT, 0f)));
-        entity.addEntity(createStopButton(device, new Vector3f(WIDTH - BUTTON_WIDTH, HEIGHT + BUTTON_HEIGHT, 0f)));
         entity.addEntity(createLCDPanel(device));
     }
 
@@ -194,8 +178,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
         Node cameraSG = new Node();
         //Attach the camera to the node
         cameraSG.attachChild(cn);
-        //Set the location of the camera to be at the -Z of the movie recorder
-        //cameraSG.setLocalTranslation(0.0f, 0.0f, 0 - (2 * DEPTH));
         //Rotate the camera through 180 degrees about the Y-axis
         float angleDegrees = 180;
         float angleRadians = (float) Math.toRadians(angleDegrees);
@@ -334,38 +316,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
         return (bi);
     }
 
-    private Entity createRecordButton(Node device, Vector3f position) {
-        recordButton = addButton(device, "Record", position);
-        recordButton.setColor(RECORD_BUTTON_DEFAULT);
-        recordButton.setSelectedColor(RECORD_BUTTON_SELECTED);
-        recordButton.setDefaultColor(RECORD_BUTTON_DEFAULT);
-        return recordButton.getEntity();
-    }
-
-    private Entity createStopButton(Node device, Vector3f position) {
-        stopButton = addButton(device, "Stop", position);
-        stopButton.setColor(STOP_BUTTON_DEFAULT);
-        stopButton.setSelectedColor(STOP_BUTTON_SELECTED);
-        stopButton.setDefaultColor(STOP_BUTTON_DEFAULT);
-        return stopButton.getEntity();
-    }
-
-    private Button addButton(Node device, String name, final Vector3f position) {
-        Button aButton = new Button(name, new Vector3f(0, 0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_DEPTH);
-        
-        // Move the button
-        aButton.getRoot().setLocalTranslation(position);
-
-        device.attachChild(aButton.getRoot());
-        
-        return aButton;
-    }
-
-    void setRecording(boolean b) {
-        recordButton.setSelected(b);
-        stopButton.setSelected(!b);
-    }
-
     // Make this buttonEntity pickable by adding a collision component to it
     protected void makeEntityPickable(Entity entity, Node node) {
         JMECollisionSystem collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().
@@ -407,130 +357,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
 
             imageCounter++;
             frameCounter++;
-        }
-    }
-
-    class Button {
-
-        private boolean isSelected;
-        private Box box;
-        private Node buttonRoot;
-        private Entity buttonEntity;
-        private ColorRGBA selectedColor;
-        private ColorRGBA defaultColor;
-
-        private Button(String name, Vector3f vector3f, float f, float BUTTON_WIDTH, float BUTTON_HEIGHT) {
-            box = new Box(name, vector3f, f, BUTTON_WIDTH, BUTTON_HEIGHT);
-            box.setLightCombineMode(Spatial.LightCombineMode.Off);
-            box.setModelBound(new BoundingSphere());
-            // Calculate the best bounds for the object you gave it
-            box.updateModelBound();
-            buttonRoot = new Node();
-            buttonRoot.attachChild(box);
-            buttonEntity = new Entity(name);
-            RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(buttonRoot);
-            buttonEntity.addComponent(RenderComponent.class, rc);
-
-            //Listen to mouse events
-            ButtonListener listener = new ButtonListener(this);
-            listener.addToEntity(buttonEntity);
-
-            // Make the secondary object pickable separately from the primary object
-            makeEntityPickable(buttonEntity, buttonRoot);
-        }
-
-        Node getRoot() {
-            return buttonRoot;
-        }
-
-        Entity getEntity() {
-            return buttonEntity;
-        }
-
-        boolean isSelected() {
-            return isSelected;
-        }
-
-        void setSelected(boolean selected) {
-            //rendererLogger.info("setSelected: " + selected);
-            this.isSelected = selected;
-            updateColor();
-        }
-
-        
-
-        void setSelectedColor(ColorRGBA selectedColor) {
-            this.selectedColor = selectedColor;
-        }
-        
-        void setDefaultColor(ColorRGBA defaultColor) {
-            this.defaultColor = defaultColor;
-        }
-
-        void setColor(ColorRGBA color) {
-            box.setSolidColor(color);
-        }
-
-        public void updateColor() {
-            if (isSelected) {
-                setColor(selectedColor);
-            } else {
-                setColor(defaultColor);
-            }
-            ClientContextJME.getWorldManager().addToUpdateList(box);
-        }
-
-        private void printComponents() {
-            //System.out.println(buttonEntity);
-            //Iterator entityComponents = buttonEntity.getComponents().iterator();
-            //while (entityComponents.hasNext()) {
-            //    System.out.println(entityComponents.next());
-            //}
-        }
-    }
-
-    class ButtonListener extends EventClassListener {
-        private Button button; 
-
-        ButtonListener(Button aButton) {
-            super();
-            button = aButton;
-        }
-
-        @Override
-        public Class[] eventClassesToConsume() {
-            return new Class[]{MouseButtonEvent3D.class};
-        }
-
-        // Note: we don't override computeEvent because we don't do any computation in this listener.
-        @Override
-        public void commitEvent(Event event) {
-            //rendererLogger.info("commit " + event + " for ");
-            //button.printComponents();
-            MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
-            if (mbe.isClicked() == false) {
-                return;
-            }
-            //Ignore if it's not the left mouse button
-            if (mbe.getButton() != ButtonId.BUTTON1) {
-                return;
-            }
-
-            if (button == stopButton) {
-                /*
-                 * We always handle the stop button.
-                 */
-                ((MovieRecorderCell) cell).stop();
-                return;
-            }
-            //
-            //Only care about the case when the button isn't already selected'
-            if (!button.isSelected()) {
-                if (button == recordButton) {
-                    ((MovieRecorderCell) cell).startRecording();
-                } 
-                return;
-            }
         }
     }
 }
