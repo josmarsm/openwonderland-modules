@@ -266,7 +266,7 @@ public class MovieRecorderCell extends Cell {
 
     private void setRecording(boolean b) {
         logger.info("setRecording: " + b);
-        renderer.setRecording(b);
+        //renderer.setRecording(b);
         isRecording = b;
     }
 
