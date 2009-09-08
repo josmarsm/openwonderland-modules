@@ -11,6 +11,9 @@
     <property name="module.src" value="${module.plugin.src}"/>
     <property name="module.jarname" value="${module.name}"/>
 
+    <property name="cmu-player.build.dir" value="build/player"/>
+    <property name="cmu-player.zipname" value="cmu-player-dist.zip"/>
+
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
@@ -21,7 +24,10 @@
 
     <pathconvert property="module-server.classpath">
         <path location="${wonderland.dir}/modules/tools/sharedstate/build/server/sharedstate-server.jar"/>
-        <path location="${current.dir}/lib/cmu-module.jar"/>
+        <path location="${current.dir}/lib/foundation.jar"/>
+        <path location="${current.dir}/lib/moveandturn.jar"/>
+        <path location="${current.dir}/lib/ide.jar"/>
+        <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
     </pathconvert>
 
     <pathconvert property="module-weblib.classpath">
@@ -33,7 +39,10 @@
     </pathconvert>
 
     <pathconvert property="cmu-player.classpath">
-        <path location="${current.dir}/lib/cmu-module.jar"/>
+        <path location="${current.dir}/lib/foundation.jar"/>
+        <path location="${current.dir}/lib/moveandturn.jar"/>
+        <path location="${current.dir}/lib/ide.jar"/>
+        <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
         <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar"/>
     </pathconvert>
@@ -85,7 +94,10 @@
             <!-- include the WL-modified jar file -->
             <zipfileset file="${current.dir}/${cmu-player.build.dir}/cmu-player.jar" prefix="lib"/>
             <!-- include the full player -->
-            <zipfileset file="${current.dir}/lib/cmu-module.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/foundation.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/moveandturn.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/ide.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/lg_walkandtouch.jar" prefix="lib"/>
             <!-- include content repository stuff -->
             <zipfileset file="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar" prefix="modules"/>
             <zipfileset file="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar" prefix="modules"/>

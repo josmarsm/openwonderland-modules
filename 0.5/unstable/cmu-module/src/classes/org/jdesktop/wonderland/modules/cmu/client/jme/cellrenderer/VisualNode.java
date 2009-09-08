@@ -34,14 +34,17 @@ import com.jme.scene.state.TextureState;
 import com.jme.util.TextureKey;
 import com.jme.util.TextureManager;
 import java.awt.Image;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.AppearancePropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.GeometryUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.TransformationMessage;
@@ -64,6 +67,7 @@ public class VisualNode extends VisualParent {
     private boolean partOfWorld = false;
     private final Object partOfWorldLock = new Object();
     private BoundingVolume bound = null;
+    private final Collection<Geometry> changingGeometries = new Vector<Geometry>();
     private static final Map<VisualAttributesIdentifier, TextureKey> keyMap = new HashMap<VisualAttributesIdentifier, TextureKey>();
     private static final String[] groundPlaneNames = {
         // Suffixes
@@ -145,7 +149,7 @@ public class VisualNode extends VisualParent {
         // Apply geometries, compute bounding box
         bound = null;
         for (Geometry geometry : attributes.getGeometries()) {
-            addGeometry(geometry);
+            addGeometry(geometry, true);
         }
 
         // Apply texture
@@ -154,9 +158,11 @@ public class VisualNode extends VisualParent {
 
     /**
      * Add a geometry to this node, and update bounds appropriately.
-     * @param geometry The geometry to add.
+     * @param geometry The geometry to add
+     * @param persistent Whether the geometry is persistent (i.e. false
+     * if it is allowed to change via a GeometryUpdateMessage)
      */
-    protected void addGeometry(Geometry geometry) {
+    protected void addGeometry(Geometry geometry, boolean persistent) {
         this.attachChild(geometry);
 
         System.out.println("Adding geometry: " + geometry);
@@ -170,15 +176,42 @@ public class VisualNode extends VisualParent {
 
             text.updateRenderState();
         }
-
+        updateBound();
+        if (!persistent) {
+            synchronized (changingGeometries) {
+                changingGeometries.add(geometry);
+            }
+        }
+        /*
         // Merge this bounding box with the cumulative bound
         BoundingBox currentBound = new BoundingBox();
         currentBound.computeFromPoints(geometry.getVertexBuffer());
 
         if (bound == null) {
-            bound = currentBound;
+        bound = currentBound;
         } else {
-            bound.mergeLocal(currentBound);
+        bound.mergeLocal(currentBound);
+        }
+        if (isPartOfWorld()) {
+        this.setModelBound(bound);
+        }*/
+    }
+
+    protected void removeGeometry(Geometry geometry) {
+        assert geometry.getParent() == this;
+        geometry.removeFromParent();
+        changingGeometries.remove(geometry);
+        updateBound();
+    }
+
+    protected void updateBound() {
+        bound = new BoundingBox();
+        for (Spatial child : getChildren()) {
+            if (child instanceof Geometry) {
+                BoundingVolume currentBound = new BoundingBox();
+                currentBound.computeFromPoints(((Geometry) child).getVertexBuffer());
+                bound.mergeLocal(currentBound);
+            }
         }
         if (isPartOfWorld()) {
             this.setModelBound(bound);
@@ -230,6 +263,8 @@ public class VisualNode extends VisualParent {
                 this.applyVisualProperties((VisualPropertyMessage) message);
             } else if (message instanceof AppearancePropertyMessage) {
                 this.applyAppearanceProperties((AppearancePropertyMessage) message);
+            } else if (message instanceof GeometryUpdateMessage) {
+                this.applyGeometryUpdate((GeometryUpdateMessage) message);
             } else {
                 Logger.getLogger(VisualNode.class.getName()).severe("Unknown message: " + message);
             }
@@ -335,6 +370,22 @@ public class VisualNode extends VisualParent {
     }
 
     /**
+     * Reload the modifiable geometries for this node, based on the update
+     * message provided.
+     * @param geometryUpdate The message from which to take geometries
+     */
+    protected void applyGeometryUpdate(GeometryUpdateMessage geometryUpdate) {
+        synchronized (changingGeometries) {
+            for (Geometry geometry : changingGeometries) {
+                removeGeometry(geometry);
+            }
+            for (Geometry geometry : geometryUpdate.getGeometries()) {
+                addGeometry(geometry, false);
+            }
+        }
+    }
+
+    /**
      * Apply the given texture to this node.
      * @param attributes The VisualAttributes obejct containing the texture
      */
@@ -343,7 +394,6 @@ public class VisualNode extends VisualParent {
         if (t != null) {
             TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
             t.setWrap(Texture.WrapMode.Repeat);
-//            t.setApply(ApplyMode.Blend);
             ts.setTexture(t);
             ts.setEnabled(true);
             this.setRenderState(ts);

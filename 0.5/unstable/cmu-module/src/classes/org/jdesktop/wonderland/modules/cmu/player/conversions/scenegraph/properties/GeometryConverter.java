@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.proper
 import edu.cmu.cs.dennisc.property.event.PropertyEvent;
 import edu.cmu.cs.dennisc.property.event.PropertyListener;
 import edu.cmu.cs.dennisc.scenegraph.Geometry;
+import java.util.logging.Logger;
 
 /**
  * Abstract class to convert a CMU geometry into something that jME can
@@ -59,16 +60,31 @@ public abstract class GeometryConverter<GeometryType extends Geometry> implement
      * text is updated) in terms of its properties.  We allow persistent
      * geometries to be uploaded to the content repository and stored there,
      * whereas non-persistent geometries are sent and updated explicitly
-     * using messsages.
+     * using messsages.  Thus if the properties of a persistent geometry are
+     * changed, these changes will not be sent to clients.
      * @return Whether the wrapped geometry is expected to change
      */
-    //public abstract boolean isPersistent();
+    public abstract boolean isPersistent();
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void propertyChanging(PropertyEvent e) {
         // No action
     }
 
+    /**
+     * Callback function when the wrapped geometry's properties are changed.
+     * Should never be called for persistent geometries; a warning is printed
+     * if so.
+     * @param e {@inheritDoc}
+     */
+    @Override
     public void propertyChanged(PropertyEvent e) {
         System.out.println("Geometry property changed: " + e);
+        if (isPersistent()) {
+            Logger.getLogger(GeometryConverter.class.getName()).severe("Property changed for persistent geometry: " + e);
+        }
     }
 }

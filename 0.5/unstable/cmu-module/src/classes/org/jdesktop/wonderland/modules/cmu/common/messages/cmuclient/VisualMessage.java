@@ -32,6 +32,8 @@ public class VisualMessage extends SingleNodeMessage {
     private final TransformationMessage transformation;
     private final VisualPropertyMessage visualProperties;
     private final AppearancePropertyMessage appearanceProperties;
+    private final GeometryUpdateMessage changingGeometries;
+    
     private VisualAttributesIdentifier visualID;
 
     /**
@@ -43,15 +45,17 @@ public class VisualMessage extends SingleNodeMessage {
      * @param initialAppearanceProperties The initial appearance properties for the visual
      */
     public VisualMessage(VisualAttributesIdentifier id, TransformationMessage initialTransform,
-            VisualPropertyMessage initialVisualProperties, AppearancePropertyMessage initialAppearanceProperties) {
+            VisualPropertyMessage initialVisualProperties, AppearancePropertyMessage initialAppearanceProperties,
+            GeometryUpdateMessage initialGeometries) {
         super(initialTransform.getNodeID());
         assert initialTransform.getNodeID().equals(initialVisualProperties.getNodeID());
         assert initialTransform.getNodeID().equals(initialAppearanceProperties.getNodeID());
 
-        this.visualID = id;
+        setVisualID(id);
         this.transformation = initialTransform;
         this.visualProperties = initialVisualProperties;
         this.appearanceProperties = initialAppearanceProperties;
+        this.changingGeometries = initialGeometries;
     }
 
     /**
@@ -76,6 +80,14 @@ public class VisualMessage extends SingleNodeMessage {
      */
     public AppearancePropertyMessage getAppearanceProperties() {
         return appearanceProperties;
+    }
+
+    /**
+     * Get the non-persistent geometries for this visual.
+     * @return GeometryUpdateMessage for this visual
+     */
+    public GeometryUpdateMessage getChangingGeometries() {
+        return changingGeometries;
     }
 
     /**

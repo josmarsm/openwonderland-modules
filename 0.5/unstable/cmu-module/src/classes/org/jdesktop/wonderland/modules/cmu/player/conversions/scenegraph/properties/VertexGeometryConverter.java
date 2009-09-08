@@ -70,6 +70,7 @@ public class VertexGeometryConverter<VertexGeometryType extends VertexGeometry>
         FloatBuffer fVertexBuf = BufferUtils.createFloatBuffer(fVertices);
         FloatBuffer fTexBuf = BufferUtils.createFloatBuffer(fTexCoords);
         mesh.reconstruct(fVertexBuf, null, null, new TexCoords(fTexBuf, PER_TEX_COORD), IntBuffer.wrap(indices));
+        mesh.setName(vertexGeometry.getName());
     }
 
     /**
@@ -88,5 +89,15 @@ public class VertexGeometryConverter<VertexGeometryType extends VertexGeometry>
     @Override
     public TriMesh getJMEGeometry() {
         return mesh;
+    }
+
+    /**
+     * Vertex geometries consist of large amounts of data, and are not allowed
+     * to change for bandwidth reasons; thus they are persistent.
+     * @return True in any case
+     */
+    @Override
+    public boolean isPersistent() {
+        return true;
     }
 }

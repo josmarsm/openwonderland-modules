@@ -428,6 +428,7 @@ public class CMUCell extends Cell {
                     sceneRoot.applyUpdateToDescendant(message.getTransformation());
                     sceneRoot.applyUpdateToDescendant(message.getVisualProperties());
                     sceneRoot.applyUpdateToDescendant(message.getAppearanceProperties());
+                    sceneRoot.applyUpdateToDescendant(message.getChangingGeometries());
                     visualNode.updateVisibility();
                     ClientContextJME.getWorldManager().addToUpdateList(visualNode);
                 }

@@ -56,7 +56,6 @@ public abstract class TransformableConverter<TransformableType extends org.alice
     // Update listeners
     private final Set<NodeUpdateListener> updateListeners = new HashSet<NodeUpdateListener>();
 
-
     /**
      * Standard constructor.
      * @param transformable The Transformable to wrap

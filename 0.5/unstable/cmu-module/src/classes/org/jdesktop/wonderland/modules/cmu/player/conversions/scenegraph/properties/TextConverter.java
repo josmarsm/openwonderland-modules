@@ -50,7 +50,7 @@ public class TextConverter<TextType extends Text> extends GeometryConverter<Text
      */
     @Override
     public Geometry getJMEGeometry() {
-        return new com.jme.scene.Text(getText(), getText());
+        return new com.jme.scene.Text(getCMUGeometry().getName(), getText());
     }
 
     /**
@@ -67,5 +67,15 @@ public class TextConverter<TextType extends Text> extends GeometryConverter<Text
      */
     public Font getFont() {
         return getCMUGeometry().font.getValue();
+    }
+
+    /**
+     * Textual geometries are expected to change (e.g. if the text they
+     * represent is updated), so they are not persistent.
+     * @return False in any case
+     */
+    @Override
+    public boolean isPersistent() {
+        return false;
     }
 }

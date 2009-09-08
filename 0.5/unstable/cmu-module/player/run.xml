@@ -24,9 +24,10 @@
         </pathconvert>
 
         <pathconvert property="cmu-player.classpath">
-            <path location="${current.dir}/lib/cmu-module.jar"/>
-<!--            <path location="${current.dir}/lib/contentrepo-client.jar"/>
-            <path location="${current.dir}/lib/webdav-client.jar"/> -->
+            <path location="${current.dir}/lib/moveandturn.jar"/>
+	    <path location="${current.dir}/lib/foundation.jar"/>
+	    <path location="${current.dir}/lib/ide.jar"/>
+	    <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
         </pathconvert>
 
         <java fork="true" classname="org.jdesktop.wonderland.modules.cmu.player.ProgramManager">
