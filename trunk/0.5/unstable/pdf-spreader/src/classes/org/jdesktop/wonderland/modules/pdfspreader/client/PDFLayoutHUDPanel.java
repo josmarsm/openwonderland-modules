@@ -115,6 +115,15 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
 
     }
 
+    public void setCell(PDFSpreaderCell cell) {
+        this.cell = cell;
+
+        // this should get the current values for scale / spacing
+        // although given the poor behavior of the embedded slider it
+        // doesn't really help much to have those values set properly to begin
+        // with. 
+    }
+
     /**
      * Indicates that this HUD panel has been closed
      */

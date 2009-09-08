@@ -97,7 +97,11 @@ public class PDFSpreaderClientPlugin implements ContextMenuFactorySPI {
 
             if(layoutHUD==null) {
                 createHUD((PDFSpreaderCell)event.getCell());
+            } else {
+                // update the cell on the current HUD object.
+                layoutPanel.setCell((PDFSpreaderCell) event.getCell());
             }
+
 
             layoutHUD.setVisible(true);
 
