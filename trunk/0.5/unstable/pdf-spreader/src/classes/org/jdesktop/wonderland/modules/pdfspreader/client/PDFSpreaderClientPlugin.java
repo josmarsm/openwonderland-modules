@@ -77,9 +77,12 @@ public class PDFSpreaderClientPlugin implements ContextMenuFactorySPI {
     }
 
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-        final SimpleContextMenuItem editLayoutItem = new SimpleContextMenuItem("Edit Slide Layout...",(ContextMenuActionListener) new EditLayoutContextListener());
-
-        return new ContextMenuItem[] {editLayoutItem};
+        if(event.getPrimaryCell() instanceof PDFSpreaderCell) {
+            final SimpleContextMenuItem editLayoutItem = new SimpleContextMenuItem("Edit Slide Layout...",(ContextMenuActionListener) new EditLayoutContextListener());
+            return new ContextMenuItem[] {editLayoutItem};
+        }
+        else
+            return new ContextMenuItem[] {};
     }
 
 
