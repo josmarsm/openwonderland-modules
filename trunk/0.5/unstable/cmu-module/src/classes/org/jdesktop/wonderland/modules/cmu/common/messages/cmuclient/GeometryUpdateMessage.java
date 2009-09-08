@@ -45,6 +45,13 @@ public class GeometryUpdateMessage extends NodeUpdateMessage {
         }
     }
 
+    public GeometryUpdateMessage(GeometryUpdateMessage toCopy) {
+        super(toCopy);
+        for (Geometry geometry : toCopy.getGeometries()) {
+            addGeometry(geometry);
+        }
+    }
+
     /**
      * Add a geometry to this message.
      * @param geometry The geometry to add

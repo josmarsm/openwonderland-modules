@@ -27,6 +27,8 @@ import edu.cmu.cs.dennisc.scenegraph.Geometry;
 import edu.cmu.cs.dennisc.scenegraph.Text;
 import edu.cmu.cs.dennisc.scenegraph.VertexGeometry;
 import edu.cmu.cs.dennisc.scenegraph.Visual;
+import java.util.Collection;
+import java.util.Vector;
 import java.util.logging.Logger;
 import org.alice.apis.moveandturn.Composite;
 import org.alice.apis.moveandturn.Model;
@@ -34,9 +36,11 @@ import org.alice.apis.moveandturn.Scene;
 import org.alice.apis.moveandturn.Transformable;
 import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.AppearancePropertyMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.GeometryUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes;
 import org.jdesktop.wonderland.modules.cmu.player.MouseButtonEventFromWorld;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.properties.GeometryConverter;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.properties.TextConverter;
 
 /**
@@ -66,6 +70,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
     // Node properties
     private final VisualPropertyMessage visualProperties;
     private final AppearancePropertyMessage appearanceProperties;
+    private final GeometryUpdateMessage changingGeometries;
 
     /**
      * Standard constructor.
@@ -81,23 +86,37 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
         ////////////////////////////
         // Initialize visual data //
         ////////////////////////////
-        
+
         visualAttributes = new VisualAttributes();
-        
+
         // Set name
         visualAttributes.setName(visual.getName());
 
         // Get meshes
+        Collection<com.jme.scene.Geometry> jmeGeometries = new Vector<com.jme.scene.Geometry>();
         for (Geometry g : visual.geometries.getValue()) {
+            GeometryConverter converter = null;
+
+            // Vertex geometry
             if (g instanceof VertexGeometry) {
-                visualAttributes.addGeometry(new VertexGeometryConverter((VertexGeometry) g).getJMEGeometry());
-            } else if (g instanceof Text) {
-                visualAttributes.addGeometry(new TextConverter((Text) g).getJMEGeometry());
-            }
+                converter = new VertexGeometryConverter((VertexGeometry) g);
+            } // Text geometry
+            else if (g instanceof Text) {
+                converter = new TextConverter((Text) g);
+            } // Unrecognized geometry
             else {
                 Logger.getLogger(ModelConverter.class.getName()).severe("Unrecognized geometry: " + g);
             }
+
+            if (converter != null) {
+                if (converter.isPersistent()) {
+                    visualAttributes.addGeometry(converter.getJMEGeometry());
+                } else {
+                    jmeGeometries.add(converter.getJMEGeometry());
+                }
+            }
         }
+        changingGeometries = new GeometryUpdateMessage(this.getNodeID(), jmeGeometries);
 
         // Get appearance properties
         frontAppearance = visual.frontFacingAppearance.getValue();
@@ -111,6 +130,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
         frontAppearance.addPropertyListener(this);
         updateVisualProperties();
         updateAppearanceProperties();
+        updateGeometries();
     }
 
     /**
@@ -128,7 +148,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
      */
     public VisualMessage getVisualMessage() {
         return new VisualMessage(getVisualAttributes().getID(), getTransformationMessage(),
-                getVisualPropertyMessage(), getAppearancePropertyMessage());
+                getVisualPropertyMessage(), getAppearancePropertyMessage(), getGeometryUpdateMessage());
 
     }
 
@@ -137,7 +157,9 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
      * @return The VisualPropertyMessage associated with this model
      */
     public VisualPropertyMessage getVisualPropertyMessage() {
-        return new VisualPropertyMessage(visualProperties);
+        synchronized(visualProperties) {
+            return new VisualPropertyMessage(visualProperties);
+        }
     }
 
     /**
@@ -146,7 +168,19 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
      * @return The AppearancePropertyMessage associated with this model
      */
     public AppearancePropertyMessage getAppearancePropertyMessage() {
-        return new AppearancePropertyMessage(appearanceProperties);
+        synchronized(appearanceProperties) {
+            return new AppearancePropertyMessage(appearanceProperties);
+        }
+    }
+
+    /**
+     * Get the non-persistent geometries for this model (e.g. text geometries).
+     * @return The GeometryUpdateMessage associated with this model
+     */
+    public GeometryUpdateMessage getGeometryUpdateMessage() {
+        synchronized(changingGeometries) {
+            return new GeometryUpdateMessage(changingGeometries);
+        }
     }
 
     /**
@@ -255,6 +289,14 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
             newProperties = new AppearancePropertyMessage(appearanceProperties);
         }
         fireNodeUpdated(newProperties);
+    }
+
+    protected void updateGeometries() {
+        GeometryUpdateMessage newGeometries = null;
+        synchronized (changingGeometries) {
+            newGeometries = new GeometryUpdateMessage(changingGeometries);
+        }
+        fireNodeUpdated(newGeometries);
     }
 
     /**
