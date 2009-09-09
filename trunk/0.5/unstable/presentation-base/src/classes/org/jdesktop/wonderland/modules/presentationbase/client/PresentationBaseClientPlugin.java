@@ -67,7 +67,9 @@ public class PresentationBaseClientPlugin extends BaseClientPlugin implements Vi
 
     public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
 
+        if(newViewCell!=null) {
             newViewCell.addComponent(new MovingPlatformAvatarComponent(newViewCell));
             logger.warning("Just added a MPAC to the local avatar.");
+        }
     }
 }
