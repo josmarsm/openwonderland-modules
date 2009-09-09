@@ -98,9 +98,9 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
      **/
     private int frameCounter;
 
-    private Vector3f cPos = new Vector3f(0.0f, 2.0f, -1.0f); //z should be negative DEPTH
+    private Vector3f cPos = new Vector3f(0.0f, 2.0f, -1.0f);
     private Vector3f cUp = new Vector3f(0.0f, 1.0f, 0.0f);
-    private Vector3f cLook = new Vector3f(0.0f, 2.0f, 0.0f);
+    private Vector3f cLook = new Vector3f(0.0f, 2.0f, -2.0f);
     TextureRenderBuffer textureBuffer = null;
     CaptureComponent captureComponent = null;
     BufferedImage captureImage = null;
