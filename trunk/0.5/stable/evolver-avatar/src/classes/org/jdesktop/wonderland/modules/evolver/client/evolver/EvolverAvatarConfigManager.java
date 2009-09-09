@@ -478,16 +478,16 @@ public class EvolverAvatarConfigManager {
             // to relative paths. This is a bit of a hack, but not too bad a
             // one. Should be fixed eventually in avatars.jar though.
             // XXX HACK XXX
-            StringBuffer sb = new StringBuffer(out.toString());
-            int index = -1;
-            String prefix = "<RelativePath>" + localRepoBasePath;
-            while ((index = sb.indexOf(prefix)) != -1) {
-                sb.delete(index + "<RelativePath>".length(), index + prefix.length());
-            }
+//            StringBuffer sb = new StringBuffer(out.toString());
+//            int index = -1;
+//            String prefix = "<RelativePath>" + localRepoBasePath;
+//            while ((index = sb.indexOf(prefix)) != -1) {
+//                sb.delete(index + "<RelativePath>".length(), index + prefix.length());
+//            }
 
             // Then write out the XML to the local repository. Update the avatar
             // to point to this local avatar resource
-            file.put(sb.toString().getBytes());
+            file.put(out.toString().getBytes());
         } catch (java.lang.Exception excp) {
             logger.log(Level.WARNING, "Unable to write avatar configuration" +
                     " to resource " + fileName, excp);
