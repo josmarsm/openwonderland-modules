@@ -15,22 +15,14 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common;
+package org.jdesktop.wonderland.modules.cmu.common.jme;
 
 import com.jme.image.Texture;
-import com.jme.image.Texture.MagnificationFilter;
-import com.jme.image.Texture.MinificationFilter;
 import com.jme.math.FastMath;
 import com.jme.math.Vector2f;
-import com.jme.renderer.Renderer;
-import com.jme.scene.BillboardNode;
-import com.jme.scene.Node;
 import com.jme.scene.shape.Quad;
-import com.jme.scene.state.BlendState;
-import com.jme.scene.state.BlendState.TestFunction;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.TextureState;
-import com.jme.system.DisplaySystem;
 import com.jme.util.TextureManager;
 import java.awt.Color;
 import java.awt.Font;
@@ -40,45 +32,52 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
-import java.util.Arrays;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 /**
  * jME geometry to represent text in a CMU scene.  Most code taken
  * from TextLabel2D.
  * @author kevin
  */
-public class CMUText extends Quad {
-    private String text;
+public class CMUText extends Quad implements TexturedGeometry {
+
+    // Defaults
+    private static final Color DEFAULT_FOREGROUND = new Color(1f, 1f, 1f);
+    private static final Color DEFAULT_BACKGROUND = new Color(0f, 0f, 0f);
+    private static final float DEFAULT_HEIGHT = 0.3f;
+    private static final Font DEFAULT_FONT = Font.decode("Sans PLAIN 40");
+
+    // Text information
+    private String text = null;
+    private Font font;
+    private Font drawFont;
+
+    // Other rendering information
+    private Color foreground = null;
+    private Color background = null;
     private float blurIntensity = 0.1f;
     private int kernelSize = 5;
-    private ConvolveOp blur;
-    private Color foreground = new Color(1f, 1f, 1f);
-    private Color background = new Color(0f, 0f, 0f);
     private float fontResolution = 40f;
     private int shadowOffsetX = 2;
     private int shadowOffsetY = 2;
-    private Font font;
-    private Font drawFont;
-    private float quadHeight = 1f;
-    private FontRenderContext fontRenderContext = null;
+    private transient FontRenderContext fontRenderContext = null;
 
     public CMUText(String text) {
-        this(text, new Color(1f, 1f, 1f), new Color(0f, 0f, 0f), 0.3f, false, null);
+        this(text, DEFAULT_FOREGROUND, DEFAULT_BACKGROUND, DEFAULT_HEIGHT, DEFAULT_FONT);
     }
 
-    public CMUText(String text, Color foreground, Color background,
-            float height, boolean billboard, Font font) {
-        super();
-        this.text = text;
-        this.foreground = foreground;
-        this.background = background;
-        this.quadHeight = height;
+    public CMUText(String text, Color foreground, Color background, float height, Font font) {
+        super(text, 0.0f, height);
+        setFont(font);
         updateKernel();
-        if (font == null) {
-            font = Font.decode("Sans PLAIN 40");
-        }
+        setText(text, foreground, background);
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+
+        // Restore the font render context
         setFont(font);
     }
 
@@ -95,12 +94,45 @@ public class CMUText extends Quad {
         this.text = text;
         this.foreground = foreground;
         this.background = background;
-        Node tmpParent = this.getParent();
-        this.removeFromParent();
+
         TextureState texState = (TextureState) this.getRenderState(StateType.Texture);
-        Texture tex = texState.getTexture();
-        TextureManager.releaseTexture(tex);
-        tmpParent.attachChild(getQuad());
+        if (texState != null) {
+            Texture oldTex = texState.getTexture();
+            TextureManager.releaseTexture(oldTex);
+        }
+
+        Vector2f scales = new Vector2f();
+        BufferedImage img = getTexture(scales);
+
+        this.clearRenderState(StateType.Texture);
+        this.clearRenderState(StateType.Blend);
+
+        float w = img.getWidth();
+        float h = img.getHeight();
+        float factor = this.height / h;
+
+        this.resize(w * factor, this.height);
+/*
+        TextureState ts = (TextureState)ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Texture);
+        Texture tex = TextureManager.loadTexture(img, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
+
+        ts.setTexture(tex);
+        ts.setEnabled(true);
+        this.setRenderState(ts);
+
+        this.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
+
+        
+        BlendState as = DisplaySystem.getDisplaySystem().getRenderer().createBlendState();
+        as.setBlendEnabled(true);
+        as.setTestEnabled(true);
+        as.setTestFunction(TestFunction.GreaterThan);
+        as.setEnabled(true);
+        this.setRenderState(as);
+
+        this.setLightCombineMode(LightCombineMode.Off);
+*/
+         this.updateRenderState();
     }
 
     public void setShadowOffsetX(int offsetPixelX) {
@@ -126,9 +158,14 @@ public class CMUText extends Quad {
     }
 
     private void updateKernel() {
-        float[] kernel = new float[kernelSize * kernelSize];
-        Arrays.fill(kernel, blurIntensity);
-        blur = new ConvolveOp(new Kernel(kernelSize, kernelSize, kernel));
+        //float[] kernel = new float[kernelSize * kernelSize];
+        //Arrays.fill(kernel, blurIntensity);
+        //blur = new ConvolveOp(new Kernel(kernelSize, kernelSize, kernel));
+    }
+
+    @Override
+    public BufferedImage getTexture() {
+        return getTexture(new Vector2f());
     }
 
     /**
@@ -137,7 +174,7 @@ public class CMUText extends Quad {
      * @param scaleFactors is set to the factors needed to adjust texture coords
      * to the next power-of-two-sized resulting image
      */
-    private BufferedImage getImage(Vector2f scaleFactors) {
+    private BufferedImage getTexture(Vector2f scaleFactors) {
 
         // calculate the size of the label text rendered with the specified font
         TextLayout layout = new TextLayout(text, font, fontRenderContext);
@@ -195,7 +232,8 @@ public class CMUText extends Quad {
         g2d.drawString(text, textX + shadowOffsetX, textY + shadowOffsetY);
 
         // blur the text
-        BufferedImage ret = blur.filter(tmp0, null);
+        //BufferedImage ret = blur.filter(tmp0, null);
+        BufferedImage ret = tmp0;
 
         // draw the blurred text over the shadow
         g2d = (Graphics2D) ret.getGraphics();
@@ -206,41 +244,5 @@ public class CMUText extends Quad {
         g2d.drawString(text, textX, textY);
 
         return ret;
-    }
-
-    private Quad getQuad() {
-        Vector2f scales = new Vector2f();
-        BufferedImage img = getImage(scales);
-
-        float w = img.getWidth();
-        float h = img.getHeight();
-        float factor = quadHeight / h;
-
-        Quad ret = new Quad("textLabel2d", w * factor, h * factor);
-        TextureState ts = DisplaySystem.getDisplaySystem().getRenderer().createTextureState();
-        Texture tex = TextureManager.loadTexture(img, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
-
-        ts.setTexture(tex);
-        ts.setEnabled(true);
-        ret.setRenderState(ts);
-
-        ret.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
-
-        BlendState as = DisplaySystem.getDisplaySystem().getRenderer().createBlendState();
-        as.setBlendEnabled(true);
-        as.setTestEnabled(true);
-        as.setTestFunction(TestFunction.GreaterThan);
-        as.setEnabled(true);
-        ret.setRenderState(as);
-
-        ret.setLightCombineMode(LightCombineMode.Off);
-        ret.updateRenderState();
-        return ret;
-    }
-
-    private BillboardNode getBillboard() {
-        BillboardNode bb = new BillboardNode("bb");
-        bb.attachChild(getQuad());
-        return bb;
     }
 }

@@ -17,9 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.properties;
 
-import com.jme.scene.Geometry;
 import edu.cmu.cs.dennisc.scenegraph.Text;
 import java.awt.Font;
+import org.jdesktop.wonderland.modules.cmu.common.jme.CMUText;
 
 /**
  * Extracts jME-compatible text data from a CMU textual geometry.
@@ -49,8 +49,8 @@ public class TextConverter<TextType extends Text> extends GeometryConverter<Text
      * @return jME geometry for the obect
      */
     @Override
-    public Geometry getJMEGeometry() {
-        return new com.jme.scene.Text(getCMUGeometry().getName(), getText());
+    public CMUText getJMEGeometry() {
+        return new CMUText(getText());
     }
 
     /**
