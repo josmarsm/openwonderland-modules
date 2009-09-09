@@ -19,8 +19,8 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
-import java.util.Iterator;
-import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import java.util.Collection;
+import java.util.Collections;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 
@@ -58,19 +58,16 @@ public class VisualParent extends Node {
      * Recursively pass the removal message down to child nodes, removing
      * any who report that the message applies to them.
      * @param visualDeletedMessage The deletion message to be applied to relevant children
-     * @return Whether the message applies to this node
      */
-    public boolean removeDescendant(VisualDeletedMessage visualDeletedMessage) {
-        Iterator<Spatial> it = this.getChildren().iterator();
-        while (it.hasNext()) {
-            Spatial child = it.next();
-            if (child instanceof VisualParent) {
-                if (((VisualParent) child).removeDescendant(visualDeletedMessage)) {
-                    it.remove();
+    public void removeDescendant(VisualDeletedMessage visualDeletedMessage) {
+        if (getChildren() != null) {
+            Collection<Spatial> childrenCopy = Collections.unmodifiableCollection(getChildren());
+            for (Spatial child : childrenCopy) {
+                if (child instanceof VisualParent) {
+                    ((VisualParent) child).removeDescendant(visualDeletedMessage);
                 }
             }
         }
-        return false;
     }
 
     /**

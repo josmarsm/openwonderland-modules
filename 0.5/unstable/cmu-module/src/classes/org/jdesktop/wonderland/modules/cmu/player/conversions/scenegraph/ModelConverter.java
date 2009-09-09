@@ -70,7 +70,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
     // Node properties
     private final VisualPropertyMessage visualProperties;
     private final AppearancePropertyMessage appearanceProperties;
-    private final GeometryUpdateMessage changingGeometries;
+    private final Collection<GeometryConverter> changingGeometries = new Vector<GeometryConverter>();
 
     /**
      * Standard constructor.
@@ -112,11 +112,13 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
                 if (converter.isPersistent()) {
                     visualAttributes.addGeometry(converter.getJMEGeometry());
                 } else {
-                    jmeGeometries.add(converter.getJMEGeometry());
+                    g.addPropertyListener(this);
+                    synchronized(changingGeometries) {
+                        changingGeometries.add(converter);
+                    }
                 }
             }
         }
-        changingGeometries = new GeometryUpdateMessage(this.getNodeID(), jmeGeometries);
 
         // Get appearance properties
         frontAppearance = visual.frontFacingAppearance.getValue();
@@ -178,9 +180,13 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
      * @return The GeometryUpdateMessage associated with this model
      */
     public GeometryUpdateMessage getGeometryUpdateMessage() {
+        Collection<com.jme.scene.Geometry> geometries = new Vector<com.jme.scene.Geometry>();
         synchronized(changingGeometries) {
-            return new GeometryUpdateMessage(changingGeometries);
+            for (GeometryConverter converter : changingGeometries) {
+                geometries.add(converter.getJMEGeometry());
+            }
         }
+        return new GeometryUpdateMessage(getNodeID(), geometries);
     }
 
     /**
@@ -254,6 +260,8 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
             updateVisualProperties();
         } else if (e.getOwner() instanceof Appearance) {
             updateAppearanceProperties();
+        } else if (e.getOwner() instanceof Geometry) {
+            updateGeometries();
         } else {
             Logger.getLogger(ModelConverter.class.getName()).severe("Unrecognized property owner: " + e.getOwner());
         }
@@ -292,11 +300,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
     }
 
     protected void updateGeometries() {
-        GeometryUpdateMessage newGeometries = null;
-        synchronized (changingGeometries) {
-            newGeometries = new GeometryUpdateMessage(changingGeometries);
-        }
-        fireNodeUpdated(newGeometries);
+        fireNodeUpdated(getGeometryUpdateMessage());
     }
 
     /**

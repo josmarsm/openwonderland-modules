@@ -20,11 +20,9 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.image.Texture;
-import com.jme.renderer.ColorRGBA;
 import com.jme.renderer.Renderer;
 import com.jme.scene.Geometry;
 import com.jme.scene.Spatial;
-import com.jme.scene.Text;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
@@ -43,6 +41,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
+import org.jdesktop.wonderland.modules.cmu.common.jme.TexturedGeometry;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.AppearancePropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.GeometryUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
@@ -163,44 +162,54 @@ public class VisualNode extends VisualParent {
      * if it is allowed to change via a GeometryUpdateMessage)
      */
     protected void addGeometry(Geometry geometry, boolean persistent) {
-        this.attachChild(geometry);
 
         System.out.println("Adding geometry: " + geometry);
 
-        if (geometry instanceof Text) {
-            Text text = (Text) geometry;
-            text.setCullHint(Spatial.CullHint.Never);
-            text.setRenderState(Text.getDefaultFontTextureState());
-            text.setRenderState(Text.getFontBlend());
-            text.setTextColor(ColorRGBA.black);
+        //TODO: Actual handling of text
+        /*if (geometry instanceof Text) {
+        Text text = (Text) geometry;
+        toAttach = new TextLabel2D(text.getText().toString());
 
-            text.updateRenderState();
+
+        //text.setCullHint(Spatial.CullHint.Never);
+        text.setRenderState(Text.getDefaultFontTextureState());
+        text.setRenderState(Text.getFontBlend());
+        text.setTextColor(ColorRGBA.black);
+
+        text.updateRenderState();
+        }*/
+
+        if (geometry instanceof TexturedGeometry) {
+            Image textureImage = ((TexturedGeometry) geometry).getTexture();
+            Texture texture = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
+            TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
+            texture.setWrap(Texture.WrapMode.Repeat);
+            ts.setTexture(texture);
+            ts.setEnabled(true);
+            geometry.setRenderState(ts);
+            geometry.updateRenderState();
         }
+
+        this.attachChild(geometry);
         updateBound();
         if (!persistent) {
             synchronized (changingGeometries) {
                 changingGeometries.add(geometry);
             }
         }
-        /*
-        // Merge this bounding box with the cumulative bound
-        BoundingBox currentBound = new BoundingBox();
-        currentBound.computeFromPoints(geometry.getVertexBuffer());
-
-        if (bound == null) {
-        bound = currentBound;
-        } else {
-        bound.mergeLocal(currentBound);
-        }
-        if (isPartOfWorld()) {
-        this.setModelBound(bound);
-        }*/
     }
 
     protected void removeGeometry(Geometry geometry) {
         assert geometry.getParent() == this;
+
         geometry.removeFromParent();
-        changingGeometries.remove(geometry);
+        
+        TextureState textureState = (TextureState) geometry.getRenderState(StateType.Texture);
+        if (textureState != null) {
+            Texture texture = textureState.getTexture();
+            TextureManager.releaseTexture(texture);
+        }
+
         updateBound();
     }
 
@@ -278,12 +287,11 @@ public class VisualNode extends VisualParent {
      * {@inheritDoc}
      */
     @Override
-    public boolean removeDescendant(VisualDeletedMessage visualDeletedMessage) {
+    public void removeDescendant(VisualDeletedMessage visualDeletedMessage) {
         super.removeDescendant(visualDeletedMessage);
         if (visualDeletedMessage.getNodeID().equals(this.getNodeID())) {
-            return true;
+            this.removeFromParent();
         }
-        return false;
     }
 
     /**
@@ -379,6 +387,7 @@ public class VisualNode extends VisualParent {
             for (Geometry geometry : changingGeometries) {
                 removeGeometry(geometry);
             }
+            changingGeometries.clear();
             for (Geometry geometry : geometryUpdate.getGeometries()) {
                 addGeometry(geometry, false);
             }
@@ -386,7 +395,8 @@ public class VisualNode extends VisualParent {
     }
 
     /**
-     * Apply the given texture to this node.
+     * Extract a texture from the given attributes, and apply it to this node;
+     * take advantage of built-in texture caching.
      * @param attributes The VisualAttributes obejct containing the texture
      */
     protected void applyTexture(VisualAttributes attributes) {
