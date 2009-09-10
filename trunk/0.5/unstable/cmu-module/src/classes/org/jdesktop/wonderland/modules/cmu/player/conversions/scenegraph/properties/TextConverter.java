@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.properties;
 
 import edu.cmu.cs.dennisc.scenegraph.Text;
+import java.awt.Color;
 import java.awt.Font;
 import org.jdesktop.wonderland.modules.cmu.common.jme.CMUText;
 
@@ -50,7 +51,9 @@ public class TextConverter<TextType extends Text> extends GeometryConverter<Text
      */
     @Override
     public CMUText getJMEGeometry() {
-        return new CMUText(getText());
+        System.out.println("L to R alignment: " + getCMUGeometry().leftToRightAlignment.getValue());
+        System.out.println("F to B alignment: " + getCMUGeometry().frontToBackAlignment.getValue());
+        return new CMUText(getText(), getFont());
     }
 
     /**
@@ -67,6 +70,14 @@ public class TextConverter<TextType extends Text> extends GeometryConverter<Text
      */
     public Font getFont() {
         return getCMUGeometry().font.getValue();
+    }
+
+    /**
+     * Get the depth of the text in this geometry.
+     * @return Text depth for this geometry
+     */
+    public float getDepth() {
+        return getCMUGeometry().depth.getValue().floatValue();
     }
 
     /**

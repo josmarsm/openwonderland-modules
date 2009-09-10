@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.jme;
 
+import com.jme.math.Vector2f;
 import java.awt.Image;
 
 /**
@@ -30,5 +31,5 @@ public interface TexturedGeometry {
      * Get the texture associated with this object.
      * @return Texture for this object
      */
-    public Image getTexture();
+    public Image getTexture(Vector2f scaleVector);
 }
