@@ -379,7 +379,7 @@ public class TimelineCell extends Cell implements ProximityListener, TransformCh
         // layer/track they're on, just pick their current distance to 0,0
         // and use that as the radius. 
 
-        Vector3f avPosition = localAvatarCell.getWorldTransform().getTranslation(Vector3f.ZERO);
+        Vector3f avPosition = localAvatarCell.getWorldTransform().getTranslation(null);
 
         Vector3f cellPositionAtHeight = this.getWorldTransform().getTranslation(null);
 

@@ -68,20 +68,20 @@ public class MovingPlatformAvatarComponent extends CellComponent implements Tran
 //            CellTransform finalPosition = cell.getWorldTransform().mul(currentPlatformLocalAvatarTransform);
 //            logger.warning("platform moved, updating avatar position to: " + finalPosition);
 
-            logger.warning("oldPlatform: " + currentPlatformTransform.getTranslation(Vector3f.ZERO) + "; newPlatform: " + platformCell.getWorldTransform().getTranslation(Vector3f.ZERO));
+            logger.warning("oldPlatform: " + currentPlatformTransform.getTranslation(null) + "; newPlatform: " + platformCell.getWorldTransform().getTranslation(null));
             CellTransform avatarLocalToPlatform = transform(this.cell.getWorldTransform(), new CellTransform(null, null), currentPlatformTransform);
 
-            logger.warning("avatarLocalToPlatform: " + avatarLocalToPlatform.getTranslation(Vector3f.ZERO));
+            logger.warning("avatarLocalToPlatform: " + avatarLocalToPlatform.getTranslation(null));
             
 //            CellTransform avatarLocalToNewPlatform = transform(avatarLocalToPlatform, currentPlatformTransform, platformCell.getWorldTransform());
             CellTransform avatarLocalToNewPlatform = platformCell.getWorldTransform().mul(avatarLocalToPlatform);
 
-            logger.warning("avatarLocalToNewPlatform: " + avatarLocalToNewPlatform.getTranslation(Vector3f.ZERO));
+            logger.warning("avatarLocalToNewPlatform: " + avatarLocalToNewPlatform.getTranslation(null));
 
 //            CellTransform finalTransform = transform(avatarLocalToNewPlatform, platformCell.getWorldTransform(), new CellTransform(null, null));
             final CellTransform finalTransform = avatarLocalToNewPlatform;
 
-            logger.warning("finalGlobalTransform: " + finalTransform.getTranslation(Vector3f.ZERO));
+            logger.warning("finalGlobalTransform: " + finalTransform.getTranslation(null));
             SwingUtilities.invokeLater(new Runnable() {
                public void run() {
                 ((AvatarCell)cell).triggerGoto(finalTransform.getTranslation(null), finalTransform.getRotation(null));
