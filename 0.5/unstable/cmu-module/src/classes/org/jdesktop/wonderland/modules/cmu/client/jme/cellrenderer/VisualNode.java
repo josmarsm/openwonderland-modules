@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.image.Texture;
+import com.jme.math.Vector2f;
 import com.jme.renderer.Renderer;
 import com.jme.scene.Geometry;
 import com.jme.scene.Spatial;
@@ -180,17 +181,41 @@ public class VisualNode extends VisualParent {
         }*/
 
         if (geometry instanceof TexturedGeometry) {
-            Image textureImage = ((TexturedGeometry) geometry).getTexture();
-            Texture texture = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
+            
+            Vector2f scales = new Vector2f();
+            Image textureImage = ((TexturedGeometry) geometry).getTexture(scales);
+            Texture texture = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.BilinearNoMipMaps, Texture.MagnificationFilter.Bilinear, false);
             TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
-            texture.setWrap(Texture.WrapMode.Repeat);
+            //            texture.setWrap(Texture.WrapMode.Repeat);
+            /*
+            TexCoords texCo = geometry.getTextureCoords(0);
+            texCo.coords.rewind();
+            for (int i = 0; i < texCo.coords.limit() - 1; i += 2) {
+            //                System.out.println("Buffer limit is " + texCo.coords.limit());
+            //                System.out.println("i = " + i);
+            //                System.out.println("Current position: " + texCo.coords.position());
+            texCo.coords.mark();
+            float u = texCo.coords.get();
+            float v = texCo.coords.get();
+            texCo.coords.reset();
+            texCo.coords.put(u * scales.x);
+            texCo.coords.put(v * scales.y);
+            }
+            geometry.setTextureCoords(texCo);
+            geometry.updateGeometricState(0, true);
+
+            //texture.setScale(new Vector3f(scales.x, scales.y, 1));
+            System.out.println("Scales: " + scales.x + " x " + scales.y);
+            texture.setScale(new Vector3f(2f * scales.x, 2f * scales.y, 1));
+             */
             ts.setTexture(texture);
             ts.setEnabled(true);
             geometry.setRenderState(ts);
             geometry.updateRenderState();
+            //this.attachChild(new TextLabelCopy("test text"));
         }
-
         this.attachChild(geometry);
+
         updateBound();
         if (!persistent) {
             synchronized (changingGeometries) {
@@ -203,7 +228,7 @@ public class VisualNode extends VisualParent {
         assert geometry.getParent() == this;
 
         geometry.removeFromParent();
-        
+
         TextureState textureState = (TextureState) geometry.getRenderState(StateType.Texture);
         if (textureState != null) {
             Texture texture = textureState.getTexture();
@@ -335,12 +360,8 @@ public class VisualNode extends VisualParent {
      * @param transformation The transformation to be applied
      */
     protected void applyTransformation(TransformationMessage transformation) {
-        if (getChildren() != null) {
-            for (Spatial mesh : getChildren()) {
-                mesh.setLocalTranslation(transformation.getTranslation());
-                mesh.setLocalRotation(transformation.getRotation());
-            }
-        }
+        setLocalTranslation(transformation.getTranslation());
+        setLocalRotation(transformation.getRotation());
     }
 
     /**
@@ -348,11 +369,7 @@ public class VisualNode extends VisualParent {
      * @param properties The properties to be applied
      */
     protected void applyVisualProperties(VisualPropertyMessage properties) {
-        if (getChildren() != null) {
-            for (Spatial mesh : getChildren()) {
-                mesh.setLocalScale(properties.getScale());
-            }
-        }
+        setLocalScale(properties.getScale());
         setVisibleInCMU(properties.isVisible());
     }
 
