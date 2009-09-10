@@ -172,6 +172,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
         quadNode.setLocalTranslation(0.0f, 0.0f,  DEPTH * 1.01f);
         
         textureBuffer = (TextureRenderBuffer) wm.getRenderManager().createRenderBuffer(RenderBuffer.Target.TEXTURE_2D, IMAGE_WIDTH, IMAGE_HEIGHT);
+        textureBuffer.setIncludeOrtho((false));
         //Create a camera node
         CameraNode cn = new CameraNode("MyCamera", null);
         //Create a node for the camera
