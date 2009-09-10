@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 /**
  * Abstract class to convert a CMU geometry into something that jME can
  * recognize.
+ * @param <GeometryType> Subclass of Geometry which is being converted
  * @author kevin
  */
 public abstract class GeometryConverter<GeometryType extends Geometry> implements PropertyListener {
@@ -68,6 +69,7 @@ public abstract class GeometryConverter<GeometryType extends Geometry> implement
 
     /**
      * {@inheritDoc}
+     * @param e {@inheritDoc}
      */
     @Override
     public void propertyChanging(PropertyEvent e) {
@@ -82,7 +84,6 @@ public abstract class GeometryConverter<GeometryType extends Geometry> implement
      */
     @Override
     public void propertyChanged(PropertyEvent e) {
-        System.out.println("Geometry property changed: " + e);
         if (isPersistent()) {
             Logger.getLogger(GeometryConverter.class.getName()).severe("Property changed for persistent geometry: " + e);
         }

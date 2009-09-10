@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
 import com.jme.image.Texture;
-import com.jme.math.Vector2f;
 import com.jme.renderer.Renderer;
 import com.jme.scene.Geometry;
 import com.jme.scene.Spatial;
@@ -164,55 +163,14 @@ public class VisualNode extends VisualParent {
      */
     protected void addGeometry(Geometry geometry, boolean persistent) {
 
-        System.out.println("Adding geometry: " + geometry);
-
-        //TODO: Actual handling of text
-        /*if (geometry instanceof Text) {
-        Text text = (Text) geometry;
-        toAttach = new TextLabel2D(text.getText().toString());
-
-
-        //text.setCullHint(Spatial.CullHint.Never);
-        text.setRenderState(Text.getDefaultFontTextureState());
-        text.setRenderState(Text.getFontBlend());
-        text.setTextColor(ColorRGBA.black);
-
-        text.updateRenderState();
-        }*/
-
         if (geometry instanceof TexturedGeometry) {
-            
-            Vector2f scales = new Vector2f();
-            Image textureImage = ((TexturedGeometry) geometry).getTexture(scales);
+            Image textureImage = ((TexturedGeometry) geometry).getTexture();
             Texture texture = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.BilinearNoMipMaps, Texture.MagnificationFilter.Bilinear, false);
             TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
-            //            texture.setWrap(Texture.WrapMode.Repeat);
-            /*
-            TexCoords texCo = geometry.getTextureCoords(0);
-            texCo.coords.rewind();
-            for (int i = 0; i < texCo.coords.limit() - 1; i += 2) {
-            //                System.out.println("Buffer limit is " + texCo.coords.limit());
-            //                System.out.println("i = " + i);
-            //                System.out.println("Current position: " + texCo.coords.position());
-            texCo.coords.mark();
-            float u = texCo.coords.get();
-            float v = texCo.coords.get();
-            texCo.coords.reset();
-            texCo.coords.put(u * scales.x);
-            texCo.coords.put(v * scales.y);
-            }
-            geometry.setTextureCoords(texCo);
-            geometry.updateGeometricState(0, true);
-
-            //texture.setScale(new Vector3f(scales.x, scales.y, 1));
-            System.out.println("Scales: " + scales.x + " x " + scales.y);
-            texture.setScale(new Vector3f(2f * scales.x, 2f * scales.y, 1));
-             */
             ts.setTexture(texture);
             ts.setEnabled(true);
             geometry.setRenderState(ts);
             geometry.updateRenderState();
-            //this.attachChild(new TextLabelCopy("test text"));
         }
         this.attachChild(geometry);
 
@@ -224,6 +182,11 @@ public class VisualNode extends VisualParent {
         }
     }
 
+    /**
+     * Remove a geometry from this node, freeing any textures associated
+     * with the geometry, and updating bounds appropriately.
+     * @param geometry The geometry to remove; must be a child of this node
+     */
     protected void removeGeometry(Geometry geometry) {
         assert geometry.getParent() == this;
 
@@ -238,6 +201,11 @@ public class VisualNode extends VisualParent {
         updateBound();
     }
 
+    /**
+     * Update the saved bounding box for this node based on all geometries which
+     * are attached to it; make this the active bounding box if this node
+     * is currently part of the world.
+     */
     protected void updateBound() {
         bound = new BoundingBox();
         for (Spatial child : getChildren()) {

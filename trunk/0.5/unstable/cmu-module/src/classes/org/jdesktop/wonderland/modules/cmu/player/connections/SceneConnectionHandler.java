@@ -40,7 +40,6 @@ import org.alice.apis.moveandturn.Scene;
 import org.alice.apis.moveandturn.Transformable;
 import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
-import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualPropertyMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
@@ -359,7 +358,6 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
     public void childRemoved(ChildRemovedEvent childrenEvent) {
         printChildWarning();
         System.out.println("removed: " + childrenEvent);
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     private void printChildWarning() {

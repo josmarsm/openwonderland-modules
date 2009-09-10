@@ -18,12 +18,12 @@
 package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.properties;
 
 import edu.cmu.cs.dennisc.scenegraph.Text;
-import java.awt.Color;
 import java.awt.Font;
 import org.jdesktop.wonderland.modules.cmu.common.jme.CMUText;
 
 /**
  * Extracts jME-compatible text data from a CMU textual geometry.
+ * @param <TextType> Subclass of text which is being converted
  * @author kevin
  */
 public class TextConverter<TextType extends Text> extends GeometryConverter<TextType> {
@@ -51,8 +51,6 @@ public class TextConverter<TextType extends Text> extends GeometryConverter<Text
      */
     @Override
     public CMUText getJMEGeometry() {
-        System.out.println("L to R alignment: " + getCMUGeometry().leftToRightAlignment.getValue());
-        System.out.println("F to B alignment: " + getCMUGeometry().frontToBackAlignment.getValue());
         return new CMUText(getText(), getFont());
     }
 

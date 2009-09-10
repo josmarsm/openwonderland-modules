@@ -25,9 +25,9 @@
 
         <pathconvert property="cmu-player.classpath">
             <path location="${current.dir}/lib/moveandturn.jar"/>
-	    <path location="${current.dir}/lib/foundation.jar"/>
-	    <path location="${current.dir}/lib/ide.jar"/>
-	    <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
+            <path location="${current.dir}/lib/foundation.jar"/>
+            <path location="${current.dir}/lib/ide.jar"/>
+            <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
         </pathconvert>
 
         <java fork="true" classname="org.jdesktop.wonderland.modules.cmu.player.ProgramManager">
@@ -39,7 +39,7 @@
             </classpath>
             <jvmarg value="-Djava.library.path=${current.dir}/core/lib/${ostype}/native/"/>
             <arg value="${wonderland.web.server.url}"/>
-	    <arg value="cmu-player"/>
+            <arg value="cmu-player"/>
         </java>
     </target>
 </project>

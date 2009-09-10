@@ -108,9 +108,6 @@
             <zipfileset dir="${wonderland.dir}/core/ext/common/" prefix="core/lib/common">
                 <include name="derby.jar"/>
                 <include name="stun.jar"/>
-<!--                <include name="commons-httpclient*.jar"/>
-                <include name="commons-codec*.jar"/>
-                <include name="commons-logging*.jar"/> -->
             </zipfileset>
             <zipfileset dir="${wonderland.dir}/core/ext/" prefix="core/lib">
                 <include name="linux/**"/>
