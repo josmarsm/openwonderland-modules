@@ -43,6 +43,7 @@ public class VisualMessage extends SingleNodeMessage {
      * @param initialTransform The initial transformation for the visual
      * @param initialVisualProperties The initial visual properties for the visual
      * @param initialAppearanceProperties The initial appearance properties for the visual
+     * @param initialGeometries The initial non-persistent geometries for the visual
      */
     public VisualMessage(VisualAttributesIdentifier id, TransformationMessage initialTransform,
             VisualPropertyMessage initialVisualProperties, AppearancePropertyMessage initialAppearanceProperties,

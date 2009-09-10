@@ -45,6 +45,10 @@ public class GeometryUpdateMessage extends NodeUpdateMessage {
         }
     }
 
+    /**
+     * Copy constructor.
+     * @param toCopy The message to copy
+     */
     public GeometryUpdateMessage(GeometryUpdateMessage toCopy) {
         super(toCopy);
         for (Geometry geometry : toCopy.getGeometries()) {

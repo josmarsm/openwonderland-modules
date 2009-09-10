@@ -72,7 +72,8 @@ public class VisualChangeReceiverThread extends Thread {
                     currNumReads = getNumReads();
                     resetStats();
                 }
-                System.out.println(currNumReads + " messages in last " + PAUSE_TIME / 1000 + "s");
+                Logger.getLogger(VisualChangeReceiverThread.MonitorThread.class.getName()).
+                        info(currNumReads + " messages in last " + PAUSE_TIME / 1000 + "s");
             }
         }
     }

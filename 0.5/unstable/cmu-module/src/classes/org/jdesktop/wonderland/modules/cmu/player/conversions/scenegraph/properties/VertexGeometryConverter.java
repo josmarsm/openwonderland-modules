@@ -29,6 +29,8 @@ import java.nio.IntBuffer;
 
 /**
  * Extracts a jME-compatible mesh from a CMU VertexGeometry object.
+ * @param <VertexGeometryType> Specific subclass of VertexGeometry which is
+ * being converted
  * @author kevin
  */
 public class VertexGeometryConverter<VertexGeometryType extends VertexGeometry>
@@ -42,7 +44,7 @@ public class VertexGeometryConverter<VertexGeometryType extends VertexGeometry>
 
     /**
      * Standard constructor.
-     * @param g The Geometry to translate
+     * @param vertexGeometry The Geometry to translate
      */
     public VertexGeometryConverter(VertexGeometryType vertexGeometry) {
         super(vertexGeometry);

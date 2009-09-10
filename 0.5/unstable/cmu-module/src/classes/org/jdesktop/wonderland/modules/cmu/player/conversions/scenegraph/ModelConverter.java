@@ -76,6 +76,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
      * Standard constructor.
      * @param model The CMU Model to wrap
      */
+    @SuppressWarnings("unchecked")
     public ModelConverter(ModelType model) {
         super(model);
         this.visual = model.getSGVisual();
@@ -299,6 +300,10 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
         fireNodeUpdated(newProperties);
     }
 
+    /**
+     * Update the non-persistent geometries for this model, parsing them
+     * directly and then sending them as a GeometryUpdateMessage.
+     */
     protected void updateGeometries() {
         fireNodeUpdated(getGeometryUpdateMessage());
     }
