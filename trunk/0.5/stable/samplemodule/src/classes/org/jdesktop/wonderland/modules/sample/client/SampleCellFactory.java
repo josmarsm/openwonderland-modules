@@ -46,8 +46,7 @@ public class SampleCellFactory implements CellFactorySPI {
         return new String[]{};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState(
-            Properties props) {
+    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         SampleCellServerState state = new SampleCellServerState();
         state.setShapeType("BOX");
 
@@ -64,8 +63,7 @@ public class SampleCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        URL url = SampleCellFactory.class.getResource(
-                "resources/sample_preview.jpg");
+        URL url = SampleCellFactory.class.getResource("resources/sample_preview.jpg");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
 }

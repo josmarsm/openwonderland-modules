@@ -23,10 +23,12 @@ import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Sphere;
+import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 
 /**
  * An example of a cell renderer
@@ -52,7 +54,18 @@ public class SampleRenderer extends BasicRenderer {
         ClientContextJME.getWorldManager().addToUpdateList(node);
     }
 
-     private TriMesh getShapeMesh(String name, String shapeType) {
+    @Override
+    public void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
+
+        if (status == CellStatus.VISIBLE && increasing == true) {
+            CollisionComponent cc = entity.getComponent(CollisionComponent.class);
+            cc.setCollidable(false);
+        }
+    }
+
+
+    private TriMesh getShapeMesh(String name, String shapeType) {
         /* Create the new object -- either a Box or Sphere */
         TriMesh mesh = null;
         if (shapeType != null && shapeType.equals("BOX") == true) {
@@ -68,6 +81,7 @@ public class SampleRenderer extends BasicRenderer {
     }
 
     protected Node createSceneGraph(Entity entity) {
+
         /* Fetch the basic info about the cell */
         String name = cell.getCellID().toString();
         String shapeType = ((SampleCell)cell).getShapeType();
@@ -75,8 +89,7 @@ public class SampleRenderer extends BasicRenderer {
         /* Create the new mesh for the shape */
         TriMesh mesh = this.getShapeMesh(name, shapeType);
         if (mesh == null) {
-          node = new Node();
-          return node;
+          return new Node();
         }
 
         /* Create the scene graph object and set its wireframe state */
