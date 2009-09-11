@@ -5,14 +5,17 @@ REQUIREMENTS:
 The Alice 3 gallery must be placed in a directory called "gallery" in the
 top-level directory of this module.  To obtain the gallery, install Alice 3
 (http://kenai.com/projects/alice/downloads) on the server to which the
-module will be deployed, and copy the "gallery" directory from the Alice 3
-install to the module directory.
+module will be deployed, and copy the directory named "gallery" from the Alice 3
+installation directory to the module directory.  Alice 3 can be safely
+uninstalled after the gallery is copied.
 
 INSTALLATION:
-With a properly configured cmu.module.properties and a running virtual world server,
-run 'ant deploy' in the module directory.  From the server administration page on
-the web interface, click "edit" on the Server Status page, then "Add Component."
-Enter the following:
+With a properly configured cmu.module.properties (see the file for more
+information on how to configure it) and a running virtual world server,
+run 'ant deploy' in the module directory.  Go to the Server Status page
+on the web interface (in the Server Administration section), click "edit"
+in the top left next to "Server Components", and then choose "Add
+Component."  Enter the following:
 
      Component Name: CMU Runner
      Component Class: org.jdesktop.wonderland.modules.cmu.weblib.CMUPlayerRunner
