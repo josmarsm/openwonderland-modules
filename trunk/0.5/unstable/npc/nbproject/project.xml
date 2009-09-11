@@ -24,14 +24,14 @@
             </folders>
             <ide-actions>
                 <action name="build">
-                    <target>package</target>
+                    <target>dist</target>
                 </action>
                 <action name="clean">
                     <target>clean</target>
                 </action>
                 <action name="rebuild">
                     <target>clean</target>
-                    <target>package</target>
+                    <target>dist</target>
                 </action>
             </ide-actions>
             <view>
@@ -48,6 +48,10 @@
                     <ide-action name="build"/>
                     <ide-action name="rebuild"/>
                     <ide-action name="clean"/>
+                    <action>
+                        <label>Deploy to Server</label>
+                        <target>deploy</target>
+                    </action>
                 </context-menu>
             </view>
             <subprojects/>
