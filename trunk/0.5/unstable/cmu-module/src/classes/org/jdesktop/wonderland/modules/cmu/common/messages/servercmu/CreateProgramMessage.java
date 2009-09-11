@@ -26,17 +26,19 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class CreateProgramMessage extends ServerCMUMessage {
 
-    private static final long serialVersionUID = 1L;
-    private String programURI;
+    private String programURI = null;
+    private float initialPlaybackSpeed = 0.0f;
 
     /**
      * Standard constructor.
      * @param cellID The ID of the cell for which the program is being created
      * @param programURI The URI of the asset representing the program file
+     * @param initialPlaybackSpeed The playback speed to start playing the scene
      */
-    public CreateProgramMessage(CellID cellID, String programURI) {
+    public CreateProgramMessage(CellID cellID, String programURI, float initialPlaybackSpeed) {
         super(cellID);
-        this.setProgramURI(programURI);
+        setProgramURI(programURI);
+        setInitialPlaybackSpeed(initialPlaybackSpeed);
     }
 
     /**
@@ -53,5 +55,21 @@ public class CreateProgramMessage extends ServerCMUMessage {
      */
     public void setProgramURI(String programURI) {
         this.programURI = programURI;
+    }
+
+    /**
+     * Get the playback speed at which the scene should be started.
+     * @return Playback speed at which to start the scene
+     */
+    public float getInitialPlaybackSpeed() {
+        return initialPlaybackSpeed;
+    }
+
+    /**
+     * Set the playback speed at which the scene should be started.
+     * @param initialPlaybackSpeed Playback speed at which to start the scene
+     */
+    public void setInitialPlaybackSpeed(float initialPlaybackSpeed) {
+        this.initialPlaybackSpeed = initialPlaybackSpeed;
     }
 }

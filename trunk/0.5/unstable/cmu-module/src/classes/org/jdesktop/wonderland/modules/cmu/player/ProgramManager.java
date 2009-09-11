@@ -38,6 +38,7 @@ import org.jdesktop.wonderland.common.ContentURI;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.player.connections.VisualUploadManager;
 
@@ -81,14 +82,15 @@ public class ProgramManager {
      * @param messageID ID of the message sent from the CMUCellMO
      * @param cellID ID of the cell which will host this program
      * @param assetURI The asset pointing to the .a3p file
+     * @param initialPlaybackSpeed The speed at which to start playing the program
      * @return A response message containing socket information for the
      * created program.
      */
-    public CreateProgramResponseMessage createProgram(MessageID messageID, CellID cellID, String assetURI) {
-        Logger.getLogger(ProgramManager.class.getName()).info("Creating program: " + assetURI);
+    public CreateProgramResponseMessage createProgram(MessageID messageID, CellID cellID, String assetURI, float initialPlaybackSpeed) {
+        Logger.getLogger(ProgramManager.class.getName()).info("Starting scene: " + assetURI);
 
         // Delete the existing program (if any) first
-        deleteProgram(cellID);
+        deleteProgram(cellID, UnloadSceneReason.RESTARTING);
 
         // Load local cache file, and send it to the program
         ProgramPlayer newProgram = null;
@@ -96,7 +98,14 @@ public class ProgramManager {
             URL url = AssetUtils.getAssetURL(assetURI);
             Asset a = AssetManager.getAssetManager().getAsset(new ContentURI(url.toString()));
             if (AssetManager.getAssetManager().waitForAsset(a)) {
+                // Create program
                 newProgram = new ProgramPlayer(a.getLocalCacheFile());
+
+                // Set initial playback speed
+                //TODO: Make sure this actually gets set regardless of threading issues
+                newProgram.setPlaybackSpeed(initialPlaybackSpeed);
+
+                // Store in map for later access
                 addProgram(cellID, newProgram);
             } else {
                 Logger.getLogger(ProgramManager.class.getName()).log(Level.SEVERE, "Couldn't load asset: " + a);
@@ -146,11 +155,11 @@ public class ProgramManager {
      * a message to connected clients noting that this has happened.
      * @param cellID The cell whose program is to be deleted
      */
-    public void deleteProgram(CellID cellID) {
+    public void deleteProgram(CellID cellID, UnloadSceneReason reason) {
         synchronized (programs) {
             ProgramPlayer program = programs.get(cellID);
             if (program != null) {
-                program.destroy();
+                program.disconnectProgram(reason);
                 programs.remove(cellID);
             }
         }
@@ -164,7 +173,7 @@ public class ProgramManager {
     private void addProgram(CellID key, ProgramPlayer program) {
         synchronized (programs) {
             // Check for an existing program, and stop it if it's there.
-            deleteProgram(key);
+            deleteProgram(key, UnloadSceneReason.RESTARTING);
             programs.put(key, program);
         }
     }
@@ -187,7 +196,7 @@ public class ProgramManager {
      */
     public static void main(String[] args) {
         if (args.length < 2 || args.length > 3) {
-            System.out.println("Usage: ProgramManager serverURL username [password]");
+            Logger.getLogger(ProgramManager.class.getName()).warning("Usage: ProgramManager serverURL username [password]");
             System.exit(-1);
         }
 

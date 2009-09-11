@@ -97,6 +97,7 @@ public class VisualUploadManager {
                         getRepository(manager).getUserRoot().getChild(REPO_COLLECTION_NAME);
 
                 // Upload this data if it hasn't already been uploaded.
+                //TODO: Fix NPE here
                 if (collection.getChild(id.getContentNodeName()) == null) {
                     ContentResource resource = (ContentResource) collection.createChild(id.getContentNodeName(), ContentNode.Type.RESOURCE);
 

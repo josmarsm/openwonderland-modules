@@ -17,8 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer;
 
+import com.jme.image.Texture;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.state.RenderState.StateType;
+import com.jme.scene.state.TextureState;
+import com.jme.util.TextureManager;
 import java.util.Collection;
 import java.util.Collections;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
@@ -80,6 +84,22 @@ public class VisualParent extends Node {
             for (Spatial child : this.getChildren()) {
                 if (child instanceof VisualParent) {
                     ((VisualParent) child).updateVisibility();
+                }
+            }
+        }
+    }
+
+    /**
+     * Unload the textures associated with the VisualParent's who are descendants
+     * of this one, as well as the texture (if any) associated with this node
+     * itself.
+     */
+    public void unloadVisualDescendantTextures() {
+        if (getChildren() != null) {
+            Collection<Spatial> childrenCopy = Collections.unmodifiableCollection(getChildren());
+            for (Spatial child : childrenCopy) {
+                if (child instanceof VisualParent) {
+                    ((VisualParent) child).unloadVisualDescendantTextures();
                 }
             }
         }

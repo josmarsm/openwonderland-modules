@@ -98,7 +98,7 @@ public class ProgramConnection extends BaseConnection {
      * @return The program manager's response, containing socket information
      */
     protected ResponseMessage handleCreateProgram(CreateProgramMessage message) {
-        return programManager.createProgram(message.getMessageID(), message.getCellID(), message.getProgramURI());
+        return programManager.createProgram(message.getMessageID(), message.getCellID(), message.getProgramURI(), message.getInitialPlaybackSpeed());
     }
 
     /**
@@ -114,7 +114,7 @@ public class ProgramConnection extends BaseConnection {
      * @param message The message pointing to the program to delete
      */
     protected void handleDeleteProgram(DeleteProgramMessage message) {
-        programManager.deleteProgram(message.getCellID());
+        programManager.deleteProgram(message.getCellID(), message.getReason());
     }
 
     /**

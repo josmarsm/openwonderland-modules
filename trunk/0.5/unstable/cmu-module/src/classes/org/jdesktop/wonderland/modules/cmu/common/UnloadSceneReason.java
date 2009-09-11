@@ -18,25 +18,17 @@
 package org.jdesktop.wonderland.modules.cmu.common;
 
 /**
- * Defines default values for scene playback.
+ * Enum to represent reasons for which a scene can be unloaded.
  * @author kevin
  */
-public final class PlaybackDefaults {
+public enum UnloadSceneReason {
+    /**
+     * Scene is unloading, but will be restarted.
+     */
+    RESTARTING,
 
     /**
-     * The speed when a scene is paused.
+     * Scene is unloading and will not be restarted.
      */
-    public static final float PAUSE_SPEED = 0.0f;
-    /**
-     * The default speed at which to play a scene.
-     */
-    public static final float DEFAULT_START_SPEED = 1.0f;
-    /**
-     * Whether to start a scene playing (true) or paused (false) by default.
-     */
-    public static final boolean DEFAULT_START_PLAYING = true;
-
-    // Should never be instantiated.
-    private PlaybackDefaults() {
-    }
+    DISCONNECTING,
 }

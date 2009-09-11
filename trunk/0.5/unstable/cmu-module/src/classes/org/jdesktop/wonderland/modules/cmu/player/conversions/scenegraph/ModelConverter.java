@@ -94,7 +94,6 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
         visualAttributes.setName(visual.getName());
 
         // Get meshes
-        Collection<com.jme.scene.Geometry> jmeGeometries = new Vector<com.jme.scene.Geometry>();
         for (Geometry g : visual.geometries.getValue()) {
             GeometryConverter converter = null;
 
@@ -134,6 +133,10 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
         updateVisualProperties();
         updateAppearanceProperties();
         updateGeometries();
+
+        //DEBUG: The properties of these objects should never change, and
+        //warnings will be logged (in propertyChanging) if they do.
+        visual.geometries.addPropertyListener(this);
     }
 
     /**
@@ -253,15 +256,29 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
 
     /**
      * Callback function when a CMU property is updated - this covers
-     * both Visual properties and Appearance properties.
+     * all types of property changes for which we are listening.
      * @param e {@inheritDoc}
      */
     public void propertyChanged(PropertyEvent e) {
+        // Check to see if the property owner was one of our changing geometries
+        boolean isChangingGeometry = false;
+        if (e.getOwner() instanceof Geometry) {
+            synchronized(changingGeometries) {
+                for (GeometryConverter converter : changingGeometries) {
+                    if (((Geometry)e.getOwner()).equals(converter.getCMUGeometry())) {
+                        isChangingGeometry = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // React appropriately to the property change
         if (e.getOwner().equals(this.visual)) {
             updateVisualProperties();
-        } else if (e.getOwner() instanceof Appearance) {
+        } else if (e.getOwner().equals(this.frontAppearance)) {
             updateAppearanceProperties();
-        } else if (e.getOwner() instanceof Geometry) {
+        } else if (isChangingGeometry) {
             updateGeometries();
         } else {
             Logger.getLogger(ModelConverter.class.getName()).severe("Unrecognized property owner: " + e.getOwner());
