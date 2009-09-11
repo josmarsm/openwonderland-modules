@@ -1,0 +1,4 @@
+print('Hello from javascript - timer script  \r\n') ;
+more = MyClass.playAnimationFrame();
+if(more == 1)
+    MyClass.startTimer(100);    
