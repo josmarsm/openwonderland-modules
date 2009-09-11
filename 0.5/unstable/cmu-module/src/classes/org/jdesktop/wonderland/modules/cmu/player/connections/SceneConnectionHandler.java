@@ -40,6 +40,7 @@ import org.alice.apis.moveandturn.Scene;
 import org.alice.apis.moveandturn.Transformable;
 import org.jdesktop.wonderland.common.NetworkAddress;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
@@ -182,7 +183,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
      * @param sc The scene to wrap
      */
     public synchronized void setScene(Scene sc) {
-        this.unloadScene();
+        this.unloadScene(UnloadSceneReason.RESTARTING);
         if (sc != null) {
             this.sc = sc;
             this.processModel(sc);
@@ -268,7 +269,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
      */
     protected void handleSocketException(ClientConnection connection, SocketException ex) {
         try {
-            connection.close();
+            connection.close(new UnloadSceneMessage(UnloadSceneReason.DISCONNECTING));
         } catch (SocketException ex1) {
             // No action, we're already closing
         }
@@ -285,6 +286,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
      * to any connected clients.
      * @param model The CMU visual to add
      */
+    @SuppressWarnings("unchecked")
     protected void addModel(Model model) {
         synchronized (visuals) {
             synchronized (connections) {
@@ -297,9 +299,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
                 // Broadcast it to each connected client.  Don't allow new
                 // connections to be created during this process; this
                 // would have this visual sent twice to these connections.
-                Iterator<ClientConnection> iterator = connections.iterator();
-                while (iterator.hasNext()) {
-                    ClientConnection connection = iterator.next();
+                for (ClientConnection connection : connections) {
                     connection.queueMessage(visualWrapper.getVisualMessage());
                 }
             }
@@ -321,12 +321,13 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
     /**
      * Unload the current scene, and inform all connected clients that this
      * is happening.
+     * @param reason The reason for unloading the scene
      */
-    public void unloadScene() {
+    public void unloadScene(UnloadSceneReason reason) {
         if (this.getScene() != null) {
             synchronized (connections) {
                 for (ClientConnection connection : connections) {
-                    connection.queueMessage(new UnloadSceneMessage());
+                    connection.queueMessage(new UnloadSceneMessage(reason));
                 }
             }
             synchronized (visuals) {
@@ -347,7 +348,6 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
      * @param childrenEvent {@inheritDoc}
      */
     public void childAdded(ChildAddedEvent childrenEvent) {
-        printChildWarning();
         System.out.println("added: " + childrenEvent);
     }
 
@@ -356,11 +356,6 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
      * @param childrenEvent {@inheritDoc}
      */
     public void childRemoved(ChildRemovedEvent childrenEvent) {
-        printChildWarning();
         System.out.println("removed: " + childrenEvent);
-    }
-
-    private void printChildWarning() {
-        System.out.println("Child added or removed");
     }
 }

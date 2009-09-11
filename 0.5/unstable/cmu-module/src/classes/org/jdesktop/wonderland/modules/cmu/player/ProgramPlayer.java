@@ -25,6 +25,7 @@ import org.alice.apis.moveandturn.Program;
 import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.alice.stageide.apis.moveandturn.event.MouseButtonAdapter;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 
 /**
  * A standard CMU program which can access its scene graph via a
@@ -169,9 +170,8 @@ public class ProgramPlayer extends Program {
     /**
      * Sever ties with the loaded scene, and destroy the player.
      */
-    @Override
-    public void destroy() {
-        this.sceneConnectionHandler.unloadScene();
+    public void disconnectProgram(UnloadSceneReason reason) {
+        this.sceneConnectionHandler.unloadScene(reason);
         super.destroy();
     }
 

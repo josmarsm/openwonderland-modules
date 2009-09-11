@@ -44,15 +44,15 @@ public class CMUText extends Quad implements TexturedGeometry {
     private static final Color DEFAULT_COLOR = new Color(1f, 1f, 1f);
     private static final Font DEFAULT_FONT = Font.decode("Sans PLAIN 60");
 
-    // Text information
+    // User-provided information
     private String text = null;
-    private Font drawFont;
     private Font userFont;
+    private Color color = null;
 
     // Other rendering information
     private float fontResolution = 60f;
-    private float drawHeight = 0.0f;
-    private Color color = null;
+    private float drawHeight;
+    private Font drawFont;
     private transient FontRenderContext fontRenderContext = null;
 
     /**
@@ -85,7 +85,7 @@ public class CMUText extends Quad implements TexturedGeometry {
         setLocalRotation(new Matrix3f(-1, 0, 0, 0, -1, 0, 0, 0, 1));
 
         // This makes the text show up lighter....
-        setLightCombineMode(LightCombineMode.Off);
+        //setLightCombineMode(LightCombineMode.Off);
 
         // Set values
         setFont(font);
@@ -128,7 +128,7 @@ public class CMUText extends Quad implements TexturedGeometry {
         BufferedImage tmp0 = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
         fontRenderContext = g2d.getFontRenderContext();
-        updateDrawHeight();
+        updateDrawScale();
     }
 
     /**
@@ -148,7 +148,7 @@ public class CMUText extends Quad implements TexturedGeometry {
         this.text = text;
         this.color = color;
 
-        updateDrawHeight();
+        updateDrawScale();
 
         float newHeight = getDrawHeight();
 
@@ -164,10 +164,12 @@ public class CMUText extends Quad implements TexturedGeometry {
      * Set the draw height based on the current text and the native size
      * of the current font.
      */
-    protected void updateDrawHeight() {
+    protected void updateDrawScale() {
         if (getText() != null) {
             // Calculate the draw height based on the font size
             TextLayout layout = new TextLayout(getText(), getFont(), fontRenderContext);
+            //Rectangle2D b = layout.getBounds();
+            //setDrawWidth((float)b.getWidth());
             setDrawHeight(layout.getAscent() + layout.getDescent() + 1f);
         }
     }

@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeEvent;
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -52,6 +53,7 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener, C
     private final ActiveHUD activePanel;
     private final DisconnectedHUD disconnectedPanel;
     private final LoadingHUD loadingPanel;
+    @UsesCellComponent
     private HUDComponent hudComponent = null;
     private boolean componentSizeSet = false;
     private boolean hudShowing = false;
@@ -72,9 +74,6 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener, C
         activePanel = new ActiveHUD(parentCell);
         disconnectedPanel = new DisconnectedHUD();
         loadingPanel = new LoadingHUD(parentCell);
-
-        hudContainer.setLayout(new GridLayout());
-        hudContainer.add(activePanel);
     }
 
     /**
@@ -149,8 +148,11 @@ public class HUDControl implements HUDEventListener, SceneTitleChangeListener, C
                 hudShowing = showing;
             }
 
-            if (!componentSizeSet && hudPanel == activePanel && showing) {
-                hudContainer.setPreferredSize(new Dimension(hudContainer.getWidth(), hudContainer.getHeight()));
+            if (!componentSizeSet && hudPanel instanceof ActiveHUD && showing) {
+                //TODO: Calculate size dynamically
+                //hudContainer.setPreferredSize(new Dimension(hudContainer.getWidth(), hudContainer.getHeight()));
+                hudContainer.setLayout(new GridLayout());
+                hudContainer.setPreferredSize(new Dimension(194, 82));
                 componentSizeSet = true;
             }
         }

@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
+import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.MouseClickMessage;
@@ -95,10 +96,11 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
      * a response with socket information.
      * @param cellID The cell wishing to create the program instance
      * @param assetURI The URI of the program file
+     * @param initialPlaybackSpeed The initial playback speed for the scene
      */
-    static public void createProgram(CellID cellID, String assetURI) {
+    static public void createProgram(CellID cellID, String assetURI, float initialPlaybackSpeed) {
         ProgramConnectionHandlerMO instance = getInstance();
-        CreateProgramMessage message = new CreateProgramMessage(cellID, assetURI);
+        CreateProgramMessage message = new CreateProgramMessage(cellID, assetURI, initialPlaybackSpeed);
 
         instance.registerProgram(message);
         instance.sendMessage(message);
@@ -125,20 +127,22 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
     /**
      * Destroy a particular program.
      * @param cellID The cell connected to the program
+     * @param reason The reason for deleting the program
      */
-    static public void removeProgram(CellID cellID) {
-        getInstance().deleteProgram(cellID);
+    static public void removeProgram(CellID cellID, UnloadSceneReason reason) {
+        getInstance().deleteProgram(cellID, reason);
     }
 
     /**
      * Destroy a particular program.
      * @param cellID The cell connected to the program
+     * @param reason The reason for deleting the program
      */
-    private void deleteProgram(CellID cellID) {
+    private void deleteProgram(CellID cellID, UnloadSceneReason reason) {
         synchronized(this.programsCreated) {
             programsCreated.remove(cellID);
         }
-        sendMessage(new DeleteProgramMessage(cellID));
+        sendMessage(new DeleteProgramMessage(cellID, reason));
     }
 
     /**

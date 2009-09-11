@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.modules.cmu.common.CMUCellServerState;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
+import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.VisibilityChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
@@ -112,7 +113,6 @@ public class CMUCellMO extends CellMO {
                 cellMO.createProgram();
             } // Mouse button event
             else if (message instanceof MouseButtonEventMessage) {
-                MouseButtonEventMessage mouseMessage = (MouseButtonEventMessage) message;
                 cellMO.sendMouseClick(((MouseButtonEventMessage) message).getNodeID());
             } // Unknown message
             else {
@@ -211,7 +211,7 @@ public class CMUCellMO extends CellMO {
             for (Class c : ServerClientMessageTypes.MESSAGE_TYPES_TO_RECEIVE) {
                 channel.removeMessageReceiver(c);
             }
-            ProgramConnectionHandlerMO.removeProgram(this.getCellID());
+            ProgramConnectionHandlerMO.removeProgram(this.getCellID(), UnloadSceneReason.DISCONNECTING);
         }
     }
 
@@ -221,8 +221,9 @@ public class CMUCellMO extends CellMO {
      */
     public void createProgram() {
         setPlaybackInformation(PlaybackDefaults.DEFAULT_START_PLAYING, PlaybackDefaults.DEFAULT_START_SPEED);
+
         // Create CMU instance
-        ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI());
+        ProgramConnectionHandlerMO.createProgram(getCellID(), getCmuURI(), getActualPlaybackSpeed());
     }
 
     /**

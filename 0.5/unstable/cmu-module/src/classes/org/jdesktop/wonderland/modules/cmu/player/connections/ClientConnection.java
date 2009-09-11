@@ -156,12 +156,13 @@ public class ClientConnection extends Thread {
     }
 
     /**
-     * Close this connection after sending an unload message
+     * Close this connection after sending the given message
      * to clients, and stop execution of its thread.
+     * @param closingMessage Final message to send to clients
      * @throws java.net.SocketException If the unload message can't be
      * sent due to socket issues
      */
-    public void close() throws SocketException {
+    public void close(CMUClientMessage closingMessage) throws SocketException {
         synchronized (closedLock) {
             closed = true;
         }
@@ -172,7 +173,7 @@ public class ClientConnection extends Thread {
         }
         synchronized (socket) {
             try {
-                this.writeToOutputStream(new UnloadSceneMessage());
+                this.writeToOutputStream(closingMessage);
                 this.outputStream.close();
                 this.socket.close();
             } catch (SocketException ex) {

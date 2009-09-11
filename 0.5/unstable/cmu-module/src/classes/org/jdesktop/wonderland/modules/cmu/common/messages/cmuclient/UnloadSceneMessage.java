@@ -17,9 +17,37 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
 
+import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
+
 /**
- *
+ * Message to notify clients that a scene is being unloaded.
  * @author kevin
  */
 public class UnloadSceneMessage extends CMUClientMessage {
+
+    private UnloadSceneReason reason = null;
+
+    /**
+     * Standard constructor.
+     * @param reason The reason for which this scene is being unloaded
+     */
+    public UnloadSceneMessage(UnloadSceneReason reason) {
+        setReason(reason);
+    }
+
+    /**
+     * Get the reason for which the scene is being unloaded.
+     * @return Reason for scene unload
+     */
+    public UnloadSceneReason getReason() {
+        return reason;
+    }
+
+    /**
+     * Set the reason for which the scene is being unloaded.
+     * @param reason Reason for scene unload
+     */
+    public void setReason(UnloadSceneReason reason) {
+        this.reason = reason;
+    }
 }

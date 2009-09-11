@@ -55,6 +55,7 @@ import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
 import org.jdesktop.wonderland.modules.cmu.client.web.VisualDownloadManager;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.PlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
+import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
@@ -420,7 +421,7 @@ public class CMUCell extends Cell {
         final VisualNode visualNode = new VisualNode(message.getNodeID(), this);
 
         synchronized (sceneRoot) {
-            visualNode.applyVisual(attributes);
+            visualNode.applyVisualAttributes(attributes);
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
                 public void update(Object arg0) {
@@ -480,8 +481,13 @@ public class CMUCell extends Cell {
      * @param message Message to apply
      */
     private void applyUnloadSceneMessage(UnloadSceneMessage message) {
-        // Note: message has no state
-        setConnectionState(ConnectionState.RECONNECTING);
+        if (message.getReason().equals(UnloadSceneReason.DISCONNECTING)) {
+            setConnectionState(ConnectionState.DISCONNECTED);
+        } else if (message.getReason().equals(UnloadSceneReason.RESTARTING)) {
+            setConnectionState(ConnectionState.RECONNECTING);
+        } else {
+            logger.severe("Unrecognized reason for scene disconnect: " + message.getReason());
+        }
     }
 
     /**
@@ -547,7 +553,6 @@ public class CMUCell extends Cell {
      * @param connectionState The connection/loading state of the scene
      */
     protected void setConnectionState(ConnectionState connectionState) {
-        //TODO: finer control of connected/disconnected states
         synchronized (sceneRoot) {
             this.connectionState = connectionState;
 
@@ -560,6 +565,7 @@ public class CMUCell extends Cell {
                     public void update(Object arg0) {
 
                         synchronized (sceneRoot) {
+                            sceneRoot.unloadVisualDescendantTextures();
                             sceneRoot.detachAllChildren();
                         }
                         ClientContextJME.getWorldManager().addToUpdateList(sceneRoot);

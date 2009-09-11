@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
 
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 
 /**
  * Message to inform the CMU program manager that a particular program
@@ -26,11 +27,31 @@ import org.jdesktop.wonderland.common.cell.CellID;
  */
 public class DeleteProgramMessage extends ServerCMUMessage {
 
+    private UnloadSceneReason reason;
+
     /**
      * Standard constructor.
      * @param cellID The ID of the cell whose program is to be deleted
+     * @param reason The reason the program is being deleted
      */
-    public DeleteProgramMessage(CellID cellID) {
+    public DeleteProgramMessage(CellID cellID, UnloadSceneReason reason) {
         super(cellID);
+        this.reason = reason;
+    }
+
+    /**
+     * Get the reason for the deletion of the program.
+     * @return Reason for deleting the program
+     */
+    public UnloadSceneReason getReason() {
+        return reason;
+    }
+
+    /**
+     * Set the reason for deletion of the program.
+     * @param reason Reason for deleting the program
+     */
+    public void setReason(UnloadSceneReason reason) {
+        this.reason = reason;
     }
 }

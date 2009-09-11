@@ -24,6 +24,8 @@ import com.jme.renderer.Renderer;
 import com.jme.scene.Geometry;
 import com.jme.scene.Spatial;
 import com.jme.scene.state.BlendState;
+import com.jme.scene.state.CullState;
+import com.jme.scene.state.CullState.Face;
 import com.jme.scene.state.LightState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
@@ -59,19 +61,29 @@ import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualAtt
  */
 public class VisualNode extends VisualParent {
 
-    private final NodeID nodeID;     // Unique ID for this node
+    private static final Map<VisualAttributesIdentifier, ReferenceCounter<TextureKey>> textureKeyMap =
+            new HashMap<VisualAttributesIdentifier, ReferenceCounter<TextureKey>>();
+    private static final String[] groundPlaneNames = {
+        // Suffixes
+        "Ground.m_sgVisual",
+        "Surface.m_sgVisual",};
+
+    // Unique ID for this node
+    private final NodeID nodeID;
+
+    // Cell of whose scene this node is a part, used to update visibility information
     private final CMUCell parentCell;
+
+    // Visibility and bound information
     private boolean visibleInCMU = false;
     private final Object visibleInCMULock = new Object();
     private boolean partOfWorld = false;
     private final Object partOfWorldLock = new Object();
     private BoundingVolume bound = null;
+
+    // ID of the visual loaded by this node
+    private VisualAttributesIdentifier attributesID = null;
     private final Collection<Geometry> changingGeometries = new Vector<Geometry>();
-    private static final Map<VisualAttributesIdentifier, TextureKey> keyMap = new HashMap<VisualAttributesIdentifier, TextureKey>();
-    private static final String[] groundPlaneNames = {
-        // Suffixes
-        "Ground.m_sgVisual",
-        "Surface.m_sgVisual",};
 
     /**
      * Standard constructor; no visual properties loaded.
@@ -112,6 +124,17 @@ public class VisualNode extends VisualParent {
         this.setRenderState(alphaState);
         this.updateRenderState();
 
+        // Add cull state
+        //TODO: is there a cull-face property to parse?
+        CullState cullState = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Cull);
+        cullState.setCullFace(Face.FrontAndBack);
+
+        cullState.setEnabled(true);
+
+        //TODO: Figure out culling issue
+        //this.setRenderState(cullState);
+        this.updateRenderState();
+
         // Enable transparency
         this.setRenderQueueMode(Renderer.QUEUE_TRANSPARENT);
     }
@@ -141,7 +164,11 @@ public class VisualNode extends VisualParent {
      * geometries, textures, etc.) to this node.
      * @param attributes The attributes to apply
      */
-    public void applyVisual(VisualAttributes attributes) {
+    public void applyVisualAttributes(VisualAttributes attributes) {
+        // Clean up any previous visual information
+        this.unloadVisualDescendantTextures();
+        this.detachAllChildren();
+
         // Set name
         this.setName(attributes.getName());
 
@@ -152,7 +179,19 @@ public class VisualNode extends VisualParent {
         }
 
         // Apply texture
-        this.applyTexture(attributes);
+        this.loadTexture(attributes);
+
+        // Store the ID so we can unload the texture later
+        this.attributesID = attributes.getID();
+    }
+
+    /**
+     * Get the ID associated with the visual attributes loaded by this node,
+     * or null if no attributes have been loaded.
+     * @return Visual attributes ID for this node
+     */
+    public VisualAttributesIdentifier getVisualAttributesID() {
+        return this.attributesID;
     }
 
     /**
@@ -162,7 +201,6 @@ public class VisualNode extends VisualParent {
      * if it is allowed to change via a GeometryUpdateMessage)
      */
     protected void addGeometry(Geometry geometry, boolean persistent) {
-
         if (geometry instanceof TexturedGeometry) {
             Image textureImage = ((TexturedGeometry) geometry).getTexture();
             Texture texture = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.BilinearNoMipMaps, Texture.MagnificationFilter.Bilinear, false);
@@ -284,6 +322,19 @@ public class VisualNode extends VisualParent {
         super.removeDescendant(visualDeletedMessage);
         if (visualDeletedMessage.getNodeID().equals(this.getNodeID())) {
             this.removeFromParent();
+            this.unloadVisualDescendantTextures();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void unloadVisualDescendantTextures() {
+        super.unloadVisualDescendantTextures();
+        this.unloadTexture();
+        for (Geometry geometry : changingGeometries) {
+            this.removeGeometry(geometry);
         }
     }
 
@@ -346,7 +397,6 @@ public class VisualNode extends VisualParent {
      * @param appearanceProperties The properties to be applied
      */
     protected void applyAppearanceProperties(AppearancePropertyMessage appearanceProperties) {
-
         MaterialState materialState = (MaterialState) this.getRenderState(StateType.Material);
         materialState.setAmbient(appearanceProperties.getAmbientColor());
         materialState.setDiffuse(appearanceProperties.getDiffuseColor());
@@ -381,18 +431,61 @@ public class VisualNode extends VisualParent {
 
     /**
      * Extract a texture from the given attributes, and apply it to this node;
-     * take advantage of built-in texture caching.
+     * if the texture has already been loaded, increment its reference count,
+     * otherwise load it and create a counter for it.
      * @param attributes The VisualAttributes obejct containing the texture
      */
-    protected void applyTexture(VisualAttributes attributes) {
-        Texture t = getTexture(attributes);
-        if (t != null) {
-            TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
-            t.setWrap(Texture.WrapMode.Repeat);
-            ts.setTexture(t);
-            ts.setEnabled(true);
-            this.setRenderState(ts);
+    protected void loadTexture(VisualAttributes attributes) {
+        Texture texture = null;
+
+        // Fetch the texture from our map, or load it if it's not there yet
+        synchronized (textureKeyMap) {
+            if (attributes.hasTexture()) {
+                if (textureKeyMap.containsKey(attributes.getID())) {
+                    // Load the texture and increase its reference count
+                    ReferenceCounter<TextureKey> counter = textureKeyMap.get(attributes.getID());
+                    texture = TextureManager.loadTexture(counter.markObjectUsed());
+                }
+                if (texture == null) {
+                    // If we haven't already loaded this texture, create it
+                    Image textureImage = attributes.getTexture();
+                    texture = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
+
+                    // Create a counter for the texture and increment it initially
+                    ReferenceCounter<TextureKey> newCounter = new ReferenceCounter<TextureKey>(texture.getTextureKey());
+                    newCounter.markObjectUsed();
+
+                    // Put it in the map
+                    textureKeyMap.put(attributes.getID(), newCounter);
+                }
+            }
+        }
+
+        // Create a texture state from the loaded texture, and attach it to this node
+        if (texture != null) {
+            TextureState textureState = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.StateType.Texture);
+            texture.setWrap(Texture.WrapMode.Repeat);
+            textureState.setTexture(texture);
+            textureState.setEnabled(true);
+            this.setRenderState(textureState);
             this.updateRenderState();
+        }
+    }
+
+    /**
+     * Decrement the reference count for the texture attached to this node,
+     * if any, and release the texture if it is no longer being used.
+     */
+    protected void unloadTexture() {
+        synchronized (textureKeyMap) {
+            if (textureKeyMap.containsKey(getVisualAttributesID())) {
+                if (textureKeyMap.get(getVisualAttributesID()).markObjectReleased()) {
+                    textureKeyMap.remove(getVisualAttributesID());
+                    TextureState textureState = (TextureState) this.getRenderState(StateType.Texture);
+                    Texture tex = textureState.getTexture();
+                    TextureManager.releaseTexture(tex);
+                }
+            }
         }
     }
 
@@ -401,22 +494,73 @@ public class VisualNode extends VisualParent {
      * in a map to take advantage of the TextureManager's built-in caching.
      * @param attributes The VisualAttributes to extract a texture from
      * @return The extracted texture
-     */
+     *
     private static Texture getTexture(VisualAttributes attributes) {
-        //TODO: clean up textures
-        synchronized (keyMap) {
-            Texture toReturn = null;
-            if (attributes.hasTexture()) {
-                if (keyMap.containsKey(attributes.getID())) {
-                    toReturn = TextureManager.loadTexture(keyMap.get(attributes.getID()));
-                }
-                if (toReturn == null) {
-                    Image textureImage = attributes.getTexture();
-                    toReturn = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
-                    keyMap.put(attributes.getID(), toReturn.getTextureKey());
-                }
+    synchronized (keyMap) {
+    Texture toReturn = null;
+    if (attributes.hasTexture()) {
+    if (keyMap.containsKey(attributes.getID())) {
+    toReturn = TextureManager.loadTexture(keyMap.get(attributes.getID()).markTextureUsed());
+    }
+    if (toReturn == null) {
+    Image textureImage = attributes.getTexture();
+    toReturn = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
+    keyMap.put(attributes.getID(), new TextureKeyCounter(toReturn.getTextureKey()));
+    }
+    }
+    return toReturn;
+    }
+    }
+    private static void removeTexture(VisualAttributesIdentifier id) {
+    synchronized (keyMap) {
+    if (keyMap.get(id).markTextureFreed()) {
+    keyMap.remove(id);
+    }
+    }
+    }*/
+    /**
+     * Class to keep track of the number of references to an object; in our
+     * case, we use it to keep track of the number of times a texture is being
+     * used currently, so that we can remove texture keys from our static map
+     * intelligently.
+     */
+    private static class ReferenceCounter<ObjectType> {
+
+        private int count = 0;
+        private final ObjectType object;
+
+        /**
+         * Standard constructor.
+         * @param object The object for which this counter should keep
+         * a reference count
+         */
+        public ReferenceCounter(ObjectType object) {
+            this.object = object;
+        }
+
+        /**
+         * Increment the reference count for the object.
+         * @return The object counted by this counter
+         */
+        public ObjectType markObjectUsed() {
+            count++;
+            return object;
+        }
+
+        /**
+         * Decrement the reference count from the object, and find out
+         * whether there are any references remaining to the object.
+         * Can only be called if the current reference count for the object
+         * is positive.
+         * @return True if the object's reference count is 0, false otherwise
+         */
+        public boolean markObjectReleased() {
+            assert (count > 0);
+            count--;
+            if (count == 0) {
+                return true;
             }
-            return toReturn;
+            return false;
         }
     }
 }
