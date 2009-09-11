@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.common.cell.St
 import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.common.cell.StickyNoteCellServerState;
 import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.common.messages.StickyNoteSyncMessage;
 import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.server.StickyNoteComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -40,8 +41,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 @ExperimentalAPI
 public class StickyNoteCellMO extends App2DCellMO {
     // The communications component used to broadcast to all clients
-
-    private ManagedReference<StickyNoteComponentMO> commComponentRef = null;
+    @UsesCellComponentMO(StickyNoteComponentMO.class)
+    private ManagedReference<StickyNoteComponentMO> commComponentRef;
     private StickyNoteCellClientState stateHolder = new StickyNoteCellClientState();
 
     /** Default constructor, used when the cell is created via WFS */
@@ -125,24 +126,24 @@ public class StickyNoteCellMO extends App2DCellMO {
     /**
      * {@inheritDoc}
      */
-    @Override
-    protected void setLive(boolean live) {
-        super.setLive(live);
-
-        if (live == true) {
-            if (commComponentRef == null) {
-                StickyNoteComponentMO commComponent = new StickyNoteComponentMO(this);
-                commComponentRef = AppContext.getDataManager().createReference(commComponent);
-                addComponent(commComponent);
-            }
-        } else {
-            if (commComponentRef != null) {
-                StickyNoteComponentMO commComponent = commComponentRef.get();
-                AppContext.getDataManager().removeObject(commComponent);
-                commComponentRef = null;
-            }
-        }
-    }
+//    @Override
+//    protected void setLive(boolean live) {
+//        super.setLive(live);
+//
+//        if (live == true) {
+//            if (commComponentRef == null) {
+//                StickyNoteComponentMO commComponent = new StickyNoteComponentMO(this);
+//                commComponentRef = AppContext.getDataManager().createReference(commComponent);
+//                addComponent(commComponent);
+//            }
+//        } else {
+//            if (commComponentRef != null) {
+//                StickyNoteComponentMO commComponent = commComponentRef.get();
+//                AppContext.getDataManager().removeObject(commComponent);
+//                commComponentRef = null;
+//            }
+//        }
+//    }
 
     public void receivedMessage(WonderlandClientSender sender, WonderlandClientID clientID, StickyNoteSyncMessage message) {
         StickyNoteComponentMO commComponent = commComponentRef.getForUpdate();

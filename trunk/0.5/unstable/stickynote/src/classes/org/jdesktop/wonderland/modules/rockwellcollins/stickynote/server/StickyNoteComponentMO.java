@@ -51,7 +51,7 @@ public class StickyNoteComponentMO extends CellComponentMO {
      * @param cell The cell to which this component belongs.
      * @throws IllegalStateException If the cell does not already have a ChannelComponent IllegalStateException will be thrown.
      */
-    public StickyNoteComponentMO(StickyNoteCellMO cell) {
+    public StickyNoteComponentMO(CellMO cell) {
         super(cell);
     }
 
