@@ -73,7 +73,12 @@ public class StickyNoteWindow
 
         stickynotePanel.setContainer(this);
 
-        setComponent(stickynotePanel);
+        SwingUtilities.invokeLater(
+                new Runnable() {
+                    public void run() {
+                        setComponent(stickynotePanel);
+                    }
+                });
         setTitle("Post-it note");
         setUserResizable(false);
 
