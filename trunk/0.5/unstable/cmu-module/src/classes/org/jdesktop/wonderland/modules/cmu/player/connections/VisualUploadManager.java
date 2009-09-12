@@ -60,7 +60,6 @@ public class VisualUploadManager {
             plugin.initialize(manager);
             VisualUploadManager.manager = manager;
             try {
-                //TODO: Handle NPE when user collection isn't there
                 ContentCollection collection = ContentRepositoryRegistry.getInstance().getRepository(manager).getUserRoot();
                 if (collection.getChild(REPO_COLLECTION_NAME) == null) {
                     collection.createChild(REPO_COLLECTION_NAME, ContentNode.Type.COLLECTION);
@@ -70,13 +69,13 @@ public class VisualUploadManager {
             }
             VisualUploadManager.username = username;
         } else {
-            Logger.getLogger(VisualUploadManager.class.getName()).log(Level.SEVERE, "Double initializabion of VisualUploadManager!");
+            Logger.getLogger(VisualUploadManager.class.getName()).log(Level.SEVERE, "Double initialization of VisualUploadManager!");
         }
     }
 
     /**
-     *
-     * @return
+     * Get the root directory to which scene visuals will be uploaded.
+     * @return Name of the directory containing scene visuals
      */
     static public String getRepoRoot() {
         return "wlcontent://users/" + username + "/" + REPO_COLLECTION_NAME + "/";
@@ -88,7 +87,6 @@ public class VisualUploadManager {
      * @param visual The visual to upload
      */
     static public void uploadVisual(VisualAttributes visual) {
-        assert isInitialized();
         if (isInitialized()) {
             VisualAttributesIdentifier id = visual.getID();
             try {
@@ -97,7 +95,6 @@ public class VisualUploadManager {
                         getRepository(manager).getUserRoot().getChild(REPO_COLLECTION_NAME);
 
                 // Upload this data if it hasn't already been uploaded.
-                //TODO: Fix NPE here
                 if (collection.getChild(id.getContentNodeName()) == null) {
                     ContentResource resource = (ContentResource) collection.createChild(id.getContentNodeName(), ContentNode.Type.RESOURCE);
 
@@ -117,6 +114,8 @@ public class VisualUploadManager {
             } catch (ContentRepositoryException ex) {
                 Logger.getLogger(VisualUploadManager.class.getName()).log(Level.SEVERE, null, ex);
             }
+        } else {
+            Logger.getLogger(VisualUploadManager.class.getName()).severe("Uninitialized use of CMU visual upload manager");
         }
     }
 

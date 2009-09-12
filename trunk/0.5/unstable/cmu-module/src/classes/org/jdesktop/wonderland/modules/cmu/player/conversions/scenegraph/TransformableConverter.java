@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph;
 import edu.cmu.cs.dennisc.property.event.PropertyListener;
 import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationListener;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
@@ -28,6 +30,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.Transformat
 import org.jdesktop.wonderland.modules.cmu.player.NodeUpdateListener;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.math.OrthogonalMatrix3x3Converter;
 import org.jdesktop.wonderland.modules.cmu.player.conversions.math.Point3Converter;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.pattern.PropertyOwnerConverter;
 
 /**
  * Converter for a CMU Transformable; listens to transformation updates,
@@ -41,7 +44,7 @@ import org.jdesktop.wonderland.modules.cmu.player.conversions.math.Point3Convert
  * @author kevin
  */
 public abstract class TransformableConverter<TransformableType extends org.alice.apis.moveandturn.Transformable>
-        implements AbsoluteTransformationListener, PropertyListener {
+        extends PropertyOwnerConverter implements AbsoluteTransformationListener, PropertyListener {
 
     // Unique ID
     private final NodeID nodeID;
@@ -61,6 +64,7 @@ public abstract class TransformableConverter<TransformableType extends org.alice
      * @param transformable The Transformable to wrap
      */
     public TransformableConverter(TransformableType transformable) {
+        super(transformable);
         this.nodeID = NodeID.generateNewID();
         this.transformable = transformable;
         this.sgTransformable = transformable.getSGTransformable();

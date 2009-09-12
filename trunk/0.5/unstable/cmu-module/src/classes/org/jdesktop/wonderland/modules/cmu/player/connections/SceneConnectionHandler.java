@@ -216,7 +216,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
 
         //TODO: Process camera
         if (c instanceof AbstractCamera) {
-            System.out.println("Camera: " + c);
+            //System.out.println("Camera: " + c);
         }
 
         if (c instanceof Model) {

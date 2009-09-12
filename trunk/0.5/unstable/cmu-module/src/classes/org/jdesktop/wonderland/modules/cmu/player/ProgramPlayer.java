@@ -169,6 +169,7 @@ public class ProgramPlayer extends Program {
 
     /**
      * Sever ties with the loaded scene, and destroy the player.
+     * @param reason The reason for the disconnection
      */
     public void disconnectProgram(UnloadSceneReason reason) {
         this.sceneConnectionHandler.unloadScene(reason);

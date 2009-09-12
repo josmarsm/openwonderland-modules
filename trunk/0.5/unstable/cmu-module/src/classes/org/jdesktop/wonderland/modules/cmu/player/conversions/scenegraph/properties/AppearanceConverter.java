@@ -27,14 +27,15 @@ import edu.cmu.cs.dennisc.texture.BufferedImageTexture;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.pattern.PropertyOwnerConverter;
 
 /**
  * Extracts jME-compatible properties from a CMU Appearance object.
  * @author kevin
  */
-public class AppearanceConverter {
+public class AppearanceConverter extends PropertyOwnerConverter {
 
     // Property identifiers
     final static private String[] TEXTURE_PROPERTIES = {
@@ -58,45 +59,8 @@ public class AppearanceConverter {
      * @param appearance The CMU Appearance to convert
      */
     public AppearanceConverter(Appearance appearance) {
-
+        super(appearance);
         this.appearance = appearance;
-
-        //DEBUG: Make sure we're not missing any properties
-        for (Property p : appearance.getProperties()) {
-            if (!propertyRecognized(p)) {
-                Logger.getLogger(AppearanceConverter.class.getName()).severe("Unrecognized appearance property: " + p);
-            }
-        }
-
-    }
-
-    /**
-     * Debugging function to ensure that a particular property is recognized
-     * by the converter.
-     * @param p The property to check
-     * @return Whether the converter knows about the property
-     */
-    private static boolean propertyRecognized(Property p) {
-        List<String> recognizedNames = new ArrayList<String>();
-        recognizedNames.add(AMBIENT_COLOR);
-        recognizedNames.add(DIFFUSE_COLOR);
-        recognizedNames.add(OPACITY);
-        recognizedNames.add(FILLING_STYLE);
-        recognizedNames.add(SHADING_STYLE);
-        recognizedNames.add(SPECULAR_HIGHLIGHT_COLOR);
-        recognizedNames.add(EMISSIVE_COLOR);
-        recognizedNames.add(SPECULAR_HIGHLIGHT_EXPONENT);
-        recognizedNames.add(DIFFUSE_COLOR_TEXTURE_ALPHA_BLENDED);
-        recognizedNames.add(ETHEREAL);
-
-        for (int i = 0; i < TEXTURE_PROPERTIES.length; i++) {
-            recognizedNames.add(TEXTURE_PROPERTIES[i]);
-        }
-
-        if (recognizedNames.contains(p.getName())) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -196,5 +160,30 @@ public class AppearanceConverter {
                 texture = null;
             }
         }
+    }
+
+    /**
+     * For debugging purposes, get the properties which are expected in an
+     * Appearance.
+     * @return Properties expected in an Appearance instance
+     */
+    @Override
+    protected Collection<String> getExpectedPropertyNames() {
+        List<String> expectedNames = new ArrayList<String>();
+        expectedNames.add(AMBIENT_COLOR);
+        expectedNames.add(DIFFUSE_COLOR);
+        expectedNames.add(OPACITY);
+        expectedNames.add(FILLING_STYLE);
+        expectedNames.add(SHADING_STYLE);
+        expectedNames.add(SPECULAR_HIGHLIGHT_COLOR);
+        expectedNames.add(EMISSIVE_COLOR);
+        expectedNames.add(SPECULAR_HIGHLIGHT_EXPONENT);
+        expectedNames.add(DIFFUSE_COLOR_TEXTURE_ALPHA_BLENDED);
+        expectedNames.add(ETHEREAL);
+
+        for (int i = 0; i < TEXTURE_PROPERTIES.length; i++) {
+            expectedNames.add(TEXTURE_PROPERTIES[i]);
+        }
+        return expectedNames;
     }
 }

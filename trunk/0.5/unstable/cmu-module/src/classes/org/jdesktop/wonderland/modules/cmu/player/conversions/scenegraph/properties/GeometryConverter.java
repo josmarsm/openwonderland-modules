@@ -20,7 +20,10 @@ package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.proper
 import edu.cmu.cs.dennisc.property.event.PropertyEvent;
 import edu.cmu.cs.dennisc.property.event.PropertyListener;
 import edu.cmu.cs.dennisc.scenegraph.Geometry;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.modules.cmu.player.conversions.pattern.PropertyOwnerConverter;
 
 /**
  * Abstract class to convert a CMU geometry into something that jME can
@@ -28,7 +31,8 @@ import java.util.logging.Logger;
  * @param <GeometryType> Subclass of Geometry which is being converted
  * @author kevin
  */
-public abstract class GeometryConverter<GeometryType extends Geometry> implements PropertyListener {
+public abstract class GeometryConverter<GeometryType extends Geometry> extends PropertyOwnerConverter
+        implements PropertyListener {
 
     private final GeometryType geometry;
 
@@ -37,6 +41,7 @@ public abstract class GeometryConverter<GeometryType extends Geometry> implement
      * @param geometry The geometry to convert
      */
     public GeometryConverter(GeometryType geometry) {
+        super(geometry);
         this.geometry = geometry;
         geometry.addPropertyListener(this);
     }
@@ -54,7 +59,7 @@ public abstract class GeometryConverter<GeometryType extends Geometry> implement
      * @return Equivalent jME geometry
      */
     public abstract com.jme.scene.Geometry getJMEGeometry();
-    
+
     /**
      * Find out whether the wrapped geometry is unchanging (i.e. a polygonal
      * model) or not (i.e. a textual geometry that might change as its
@@ -87,5 +92,15 @@ public abstract class GeometryConverter<GeometryType extends Geometry> implement
         if (isPersistent()) {
             Logger.getLogger(GeometryConverter.class.getName()).severe("Property changed for persistent geometry: " + e);
         }
+    }
+
+    /**
+     * For debugging purposes, get all the property names expected to be
+     * present in this geometry.
+     * @return Collection of expected property names
+     */
+    @Override
+    protected Collection<String> getExpectedPropertyNames() {
+        return new ArrayList<String>();
     }
 }

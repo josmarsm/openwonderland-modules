@@ -26,6 +26,8 @@ import edu.cmu.cs.dennisc.scenegraph.VertexGeometry;
 import edu.cmu.cs.dennisc.texture.TextureCoordinate2f;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Extracts a jME-compatible mesh from a CMU VertexGeometry object.
@@ -101,5 +103,16 @@ public class VertexGeometryConverter<VertexGeometryType extends VertexGeometry>
     @Override
     public boolean isPersistent() {
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Collection<String> getExpectedPropertyNames() {
+        Collection<String> retVal = new ArrayList<String>();
+        retVal.add(INDICES_PROPERTY_NAME);
+        retVal.add(VERTICES_PROPERTY_NAME);
+        return retVal;
     }
 }
