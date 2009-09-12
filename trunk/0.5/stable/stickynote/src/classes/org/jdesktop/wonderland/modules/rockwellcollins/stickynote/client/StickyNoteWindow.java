@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
