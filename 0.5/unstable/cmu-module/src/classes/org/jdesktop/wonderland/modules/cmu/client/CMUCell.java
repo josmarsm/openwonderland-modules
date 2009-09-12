@@ -564,6 +564,7 @@ public class CMUCell extends Cell {
 
                     public void update(Object arg0) {
 
+                        //TODO: If we're reconnecting, postpone detach until new visuals are loaded
                         synchronized (sceneRoot) {
                             sceneRoot.unloadVisualDescendantTextures();
                             sceneRoot.detachAllChildren();

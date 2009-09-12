@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph.proper
 
 import edu.cmu.cs.dennisc.scenegraph.Text;
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.jdesktop.wonderland.modules.cmu.common.jme.CMUText;
 
 /**
@@ -86,5 +88,20 @@ public class TextConverter<TextType extends Text> extends GeometryConverter<Text
     @Override
     public boolean isPersistent() {
         return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Collection<String> getExpectedPropertyNames() {
+        Collection<String> retVal = new ArrayList<String>();
+        retVal.add("text");
+        retVal.add("font");
+        retVal.add("depth");
+        retVal.add("leftToRightAlignment");
+        retVal.add("topToBottomAlignment");
+        retVal.add("frontToBackAlignment");
+        return retVal;
     }
 }

@@ -125,13 +125,12 @@ public class VisualNode extends VisualParent {
         this.updateRenderState();
 
         // Add cull state
-        //TODO: is there a cull-face property to parse?
         CullState cullState = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Cull);
         cullState.setCullFace(Face.FrontAndBack);
 
         cullState.setEnabled(true);
 
-        //TODO: Figure out culling issue
+        //TODO: Figure out culling issue (textures painted on to other nodes when a node is viewed from behind)
         //this.setRenderState(cullState);
         this.updateRenderState();
 
@@ -489,35 +488,6 @@ public class VisualNode extends VisualParent {
         }
     }
 
-    /**
-     * Get the texture associated with the given attributes; uses TextureKey's
-     * in a map to take advantage of the TextureManager's built-in caching.
-     * @param attributes The VisualAttributes to extract a texture from
-     * @return The extracted texture
-     *
-    private static Texture getTexture(VisualAttributes attributes) {
-    synchronized (keyMap) {
-    Texture toReturn = null;
-    if (attributes.hasTexture()) {
-    if (keyMap.containsKey(attributes.getID())) {
-    toReturn = TextureManager.loadTexture(keyMap.get(attributes.getID()).markTextureUsed());
-    }
-    if (toReturn == null) {
-    Image textureImage = attributes.getTexture();
-    toReturn = TextureManager.loadTexture(textureImage, Texture.MinificationFilter.Trilinear, Texture.MagnificationFilter.Bilinear, false);
-    keyMap.put(attributes.getID(), new TextureKeyCounter(toReturn.getTextureKey()));
-    }
-    }
-    return toReturn;
-    }
-    }
-    private static void removeTexture(VisualAttributesIdentifier id) {
-    synchronized (keyMap) {
-    if (keyMap.get(id).markTextureFreed()) {
-    keyMap.remove(id);
-    }
-    }
-    }*/
     /**
      * Class to keep track of the number of references to an object; in our
      * case, we use it to keep track of the number of times a texture is being

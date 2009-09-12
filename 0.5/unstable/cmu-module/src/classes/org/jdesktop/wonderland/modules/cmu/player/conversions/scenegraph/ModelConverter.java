@@ -83,7 +83,7 @@ public class ModelConverter<ModelType extends Model> extends TransformableConver
         visualProperties = new VisualPropertyMessage(getNodeID());
         appearanceProperties = new AppearancePropertyMessage(getNodeID());
         assert visual != null;
-
+        
         ////////////////////////////
         // Initialize visual data //
         ////////////////////////////

@@ -102,7 +102,6 @@ public class ProgramManager {
                 newProgram = new ProgramPlayer(a.getLocalCacheFile());
 
                 // Set initial playback speed
-                //TODO: Make sure this actually gets set regardless of threading issues
                 newProgram.setPlaybackSpeed(initialPlaybackSpeed);
 
                 // Store in map for later access
@@ -154,6 +153,7 @@ public class ProgramManager {
      * Stop playback of the program associated with the given cell and send
      * a message to connected clients noting that this has happened.
      * @param cellID The cell whose program is to be deleted
+     * @param reason The reason for the program's deletion
      */
     public void deleteProgram(CellID cellID, UnloadSceneReason reason) {
         synchronized (programs) {
