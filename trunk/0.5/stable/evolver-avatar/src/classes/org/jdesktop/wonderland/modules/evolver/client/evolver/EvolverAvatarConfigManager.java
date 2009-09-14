@@ -434,7 +434,7 @@ public class EvolverAvatarConfigManager {
         // user name. This will be the base URL for all art in the avatar. Assume
         // this is on the local disk
         String localRepoBasePath = getLocalRepoBasePath() + "/";
-        String localRepoBaseURL = "file://" + localRepoBasePath;
+        String localRepoBaseURL = "file:///" + localRepoBasePath;
         String userName = getUserName();
 
         logger.info("Using local repo base URL of " + localRepoBaseURL);
