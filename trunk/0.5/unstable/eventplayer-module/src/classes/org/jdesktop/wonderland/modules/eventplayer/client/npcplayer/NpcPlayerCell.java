@@ -48,11 +48,8 @@ import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCel
  */
 public class NpcPlayerCell extends Cell {
 
-    private AvatarImiJME renderer;
     @UsesCellComponent
     private MovableNpcPlayerComponent movableNPC;
-    private Vector3f npcPosition;
-    private GoTo myGoTo;
 
     public NpcPlayerCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);        
@@ -70,11 +67,9 @@ public class NpcPlayerCell extends Cell {
                     ServerSessionManager session = getCellCache().getSession().getSessionManager();
                     ret = ClientContextJME.getAvatarRenderManager().createRenderer(session, this);
 
-                    if (ret instanceof AvatarImiJME) {
-                        renderer = (AvatarImiJME) ret;
-                    }
                 } catch (RendererUnavailable ex) {
                     Logger.getLogger(NpcPlayerCell.class.getName()).log(Level.SEVERE, null, ex);
+                    //Create Teapot
                     ret = new AvatarJME(this);
                 }
                 break;

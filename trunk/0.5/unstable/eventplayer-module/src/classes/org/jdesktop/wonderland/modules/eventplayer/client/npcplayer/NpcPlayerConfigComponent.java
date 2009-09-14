@@ -17,14 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.eventplayer.client.npcplayer;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.client.basic.BasicAvatarLoaderFactory;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentClientState;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
@@ -38,6 +35,7 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
  */
 @ComponentLookupClass(AvatarConfigComponent.class)
 public class NpcPlayerConfigComponent extends AvatarConfigComponent {
+    private static final String AVATAR_URL = "default-avatars/maleCartoonAvatar.dae/maleCartoonAvatar.dae.gz.dep";
 
     private static Logger logger =
             Logger.getLogger(NpcPlayerConfigComponent.class.getName());
@@ -55,24 +53,11 @@ public class NpcPlayerConfigComponent extends AvatarConfigComponent {
         // Intercept the setClientState() call and "annotate" the avatar
         // config URI with the server:port. This AvatarConfigComponent does
         // not do this.
-        AvatarConfigComponentClientState acccs =
-                (AvatarConfigComponentClientState)clientState;
-        AvatarConfigInfo avatarConfigInfo = acccs.getAvatarConfigInfo();
-
-        try {
-            if (avatarConfigInfo != null) {
-                String uri = avatarConfigInfo.getAvatarConfigURL();
-                if (uri != null) {
-                    logger.fine("Setting client state: " + uri);
-                    URL url = AssetUtils.getAssetURL(uri, cell);
-                    avatarConfigInfo = new AvatarConfigInfo(url.toExternalForm(),
-                            avatarConfigInfo.getLoaderFactoryClassName());
-                    acccs.setAvatarConfigInfo(avatarConfigInfo);
-                }
-            }
-        } catch (MalformedURLException ex) {
-            logger.log(Level.WARNING, "Unable to form URL", ex);
-        }
+        AvatarConfigComponentClientState acccs = (AvatarConfigComponentClientState)clientState;
+        //AvatarConfigInfo avatarConfigInfo = acccs.getAvatarConfigInfo();
+        //logger.info("Class loader: " + avatarConfigInfo.getLoaderFactoryClassName());
+        AvatarConfigInfo avatarConfigInfo = new AvatarConfigInfo(AVATAR_URL, BasicAvatarLoaderFactory.class.getName());
+        acccs.setAvatarConfigInfo(avatarConfigInfo);
 
         super.setClientState(clientState);
     }
