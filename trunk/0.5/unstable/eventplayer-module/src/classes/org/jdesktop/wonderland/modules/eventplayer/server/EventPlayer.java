@@ -36,6 +36,10 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
+import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerConfigComponentServerState;
+import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellServerState;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
@@ -47,6 +51,7 @@ import org.jdesktop.wonderland.modules.eventplayer.server.wfs.CellImportManager.
 import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.common.cell.state.AvatarCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 
@@ -242,6 +247,21 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
              * Create the cell and pass it the setup information
              */
             String className = setup.getServerClassName();
+            if (className == null) {
+                if (setup instanceof AvatarCellServerState) {
+                    logger.info("Loading an avatar: " + setup);
+                    
+                    //Create a new setup to describe an NPC
+                    setup = new NpcPlayerCellServerState((AvatarCellServerState)setup);
+                    
+                    //Get the classname of the new setup
+                    className = setup.getServerClassName();
+                } else {
+                    /* Log a warning and move onto the next cell */
+                    logger.warning("Unable to load cell MO: " + setup);
+                    continue;
+                }
+            }
             //logger.info("className: " + className);
             CellMO cellMO = CellMOFactory.loadCellMO(className);
             //logger.info("created cellMO: " + cellMO);
@@ -356,6 +376,21 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
          * Create the cell and pass it the setup information
          */
         String className = setup.getServerClassName();
+        if (className == null) {
+            if (setup instanceof AvatarCellServerState) {
+                    logger.info("Loading an avatar: " + setup);
+
+                    //Create a new setup to describe an NPC
+                    setup = new NpcPlayerCellServerState((AvatarCellServerState)setup);
+
+                    //Get the classname of the new setup
+                    className = setup.getServerClassName();
+                } else {
+                    logger.severe("No cellMO class name from " + setup);
+                    return;
+                }
+            
+        }
         //logger.getLogger().info("className: " + className);
         CellMO cellMO = null;
         try {
@@ -445,6 +480,7 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
     }
 
     private void translateServerState(CellServerState cellServerState) {
+        logger.info("translating: " + cellServerState);
         PositionComponentServerState cellPositionState = (PositionComponentServerState) cellServerState.getComponentServerState(PositionComponentServerState.class);
         if (cellPositionState == null) {
             logger.severe("Cell has no position state");
@@ -452,9 +488,11 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
         }
         //Subtract the translation of the recorder from the translation of the cell
         Vector3f cellTranslation = cellPositionState.getTranslation();
+        logger.info("Old translation: " + cellTranslation);
         Vector3f recorderTranslation = originalRecorderPosition.getTranslation();
         Vector3f newTranslation = cellTranslation.subtract(recorderTranslation);
         cellPositionState.setTranslation(newTranslation);
+        logger.info("new translation: " + cellPositionState.getTranslation());
 
 //        Quaternion cellQuat = cellPositionState.getRotation();
 //        Quaternion playerQuat = originalRecorderPosition.getRotation();
@@ -463,7 +501,7 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
     }
 
 
-
+    
     
 
 }
