@@ -42,9 +42,6 @@ import org.jdesktop.wonderland.common.cell.state.AvatarCellServerState;
 @ServerState
 public class NpcPlayerCellServerState extends CellServerState {
     private static final Logger logger = Logger.getLogger(NpcPlayerCellServerState.class.getName());
-    //Use a default URL for the avatar
-    //TODO
-    private static final String AVATAR_CONFIG_URL =  "wla://avatarbaseart/assets/configurations/FemaleD_AZ_00_bin.xml";
 
     /** Default constructor */
     public NpcPlayerCellServerState() {
@@ -60,10 +57,7 @@ public class NpcPlayerCellServerState extends CellServerState {
         AvatarConfigComponentServerState configComponent = (AvatarConfigComponentServerState) setup.getComponentServerState(AvatarConfigComponentServerState.class);
         logger.info("config component: " + configComponent);
         AvatarConfigInfo info = configComponent.getAvatarConfigInfo();
-        String infoClassName = info.getLoaderFactoryClassName();
-        //Assume existing avatarConfigURL is dead
-        info = new AvatarConfigInfo(AVATAR_CONFIG_URL, infoClassName);
-        configComponent.setAvatarConfigInfo(info);
+        logger.info("config info: " + info);
 
         //Get the avatar position info
         PositionComponentServerState positionComponent = (PositionComponentServerState) setup.getComponentServerState(PositionComponentServerState.class);

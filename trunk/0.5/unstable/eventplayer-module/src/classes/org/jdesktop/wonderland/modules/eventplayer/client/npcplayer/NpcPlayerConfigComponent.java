@@ -17,12 +17,15 @@
  */
 package org.jdesktop.wonderland.modules.eventplayer.client.npcplayer;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.avatarbase.client.basic.BasicAvatarLoaderFactory;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
+import org.jdesktop.wonderland.modules.avatarbase.client.loader.spi.AvatarLoaderFactorySPI;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentClientState;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 
@@ -45,20 +48,43 @@ public class NpcPlayerConfigComponent extends AvatarConfigComponent {
         super(cell);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setClientState(CellComponentClientState clientState) {
-        // Intercept the setClientState() call and "annotate" the avatar
-        // config URI with the server:port. This AvatarConfigComponent does
-        // not do this.
-        AvatarConfigComponentClientState acccs = (AvatarConfigComponentClientState)clientState;
-        //AvatarConfigInfo avatarConfigInfo = acccs.getAvatarConfigInfo();
-        //logger.info("Class loader: " + avatarConfigInfo.getLoaderFactoryClassName());
-        AvatarConfigInfo avatarConfigInfo = new AvatarConfigInfo(AVATAR_URL, BasicAvatarLoaderFactory.class.getName());
-        acccs.setAvatarConfigInfo(avatarConfigInfo);
-
+        AvatarConfigComponentClientState acccs = (AvatarConfigComponentClientState) clientState;
+        AvatarConfigInfo avatarConfigInfo = acccs.getAvatarConfigInfo();
+        
+        if (avatarConfigInfo != null) {
+            String uri = avatarConfigInfo.getAvatarConfigURL();
+            if (uri != null) {
+                logger.info("uri " + uri);
+                String clazz = avatarConfigInfo.getLoaderFactoryClassName();
+                try {
+                    Class avatarLoaderFactoryClass = Class.forName(clazz);
+                    AvatarLoaderFactorySPI factory = (AvatarLoaderFactorySPI) avatarLoaderFactoryClass.newInstance();
+                    WlAvatarCharacter avatarCharacter = factory.getAvatarLoader().getAvatarCharacter(cell, uri, avatarConfigInfo);
+                    logger.info("avatarCharacter: " + avatarCharacter);
+                    if (avatarCharacter == null) {
+                        fallback(acccs, avatarConfigInfo);
+                    }
+                } catch (InstantiationException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                    fallback(acccs, avatarConfigInfo);
+                } catch (IllegalAccessException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                    fallback(acccs, avatarConfigInfo);
+                } catch (ClassNotFoundException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                    fallback(acccs, avatarConfigInfo);
+                }
+                
+            }
+        }
         super.setClientState(clientState);
+    }
+
+    private void fallback(AvatarConfigComponentClientState acccs, AvatarConfigInfo avatarConfigInfo) {
+        logger.warning("Using fallback avatar: " + AVATAR_URL);
+        avatarConfigInfo = new AvatarConfigInfo(AVATAR_URL, BasicAvatarLoaderFactory.class.getName());
+        acccs.setAvatarConfigInfo(avatarConfigInfo);
     }
 }
