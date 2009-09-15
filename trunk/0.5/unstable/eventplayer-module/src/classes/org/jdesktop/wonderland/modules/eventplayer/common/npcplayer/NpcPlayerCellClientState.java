@@ -18,12 +18,23 @@
 package org.jdesktop.wonderland.modules.eventplayer.common.npcplayer;
 
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.view.ViewCellClientState;
 
 /**
  * The client state for the NPC player Cell.
  * Just a stub to be represented on the client.
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Bernard Horan
  */
-public class NpcPlayerCellClientState extends CellClientState {
+public class NpcPlayerCellClientState extends ViewCellClientState {
+    private String userName;
+
+    public NpcPlayerCellClientState(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
 }

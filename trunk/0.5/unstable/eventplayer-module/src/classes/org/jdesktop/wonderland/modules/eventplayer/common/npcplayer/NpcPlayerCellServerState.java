@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.common.cell.state.AvatarCellServerState;
 @ServerState
 public class NpcPlayerCellServerState extends CellServerState {
     private static final Logger logger = Logger.getLogger(NpcPlayerCellServerState.class.getName());
+    private String userName;
 
     /** Default constructor */
     public NpcPlayerCellServerState() {
@@ -67,7 +68,7 @@ public class NpcPlayerCellServerState extends CellServerState {
         Map<String, String> metadata = setup.getMetaData();
 
         //Get the name from the setup state
-        String name = setup.getName();
+        String userName = setup.getUserName();
 
         // Attach an avatar config component. This will
         // configure the appearance of the NPC.
@@ -82,11 +83,21 @@ public class NpcPlayerCellServerState extends CellServerState {
         setMetaData(metadata);
 
         //Set my name
-        setName(name);
+        setUserName(userName);
     }
+
+    
 
     @Override
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.eventplayer.server.npcplayer.NpcPlayerCellMO";
+    }
+
+    private void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserName() {
+        return userName;
     }
 }
