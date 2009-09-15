@@ -30,15 +30,19 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
 import org.jdesktop.wonderland.client.jme.AvatarRenderManager.RendererUnavailable;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
+import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellChangeMessage;
+import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellClientState;
 
 /**
  * Cell that represents an NPC in the event player. Adapted from the NPC module.
@@ -46,14 +50,25 @@ import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCel
  * @author david <dmaroto@it.uc3m.es> UC3M - "Project España Virtual"
  * @author Bernard Horan
  */
-public class NpcPlayerCell extends Cell {
+public class NpcPlayerCell extends AvatarCell {
 
     @UsesCellComponent
     private MovableNpcPlayerComponent movableNPC;
 
+    private WonderlandIdentity identity;
+
     public NpcPlayerCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);        
     }
+    
+    @Override
+    public void setClientState(CellClientState cellClientState) {
+        String userName = ((NpcPlayerCellClientState)cellClientState).getUserName();
+        this.identity = new WonderlandIdentity(userName, null, null);
+        super.setClientState(cellClientState);
+    }
+
+
 
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
@@ -91,6 +106,11 @@ public class NpcPlayerCell extends Cell {
                 ((AvatarActionTrigger)rend).trigger(trigger, pressed, animationName);
             }
         }
+    }
+
+    @Override
+    public WonderlandIdentity getIdentity() {
+        return identity;
     }
 
     

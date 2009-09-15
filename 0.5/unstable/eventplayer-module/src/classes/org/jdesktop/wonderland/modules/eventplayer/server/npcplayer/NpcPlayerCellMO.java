@@ -46,24 +46,13 @@ public class NpcPlayerCellMO extends CellMO {
     @UsesCellComponentMO(MovableNpcPlayerComponentMO.class)
     private ManagedReference<MovableNpcPlayerComponentMO> npcMovableComp;
 
-//    @UsesCellComponentMO(NpcAvatarConfigComponentMO.class)
-//    private ManagedReference<NpcAvatarConfigComponentMO> avatarConfigComp;
-    
-    // The relative avatar configuration URL
-    private String relativeConfigURL = null;
+    private String userName = null;
 
     /** Default constructor */
     public NpcPlayerCellMO() {
     }
 
-    /**
-     * Returns the URL of the avatar configuration, relative to the module.
-     * 
-     * @return The relative URL of the avatar configuration file
-     */
-    public String getRelativeConfigURL() {
-        return relativeConfigURL;
-    }
+  
 
     /**
      * {@inheritDoc}
@@ -91,6 +80,7 @@ public class NpcPlayerCellMO extends CellMO {
      */
     @Override
     public void setServerState(CellServerState state) {
+        userName = ((NpcPlayerCellServerState)state).getUserName();
         super.setServerState(state);
     }
 
@@ -104,7 +94,7 @@ public class NpcPlayerCellMO extends CellMO {
 
         // Create a new client state if one does not exist
         if (state == null) {
-            state = new NpcPlayerCellClientState();
+            state = new NpcPlayerCellClientState(userName);
         }
         return super.getClientState(state, clientID, capabilities);
     }

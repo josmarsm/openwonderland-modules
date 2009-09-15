@@ -42,6 +42,7 @@ public class MovableNpcPlayerComponent extends MovableAvatarComponent {
 
     @Override
     protected void serverMoveRequest(MovableMessage msg) {
+        System.err.println("MovableNpcPlayerComponent.serverMoveRequest: " + msg);
         CellTransform transform = msg.getCellTransform();
         applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.REMOTE);
         notifyServerCellMoveListeners(msg, transform, CellMoveSource.REMOTE);
