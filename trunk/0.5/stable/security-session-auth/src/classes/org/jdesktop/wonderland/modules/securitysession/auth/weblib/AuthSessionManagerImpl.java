@@ -61,6 +61,9 @@ public class AuthSessionManagerImpl implements SessionManager {
     private static final AuthSessionManagerSingleton SINGLETON =
             new AuthSessionManagerSingleton();
 
+    /** the HTTP header value to disable redirects */
+    private static final String REDIRECT_HEADER = "Redirect";
+
     public void initialize(Map opts) {
         // ignore
     }
@@ -110,13 +113,24 @@ public class AuthSessionManagerImpl implements SessionManager {
                                         HttpServletResponse response)
         throws IOException
     {
+        boolean redirect = true;
+        String redirStr = request.getHeader(REDIRECT_HEADER);
+        if (redirStr != null) {
+            redirect = Boolean.parseBoolean(redirStr);
+        }
+
         // if security is mandatory, then redirect unauthenticated users to the
         // login page
-        if (mandatory) {
+        if (mandatory && redirect) {
             String loginPage = LOGIN_PAGE + "?forwardPage=" +
                     URLEncoder.encode(request.getRequestURI(), "UTF-8");
             response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
             response.sendRedirect(loginPage);
+        } else if (mandatory) {
+            // if authentication is required and we are not allowed to
+            // redirect to the login page, just send an error
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                               "Not authorized");
         }
 
         // no mapping for unauthenticated user
