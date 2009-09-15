@@ -50,6 +50,7 @@ public class SimpleShapeCellFactory implements CellFactorySPI {
         SimpleShapeCellServerState cellServerState =
                 new SimpleShapeCellServerState();
         cellServerState.setShape(Shape.CONE);
+        cellServerState.setName("SimpleShape");
 
         return (T) cellServerState;
     }
