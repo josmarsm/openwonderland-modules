@@ -45,6 +45,7 @@ public class SwingExampleCellFactory implements CellFactorySPI {
     public <T extends CellServerState> T getDefaultCellServerState(
             Properties props) {
         SwingExampleCellServerState state = new SwingExampleCellServerState();
+        state.setName("SwingExample");
 
         // Minor Optimization
         SwingCellFactoryUtils.skipSystemInitialPlacement(state);
