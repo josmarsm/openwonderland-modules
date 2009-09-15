@@ -85,7 +85,7 @@ public class SwingExampleCellMO extends App2DCellMO {
     @Override
     public CellServerState getServerState(CellServerState stateToFill) {
         if (stateToFill == null) {
-            return null;
+            stateToFill = new SwingExampleCellServerState();
         }
 
         super.getServerState(stateToFill);
