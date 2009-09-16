@@ -361,7 +361,7 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
     }
 
     public void allCellsRetrieved() {
-       logger.info("All Cells Retrieved");
+       logger.fine("All Cells Retrieved");
        playerCellMORef.get().allCellsRetrieved();
     }
 

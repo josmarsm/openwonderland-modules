@@ -159,7 +159,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
 
     void addReplayedChild(CellMO cellMO) throws MultipleParentException {
         CellID childCellID = cellMO.getCellID();
-        logger.info("adding replayed child: " + cellMO);
+        logger.fine("adding replayed child: " + cellMO);
         loadedCellsRef.getForUpdate().add(childCellID);
         addChild(cellMO);
         EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.addReplayedChild(getCellID());
@@ -267,7 +267,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     }
 
     private void loadRecording() {
-        eventPlayerLogger.info("Load recording");
+        eventPlayerLogger.fine("Load recording");
         playerRef.get().loadRecording(serverState.getSelectedTape().getTapeName());
     }
 
@@ -341,7 +341,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         }
 
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            logger.info("message received: " + message + ", ID: " + clientID);
+            logger.fine("message received: " + message + ", ID: " + clientID);
             EventPlayerCellMO cellMO = (EventPlayerCellMO) getCell();
             EventPlayerCellChangeMessage arcm = (EventPlayerCellChangeMessage) message;
             switch (arcm.getAction()) {
