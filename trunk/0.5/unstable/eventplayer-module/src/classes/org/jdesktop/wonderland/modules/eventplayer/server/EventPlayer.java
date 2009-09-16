@@ -293,19 +293,19 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
              */
             try {
                 if (parentID == null) {
-                    logger.info("parentID == null");
+                    logger.fine("parentID == null");
                     
                     if (playerCellMORef != null) {
                         EventPlayerCellMO parent = playerCellMORef.get();
-                        logger.info("parent: " + parent);
+                        logger.fine("parent: " + parent);
                         parent.addReplayedChild(cellMO);
-                        logger.info("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
+                        logger.fine("[EventPlayer] Parent Cell ID=" + cellMO.getParent().getCellID().toString());
                         Collection<ManagedReference<CellMO>> refs = cellMO.getParent().getAllChildrenRefs();
                         Iterator<ManagedReference<CellMO>> it = refs.iterator();
                         while (it.hasNext() == true) {
-                            logger.info("[EventPlayer] Child Cell=" + it.next().get().getCellID().toString());
+                            logger.fine("[EventPlayer] Child Cell=" + it.next().get().getCellID().toString());
                         }
-                        logger.info("[EventPlayer] Cell Live: " + cellMO.isLive());
+                        logger.fine("[EventPlayer] Cell Live: " + cellMO.isLive());
                     } else {
                         logger.severe("There shouldn't be a null ref to the player cell)");
                         
