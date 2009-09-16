@@ -25,8 +25,8 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 /*********************************************
- * UI: The marbleous control window
- * @author deronj@dev.java.net
+ * UI: The movie recorder control panel
+ * @author Bernard Horan
  */
 
 public class ControlPanelUI {
@@ -61,7 +61,9 @@ public class ControlPanelUI {
         mainHUD.addComponent(hudComponent);
     }
 
-    /** Control the visibility of the window. */
+    /** Control the visibility of the window.
+     * @param visible if true, show the hud, otherwise hide it
+     */
     public void setVisible (boolean visible) {
         hudComponent.setVisible(visible);
     }

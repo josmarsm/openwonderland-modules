@@ -1,12 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * MovieControlPanel.java
+/**
+ * Project Wonderland
  *
- * Created on Sep 2, 2009, 2:11:58 PM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.movierecorder.client;
@@ -19,34 +26,29 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.modules.movierecorder.client.utils.MovieCreator;
 
 /**
- *
+ * Control panel for movie recorder. Provides buttons to start & stop recording, and
+ * function to set the location of recorded movie.
  * @author Bernard Horan
  */
 public class MovieControlPanel extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger(MovieControlPanel.class.getName());
-    private String audioFilename;
     private String movieFilename;
     private MovieRecorderCell recorderCell;
     private SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
-    /** Creates new form MovieControlPanel */
+    /** Creates new form MovieControlPanel
+     * @param recorderCell the movie recorder cell controlled by this panel
+     */
     public MovieControlPanel(MovieRecorderCell recorderCell) {
         this.recorderCell = recorderCell;
-        audioFilename = getImageDirectory() + File.separator + "SipRecording.au";
         initComponents();
         movieDirectoryField.setText(getDefaultMovieDirectory());
-        fpsSpinner.setModel(new SpinnerNumberModel(10, 1, 30, 1));
-        scaleSpinner.setModel(new SpinnerNumberModel(0.5, 0.1, 1, 0.1));
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(scaleSpinner,"0%");
-        scaleSpinner.setEditor(editor);
         previewPanel.setLayout(new GridBagLayout());
         previewPanel.add(recorderCell.getCaptureComponent());
     }
@@ -64,14 +66,9 @@ public class MovieControlPanel extends javax.swing.JPanel {
         recorderStatusLabel = new javax.swing.JLabel();
         recordButton = new javax.swing.JButton();
         stopButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        fpsSpinner = new javax.swing.JSpinner();
-        jLabel2 = new javax.swing.JLabel();
-        scaleSpinner = new javax.swing.JSpinner();
         movieDirectoryField = new javax.swing.JTextField();
         outputDirectoryLabel1 = new javax.swing.JLabel();
         moviePathBrowseButton = new javax.swing.JButton();
-        recordAudioCheckBox = new javax.swing.JCheckBox();
         previewPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
@@ -97,12 +94,6 @@ public class MovieControlPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setText("Framerate:");
-
-        fpsSpinner.setToolTipText("Frame Rate");
-
-        jLabel2.setText("Scale:");
-
         movieDirectoryField.setEditable(false);
         movieDirectoryField.setToolTipText("Directory for saving the movie");
 
@@ -116,73 +107,41 @@ public class MovieControlPanel extends javax.swing.JPanel {
             }
         });
 
-        recordAudioCheckBox.setSelected(true);
-        recordAudioCheckBox.setText("Record Audio");
-        recordAudioCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
         javax.swing.GroupLayout controlPanelLayout = new javax.swing.GroupLayout(controlPanel);
         controlPanel.setLayout(controlPanelLayout);
         controlPanelLayout.setHorizontalGroup(
             controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 507, Short.MAX_VALUE)
-            .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(controlPanelLayout.createSequentialGroup()
-                    .addGap(12, 12, 12)
-                    .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(controlPanelLayout.createSequentialGroup()
-                            .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(outputDirectoryLabel1)
-                                .addGroup(controlPanelLayout.createSequentialGroup()
-                                    .addComponent(jLabel1)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(fpsSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(controlPanelLayout.createSequentialGroup()
-                                    .addComponent(jLabel2)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(scaleSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(21, 21, 21)
-                                    .addComponent(recordAudioCheckBox))
-                                .addGroup(controlPanelLayout.createSequentialGroup()
-                                    .addComponent(movieDirectoryField, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(moviePathBrowseButton))))
-                        .addGroup(controlPanelLayout.createSequentialGroup()
-                            .addComponent(recordButton)
-                            .addGap(16, 16, 16)
-                            .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(recorderStatusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(25, Short.MAX_VALUE)))
+            .addGroup(controlPanelLayout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(controlPanelLayout.createSequentialGroup()
+                        .addComponent(recordButton)
+                        .addGap(18, 18, 18)
+                        .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(recorderStatusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(controlPanelLayout.createSequentialGroup()
+                        .addComponent(outputDirectoryLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(movieDirectoryField, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(moviePathBrowseButton)))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
         controlPanelLayout.setVerticalGroup(
             controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 130, Short.MAX_VALUE)
-            .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(controlPanelLayout.createSequentialGroup()
-                    .addGap(10, 10, 10)
-                    .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(controlPanelLayout.createSequentialGroup()
-                            .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 28, Short.MAX_VALUE)
-                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(fpsSpinner)
-                                    .addComponent(jLabel1))
-                                .addComponent(scaleSpinner)
-                                .addComponent(recordAudioCheckBox))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(outputDirectoryLabel1)
-                                .addComponent(movieDirectoryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(moviePathBrowseButton))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(recordButton)
-                                .addComponent(stopButton))
-                            .addGap(11, 11, 11))
-                        .addComponent(recorderStatusLabel, javax.swing.GroupLayout.Alignment.TRAILING))
-                    .addGap(10, 10, 10)))
+            .addGroup(controlPanelLayout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(outputDirectoryLabel1)
+                    .addComponent(movieDirectoryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(moviePathBrowseButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(recordButton)
+                    .addComponent(stopButton)
+                    .addComponent(recorderStatusLabel))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         add(controlPanel, java.awt.BorderLayout.PAGE_END);
@@ -191,11 +150,11 @@ public class MovieControlPanel extends javax.swing.JPanel {
         previewPanel.setLayout(previewPanelLayout);
         previewPanelLayout.setHorizontalGroup(
             previewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 507, Short.MAX_VALUE)
+            .addGap(0, 434, Short.MAX_VALUE)
         );
         previewPanelLayout.setVerticalGroup(
             previewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 338, Short.MAX_VALUE)
+            .addGap(0, 373, Short.MAX_VALUE)
         );
 
         add(previewPanel, java.awt.BorderLayout.CENTER);
@@ -221,49 +180,20 @@ public class MovieControlPanel extends javax.swing.JPanel {
         simpleDateFormat.applyPattern("yyyyMMdd_HH.mm");
         movieFilename = "Wonderland_" + simpleDateFormat.format(calendar.getTime()) + ".mov";
 
-
-
-        if (recordsAudio()) {
-            try {
-                System.err.println("Recording audio to: " + audioFilename);
-                sc.recordReceivedAudio(audioFilename);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        setFrameRate();
-        recorderCell.startRecording(getScale());
-
+        recorderCell.startRecording();
     }//GEN-LAST:event_recordButtonActionPerformed
-
-    /**
-     * Did the user select the checkbox to record audio
-     * @return a boolean indicating if the user wishes to record audio
-     */
-    public boolean recordsAudio() {
-        return recordAudioCheckBox.getModel().isSelected();
-    }
 
     private void disableButtons() {
         enableButtons(false);
     }
 
-
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
         stopButton.setEnabled(false);
-        if (recordsAudio()) {
-            System.err.println("STOP Recording audio to: " + audioFilename);
-            sc.stopRecordingReceivedAudio();
-        }
         recorderCell.stopRecording();
-        restoreOldFrameRate();
         recorderStatusLabel.setText("Offline");
         recorderStatusLabel.setForeground(Color.BLACK);
         createMovie();
-        if (recordsAudio()) {
-            //deleteAudioFile();
-        }
-        //deleteImageDirectory();
+        deleteImageDirectory();
         enableButtons();
 }//GEN-LAST:event_stopButtonActionPerformed
 
@@ -278,18 +208,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
 
     private void enableButtons(boolean enable) {
         recordButton.setEnabled(enable);
-        fpsSpinner.setEnabled(enable);
         moviePathBrowseButton.setEnabled(enable);
-        scaleSpinner.setEnabled(enable);
-        recordAudioCheckBox.setEnabled(enable);
-    }
-
-    /**
-     * The full path of the location o fthe audio file
-     * @return A string locating the path of the audio file
-     */
-    public String getAudioFilename() {
-        return audioFilename;
     }
 
     /**
@@ -305,13 +224,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
      * @return A File identifying a directory/folder that contains the JPEGs of the recording
      */
     public File getImageDirectory() {
-        return recorderCell.getImageDirectory();
-    }
-
-
-    private float getScale() {
-        SpinnerNumberModel scaleModel = (SpinnerNumberModel) scaleSpinner.getModel();
-        return scaleModel.getNumber().floatValue();
+        return MovieRecorderCell.getImageDirectory();
     }
 
     /**
@@ -320,10 +233,6 @@ public class MovieControlPanel extends javax.swing.JPanel {
      */
     public String getMovieDirectory() {
         return movieDirectoryField.getText();
-    }
-
-    private void deleteAudioFile() {
-        new File(getAudioFilename()).delete();
     }
 
     private void deleteImageDirectory() {
@@ -343,15 +252,6 @@ public class MovieControlPanel extends javax.swing.JPanel {
      */
     public float getCapturedFrameRate() {
         return recorderCell.getCapturedFrameRate();
-    }
-
-    private void setFrameRate() {
-        SpinnerNumberModel fpsModel = (SpinnerNumberModel) fpsSpinner.getModel();
-        int fps = fpsModel.getNumber().intValue();
-        logger.info("Frame rate: " + fps);
-        long cycleTime = (long)(1000/fps);
-//        oldFrameRate = WonderlandUniverseFactory.getUniverse().getViewer().getView().getMinimumFrameCycleTime();
-//        WonderlandUniverseFactory.getUniverse().getViewer().getView().setMinimumFrameCycleTime(cycleTime);
     }
 
     private String getDefaultMovieDirectory() {
@@ -379,10 +279,6 @@ public class MovieControlPanel extends javax.swing.JPanel {
         return home;
     }
 
-    private void restoreOldFrameRate() {
-        //WonderlandUniverseFactory.getUniverse().getViewer().getView().setMinimumFrameCycleTime(oldFrameRate);
-    }
-
     private void moviePathBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moviePathBrowseButtonActionPerformed
         JFileChooser outputPathFileChooser = new JFileChooser();
 
@@ -400,17 +296,12 @@ public class MovieControlPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel controlPanel;
-    private javax.swing.JSpinner fpsSpinner;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField movieDirectoryField;
     private javax.swing.JButton moviePathBrowseButton;
     private javax.swing.JLabel outputDirectoryLabel1;
     private javax.swing.JPanel previewPanel;
-    private javax.swing.JCheckBox recordAudioCheckBox;
     private javax.swing.JButton recordButton;
     private javax.swing.JLabel recorderStatusLabel;
-    private javax.swing.JSpinner scaleSpinner;
     private javax.swing.JButton stopButton;
     // End of variables declaration//GEN-END:variables
 
