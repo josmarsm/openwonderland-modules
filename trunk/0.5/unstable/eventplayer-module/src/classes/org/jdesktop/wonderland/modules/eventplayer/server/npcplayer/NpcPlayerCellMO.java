@@ -20,17 +20,12 @@ package org.jdesktop.wonderland.modules.eventplayer.server.npcplayer;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellClientState;
 import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellServerState;
-import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * The server-side Cell MO for the NPC Player Cell.<br>

@@ -17,16 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.eventplayer.client.npcplayer;
 
-import com.jme.math.Vector3f;
-import imi.character.CharacterMotionListener;
-import imi.character.behavior.CharacterBehaviorManager;
-import imi.character.behavior.GoTo;
-import imi.character.statemachine.GameContext;
-import imi.scene.PMatrix;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
@@ -38,10 +31,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
-import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellClientState;
 
 /**
