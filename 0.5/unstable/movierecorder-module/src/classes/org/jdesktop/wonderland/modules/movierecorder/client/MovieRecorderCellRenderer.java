@@ -19,13 +19,11 @@
 package org.jdesktop.wonderland.modules.movierecorder.client;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
-import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Quad;
 import com.jme.scene.state.BlendState;
@@ -34,24 +32,17 @@ import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.TextureState;
-import com.jme.renderer.Camera;
-import com.sun.scenario.animation.Animation;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.RenderComponent;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 
 
 import java.nio.ByteBuffer;
@@ -59,10 +50,7 @@ import org.jdesktop.mtgame.CameraComponent;
 import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.mtgame.TextureRenderBuffer;
 import org.jdesktop.mtgame.WorldManager;
-import org.jdesktop.mtgame.BufferUpdater;
 import org.jdesktop.mtgame.RenderUpdater;
-import org.jdesktop.mtgame.util.FrameBufferCapture;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.event.WindowAdapter;
@@ -77,10 +65,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 
 /**
- *
- * @author bh37721
+ * Renderer for the movie recorder cell. Includes the code to create the camera.
+ * @author Bernard Horan
  */
-public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUpdater, RenderUpdater {
+public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUpdater {
 
     private static final Logger rendererLogger = Logger.getLogger(MovieRecorderCellRenderer.class.getName());
 
@@ -98,12 +86,9 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
      **/
     private int frameCounter;
 
-    //private Vector3f cPos = new Vector3f(0.0f, 2.0f, -1.0f);
-    //private Vector3f cUp = new Vector3f(0.0f, 1.0f, 0.0f);
-    //private Vector3f cLook = new Vector3f(0.0f, 2.0f, -2.0f);
-    TextureRenderBuffer textureBuffer = null;
-    CaptureComponent captureComponent = null;
-    BufferedImage captureImage = null;
+    private TextureRenderBuffer textureBuffer = null;
+    private CaptureComponent captureComponent = null;
+    private BufferedImage captureImage = null;
 
     public MovieRecorderCellRenderer(Cell cell) {
         super(cell);
@@ -117,7 +102,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
         root.updateModelBound();
         //Set the name of the buttonRoot node
         root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
-
         return root;
     }
 
@@ -158,7 +142,8 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
     }
 
     private Entity createLCDPanel(Node device) {
-        float aspect = 640 / 480;
+        //float aspect = 640 / 480;
+        float aspect = 1.0f;
         WorldManager wm = ClientContextJME.getWorldManager();
         //Node for the quad
         Node quadNode = new Node();
@@ -186,14 +171,15 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
         cameraSG.setLocalRotation(quat);
         //Create a camera component
         //NOT SURE ABOUT THE FRONT AND BACK CLIPPING
+        float frontClipping = 500f;
         CameraComponent cc = wm.getRenderManager().createCameraComponent(cameraSG, cn,
-                IMAGE_WIDTH, IMAGE_HEIGHT, 90.0f, aspect, 0.1f, 1000.0f, false);
+                IMAGE_WIDTH, IMAGE_HEIGHT, 90.0f, aspect, 0.1f, frontClipping, false);
         //Set the camera for the render buffer
         textureBuffer.setCameraComponent(cc);
         //Add the render buffer to the render manager
         wm.getRenderManager().addRenderBuffer(textureBuffer);
         textureBuffer.setRenderUpdater(this);
-        textureBuffer.setBufferUpdater(this);
+        //textureBuffer.setBufferUpdater(this);
 
         //Add the camera component to the quad entity
         quadEntity.addComponent(CameraComponent.class, cc);
@@ -206,16 +192,12 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
         quadGeo.setRenderState(ts);
 
         RenderComponent quadRC = wm.getRenderManager().createRenderComponent(quadNode);
-        //quadRC.setOrtho(false);
-        //quadRC.setLightingEnabled(false);
         quadEntity.addComponent(RenderComponent.class, quadRC);
 
         device.attachChild(quadNode);
-        device.attachChild(cameraSG);
-         
+        device.attachChild(cameraSG);         
 
-        createPreviewFrame(IMAGE_WIDTH, IMAGE_HEIGHT);
-        
+        createCaptureComponent(IMAGE_WIDTH, IMAGE_HEIGHT);
 
         return quadEntity;
     }
@@ -234,46 +216,10 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
         frameCounter = 0;
     }
 
-        /**
-     * Create all of the Swing windows - and the 3D window
-     */
-    private void createPreviewFrame(int width, int height) {
-        SwingFrame frame = new SwingFrame(width, height);
-        // center the frame
-        frame.setLocationRelativeTo(null);
-        // show frame
-        //frame.setVisible(true);
+    private void createCaptureComponent(int width, int height) {
+        captureComponent = new CaptureComponent();
+        captureComponent.setPreferredSize(new Dimension(width, height));
     }
-
-    class SwingFrame extends JFrame {
-
-        JPanel contentPane;
-        JPanel capturePanel = new JPanel();
-
-        // Construct the frame
-        public SwingFrame(int width, int height) {
-            addWindowListener(new WindowAdapter() {
-
-                public void windowClosing(WindowEvent e) {
-                    dispose();
-                    // TODO: Real cleanup
-                    //System.exit(0);
-                }
-            });
-
-            contentPane = (JPanel) this.getContentPane();
-            contentPane.setLayout(new BorderLayout());
-
-            captureComponent = new CaptureComponent();
-            captureComponent.setPreferredSize(new Dimension(width, height));
-            capturePanel.setLayout(new GridBagLayout());
-            //capturePanel.add(captureComponent);
-            //contentPane.add(capturePanel, BorderLayout.CENTER);
-
-            pack();
-        }
-    }
-
 
     public class CaptureComponent extends JComponent {
         public CaptureComponent() {
@@ -290,13 +236,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
         }
     }
 
-    public void init(RenderBuffer rb) {
-        //Camera camera = rb.getCameraComponent().getCamera();
-        //camera.setLocation(cPos);
-        //camera.lookAt(cLook, cUp);
-    }
-
-    BufferedImage createBufferedImage(ByteBuffer bb) {
+    private BufferedImage createBufferedImage(ByteBuffer bb) {
         int width = textureBuffer.getWidth();
         int height = textureBuffer.getHeight();
 
@@ -317,16 +257,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
         return (bi);
     }
 
-    // Make this buttonEntity pickable by adding a collision component to it
-    protected void makeEntityPickable(Entity entity, Node node) {
-        JMECollisionSystem collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().
-                loadCollisionSystem(JMECollisionSystem.class);
-
-        CollisionComponent cc = collisionSystem.createCollisionComponent(node);
-        entity.addComponent(CollisionComponent.class, cc);
-    }
-
-    // This is used in the texture Case
     public void update(Object arg0) {
         //System.err.println("Update object: " + arg0);
         captureImage = createBufferedImage(textureBuffer.getTextureData());
@@ -347,13 +277,13 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements BufferUp
 
                 //jpegEncoder.setJPEGEncodeParam(jpegParam);
                 //jpegEncoder.encode(outputImage);
-                File outputFile = new File(((MovieRecorderCell)cell).getImageDirectory()  + File.separator + imageCounter + ".jpg");
+                File outputFile = new File(MovieRecorderCell.getImageDirectory()  + File.separator + imageCounter + ".jpg");
                 ImageIO.write(outputImage, "jpg", outputFile);
                 //outputFile.close();
             } catch ( IOException e ) {
                 System.err.println("I/O exception in postSwap: " + e);
                 e.printStackTrace();
-                ((MovieRecorderCell) cell).stop();
+                ((MovieRecorderCell) cell).stopRecording();
             }
 
             imageCounter++;

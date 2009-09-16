@@ -40,6 +40,7 @@ import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -58,7 +59,7 @@ public class MovieRecorderCell extends Cell {
     /**
      *Directory to hold images when recording, deleted when finished
      **/
-    private static final File imageDirectory = ClientContext.getUserDirectory("WonderlandRecording");
+    private static final File IMAGE_DIRECTORY = ClientContext.getUserDirectory("MovieRecording");
 
     private ContextMenuFactorySPI menuFactory = null;
 
@@ -77,10 +78,6 @@ public class MovieRecorderCell extends Cell {
      *Time when recording started
      **/
     private long startTime;
-    /**
-     *scale of the image  to be recorded
-     **/
-    private float scale = 1.0f;
 
     /** the message handler, or null if no message handler is registered */
     private MovieRecorderCellMessageReceiver receiver = null;
@@ -97,6 +94,7 @@ public class MovieRecorderCell extends Cell {
         if (increasing && status == CellStatus.RENDERING) {
             if (ui == null) {
                 initUI();
+                ui.setVisible(true);
             }
             if (menuFactory == null) {
                 final ContextMenuActionListener l = new ContextMenuActionListener() {
@@ -175,39 +173,29 @@ public class MovieRecorderCell extends Cell {
      * @return A string identifying the name of the path in which the images are written
      */
     static File getImageDirectory() {
-        //System.err.println("IMAGE DIRECTORY: " + imageDirectory);
-        return imageDirectory;
+        return IMAGE_DIRECTORY;
     }
 
     public JComponent getCaptureComponent() {
         return renderer.getCaptureComponent();
     }
 
-    void startRecording(float scale) {
+    void startRecording() {
+        logger.info("start recording");
+        userName = getCurrentUserName();
         ((MovieRecorderCellRenderer)renderer).resetImageCounter();
         ((MovieRecorderCellRenderer)renderer).resetFrameCounter();
         resetStartTime();
-        this.scale = scale;
-        isRecording = true;
-        logger.info("Start Recording, scale: " + scale);
-    }
-
-    
+        setRecording(true);
+        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), isRecording, userName);
+        getChannel().send(msg);
+    }   
 
     /**
      * Reset the time at which the canvas began recordinig JPEGs
      */
     private void resetStartTime() {
         startTime = System.currentTimeMillis();
-    }
-
-    /**
-     * Stop capturing JPEGs
-     */
-    void stopRecording() {
-        isRecording = false;
-        calculateActualFrameRate();
-        logger.info("Stop recording");
     }
 
     /**
@@ -222,22 +210,13 @@ public class MovieRecorderCell extends Cell {
 
         capturedFrameRate = renderer.getFrameCounter()/elapsedTimeSec;
         logger.info("capturedFrameRate: " + capturedFrameRate);
-
     }
 
     private ChannelComponent getChannel() {
         return getComponent(ChannelComponent.class);
     }
 
-    void startRecording() {
-        logger.info("start recording");
-        userName = getCurrentUserName();
-        setRecording(true);
-        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), isRecording, userName);
-        getChannel().send(msg);        
-    }
-
-    void stop() {
+    void stopRecording() {
         if (!isRecording) {
             //logger.warning("no reason to stop, not recording");
             return;
@@ -252,6 +231,8 @@ public class MovieRecorderCell extends Cell {
             }
             setRecording(false);
             userName = null;
+            calculateActualFrameRate();
+            logger.info("Stop recording");
         } else {
             logger.warning("Attempt to stop by non-initiating user: " + userName);
             SwingUtilities.invokeLater(new Runnable() {
@@ -279,7 +260,7 @@ public class MovieRecorderCell extends Cell {
     }
 
     private JFrame getParentFrame() {
-        return ClientContextJME.getClientMain().getFrame().getFrame();
+        return JmeClientMain.getFrame().getFrame();
     }
 
     @Override
@@ -311,7 +292,6 @@ public class MovieRecorderCell extends Cell {
                         break;
                     default:
                         logger.severe("Unknown action type: " + sccm.getAction());
-
                 }
             }
         }

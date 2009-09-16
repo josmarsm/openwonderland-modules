@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.modules.movierecorder.common.MovieRecorderCellSer
  * The cell factory for the movie recorder.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Bernard Horan
  */
 @CellFactory
 public class MovieRecorderCellFactory implements CellFactorySPI {
@@ -62,7 +63,7 @@ public class MovieRecorderCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        URL url = MovieRecorderCellFactory.class.getResource("resources/audiorecorder_preview.png");
+        URL url = MovieRecorderCellFactory.class.getResource("resources/movierecorder_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
         //return null;
     }

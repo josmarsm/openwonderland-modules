@@ -18,17 +18,10 @@
 
 package org.jdesktop.wonderland.modules.movierecorder.common;
 
-import java.io.CharArrayReader;
-import java.io.CharArrayWriter;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;

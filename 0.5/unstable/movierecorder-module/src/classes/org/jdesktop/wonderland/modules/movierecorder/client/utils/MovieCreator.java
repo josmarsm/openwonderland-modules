@@ -1,9 +1,7 @@
 /**
- * Project Looking Glass
+ * Project Wonderland
  *
- * $RCSfile: MovieCreator.java,v $
- *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -13,11 +11,11 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision: 1.3 $
- * $Date: 2008/03/14 18:14:27 $
- * $State: Exp $
- * $Id: MovieCreator.java,v 1.3 2008/03/14 18:14:27 bernard_horan Exp $
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
+
 package org.jdesktop.wonderland.modules.movierecorder.client.utils;
 
 import java.net.URL;
@@ -29,8 +27,6 @@ import javax.media.protocol.ContentDescriptor;
 import javax.media.protocol.DataSource;
 import javax.media.protocol.FileTypeDescriptor;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import javax.media.ControllerEvent;
 import javax.media.ControllerListener;
 import javax.media.DataSink;
@@ -95,11 +91,11 @@ public class MovieCreator {
             ex.printStackTrace();
         }
         try {
-            if (controlPanel.recordsAudio()) {
-                record(source, new File(controlPanel.getAudioFilename()), new File(movieFilePath));
-            } else {
+            //if (controlPanel.recordsAudio()) {
+                //record(source, new File(controlPanel.getAudioFilename()), new File(movieFilePath));
+            //} else {
                 record(source, new File(movieFilePath));
-            }
+            //}
         } catch (EncodeException ex) {
             ex.printStackTrace();
         }
