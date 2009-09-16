@@ -24,6 +24,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellClientState;
 import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellServerState;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.MovableAvatarComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -38,8 +39,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  */
 public class NpcPlayerCellMO extends CellMO {
 
-    @UsesCellComponentMO(MovableNpcPlayerComponentMO.class)
-    private ManagedReference<MovableNpcPlayerComponentMO> npcMovableComp;
+    @UsesCellComponentMO(MovableAvatarComponentMO.class)
+    private ManagedReference<MovableAvatarComponentMO> npcMovableComp;
 
     private String userName = null;
 

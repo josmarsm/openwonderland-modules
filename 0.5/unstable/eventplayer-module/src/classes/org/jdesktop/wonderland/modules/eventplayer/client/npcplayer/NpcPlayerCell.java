@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell.AvatarActionTrigger;
@@ -43,7 +44,7 @@ import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCel
 public class NpcPlayerCell extends AvatarCell {
 
     @UsesCellComponent
-    private MovableNpcPlayerComponent movableNPC;
+    private MovableAvatarComponent movableNPC;
 
     private WonderlandIdentity identity;
 
@@ -58,50 +59,9 @@ public class NpcPlayerCell extends AvatarCell {
         super.setClientState(cellClientState);
     }
 
-
-
-    @Override
-    protected CellRenderer createCellRenderer(RendererType rendererType) {
-        CellRenderer ret = null;
-        switch (rendererType) {
-            case RENDERER_2D:
-                // No 2D Renderer yet
-                break;
-            case RENDERER_JME:
-                try {
-                    ServerSessionManager session = getCellCache().getSession().getSessionManager();
-                    ret = ClientContextJME.getAvatarRenderManager().createRenderer(session, this);
-
-                } catch (RendererUnavailable ex) {
-                    Logger.getLogger(NpcPlayerCell.class.getName()).log(Level.SEVERE, null, ex);
-                    //Create Teapot
-                    ret = new AvatarJME(this);
-                }
-                break;
-        }
-
-        return ret;
-    }
-
-    /**
-     * TODO this is a temporary interface for handling avatar actions, need
-     * to uplevel
-     * @param trigger
-     * @param pressed
-     */
-    public void triggerAction(int trigger, boolean pressed, String animationName) {
-        if (ClientContext.getRendererType()==RendererType.RENDERER_JME) {
-            CellRenderer rend = getCellRenderer(RendererType.RENDERER_JME);
-            if (rend instanceof AvatarActionTrigger) {
-                ((AvatarActionTrigger)rend).trigger(trigger, pressed, animationName);
-            }
-        }
-    }
-
     @Override
     public WonderlandIdentity getIdentity() {
         return identity;
     }
-
     
 }
