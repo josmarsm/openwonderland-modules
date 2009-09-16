@@ -288,7 +288,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     }
 
     void allCellsRetrieved() {
-        logger.info("All cells retrieved");
+        logger.fine("All cells retrieved");
         EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.allCellsRetrieved(getCellID());
         getChannel().sendAll(null, epccm);
     }
