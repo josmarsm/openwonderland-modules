@@ -92,7 +92,7 @@ public class ColladaAvatarLoader implements AvatarLoaderSPI {
         try {
             URL url = new URL(baseURL + avatarURL);
             DeployedModel dm = LoaderManager.getLoaderManager().getLoaderFromDeployment(url);
-            spatial = dm.getModelLoader().loadDeployedModel(dm);
+            spatial = dm.getModelLoader().loadDeployedModel(dm, null);
 //            spatial.setLocalTranslation(0.0f, 1.0f, 0.0f);
         } catch (MalformedURLException excp) {
             logger.log(Level.WARNING, "Unable to for .dep URL", excp);
