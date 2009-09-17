@@ -24,7 +24,7 @@ import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Sphere;
-import com.jme.scene.state.RenderState;
+import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.TextureState;
 import com.jme.util.TextureManager;
 import java.net.MalformedURLException;
@@ -33,7 +33,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.modules.shape.client.ShapeCell;
 
@@ -46,15 +49,19 @@ public class ShapeCellRenderer extends BasicRenderer {
     }
     
     public void updateShape() {
-        String name = cell.getCellID().toString();
-        String shapeType = ((ShapeCell) cell).getShapeType();
-        
-        node.detachAllChildren();
-        node.attachChild(this.getShapeMesh(name, shapeType));
-        node.setModelBound(new BoundingBox());
-        node.updateModelBound();
+        final String name = cell.getCellID().toString();
+        final String shapeType = ((ShapeCell) cell).getShapeType();
 
-        ClientContextJME.getWorldManager().addToUpdateList(node);
+        SceneWorker.addWorker(new WorkCommit() {
+            public void commit() {
+                node.detachAllChildren();
+                node.attachChild(getShapeMesh(name, shapeType));
+                node.setModelBound(new BoundingBox());
+                node.updateModelBound();
+
+                ClientContextJME.getWorldManager().addToUpdateList(node);
+            }
+        });
     }
     
     private TriMesh getShapeMesh(String name, String shapeType) {        
@@ -89,7 +96,8 @@ public class ShapeCellRenderer extends BasicRenderer {
 
         String textureURI = ((ShapeCell)cell).getTextureURI();
         if (textureURI != null) {
-            TextureState ts = (TextureState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(RenderState.RS_TEXTURE);
+            RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+            TextureState ts = (TextureState) rm.createRendererState(StateType.Texture);
             Texture t = null;
             try {
                 URL url = getAssetURL(textureURI);
