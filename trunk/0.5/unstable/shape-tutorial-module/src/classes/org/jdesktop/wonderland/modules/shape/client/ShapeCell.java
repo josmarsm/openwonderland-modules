@@ -76,9 +76,11 @@ public class ShapeCell extends Cell {
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
-        if (status == CellStatus.DISK && increasing == false) {
-            listener.removeFromEntity(renderer.getEntity());
-            listener = null;
+        if (status == CellStatus.INACTIVE && increasing == false) {
+            if (listener != null) {
+                listener.removeFromEntity(renderer.getEntity());
+                listener = null;
+            }
 
             ChannelComponent channel = getComponent(ChannelComponent.class);
             channel.removeMessageReceiver(ShapeCellChangeMessage.class);
@@ -89,9 +91,11 @@ public class ShapeCell extends Cell {
             }
         }
         else if (status == CellStatus.RENDERING && increasing == true) {
-            listener = new MouseEventListener();
-            listener.addToEntity(renderer.getEntity());
-
+            if (listener == null) {
+                listener = new MouseEventListener();
+                listener.addToEntity(renderer.getEntity());
+            }
+            
             ShapeCellMessageReceiver recv = new ShapeCellMessageReceiver();
             ChannelComponent channel = getComponent(ChannelComponent.class);
             channel.addMessageReceiver(ShapeCellChangeMessage.class, recv);
