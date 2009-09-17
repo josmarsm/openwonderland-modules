@@ -61,8 +61,10 @@ public class PresentationBaseClientPlugin extends BaseClientPlugin implements Vi
 
             // The javadoc on this method says TEST ME, so I'm not sure
             // this will actually work.
-            avatar.removeComponent(MovingPlatformAvatarComponent.class);
-            logger.warning("Removing MPAC from local avatar.");
+            if (avatar != null) {
+                avatar.removeComponent(MovingPlatformAvatarComponent.class);
+                logger.warning("Removing MPAC from local avatar.");
+            }
         }
 
     public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
