@@ -21,28 +21,22 @@ package org.jdesktop.wonderland.modules.movierecorder.common;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
- *
+ * Class to represent the client state of a movie recorder cell.
  * @author Bernard Horan
  */
 public class MovieRecorderCellClientState extends CellClientState {
     private boolean isRecording;
-    private String userName;
 
     /** Default constructor */
     public MovieRecorderCellClientState() {
     }
 
-     public MovieRecorderCellClientState(boolean isRecording, String userName) {
+     public MovieRecorderCellClientState(boolean isRecording) {
         this.isRecording = isRecording;
-        this.userName = userName;
     }
 
     public boolean isRecording() {
         return isRecording;
-    }
-
-    public String getUserName() {
-        return userName;
     }
 }
 

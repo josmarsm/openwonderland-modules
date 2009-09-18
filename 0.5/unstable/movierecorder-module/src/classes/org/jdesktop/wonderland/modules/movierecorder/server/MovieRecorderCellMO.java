@@ -97,7 +97,7 @@ public class MovieRecorderCellMO extends CellMO  {
         movieRecorderLogger.fine("Getting client state");
 
         if (cellClientState == null) {
-            cellClientState = new MovieRecorderCellClientState(serverState.isRecording(), serverState.getUserName());
+            cellClientState = new MovieRecorderCellClientState(serverState.isRecording());
         }
 
         return super.getClientState(cellClientState, clientID, capabilities);
@@ -191,16 +191,15 @@ public class MovieRecorderCellMO extends CellMO  {
 
     private void stopRecording() {
         movieRecorderLogger.fine("Stop Recording");
-        try {
-            recorder.stopRecording();
-        } catch (IOException e) {
-            System.err.println(e);
-        }
+//        try {
+//            recorder.stopRecording();
+//        } catch (IOException e) {
+//            System.err.println(e);
+//        }
     }
 
     private void processRecordMessage(WonderlandClientID clientID, MovieRecorderCellChangeMessage arcm) {
         setRecording(arcm.isRecording());
-        serverState.setUserName(arcm.getUserName());
 
         // send a message to all clients
         getChannel().sendAll(clientID, arcm);
