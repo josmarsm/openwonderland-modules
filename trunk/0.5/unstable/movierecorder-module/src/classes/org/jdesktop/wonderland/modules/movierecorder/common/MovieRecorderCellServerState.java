@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
- *
+ * Class to represent the server state of the movie recorder.
  * @author Bernard Horan
  */
 @XmlRootElement(name="movierecorder-cell")
@@ -39,7 +39,6 @@ public class MovieRecorderCellServerState extends CellServerState implements Ser
     @XmlAttribute(required=true)
     private boolean isRecording;
 
-    private String userName;
 
 
     public MovieRecorderCellServerState() {
@@ -57,22 +56,12 @@ public class MovieRecorderCellServerState extends CellServerState implements Ser
         return isRecording;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append(super.toString());
         builder.append(" isRecording=");
         builder.append(isRecording);
-        builder.append(" userName=");
-        builder.append(userName);
         return builder.toString();
     }
 }

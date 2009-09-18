@@ -22,7 +22,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- *
+ * Class to represent the message sent between client and server
+ * to control the movie recorder
  * @author Bernard Horan
  * @author Joe Provino
  */
@@ -39,7 +40,6 @@ public class MovieRecorderCellChangeMessage extends CellMessage {
 
     private MovieRecorderAction action;
     private boolean isRecording;
-    private String userName;
 
     public MovieRecorderAction getAction() {
         return action;
@@ -47,10 +47,6 @@ public class MovieRecorderCellChangeMessage extends CellMessage {
 
     public boolean isRecording() {
         return isRecording;
-    }
-
-    public String getUserName() {
-        return userName;
     }
 
     /**
@@ -61,9 +57,8 @@ public class MovieRecorderCellChangeMessage extends CellMessage {
      * @param userName the name of the user that initiated this change
      * @return a message with appropriate state
      */
-    public static MovieRecorderCellChangeMessage recordingMessage(CellID cellID, boolean recording, String userName) {
+    public static MovieRecorderCellChangeMessage recordingMessage(CellID cellID, boolean recording) {
         MovieRecorderCellChangeMessage msg = new MovieRecorderCellChangeMessage(cellID);
-        msg.userName = userName;
         msg.action = MovieRecorderAction.RECORD;
         msg.isRecording = recording;
         return msg;

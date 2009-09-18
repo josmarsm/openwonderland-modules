@@ -21,14 +21,14 @@ package org.jdesktop.wonderland.modules.movierecorder.client;
 import java.awt.Color;
 import java.awt.GridBagLayout;
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import javax.swing.SpinnerNumberModel;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+import org.jdesktop.wonderland.modules.movierecorder.client.utils.EncodeException;
 import org.jdesktop.wonderland.modules.movierecorder.client.utils.MovieCreator;
 
 /**
@@ -40,7 +40,6 @@ public class MovieControlPanel extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger(MovieControlPanel.class.getName());
     private String movieFilename;
     private MovieRecorderCell recorderCell;
-    private SoftphoneControl sc = SoftphoneControlImpl.getInstance();
 
     /** Creates new form MovieControlPanel
      * @param recorderCell the movie recorder cell controlled by this panel
@@ -51,6 +50,17 @@ public class MovieControlPanel extends javax.swing.JPanel {
         movieDirectoryField.setText(getDefaultMovieDirectory());
         previewPanel.setLayout(new GridBagLayout());
         previewPanel.add(recorderCell.getCaptureComponent());
+        if (recorderCell.isRemoteRecording()) {
+            disableAllButtons();
+        }
+    }
+
+    void setRemoteRecording(boolean b) {
+        enableAllButtons(!b);
+        //If the remote client is no longer recording, disable the stop button
+        if (!b) {
+            stopButton.setEnabled(false);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -164,7 +174,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
         recorderStatusLabel.setText("Recording");
         recorderStatusLabel.setForeground(Color.red);
         stopButton.setEnabled(true);
-        disableButtons();
+        disableLocalButtons();
 
         File imageDirectoryFile = getImageDirectory();
         logger.info("imageDirectory: " + imageDirectoryFile);
@@ -183,8 +193,12 @@ public class MovieControlPanel extends javax.swing.JPanel {
         recorderCell.startRecording();
     }//GEN-LAST:event_recordButtonActionPerformed
 
-    private void disableButtons() {
-        enableButtons(false);
+    private void disableLocalButtons() {
+        enableLocalButtons(false);
+    }
+
+    private void disableAllButtons() {
+        enableAllButtons(false);
     }
 
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
@@ -192,23 +206,33 @@ public class MovieControlPanel extends javax.swing.JPanel {
         recorderCell.stopRecording();
         recorderStatusLabel.setText("Offline");
         recorderStatusLabel.setForeground(Color.BLACK);
-        createMovie();
+        try {
+            createMovie();
+        } catch (EncodeException e) {
+            logger.log(Level.SEVERE, "Failed to create movie, caused by", e.getCause());
+        }
         deleteImageDirectory();
-        enableButtons();
+        enableLocalButtons();
 }//GEN-LAST:event_stopButtonActionPerformed
 
-    private void createMovie() {
+    private void createMovie() throws EncodeException {
         MovieCreator mCreator = new MovieCreator(this);
         mCreator.createMovie();
     }
 
-    private void enableButtons() {
-        enableButtons(true);
+    private void enableLocalButtons() {
+        enableLocalButtons(true);
     }
 
-    private void enableButtons(boolean enable) {
+    private void enableLocalButtons(boolean enable) {
         recordButton.setEnabled(enable);
         moviePathBrowseButton.setEnabled(enable);
+        movieDirectoryField.setEnabled(enable);
+    }
+
+    private void enableAllButtons(boolean enable) {
+        enableLocalButtons(enable);
+        stopButton.setEnabled(enable);
     }
 
     /**

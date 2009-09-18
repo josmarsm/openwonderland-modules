@@ -74,8 +74,9 @@ public class MovieCreator {
 
     /**
      * Create the movie, using the <CODE>controlPanel</CODE> as the provider of paths etc.
+     * @throws EncodeException if the recording fails
      */
-    public void createMovie() {
+    public void createMovie() throws EncodeException {
         ImagesDataSource source = null;
         File movieDirectory = new File(controlPanel.getMovieDirectory());
         if (!movieDirectory.exists()) {
@@ -90,15 +91,13 @@ public class MovieCreator {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        try {
-            //if (controlPanel.recordsAudio()) {
-                //record(source, new File(controlPanel.getAudioFilename()), new File(movieFilePath));
-            //} else {
-                record(source, new File(movieFilePath));
-            //}
-        } catch (EncodeException ex) {
-            ex.printStackTrace();
-        }
+        
+        //if (controlPanel.recordsAudio()) {
+            //record(source, new File(controlPanel.getAudioFilename()), new File(movieFilePath));
+        //} else {
+            record(source, new File(movieFilePath));
+        //}
+        
         
     
     }

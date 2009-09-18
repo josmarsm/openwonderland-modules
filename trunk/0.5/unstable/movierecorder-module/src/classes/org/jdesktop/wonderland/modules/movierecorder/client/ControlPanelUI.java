@@ -68,4 +68,8 @@ public class ControlPanelUI {
         hudComponent.setVisible(visible);
     }
 
+    void setRemoteRecording(boolean b) {
+        controlPanel.setRemoteRecording(b);
+    }
+
 }

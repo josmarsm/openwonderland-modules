@@ -31,6 +31,33 @@
         <path location="${modules.dir}/foundation/hud/build/client/hud-client.jar"/>
         <path location="${current.dir}/lib/jmf.jar"/>
     </pathconvert>
+
+    <target name="-module-compile-client" depends="-module-init, -module-compile-common">
+       
+
+        <wl-compile-client>
+            <client-compile-classes>
+                <include name="${module.src}/client/**"/>
+                <include name="com/sun/media/util/RegistryLib.java"/>
+            </client-compile-classes>
+
+            <client-compile-classpath>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+            </client-compile-classpath>
+        </wl-compile-client>
+
+        <!-- update jmf jar with jmf properties and updated RegistryLib class -->
+        <jar jarfile="${current.dir}/lib/jmf.jar"
+             update="true">
+            <fileset dir="${current.dir}/lib">
+                <include name="jmf.properties"/>
+            </fileset>
+            <fileset dir="${build.classes.dir}">
+                <include name="com/sun/media/util/*.class"/>
+            </fileset>
+        </jar>
+    </target>
        
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,

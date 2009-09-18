@@ -36,10 +36,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
@@ -51,13 +49,7 @@ import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.mtgame.TextureRenderBuffer;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.RenderUpdater;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.Graphics;
-import java.awt.GridBagLayout;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.imageio.ImageIO;
@@ -72,10 +64,11 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
 
     private static final Logger rendererLogger = Logger.getLogger(MovieRecorderCellRenderer.class.getName());
 
-    public static final float WIDTH = 0.6f; //x-extent
-    public static final float HEIGHT = WIDTH /2 ; //y-extent was 0.3f
+    //Use 16:9 aspect ratio
+    public static final float WIDTH = 0.8f; //x-extent
+    public static final float HEIGHT = 0.45f ; //y-extent
     public static final float DEPTH = 0.05f; //z-extent
-    private static final int IMAGE_HEIGHT = 480;
+    private static final int IMAGE_HEIGHT = 360;
     private static final int IMAGE_WIDTH = 640;
     /**
      *Counter for naming images
@@ -126,7 +119,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
         matState.setDiffuse(casingColour);
         casing.setRenderState(matState);
-        //casing.setLightCombineMode(Spatial.LightCombineMode.Off);
         BlendState as = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Blend);
         as.setEnabled(true);
         as.setBlendEnabled(true);
@@ -142,8 +134,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     }
 
     private Entity createLCDPanel(Node device) {
-        //float aspect = 640 / 480;
-        float aspect = 1.0f;
         WorldManager wm = ClientContextJME.getWorldManager();
         //Node for the quad
         Node quadNode = new Node();
@@ -169,17 +159,18 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         float angleRadians = (float) Math.toRadians(angleDegrees);
         Quaternion quat = new Quaternion().fromAngleAxis(angleRadians, new Vector3f(0,1,0));
         cameraSG.setLocalRotation(quat);
+        //Translate the camera so it's in front of the model
+        cameraSG.setLocalTranslation(0f, 0f, -0.5f);
         //Create a camera component
         //NOT SURE ABOUT THE FRONT AND BACK CLIPPING
-        float frontClipping = 500f;
+        float frontClipping = 10000f;
         CameraComponent cc = wm.getRenderManager().createCameraComponent(cameraSG, cn,
-                IMAGE_WIDTH, IMAGE_HEIGHT, 90.0f, aspect, 0.1f, frontClipping, false);
+                IMAGE_WIDTH, IMAGE_HEIGHT, 90.0f, 16/9, 0.1f, frontClipping, false);
         //Set the camera for the render buffer
         textureBuffer.setCameraComponent(cc);
         //Add the render buffer to the render manager
         wm.getRenderManager().addRenderBuffer(textureBuffer);
         textureBuffer.setRenderUpdater(this);
-        //textureBuffer.setBufferUpdater(this);
 
         //Add the camera component to the quad entity
         quadEntity.addComponent(CameraComponent.class, cc);
@@ -187,7 +178,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         //Create a texture state
         TextureState ts = (TextureState) wm.getRenderManager().createRendererState(RenderState.StateType.Texture);
         ts.setEnabled(true);
-        //??Set its texture to be the texture of the render buffer??
+        //Set its texture to be the texture of the render buffer
         ts.setTexture(textureBuffer.getTexture());
         quadGeo.setRenderState(ts);
 
@@ -229,7 +220,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             g.setColor(Color.BLACK);
-            g.fillRect(0, 0, 400, 300);
+            //g.fillRect(0, 0, 400, 300);
             if (captureImage != null) {
                 g.drawImage(captureImage, 0, 0, null);
             }
@@ -263,7 +254,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         captureComponent.repaint();
         
 
-        if (((MovieRecorderCell) cell).isRecording()) {
+        if (((MovieRecorderCell) cell).isLocalRecording()) {
                 //System.err.println("Capturing image " + imageCounter);
                 BufferedImage outputImage = createBufferedImage(textureBuffer.getTextureData());
                 //System.err.println("image: " + outputImage);

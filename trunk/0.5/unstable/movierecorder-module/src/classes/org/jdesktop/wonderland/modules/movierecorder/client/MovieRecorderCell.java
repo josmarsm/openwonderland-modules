@@ -18,13 +18,9 @@
 
 package org.jdesktop.wonderland.modules.movierecorder.client;
 
-import java.awt.Toolkit;
 import java.io.File;
 import java.math.BigInteger;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
@@ -39,8 +35,6 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -63,8 +57,8 @@ public class MovieRecorderCell extends Cell {
 
     private ContextMenuFactorySPI menuFactory = null;
 
-    private boolean isRecording;
-    private String userName;
+    private boolean localRecording;
+    private boolean remoteRecording;
     private MovieRecorderCellRenderer renderer;
     private ControlPanelUI ui;
     
@@ -84,8 +78,8 @@ public class MovieRecorderCell extends Cell {
 
     public MovieRecorderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        isRecording = false;
-        
+        localRecording = false;
+        remoteRecording = false;
     }
 
     @Override
@@ -140,18 +134,7 @@ public class MovieRecorderCell extends Cell {
     @Override
     public void setClientState(CellClientState cellClientState) {
         super.setClientState(cellClientState);
-        isRecording = ((MovieRecorderCellClientState) cellClientState).isRecording();
-        userName = ((MovieRecorderCellClientState) cellClientState).getUserName();
-        if (isRecording) {
-            if (userName == null) {
-                logger.warning("userName should not be null");
-            }
-        }
-        if (!isRecording) {
-            if (userName != null) {
-                logger.warning("userName should be null");
-            }
-        }
+        remoteRecording = ((MovieRecorderCellClientState) cellClientState).isRecording();       
     }
 
     private void initUI () {
@@ -182,12 +165,11 @@ public class MovieRecorderCell extends Cell {
 
     void startRecording() {
         logger.info("start recording");
-        userName = getCurrentUserName();
         ((MovieRecorderCellRenderer)renderer).resetImageCounter();
         ((MovieRecorderCellRenderer)renderer).resetFrameCounter();
         resetStartTime();
-        setRecording(true);
-        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), isRecording, userName);
+        localRecording = true;
+        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), localRecording);
         getChannel().send(msg);
     }   
 
@@ -217,50 +199,29 @@ public class MovieRecorderCell extends Cell {
     }
 
     void stopRecording() {
-        if (!isRecording) {
+        if (!localRecording) {
             //logger.warning("no reason to stop, not recording");
             return;
         }
-        if (userName != null && userName.equals(getCurrentUserName())) {
-            MovieRecorderCellChangeMessage msg = null;
-            if (isRecording) {
-                msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), false, userName);
-            }
-            if (msg != null) {
-                getChannel().send(msg);
-            }
-            setRecording(false);
-            userName = null;
-            calculateActualFrameRate();
-            logger.info("Stop recording");
-        } else {
-            logger.warning("Attempt to stop by non-initiating user: " + userName);
-            SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        Toolkit.getDefaultToolkit().beep();
-                        JOptionPane.showMessageDialog(getParentFrame(), "You can't stop a recording that was started by another user");
-                    }
-                });
-        }
+        localRecording = false;
+        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), localRecording);
+        getChannel().send(msg);
+        calculateActualFrameRate();
+        logger.info("Stop recording");
     }
 
-    private void setRecording(boolean b) {
+    private void setRemoteRecording(boolean b) {
         logger.info("setRecording: " + b);
-        //renderer.setRecording(b);
-        isRecording = b;
+        ui.setRemoteRecording(b);
+        remoteRecording = b;
     }
 
-    boolean isRecording() {
-        return isRecording;
+    boolean isLocalRecording() {
+        return localRecording;
     }
 
-    private String getCurrentUserName() {
-        return getCellCache().getSession().getUserID().getUsername();
-    }
-
-    private JFrame getParentFrame() {
-        return JmeClientMain.getFrame().getFrame();
+    boolean isRemoteRecording() {
+        return remoteRecording;
     }
 
     @Override
@@ -287,8 +248,7 @@ public class MovieRecorderCell extends Cell {
             if (!senderID.equals(getCellCache().getSession().getID())) {
                 switch (sccm.getAction()) {
                     case RECORD:
-                        setRecording(sccm.isRecording());
-                        userName = sccm.getUserName();
+                        setRemoteRecording(sccm.isRecording());
                         break;
                     default:
                         logger.severe("Unknown action type: " + sccm.getAction());
