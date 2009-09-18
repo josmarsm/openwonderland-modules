@@ -39,7 +39,17 @@ public class PDFViewerCellFactory implements CellFactorySPI {
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        return (T) new PDFViewerCellServerState();
+        PDFViewerCellServerState state =  new PDFViewerCellServerState();
+        
+        // Look for the content-uri field and set if so
+        if (props != null) {
+           String uri = props.getProperty("content-uri");
+           if (uri != null) {
+               state.setDocumentURI(uri);
+           }
+       }
+        
+       return (T) state;
     }
 
     public String getDisplayName() {

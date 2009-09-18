@@ -20,15 +20,19 @@ package org.jdesktop.wonderland.modules.pdfviewer.client;
 import com.sun.pdfview.PDFFile;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel.MapMode;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -74,22 +78,30 @@ public class PDFDocumentLoader extends Thread {
             URLConnection conn = docURL.openConnection();
             conn.connect();
 
+            // download the data into a temporary file
+            File pdfTemp = File.createTempFile("wl_pdf", "tmp");
+            pdfTemp.deleteOnExit();
+            RandomAccessFile raf = new RandomAccessFile(pdfTemp, "rw");
+
             // create a buffer to load the document into
-            int docSize = conn.getContentLength();
-            byte[] data = new byte[docSize];
-            DataInputStream is = null;
+            byte[] dataBuffer = new byte[32 * 1024];
+            BufferedInputStream is = null;
+            int read;
+            long fileSize = 0;
 
+            // write the data to the file
             try {
-                // create a buffered stream for reading the document
-                is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
-
-                // read the document into the buffer
-                is.readFully(data, 0, docSize);
-
-                buf = ByteBuffer.wrap((byte[]) data, 0, ((byte[]) data).length);
+                is = new BufferedInputStream(conn.getInputStream());
+                while ((read = is.read(dataBuffer, 0, dataBuffer.length)) > 0) {
+                    raf.write(dataBuffer, 0, read);
+                    fileSize += read;
+                }
             } finally {
                 is.close();
             }
+
+            // now convert the file into a byte buffer by mapping it
+            buf = raf.getChannel().map(MapMode.READ_ONLY, 0, fileSize);
         }
 
         return buf;
@@ -111,7 +123,7 @@ public class PDFDocumentLoader extends Thread {
 
                 logger.info("loaded PDF in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
             } catch (Exception e) {
-                logger.warning("failed to open: " + url + ": " + e);
+                logger.log(Level.WARNING, "failed to open: " + url + ": " + e, e);
                 notifyListeners(url, false, e);
             }
             if (loadingFile != null) {

@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.pdfviewer.client;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
@@ -25,7 +28,9 @@ import com.jme.math.Vector3f;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -150,7 +155,17 @@ public class PDFViewerWindow extends WindowSwing {
 
     public void openDocument(String documentURI, int pageNumber) {
         if (isSynced()) {
-            pdfPanel.openDocument(documentURI, pageNumber);
+            try {
+                // resolve the server-independent URI into a server-specific
+                // URI for loading. Be careful not to share this URI across
+                // servers
+                URL documentURL = AssetUtils.getAssetURL(documentURI, cell);
+                pdfPanel.openDocument(documentURL.toURI().toString(), pageNumber);
+            } catch (URISyntaxException ex) {
+                logger.log(Level.WARNING, "Error opening " + documentURI, ex);
+            } catch (MalformedURLException ex) {
+                logger.log(Level.WARNING, "Error opening " + documentURI, ex);
+            }
         }
     }
 
