@@ -55,6 +55,9 @@ public class ImageViewerCellRenderer extends BasicRenderer {
      */
     protected Node createSceneGraph(Entity entity) {
 
+        // First turn off lighting for the Entity
+        setLightingEnabled(false);
+        
         // Create a new root node
         Node node = new Node("Image Viewer Node");
 
