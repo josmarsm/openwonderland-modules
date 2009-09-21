@@ -226,7 +226,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 	setup.y = origin.y;
 	setup.z = origin.z;
 
-	logger.info("Recorder Origin is " + "(" 
+	logger.fine("Recorder Origin is " + "("
 	    + origin.x + ":" + origin.y + ":" + origin.z + ")");
 
 	setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
