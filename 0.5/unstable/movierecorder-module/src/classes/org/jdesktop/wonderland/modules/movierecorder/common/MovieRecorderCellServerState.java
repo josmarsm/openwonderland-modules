@@ -36,12 +36,17 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @XmlAccessorType(XmlAccessType.FIELD)
 @ServerState
 public class MovieRecorderCellServerState extends CellServerState implements Serializable {
+    private String recordingDirectory;
     @XmlAttribute(required=true)
     private boolean isRecording;
 
 
 
     public MovieRecorderCellServerState() {
+    }
+
+    public String getRecordingDirectory() {
+        return recordingDirectory;
     }
 
     public String getServerClassName() {
@@ -54,6 +59,10 @@ public class MovieRecorderCellServerState extends CellServerState implements Ser
 
     public boolean isRecording() {
         return isRecording;
+    }
+
+    public void setRecordingDirectory(String recordingDirectory) {
+        this.recordingDirectory = recordingDirectory;
     }
 
     @Override

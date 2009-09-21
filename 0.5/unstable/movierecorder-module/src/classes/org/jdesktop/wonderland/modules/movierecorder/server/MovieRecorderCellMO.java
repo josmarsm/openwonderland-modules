@@ -38,6 +38,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.mpk20.voicelib.app.Recorder;
 import com.sun.mpk20.voicelib.app.RecorderSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.movierecorder.common.MovieRecorderCellServerState;
@@ -51,7 +53,7 @@ import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
  * @author Joe Provino
  * 
  */
-public class MovieRecorderCellMO extends CellMO  {
+public class MovieRecorderCellMO extends CellMO {
     
     private static final Logger movieRecorderLogger = Logger.getLogger(MovieRecorderCellMO.class.getName());
     private static int INSTANCE_COUNT = 0;
@@ -65,6 +67,7 @@ public class MovieRecorderCellMO extends CellMO  {
         addComponent(new MovableComponentMO(this));
         serverState = new MovieRecorderCellServerState();
         instanceNumber = ++INSTANCE_COUNT;
+        serverState.setRecordingDirectory("/tmp/MovieRecordings/Recorder" + instanceNumber);
         serverState.setRecording(false);
         callId = getCellID().toString();
         int ix;
@@ -156,46 +159,57 @@ public class MovieRecorderCellMO extends CellMO  {
 //       getOriginWorld().get(currentPosition);
 //
 
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-    //vm.addCallStatusListener(this, callId);
+        //vm.addCallStatusListener(this, callId);
 
-	RecorderSetup setup = new RecorderSetup();
+        RecorderSetup setup = new RecorderSetup();
 
-	setup.x = origin.x;
-	setup.y = origin.y;
-	setup.z = origin.z;
+        setup.x = origin.x;
+        setup.y = origin.y;
+        setup.z = origin.z;
 
-	logger.info("Recorder Origin is " + "(" 
-	    + origin.x + ":" + origin.y + ":" + origin.z + ")");
+        logger.info("Recorder Origin is " + "(" + origin.x + ":" + origin.y + ":" + origin.z + ")");
 
-	setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
+        setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
 
-	//setup.recordDirectory = serverState.getRecordingDirectory();
+        setup.recordDirectory = serverState.getRecordingDirectory();
+        logger.info("record directory: " + setup.recordDirectory);
+        logger.info("setup: " + setup);
 
         try {
             recorder = vm.createRecorder(callId, setup);
+            logger.info("recorder: " + recorder);
         } catch (IOException e) {
             System.out.println(e);
         }
     }
 
     private void startRecording() {
-        movieRecorderLogger.fine("Start Recording");
-//        try {
-//            recorder.startRecording(getRecorderFilename());
-//        } catch (IOException e) {
-//            System.out.println(e);
-//        }
+        String filename = getRecordingFilename();
+        movieRecorderLogger.info("Start Recording: " + filename);
+        try {
+            recorder.startRecording(filename);
+        } catch (IOException e) {
+            System.out.println(e);
+        }
     }
 
     private void stopRecording() {
         movieRecorderLogger.fine("Stop Recording");
-//        try {
-//            recorder.stopRecording();
-//        } catch (IOException e) {
-//            System.err.println(e);
-//        }
+        try {
+            recorder.stopRecording();
+        } catch (IOException e) {
+            System.err.println(e);
+        }
+    }
+
+    private String getRecordingFilename() {
+        //MUST end in '.au'
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+        simpleDateFormat.applyPattern("yyyyMMdd_HH.mm");
+        return "Wonderland_" + simpleDateFormat.format(calendar.getTime()) + ".au";
     }
 
     private void processRecordMessage(WonderlandClientID clientID, MovieRecorderCellChangeMessage arcm) {
