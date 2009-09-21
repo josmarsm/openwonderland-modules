@@ -23,6 +23,7 @@ import com.jme.image.Texture;
 import com.jme.math.Vector3f;
 import com.jme.util.TextureManager;
 import java.awt.Image;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
@@ -61,6 +62,10 @@ public class ImageViewerCellFactory implements CellFactorySPI {
                state.setImageURI(uri);
            }
        }
+
+       // Set the name of the Cell to the name of the image, absent any path
+       // preceeding the name.
+       state.setName(getFileName(state.getImageURI()));
 
        // Figure out a good sizing hint for the image. We first fetch the image
        // (it's ok to do it here, it'll get cached so that later it won't take
@@ -105,6 +110,20 @@ public class ImageViewerCellFactory implements CellFactorySPI {
         // Convert the uri given to a proper url to download
         URL url = AssetUtils.getAssetURL(uri);
         return TextureManager.loadTexture(url);
+    }
+
+    /**
+     * Returns the file element in the path name given the full path of the
+     * image file
+     */
+    private String getFileName(String uri) {
+        // Check to see if there is a final '/'. We always use a forward-slash
+        // regardless of platform, because it is typically a wlcontent URI.
+        int index = uri.lastIndexOf("/");
+        if (index == -1) {
+            return uri;
+        }
+        return uri.substring(index + 1);
     }
 
     /**
