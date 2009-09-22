@@ -56,13 +56,13 @@ public class NpcPlayerConfigComponent extends AvatarConfigComponent {
         if (avatarConfigInfo != null) {
             String uri = avatarConfigInfo.getAvatarConfigURL();
             if (uri != null) {
-                logger.info("uri " + uri);
+                //logger.info("uri " + uri);
                 String clazz = avatarConfigInfo.getLoaderFactoryClassName();
                 try {
                     Class avatarLoaderFactoryClass = Class.forName(clazz);
                     AvatarLoaderFactorySPI factory = (AvatarLoaderFactorySPI) avatarLoaderFactoryClass.newInstance();
                     WlAvatarCharacter avatarCharacter = factory.getAvatarLoader().getAvatarCharacter(cell, uri, avatarConfigInfo);
-                    logger.info("avatarCharacter: " + avatarCharacter);
+                    //logger.info("avatarCharacter: " + avatarCharacter);
                     if (avatarCharacter == null) {
                         fallback(acccs, avatarConfigInfo);
                     }
