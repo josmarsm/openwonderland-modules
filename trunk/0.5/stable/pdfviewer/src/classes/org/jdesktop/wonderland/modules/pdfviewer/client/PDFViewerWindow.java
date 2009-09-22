@@ -83,7 +83,7 @@ public class PDFViewerWindow extends WindowSwing {
     public PDFViewerWindow(PDFViewerCell cell, App2D app, int width, int height, boolean topLevel,
             Vector2f pixelScale)
             throws InstantiationException {
-        super(app, width, height, topLevel, pixelScale);
+        super(app, Type.PRIMARY, width, height, topLevel, pixelScale);
         this.cell = cell;
         setTitle("PDF Viewer");
 
