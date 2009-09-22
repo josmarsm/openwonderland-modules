@@ -118,7 +118,7 @@ public class WhiteboardWindow extends Window2D {
     public WhiteboardWindow(WhiteboardCell cell, App2D app, int width, int height, boolean topLevel, Vector2f pixelScale,
             final WhiteboardComponent commComponent)
             throws InstantiationException {
-        super(app, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
+        super(app, Type.PRIMARY, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
         logger.info("creating whiteboard with size: " + width + "x" + height);
         this.cell = cell;
         this.commComponent = commComponent;
