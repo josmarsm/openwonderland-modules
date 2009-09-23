@@ -40,6 +40,7 @@ public class WhiteboardCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         WhiteboardSVGCellServerState cellServerState = new WhiteboardSVGCellServerState();
+        cellServerState.setName("Whiteboard");
 
         // Look for the content-uri field and set if so
         if (props != null) {
