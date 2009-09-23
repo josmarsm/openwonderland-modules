@@ -160,9 +160,15 @@ public class PDFViewerWindow extends WindowSwing {
                 // URI for loading. Be careful not to share this URI across
                 // servers
                 URL documentURL = AssetUtils.getAssetURL(documentURI, cell);
-                pdfPanel.openDocument(documentURL.toURI().toString(), pageNumber);
-            } catch (URISyntaxException ex) {
-                logger.log(Level.WARNING, "Error opening " + documentURI, ex);
+
+                // convert to a string
+                documentURI = documentURL.toExternalForm();
+
+                // issue #807 -- make sure to get rid of spaces
+                documentURI = documentURI.replace(" ", "%20");
+
+                // open the resolved URI
+                pdfPanel.openDocument(documentURI, pageNumber);
             } catch (MalformedURLException ex) {
                 logger.log(Level.WARNING, "Error opening " + documentURI, ex);
             }
