@@ -23,6 +23,7 @@ import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -98,13 +99,41 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
 
         // Create a camera component and associated with the texture buffer we
         // have created.
-        CameraComponent cc = rm.createCameraComponent(cameraNode, cn, width,
-                height, 90.0f, 1.0f, 0.1f, 10000.0f, false);
+//        CameraComponent cc = rm.createCameraComponent(
+//                cameraNode,      // The Node of the camera scene graph
+//                cn,              // The Camera
+//                width,           // Viewport width
+//                height,          // Viewport height
+//                90.0f,           // Field of view
+//                1.0f,            // Aspect ratio
+//                0.1f,            // Front clip
+//                10000.0f,        // Rear clip
+//                false            // Primary?
+//                );
+
+        // Create a camera component and associated with the texture buffer we
+        // have created. This usage creates a parallel projection, the extent
+        // of the scene is given by a (left, right, bottom, top) quad.
+        CameraComponent cc = rm.createCameraComponent(
+                cameraNode,      // The Node of the camera scene graph
+                cn,              // The Camera
+                width,           // Viewport width
+                height,          // Viewport height
+                0.1f,            // Front clip
+                10000.0f,        // Rear clip
+                2.0f,           // Left extent
+                2.0f,           // Right extent
+                2.0f,           // Botton extent
+                2.0f,           // Top extent
+                false            // Primary?
+                );
+
         textureBuffer.setCameraComponent(cc);
         rm.addRenderBuffer(textureBuffer);
         textureBuffer.setRenderUpdater(this);
 
         ViewCell viewCell = ViewManager.getViewManager().getPrimaryViewCell();
+        Logger.getLogger(TopMapCameraEntity.class.getName()).warning("view cell " + viewCell);
         if (viewCell != null) {
             viewCell.addTransformChangeListener(new TransformChangeListener() {
                 public void transformChanged(Cell cell, ChangeSource source) {
@@ -123,7 +152,6 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
 
 //                            Quaternion q = cameraNode.getLocalRotation();
 //                            cameraNode.setLocalRotation(q.mult(rotation));
-                            wm.addToUpdateList(cameraNode);
                         }
                     });
                 }
