@@ -51,7 +51,7 @@ public class WhiteboardComponentMO extends CellComponentMO {
      * @param cell The cell to which this component belongs.
      * @throws IllegalStateException If the cell does not already have a ChannelComponent IllegalStateException will be thrown.
      */
-    public WhiteboardComponentMO(WhiteboardCellMO cell) {
+    public WhiteboardComponentMO(CellMO cell) {
         super(cell);
     }
 

@@ -145,6 +145,14 @@ public class WhiteboardSVGCellClientState extends App2DCellClientState {
         this.checksum = checksum;
     }
 
+    public void copyLocal(WhiteboardSVGCellClientState state) {
+        setPreferredWidth(state.getPreferredWidth());
+        setPreferredHeight(state.getPreferredHeight());
+        setPosition(state.getPosition());
+        setDecorated(state.getDecorated());
+        setZoom(state.getZoom());
+    }
+
     /**
      * Returns a string representation of this class.
      *
