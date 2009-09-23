@@ -324,7 +324,8 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 break;
 
             case SEMICIRCLE:
-                curAngle = (float) (i * (Math.PI / this.pdf.getNumPages()));
+                int n = this.pdf.getNumPages() - i;
+                curAngle = (float) (n * (Math.PI / this.pdf.getNumPages()));
                 pos = new Vector3f((float)(pdfCell.getSpacing()*Math.sin(curAngle)), 0.0f, (float)(pdfCell.getSpacing()*Math.cos(curAngle)));
                 rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
                 break;
