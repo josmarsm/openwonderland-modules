@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellClientState;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellServerState;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.w3c.dom.Document;
@@ -46,21 +47,21 @@ import org.w3c.dom.Element;
  * @author jbarratt
  */
 public class WhiteboardCellMO extends App2DCellMO {
+    // The communications component used to broadcast to all clients
 
+    @UsesCellComponentMO(WhiteboardComponentMO.class)
+    private ManagedReference<WhiteboardComponentMO> commComponentRef;
+    private WhiteboardSVGCellClientState stateHolder = new WhiteboardSVGCellClientState();
     private static final Logger logger =
             Logger.getLogger(WhiteboardCellMO.class.getName());
     // how long a client can retain control (ms)
     private static long controlTimeout = 90 * 1000;
-
     // SVG Document
     private transient Document svgDocument = null;
     // SVG Document URI
     private String svgDocumentURI = null;
     // SVG Document as XML string
     private String svgXML = null;
-    // The communications component used to broadcast to all clients
-    private ManagedReference<WhiteboardComponentMO> commComponentRef = null;
-
     // The preferred width (from the WFS file)
     private int preferredWidth;
     // The preferred height (from the WFS file)
@@ -89,12 +90,10 @@ public class WhiteboardCellMO extends App2DCellMO {
      */
     @Override
     protected CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
-        // If the cellClientState is null, create one
         if (cellClientState == null) {
             cellClientState = new WhiteboardSVGCellClientState(pixelScale);
         }
-        ((WhiteboardSVGCellClientState) cellClientState).setPreferredWidth(preferredWidth);
-        ((WhiteboardSVGCellClientState) cellClientState).setPreferredHeight(preferredHeight);
+        ((WhiteboardSVGCellClientState) cellClientState).copyLocal(stateHolder);
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
@@ -102,24 +101,25 @@ public class WhiteboardCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setServerState(CellServerState serverState) {
-        super.setServerState(serverState);
+    public void setServerState(CellServerState state) {
+        super.setServerState(state);
 
-        WhiteboardSVGCellServerState state = (WhiteboardSVGCellServerState) serverState;
-        preferredWidth = state.getPreferredWidth();
-        preferredHeight = state.getPreferredHeight();
-        pixelScale = new Vector2f(state.getPixelScaleX(), state.getPixelScaleY());
+        WhiteboardSVGCellServerState serverState = (WhiteboardSVGCellServerState) state;
+        stateHolder.setPreferredWidth(serverState.getPreferredWidth());
+        stateHolder.setPreferredHeight(serverState.getPreferredHeight());
+        stateHolder.setPixelScale(new Vector2f(serverState.getPixelScaleX(), serverState.getPixelScaleY()));
+
         svgDocument = WhiteboardUtils.newDocument();
         persistDocument();
 
         // get the document URI from the server state
-        String uri = state.getSVGDocumentURI();
+        String uri = serverState.getSVGDocumentURI();
         if (uri != null && uri.equals("") == false) {
             setDocumentURI(uri);
         }
 
         // load the SVG XML
-        String xml = state.getSVGDocumentXML();
+        String xml = serverState.getSVGDocumentXML();
         if ((xml != null) && (xml.length() > 0)) {
             setDocument(xml);
             constructDocument();
@@ -130,35 +130,23 @@ public class WhiteboardCellMO extends App2DCellMO {
      * {@inheritDoc}
      */
     @Override
-    public CellServerState getServerState(CellServerState state) {
-        if (state == null) {
-            state = new WhiteboardSVGCellServerState();
+    public CellServerState getServerState(CellServerState stateToFill) {
+        if (stateToFill == null) {
+            stateToFill = new WhiteboardSVGCellServerState();
         }
-        ((WhiteboardSVGCellServerState) state).setSVGDocumentXML(getDocument());
-        ((WhiteboardSVGCellServerState) state).setSVGDocumentURI(getDocumentURI());
-        return super.getServerState(state);
-    }
+        
+        super.getServerState(stateToFill);
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void setLive(boolean live) {
-        super.setLive(live);
+        WhiteboardSVGCellServerState state = (WhiteboardSVGCellServerState) stateToFill;
+        state.setPreferredWidth(stateHolder.getPreferredWidth());
+        state.setPreferredHeight(stateHolder.getPreferredHeight());
+        state.setPixelScaleX(stateHolder.getPixelScale().x);
+        state.setPixelScaleY(stateHolder.getPixelScale().y);
 
-        if (live == true) {
-            if (commComponentRef == null) {
-                WhiteboardComponentMO commComponent = new WhiteboardComponentMO(this);
-                commComponentRef = AppContext.getDataManager().createReference(commComponent);
-                addComponent(commComponent);
-            }
-        } else {
-            if (commComponentRef != null) {
-                WhiteboardComponentMO commComponent = commComponentRef.get();
-                AppContext.getDataManager().removeObject(commComponent);
-                commComponentRef = null;
-            }
-        }
+        state.setSVGDocumentXML(getDocument());
+        state.setSVGDocumentURI(getDocumentURI());
+
+        return stateToFill;
     }
 
     private void constructDocument() {
@@ -239,7 +227,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @param position the scroll position in x and y coordinates
      */
     public void setPosition(Point position) {
-        this.position = position;
+       stateHolder.setPosition(position);
     }
 
     /*
@@ -247,7 +235,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @return the scroll position of the image
      */
     public Point getPosition() {
-        return position;
+        return stateHolder.getPosition();
     }
 
     /**
@@ -255,7 +243,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @param zoom the zoom factor
      */
     public void setZoom(float zoom) {
-        this.zoom = zoom;
+        stateHolder.setZoom(zoom);
     }
 
     /**
@@ -263,7 +251,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @return the zoom factor
      */
     public float getZoom() {
-        return zoom;
+        return stateHolder.getZoom();
     }
 
     /*
@@ -271,7 +259,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @param preferredWidth the preferred width in pixels
      */
     public void setPreferredWidth(int preferredWidth) {
-        this.preferredWidth = preferredWidth;
+        stateHolder.setPreferredWidth(preferredWidth);
     }
 
     /*
@@ -279,7 +267,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @return the preferred width, in pixels
      */
     public int getPreferredWidth() {
-        return preferredWidth;
+        return stateHolder.getPreferredWidth();
     }
 
     /*
@@ -287,7 +275,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @param preferredHeight the preferred height, in pixels
      */
     public void setPreferredHeight(int preferredHeight) {
-        this.preferredHeight = preferredHeight;
+        stateHolder.setPreferredHeight(preferredHeight);
     }
 
     /*
@@ -295,7 +283,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @return the preferred height, in pixels
      */
     public int getPreferredHeight() {
-        return preferredHeight;
+        return stateHolder.getPreferredHeight();
     }
 
     /**
@@ -303,7 +291,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @param decorated whether to show or hide the window decorations
      */
     public void setDecorated(boolean decorated) {
-        this.decorated = decorated;
+        stateHolder.setDecorated(decorated);
     }
 
     /**
@@ -311,7 +299,7 @@ public class WhiteboardCellMO extends App2DCellMO {
      * @return true if the window decorations are enabled, false otherwise
      */
     public boolean getDecorated() {
-        return decorated;
+        return stateHolder.getDecorated();
     }
 
     public long getControlOwnedDuration() {
@@ -389,8 +377,8 @@ public class WhiteboardCellMO extends App2DCellMO {
                         if (messageReceived.getURI() != null) {
                             // Create new Document object from URI target
                             setDocumentURI(messageReceived.getURI());
-                        //svgDocument = WhiteboardUtils.openDocument(messageReceived.getURI());
-                        //persistDocument();
+                            //svgDocument = WhiteboardUtils.openDocument(messageReceived.getURI());
+                            //persistDocument();
                         }
                         break;
                     case NEW_DOCUMENT:
