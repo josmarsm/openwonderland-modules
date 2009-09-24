@@ -18,12 +18,14 @@
 
 package org.jdesktop.wonderland.modules.pdfspreader.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.util.Properties;
-import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellServerState;
@@ -43,6 +45,14 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
         state.setScale(1.0f);
         state.setSpacing(4.0f);
         state.setCreatorName(LoginManager.getPrimary().getUsername());
+
+        // XXX HACK XXX
+        // Provide a hint so that the slides appear above the floor
+        // XXX HACK XXX
+        // Give the hint for the bounding volume for initial Cell placement
+        BoundingBox box = new BoundingBox(Vector3f.ZERO, 1, 2, 1);
+        BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
+        state.setBoundingVolumeHint(hint);
 
         if (props != null) {
            String uri = props.getProperty("content-uri");
