@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.topmap.client.TopMapJPanel.ElevationListener;
 
 /**
  * Client-side plugin for the top map.
@@ -58,6 +59,9 @@ public class TopMapClientPlugin extends BaseClientPlugin {
 
     // Create a new top camera Entity used to capture the scene
     private TopMapCameraEntity topMapEntity = null;
+
+    // Listener for elevation changes in the HUD control
+    private MapElevationListener elevationListener = null;
 
     /**
      * {@inheritDoc}
@@ -88,6 +92,10 @@ public class TopMapClientPlugin extends BaseClientPlugin {
             }
         });
 
+        // Create a new listener for changes in the elevation on the HUD,
+        // for later use
+        elevationListener = new MapElevationListener();
+
         super.initialize(loginInfo);
     }
 
@@ -114,9 +122,14 @@ public class TopMapClientPlugin extends BaseClientPlugin {
         });
 
         // Create the Entity that holds the camera and add it to the world
-        topMapEntity = new TopMapCameraEntity(panel.getCaptureJComponent());
+        CaptureJComponent captureComponent = panel.getCaptureJComponent();
+        float elevation = panel.getElevation();
+        topMapEntity = new TopMapCameraEntity(captureComponent, elevation);
         WorldManager wm = ClientContextJME.getWorldManager();
         wm.addEntity(topMapEntity);
+
+        // Add a listener to the HUD panel for changes in the elevation
+        panel.addElevationListener(elevationListener);
         
         return hudComponent;
     }
@@ -148,6 +161,19 @@ public class TopMapClientPlugin extends BaseClientPlugin {
         if (hudComponent != null) {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             mainHUD.removeComponent(hudComponent);
+        }
+    }
+
+    /**
+     * Listener for changes in the elevation on the HUD. Updates the map with
+     * the new elevation
+     */
+    private class MapElevationListener implements ElevationListener {
+        /**
+         * {@inheritDoc}
+         */
+        public void elevationChanged(float elevation) {
+            topMapEntity.setElevation(elevation);
         }
     }
 }

@@ -23,7 +23,6 @@ import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -55,6 +54,9 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
     // The JComponent into which the camera scene should be drawn
     private CaptureJComponent captureComponent = null;
 
+    // The elevation of the camera node
+    private float elevation = 0.0f;
+
     // The scene graph node for the position of the camera
     private Node cameraNode = null;
 
@@ -62,14 +64,35 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
      * Default constructor, takes the JComponent into which it should draw
      * the camera scene.
      */
-    public TopMapCameraEntity(CaptureJComponent captureComponent) {
+    public TopMapCameraEntity(CaptureJComponent capture, float elevation) {
         super("Top Camera Entity");
-        this.captureComponent = captureComponent;
+        this.captureComponent = capture;
+        this.elevation = elevation;
 
         // Creates the scene graph and attach to the entity
         createTopMap();
     }
 
+    /**
+     * Sets the elevation of the camera.
+     *
+     * @param elevation The new elevation of the camera
+     */
+    public void setElevation(final float elevation) {
+        // Update the elevation, we must alter the camera in the MT Game
+        // render thread.
+        this.elevation = elevation;
+        SceneWorker.addWorker(new WorkCommit() {
+            public void commit() {
+                Vector3f translation = cameraNode.getLocalTranslation();
+                float x = translation.getX();
+                float y = elevation;
+                float z = translation.getZ();
+                cameraNode.setLocalTranslation(x, y, z);
+                ClientContextJME.getWorldManager().addToUpdateList(cameraNode);
+            }
+        });
+    }
 
     /**
      * Creates the scene graph for the camera map Entity.
@@ -87,65 +110,79 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
         textureBuffer = (TextureRenderBuffer) rm.createRenderBuffer(
                 RenderBuffer.Target.TEXTURE_2D, width, height);
         textureBuffer.setIncludeOrtho(false);
-        
+
+        // Figure out what the initial position of the camera should be.
+        ViewCell viewCell = ViewManager.getViewManager().getPrimaryViewCell();
+        float x = 0.0f, y = elevation, z = 0.0f;
+        if (viewCell != null) {
+            CellTransform transform = viewCell.getWorldTransform();
+            Vector3f translation = transform.getTranslation(null);
+            x = translation.x;
+            z = translation.z;
+        }
+
         // Create the new camera and a node to hold it. We attach this to the
         // Entity
         cameraNode = new Node();
-        cameraNode.setLocalTranslation(0.0f, 10.0f, 0.0f);
-        Quaternion rot = new Quaternion().fromAngleAxis(90.0f, Vector3f.UNIT_X);
+        cameraNode.setLocalTranslation(x, y, z);
+        float angle = (float)Math.toRadians(90.0f);
+        Quaternion rot = new Quaternion().fromAngleAxis(angle, Vector3f.UNIT_X);
         cameraNode.setLocalRotation(rot);
         CameraNode cn = new CameraNode("Top Camera", null);
         cameraNode.attachChild(cn);
 
         // Create a camera component and associated with the texture buffer we
         // have created.
-//        CameraComponent cc = rm.createCameraComponent(
-//                cameraNode,      // The Node of the camera scene graph
-//                cn,              // The Camera
-//                width,           // Viewport width
-//                height,          // Viewport height
-//                90.0f,           // Field of view
-//                1.0f,            // Aspect ratio
-//                0.1f,            // Front clip
-//                10000.0f,        // Rear clip
-//                false            // Primary?
-//                );
-
-        // Create a camera component and associated with the texture buffer we
-        // have created. This usage creates a parallel projection, the extent
-        // of the scene is given by a (left, right, bottom, top) quad.
         CameraComponent cc = rm.createCameraComponent(
                 cameraNode,      // The Node of the camera scene graph
                 cn,              // The Camera
                 width,           // Viewport width
                 height,          // Viewport height
-                0.1f,            // Front clip
-                10000.0f,        // Rear clip
-                2.0f,           // Left extent
-                2.0f,           // Right extent
-                2.0f,           // Botton extent
-                2.0f,           // Top extent
+                90.0f,           // Field of view
+                1.0f,            // Aspect ratio
+                1.0f,            // Front clip
+                3000.0f,         // Rear clip
                 false            // Primary?
                 );
+
+        // Create a camera component and associated with the texture buffer we
+        // have created. This usage creates a parallel projection, the extent
+        // of the scene is given by a (left, right, bottom, top) quad.
+//        CameraComponent cc = rm.createCameraComponent(
+//                cameraNode,      // The Node of the camera scene graph
+//                cn,              // The Camera
+//                width,           // Viewport width
+//                height,          // Viewport height
+//                1.0f,            // Front clip
+//                3000.0f,         // Rear clip
+//                -10.0f,          // Left extent
+//                10.0f,           // Right extent
+//                -10.0f,          // Botton extent
+//                10.0f,           // Top extent
+//                false            // Primary?
+//                );
 
         textureBuffer.setCameraComponent(cc);
         rm.addRenderBuffer(textureBuffer);
         textureBuffer.setRenderUpdater(this);
 
-        ViewCell viewCell = ViewManager.getViewManager().getPrimaryViewCell();
-        Logger.getLogger(TopMapCameraEntity.class.getName()).warning("view cell " + viewCell);
+        // Listener for changes in the position of the view cell and update
+        // the camera position as a result.
         if (viewCell != null) {
             viewCell.addTransformChangeListener(new TransformChangeListener() {
                 public void transformChanged(Cell cell, ChangeSource source) {
-                    
+                    // Find the world transform of the view cell. We take the
+                    // (x, z) of the translation and the rotation.
                    CellTransform transform = cell.getWorldTransform();
                    final Vector3f translation = transform.getTranslation(null);
                    final Quaternion rotation = transform.getRotation(null);
 
+                   // Update the translation and rotation of the camera node.
+                   // We must do this in an MT Game render thead.
                    SceneWorker.addWorker(new WorkCommit() {
                         public void commit() {
                             float x = translation.getX();
-                            float y = translation.getY() + 10.0f;
+                            float y = elevation;
                             float z = translation.getZ();
                             cameraNode.setLocalTranslation(x, y, z);
                             wm.addToUpdateList(cameraNode);
