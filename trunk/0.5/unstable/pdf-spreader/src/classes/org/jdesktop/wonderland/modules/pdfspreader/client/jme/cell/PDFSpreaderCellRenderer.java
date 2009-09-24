@@ -37,7 +37,6 @@ import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.geom.Dimension2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -57,6 +56,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.pdfspreader.client.PDFSpreaderCell;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfspreader.common.PDFSpreaderCellChangeMessage.LayoutType;
@@ -85,6 +85,19 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
     public PDFSpreaderCellRenderer(Cell cell) {
         super(cell);
         this.pdfCell = (PDFSpreaderCell) cell;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
+
+        // If we are becoming active, turn off the lighting
+        if (status == CellStatus.ACTIVE && increasing == true) {
+            setLightingEnabled(false);
+        }
     }
 
     @Override
