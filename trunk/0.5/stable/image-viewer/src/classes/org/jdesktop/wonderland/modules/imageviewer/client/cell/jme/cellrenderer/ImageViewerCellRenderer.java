@@ -34,6 +34,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.imageviewer.client.cell.ImageViewerCell;
 
 /**
@@ -53,10 +54,20 @@ public class ImageViewerCellRenderer extends BasicRenderer {
     /**
      * {@inheritDoc}
      */
-    protected Node createSceneGraph(Entity entity) {
+    @Override
+    public void setStatus(CellStatus status, boolean increasing) {
+        super.setStatus(status, increasing);
 
-        // First turn off lighting for the Entity
-        setLightingEnabled(false);
+        // If we are becoming active, turn off the lighting
+        if (status == CellStatus.ACTIVE && increasing == true) {
+            setLightingEnabled(false);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected Node createSceneGraph(Entity entity) {
         
         // Create a new root node
         Node node = new Node("Image Viewer Node");
