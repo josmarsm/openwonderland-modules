@@ -18,8 +18,12 @@
 package org.jdesktop.wonderland.modules.topmap.client;
 
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 
 /**
@@ -39,10 +43,32 @@ public class TopMapJPanel extends javax.swing.JPanel {
     // The component that displays the top map
     private CaptureJComponent mapComponent = null;
 
+    // The model behind the elevation spinner value
+    private SpinnerNumberModel elevationModel = null;
+
+    // The initial elevation to use and display in the spinner
+    private static final float INITIAL_ELEVATION = 10.0f;
+
+    // The current elevation
+    private float elevation = INITIAL_ELEVATION;
+
+    // A set of listeners for changes to the elevation
+    private Set<ElevationListener> listenerSet = null;
+
     /** Default constructor */
     public TopMapJPanel() {
         // Initialize the GUI
+        listenerSet = new HashSet<ElevationListener>();
         initComponents();
+
+        // Put a model on the spinner for elevation, with a min of 0, a max
+        // of 10000, and a step size of 1.
+        Float value = new Float(elevation);
+        Float min = new Float(0.0f);
+        Float max = new Float(10000.0f);
+        Float step = new Float(1.0f);
+        elevationModel = new SpinnerNumberModel(value, min, max, step);
+        elevationSpinner.setModel(elevationModel);
 
         // Create the BufferedImage into which we will draw the camera scene
         bufferedImage = new BufferedImage(MAP_WIDTH, MAP_HEIGHT,
@@ -52,6 +78,16 @@ public class TopMapJPanel extends javax.swing.JPanel {
         mapComponent = new CaptureJComponent(bufferedImage);
         mapComponent.setPreferredSize(new Dimension(MAP_WIDTH, MAP_HEIGHT));
         topMapPanel.add(mapComponent);
+
+        // Listen for changes to the elevation value and update the camera as
+        // a result.
+        elevationModel.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                // Set the elevation and fire an event that it has changed
+                elevation = (Float) elevationModel.getValue();
+                fireElevationListener(elevation);
+            }
+        });
     }
 
     /**
@@ -63,6 +99,61 @@ public class TopMapJPanel extends javax.swing.JPanel {
         return mapComponent;
     }
 
+    /**
+     * Returns the current elevation set on the panel.
+     *
+     * @return The current elevation
+     */
+    public float getElevation() {
+        return elevation;
+    }
+
+    /**
+     * Adds a new listener for elevation changes. If the listener already
+     * exists, this method does nothing.
+     *
+     * @param listener The listener to add
+     */
+    public void addElevationListener(ElevationListener listener) {
+        synchronized (listenerSet) {
+            listenerSet.add(listener);
+        }
+    }
+
+    /**
+     * Removes an existing listener for elevation changes. If the listener
+     * does not exist, this method does nothing.
+     *
+     * @param listener The listener to remove
+     */
+    public void removeElevationListener(ElevationListener listener) {
+        synchronized (listenerSet) {
+            listenerSet.remove(listener);
+        }
+    }
+
+    /**
+     * Notifies all listeners that an elevation change has happened.
+     */
+    private void fireElevationListener(float elevation) {
+        synchronized (listenerSet) {
+            for (ElevationListener listener : listenerSet) {
+                listener.elevationChanged(elevation);
+            }
+        }
+    }
+
+    /**
+     * A listener interface for changes in the elevation
+     */
+    public interface ElevationListener {
+        /**
+         * Indicates that the elevation has changed.
+         * @param elevation The new elevation
+         */
+        public void elevationChanged(float elevation);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -71,16 +162,52 @@ public class TopMapJPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         topMapPanel = new javax.swing.JPanel();
+        controlPanel = new javax.swing.JPanel();
+        elevationLabel = new javax.swing.JLabel();
+        elevationSpinner = new javax.swing.JSpinner();
+        metersLabel = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridLayout());
+        setLayout(new java.awt.GridBagLayout());
 
-        topMapPanel.setLayout(new java.awt.GridLayout());
-        add(topMapPanel);
+        topMapPanel.setLayout(new java.awt.GridLayout(1, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(topMapPanel, gridBagConstraints);
+
+        controlPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/topmap/client/resources/Bundle"); // NOI18N
+        elevationLabel.setText(bundle.getString("Elevation_Label")); // NOI18N
+        controlPanel.add(elevationLabel);
+        controlPanel.add(elevationSpinner);
+
+        metersLabel.setText(bundle.getString("Meters_Label")); // NOI18N
+        controlPanel.add(metersLabel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        add(controlPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel controlPanel;
+    private javax.swing.JLabel elevationLabel;
+    private javax.swing.JSpinner elevationSpinner;
+    private javax.swing.JLabel metersLabel;
     private javax.swing.JPanel topMapPanel;
     // End of variables declaration//GEN-END:variables
 }
