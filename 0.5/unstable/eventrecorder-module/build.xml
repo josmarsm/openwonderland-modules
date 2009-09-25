@@ -12,6 +12,10 @@
         
     <property name="module.src" value="${module.plugin.src}"/>
     <property name="module.jarname" value="${module.name}"/>
+
+    <pathconvert property="module-server.classpath">
+        <path location="${modules.dir}/tools/audio-manager/lib/voicelib.jar"/>
+    </pathconvert>
     
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
