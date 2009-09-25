@@ -19,14 +19,12 @@
 package org.jdesktop.wonderland.modules.eventplayer.server;
 
 import com.jme.math.Vector3f;
-import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.mpk20.voicelib.app.Recorder;
 import com.sun.mpk20.voicelib.app.RecorderSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.util.ScalableHashSet;
-import com.sun.voip.client.connector.CallStatus;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
@@ -64,7 +62,7 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
  * @author Bernard Horan
  * 
  */
-public class EventPlayerCellMO extends CellMO implements ListRecordingsListener, ManagedCallStatusListener {
+public class EventPlayerCellMO extends CellMO implements ListRecordingsListener {
     
     private static final Logger eventPlayerLogger = Logger.getLogger(EventPlayerCellMO.class.getName());
     private EventPlayerCellServerState serverState;
@@ -276,8 +274,6 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener,
     private void setupAudioRecorder(Vector3f origin) {
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        vm.addCallStatusListener(this, callId);
-
         RecorderSetup setup = new RecorderSetup();
 
         setup.x = origin.x;
@@ -426,17 +422,6 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener,
         }
 
         
-    }
-
-    public void callStatusChanged(CallStatus status) {
-        switch (status.getCode()) {
-            case CallStatus.TREATMENTDONE:
-                playbackDone();
-                break;
-            default:
-                eventPlayerLogger.severe("Unknown call status: " + status.getCode());
-        }
-
     }
 
 }
