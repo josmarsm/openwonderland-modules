@@ -144,10 +144,11 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     }
 
     private void createTapes() {
+        //TODO
         //Add any existing files
         File tapeDir = new File(serverState.getRecordingDirectory());
         if (!tapeDir.exists()) {
-            audioRecorderLogger.fine("Non existent directory: " + tapeDir);
+            audioRecorderLogger.warning("Non existent directory: " + tapeDir);
             tapeDir.mkdirs();
         }
         String[] tapeFiles = tapeDir.list(new FilenameFilter() {
