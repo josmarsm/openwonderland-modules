@@ -47,6 +47,7 @@ public class GenericStickyNoteCellFactory implements CellFactorySPI {
         Map<String, String> metadata = new HashMap();
         metadata.put("sizing-hint", "2.0");
         state.setMetaData(metadata);
+        state.setName("StickyNote");
 
         return (T) state;
     }
