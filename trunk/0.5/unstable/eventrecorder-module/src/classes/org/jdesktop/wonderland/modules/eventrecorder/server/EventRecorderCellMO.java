@@ -19,6 +19,10 @@
 
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
+import com.jme.math.Vector3f;
+import com.sun.mpk20.voicelib.app.Recorder;
+import com.sun.mpk20.voicelib.app.RecorderSetup;
+import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.io.IOException;
@@ -39,6 +43,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellChangeMessage;
 import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellServerState;
@@ -58,7 +63,7 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 
 /**
  *
- * Server side cell that represents the event recorder object in world.
+ * Server side cell that represents the event audioRecorder object in world.
  * Reponsible for receiving and sending messages to and from the client cell and managing the eventrecorder object
  * that actually does the work of recording.
  * @author Bernard Horan
@@ -72,6 +77,9 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     private String recorderName;
     private ManagedReference<EventRecorderImpl> recorderRef;
     private ManagedReference<EventRecorderCellCacheMO> eventRecorderCellCacheRef;
+    private String callId;
+    private Recorder audioRecorder;
+
     
     public EventRecorderCellMO() {
         super();
@@ -82,6 +90,11 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         createTapes();
         serverState.setRecording(false);
         addTransformChangeListener(new TransformChangeListener());
+        callId = getCellID().toString();
+        int ix = callId.indexOf("@");
+        if (ix >= 0) {
+            callId = callId.substring(ix + 1);
+        }
     }
 
     /**
@@ -142,6 +155,15 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     public void setServerState(CellServerState cellServerState) {
         super.setServerState(cellServerState);
         createEventRecorder();
+        // Check to see if the CellServerState has a PositionComponentServerState
+        // and takes it origin. This will only work upon the initial creation
+        // of the cell and not when the cell is moved at all. This class should
+        // add a transform change listener to listen for changes in the cell
+        // origin after the cell has been created.
+        PositionComponentServerState state = (PositionComponentServerState) cellServerState.getComponentServerState(PositionComponentServerState.class);
+        if (state != null) {
+            setupAudioRecorder(state.getTranslation());
+        }
     }
 
 
@@ -285,17 +307,55 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         }
     }
 
+    private void setupAudioRecorder(Vector3f origin) {
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        //vm.addCallStatusListener(this, callId);
+
+        RecorderSetup setup = new RecorderSetup();
+
+        setup.x = origin.x;
+        setup.y = origin.y;
+        setup.z = origin.z;
+
+        logger.info("Recorder Origin is " + "(" + origin.x + ":" + origin.y + ":" + origin.z + ")");
+
+        setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
+
+        setup.recordDirectory = getAudioRecordingDirectory();
+
+        try {
+            audioRecorder = vm.createRecorder(callId, setup);
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+    }
+
+    private String getAudioRecordingDirectory() {
+        return "/tmp/EventRecordings";
+    }
 
     private void startRecording() {
         //eventRecorderLogger.info("Start Recording");
         //logger.info("cellCacheRef for " + recorderName + ": " + eventRecorderCellCacheRef);
-        recorderRef.get().startRecording(serverState.getSelectedTape().getTapeName(), eventRecorderCellCacheRef.get().getLoadedCells());
+        String tapeName = serverState.getSelectedTape().getTapeName();
+        try {
+            audioRecorder.startRecording(tapeName + ".au");
+        } catch (IOException ex) {
+            eventRecorderLogger.log(Level.SEVERE, "Failed to start audio recording", ex);
+        }
+        recorderRef.get().startRecording(tapeName, eventRecorderCellCacheRef.get().getLoadedCells());
     }
 
 
     private void stopRecording() {
         //eventRecorderLogger.info("Stop Recording");
         recorderRef.get().stopRecording();
+        try {
+            audioRecorder.stopRecording();
+        } catch (IOException ex) {
+            eventRecorderLogger.log(Level.SEVERE, "Failed to stop audio recording", ex);
+        }
     }
 
     
