@@ -18,9 +18,15 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server;
 
+import com.jme.math.Vector3f;
+import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
+import com.sun.mpk20.voicelib.app.Recorder;
+import com.sun.mpk20.voicelib.app.RecorderSetup;
+import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.util.ScalableHashSet;
+import com.sun.voip.client.connector.CallStatus;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
@@ -36,6 +42,7 @@ import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.wfs.WFSRecordingList;
 import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerCellChangeMessage;
@@ -57,13 +64,14 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
  * @author Bernard Horan
  * 
  */
-public class EventPlayerCellMO extends CellMO implements ListRecordingsListener {
+public class EventPlayerCellMO extends CellMO implements ListRecordingsListener, ManagedCallStatusListener {
     
     private static final Logger eventPlayerLogger = Logger.getLogger(EventPlayerCellMO.class.getName());
     private EventPlayerCellServerState serverState;
     private ManagedReference<EventPlayer> playerRef;
     private ManagedReference<ScalableHashSet<CellID>> loadedCellsRef;
-
+    private String callId;
+    private Recorder audioRecorder;
 
     public EventPlayerCellMO() {
         super();
@@ -72,6 +80,11 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         ScalableHashSet<CellID> loadedCells = new ScalableHashSet<CellID>();
         loadedCellsRef = AppContext.getDataManager().createReference(loadedCells);
         createTapes();
+        callId = getCellID().toString();
+        int ix = callId.indexOf("@");
+        if (ix >= 0) {
+            callId = callId.substring(ix + 1);
+        }
     }
 
     @Override
@@ -121,6 +134,15 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     public void setServerState(CellServerState cellServerState) {
         super.setServerState(cellServerState);
         createEventPlayer();
+        // Check to see if the CellServerState has a PositionComponentServerState
+        // and takes it origin. This will only work upon the initial creation
+        // of the cell and not when the cell is moved at all. This class should
+        // add a transform change listener to listen for changes in the cell
+        // origin after the cell has been created.
+        PositionComponentServerState state = (PositionComponentServerState) cellServerState.getComponentServerState(PositionComponentServerState.class);
+        if (state != null) {
+            setupAudioRecorder(state.getTranslation());
+        }
     }
 
 
@@ -251,6 +273,34 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         }
     }
 
+    private void setupAudioRecorder(Vector3f origin) {
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+
+        vm.addCallStatusListener(this, callId);
+
+        RecorderSetup setup = new RecorderSetup();
+
+        setup.x = origin.x;
+        setup.y = origin.y;
+        setup.z = origin.z;
+
+        logger.info("Recorder Origin is " + "(" + origin.x + ":" + origin.y + ":" + origin.z + ")");
+
+        setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
+
+        setup.recordDirectory = getAudioRecordingDirectory();
+
+        try {
+            audioRecorder = vm.createRecorder(callId, setup);
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+    }
+
+    private String getAudioRecordingDirectory() {
+        return "/tmp/EventRecordings";
+    }
+
     private void unloadRecording() {
         Tape selectedTape = serverState.getSelectedTape();
         if (selectedTape != null) {
@@ -274,14 +324,30 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
     private void startPlaying() {
         eventPlayerLogger.info("Start Playing");
         playerRef.get().startPlaying();
+        try {
+            audioRecorder.playRecording(serverState.getSelectedTape().getTapeName() + ".au");
+        } catch (IOException ex) {
+            eventPlayerLogger.log(Level.SEVERE, "Failed to play recording", ex);
+        }
+
     }
 
     private void stopPlaying() {
         eventPlayerLogger.info("Stop Playing");
         playerRef.get().stopPlaying();
+        try {
+            audioRecorder.stopPlayingRecording();
+        } catch (IOException ex) {
+            eventPlayerLogger.log(Level.SEVERE, "Failed to stop playing recording", ex);
+        }
     }
 
     void playbackDone() {
+        try {
+            audioRecorder.stopPlayingRecording();
+        } catch (IOException ex) {
+            eventPlayerLogger.log(Level.SEVERE, "Failed to stop playing recording", ex);
+        }
         serverState.setPlaying(false);
         EventPlayerCellChangeMessage epccm = EventPlayerCellChangeMessage.playbackDone(getCellID());
         getChannel().sendAll(null, epccm);
@@ -362,6 +428,15 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         
     }
 
-    
+    public void callStatusChanged(CallStatus status) {
+        switch (status.getCode()) {
+            case CallStatus.TREATMENTDONE:
+                playbackDone();
+                break;
+            default:
+                eventPlayerLogger.severe("Unknown call status: " + status.getCode());
+        }
+
+    }
 
 }
