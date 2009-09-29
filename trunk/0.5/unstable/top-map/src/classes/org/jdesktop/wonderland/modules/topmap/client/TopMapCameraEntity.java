@@ -23,6 +23,7 @@ import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -41,11 +42,16 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  * An Entity that contains a Camera that can be attached to the world and that
- * can track the movements of a Cell.
+ * can track the movements of a Cell. This class assumes a primary view cell
+ * exists before it is created -- if not, this class will do nothing.
  *
  * @author Jordan Slott <jslott@dev.java.net>
  */
 public class TopMapCameraEntity extends Entity implements RenderUpdater {
+
+    // The error logger
+    private static Logger LOGGER =
+            Logger.getLogger(TopMapCameraEntity.class.getName());
 
     // The buffer into which the camera is renderer, so we can copy it into
     // a BufferedImage
@@ -60,6 +66,12 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
     // The scene graph node for the position of the camera
     private Node cameraNode = null;
 
+    // The primary view cell currently in use
+    private ViewCell viewCell = null;
+
+    // The transform change listener on the view Cell
+    private TransformChangeListener listener = null;
+
     /**
      * Default constructor, takes the JComponent into which it should draw
      * the camera scene.
@@ -68,6 +80,14 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
         super("Top Camera Entity");
         this.captureComponent = capture;
         this.elevation = elevation;
+
+        // Look up the primary view cell. Assume it exists, if not, log an
+        // error and return (never creating the map).
+        viewCell = ViewManager.getViewManager().getPrimaryViewCell();
+        if (viewCell == null) {
+            LOGGER.warning("Unable to find primary view cell, is null.");
+            return;
+        }
 
         // Creates the scene graph and attach to the entity
         createTopMap();
@@ -95,6 +115,37 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
     }
 
     /**
+     * Sets whether the camera is enabled (true) or disabled (false).
+     *
+     * @param isEnabled True to enable the camera, false to disable
+     */
+    public void setCameraEnabled(boolean isEnabled) {
+        // If it is enabled, then turn on the rendering and the buffer
+        if (textureBuffer != null) {
+            textureBuffer.setEnable(isEnabled);
+        }
+    }
+
+    /**
+     * Dispose of any resources associated with this entity. Once called, the
+     * Entity can no longer be used.
+     */
+    public void dispose() {
+        // Remove the listener from the view cell, if there is one
+        if (viewCell != null) {
+            viewCell.removeTransformChangeListener(listener);
+            listener = null;
+        }
+
+        // Remove the render buffer to clean it up
+        if (textureBuffer != null) {
+            WorldManager wm = ClientContextJME.getWorldManager();
+            RenderManager rm = wm.getRenderManager();
+            rm.removeRenderBuffer(textureBuffer);
+        }
+    }
+
+    /**
      * Creates the scene graph for the camera map Entity.
      */
     private void createTopMap() {
@@ -111,15 +162,14 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
                 RenderBuffer.Target.TEXTURE_2D, width, height);
         textureBuffer.setIncludeOrtho(false);
 
-        // Figure out what the initial position of the camera should be.
-        ViewCell viewCell = ViewManager.getViewManager().getPrimaryViewCell();
-        float x = 0.0f, y = elevation, z = 0.0f;
-        if (viewCell != null) {
-            CellTransform transform = viewCell.getWorldTransform();
-            Vector3f translation = transform.getTranslation(null);
-            x = translation.x;
-            z = translation.z;
-        }
+        // Figure out what the initial position of the camera should be from
+        // the primary view Cell. This assumes the view cell is not null, which
+        // is checked in the constructor.
+        CellTransform transform = viewCell.getWorldTransform();
+        Vector3f translation = transform.getTranslation(null);
+        float x = translation.x;
+        float y = elevation;
+        float z = translation.z;
 
         // Create the new camera and a node to hold it. We attach this to the
         // Entity
@@ -162,38 +212,36 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
 //                false            // Primary?
 //                );
 
+        // Associated the texture buffer with the render manager, but keep it
+        // off initially.
+        textureBuffer.setEnable(false);
         textureBuffer.setCameraComponent(cc);
         rm.addRenderBuffer(textureBuffer);
         textureBuffer.setRenderUpdater(this);
 
         // Listener for changes in the position of the view cell and update
         // the camera position as a result.
-        if (viewCell != null) {
-            viewCell.addTransformChangeListener(new TransformChangeListener() {
-                public void transformChanged(Cell cell, ChangeSource source) {
-                    // Find the world transform of the view cell. We take the
-                    // (x, z) of the translation and the rotation.
-                   CellTransform transform = cell.getWorldTransform();
-                   final Vector3f translation = transform.getTranslation(null);
-                   final Quaternion rotation = transform.getRotation(null);
+        listener = new TransformChangeListener() {
+            public void transformChanged(Cell cell, ChangeSource source) {
+                // Find the world transform of the view cell. We take the
+                // (x, z) of the translation and the rotation.
+                CellTransform transform = cell.getWorldTransform();
+                final Vector3f translation = transform.getTranslation(null);
 
-                   // Update the translation and rotation of the camera node.
-                   // We must do this in an MT Game render thead.
-                   SceneWorker.addWorker(new WorkCommit() {
-                        public void commit() {
-                            float x = translation.getX();
-                            float y = elevation;
-                            float z = translation.getZ();
-                            cameraNode.setLocalTranslation(x, y, z);
-                            wm.addToUpdateList(cameraNode);
-
-//                            Quaternion q = cameraNode.getLocalRotation();
-//                            cameraNode.setLocalRotation(q.mult(rotation));
-                        }
-                    });
-                }
-            });
-        }
+                // Update the translation and rotation of the camera node.
+                // We must do this in an MT Game render thead.
+                SceneWorker.addWorker(new WorkCommit() {
+                    public void commit() {
+                        float x = translation.getX();
+                        float y = elevation;
+                        float z = translation.getZ();
+                        cameraNode.setLocalTranslation(x, y, z);
+                        wm.addToUpdateList(cameraNode);
+                    }
+                });
+            }
+        };
+        viewCell.addTransformChangeListener(listener);
 
         // Add the camera component to the Entity
         addComponent(CameraComponent.class, cc);
