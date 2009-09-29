@@ -19,12 +19,13 @@ package org.jdesktop.wonderland.modules.topmap.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.ref.WeakReference;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -36,6 +37,8 @@ import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.modules.topmap.client.TopMapJPanel.ElevationListener;
 
 /**
@@ -46,6 +49,10 @@ import org.jdesktop.wonderland.modules.topmap.client.TopMapJPanel.ElevationListe
 @Plugin
 public class TopMapClientPlugin extends BaseClientPlugin {
 
+    // The error logger
+    private static Logger LOGGER =
+            Logger.getLogger(TopMapClientPlugin.class.getName());
+
     // The I18N resource bundle
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/topmap/client/resources/Bundle");
@@ -53,15 +60,17 @@ public class TopMapClientPlugin extends BaseClientPlugin {
     // The top map menu item to add to the Windows menu
     private JMenuItem topMapMI = null;
 
-    // The HUD Component displaying the top map, stored as a weak reference
-    // to help GC
-    private WeakReference<HUDComponent> hudRef = null;
+    // The HUD Component displaying the top map.
+    private HUDComponent hudComponent = null;
 
     // Create a new top camera Entity used to capture the scene
     private TopMapCameraEntity topMapEntity = null;
 
     // Listener for elevation changes in the HUD control
     private MapElevationListener elevationListener = null;
+
+    // Listener for changes in the primary view Cell
+    private ViewManagerListener viewManagerListener = null;
 
     /**
      * {@inheritDoc}
@@ -74,20 +83,18 @@ public class TopMapClientPlugin extends BaseClientPlugin {
         topMapMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Depending upon whether the checkbox is selected or not,
-                // either hide or show the HUD Component
+                // either hide or show the HUD Component and turn on/off the
+                // camera taking the snapshots for the map.
                 if (topMapMI.isSelected() == true) {
-                    if (hudRef == null || hudRef.get() == null) {
-                        HUDComponent hudComponent = createHUD();
-                        hudRef = new WeakReference<HUDComponent>(hudComponent);
+                    if (hudComponent == null) {
+                        hudComponent = createHUD();
                     }
-                    HUDComponent hudComponent = hudRef.get();
                     hudComponent.setVisible(true);
+                    topMapEntity.setCameraEnabled(true);
                 }
                 else {
-                    HUDComponent hudComponent = hudRef.get();
-                    if (hudComponent != null) {
-                        hudComponent.setVisible(false);
-                    }
+                    hudComponent.setVisible(false);
+                    topMapEntity.setCameraEnabled(false);
                 }
             }
         });
@@ -96,6 +103,11 @@ public class TopMapClientPlugin extends BaseClientPlugin {
         // for later use
         elevationListener = new MapElevationListener();
 
+        // Wait until we get a "primary view" Cell. We need one before we can
+        // display the map.
+        viewManagerListener = new MapViewManagerListener();
+        ViewManager.getViewManager().addViewManagerListener(viewManagerListener);
+        
         super.initialize(loginInfo);
     }
 
@@ -103,24 +115,27 @@ public class TopMapClientPlugin extends BaseClientPlugin {
      * Creates and returns the top map HUD component.
      */
     private HUDComponent createHUD() {
+        LOGGER.warning("CREATING TOP MAP HUD");
+
         // Create the HUD Panel that displays the map.
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         TopMapJPanel panel = new TopMapJPanel();
-        HUDComponent hudComponent = mainHUD.createComponent(panel);
+        hudComponent = mainHUD.createComponent(panel);
         hudComponent.setName(BUNDLE.getString("Top_Map_Title"));
         hudComponent.setPreferredLocation(Layout.SOUTHEAST);
         mainHUD.addComponent(hudComponent);
 
         // Track when the HUD Component is closed. We need to update the state
-        // of the check box menu item too
+        // of the check box menu item too. We also need to turn off the camera.
         hudComponent.addEventListener(new HUDEventListener() {
             public void HUDObjectChanged(HUDEvent event) {
                 if (event.getEventType() == HUDEventType.CLOSED) {
                     topMapMI.setSelected(false);
+                    topMapEntity.setCameraEnabled(false);
                 }
             }
         });
-
+        
         // Create the Entity that holds the camera and add it to the world
         CaptureJComponent captureComponent = panel.getCaptureJComponent();
         float elevation = panel.getElevation();
@@ -138,29 +153,68 @@ public class TopMapClientPlugin extends BaseClientPlugin {
      * {@inheritDoc}
      */
     @Override
-    protected void activate() {
-        JmeClientMain.getFrame().addToWindowMenu(topMapMI, -1);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void deactivate() {
-        JmeClientMain.getFrame().removeFromWindowMenu(topMapMI);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void cleanup() {
         // If there is a HUD Component, then remove it from the HUD and clean
-        // it up.
-        HUDComponent hudComponent = hudRef.get();
+        // it up. This really should happen when the primary view cell is
+        // disconnected, but we do this here just in case.
         if (hudComponent != null) {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             mainHUD.removeComponent(hudComponent);
+        }
+
+        // Clean up the Map entity, ane release the reference
+        if (topMapEntity != null) {
+            topMapEntity.setCameraEnabled(false);
+            topMapEntity.dispose();
+            topMapEntity = null;
+        }
+
+        // Remove the listener from the view manager
+        if (viewManagerListener != null) {
+            ViewManager vm = ViewManager.getViewManager();
+            vm.removeViewManagerListener(viewManagerListener);
+            viewManagerListener = null;
+        }
+    }
+
+    /**
+     * Listener for the changes in the primary view cell.
+     */
+    private class MapViewManagerListener implements ViewManagerListener {
+        /**
+         * {@inheritDoc}
+         */
+        public void primaryViewCellChanged(ViewCell oldCell, ViewCell newCell) {
+            LOGGER.warning("PRIMARY VIEW CHANGE FROM " + oldCell + " TO " + newCell);
+            
+            // If there is an old Cell, then remove the old HUD component and
+            // the main menu item.
+            if (oldCell != null) {
+                // If there is a HUD Component, then remove it from the HUD and
+                // clean it up. This really should happen when the primary view
+                // cell is disconnected, but we do this here just in case.
+                LOGGER.warning("HUD COMPONENT IS " + hudComponent);
+                if (hudComponent != null) {
+                    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+                    mainHUD.removeComponent(hudComponent);
+                }
+
+                // Clean up the Map entity, ane release the reference
+                LOGGER.warning("TOP MAP ENTITY IS " + topMapEntity);
+                if (topMapEntity != null) {
+                    topMapEntity.setCameraEnabled(false);
+                    topMapEntity.dispose();
+                    topMapEntity = null;
+                }
+
+                // Remove the menu item
+                JmeClientMain.getFrame().removeFromWindowMenu(topMapMI);
+            }
+
+            // If there is a new Cell, the add the menu item
+            if (newCell != null) {
+                JmeClientMain.getFrame().addToWindowMenu(topMapMI, -1);
+            }
         }
     }
 
