@@ -22,6 +22,8 @@ import java.awt.Point;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JCheckBox;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -29,6 +31,7 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import sun.swing.table.DefaultTableCellHeaderRenderer;
 
 /**
  * A JFrame that displays a list of HUD Components and various aspects of them.
@@ -47,6 +50,13 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
         // The set table model for the list of HUD components
         hudTableModel = new HUDTableModel();
         hudTable.setModel(hudTableModel);
+
+        // Set the default renderer and editor for all Boolean values to be a
+        // checkbox
+//        hudTable.setDefaultRenderer(Boolean.class,
+//                new DefaultTableCellHeaderRenderer(
+//        hudTable.setDefaultEditor(Boolean.class,
+//                new DefaultCellEditor(new JCheckBox()));
 
         // Listen for when any changes are made to the HUD and update the
         // table display accordingly.
@@ -86,6 +96,12 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
         private String[] COLUMNS = {
             "Name", "Display", "Position", "Size", "Enabled", "Visible",
             "Minimized", "Decorated"
+        };
+
+        // An array of classes that represent the column classes
+        private Class[] COLUMN_CLASSES = {
+            String.class, String.class, String.class, String.class,
+            Boolean.class, Boolean.class, Boolean.class, Boolean.class
         };
 
         /** Default constructor */
@@ -130,6 +146,62 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
         @Override
         public String getColumnName(int column) {
             return COLUMNS[column];
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return COLUMN_CLASSES[columnIndex];
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            // Make the boolean values editable
+            if (columnIndex >= 4 && columnIndex <= 7) {
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            // For the boolean values that we can edit, fetch the checkbox
+            // and set the appropriate value
+            if (columnIndex < 3 || columnIndex > 7) {
+                return;
+            }
+            boolean isSelected = (Boolean)aValue;
+            HUDComponent hudComponent = componentList.get(rowIndex);
+
+            switch (columnIndex) {
+                case 4:
+                    hudComponent.setEnabled(isSelected);
+                    break;
+                case 5:
+                    hudComponent.setVisible(isSelected);
+                    break;
+                case 6:
+                    if (isSelected == true) {
+                        hudComponent.setMinimized();
+                    }
+                    else {
+                        hudComponent.setMaximized();
+                    }
+                    break;
+                case 7:
+                    hudComponent.setDecoratable(isSelected);
+                    break;
+                default:
+                    break;
+            }
         }
 
         /**
