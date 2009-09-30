@@ -42,6 +42,7 @@
                     <include name="${module.src}/common/**"/>
                     <fileset dir="${current.dir}/src/classes">
                         <include name="${module.src}/client/**/*.properties"/>
+                        <include name="${module.src}/client/resources/*.png"/>
                     </fileset>
                 </clientjar>
             </client>
