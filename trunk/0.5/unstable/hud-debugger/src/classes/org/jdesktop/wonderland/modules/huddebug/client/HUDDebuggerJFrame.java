@@ -22,8 +22,6 @@ import java.awt.Point;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JCheckBox;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -31,7 +29,6 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDEvent;
 import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
-import sun.swing.table.DefaultTableCellHeaderRenderer;
 
 /**
  * A JFrame that displays a list of HUD Components and various aspects of them.
@@ -62,8 +59,10 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
         // table display accordingly.
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         mainHUD.addEventListener(new HUDEventListener() {
+
             public void HUDObjectChanged(HUDEvent event) {
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         hudTableModel.refresh();
                     }
@@ -91,16 +90,14 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
 
         // An ordered list of HUD components that are present
         private List<HUDComponent> componentList = null;
-
         // An array of column names for the table
         private String[] COLUMNS = {
-            "Name", "Display", "Position", "Size", "Enabled", "Visible",
+            "Name", "Type", "Mode", "Position", "Size", "Enabled", "Visible",
             "Minimized", "Decorated"
         };
-
         // An array of classes that represent the column classes
         private Class[] COLUMN_CLASSES = {
-            String.class, String.class, String.class, String.class,
+            String.class, String.class, String.class, String.class, String.class,
             Boolean.class, Boolean.class, Boolean.class, Boolean.class
         };
 
@@ -178,25 +175,24 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
             if (columnIndex < 3 || columnIndex > 7) {
                 return;
             }
-            boolean isSelected = (Boolean)aValue;
+            boolean isSelected = (Boolean) aValue;
             HUDComponent hudComponent = componentList.get(rowIndex);
 
             switch (columnIndex) {
-                case 4:
+                case 5:
                     hudComponent.setEnabled(isSelected);
                     break;
-                case 5:
+                case 6:
                     hudComponent.setVisible(isSelected);
                     break;
-                case 6:
+                case 7:
                     if (isSelected == true) {
                         hudComponent.setMinimized();
-                    }
-                    else {
+                    } else {
                         hudComponent.setMaximized();
                     }
                     break;
-                case 7:
+                case 8:
                     hudComponent.setDecoratable(isSelected);
                     break;
                 default:
@@ -213,20 +209,22 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
                 case 0:
                     return hudComponent.getName();
                 case 1:
-                    return hudComponent.getDisplayMode();
+                    return hudComponent.getClass().getSimpleName();
                 case 2:
+                    return hudComponent.getDisplayMode();
+                case 3:
                     Point location = hudComponent.getLocation();
                     return "(" + location.x + ", " + location.y + ")";
-                case 3:
+                case 4:
                     Dimension size = hudComponent.getSize();
                     return "(" + size.width + ", " + size.height + ")";
-                case 4:
-                    return hudComponent.isEnabled();
                 case 5:
-                    return hudComponent.isVisible();
+                    return hudComponent.isEnabled();
                 case 6:
-                    return hudComponent.isMinimized();
+                    return hudComponent.isVisible();
                 case 7:
+                    return hudComponent.isMinimized();
+                case 8:
                     return hudComponent.getDecoratable();
                 default:
                     return null;
@@ -249,10 +247,13 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/huddebug/client/resources/Bundle"); // NOI18N
         setTitle(bundle.getString("HUD_Debugger_Title")); // NOI18N
-        getContentPane().setLayout(new java.awt.GridLayout());
+        getContentPane().setLayout(new java.awt.GridLayout(1, 0));
 
         mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 3, 3));
-        mainPanel.setLayout(new java.awt.GridLayout());
+        mainPanel.setPreferredSize(new java.awt.Dimension(600, 200));
+        mainPanel.setLayout(new java.awt.GridLayout(1, 0));
+
+        hudScrollPane.setPreferredSize(new java.awt.Dimension(600, 200));
 
         hudTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -265,6 +266,8 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        hudTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS);
+        hudTable.setPreferredSize(new java.awt.Dimension(600, 200));
         hudScrollPane.setViewportView(hudTable);
 
         mainPanel.add(hudScrollPane);
@@ -273,7 +276,6 @@ public class HUDDebuggerJFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane hudScrollPane;
     private javax.swing.JTable hudTable;
