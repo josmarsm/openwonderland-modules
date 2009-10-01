@@ -72,6 +72,8 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
     // The transform change listener on the view Cell
     private TransformChangeListener listener = null;
 
+    int[] pixels = null;
+
     /**
      * Default constructor, takes the JComponent into which it should draw
      * the camera scene.
@@ -158,6 +160,7 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
         BufferedImage bufferedImage = captureComponent.getBufferedImage();
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
+        pixels = new int[width*height];
         textureBuffer = (TextureRenderBuffer) rm.createRenderBuffer(
                 RenderBuffer.Target.TEXTURE_2D, width, height);
         textureBuffer.setIncludeOrtho(false);
@@ -253,6 +256,7 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
      */
     private void fill(BufferedImage bi, ByteBuffer bb, int width, int height) {
         bb.rewind();
+        int pi = 0;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int index = (y * width + x) * 3;
@@ -260,11 +264,12 @@ public class TopMapCameraEntity extends Entity implements RenderUpdater {
                 int g = bb.get(index + 1);
                 int r = bb.get(index + 2);
 
-                int pixel = ((r & 255) << 16) | ((g & 255) << 8) |
+                pixels[pi++] = ((r & 255) << 16) | ((g & 255) << 8) |
                         ((b & 255)) | 0xff000000;
-                bi.setRGB(x, (height - y) - 1, pixel);
+                //bi.setRGB(x, (height - y) - 1, pixel);
             }
         }
+        bi.setRGB(0, 0, width, height, pixels, 0, width);
     }
 
     /**
