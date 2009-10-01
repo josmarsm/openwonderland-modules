@@ -18,12 +18,15 @@
 package org.jdesktop.wonderland.modules.xmpp_presence.server.service;
 
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import java.io.Serializable;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.server.UserListener;
+import org.jdesktop.wonderland.server.UserMO;
 import org.jdesktop.wonderland.server.UserManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -121,12 +124,17 @@ public class XMPPPresenceManager {
      */
     public static class PresenceUserListener implements UserListener {
 
-        public void userLoggedOut(WonderlandClientID clientID) {
+        public void userLoggedOut(WonderlandClientID clientID,
+                ManagedReference<UserMO> userRef,
+                ManagedReference<Queue<Task>> logoutTasksRef) {
+
             XMPPPresenceManager manager = AppContext.getManager(XMPPPresenceManager.class);
             manager.userLoggedOutEvent(clientID);
         }
 
-        public void userLoggedIn(WonderlandClientID clientID) {
+        public void userLoggedIn(WonderlandClientID clientID,
+                ManagedReference<UserMO> userRef) {
+
             XMPPPresenceManager manager = AppContext.getManager(XMPPPresenceManager.class);
             manager.userLoggedInEvent(clientID);
         }
