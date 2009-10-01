@@ -17,9 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.xmpp_presence.server.service;
 
-import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.impl.auth.IdentityImpl;
 import com.sun.sgs.impl.sharedutil.LoggerWrapper;
 import com.sun.sgs.impl.util.AbstractService;
@@ -40,9 +38,7 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.comms.ClientConnectionHandler;
 import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.modules.textchat.common.TextChatConnectionType;
-import org.jdesktop.wonderland.modules.textchat.common.TextChatMessage;
 import org.jdesktop.wonderland.modules.textchat.server.TextChatConnectionHandler;
-import org.jdesktop.wonderland.modules.textchat.server.TextChatMessageListener;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.ConnectionConfiguration;
