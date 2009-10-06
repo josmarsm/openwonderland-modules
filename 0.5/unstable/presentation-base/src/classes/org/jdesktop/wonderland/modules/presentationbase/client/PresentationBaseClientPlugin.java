@@ -56,7 +56,11 @@ public class PresentationBaseClientPlugin extends BaseClientPlugin implements Vi
 
         @Override
         public void deactivate() {
+            // Fetch the client cache and remove the component from the avatar.
             CellCache cache = ClientContextJME.getCellCache(session.getPrimarySession());
+            if (cache == null) {
+                return;
+            }
             AvatarCell avatar = (AvatarCell) cache.getViewCell();
 
             // The javadoc on this method says TEST ME, so I'm not sure

@@ -70,7 +70,7 @@ public class PresentationCellMO extends CellMO {
         ((PresentationCellServerState)state).setInitialized(true);
 
 
-        return state;
+        return super.getServerState(state);
     }
 
     /**
@@ -208,22 +208,22 @@ public class PresentationCellMO extends CellMO {
 
     }
 
-        @Override
-        protected void setLive(boolean live) {
-            super.setLive(live);
+    @Override
+    protected void setLive(boolean live) {
+        super.setLive(live);
 
-            ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
-            if(live) {
-                channel.addMessageReceiver(PresentationCellChangeMessage.class, (ChannelComponentMO.ComponentMessageReceiver)new PresentationCellChangeMessageReceiver(this));
-            }
-            else {
-                channel.removeMessageReceiver(PresentationCellChangeMessage.class);
-            }
+        ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
+        if (live) {
+            channel.addMessageReceiver(PresentationCellChangeMessage.class, (ChannelComponentMO.ComponentMessageReceiver) new PresentationCellChangeMessageReceiver(this));
         }
+        else {
+            channel.removeMessageReceiver(PresentationCellChangeMessage.class);
+        }
+    }
 
-        public void setPlatformCellMO(MovingPlatformCellMO cellMO) {
-            this.platformCellMORef = AppContext.getDataManager().createReference(cellMO);
-        }
+    public void setPlatformCellMO(MovingPlatformCellMO cellMO) {
+        this.platformCellMORef = AppContext.getDataManager().createReference(cellMO);
+    }
 
     public void setSlidesCell(SlidesCell slidesCell) {
         this.slidesCellRef = AppContext.getDataManager().createReference(slidesCell);
@@ -231,37 +231,35 @@ public class PresentationCellMO extends CellMO {
 
 
 
-        public int getCurSlide() {
-            return curSlide;
+    public int getCurSlide() {
+        return curSlide;
+    }
+
+    public void setCurSlide(int curSlide) {
+        this.curSlide = curSlide;
+
+        // Update the position of the MovingPlatformCell.
+        if (this.platformCellMORef != null) {
+            logger.info("Updating platform position.");
+            MovableComponentMO mc = this.platformCellMORef.get().getComponent(MovableComponentMO.class);
+            mc.moveRequest(null, new CellTransform(new Quaternion(), this.getPositionForIndex(this.slidesCellRef.get(), curSlide)));
         }
+    }
 
-        public void setCurSlide(int curSlide) {
-            this.curSlide = curSlide;
-
-            // Update the position of the MovingPlatformCell.
-            if(this.platformCellMORef!=null) {
-                logger.info("Updating platform position.");
-                MovableComponentMO mc = this.platformCellMORef.get().getComponent(MovableComponentMO.class);
-                mc.moveRequest(null, new CellTransform(new Quaternion(), this.getPositionForIndex(this.slidesCellRef.get(), curSlide)));
-            }
-        }
-
-        private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
+    private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
         public PresentationCellChangeMessageReceiver(PresentationCellMO cellMO) {
             super(cellMO);
         }
 
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            PresentationCellMO cellMO = (PresentationCellMO)getCell();
+            PresentationCellMO cellMO = (PresentationCellMO) getCell();
             PresentationCellChangeMessage msg = (PresentationCellChangeMessage) message;
 
-            if(msg.getSlideIncrement()==1)
-                cellMO.setCurSlide(cellMO.getCurSlide()+1);
-            else if(msg.getSlideIncrement()==-1)
-                cellMO.setCurSlide(cellMO.getCurSlide()-1);
+            if (msg.getSlideIncrement() == 1)
+                cellMO.setCurSlide(cellMO.getCurSlide() + 1);
+            else if (msg.getSlideIncrement() == -1)
+                cellMO.setCurSlide(cellMO.getCurSlide() - 1);
 
         }
     }
-
-
 }
