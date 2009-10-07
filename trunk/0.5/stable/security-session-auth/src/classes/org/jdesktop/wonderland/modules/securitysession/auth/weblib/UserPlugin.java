@@ -39,14 +39,17 @@ public interface UserPlugin {
     public void configure(Properties props);
 
     /**
-     * Determine if the given username and password are valid.
+     * Determine if the given username and credentials are valid.
      * @param userId the id of the user to verify
-     * @param password the password to verify for the user
+     * @param credentials the credentials for the given user. In the case of
+     * a standard password authentication, the credentials will be a single
+     * character array containing the password.  In the case of a guest login,
+     * credentials will include the username and email address.
      * @return MATCH if the userId and password match, NO_MATCH if they
      * don't match, or UNKNOWN_USER to skip to the next registered user
      * plugin
      */
-    public PasswordResult passwordMatches(String userId, char[] password);
+    public PasswordResult credentialsMatch(String userId, Object... credentials);
 
     /**
      * Get user information for the user with the given userId.  Typically

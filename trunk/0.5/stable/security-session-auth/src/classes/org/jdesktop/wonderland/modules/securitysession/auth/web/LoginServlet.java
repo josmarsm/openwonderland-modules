@@ -109,7 +109,7 @@ public class LoginServlet extends HttpServlet {
         AuthSessionManagerImpl impl = new AuthSessionManagerImpl();
         UserRecord rec;
         try {
-            rec = impl.login(username, password);
+            rec = impl.login(username, password.toCharArray());
             logger.fine("Record for " + username + " is " + rec);
         } catch (SessionLoginException sle) {
             throw new ServletException(sle);

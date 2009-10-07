@@ -50,11 +50,16 @@ public class DBUserPluginImpl implements UserPlugin {
         }
     }
 
-    public PasswordResult passwordMatches(String userId, char[] password) {
+    public PasswordResult credentialsMatch(String userId, Object... credentials) {
         // construct an object to query the users database
         UserDAO users = new UserDAO(emf);
 
-        if (users.passwordMatches(userId, String.valueOf(password))) {
+        // make sure this is actually a username / password request, and that
+        // the password matches the username
+        if (credentials.length == 1 &&
+                credentials[0] instanceof char[] &&
+                users.passwordMatches(userId, String.valueOf((char[]) credentials[0])))
+        {
             // username and password match
             return PasswordResult.MATCH;
         } else if (users.getUser(userId) != null) {

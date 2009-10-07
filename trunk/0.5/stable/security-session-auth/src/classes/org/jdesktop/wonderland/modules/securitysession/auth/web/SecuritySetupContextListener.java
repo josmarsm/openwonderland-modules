@@ -29,6 +29,7 @@ import org.jdesktop.wonderland.common.login.AuthenticationInfo;
 import org.jdesktop.wonderland.front.admin.AdminRegistration;
 import org.jdesktop.wonderland.front.admin.AdminRegistration.RegistrationFilter;
 import org.jdesktop.wonderland.front.admin.ServerInfo;
+import org.jdesktop.wonderland.modules.securitysession.auth.weblib.AuthUtils;
 import org.jdesktop.wonderland.modules.securitysession.auth.weblib.db.UserDAO;
 import org.jdesktop.wonderland.modules.securitysession.auth.weblib.db.UserEntity;
 import org.jdesktop.wonderland.utils.Constants;
@@ -60,9 +61,15 @@ public class SecuritySetupContextListener implements ServletContextListener {
         serverUrl += SECURITY_PATH;
         
         // set the login type and URL
-        AuthenticationInfo authInfo = new AuthenticationInfo(
-                                       AuthenticationInfo.Type.WEB_SERVICE, serverUrl);
-        
+        AuthenticationInfo authInfo;
+        if (AuthUtils.isGuestLoginAllowed()) {
+            authInfo = new AuthenticationInfo(
+                    AuthenticationInfo.Type.EITHER, serverUrl);    
+        } else {
+            authInfo = new AuthenticationInfo(
+                    AuthenticationInfo.Type.WEB_SERVICE, serverUrl);
+        }
+
         logger.fine("Setting auth URL: " + serverUrl);
 
         ServerInfo.getServerDetails().setAuthInfo(authInfo);
