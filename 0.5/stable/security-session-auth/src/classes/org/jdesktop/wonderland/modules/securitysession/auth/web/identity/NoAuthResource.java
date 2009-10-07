@@ -28,27 +28,34 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import org.jdesktop.wonderland.modules.securitysession.auth.weblib.AuthUtils;
 import org.jdesktop.wonderland.modules.securitysession.weblib.SessionLoginException;
 import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManager;
 import org.jdesktop.wonderland.modules.securitysession.weblib.SessionManagerFactory;
 import org.jdesktop.wonderland.modules.securitysession.weblib.UserRecord;
 
 /**
- *
- * @author jkaplan
+ * A copy of the NoAuth resource for use with guest login. If guest login is
+ * disabled, calling this method will result in a 404 error.
+ * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-@Path("authenticate")
-public class AuthenticateResource {
+@Path("noauth")
+public class NoAuthResource {
     private static final Logger logger =
-            Logger.getLogger(AuthenticateResource.class.getName());
+            Logger.getLogger(NoAuthResource.class.getName());
 
     private final SessionManager sm = SessionManagerFactory.getSessionManager();
 
     @POST
     @Consumes("application/x-www-form-urlencoded")
     public Response post(@FormParam("username") String username,
-                         @FormParam("password") String password)
+                         @FormParam("fullname") String fullname,
+                         @FormParam("email") String email)
     {
+        if (!AuthUtils.isGuestLoginAllowed()) {
+            return Responses.notFound().build();
+        }
+
         if (username == null) {
             return Responses.notAcceptable().build();
         }
@@ -56,28 +63,39 @@ public class AuthenticateResource {
         // decode arguments
         try {
             username = URLDecoder.decode(username, "UTF-8");
-            password = URLDecoder.decode(password, "UTF-8");
+            
+            if (fullname != null) {
+                fullname = URLDecoder.decode(fullname, "UTF-8");
+            } else {
+                fullname = username;
+            }
+
+            if (email != null) {
+                email = URLDecoder.decode(email, "UTF-8");
+            }
         } catch (UnsupportedEncodingException uee) {
             logger.log(Level.WARNING, "Decoding error", uee);
             throw new WebApplicationException(uee,
                                         Response.Status.INTERNAL_SERVER_ERROR);
         }
 
+
         // get or create the record
         UserRecord rec;
         try {
-            rec = sm.login(username, password.toCharArray());
+            rec = sm.login(username, fullname, email);
         } catch (SessionLoginException sle) {
             logger.log(Level.WARNING, "Login error", sle);
             throw new WebApplicationException(sle,
                                         Response.Status.INTERNAL_SERVER_ERROR);
         }
-
+        
         // see if the login was OK, and if not return an error
         if (rec == null) {
             throw new WebApplicationException(Response.Status.FORBIDDEN);
         }
 
+        // return the token
         String res = "string=" + rec.getToken();
         return Response.ok(res).build();
     }

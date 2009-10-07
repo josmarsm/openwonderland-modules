@@ -71,16 +71,8 @@ public class AuthSessionManagerImpl implements SessionManager {
     public UserRecord login(String userId, Object... credentials)
         throws SessionLoginException
     {
-        // make sure we got what we expect
-        if (credentials.length != 1) {
-            throw new SessionLoginException("Username and password required.");
-        }
-
-        // decode the credentials
-        String password = ((String) credentials[0]).trim();
-
         // now ask the singleton for the information
-        return SINGLETON.login(userId, password);
+        return SINGLETON.login(userId, credentials);
     }
 
     public UserRecord get(String userId) {
@@ -178,6 +170,13 @@ public class AuthSessionManagerImpl implements SessionManager {
                 UserPlugin dbPlugin = new DBUserPluginImpl();
                 dbPlugin.configure(new Properties());
                 out.add(dbPlugin);
+
+                // if guest login is enabled, add the guest plugin as well
+                if (AuthUtils.isGuestLoginAllowed()) {
+                    UserPlugin guestPlugin = new GuestUserPluginImpl();
+                    guestPlugin.configure(new Properties());
+                    out.add(guestPlugin);
+                }
             }
 
             return out;
@@ -204,7 +203,7 @@ public class AuthSessionManagerImpl implements SessionManager {
             }
         }
 
-        public synchronized UserRecord login(String userId, String password) {
+        public synchronized UserRecord login(String userId, Object... credentials) {
             // go through each plugin until we find one which answers when we
             // ask for this user id
             UserPlugin plugin = null;
@@ -213,7 +212,7 @@ public class AuthSessionManagerImpl implements SessionManager {
 
             while (result == PasswordResult.UNKNOWN_USER && pi.hasNext()) {
                 plugin = pi.next();
-                result = plugin.passwordMatches(userId, password.toCharArray());
+                result = plugin.credentialsMatch(userId, credentials);
             }
 
             if (result != PasswordResult.MATCH) {
