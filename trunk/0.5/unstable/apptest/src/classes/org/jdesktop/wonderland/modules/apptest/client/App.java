@@ -193,7 +193,7 @@ public class App {
 
     private void deleteCell () {
         if (cell == null) return;
-        CellUtils.deleteCell(cell);
+        cell.destroy();
     }
 
     public synchronized void launch (AppLauncher launcher) {
