@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.swingexample.client.cell.SwingExampleCell;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -44,6 +45,9 @@ public class SwingExampleWindow extends WindowSwing {
     /** The cell in which this window is displayed. */
     private SwingExampleCell cell;
 
+    /** The panel displayed within this window. */
+    private TestPanel examplePanel;
+
     /**
      * Create a new instance of SwingExampleWindow.
      *
@@ -62,7 +66,16 @@ public class SwingExampleWindow extends WindowSwing {
 
         setTitle(BUNDLE.getString("Swing_Example"));
 
-        TestPanel examplePanel = new TestPanel();
+        try {
+            SwingUtilities.invokeAndWait(new Runnable () {
+                public void run () {
+                    // This must be invoked on the AWT Event Dispatch Thread
+                    examplePanel = new TestPanel();
+                }
+            });
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
 
         // Parent to Wonderland main window for proper focus handling
         JmeClientMain.getFrame().getCanvas3DPanel().add(examplePanel);

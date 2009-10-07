@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2DEntity;
 import org.jdesktop.wonderland.modules.swingtest.client.cell.SwingTestCell;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -46,6 +47,8 @@ public class SwingTestWindow
     /** Whether the window is currently displayed "on the glass". */
     private boolean ortho;
 
+    private TestPanel testPanel;
+
     /**
      * Create a new instance of SwingTestWindow.
      *
@@ -65,7 +68,16 @@ public class SwingTestWindow
 
 	setTitle("Swing Test");
 
-	TestPanel testPanel = new TestPanel();
+        try {
+            SwingUtilities.invokeAndWait(new Runnable () {
+                public void run () {
+                    // This must be invoked on the AWT Event Dispatch Thread
+                    testPanel = new TestPanel();
+                }
+            });
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
 
 	// Parent to Wonderland main window for proper focus handling 
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
