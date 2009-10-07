@@ -59,7 +59,7 @@ public class ColoredCubeCell extends Cell {
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
-        if (status == CellStatus.INACTIVE && increasing) {
+        if (status == CellStatus.RENDERING && increasing) {
             renderer.setSharedState(state);
         }
     }
