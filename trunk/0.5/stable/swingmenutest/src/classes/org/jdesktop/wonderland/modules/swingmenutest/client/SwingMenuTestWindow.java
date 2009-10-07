@@ -23,6 +23,7 @@ import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -36,6 +37,8 @@ public class SwingMenuTestWindow extends WindowSwing  {
 
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(SwingMenuTestWindow.class.getName());
+
+    private MenuPanel menuPanel;
 
     /**
      * Create a new instance of SwingMenuTestWindow.
@@ -53,7 +56,16 @@ public class SwingMenuTestWindow extends WindowSwing  {
 
 	setTitle("Swing Menu Test");
 	
-	MenuPanel menuPanel = new MenuPanel();
+        try {
+            SwingUtilities.invokeAndWait(new Runnable () {
+                public void run () {
+                    // This must be invoked on the AWT Event Dispatch Thread
+                    menuPanel = new MenuPanel();
+                }
+            });
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
 
 	// Parent to Wonderland main window for proper focus handling 
        	JmeClientMain.getFrame().getCanvas3DPanel().add(menuPanel);
