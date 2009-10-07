@@ -24,6 +24,7 @@ import com.jme.math.Vector2f;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -37,6 +38,8 @@ public class JEditorTestWindow extends WindowSwing  {
 
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(JEditorTestWindow.class.getName());
+
+    private JPanel testPanel;
 
     /**
      * Create a new instance of JEditorTestWindow.
@@ -54,7 +57,16 @@ public class JEditorTestWindow extends WindowSwing  {
 
 	setTitle("JEditor Test");
 	
-	JPanel testPanel = new TestJEditorPane();
+        try {
+            SwingUtilities.invokeAndWait(new Runnable () {
+                public void run () {
+                    // This must be invoked on the AWT Event Dispatch Thread
+                    testPanel = new TestJEditorPane();
+                }
+            });
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
 
 	// Parent to Wonderland main window for proper focus handling 
        	JmeClientMain.getFrame().getCanvas3DPanel().add(testPanel);
