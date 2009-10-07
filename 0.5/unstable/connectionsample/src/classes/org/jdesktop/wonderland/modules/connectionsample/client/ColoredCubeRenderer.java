@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.connectionsample.common.ColoredCubeConstants;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
+import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
@@ -78,23 +79,21 @@ public class ColoredCubeRenderer extends BasicRenderer {
         // read the current value of the color variable in the map
         SharedData colorData = map.get(ColoredCubeConstants.COLOR_KEY);
         if (colorData != null) {
-            setColor (((SharedInteger) colorData).getValue());
+            setColor(((SharedInteger) colorData).getValue());
         }
 
         // register a listener that will change the cube's color any
         // time the "color" variable in the shared map changes
         map.addSharedMapListener(ColoredCubeConstants.COLOR_KEY,
-                                 new SharedMapListenerCli()
-        {
-            public void propertyChanged(SharedMapCli map, BigInteger source,
-                                        String key, SharedData prevValue,                                            SharedData curValue)
-            {
-                if (curValue instanceof SharedInteger) {
-                    int color = ((SharedInteger) curValue).getValue();
-                    setColor(color);
-                }
-            }
-        });
+                new SharedMapListenerCli() {
+
+                    public void propertyChanged(SharedMapEventCli arg0) {
+                        if (arg0.getNewValue() instanceof SharedInteger) {
+                            int color = ((SharedInteger) arg0.getNewValue()).getValue();
+                            setColor(color);
+                        }
+                    }
+                });
     }
 
     /**
