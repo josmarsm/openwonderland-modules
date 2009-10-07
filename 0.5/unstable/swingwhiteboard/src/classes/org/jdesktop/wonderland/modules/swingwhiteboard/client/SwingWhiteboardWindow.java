@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardAction;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCellMessage;
 import org.jdesktop.wonderland.modules.swingwhiteboard.common.WhiteboardCommand.Command;
 import org.jdesktop.wonderland.common.cell.CellID;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -50,6 +51,8 @@ public class SwingWhiteboardWindow extends WindowSwing {
     private int penX, penY;
     private SwingWhiteboardCell cell;
     private CellID cellID;
+
+    private SwingWhiteboardPanel panel;
 
     /**
      * Create a new instance of SwingWhiteboardWindow.
@@ -73,7 +76,16 @@ public class SwingWhiteboardWindow extends WindowSwing {
 
         setTitle(BUNDLE.getString("Swing_Whiteboard_Window"));
 
-        SwingWhiteboardPanel panel = new SwingWhiteboardPanel(this);
+        try {
+            SwingUtilities.invokeAndWait(new Runnable () {
+                public void run () {
+                    // This must be invoked on the AWT Event Dispatch Thread
+                    panel = new SwingWhiteboardPanel(SwingWhiteboardWindow.this);
+                }
+            });
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
 
         // Parent to Wonderland main window for proper focus handling
         JmeClientMain.getFrame().getCanvas3DPanel().add(panel);

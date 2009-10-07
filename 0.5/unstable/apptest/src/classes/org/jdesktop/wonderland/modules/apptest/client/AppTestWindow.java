@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.apptest.client.cell.AppTestCell;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -45,6 +46,7 @@ public class AppTestWindow extends WindowSwing implements TestPanel.Container {
 
     private AppTest appTest;
 
+    private TestPanel testPanel;
 
     /**
      * Create a new instance of AppTestWindow.
@@ -64,7 +66,17 @@ public class AppTestWindow extends WindowSwing implements TestPanel.Container {
 
         setTitle("App Test");
 
-        TestPanel testPanel = new TestPanel();
+        try {
+            SwingUtilities.invokeAndWait(new Runnable () {
+                public void run () {
+                    // This must be invoked on the AWT Event Dispatch Thread
+                    testPanel = new TestPanel();
+                }
+            });
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
         testPanel.setContainer(this);
 
         // Parent to Wonderland main window for proper focus handling
