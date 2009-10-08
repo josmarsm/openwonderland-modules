@@ -87,7 +87,7 @@ public class TopMapClientPlugin extends BaseClientPlugin {
                 // camera taking the snapshots for the map.
                 if (topMapMI.isSelected() == true) {
                     if (hudComponent == null) {
-                        hudComponent = createHUD();
+                        hudComponent = createHUDComponent();
                     }
                     hudComponent.setVisible(true);
                     topMapEntity.setCameraEnabled(true);
@@ -114,7 +114,7 @@ public class TopMapClientPlugin extends BaseClientPlugin {
     /**
      * Creates and returns the top map HUD component.
      */
-    private HUDComponent createHUD() {
+    private HUDComponent createHUDComponent() {
         LOGGER.warning("CREATING TOP MAP HUD");
 
         // Create the HUD Panel that displays the map.
@@ -185,7 +185,6 @@ public class TopMapClientPlugin extends BaseClientPlugin {
          * {@inheritDoc}
          */
         public void primaryViewCellChanged(ViewCell oldCell, ViewCell newCell) {
-            LOGGER.warning("PRIMARY VIEW CHANGE FROM " + oldCell + " TO " + newCell);
             
             // If there is an old Cell, then remove the old HUD component and
             // the main menu item.
@@ -193,14 +192,12 @@ public class TopMapClientPlugin extends BaseClientPlugin {
                 // If there is a HUD Component, then remove it from the HUD and
                 // clean it up. This really should happen when the primary view
                 // cell is disconnected, but we do this here just in case.
-                LOGGER.warning("HUD COMPONENT IS " + hudComponent);
                 if (hudComponent != null) {
                     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
                     mainHUD.removeComponent(hudComponent);
                 }
 
                 // Clean up the Map entity, ane release the reference
-                LOGGER.warning("TOP MAP ENTITY IS " + topMapEntity);
                 if (topMapEntity != null) {
                     topMapEntity.setCameraEnabled(false);
                     topMapEntity.dispose();
