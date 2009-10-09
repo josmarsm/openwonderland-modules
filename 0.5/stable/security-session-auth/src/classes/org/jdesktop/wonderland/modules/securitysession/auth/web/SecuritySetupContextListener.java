@@ -120,6 +120,12 @@ public class SecuritySetupContextListener implements ServletContextListener {
             webserver.setPassword("webserver");
             users.updateUser(webserver);
 
+            UserEntity sasxprovider = new UserEntity();
+            sasxprovider.setId("sasxprovider");
+            sasxprovider.setFullname("Shared App Server");
+            sasxprovider.setPassword("sasxprovider");
+            users.updateUser(sasxprovider);
+
             logger.warning("Created initial users " + admin.getId() + " " +
                            darkstar.getId() + " " + webserver.getId() + ". " +
                            "Be sure to change default passwords.");
