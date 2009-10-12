@@ -12,22 +12,18 @@
 
 <html>
 <head>
-    <link href="/wonderland-web-front/admin.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
     <title>Wonderland Login</title>
 </head>
 <body>
-    <h1>Log in</h1>
+    <h2>Log in</h2>
 
     <form action="login" method="POST">
         <input type="hidden" name="forwardPage" value="${param['forwardPage']}"/>
         <input type="hidden" name="action" value="login"/>
-        
+        <font color="red">${requestScope['error']}</font>
         <table class="installed">
-            <tr>
-                <td colspan="2">
-                    <font color="red">${requestScope['error']}</font>
-                </td>
-            </tr>
             <tr>
                 <td>Username:</td>
                 <td><input type="text" name="username" size="20"/></td>
@@ -36,10 +32,9 @@
                 <td>Password:</td>
                 <td><input type="password" name="password" size="20"/></td>
             </tr>
-            <tr>
-                <td></td>
-                <td><input type="submit" name="Log In" value="Log In"/></td>
-            </tr>
         </table>
+                <div id="actionLinks">
+                   <input type="submit" name="Log In" value="Log In"/>
+                </div>
     </form>
 </body>
