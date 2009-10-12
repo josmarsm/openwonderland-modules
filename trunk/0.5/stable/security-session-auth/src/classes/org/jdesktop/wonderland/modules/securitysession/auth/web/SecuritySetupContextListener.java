@@ -81,7 +81,7 @@ public class SecuritySetupContextListener implements ServletContextListener {
 
         // register with the admininstration page
         ServletContext sc = evt.getServletContext();
-        ar = new AdminRegistration("User Manager",
+        ar = new AdminRegistration("Manage Users",
                                    "/security-session-auth/security-session-auth/users");
         ar.setFilter(AdminRegistration.LOGGED_IN_FILTER);
         AdminRegistration.register(ar, sc);
