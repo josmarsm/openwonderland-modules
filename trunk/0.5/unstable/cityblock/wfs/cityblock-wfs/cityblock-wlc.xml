@@ -1,0 +1,27 @@
+<city-cell>
+    <streetCount>10</streetCount>
+    <avenueCount>5</avenueCount>
+
+    <position-component>
+        <translation>
+            <x>0.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <radius>1.0</radius>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+            <angle>0.0</angle>
+        </rotation>
+    </position-component>
+</city-cell>
