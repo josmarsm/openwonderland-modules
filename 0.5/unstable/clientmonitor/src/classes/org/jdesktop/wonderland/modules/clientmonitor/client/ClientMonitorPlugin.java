@@ -82,6 +82,8 @@ public class ClientMonitorPlugin extends BaseClientPlugin
             oldViewCell.removeComponent(ClientMonitorComponent.class);
         }
 
-        newViewCell.addComponent(new ClientMonitorComponent(newViewCell));
+        if (newViewCell!=null) {
+            newViewCell.addComponent(new ClientMonitorComponent(newViewCell));
+        }
     }
 }
