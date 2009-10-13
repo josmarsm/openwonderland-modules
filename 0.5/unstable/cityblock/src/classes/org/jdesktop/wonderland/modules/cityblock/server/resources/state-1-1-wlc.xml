@@ -27,7 +27,7 @@
         </rotation>
     </position-component>
     <model-cell-component>
-        <deployedModelURL>wlcontent://users/Jonathan/art/state-1.kmz/state-1.kmz.dep</deployedModelURL>
+        <deployedModelURL>wla://cityblock/state-1.kmz/state-1.kmz.dep</deployedModelURL>
         <PickingEnabled>true</PickingEnabled>
         <CollisionEnabled>true</CollisionEnabled>
         <LightingEnabled>false</LightingEnabled>
