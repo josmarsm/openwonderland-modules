@@ -239,6 +239,33 @@ public class ClientMonitorFrame extends javax.swing.JFrame {
         jLabel17 = new javax.swing.JLabel();
         jPanel15 = new javax.swing.JPanel();
         jLabel18 = new javax.swing.JLabel();
+        jmeBiffersPanel = new javax.swing.JPanel();
+        jPanel18 = new javax.swing.JPanel();
+        jLabel27 = new javax.swing.JLabel();
+        totalBufferSizeTF = new javax.swing.JTextField();
+        jLabel28 = new javax.swing.JLabel();
+        totalBufferCountTF = new javax.swing.JTextField();
+        jLabel29 = new javax.swing.JLabel();
+        jLabel30 = new javax.swing.JLabel();
+        jLabel32 = new javax.swing.JLabel();
+        jLabel31 = new javax.swing.JLabel();
+        jLabel33 = new javax.swing.JLabel();
+        totalIntBufferCountTF = new javax.swing.JTextField();
+        totalByteBufferCountTF = new javax.swing.JTextField();
+        totalShortBufferCountTF = new javax.swing.JTextField();
+        totalFloatBufferCountTF = new javax.swing.JTextField();
+        totalDoubleBufferCountTF = new javax.swing.JTextField();
+        jLabel34 = new javax.swing.JLabel();
+        jLabel35 = new javax.swing.JLabel();
+        jLabel36 = new javax.swing.JLabel();
+        jLabel37 = new javax.swing.JLabel();
+        jLabel38 = new javax.swing.JLabel();
+        intBufferSizeTF = new javax.swing.JTextField();
+        byteBufferSizeTF = new javax.swing.JTextField();
+        shortBufferSizeTF = new javax.swing.JTextField();
+        floatBufferSizeTF = new javax.swing.JTextField();
+        doubleBufferSizeTF = new javax.swing.JTextField();
+        forceGCButton1 = new javax.swing.JButton();
 
         setTitle("Client Monitor");
 
@@ -814,11 +841,189 @@ public class ClientMonitorFrame extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Memory", memoryPanel);
 
+        jPanel18.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        jLabel27.setText("Total Buffer Count :");
+
+        totalBufferSizeTF.setEditable(false);
+
+        jLabel28.setText("Total Size :");
+
+        totalBufferCountTF.setEditable(false);
+
+        jLabel29.setText("Int Buffer Count :");
+
+        jLabel30.setText("Byte Buffer Count :");
+
+        jLabel32.setText("Float Buffer Count :");
+
+        jLabel31.setText("Short Buffer Count :");
+
+        jLabel33.setText("Double Buffer Count :");
+
+        totalIntBufferCountTF.setEditable(false);
+
+        totalByteBufferCountTF.setEditable(false);
+
+        totalShortBufferCountTF.setEditable(false);
+
+        totalFloatBufferCountTF.setEditable(false);
+
+        totalDoubleBufferCountTF.setEditable(false);
+
+        jLabel34.setText("Int Size :");
+
+        jLabel35.setText("Byte Size :");
+
+        jLabel36.setText("Short Size :");
+
+        jLabel37.setText("Float Size :");
+
+        jLabel38.setText("Double Size :");
+
+        intBufferSizeTF.setEditable(false);
+
+        byteBufferSizeTF.setEditable(false);
+
+        shortBufferSizeTF.setEditable(false);
+
+        floatBufferSizeTF.setEditable(false);
+
+        doubleBufferSizeTF.setEditable(false);
+
+        javax.swing.GroupLayout jPanel18Layout = new javax.swing.GroupLayout(jPanel18);
+        jPanel18.setLayout(jPanel18Layout);
+        jPanel18Layout.setHorizontalGroup(
+            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel18Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel33, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel32, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel31, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel30, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel29, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel27, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(totalBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(totalDoubleBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(totalFloatBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(totalByteBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(totalIntBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(totalShortBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(41, 41, 41)
+                .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel28, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel36, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel37, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel34, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel35, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel38, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(shortBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(intBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(totalBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(floatBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(doubleBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(byteBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel18Layout.setVerticalGroup(
+            jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel18Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel18Layout.createSequentialGroup()
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel27)
+                            .addComponent(totalBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel29)
+                            .addComponent(totalIntBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel18Layout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addComponent(jLabel30))
+                            .addGroup(jPanel18Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(totalByteBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel31)
+                            .addComponent(totalShortBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel32)
+                            .addComponent(totalFloatBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel33)
+                            .addComponent(totalDoubleBufferCountTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel18Layout.createSequentialGroup()
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel28)
+                            .addComponent(totalBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel34)
+                            .addComponent(intBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(byteBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel35))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel36)
+                            .addComponent(shortBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel37)
+                            .addComponent(floatBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel38)
+                            .addComponent(doubleBufferSizeTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        forceGCButton1.setText("Force GC");
+        forceGCButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                forceGCButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jmeBiffersPanelLayout = new javax.swing.GroupLayout(jmeBiffersPanel);
+        jmeBiffersPanel.setLayout(jmeBiffersPanelLayout);
+        jmeBiffersPanelLayout.setHorizontalGroup(
+            jmeBiffersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jmeBiffersPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jmeBiffersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(forceGCButton1)
+                    .addComponent(jPanel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(466, Short.MAX_VALUE))
+        );
+        jmeBiffersPanelLayout.setVerticalGroup(
+            jmeBiffersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jmeBiffersPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(forceGCButton1)
+                .addContainerGap(329, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("JME Buffers", jmeBiffersPanel);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 958, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -895,7 +1100,20 @@ public class ClientMonitorFrame extends javax.swing.JFrame {
                                   BigDecimal.valueOf(stats.totalByteBufferBytes / (1024 * 1024)));
             directBuffersMemoryGraph.render();
             directBuffersMemoryGraph.repaint();
-            
+
+            totalBufferCountTF.setText(Integer.toString(stats.totalBuffers));
+            totalByteBufferCountTF.setText(Integer.toString(stats.totalByteBuffers));
+            totalIntBufferCountTF.setText(Integer.toString(stats.totalIntBuffers));
+            totalShortBufferCountTF.setText(Integer.toString(stats.totalShortBuffers));
+            totalFloatBufferCountTF.setText(Integer.toString(stats.totalFloatBuffers));
+            totalDoubleBufferCountTF.setText(Integer.toString(stats.totalDoubleBuffers));
+
+            totalBufferSizeTF.setText(Long.toString(stats.totalBufferBytes));
+            byteBufferSizeTF.setText(Long.toString(stats.totalByteBufferBytes));
+            intBufferSizeTF.setText(Long.toString(stats.totalIntBufferBytes));
+            shortBufferSizeTF.setText(Long.toString(stats.totalShortBufferBytes));
+            floatBufferSizeTF.setText(Long.toString(stats.totalFloatBufferBytes));
+            doubleBufferSizeTF.setText(Long.toString(stats.totalDoubleBufferBytes));
         }
     }
 
@@ -936,6 +1154,7 @@ public class ClientMonitorFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField byteBufferSizeTF;
     private javax.swing.JButton closeButton;
     private javax.swing.JPanel directBufferMemoryPanel;
     private javax.swing.JPanel directMemoryPanel;
@@ -944,8 +1163,12 @@ public class ClientMonitorFrame extends javax.swing.JFrame {
     private javax.swing.JLabel displayRendererLabel;
     private javax.swing.JLabel displayVendorLabel;
     private javax.swing.JLabel displayVersionLabel;
+    private javax.swing.JTextField doubleBufferSizeTF;
+    private javax.swing.JTextField floatBufferSizeTF;
     private javax.swing.JButton forceGCButton;
+    private javax.swing.JButton forceGCButton1;
     private javax.swing.JPanel generalPanel;
+    private javax.swing.JTextField intBufferSizeTF;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -965,7 +1188,19 @@ public class ClientMonitorFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel24;
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel30;
+    private javax.swing.JLabel jLabel31;
+    private javax.swing.JLabel jLabel32;
+    private javax.swing.JLabel jLabel33;
+    private javax.swing.JLabel jLabel34;
+    private javax.swing.JLabel jLabel35;
+    private javax.swing.JLabel jLabel36;
+    private javax.swing.JLabel jLabel37;
+    private javax.swing.JLabel jLabel38;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -981,6 +1216,7 @@ public class ClientMonitorFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
     private javax.swing.JPanel jPanel17;
+    private javax.swing.JPanel jPanel18;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -990,8 +1226,17 @@ public class ClientMonitorFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JPanel jmeBiffersPanel;
     private javax.swing.JPanel memoryPanel;
+    private javax.swing.JTextField shortBufferSizeTF;
     private javax.swing.JPanel systemMemoryPanel;
+    private javax.swing.JTextField totalBufferCountTF;
+    private javax.swing.JTextField totalBufferSizeTF;
+    private javax.swing.JTextField totalByteBufferCountTF;
+    private javax.swing.JTextField totalDoubleBufferCountTF;
+    private javax.swing.JTextField totalFloatBufferCountTF;
+    private javax.swing.JTextField totalIntBufferCountTF;
+    private javax.swing.JTextField totalShortBufferCountTF;
     private javax.swing.JLabel worldRootCellsLabel;
     private javax.swing.JLabel worldSessionLabel;
     private javax.swing.JLabel worldTotalCellsLabel;
