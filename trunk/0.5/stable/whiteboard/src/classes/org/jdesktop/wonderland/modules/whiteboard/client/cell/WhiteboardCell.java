@@ -122,6 +122,8 @@ public class WhiteboardCell extends App2DCell {
                     // The cell is no longer visible
                     whiteboardWin.setVisibleApp(false);
                     removeComponent(WhiteboardComponent.class);
+                    whiteboardWin.cleanup();
+                    destroy();
                     commComponent = null;
                     whiteboardWin = null;
                 }

@@ -85,7 +85,6 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
     public WhiteboardDocument(WhiteboardWindow whiteboardWindow) {
         this.whiteboardWindow = whiteboardWindow;
-        initSVGDialog();
     }
 
     private Element getDocumentElement() {
@@ -325,32 +324,25 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
+                svgDocumentDialog = new DocumentDialog(null, false);
+                svgDocumentDialog.addActionListener(new java.awt.event.ActionListener() {
+
+                    public void actionPerformed(java.awt.event.ActionEvent evt) {
+                        svgDocumentDialog.setVisible(false);
+                        if (evt.getActionCommand().equals("OK")) {
+                            openDocument(svgDocumentDialog.getDocumentURL(), true);
+                        }
+                        svgDocumentDialog = null;
+                    }
+                });
                 svgDocumentDialog.setVisible(true);
             }
         });
     }
 
-    private void initSVGDialog() {
-        svgDocumentDialog = new DocumentDialog(null, false);
-        svgDocumentDialog.addActionListener(new java.awt.event.ActionListener() {
-
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                hideSVGDialog();
-                if (evt.getActionCommand().equals("OK")) {
-                    openDocument(svgDocumentDialog.getDocumentURL(), true);
-                }
-            }
-        });
-    }
-
-    private void hideSVGDialog() {
-        if (svgDocumentDialog != null) {
-            svgDocumentDialog.setVisible(false);
-        }
-    }
-
     private void setSVGDialogDocumentURL(String docURI) {
-        svgDocumentDialog.setDocumentURL(docURI);
+        if (svgDocumentDialog!=null)
+            svgDocumentDialog.setDocumentURL(docURI);
     }
 
     /**
