@@ -85,7 +85,6 @@ public class WhiteboardWindow extends Window2D {
     private float zoom = 1.0f;
     private boolean synced = true;
     private WhiteboardControlPanel controls;
-    private WindowSwing window;
     protected final Object actionLock = new Object();
     // drawing variables
     private float strokeWeight = 3;
@@ -104,6 +103,9 @@ public class WhiteboardWindow extends Window2D {
     private HUDComponent controlComponent;
     private HUDComponent messageComponent;
     private DisplayMode displayMode;
+
+    private WhiteboardGVTTreeRendererListener whiteboardGVTTreeRendererListener;
+    private WhiteboardUpdateManagerListener whiteboardUpdateManagerListener;
 
     /**
      * Create a new instance of WhiteboardWindow.
@@ -138,8 +140,10 @@ public class WhiteboardWindow extends Window2D {
         svgCanvas.setDocumentState(JSVGCanvas.ALWAYS_DYNAMIC);
         svgCanvas.setSize(width, height);
         svgCanvas.addSVGDocumentLoaderListener(whiteboardDocument);
-        svgCanvas.addGVTTreeRendererListener(new WhiteboardGVTTreeRendererListener(this));
-        svgCanvas.addUpdateManagerListener(new WhiteboardUpdateManagerListener((WhiteboardApp) this.getApp()));
+        whiteboardGVTTreeRendererListener = new WhiteboardGVTTreeRendererListener(this);
+        svgCanvas.addGVTTreeRendererListener(whiteboardGVTTreeRendererListener);
+        whiteboardUpdateManagerListener = new WhiteboardUpdateManagerListener((WhiteboardApp) this.getApp());
+        svgCanvas.addUpdateManagerListener(whiteboardUpdateManagerListener);
     }
 
     private void initHUD() {
@@ -158,6 +162,12 @@ public class WhiteboardWindow extends Window2D {
         addKeyListener(new WhiteboardKeyListener(this));
     }
 
+    private void removeEventListeners() {
+        removeMouseWheelListener(svgMouseListener);
+        removeMouseMotionListener(svgMouseListener);
+        removeMouseListener(svgMouseListener);
+        removeKeyListener(new WhiteboardKeyListener(this));
+    }
     /**
      * {@inheritDoc}
      */
@@ -165,12 +175,18 @@ public class WhiteboardWindow extends Window2D {
     public void cleanup() {
         setVisibleApp(false);
         showControls(false);
-        if (window != null) {
-            window.setVisibleApp(false);
-            // window.setVisibleUser(window, false); // TODO: what's wrong here?
-            window.cleanup();
-        }
+        removeEventListeners();
+        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+        mainHUD.removeComponent(messageComponent);
+        mainHUD.removeComponent(controlComponent);
         super.cleanup();
+
+        svgCanvas.removeSVGDocumentLoaderListener(whiteboardDocument);
+        svgCanvas.removeGVTTreeRendererListener(whiteboardGVTTreeRendererListener);
+        svgCanvas.removeUpdateManagerListener(whiteboardUpdateManagerListener);
+        svgCanvas.dispose();
+
+        setDocument(null, false);       // Attempt to clean up document, not sure this is sufficient
     }
 
     /** 
@@ -610,7 +626,7 @@ public class WhiteboardWindow extends Window2D {
      * @param g the graphics context on which to paint
      */
     protected void paint(Graphics2D g) {
-        logger.finest("whiteboard: paint");
+//        logger.finest("whiteboard: paint");
         if (svgCanvas != null) {
             svgCanvas.paint(g);
         }
