@@ -1,0 +1,188 @@
+<html>
+<head><title>Cambozola Streaming Image Viewer</title></head>
+<body>
+<h1>README File for Cambozola V0.76</h1>
+
+<p>Cambozola is a very simple (cheesey!) viewer for multipart jpeg streams
+that are often pumped out by a streaming webcam server, sending over
+multiple images per second. Netscape will display and refresh these 
+automatically, but Internet Explorer and other browsers do not - they 
+will only display the first image.</p>
+
+<p>Cambozola is a cross-browser replacement that displays the image streams
+correctly. Without a signed jar, it is only able to connect to the same 
+server that it was downloaded from. It may also be used from the command 
+line to connect to any server.</p>
+
+<p>Cambozola supports pluggable 'accessories' that may be used to display 
+information about the stream or change its appearance on the fly.</p>
+
+<p><b>NOTE</b>: This release of Cambozola does not need to be recompiled with a 1.1.8 JVM specifically for the default Internet Explorer JVM. When the default JVM is used in IE, it will only be 
+able to connect to the originating server unless the code is signed in a way that this JVM can understand [moral of the story, please use the Java plugin!].</p>
+
+<p>
+<a href="http://www.charliemouse.com:8080/code/cambozola/config.html">An example of Cambozola in use, plus information about network configurations.</a>
+
+<p>If you like it, hate it, or have any questions/comments/bugs or you would like
+to show your appreciation by buying me an <a href="http://www.axis.com/products/cam_2100/index.htm">Axis 2100</a> (beg, beg), then feel free to email me at <a href="mailto:andrew_wilcock@bigfoot.com">andrew_wilcock@bigfoot.com</a>
+
+<h2>Downloading</h2>
+<p>Download Cambozola as a <a href="http://www.charliemouse.com:8080/code/cambozola/cambozola-latest.tar.gz">.tar.gz</a> file or a <a href="http://www.charliemouse.com:8080/code/cambozola/cambozola-latest.zip">.zip</a> file.</p>
+
+<h2>Building</h2>
+    Building Cambozola requires ant (<a href="http://jakarta.apache.org/ant/">
+    http://jakarta.apache.org/ant/</a>). To build Cambozola, use:
+    <br>
+    <code>
+      ant
+    </code>
+	<p>This will create two files in the <b>dist/</b> directory:
+	<ul>
+			<li><b>cambozola-server.jar</b> - A test server that repeatedly pumps out a short set of images</li>
+			<li><b>cambozola.jar</b> - The client-side code for use in a web page, or from the command line</li>
+	</ul>
+<h2>Usage - Web page</h2>
+The HTML snippet for a Netscape-readable page would be as follows:
+<p>
+	<code>
+ 		&lt;img src="/cgi-bin/w3cam.cgi?refresh=0.0" width="352" height="288"&gt;
+    </code>
+    <p>
+	The equivalent HTML snippet using the Cambozola viewer is:
+	<br><code>
+			.<br>
+			.<br>
+			.<br>
+      &lt;applet code="com.charliemouse.cambozola.Viewer" archive="cambozola.jar" width="352" height="400"&gt;<br>
+        &nbsp;&nbsp;&lt;param name="url" value="/cgi-bin/w3cam.cgi?refresh=0.0"&gt;<br>
+		&lt;/applet&gt;</br>
+		.<br>
+		.<br>
+		.<br>
+    </code> 
+    <p>
+    As it is specified, the cambozola.jar file should be in the same
+    directory as the web page. Due to applet security restrictions, Cambozola can only connect to the machine that the web page was downloaded from.
+
+<h2>Usage - Command line</h2>
+To run the test server (on localhost, port 2020), use:
+<p>
+	<code>
+		java -jar dist/cambozola-server.jar
+	</code>
+</p>
+To connect to the test server, use:
+<p>
+	<code>
+		java -jar dist/cambozola.jar http://localhost:2020/
+	</code>
+</p>
+This server can accept multiple connections, and sends a short repeating
+loop of GIF images at around 30 frames per second. Move the mouse to the 
+left-hand side of the image, to see the accessories.
+
+<h2>Usage - Controlling Accessories</h2>
+Cambozola comes with a default set of accessories:
+<ul>
+		<li><b>ZoomIn</b>
+		Zooms in on the image</li>
+
+		<li><b>ZoomOut</b>
+		Zooms out of image</li>
+
+		<li><b>Home</b>
+		Shows all the image</li>
+
+		<li><b>Pan</b>
+		Pan around a zoomed in image (click the arrows to pan)</li>
+
+		<li><b>ChangeStream</b>
+		Swap to another stream without leaving the window</li>
+
+		<li><b>Info</b>
+		Displays information about the stream</li>
+
+		<li><b>WWWHelp</b>
+		Displays Web page with application help [this]</li>
+</ul>
+<p>
+These are specified using the '-accessories' parameter on the command line, some examples:
+<dl>
+	<dl>
+		<dt><b>-noaccessories</b></dt>
+		<dd>Will not display any accessories</dd>
+
+		<dt><b>-accessories=none</b></dt>
+		<dd>Will not display any accessories</dd>
+
+		<dt><b>-accessories=default</b></dt>
+		<dd>Will display the default set of accessories</dd>
+
+		<dt><b>-accessories=ZoomIn,ZoomOut</b></dt>
+		<dd>Will display only the specified accessories</dd>
+
+		<dt><b>-retries={number}</b></dt>
+		<dd>Will attempt to connect to the server for the specified number of times</dd>
+
+		<dt><b>-delay={num}</b></dt>
+		<dd>Will wait the specified number of milliseconds (1/1000 sec) before retrying</dd>
+		<dt><b>-failureimage={url}</b></dt>
+		<dd>Will display the specified URL when unable to connect</dd>
+		<dt><b>-watermarks=image_url|location|link_url</b></dt>
+		<dd>Will display the image URL in the specified corner (top/bottom/right/left/north/south/east/west). When used in a browser, using a link url will make the watermark clickable.</dd>
+	</dl>
+</dl>
+To specify the accessories in a web page, use the 'attributes' applet parameter:
+<dl>
+	<dl>
+		<dt><b>&lt;param name="accessories" value="none"/&gt;</b></dt>
+		<dd>Will not display any accessories</dd>
+
+		<dt><b>&lt;param name="accessories" value="default"/&gt;</b></dt>
+		<dd>Will display the default set of accessories</dd>
+		<dt><b>&lt;param name="accessories" value="ZoomIn,ZoomOut"/&gt;</b></dt>
+		<dd>Will display only the specified accessories</dd>
+		<dt><b>&lt;param name="retries" value="5"&gt;</b></dt>
+		<dd>Will attempt to connect to the server for the specified number of times</dd>
+	</dl>
+</dl>
+
+
+<h2>Real Examples</h2>
+Just a couple of examples of streaming webcam URLs [they will not work in all browsers, but will in Cambozola - just right-click on the image, select copy image location, and use that as the Cambozola URL]:
+<ul>
+		<li><a href="http://cams.exploratorium.edu/CAM2/index.html?speed=vo&amp;size=large">San Francisco</a></li>
+		<li><a href="http://www.axis.com/solutions/video/gallery.htm">Axis Demo Gallery</a></li>
+</ul>
+
+<h2>Webcam software</h2>
+If you want to stream from your own server, you'll need to use some
+streaming webcam software, some Linux-friendly package are:
+<ul>
+	<li>W3CAM: <a href="http://mpx.freeshell.net/">
+			http://mpx.freeshell.net/</a></li>
+	<li>V4l-col: <a href="http://www.sr.bham.ac.uk/~mpc/pulsar/qcam/index.shtml">
+			http://www.sr.bham.ac.uk/~mpc/pulsar/qcam/index.shtml</a></li>
+	<li>Palantir: <a href="http://www.fastpath.it/products/palantir">
+			http://www.fastpath.it/products/palantir</a></li>
+	<li>Camsource: <a href="http://camsource.sourceforge.net/">
+			http://camsource.sourceforge.net/</a></li>
+	<li>Camserv: <a href="http://camserv.sourceforge.net/">
+			http://camserv.sourceforge.net/</a></li>
+</ul>
+<h2>Users of Cambozola</h2>
+<ul>
+	<li>Zoneminder: <a href="http://www.zoneminder.com/">
+			http://www.zoneminder.com/</a></li>
+	<li>Motion: <a href="http://www.lavrsen.dk/sources/webcam/motion_guide.htm">
+			http://www.lavrsen.dk/sources/webcam/motion_guide.htm</a></li>
+	<li>Wings of Cabarete: <a href="http://www.windsofcabarete.com/windsOfCabarete/webcam.jsp?id=1">Dominican Republic beach cam</a></li>
+</ul>
+
+<h2>Older Versions</h2>
+<p>Version 0.50 as a <a href="http://www.charliemouse.com:8080/code/cambozola/cambozola-0.50.tar.gz">.tar.gz</a> file or a <a href="http://www.charliemouse.com:8080/code/cambozola/cambozola-0.50.zip">.zip</a> file.
+<p>Version 0.34 as a <a href="http://www.charliemouse.com:8080/code/cambozola/cambozola-0.34.tar.gz">.tar.gz</a> file or a <a href="http://www.charliemouse.com:8080/code/cambozola/cambozola-0.34.zip">.zip</a> file.
+<p>Version 0.25 as a <a href="http://www.charliemouse.com:8080/code/cambozola/cambozola-0.25.tar.gz">.tar.gz</a> file or a <a href="http://www.charliemouse.com:8080/code/cambozola/cambozola-0.25.zip">.zip</a> file.
+
+</body>
+</html>
