@@ -123,7 +123,6 @@ public class WhiteboardCell extends App2DCell {
                     whiteboardWin.setVisibleApp(false);
                     removeComponent(WhiteboardComponent.class);
                     whiteboardWin.cleanup();
-                    destroy();
                     commComponent = null;
                     whiteboardWin = null;
                 }
