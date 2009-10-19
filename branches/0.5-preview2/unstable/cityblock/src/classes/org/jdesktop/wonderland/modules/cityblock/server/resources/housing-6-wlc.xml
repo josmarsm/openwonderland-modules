@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>new york 2</name>
+    <metadata/>
+    <position-component>
+        <translation>
+            <x>13.8</x>
+            <y>12.8</y>
+            <z>19.1</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>47.203216552734375</x>
+            <y>12.76500129699707</y>
+            <z>48.718475341796875</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>0.99999994</y>
+            <z>0.0</z>
+            <angle>1.5707953</angle>
+        </rotation>
+    </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://cityblock/new york.kmz/new york.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+    </model-cell-component>
+</model-cell>
