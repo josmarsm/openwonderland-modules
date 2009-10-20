@@ -244,9 +244,13 @@ public class EvolverAvatarConfigManager {
      * @param session The session to remove.
      */
     public void removeServer(ServerSessionManager session) {
-        // XXX Perhaps we should stop all jobs in process? XXX
+        // Remove the server session. If we find a thread, then stop it and
+        // remove it from the map.
         synchronized (avatarConfigServers) {
-            avatarConfigServers.remove(session);
+            ServerSyncThread t = avatarConfigServers.remove(session);
+            if (t != null) {
+                t.setConnected(false);
+            }
         }
     }
 
@@ -308,7 +312,6 @@ public class EvolverAvatarConfigManager {
         // .dae file within the zip archive. If there is no name, then flag
         // an error
         JFrame frame = JmeClientMain.getFrame().getFrame();
-        String fname = zipFile.getName();
         String avatarName = avatarInfo.getAvatarName();
 
         logger.info("Creating avatar with name " + avatarName);
@@ -552,22 +555,6 @@ public class EvolverAvatarConfigManager {
     }
 
     /**
-     * Searches the given zip file for a .dae and returns its name. If one
-     * does not exist, then return null
-     */
-    private String getAvatarName(ZipFile zipFile) {
-        Enumeration<? extends ZipEntry> entries = zipFile.entries();
-        while (entries.hasMoreElements() == true) {
-            ZipEntry entry = entries.nextElement();
-            String name = entry.getName();
-            if (name.endsWith(".dae") == true) {
-                return name.substring(0, name.length() - 4);
-            }
-        }
-        return null;
-    }
-
-    /**
      * Returns true if the given avatar name already exists within the user's
      * content repository
      */
@@ -729,19 +716,6 @@ public class EvolverAvatarConfigManager {
                 logger.log(Level.WARNING, "Unable to upload Eyeball texture", excp);
                 return;
             }
-
-            // Listen for when the primary session becomes inactive. Remove from
-            // the list of servers and set the thread state connected to false
-            manager.getPrimarySession().addSessionStatusListener(new SessionStatusListener() {
-                public void sessionStatusChanged(WonderlandSession session, Status status) {
-                    if (status == Status.DISCONNECTED) {
-                        synchronized (avatarConfigServers) {
-                            avatarConfigServers.remove(manager);
-                            setConnected(false);
-                        }
-                    }
-                }
-            });
 
             // Finally, start the thread off
             this.start();
