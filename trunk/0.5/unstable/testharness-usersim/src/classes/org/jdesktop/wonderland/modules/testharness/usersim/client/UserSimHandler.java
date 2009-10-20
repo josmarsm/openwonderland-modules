@@ -22,11 +22,14 @@ import com.jme.math.Vector3f;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
@@ -59,12 +62,29 @@ public class UserSimHandler implements ClientPlugin {
             return;
         }
 
-        ClientContextJME.getWorldManager().getRenderManager().setHeadless(true);
+        // The 'headless' api in mtgame is a hack to support this simulator, so
+        // it's not exposed in the public api. Use introspection to get to it.
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        Method setHeadless;
+        try {
+            setHeadless = rm.getClass().getDeclaredMethod("setWlTestHarness", Boolean.TYPE);
+            setHeadless.setAccessible(true);
+            setHeadless.invoke(rm, Boolean.TRUE);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(UserSimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(UserSimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchMethodException ex) {
+            Logger.getLogger(UserSimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(UserSimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(UserSimHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         ClientContextJME.getViewManager().addViewManagerListener(new ViewManagerListener() {
 
             public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
-                System.err.println("---> Primary View Cell "+newViewCell);
                 synchronized(userSimLock) {
                     if (userSim!=null)
                         userSim.quit();
