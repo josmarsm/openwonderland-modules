@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.pdfviewer.client;
 
 import com.sun.pdfview.PDFFile;
 import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -27,11 +26,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel.MapMode;
-import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,10 +44,10 @@ public class PDFDocumentLoader extends Thread {
     private URL url;
     private PDFFile pdfFile;
     boolean loadInProgress = false;
-    private List listeners;
+    private ConcurrentLinkedQueue<PDFDocumentLoaderListener> listeners;
 
     public PDFDocumentLoader() {
-        listeners = Collections.synchronizedList(new LinkedList<PDFDocumentLoaderListener>());
+        listeners = new ConcurrentLinkedQueue();
     }
 
     public PDFDocumentLoader(URL url) {
@@ -173,7 +170,7 @@ public class PDFDocumentLoader extends Thread {
     }
 
     public void notifyListeners(URL url, boolean loaded, Exception e) {
-        ListIterator<PDFDocumentLoaderListener> iter = listeners.listIterator();
+        Iterator<PDFDocumentLoaderListener> iter = listeners.iterator();
         while (iter.hasNext()) {
             PDFDocumentLoaderListener listener = iter.next();
             listener.documentLoadStateChanged(url, loaded, e);
