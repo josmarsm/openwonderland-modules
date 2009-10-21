@@ -61,13 +61,8 @@ public class PositionDescriptor {
     
     /** Constructor, takes all of the class attributes */
     PositionDescriptor(String tapeName, PositionComponentServerState positionState) {
-        try {
-            this.tapeName = URLEncoder.encode(tapeName, "UTF-8");
-            
-            this.positionInfo = getPositionInfo(positionState);
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(PositionDescriptor.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        this.tapeName = tapeName;
+        this.positionInfo = getPositionInfo(positionState);        
     }
 
 
