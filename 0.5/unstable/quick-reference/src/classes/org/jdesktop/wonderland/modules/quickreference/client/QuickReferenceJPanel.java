@@ -67,6 +67,12 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         eLabel = new javax.swing.JLabel();
         qeLabel = new javax.swing.JLabel();
+        scrollWheelLabel = new javax.swing.JLabel();
+        zoomInOutLabel = new javax.swing.JLabel();
+        controlLabel = new javax.swing.JLabel();
+        plusLabel2 = new javax.swing.JLabel();
+        lookLabel = new javax.swing.JLabel();
+        dragLabel = new javax.swing.JLabel();
 
         shiftLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Shift-key.png"))); // NOI18N
 
@@ -87,7 +93,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
 
         upLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key.png"))); // NOI18N
 
-        runLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        runLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         runLabel.setText(bundle.getString("Run")); // NOI18N
         runLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
 
@@ -98,7 +104,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
 
         rightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Right-key.png"))); // NOI18N
 
-        leftRightLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        leftRightLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         leftRightLabel.setText(bundle.getString("Turn_Left_Right")); // NOI18N
         leftRightLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
 
@@ -109,7 +115,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
 
         downLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Down-key.png"))); // NOI18N
 
-        upDownLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        upDownLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         upDownLabel.setText(bundle.getString("Walk_Forward_Backward")); // NOI18N
         upDownLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
 
@@ -120,9 +126,28 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
 
         eLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/E-key.png"))); // NOI18N
 
-        qeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        qeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         qeLabel.setText(bundle.getString("Step_Left_Right")); // NOI18N
         qeLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+
+        scrollWheelLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/MouseWheel.png"))); // NOI18N
+
+        zoomInOutLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        zoomInOutLabel.setText(bundle.getString("Zoom_In_Out")); // NOI18N
+        zoomInOutLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+
+        controlLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Ctrl-key.png"))); // NOI18N
+
+        plusLabel2.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        plusLabel2.setText(bundle.getString("Slash")); // NOI18N
+
+        lookLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        lookLabel.setText(bundle.getString("Look_Up_Down")); // NOI18N
+        lookLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+
+        dragLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        dragLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        dragLabel.setText(bundle.getString("Drag")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -130,44 +155,59 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(qLabel1)
-                    .add(qLabel)
-                    .add(shiftLabel)
-                    .add(leftLabel)
-                    .add(upLabel2))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(qLabel1)
+                            .add(qLabel)
+                            .add(shiftLabel)
+                            .add(leftLabel)
+                            .add(upLabel2))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                            .add(jLabel1)
+                            .add(jLabel5)
+                            .add(jLabel4)
+                            .add(jLabel2)
+                            .add(jLabel3))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(eLabel1)
+                            .add(eLabel)
+                            .add(upLabel)
+                            .add(rightLabel)
+                            .add(downLabel)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, scrollWheelLabel)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(controlLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(plusLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(dragLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(jLabel1)
-                    .add(jLabel5)
-                    .add(jLabel4)
-                    .add(jLabel2)
-                    .add(jLabel3))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(eLabel1)
-                    .add(eLabel)
-                    .add(upLabel)
-                    .add(rightLabel)
-                    .add(downLabel))
-                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(upDownLabel)
                     .add(leftRightLabel)
                     .add(runLabel)
                     .add(qeLabel)
-                    .add(qeLabel1))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(qeLabel1)
+                    .add(lookLabel)
+                    .add(zoomInOutLabel))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(upLabel2)
-                    .add(jLabel1)
-                    .add(upDownLabel)
-                    .add(downLabel))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                            .add(upLabel2)
+                            .add(jLabel1)
+                            .add(downLabel)))
+                    .add(layout.createSequentialGroup()
+                        .add(17, 17, 17)
+                        .add(upDownLabel)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(leftLabel)
@@ -188,20 +228,33 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
                     .add(qeLabel))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(18, 18, 18)
-                        .add(qeLabel1))
-                    .add(layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(eLabel1)
                             .add(qLabel1)
-                            .add(jLabel3))))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(jLabel3)))
+                    .add(layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(qeLabel1)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(scrollWheelLabel)
+                    .add(zoomInOutLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(controlLabel)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(plusLabel2)
+                        .add(lookLabel)
+                        .add(dragLabel)))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel controlLabel;
     private javax.swing.JLabel downLabel;
+    private javax.swing.JLabel dragLabel;
     private javax.swing.JLabel eLabel;
     private javax.swing.JLabel eLabel1;
     private javax.swing.JLabel jLabel1;
@@ -211,15 +264,19 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel leftLabel;
     private javax.swing.JLabel leftRightLabel;
+    private javax.swing.JLabel lookLabel;
+    private javax.swing.JLabel plusLabel2;
     private javax.swing.JLabel qLabel;
     private javax.swing.JLabel qLabel1;
     private javax.swing.JLabel qeLabel;
     private javax.swing.JLabel qeLabel1;
     private javax.swing.JLabel rightLabel;
     private javax.swing.JLabel runLabel;
+    private javax.swing.JLabel scrollWheelLabel;
     private javax.swing.JLabel shiftLabel;
     private javax.swing.JLabel upDownLabel;
     private javax.swing.JLabel upLabel;
     private javax.swing.JLabel upLabel2;
+    private javax.swing.JLabel zoomInOutLabel;
     // End of variables declaration//GEN-END:variables
 }
