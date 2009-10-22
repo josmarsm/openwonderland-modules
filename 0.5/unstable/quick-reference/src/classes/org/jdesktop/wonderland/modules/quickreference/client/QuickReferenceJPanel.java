@@ -47,29 +47,179 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        quickReferenceScrollPane = new javax.swing.JScrollPane();
-        quickReferenceTable = new javax.swing.JTable();
+        shiftLabel = new javax.swing.JLabel();
+        qLabel1 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        eLabel1 = new javax.swing.JLabel();
+        qeLabel1 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        upLabel2 = new javax.swing.JLabel();
+        runLabel = new javax.swing.JLabel();
+        leftLabel = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        rightLabel = new javax.swing.JLabel();
+        leftRightLabel = new javax.swing.JLabel();
+        upLabel = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        downLabel = new javax.swing.JLabel();
+        upDownLabel = new javax.swing.JLabel();
+        qLabel = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        eLabel = new javax.swing.JLabel();
+        qeLabel = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridLayout());
+        shiftLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Shift-key.png"))); // NOI18N
 
-        quickReferenceTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {"Up Arrow", "Walk forward"},
-                {"Down Arrow", "Walk backward"},
-                {"Left Arrow", "Turn left"},
-                {"Right Arrow", "Turn right"}
-            },
-            new String [] {
-                "Key", "Description"
-            }
-        ));
-        quickReferenceScrollPane.setViewportView(quickReferenceTable);
+        qLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageUp-key.png"))); // NOI18N
 
-        add(quickReferenceScrollPane);
+        jLabel5.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/quickreference/client/resources/Bundle"); // NOI18N
+        jLabel5.setText(bundle.getString("Slash")); // NOI18N
+
+        eLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageDown-key.png"))); // NOI18N
+
+        qeLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        qeLabel1.setText(bundle.getString("Go_Up_Down")); // NOI18N
+        qeLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+
+        jLabel4.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel4.setText(bundle.getString("Plus")); // NOI18N
+
+        upLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key.png"))); // NOI18N
+
+        runLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        runLabel.setText(bundle.getString("Run")); // NOI18N
+        runLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+
+        leftLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Left-key.png"))); // NOI18N
+
+        jLabel3.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel3.setText(bundle.getString("Slash")); // NOI18N
+
+        rightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Right-key.png"))); // NOI18N
+
+        leftRightLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        leftRightLabel.setText(bundle.getString("Turn_Left_Right")); // NOI18N
+        leftRightLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+
+        upLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key.png"))); // NOI18N
+
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel1.setText(bundle.getString("Slash")); // NOI18N
+
+        downLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Down-key.png"))); // NOI18N
+
+        upDownLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        upDownLabel.setText(bundle.getString("Walk_Forward_Backward")); // NOI18N
+        upDownLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+
+        qLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Q-key.png"))); // NOI18N
+
+        jLabel2.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel2.setText(bundle.getString("Slash")); // NOI18N
+
+        eLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/E-key.png"))); // NOI18N
+
+        qeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        qeLabel.setText(bundle.getString("Step_Left_Right")); // NOI18N
+        qeLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(qLabel1)
+                    .add(qLabel)
+                    .add(shiftLabel)
+                    .add(leftLabel)
+                    .add(upLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(jLabel1)
+                    .add(jLabel5)
+                    .add(jLabel4)
+                    .add(jLabel2)
+                    .add(jLabel3))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(eLabel1)
+                    .add(eLabel)
+                    .add(upLabel)
+                    .add(rightLabel)
+                    .add(downLabel))
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(upDownLabel)
+                    .add(leftRightLabel)
+                    .add(runLabel)
+                    .add(qeLabel)
+                    .add(qeLabel1))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(upLabel2)
+                    .add(jLabel1)
+                    .add(upDownLabel)
+                    .add(downLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(leftLabel)
+                    .add(jLabel5)
+                    .add(rightLabel)
+                    .add(leftRightLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(shiftLabel)
+                    .add(jLabel4)
+                    .add(upLabel)
+                    .add(runLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(qLabel)
+                    .add(jLabel2)
+                    .add(eLabel)
+                    .add(qeLabel))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(qeLabel1))
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(eLabel1)
+                            .add(qLabel1)
+                            .add(jLabel3))))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane quickReferenceScrollPane;
-    private javax.swing.JTable quickReferenceTable;
+    private javax.swing.JLabel downLabel;
+    private javax.swing.JLabel eLabel;
+    private javax.swing.JLabel eLabel1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel leftLabel;
+    private javax.swing.JLabel leftRightLabel;
+    private javax.swing.JLabel qLabel;
+    private javax.swing.JLabel qLabel1;
+    private javax.swing.JLabel qeLabel;
+    private javax.swing.JLabel qeLabel1;
+    private javax.swing.JLabel rightLabel;
+    private javax.swing.JLabel runLabel;
+    private javax.swing.JLabel shiftLabel;
+    private javax.swing.JLabel upDownLabel;
+    private javax.swing.JLabel upLabel;
+    private javax.swing.JLabel upLabel2;
     // End of variables declaration//GEN-END:variables
 }
