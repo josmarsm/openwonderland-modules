@@ -149,5 +149,6 @@ public class QuickReferenceClientPlugin extends BaseClientPlugin {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             mainHUD.removeComponent(hudComponent);
         }
+        super.cleanup();
     }
 }
