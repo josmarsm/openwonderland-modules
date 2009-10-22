@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.quickreference.client;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
@@ -41,6 +42,10 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
  */
 @Plugin
 public class QuickReferenceClientPlugin extends BaseClientPlugin {
+
+    // The error logger
+    private static final Logger LOGGER =
+            Logger.getLogger(QuickReferenceClientPlugin.class.getName());
 
     // The I18N resource bundle
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
@@ -86,7 +91,8 @@ public class QuickReferenceClientPlugin extends BaseClientPlugin {
      */
     @Override
     protected void activate() {
-        JmeClientMain.getFrame().addToWindowMenu(menuItem, -1);
+        JmeClientMain.getFrame().addToHelpMenu(menuItem, -1);
+        menuItem.setSelected(false);
     }
 
     /**
@@ -94,15 +100,14 @@ public class QuickReferenceClientPlugin extends BaseClientPlugin {
      */
     @Override
     protected void deactivate() {
-        // If there is a HUD Component, then remove it from the HUD and
-        // clean it up.
+        
+        // If there is a HUD Component, then make it invisible
         if (hudComponent != null) {
-            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-            mainHUD.removeComponent(hudComponent);
+            hudComponent.setVisible(false);
         }
 
         // Remove the menu item
-        JmeClientMain.getFrame().removeFromWindowMenu(menuItem);
+        JmeClientMain.getFrame().removeFromHelpMenu(menuItem);
     }
 
     /**
