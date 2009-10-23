@@ -18,7 +18,9 @@
 package org.jdesktop.wonderland.modules.npc.server.cell;
 
 import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.avatarbase.server.cell.AvatarConfigComponentMO;
+import org.jdesktop.wonderland.modules.npc.common.NpcAvatarConfigComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
 /**
@@ -41,5 +43,18 @@ public class NpcAvatarConfigComponentMO extends AvatarConfigComponentMO {
     @Override
     protected String getClientClass() {
         return "org.jdesktop.wonderland.modules.npc.client.cell.NpcAvatarConfigComponent";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CellComponentServerState getServerState(CellComponentServerState state) {
+        // We need to override getServerState() so that we return the NPC version
+        // of the component server state.
+        if (state == null) {
+            state = new NpcAvatarConfigComponentServerState();
+        }
+        return super.getServerState(state);
     }
 }
