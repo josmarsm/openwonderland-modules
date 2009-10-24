@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.scriptingImager.client;
 
-import java.awt.event.MouseEvent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
@@ -28,11 +27,9 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.scriptingImager.client.jme.cellrenderer.ScriptingImagerCellRenderer;
 import org.jdesktop.wonderland.modules.scriptingImager.common.ScriptingImagerCellClientState;
-import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
-import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingActionClass;
 import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingComponent;
+import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingRunnable;
 /**
  * Client Cell for a whiteboard shared application.
  *
@@ -42,7 +39,7 @@ import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingCompon
 public class ScriptingImagerCell extends Cell {
     
     @UsesCellComponent
-    private ScriptingComponent scriptingComp;
+    private ScriptingComponent scriptingComponent;
 
     /* The image uri to use */
     private String imageURI = null;
@@ -61,7 +58,7 @@ public class ScriptingImagerCell extends Cell {
     }
 
     /**
-     * Initialize the whiteboard with parameters from the server.
+     * Initialize the imager with parameters from the server.
      *
      * @param configData the config data to initialize the cell with
      */
@@ -95,22 +92,107 @@ public class ScriptingImagerCell extends Cell {
                 break;
 
             case ACTIVE:
+                {
 //                if (listener == null)
 //                    {
 //                    listener = new MouseEventListener();
 //                    listener.addToEntity(icr.getEntity());
                 System.out.println("Inside ACTIVE in scriptingImager");
-//                scriptingComp.setAvatarRenderer(icr);
 //                    }
-                break;
+                if(increasing == true)
+                    {
+                    ScriptingActionClass sac = new ScriptingActionClass();
+                    sac.setName("Imager");
+                    sac.insertCmdMap("testit", testitRun);
 
+                    sac.insertCmdMap("exposeImage", exposeImageRun);
+                    sac.insertCmdMap("exposeNext", exposeNextRun);
+                    sac.insertCmdMap("exposePrevious", exposePreviousRun);
+/*
+                sac.insertCmdMap("startBack", avatarStartBackRun);
+            sac.insertCmdMap("stopBack", avatarStopBackRun);
+            sac.insertCmdMap("startLeft", avatarStartLeftRun);
+            sac.insertCmdMap("stopLeft", avatarStopLeftRun);
+            sac.insertCmdMap("startRight", avatarStartRightRun);
+            sac.insertCmdMap("stopRight", avatarStopRightRun);
+            sac.insertCmdMap("startUp", avatarStartUpRun);
+            sac.insertCmdMap("stopUp", avatarStopUpRun);
+            sac.insertCmdMap("startDown", avatarStartDownRun);
+            sac.insertCmdMap("stopDown", avatarStopDownRun);
+ */     
+                    scriptingComponent.putActionObject(sac);
+                    }
+                break;
+                }
             default:
                 break;
             }
         }
-    
-    @Override
 
+    public void testit(int a)
+        {
+        System.out.println("testit a = " + a);
+        }
+
+    ScriptingRunnable testitRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            testit(a);
+            System.out.println("ScriptingActionClass - enter testit");
+            }
+        };
+    
+
+    public void exposeImage(int a)
+        {
+        System.out.println("exposeImage a = " + a);
+        icr.exposeImage(a);
+        }
+
+    ScriptingRunnable exposeImageRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            exposeImage(a);
+            }
+        };
+
+
+    public void exposeNext()
+        {
+        System.out.println("exposeNext");
+        icr.exposeNext();
+        }
+
+    ScriptingRunnable exposeNextRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            exposeNext();
+            }
+        };
+
+
+    public void exposePrevious()
+        {
+        System.out.println("exposePrevious");
+        icr.exposePrevious();
+        }
+
+    ScriptingRunnable exposePreviousRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            exposePrevious();
+            }
+        };
+
+    @Override
     protected CellRenderer createCellRenderer(RendererType rendererType)
         {
         if (rendererType == RendererType.RENDERER_JME) 
