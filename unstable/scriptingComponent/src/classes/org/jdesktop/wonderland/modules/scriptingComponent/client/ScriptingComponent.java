@@ -22,7 +22,6 @@ import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import imi.character.avatar.AvatarContext.TriggerNames;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -61,7 +60,6 @@ import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.input.EventListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
@@ -95,12 +93,13 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
+//import org.jdesktop.wonderland.modules.npc.client.cell.NpcCell;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentNpcMoveMessage;
-import org.jdesktop.wonderland.modules.scriptingImager.client.jme.cellrenderer.ScriptingImagerCellRenderer;
+//import org.jdesktop.wonderland.modules.scriptingImager.client.jme.cellrenderer.ScriptingImagerCellRenderer;
 
 /**
  *
- * A Component that provides scripting interface 
+ * A Component that provides a scripting interface
  * 
  * @author morrisford
  */
@@ -113,6 +112,9 @@ public class ScriptingComponent extends CellComponent
     public boolean stateBoolean[] = {false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false};
     public float stateFloat[] = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
     Map<String, CompiledScript> scriptMap = new HashMap<String, CompiledScript>();
+    private ScriptingActionClass actionObject;
+    private String cellType = "";
+
 //    myThread mth = new myThread();
     private ArrayList aniList;
     private int aniFrame = 0;
@@ -208,8 +210,6 @@ public class ScriptingComponent extends CellComponent
     private   String[]    contentRead;
 
     private   Cell      theCell;
-    private   AvatarImiJME                  avatarRenderer;
-    private   ScriptingImagerCellRenderer   imageRenderer;    
     
     private   boolean             firstEntry = false;
     private   boolean             iceEventInFlight = false;
@@ -217,17 +217,20 @@ public class ScriptingComponent extends CellComponent
     private   String cellName;
     private   String userName;
     
-/*
-    private   Vector3f                      npcPosition;
-    private   GoTo                          myGoTo;
-    private   MovableAvatarComponent        movableAvatar;
-*/
     private   CellRendererJME ret = null;
-    
+    private ControllerInterface controller;
+    private   boolean       keepRunning;
+    private   boolean       activeVehicle;
+    private   int controllerTime = 100;
+
     @UsesCellComponent
     protected ChannelComponent channelComp;
     
     protected ChannelComponent.ComponentMessageReceiver msgReceiver=null;
+    private truck     myTruck;
+    private fixedWing myFixedWing;
+    private int       mobileType = 1;
+    private Quaternion initialQuat;
 
     /**
      * The ScriptingComponent constructor
@@ -239,6 +242,7 @@ public class ScriptingComponent extends CellComponent
         super(cell);
         firstEntry = false;
         theCell = cell;
+
         System.out.println("******************** Cell name = " + cell.getName());
         System.out.println("ScriptingComponent : Cell " + cell + " - id = " + cell.getCellID() + " : Enter ScriptingComponent constructor");
         this.cellName = cell.getName();
@@ -256,154 +260,41 @@ public class ScriptingComponent extends CellComponent
             }, 100);
         repo = ContentRepositoryRegistry.getInstance().getRepository(cell.getCellCache().getSession().getSessionManager());
         }
-/*
-    public void avatarMove(int x, int y, int z)
+
+    public void putActionObject(ScriptingActionClass actionObject)
         {
-        npcPosition = new Vector3f(x, y, z);
-
-        avatarGoTo(npcPosition);
-
-        CellTransform transform = new CellTransform(null, npcPosition, null);
-        ScriptingComponentNpcMoveMessage msg = new ScriptingComponentNpcMoveMessage(cell.getCellID(), transform);
-        channelComp.send(msg);
-
-        CharacterMotionListener motionListener = new CharacterMotionListener()
-            {
-            public void transformUpdate(Vector3f translation, PMatrix rotation)
-                {
-                //Check if NPC has reached his destination
-                if (!myGoTo.verify())
-                    {
-                    System.out.println("In myGoTo.verify");
-                    CellTransform transform = new CellTransform(avatarRenderer.getAvatarCharacter().getQuaternion(), npcPosition, null);
-                    System.out.println("In there also - movableAvatar = " + movableAvatar);
-                    movableAvatar.localMoveRequest(transform, 0, false, null, null);
-                    }
-                }
-            };
-        avatarRenderer.getAvatarCharacter().getController().addCharacterMotionListener(motionListener);
+        System.out.println("In scriptingComponent - enter putActionObject");
+        this.actionObject = actionObject;
+        this.cellType = actionObject.getName();
+//        System.out.println("In putActionObject - name = " + actionObject.getName());
+//        ScriptingRunnable runny = actionObject.getCmdMap("testit");
+//        runny.setPoint(1.0f, 2.0f, 3.0f);
+//        runny.run();
         }
 
-    public void avatarGoTo(Vector3f NpcPosition)
+    public void executeAction(String Name, float x, float y, float z)
         {
-        GameContext context = avatarRenderer.getAvatarCharacter().getContext();
-        CharacterSteeringHelm helm = context.getSteering();
-        myGoTo = new GoTo(NpcPosition, context);
-        helm.clearTasks();
-        helm.setEnable(true);
-        helm.addTaskToTop(myGoTo);
-        }
-*/
-    public  void    imagerExposeNext()
-        {
-        imageRenderer = (ScriptingImagerCellRenderer)ret;
-        imageRenderer.exposeNext();
+        System.out.println("ScriptingComponent - enter executeAction - three floats");
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.setPoint(x, y, z);
+        runny.run();
         }
 
-    public  void    imagerExposePrevious()
+    public void executeAction(String Name)
         {
-        imageRenderer = (ScriptingImagerCellRenderer)ret;
-        imageRenderer.exposePrevious();
+        System.out.println("ScriptingComponent - enter executeAction - no parms");
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.run();
         }
 
-    public  void    imagerExposeImage(int image)
+    public void executeAction(String Name, int a)
         {
-        imageRenderer = (ScriptingImagerCellRenderer)ret;
-        imageRenderer.exposeImage(image);
+        System.out.println("ScriptingComponent - enter executeAction - no parms");
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.setSingleInt(a);
+        runny.run();
         }
 
-    public  void    stopAvatarForward()
-        {
-        System.out.println("stopAvatarForward");
-        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Forward);
-
-        Vector3f npcPosition = new Vector3f(2, 2, 2);
-
-        CellTransform transform = new CellTransform(null, npcPosition, null);
-        ScriptingComponentNpcMoveMessage msg = new ScriptingComponentNpcMoveMessage(cell.getCellID(), transform);
-        channelComp.send(msg);
-        }
-
-    public  void    startAvatarForward()
-        {
-        System.out.println("startAvatarForward");
-        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Forward);
-        }
-
-    public  void    stopAvatarBack()
-        {
-        System.out.println("stopAvatarBack");
-        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Back);
-        }
-
-    public  void    startAvatarBack()
-        {
-        System.out.println("startAvatarBack");
-        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Back);
-        }
-
-    public  void    stopAvatarLeft()
-        {
-        System.out.println("stopAvatarLeft");
-        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Left);
-        }
-
-    public  void    startAvatarLeft()
-        {
-        System.out.println("startAvatarLeft");
-        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Left);
-        }
-
-    public  void    stopAvatarRight()
-        {
-        System.out.println("stopAvatarRight");
-        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Right);
-        }
-
-    public  void    startAvatarRight()
-        {
-        System.out.println("startAvatarRight");
-        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Right);
-        }
-
-    public  void    stopAvatarUp()
-        {
-        System.out.println("stopAvatarUp");
-        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Up);
-        }
-
-    public  void    startAvatarUp()
-        {
-        System.out.println("startAvatarUp");
-        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Up);
-        }
-
-    public  void    stopAvatarDown()
-        {
-        System.out.println("stopAvatarDown");
-        avatarRenderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Down);
-        }
-
-    public  void    startAvatarDown()
-        {
-        System.out.println("startAvatarDown");
-        avatarRenderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Down);
-        }
-
-/*    public  void    setMovableAvatar(MovableAvatarComponent MovableAvatar)
-        {
-        movableAvatar = MovableAvatar;
-        } */
-    public  void    setAvatarRenderer(AvatarImiJME AvatarRenderer)
-        {
-        avatarRenderer = AvatarRenderer;
-        }
-/*
-    public  void    setImageRenderer(ScriptingImagerCellRenderer ImageRenderer)
-        {
-        imageRenderer = ImageRenderer;
-        }
-*/
 /**
  * contentCreateFile - method for calls from a script to create a directory path in the user area on the content area
  *
@@ -854,15 +745,14 @@ public class ScriptingComponent extends CellComponent
 /* Get local node */
                 if(!firstEntry)
                     {
-                    ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+                    if(cellType.equals("NPC"))
+                        {
+                        System.out.println("In ScriptingComponent - setStatus RENDERING - NPC found");
+                        }
+                    else
+                        {
+                        ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
 
-                    System.out.println("In component setStatus - renderer = " + ret);
-//                    if(ret instanceof AvatarImiJME)
-//                        {
-//                        System.out.println("Avatar renderer");
-//                        }
-//                    else
-//                        {
                         Entity mye = ret.getEntity();
                         RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
                         localNode = rc.getSceneRoot();
@@ -870,17 +760,21 @@ public class ScriptingComponent extends CellComponent
                         myListener.addToEntity(mye);
                         KeyEventListener myKeyListener = new KeyEventListener();
                         myKeyListener.addToEntity(mye);
-//                        }
+
+//                        ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+                        }
+                    System.out.println("In component setStatus - renderer = " + ret);
 /* Execute the startup script */
                     executeScript(STARTUP_EVENT, null);
                     firstEntry = true;
+
                     }
                 break;
                 }
             case ACTIVE:
                 {
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE");
-/* Register the intercell listener */
+ /* Register the intercell listener */
                 ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
 /* Get local node */
 //                CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
@@ -1178,6 +1072,14 @@ public class ScriptingComponent extends CellComponent
                 executeScript(PROXIMITY_EVENT, null);
                 }
             }, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()), new BoundingSphere((float)middle, new Vector3f()), new BoundingSphere((float)inner, new Vector3f())});
+/*            }, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()),
+                                      new BoundingSphere((float)outer - .2f, new Vector3f()),
+                                      new BoundingSphere((float)middle, new Vector3f()),
+                                      new BoundingSphere((float)middle - .2f, new Vector3f()),
+                                      new BoundingSphere((float)inner, new Vector3f()),
+                                      new BoundingSphere((float)inner - .2f, new Vector3f())
+                                    }
+                                        ); */
         cell.addComponent(comp);
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : Prox class = " + cell.getComponent(ProximityComponent.class));                
         }
@@ -1232,11 +1134,6 @@ public class ScriptingComponent extends CellComponent
         channelComp.send(msg);
         }
 
-    public void testMethod(String ibid)
-        {
-        System.out.println(ibid);
-        }
-   
     public void setStateString(String value, int which)
         {
         stateString[which] = value;
@@ -1290,7 +1187,7 @@ public class ScriptingComponent extends CellComponent
     
     public void putName(String theName)
         {
-    testName = theName;    
+        testName = theName;
         }
     
     public void setScriptName(String name, int which)
@@ -1461,6 +1358,7 @@ public class ScriptingComponent extends CellComponent
         float angle;
 
         Quaternion orig = localNode.getLocalRotation();
+        
 //        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original quat = " + orig);
         angle = orig.toAngleAxis(axis);
 
@@ -1468,22 +1366,64 @@ public class ScriptingComponent extends CellComponent
         initialRotationY = axis.y;
         initialRotationZ = axis.z;
         initialAngle = angle;
+        initialQuat = orig;
         }
 
     public void getInitialPosition()
         {
- //       if(localNode != null)
- //           {
+        if(cellType.equals("NPC"))
+            {
+            initialX = 0.0f;
+            initialY = 0.0f;
+            initialZ = 0.0f;
+            }
+        else
+            {
             Vector3f v3f = localNode.getLocalTranslation();
             initialX = v3f.x;
             initialY = v3f.y;
             initialZ = v3f.z;
-            System.out.append("Initial pos in getInitialPosition = " + initialX + ", " + initialY + ", " + initialZ);
- //           }
- //       else
- //           {
- //           System.out.println("localNode is null in getInitialPosition");
- //           }
+            }
+        }
+
+    public Quaternion getInitialQuat()
+        {
+        return initialQuat;
+        }
+    
+    public float getInitialX()
+        {
+        return initialX;
+        }
+
+    public float getInitialY()
+        {
+        return initialY;
+        }
+
+    public float getInitialZ()
+        {
+        return initialZ;
+        }
+
+    public float getInitialRotationZ()
+        {
+        return initialRotationZ;
+        }
+
+    public float getInitialRotationX()
+        {
+        return initialRotationX;
+        }
+
+    public float getInitialRotationY()
+        {
+        return initialRotationY;
+        }
+
+    public float getInitialAngle()
+        {
+        return initialAngle;
         }
 
     public void getWorldCoor()
@@ -1514,9 +1454,117 @@ public class ScriptingComponent extends CellComponent
             doNotifyTranslate(v3fn);
         }
 
+    public void testAxes()
+        {
+            System.out.println("Enter testAxes");
+            getInitialRotation();
+            Quaternion toTurn = new Quaternion();
+            Quaternion toRoll = new Quaternion();
+            Quaternion step = new Quaternion();
+            Quaternion to = new Quaternion();
+            Vector3f axis = new Vector3f();
+            float angle;
+
+            toTurn.fromAngleAxis((float) (Math.PI / 12), new Vector3f(0, 1, 0));
+
+            angle = initialQuat.toAngleAxis(axis);
+            System.out.println("Initial rot - angle = " + angle + " - axis " + axis);
+
+            step = toTurn.mult(initialQuat);
+            angle = step.toAngleAxis(axis);
+            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+
+            toRoll.fromAngleAxis((float) -(Math.PI / 12), new Vector3f((float)Math.cos(angle), 0, -(float)Math.sin(angle)));
+//            toRoll.fromAngleAxis((float) -(Math.PI / 12), new Vector3f(1, 0, -(float)Math.sin(angle)));
+
+            to = toRoll.mult(step);
+            angle = to.toAngleAxis(axis);
+            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+
+            setRotation(axis.x, axis.y, axis.z, angle, 1);
+            mySleep(5000);
+            getInitialRotation();
+            angle = initialQuat.toAngleAxis(axis);
+            System.out.println("After first rotation Initial rot - angle = " + angle + " - axis " + axis);
+        }
+
+
+    public void testAxesReverse()
+        {
+            System.out.println("Enter testAxesReverse");
+            getInitialRotation();
+            Quaternion toTurn = new Quaternion();
+            Quaternion toRoll = new Quaternion();
+            Quaternion step = new Quaternion();
+            Quaternion to = new Quaternion();
+            Vector3f axis = new Vector3f();
+            float angle;
+
+            toTurn.fromAngleAxis(-(float) (Math.PI / 12), new Vector3f(0, 1, 0));
+
+            angle = initialQuat.toAngleAxis(axis);
+            System.out.println("Initial rot - angle = " + angle + " - axis " + axis);
+
+            step = toTurn.mult(initialQuat);
+            angle = step.toAngleAxis(axis);
+            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+
+            toRoll.fromAngleAxis((float) +(Math.PI / 12), new Vector3f((float)Math.cos(angle), 0, -(float)Math.sin(angle)));
+//            toRoll.fromAngleAxis((float) +(Math.PI / 12), new Vector3f(1, 0, +(float)Math.sin(angle)));
+
+            to = toRoll.mult(step);
+            angle = to.toAngleAxis(axis);
+            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+
+            setRotation(axis.x, axis.y, axis.z, angle, 1);
+            mySleep(5000);
+            getInitialRotation();
+            angle = initialQuat.toAngleAxis(axis);
+            System.out.println("After first rotation Initial rot - angle = " + angle + " - axis " + axis);
+        }
+
+    public void testAxes2()
+        {
+            System.out.println("Enter testAxes2");
+            getInitialRotation();
+            Quaternion toTurn = new Quaternion();
+            Quaternion toRoll = new Quaternion();
+            Quaternion step = new Quaternion();
+            Quaternion to = new Quaternion();
+            Vector3f axis = new Vector3f();
+            float angle;
+
+            toRoll.fromAngleAxis((float) -(Math.PI / 12), new Vector3f(1, 0, 0));
+
+//            toTurn.fromAngleAxis((float) (Math.PI / 12), new Vector3f(0, 1, 0));
+
+            angle = initialQuat.toAngleAxis(axis);
+            System.out.println("Initial rot - angle = " + angle + " - axis " + axis);
+
+            step = toRoll.mult(initialQuat);
+            angle = step.toAngleAxis(axis);
+            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+
+            toTurn.fromAngleAxis((float) (Math.PI / 12), new Vector3f(0, 1, -(float)Math.sin(angle)));
+
+//            toRoll.fromAngleAxis((float) -(Math.PI / 12), new Vector3f((float)Math.cos(angle), 0, -(float)Math.sin(angle)));
+//            toRoll.fromAngleAxis((float) -(Math.PI / 12), new Vector3f(1, 0, -(float)Math.sin(angle)));
+
+            to = toTurn.mult(step);
+            angle = to.toAngleAxis(axis);
+            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+
+            setRotation(axis.x, axis.y, axis.z, angle, 1);
+            mySleep(5000);
+            getInitialRotation();
+            angle = initialQuat.toAngleAxis(axis);
+            System.out.println("After first rotation Initial rot - angle = " + angle + " - axis " + axis);
+        }
+
     public void setRotation(float x, float y, float z, float w, int notify)
         {
         final Quaternion roll;
+        
         
         Quaternion orig = localNode.getLocalRotation();
 //        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setRotation - Original rotation = " + orig);
@@ -1584,20 +1632,21 @@ public class ScriptingComponent extends CellComponent
         float angle;
 
         Quaternion orig = localNode.getLocalRotation();
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original quat = " + orig);
+
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original quat = " + orig);
         angle = orig.toAngleAxis(axis);
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original angle/axis = " + angle + " / " + axis);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original angle/axis = " + angle + " / " + axis);
         
         Quaternion roll = new Quaternion();
         roll.fromAngleAxis( w , new Vector3f(x, y, z) );
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() +" : In rotateObject - Change quat = " + roll);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() +" : In rotateObject - Change quat = " + roll);
         angle = roll.toAngleAxis(axis);
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Change angle/axis = " + angle + " / " + axis);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Change angle/axis = " + angle + " / " + axis);
 
         sum = roll.mult(orig);
         angle = sum.toAngleAxis(axis);
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum quat = " + sum);
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum angle/axis = " + angle + " / " + axis);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum quat = " + sum);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum angle/axis = " + angle + " / " + axis);
         SceneWorker.addWorker(new WorkCommit() 
             {
             public void commit() 
@@ -1709,6 +1758,172 @@ public class ScriptingComponent extends CellComponent
         System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In start timer - This is the method called to initiate a timer");
         Timer timer = new Timer();
         timer.schedule(new expired(), timeValue);
+        }
+
+    public void establishMobile()
+        {
+        switch(mobileType)
+            {
+            case 0:
+                {
+                myTruck = new truck(this);
+                break;
+                }
+            case 1:
+                {
+                myFixedWing = new fixedWing(this);
+                break;
+                }
+            default:
+                {
+                break;
+                }
+            }
+        activeVehicle = true;
+        }
+
+    public void removeMobile()
+        {
+        switch(mobileType)
+            {
+            case 0:
+                {
+                myTruck = null;
+                break;
+                }
+            case 1:
+                {
+                myFixedWing = null;
+                break;
+                }
+            default:
+                {
+                break;
+                }
+            }
+        activeVehicle = false;
+        }
+
+    public void moveMobile(float XData, float ZData)
+        {
+//        System.out.println("Enter moveVehicle()");
+        switch(mobileType)
+            {
+            case 0:
+                {
+                myTruck.motivate(XData, ZData);
+                break;
+                }
+            case 1:
+                {
+                myFixedWing.motivate(XData, ZData);
+                break;
+                }
+            default:
+                {
+                break;
+                }
+            }
+        }
+
+    public void startController()
+        {
+        controller = new ControllerInterface("Logitech Attack 3");
+        keepRunning = true;
+        Timer timer = new Timer(true);
+        timer.schedule(new controllerExpired(), controllerTime);
+        System.out.println("Controller started");
+        }
+
+    public void stopController()
+        {
+        keepRunning = false;
+        controller = null;
+        System.out.println("Controller stopped");
+        }
+
+    class controllerExpired extends TimerTask
+        {
+        public void run()
+            {
+            float XData = controller.getComponent11();
+            float ZData = controller.getComponent12();
+
+            moveMobile(XData, ZData);
+            if(keepRunning)
+                {
+                Timer timer = new Timer(true);
+                timer.schedule(new controllerExpired(), controllerTime);
+                }
+            }
+        }
+
+    public void setControllerTime(int cTime)
+        {
+        controllerTime = cTime;
+        }
+
+    public void setControllerTime(float cTime)
+        {
+        controllerTime = (int)cTime;
+        }
+
+    public void configureMobile(String command, float value1)
+        {
+        if(activeVehicle)
+            {
+            switch(mobileType)
+                {
+                case 0:
+                    {
+                    myTruck.configureMobile(command, value1);
+                    break;
+                    }
+                case 1:
+                    {
+                    myFixedWing.configureMobile(command, value1);
+                    break;
+                    }
+                default:
+                    {
+                    break;
+                    }
+                }
+            }
+        }
+
+    public void configureMobile(String command, float value1, float value2)
+        {
+        if(activeVehicle)
+            {
+            switch(mobileType)
+                {
+                case 0:
+                    {
+                    myTruck.configureMobile(command, value1, value2);
+                    break;
+                    }
+                case 1:
+                    {
+                    myFixedWing.configureMobile(command, value1, value2);
+                    break;
+                    }
+                default:
+                    {
+                    break;
+                    }
+                }
+            }
+        }
+
+    public void setMobileType(int type)
+        {
+        mobileType = type;
+        }
+
+    public void setMobileType(float type)
+        {
+        mobileType = (int)type;
         }
 
     class Animation
@@ -1876,7 +2091,6 @@ public class ScriptingComponent extends CellComponent
 */    
     public void doNotifyTranslate(Vector3f translate)
         {
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Translate = " + cell.getLocalTransform());
         ScriptingComponentTransformMessage msg = new ScriptingComponentTransformMessage(cell.getCellID(), ScriptingComponentTransformMessage.TRANSLATE_TRANSFORM, translate);
         channelComp.send(msg);
 //        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
@@ -1884,7 +2098,6 @@ public class ScriptingComponent extends CellComponent
     
     public void doNotifyRotate(Quaternion transform)
         {
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In doNotify - Rotate = " + cell.getLocalTransform());
         ScriptingComponentTransformMessage msg = new ScriptingComponentTransformMessage(cell.getCellID(), ScriptingComponentTransformMessage.ROTATE_TRANSFORM, transform);
         channelComp.send(msg);
 //        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
@@ -1898,14 +2111,10 @@ public class ScriptingComponent extends CellComponent
 //        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
         }
 
-    public void callTridentTest()
+    public void createNPCInstance()
         {
-        System.out.println("Enter callTridentTest()");
-        TridentAnimations helloWorld = new TridentAnimations();
-        helloWorld.go1(this);
-//        helloWorld.ani1(this);
-        }
 
+        }
     class KeyEventListener extends EventClassListener
         {
         @Override

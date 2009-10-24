@@ -89,6 +89,7 @@ public class ScriptingComponentMO extends CellComponentMO
     public static final int INTERCELL_EVENT = 19;
     public static final int CHAT_EVENT = 20;
     public static final int PRESENCE_EVENT = 21;
+    public static final int CONTROLLER_EVENT = 22;
 
     private Vector3f npcPosition;
 
@@ -115,7 +116,7 @@ public class ScriptingComponentMO extends CellComponentMO
         eventNames[MOUSE3_EVENT] = "mouse3.js";
         eventNames[MOUSE1S_EVENT] = "mouse1s.js";
         eventNames[MOUSE2S_EVENT] = "mouse2s.js";
-        eventNames[MOUSE3S_EVENT] = "mouse3s.js";
+        eventNames[MOUSE3S_EVENT] = "mouse3s.java";
         eventNames[MOUSE1C_EVENT] = "mouse1c.js";
         eventNames[MOUSE2C_EVENT] = "mouse2c.js";
         eventNames[MOUSE3C_EVENT] = "mouse3c.java";
@@ -138,7 +139,7 @@ public class ScriptingComponentMO extends CellComponentMO
         eventScriptType[MOUSE3_EVENT] = "javascript";
         eventScriptType[MOUSE1S_EVENT] = "javascript";
         eventScriptType[MOUSE2S_EVENT] = "javascript";
-        eventScriptType[MOUSE3S_EVENT] = "javascript";
+        eventScriptType[MOUSE3S_EVENT] = "java";
         eventScriptType[MOUSE1C_EVENT] = "javascript";
         eventScriptType[MOUSE2C_EVENT] = "javascript";
         eventScriptType[MOUSE3C_EVENT] = "java";
@@ -155,7 +156,8 @@ public class ScriptingComponentMO extends CellComponentMO
         eventScriptType[INTERCELL_EVENT] = "javascript";
         eventScriptType[CHAT_EVENT] = "javascript";
         eventScriptType[PRESENCE_EVENT] = "javascript";
-
+        eventScriptType[CONTROLLER_EVENT] = "javascript";
+        
         }
 
     @Override
@@ -267,18 +269,18 @@ public class ScriptingComponentMO extends CellComponentMO
                     case ScriptingComponentTransformMessage.TRANSLATE_TRANSFORM:
                         {
                         cellMO.translateTransform = ent.getVector();
-                        System.out.println("ScriptingComponentMO.messageReceived - Translate transform message - code = "+ ent.getTransformCode() + " transform = " + cellMO.translateTransform + " - Client ID = " + clientID);
+//                        System.out.println("ScriptingComponentMO.messageReceived - Translate transform message - code = "+ ent.getTransformCode() + " transform = " + cellMO.translateTransform + " - Client ID = " + clientID);
                         break;
                         }
                     case ScriptingComponentTransformMessage.ROTATE_TRANSFORM:
                         {
                         cellMO.rotateTransform = ent.getTransform();
-                        System.out.println("ScriptingComponentMO.messageReceived - Rotate transform message - code = "+ ent.getTransformCode() + " transform = " + cellMO.rotateTransform + " - Client ID = " + clientID);
+//                        System.out.println("ScriptingComponentMO.messageReceived - Rotate transform message - code = "+ ent.getTransformCode() + " transform = " + cellMO.rotateTransform + " - Client ID = " + clientID);
                         break;
                         }
                     case ScriptingComponentTransformMessage.SCALE_TRANSFORM:
                         {
-                        System.out.println("ScriptingComponentMO.messageReceived - Scale transform message - code = "+ ent.getTransformCode() + " transform = " + cellMO.scaleTransform + " - Client ID = " + clientID);
+//                        System.out.println("ScriptingComponentMO.messageReceived - Scale transform message - code = "+ ent.getTransformCode() + " transform = " + cellMO.scaleTransform + " - Client ID = " + clientID);
                         cellMO.scaleTransform = ent.getVector();
                         break;
                         }
