@@ -46,11 +46,12 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         shiftLabel = new javax.swing.JLabel();
-        qLabel1 = new javax.swing.JLabel();
+        pageUpLabel = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        eLabel1 = new javax.swing.JLabel();
+        pageDownLabel = new javax.swing.JLabel();
         qeLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         upLabel2 = new javax.swing.JLabel();
@@ -74,181 +75,245 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         lookLabel = new javax.swing.JLabel();
         dragLabel = new javax.swing.JLabel();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        setLayout(new java.awt.GridBagLayout());
+
         shiftLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Shift-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(shiftLabel, gridBagConstraints);
 
-        qLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageUp-key.png"))); // NOI18N
+        pageUpLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageUp-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(pageUpLabel, gridBagConstraints);
 
-        jLabel5.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel5.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/quickreference/client/resources/Bundle"); // NOI18N
         jLabel5.setText(bundle.getString("Slash")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        add(jLabel5, gridBagConstraints);
 
-        eLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageDown-key.png"))); // NOI18N
+        pageDownLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageDown-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(pageDownLabel, gridBagConstraints);
 
         qeLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         qeLabel1.setText(bundle.getString("Go_Up_Down")); // NOI18N
         qeLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(qeLabel1, gridBagConstraints);
 
-        jLabel4.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel4.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
         jLabel4.setText(bundle.getString("Plus")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        add(jLabel4, gridBagConstraints);
 
         upLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(upLabel2, gridBagConstraints);
 
         runLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         runLabel.setText(bundle.getString("Run")); // NOI18N
         runLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(runLabel, gridBagConstraints);
 
         leftLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Left-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(leftLabel, gridBagConstraints);
 
-        jLabel3.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel3.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
         jLabel3.setText(bundle.getString("Slash")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        add(jLabel3, gridBagConstraints);
 
         rightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Right-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(rightLabel, gridBagConstraints);
 
-        leftRightLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        leftRightLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         leftRightLabel.setText(bundle.getString("Turn_Left_Right")); // NOI18N
         leftRightLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(leftRightLabel, gridBagConstraints);
 
         upLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(upLabel, gridBagConstraints);
 
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
         jLabel1.setText(bundle.getString("Slash")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        add(jLabel1, gridBagConstraints);
 
         downLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Down-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(downLabel, gridBagConstraints);
 
         upDownLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         upDownLabel.setText(bundle.getString("Walk_Forward_Backward")); // NOI18N
         upDownLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(upDownLabel, gridBagConstraints);
 
         qLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Q-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(qLabel, gridBagConstraints);
 
-        jLabel2.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel2.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
         jLabel2.setText(bundle.getString("Slash")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        add(jLabel2, gridBagConstraints);
 
         eLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/E-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(eLabel, gridBagConstraints);
 
-        qeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        qeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         qeLabel.setText(bundle.getString("Step_Left_Right")); // NOI18N
         qeLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(qeLabel, gridBagConstraints);
 
         scrollWheelLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/MouseWheel.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        add(scrollWheelLabel, gridBagConstraints);
 
-        zoomInOutLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        zoomInOutLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         zoomInOutLabel.setText(bundle.getString("Zoom_In_Out")); // NOI18N
         zoomInOutLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(zoomInOutLabel, gridBagConstraints);
 
         controlLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Ctrl-key.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(controlLabel, gridBagConstraints);
 
-        plusLabel2.setFont(new java.awt.Font("Lucida Grande", 0, 24));
-        plusLabel2.setText(bundle.getString("Slash")); // NOI18N
+        plusLabel2.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
+        plusLabel2.setText(bundle.getString("Plus")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        add(plusLabel2, gridBagConstraints);
 
-        lookLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        lookLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
         lookLabel.setText(bundle.getString("Look_Up_Down")); // NOI18N
         lookLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(lookLabel, gridBagConstraints);
 
         dragLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         dragLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         dragLabel.setText(bundle.getString("Drag")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(qLabel1)
-                            .add(qLabel)
-                            .add(shiftLabel)
-                            .add(leftLabel)
-                            .add(upLabel2))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                            .add(jLabel1)
-                            .add(jLabel5)
-                            .add(jLabel4)
-                            .add(jLabel2)
-                            .add(jLabel3))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(eLabel1)
-                            .add(eLabel)
-                            .add(upLabel)
-                            .add(rightLabel)
-                            .add(downLabel)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, scrollWheelLabel)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(controlLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(plusLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(dragLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(upDownLabel)
-                    .add(leftRightLabel)
-                    .add(runLabel)
-                    .add(qeLabel)
-                    .add(qeLabel1)
-                    .add(lookLabel)
-                    .add(zoomInOutLabel))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                            .add(upLabel2)
-                            .add(jLabel1)
-                            .add(downLabel)))
-                    .add(layout.createSequentialGroup()
-                        .add(17, 17, 17)
-                        .add(upDownLabel)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(leftLabel)
-                    .add(jLabel5)
-                    .add(rightLabel)
-                    .add(leftRightLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(shiftLabel)
-                    .add(jLabel4)
-                    .add(upLabel)
-                    .add(runLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(qLabel)
-                    .add(jLabel2)
-                    .add(eLabel)
-                    .add(qeLabel))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(eLabel1)
-                            .add(qLabel1)
-                            .add(jLabel3)))
-                    .add(layout.createSequentialGroup()
-                        .add(18, 18, 18)
-                        .add(qeLabel1)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
-                    .add(scrollWheelLabel)
-                    .add(zoomInOutLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(controlLabel)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(plusLabel2)
-                        .add(lookLabel)
-                        .add(dragLabel)))
-                .addContainerGap(12, Short.MAX_VALUE))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(dragLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -256,7 +321,6 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     private javax.swing.JLabel downLabel;
     private javax.swing.JLabel dragLabel;
     private javax.swing.JLabel eLabel;
-    private javax.swing.JLabel eLabel1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -265,9 +329,10 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     private javax.swing.JLabel leftLabel;
     private javax.swing.JLabel leftRightLabel;
     private javax.swing.JLabel lookLabel;
+    private javax.swing.JLabel pageDownLabel;
+    private javax.swing.JLabel pageUpLabel;
     private javax.swing.JLabel plusLabel2;
     private javax.swing.JLabel qLabel;
-    private javax.swing.JLabel qLabel1;
     private javax.swing.JLabel qeLabel;
     private javax.swing.JLabel qeLabel1;
     private javax.swing.JLabel rightLabel;
