@@ -18,64 +18,74 @@
 
 package org.jdesktop.wonderland.modules.presentationbase.client;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
-import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.jme.ViewManager.ViewManagerListener;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
 /**
+ * Client-side plugin for the presentation system. Registers a component on
+ * the primary view cell (i.e. avatar) so that it may be moved when the
+ * platform moves.
  *
- * @author Drew Harry <drew_harry@dev.java.>
+ * @author Drew Harry <drew_harry@dev.java.net>
+ * @author Jordan Slott <jslott@dev.java.net>
  */
-
 @Plugin
-public class PresentationBaseClientPlugin extends BaseClientPlugin implements ViewManager.ViewManagerListener{
+public class PresentationBaseClientPlugin extends BaseClientPlugin
+        implements ViewManagerListener {
 
-        private static final Logger logger =
+    // The error logger
+    private static final Logger LOGGER =
             Logger.getLogger(PresentationBaseClientPlugin.class.getName());
 
-        ServerSessionManager session;
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void initialize(ServerSessionManager loginInfo) {
+        // Listen for changes in the primary view cell, to add and remove the
+        // moving platform component for it.
+        ViewManager.getViewManager().addViewManagerListener(this);
 
-        @Override
-        public void initialize(ServerSessionManager loginInfo) {
-            logger.warning("Initializing ClientPlugin for Presentation-base.");
-            session = loginInfo;
-            super.initialize(loginInfo);
-        }
+        super.initialize(loginInfo);
+    }
 
-        @Override
-        public void activate() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void cleanup() {
+        // Stop listening for changes in the primary view cell
+        ViewManager.getViewManager().removeViewManagerListener(this);
 
-            ViewManager.getViewManager().addViewManagerListener(this);
-        }
+        super.cleanup();
+    }
 
-        @Override
-        public void deactivate() {
-            // Fetch the client cache and remove the component from the avatar.
-            CellCache cache = ClientContextJME.getCellCache(session.getPrimarySession());
-            if (cache == null) {
-                return;
-            }
-            AvatarCell avatar = (AvatarCell) cache.getViewCell();
-
-            // The javadoc on this method says TEST ME, so I'm not sure
-            // this will actually work.
-            if (avatar != null) {
-                avatar.removeComponent(MovingPlatformAvatarComponent.class);
-                logger.warning("Removing MPAC from local avatar.");
-            }
-        }
-
+    /**
+     * {@inheritDoc}
+     */
     public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
 
-        if(newViewCell!=null) {
-            newViewCell.addComponent(new MovingPlatformAvatarComponent(newViewCell));
-            logger.warning("Just added a MPAC to the local avatar.");
+        // If there is an old view cell, then remove the component from the
+        // avatar. If not present, this should fail silently.
+        if (oldViewCell != null) {
+            oldViewCell.removeComponent(MovingPlatformAvatarComponent.class);
+        }
+
+        // If there is a new view cell, then add the component. If already
+        // present (none should be), then log an error message and continue
+        if (newViewCell != null) {
+            try {
+                newViewCell.addComponent(new MovingPlatformAvatarComponent(newViewCell));
+            } catch (IllegalArgumentException excp) {
+                LOGGER.log(Level.WARNING, "Adding a duplicate moving platform" +
+                        " avatar component", excp);
+            }
         }
     }
 }
