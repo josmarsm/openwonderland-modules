@@ -199,7 +199,7 @@ public class UserSimHandler implements ClientPlugin {
         private LocalAvatar avatar;
         private boolean quit = false;
         private boolean walking = false;
-        private long sleepTime = 500; // Time between steps (in ms)
+        private long sleepTime = 50; // Time between steps (in ms)
         private int currentLoopCount = 0;
         private int desiredLoopCount;
         private Semaphore semaphore;
@@ -233,26 +233,25 @@ public class UserSimHandler implements ClientPlugin {
                 }
 
                 while (!quit && walking) {
-                    if (currentLocation.subtract(desiredLocations[locationIndex]).lengthSquared() < 0.1) {   // Need epsilonEquals
+                    if (currentLocation.subtract(desiredLocations[locationIndex]).lengthSquared() < 0.5) {   // Need epsilonEquals
                         if (locationIndex < desiredLocations.length - 1) {
                             locationIndex++;
-
-                            step = desiredLocations[locationIndex].subtract(currentLocation);
-                            step.multLocal(speed / (1000f / sleepTime));
-
+                            
+                            setStep();
                         } else if (locationIndex == desiredLocations.length - 1 && desiredLoopCount != currentLoopCount) {
                             currentLoopCount++;
                             locationIndex = 0;
 
-                            step = desiredLocations[locationIndex].subtract(currentLocation);
-                            step.multLocal(speed / (1000f / sleepTime));
+                            setStep();
                         } else {
                             walking = false;
                         }
+
+                        
                     }
 
                     if (walking) {
-                        System.err.println("Walk "+currentLocation);
+                        //System.err.println("Walk " + currentLocation);
                         currentLocation.addLocal(step);
                         rend.triggerGoto(currentLocation, orientation);
 //                        messageTimer.messageSent(new CellTransform(orientation, currentLocation));
@@ -282,12 +281,24 @@ public class UserSimHandler implements ClientPlugin {
             desiredLoopCount = loopCount;
             currentLoopCount = 0;
 
-            step = new Vector3f(desiredLocations[0]);
-            step.subtractLocal(currentLocation);
-            step.multLocal(speed / (1000f / sleepTime));
+            setStep();
 
             walking = true;
             semaphore.release();
+        }
+
+        void setStep() {
+            float dist = desiredLocations[locationIndex].distance(currentLocation);
+            float steps = (dist / speed) * (1000f / sleepTime);
+
+            step = desiredLocations[locationIndex].subtract(currentLocation);
+            step.multLocal(1f / steps);
+
+            System.err.println("Set step: " + step + " target (" +
+                               locationIndex + "): " +
+                               desiredLocations[locationIndex] + " dist: " + dist +
+                               " steps: " + steps + " time " +
+                               (steps / (1000f / sleepTime) + " seconds."));
         }
 
         void stopWalking() {
