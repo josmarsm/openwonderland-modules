@@ -58,20 +58,30 @@ public class TelePointerComponent extends CellComponent {
     private MouseEvent3DListener listener;
 
     private SharedPointer pointer;
+
+    private boolean enabled = false;
     
     public TelePointerComponent(Cell cell) {
         super(cell);
     }
 
     public void setEnabled(boolean enabled) {
+        if (this.enabled==enabled)
+            return;
+
+        this.enabled = enabled;
+
         if (enabled) {
             listener = new MouseEvent3DListener();
             ClientContext.getInputManager().addGlobalEventListener(listener);
+            monitorThread = new MonitorThread();
         } else {
             if (listener!=null) {
                 ClientContext.getInputManager().removeGlobalEventListener(listener);
                 listener.commitEvent(new FakeExitEvent());
             }
+            monitorThread.setDone(true);
+            monitorThread = null;
             listener = null;
         }
     }
@@ -81,9 +91,12 @@ public class TelePointerComponent extends CellComponent {
         super.setStatus(status, increasing);
         switch (status) {
             case DISK:
-                if (msgReceiver != null && channelComp != null) {
-                    channelComp.removeMessageReceiver(getMessageClass());
-                    msgReceiver = null;
+                if (!increasing) {
+                    setEnabled(false);
+                    if (msgReceiver != null && channelComp != null) {
+                        channelComp.removeMessageReceiver(getMessageClass());
+                        msgReceiver = null;
+                    }
                 }
                 break;
             case ACTIVE: {
@@ -103,7 +116,6 @@ public class TelePointerComponent extends CellComponent {
                         }
                     };
                     channelComp.addMessageReceiver(getMessageClass(), msgReceiver);
-                    monitorThread = new MonitorThread();
                 }
             }
         }
@@ -131,15 +143,17 @@ public class TelePointerComponent extends CellComponent {
     class MonitorThread extends Thread {
 
         private TelePointerMessage msg;
+        private boolean done = false;
 
         public MonitorThread() {
             msg = new TelePointerMessage();
+            setDaemon(true);
             this.start();
         }
 
         @Override
         public void run() {
-            while(true) {
+            while(!done) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException ex) {
@@ -157,6 +171,10 @@ public class TelePointerComponent extends CellComponent {
                 }
 
             }
+        }
+
+        public void setDone(boolean isDone) {
+            done = isDone;
         }
     }
 
