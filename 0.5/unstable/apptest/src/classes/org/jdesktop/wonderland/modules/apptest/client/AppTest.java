@@ -49,6 +49,7 @@ public class AppTest {
         // NOTE: in this test, the display names of the apps must be unique.
         //apps.add(new App(appTestCell, "gt", 20));
         apps.add(new App(appTestCell, "gt", 5));
+        //apps.add(new App(appTestCell, "Swing Test Cell", 5));
     }
 
     /** 
