@@ -86,6 +86,7 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
+            <art dir="${current.dir}/art"/>
         </module>
     </target>                                  
                                            
