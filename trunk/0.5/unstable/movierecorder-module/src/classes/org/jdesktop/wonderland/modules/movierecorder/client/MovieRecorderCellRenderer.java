@@ -21,20 +21,16 @@ package org.jdesktop.wonderland.modules.movierecorder.client;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import com.jme.renderer.ColorRGBA;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
-import com.jme.scene.shape.Box;
+import com.jme.scene.Spatial;
 import com.jme.scene.shape.Quad;
-import com.jme.scene.state.BlendState;
-import com.jme.scene.state.CullState;
-import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState;
-import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.TextureState;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
@@ -52,12 +48,17 @@ import org.jdesktop.mtgame.RenderUpdater;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.net.URL;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 
 /**
- * Renderer for the movie recorder cell. Includes the code to create the camera.
+ * Renderer for the movie recorder cell. Includes the code to create the camera, download the model and create the "LCD".
  * @author Bernard Horan
  */
 public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUpdater {
@@ -89,12 +90,13 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
 
     protected Node createSceneGraph(Entity entity) {
         /* Create the scene graph object*/
-        Node root = new Node();
+        Node root = new Node("Movie Recorder Root");
         attachRecordingDevice(root, entity);
         root.setModelBound(new BoundingBox());
         root.updateModelBound();
         //Set the name of the buttonRoot node
         root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
+        printTree(root);
         return root;
     }
 
@@ -107,51 +109,42 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     }
 
     private void attachRecordingDevice(Node device, Entity entity) {
-        addOuterCasing(device);
+        addCameraModel(device, entity);
         entity.addEntity(createLCDPanel(device));
     }
 
-    private void addOuterCasing(Node device) {
-        Box casing = new Box("Movie Recorder Casing", new Vector3f(0, 0, 0), WIDTH, HEIGHT, DEPTH); //x, y, z
-        casing.setModelBound(new BoundingBox());
-        casing.updateModelBound();
-        ColorRGBA casingColour = new ColorRGBA(0f, 0f, 1f, 0.2f);
-        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
-        matState.setDiffuse(casingColour);
-        casing.setRenderState(matState);
-        BlendState as = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Blend);
-        as.setEnabled(true);
-        as.setBlendEnabled(true);
-        as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
-        as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
-        casing.setRenderState(as);
-
-        CullState cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Cull);
-        cs.setEnabled(true);
-        cs.setCullFace(CullState.Face.Back);
-        casing.setRenderState(cs);
-        device.attachChild(casing);
+    private void addCameraModel(Node device, Entity entity) {
+        try {
+            LoaderManager manager = LoaderManager.getLoaderManager();
+            URL url = AssetUtils.getAssetURL("wla://movierecorder/pwl_3d_videorecorder_006.dae/pwl_3d_videorecorder_006.dae.gz.dep", this.getCell());
+            DeployedModel dm = manager.getLoaderFromDeployment(url);
+            Node cameraModel = dm.getModelLoader().loadDeployedModel(dm, entity);
+            device.attachChild(cameraModel);
+        } catch (IOException ex) {
+            rendererLogger.log(Level.SEVERE, "Failed to load camera model", ex);
+        }
     }
 
     private Entity createLCDPanel(Node device) {
         WorldManager wm = ClientContextJME.getWorldManager();
         //Node for the quad
-        Node quadNode = new Node();
+        Node quadNode = new Node("quad node");
         //Geometric
         Quad quadGeo = new Quad("Ortho", 2 * WIDTH, 2 * HEIGHT);
         //Entity for the quad
         Entity quadEntity = new Entity("Ortho ");
         //Attach the geometric to the node
         quadNode.attachChild(quadGeo);
-        //Set the quad node position at the +Z of the movie recorder
-        quadNode.setLocalTranslation(0.0f, 0.0f,  DEPTH * 1.01f);
+        //Set the quad node position so that it is directly in front of the camera model
+        //To give the appearance of an LCD panel
+        quadNode.setLocalTranslation(0.0f, -0.15f,  -0.045f);
         
         textureBuffer = (TextureRenderBuffer) wm.getRenderManager().createRenderBuffer(RenderBuffer.Target.TEXTURE_2D, IMAGE_WIDTH, IMAGE_HEIGHT);
         textureBuffer.setIncludeOrtho((false));
         //Create a camera node
         CameraNode cn = new CameraNode("MyCamera", null);
         //Create a node for the camera
-        Node cameraSG = new Node();
+        Node cameraSG = new Node("cameraSG");
         //Attach the camera to the node
         cameraSG.attachChild(cn);
         //Rotate the camera through 180 degrees about the Y-axis
@@ -193,7 +186,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         return quadEntity;
     }
 
-    /**
+    /**x
      * Reset the counter that's used to name the images
      */
     void resetImageCounter() {
@@ -210,6 +203,21 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     private void createCaptureComponent(int width, int height) {
         captureComponent = new CaptureComponent();
         captureComponent.setPreferredSize(new Dimension(width, height));
+    }
+
+    private void printTree(Node root) {
+        rendererLogger.info("node: " + root);
+        List<Spatial> children = root.getChildren();
+        if (children == null) {
+            return;
+        }
+        for (Spatial spatial : children) {
+            if (spatial instanceof Node) {
+                printTree((Node)spatial);
+            } else {
+                rendererLogger.info("spatial: " + spatial);
+            }
+        }
     }
 
     public class CaptureComponent extends JComponent {
