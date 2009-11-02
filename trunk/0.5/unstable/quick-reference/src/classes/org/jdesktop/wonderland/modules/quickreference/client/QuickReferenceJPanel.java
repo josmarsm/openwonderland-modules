@@ -17,7 +17,11 @@
  */
 package org.jdesktop.wonderland.modules.quickreference.client;
 
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 
 /**
  * A JPanel to display simple navigation controls for an Avatar
@@ -30,12 +34,48 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     private static final Logger LOGGER =
             Logger.getLogger(QuickReferenceJPanel.class.getName());
 
+    // The path to the resources for this class
+    private static final String RESOURCES =
+            "org/jdesktop/wonderland/modules/quickreference/client/resources/";
+
+    // The I18N resource bundle
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            RESOURCES + "Bundle");
+
     /**
      * Creates a new JPanel. This method assumes there is a primary view Cell
      * that already exists.
      */
     public QuickReferenceJPanel() {
         initComponents();
+
+        // Set the proper localized icon labels
+        setJLabelIcon("Ctrl_Key_Image", controlLabel);
+        setJLabelIcon("Down_Key_Image", downLabel);
+        setJLabelIcon("E_Key_Image", eLabel);
+        setJLabelIcon("Left_Key_Image", leftLabel);
+        setJLabelIcon("Mouse_Wheel_Image", scrollWheelLabel);
+        setJLabelIcon("PageDown_Key_Image", pageDownLabel);
+        setJLabelIcon("PageUp_Key_Image", pageUpLabel);
+        setJLabelIcon("Q_Key_Image", qLabel);
+        setJLabelIcon("Right_Key_Image", rightLabel);
+        setJLabelIcon("Shift_Key_Image", shiftLabel);
+        setJLabelIcon("Up_Key_Image", upLabel);
+        setJLabelIcon("Up_Key_Image", upLabel2);
+    }
+
+    /**
+     * Given the name of the key in the resource bundle and the JLabel, loads
+     * the image pointed to in the resource bundle and sets it as the JLabel
+     * icon.
+     *
+     * @param key The key string in the resource bundle
+     * param jlabel The label whose icon to set
+     */
+    private void setJLabelIcon(String key, JLabel jlabel) {
+        String resource = RESOURCES + BUNDLE.getString(key);
+        Icon icon = new ImageIcon(getClass().getResource(resource));
+        jlabel.setIcon(icon);
     }
 
     /** This method is called from within the constructor to
