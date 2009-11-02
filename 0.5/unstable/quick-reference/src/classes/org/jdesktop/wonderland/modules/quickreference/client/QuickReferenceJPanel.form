@@ -26,7 +26,7 @@
     <Component class="javax.swing.JLabel" name="shiftLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Shift-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Shift-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -38,7 +38,7 @@
     <Component class="javax.swing.JLabel" name="pageUpLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/PageUp-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/PageUp-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -65,7 +65,7 @@
     <Component class="javax.swing.JLabel" name="pageDownLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/PageDown-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/PageDown-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -112,7 +112,7 @@
     <Component class="javax.swing.JLabel" name="upLabel2">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -144,7 +144,7 @@
     <Component class="javax.swing.JLabel" name="leftLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Left-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Left-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -171,7 +171,7 @@
     <Component class="javax.swing.JLabel" name="rightLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Right-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Right-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -203,7 +203,7 @@
     <Component class="javax.swing.JLabel" name="upLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -230,7 +230,7 @@
     <Component class="javax.swing.JLabel" name="downLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Down-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Down-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -262,7 +262,7 @@
     <Component class="javax.swing.JLabel" name="qLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Q-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Q-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -289,7 +289,7 @@
     <Component class="javax.swing.JLabel" name="eLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/E-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/E-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -321,7 +321,7 @@
     <Component class="javax.swing.JLabel" name="scrollWheelLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/MouseWheel.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/MouseWheel_en.png"/>
         </Property>
       </Properties>
       <Constraints>
@@ -353,7 +353,7 @@
     <Component class="javax.swing.JLabel" name="controlLabel">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Ctrl-key.png"/>
+          <Image iconType="3" name="/org/jdesktop/wonderland/modules/quickreference/client/resources/Ctrl-key_en.png"/>
         </Property>
       </Properties>
       <Constraints>
