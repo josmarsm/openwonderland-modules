@@ -48,17 +48,21 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
 
         // Set the proper localized icon labels
         setJLabelIcon("Ctrl_Key_Image", controlLabel);
-        setJLabelIcon("Down_Key_Image", downLabel);
+        setJLabelIcon("Down_Key_Image", wLabel);
         setJLabelIcon("E_Key_Image", eLabel);
         setJLabelIcon("Left_Key_Image", leftLabel);
         setJLabelIcon("Mouse_Wheel_Image", scrollWheelLabel);
         setJLabelIcon("PageDown_Key_Image", pageDownLabel);
         setJLabelIcon("PageUp_Key_Image", pageUpLabel);
         setJLabelIcon("Q_Key_Image", qLabel);
-        setJLabelIcon("Right_Key_Image", rightLabel);
+        setJLabelIcon("Right_Key_Image", aLabel);
         setJLabelIcon("Shift_Key_Image", shiftLabel);
         setJLabelIcon("Up_Key_Image", upLabel);
         setJLabelIcon("Up_Key_Image", upLabel2);
+        setJLabelIcon("W_Key_Image", wLabel);
+        setJLabelIcon("S_Key_Image", sLabel);
+        setJLabelIcon("A_Key_Image", aLabel);
+        setJLabelIcon("D_Key_Image", dLabel);
     }
 
     /**
@@ -95,12 +99,12 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         runLabel = new javax.swing.JLabel();
         leftLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        rightLabel = new javax.swing.JLabel();
-        leftRightLabel = new javax.swing.JLabel();
+        aLabel = new javax.swing.JLabel();
+        turnLeftLabel = new javax.swing.JLabel();
         upLabel = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        downLabel = new javax.swing.JLabel();
-        upDownLabel = new javax.swing.JLabel();
+        wLabel = new javax.swing.JLabel();
+        forwardLabel = new javax.swing.JLabel();
         qLabel = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         eLabel = new javax.swing.JLabel();
@@ -111,6 +115,14 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         plusLabel2 = new javax.swing.JLabel();
         lookLabel = new javax.swing.JLabel();
         dragLabel = new javax.swing.JLabel();
+        downLabel = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        sLabel = new javax.swing.JLabel();
+        backLabel = new javax.swing.JLabel();
+        rightLabel = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        dLabel = new javax.swing.JLabel();
+        turnRightLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
         setLayout(new java.awt.GridBagLayout());
@@ -118,7 +130,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         shiftLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Shift-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(shiftLabel, gridBagConstraints);
@@ -126,7 +138,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         pageUpLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageUp-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(pageUpLabel, gridBagConstraints);
@@ -136,14 +148,14 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         jLabel5.setText(bundle.getString("Slash")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         add(jLabel5, gridBagConstraints);
 
         pageDownLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageDown-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(pageDownLabel, gridBagConstraints);
@@ -153,35 +165,35 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         qeLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(qeLabel1, gridBagConstraints);
 
-        jLabel4.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        jLabel4.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
         jLabel4.setText(bundle.getString("Plus")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         add(jLabel4, gridBagConstraints);
 
         upLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(upLabel2, gridBagConstraints);
 
-        runLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
+        runLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
         runLabel.setText(bundle.getString("Run")); // NOI18N
         runLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -191,38 +203,38 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         leftLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Left-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(leftLabel, gridBagConstraints);
 
-        jLabel3.setFont(new java.awt.Font("Lucida Grande", 0, 24));
-        jLabel3.setText(bundle.getString("Slash")); // NOI18N
+        jLabel3.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
+        jLabel3.setText(bundle.getString("Or")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         add(jLabel3, gridBagConstraints);
 
-        rightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Right-key_en.png"))); // NOI18N
+        aLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/A-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(rightLabel, gridBagConstraints);
+        add(aLabel, gridBagConstraints);
 
-        leftRightLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
-        leftRightLabel.setText(bundle.getString("Turn_Left_Right")); // NOI18N
-        leftRightLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        turnLeftLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        turnLeftLabel.setText(bundle.getString("Turn_Left")); // NOI18N
+        turnLeftLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(leftRightLabel, gridBagConstraints);
+        add(turnLeftLabel, gridBagConstraints);
 
         upLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -232,25 +244,25 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(upLabel, gridBagConstraints);
 
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 24));
-        jLabel1.setText(bundle.getString("Slash")); // NOI18N
+        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
+        jLabel1.setText(bundle.getString("Or")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         add(jLabel1, gridBagConstraints);
 
-        downLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Down-key_en.png"))); // NOI18N
+        wLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/W-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(downLabel, gridBagConstraints);
+        add(wLabel, gridBagConstraints);
 
-        upDownLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
-        upDownLabel.setText(bundle.getString("Walk_Forward_Backward")); // NOI18N
-        upDownLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        forwardLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        forwardLabel.setText(bundle.getString("Walk_Forward")); // NOI18N
+        forwardLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 0;
@@ -258,12 +270,12 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(upDownLabel, gridBagConstraints);
+        add(forwardLabel, gridBagConstraints);
 
         qLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Q-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(qLabel, gridBagConstraints);
@@ -272,14 +284,14 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         jLabel2.setText(bundle.getString("Slash")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         add(jLabel2, gridBagConstraints);
 
         eLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/E-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(eLabel, gridBagConstraints);
@@ -289,7 +301,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         qeLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -299,7 +311,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         scrollWheelLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/MouseWheel_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         add(scrollWheelLabel, gridBagConstraints);
 
@@ -308,7 +320,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         zoomInOutLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -317,7 +329,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         controlLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Ctrl-key_en.png"))); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(controlLabel, gridBagConstraints);
@@ -326,7 +338,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         plusLabel2.setText(bundle.getString("Plus")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
         add(plusLabel2, gridBagConstraints);
 
@@ -335,7 +347,7 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         lookLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -347,24 +359,100 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
         dragLabel.setText(bundle.getString("Drag")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
         add(dragLabel, gridBagConstraints);
+
+        downLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Down-key_en.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(downLabel, gridBagConstraints);
+
+        jLabel6.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
+        jLabel6.setText(bundle.getString("Or")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        add(jLabel6, gridBagConstraints);
+
+        sLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/S-key_en.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(sLabel, gridBagConstraints);
+
+        backLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        backLabel.setText(bundle.getString("Walk_Backward")); // NOI18N
+        backLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(backLabel, gridBagConstraints);
+
+        rightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Right-key_en.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(rightLabel, gridBagConstraints);
+
+        jLabel7.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
+        jLabel7.setText(bundle.getString("Or")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
+        add(jLabel7, gridBagConstraints);
+
+        dLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/D-key_en.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(dLabel, gridBagConstraints);
+
+        turnRightLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
+        turnRightLabel.setText(bundle.getString("Turn_Right")); // NOI18N
+        turnRightLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(turnRightLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel aLabel;
+    private javax.swing.JLabel backLabel;
     private javax.swing.JLabel controlLabel;
+    private javax.swing.JLabel dLabel;
     private javax.swing.JLabel downLabel;
     private javax.swing.JLabel dragLabel;
     private javax.swing.JLabel eLabel;
+    private javax.swing.JLabel forwardLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel leftLabel;
-    private javax.swing.JLabel leftRightLabel;
     private javax.swing.JLabel lookLabel;
     private javax.swing.JLabel pageDownLabel;
     private javax.swing.JLabel pageUpLabel;
@@ -374,11 +462,14 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     private javax.swing.JLabel qeLabel1;
     private javax.swing.JLabel rightLabel;
     private javax.swing.JLabel runLabel;
+    private javax.swing.JLabel sLabel;
     private javax.swing.JLabel scrollWheelLabel;
     private javax.swing.JLabel shiftLabel;
-    private javax.swing.JLabel upDownLabel;
+    private javax.swing.JLabel turnLeftLabel;
+    private javax.swing.JLabel turnRightLabel;
     private javax.swing.JLabel upLabel;
     private javax.swing.JLabel upLabel2;
+    private javax.swing.JLabel wLabel;
     private javax.swing.JLabel zoomInOutLabel;
     // End of variables declaration//GEN-END:variables
 }
