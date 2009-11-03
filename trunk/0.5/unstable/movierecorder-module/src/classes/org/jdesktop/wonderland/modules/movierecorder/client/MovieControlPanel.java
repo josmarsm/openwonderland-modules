@@ -20,14 +20,14 @@ package org.jdesktop.wonderland.modules.movierecorder.client;
 
 import java.awt.Color;
 import java.awt.GridBagLayout;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import org.jdesktop.wonderland.client.softphone.SoftphoneControl;
-import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.modules.movierecorder.client.utils.EncodeException;
 import org.jdesktop.wonderland.modules.movierecorder.client.utils.MovieCreator;
 
@@ -53,6 +53,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
         if (recorderCell.isRemoteRecording()) {
             disableAllButtons();
         }
+        recorderCell.getVideoButtonModel().addItemListener(new VideoButtonListener());
     }
 
     void setRemoteRecording(boolean b) {
@@ -329,4 +330,12 @@ public class MovieControlPanel extends javax.swing.JPanel {
     private javax.swing.JButton stopButton;
     // End of variables declaration//GEN-END:variables
 
+    class VideoButtonListener implements ItemListener {
+
+        public void itemStateChanged(ItemEvent event) {
+            //update the control panel
+            logger.info("event: " + event);
+        }
+
+    }
 }

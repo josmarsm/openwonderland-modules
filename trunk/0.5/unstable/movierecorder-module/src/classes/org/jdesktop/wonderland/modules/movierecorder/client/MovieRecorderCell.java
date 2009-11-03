@@ -18,8 +18,12 @@
 
 package org.jdesktop.wonderland.modules.movierecorder.client;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.math.BigInteger;
+import java.util.logging.Logger;
+import javax.swing.DefaultButtonModel;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
@@ -48,6 +52,7 @@ import org.jdesktop.wonderland.modules.movierecorder.common.MovieRecorderCellCli
  * @author Bernard Horan
  */
 public class MovieRecorderCell extends Cell {
+    private static final Logger cellLogger = Logger.getLogger(MovieRecorderCell.class.getName());
 
     @UsesCellComponent private ContextMenuComponent contextComp = null;
     /**
@@ -75,11 +80,17 @@ public class MovieRecorderCell extends Cell {
 
     /** the message handler, or null if no message handler is registered */
     private MovieRecorderCellMessageReceiver receiver = null;
+    private DefaultButtonModel videoButtonModel, stillButtonModel;
 
     public MovieRecorderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         localRecording = false;
         remoteRecording = false;
+        videoButtonModel = new DefaultButtonModel();
+        videoButtonModel.setPressed(false);
+        videoButtonModel.setEnabled(true);
+        videoButtonModel.addItemListener(new VideoButtonChangeListener());
+        stillButtonModel = new DefaultButtonModel();
     }
 
     @Override
@@ -224,6 +235,10 @@ public class MovieRecorderCell extends Cell {
         return remoteRecording;
     }
 
+    DefaultButtonModel getVideoButtonModel() {
+        return videoButtonModel;
+    }
+
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
@@ -256,5 +271,19 @@ public class MovieRecorderCell extends Cell {
             }
         }
     }
+
+    class VideoButtonChangeListener implements ItemListener {
+
+        public void itemStateChanged(ItemEvent event) {
+            //The state of the video button model has changed
+            //Take some action. Rendering issues are dealth with by other listeners in
+            //the renderer and the control panel
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+                cellLogger.info("should start recording");
+            } else {
+                cellLogger.info("should stop recording");
+            }
+        }
+   }
 }
 

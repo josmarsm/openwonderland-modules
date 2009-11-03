@@ -24,9 +24,11 @@ import com.jme.math.Vector3f;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Quad;
 import com.jme.scene.state.RenderState;
 import com.jme.scene.state.TextureState;
+import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -48,14 +50,22 @@ import org.jdesktop.mtgame.RenderUpdater;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ItemListener;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultButtonModel;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
+import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 
 /**
  * Renderer for the movie recorder cell. Includes the code to create the camera, download the model and create the "LCD".
@@ -83,6 +93,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     private TextureRenderBuffer textureBuffer = null;
     private CaptureComponent captureComponent = null;
     private BufferedImage captureImage = null;
+    private Spatial videoSpatial, videoSpatialOn, stillSpatial;
 
     public MovieRecorderCellRenderer(Cell cell) {
         super(cell);
@@ -96,7 +107,13 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         root.updateModelBound();
         //Set the name of the buttonRoot node
         root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
-        printTree(root);
+        printTree(root, 0);
+        HashMap<String,Spatial> nodeMap = new HashMap<String, Spatial>();
+        ScenegraphUtils.getNamedNodes(rootNode, nodeMap);
+        for(String key: nodeMap.keySet()) {
+            rendererLogger.info("key: " + key + " node: " + nodeMap.get(key));
+        }
+        
         return root;
     }
 
@@ -109,20 +126,27 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     }
 
     private void attachRecordingDevice(Node device, Entity entity) {
-        addCameraModel(device, entity);
-        entity.addEntity(createLCDPanel(device));
-    }
-
-    private void addCameraModel(Node device, Entity entity) {
         try {
-            LoaderManager manager = LoaderManager.getLoaderManager();
-            URL url = AssetUtils.getAssetURL("wla://movierecorder/pwl_3d_videorecorder_006.dae/pwl_3d_videorecorder_006.dae.gz.dep", this.getCell());
-            DeployedModel dm = manager.getLoaderFromDeployment(url);
-            Node cameraModel = dm.getModelLoader().loadDeployedModel(dm, entity);
-            device.attachChild(cameraModel);
+            addCameraModel(device, entity);
         } catch (IOException ex) {
             rendererLogger.log(Level.SEVERE, "Failed to load camera model", ex);
         }
+        entity.addEntity(createLCDPanel(device));
+    }
+
+    private void addCameraModel(Node device, Entity entity) throws IOException {
+        LoaderManager manager = LoaderManager.getLoaderManager();
+        URL url = AssetUtils.getAssetURL("wla://movierecorder/pwl_3d_videorecorder_006.dae/pwl_3d_videorecorder_006.dae.gz.dep", this.getCell());
+        DeployedModel dm = manager.getLoaderFromDeployment(url);
+        Node cameraModel = dm.getModelLoader().loadDeployedModel(dm, entity);
+        device.attachChild(cameraModel);
+        videoSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideo_001-vrBtnVideo");
+        rendererLogger.info("videoSpatial visibility: " + videoSpatial.isVisible());
+        videoSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideoOn-Geometry-vrBtnVideoOn");
+        ((MovieRecorderCell)cell).getVideoButtonModel().addItemListener(new VideoButtonListener());
+        stillSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_001-vrBtnStill");
+        CameraListener listener = new CameraListener();
+        listener.addToEntity(entity);
     }
 
     private Entity createLCDPanel(Node device) {
@@ -205,15 +229,34 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         captureComponent.setPreferredSize(new Dimension(width, height));
     }
 
-    private void printTree(Node root) {
-        rendererLogger.info("node: " + root);
+    private void toggleRecording() {
+        MovieRecorderCell mrCell = (MovieRecorderCell) getCell();
+        if (mrCell.isRemoteRecording()) {
+            //do nothing, can't stop the recording, and can't start it either
+            rendererLogger.warning("Someone else is recording, you are powerless");
+            return;
+        }
+        if (mrCell.isLocalRecording()) {
+            mrCell.stopRecording();
+        } else {
+            mrCell.startRecording();
+        }
+    }
+    
+
+    private void printTree(Node root, int indent) {
+        StringBuffer buffer = new StringBuffer();
+        for (int i = 0; i < indent; i++) {
+           buffer.append('\t');
+        }
+        rendererLogger.info(buffer.toString() + "node: " + root);
         List<Spatial> children = root.getChildren();
         if (children == null) {
             return;
         }
         for (Spatial spatial : children) {
             if (spatial instanceof Node) {
-                printTree((Node)spatial);
+                printTree((Node)spatial, indent + 1);
             } else {
                 rendererLogger.info("spatial: " + spatial);
             }
@@ -288,5 +331,51 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             imageCounter++;
             frameCounter++;
         }
+    }
+
+    class CameraListener extends EventClassListener {
+
+        CameraListener() {
+            super();
+        }
+
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[]{MouseButtonEvent3D.class};
+        }
+
+        // Note: we don't override computeEvent because we don't do any computation in this listener.
+        @Override
+        public void commitEvent(Event event) {
+            rendererLogger.info("commit " + event + " for " + this);
+            MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
+            if (!mbe.isClicked()) {
+                return;
+            }
+            //ignore any mouse button that isn't the left one
+            if (mbe.getButton() != ButtonId.BUTTON1) {
+                return;
+            }
+            TriMesh mesh = mbe.getPickDetails().getTriMesh();
+            rendererLogger.info("mesh: " + mesh);
+            if (mesh == videoSpatial) {
+                rendererLogger.info("video button pressed");
+                DefaultButtonModel videoButtonModel = ((MovieRecorderCell)cell).getVideoButtonModel();
+                if (videoButtonModel.isEnabled()) {
+                    videoButtonModel.setSelected(!videoButtonModel.isSelected());
+                }
+                //done
+                return;
+            }
+        }
+    }
+
+    class VideoButtonListener implements ItemListener {
+
+        public void itemStateChanged(ItemEvent event) {
+            //update the renderer
+            rendererLogger.info("event: " + event);
+        }
+
     }
 }
