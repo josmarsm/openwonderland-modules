@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
@@ -141,10 +142,16 @@ public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {
                 }
                 break;
             case DISK:
-                // the cell is no longer visible
                 if (!increasing) {
+                    // The cell is no longer visible
                     pdfViewerWindow.setVisibleApp(false);
-                    pdfViewerWindow = null;
+                    App2D.invokeLater(new Runnable() {
+
+                        public void run() {
+                            pdfViewerWindow.cleanup();
+                            pdfViewerWindow = null;
+                        }
+                    });
                 }
                 break;
         }
