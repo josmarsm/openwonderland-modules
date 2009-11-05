@@ -26,6 +26,7 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellClientState;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage;
@@ -122,9 +123,14 @@ public class WhiteboardCell extends App2DCell {
                     // The cell is no longer visible
                     whiteboardWin.setVisibleApp(false);
                     removeComponent(WhiteboardComponent.class);
-                    whiteboardWin.cleanup();
-                    commComponent = null;
-                    whiteboardWin = null;
+                    App2D.invokeLater(new Runnable() {
+
+                        public void run() {
+                            whiteboardWin.cleanup();
+                            commComponent = null;
+                            whiteboardWin = null;
+                        }
+                    });
                 }
                 break;
             default:
@@ -253,7 +259,7 @@ public class WhiteboardCell extends App2DCell {
             synced = false;
             logger.info("whiteboard: unsynced");
             whiteboardWin.showHUDMessage("unsynced", 3000);
-        //whiteboardWindow.updateMenu();
+            //whiteboardWindow.updateMenu();
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
             logger.info("whiteboard: requesting sync with shared state");
