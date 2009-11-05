@@ -68,6 +68,14 @@ public class ControlPanelUI {
         hudComponent.setVisible(visible);
     }
 
+    void enableLocalButtons() {
+        controlPanel.enableLocalButtons();
+    }
+
+    MovieControlPanel getControlPanel() {
+        return controlPanel;
+    }
+
     void setRemoteRecording(boolean b) {
         controlPanel.setRemoteRecording(b);
     }

@@ -22,6 +22,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JComponent;
@@ -44,6 +47,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.movierecorder.client.utils.EncodeException;
+import org.jdesktop.wonderland.modules.movierecorder.client.utils.MovieCreator;
 import org.jdesktop.wonderland.modules.movierecorder.common.MovieRecorderCellChangeMessage;
 import org.jdesktop.wonderland.modules.movierecorder.common.MovieRecorderCellClientState;
 
@@ -81,6 +86,8 @@ public class MovieRecorderCell extends Cell {
     /** the message handler, or null if no message handler is registered */
     private MovieRecorderCellMessageReceiver receiver = null;
     private DefaultButtonModel videoButtonModel, stillButtonModel;
+    
+    
 
     public MovieRecorderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -176,6 +183,17 @@ public class MovieRecorderCell extends Cell {
 
     void startRecording() {
         logger.info("start recording");
+        File imageDirectoryFile = getImageDirectory();
+        logger.info("imageDirectory: " + imageDirectoryFile);
+
+        if (!imageDirectoryFile.exists()) {
+            logger.info("Creating image directory");
+            imageDirectoryFile.mkdirs();
+        }
+
+
+        
+
         ((MovieRecorderCellRenderer)renderer).resetImageCounter();
         ((MovieRecorderCellRenderer)renderer).resetFrameCounter();
         resetStartTime();
@@ -202,7 +220,7 @@ public class MovieRecorderCell extends Cell {
         float elapsedTimeSec = elapsedTimeMillis/1000F;
 
         capturedFrameRate = renderer.getFrameCounter()/elapsedTimeSec;
-        logger.info("capturedFrameRate: " + capturedFrameRate);
+        cellLogger.info("capturedFrameRate: " + capturedFrameRate);
     }
 
     private ChannelComponent getChannel() {
@@ -214,6 +232,17 @@ public class MovieRecorderCell extends Cell {
             //logger.warning("no reason to stop, not recording");
             return;
         }
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+        simpleDateFormat.applyPattern("yyyyMMdd_HH.mm");
+        String movieFilename = "Wonderland_" + simpleDateFormat.format(calendar.getTime()) + ".mov";
+        try {
+            createMovie(movieFilename);
+        } catch (EncodeException e) {
+            logger.log(Level.SEVERE, "Failed to create movie, caused by", e.getCause());
+        }
+        deleteImageDirectory();
+        ui.enableLocalButtons();
         localRecording = false;
         MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), localRecording);
         getChannel().send(msg);
@@ -249,7 +278,23 @@ public class MovieRecorderCell extends Cell {
         else {
             return super.createCellRenderer(rendererType);
         }
-    }  
+    }
+
+    private void createMovie(String movieFilename) throws EncodeException {
+        MovieCreator mCreator = new MovieCreator(ui.getControlPanel());
+        mCreator.createMovie(movieFilename);
+    }
+
+    private void deleteImageDirectory() {
+        File dir = getImageDirectory();
+        String[] children = dir.list();
+        for (int i=0; i<children.length; i++) {
+            new File(dir, children[i]).delete();
+
+        }
+        // The directory is now empty so delete it
+        dir.delete();
+    }
 
     class MovieRecorderCellMessageReceiver implements ComponentMessageReceiver {
 
@@ -280,6 +325,7 @@ public class MovieRecorderCell extends Cell {
             //the renderer and the control panel
             if (event.getStateChange() == ItemEvent.SELECTED) {
                 cellLogger.info("should start recording");
+                startRecording();
             } else {
                 cellLogger.info("should stop recording");
             }

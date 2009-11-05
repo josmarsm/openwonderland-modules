@@ -358,7 +358,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             }
             TriMesh mesh = mbe.getPickDetails().getTriMesh();
             rendererLogger.info("mesh: " + mesh);
-            if (mesh == videoSpatial) {
+            if (mesh == videoSpatial || mesh == videoSpatialOn) {
                 rendererLogger.info("video button pressed");
                 DefaultButtonModel videoButtonModel = ((MovieRecorderCell)cell).getVideoButtonModel();
                 if (videoButtonModel.isEnabled()) {

@@ -76,14 +76,14 @@ public class MovieCreator {
      * Create the movie, using the <CODE>controlPanel</CODE> as the provider of paths etc.
      * @throws EncodeException if the recording fails
      */
-    public void createMovie() throws EncodeException {
+    public void createMovie(String movieFilename) throws EncodeException {
         ImagesDataSource source = null;
         File movieDirectory = new File(controlPanel.getMovieDirectory());
         if (!movieDirectory.exists()) {
             logger.info("Creating movie directory");
             movieDirectory.mkdirs();
         }
-        String movieFilePath = controlPanel.getMovieDirectory() + File.separator + controlPanel.getMovieFilename();
+        String movieFilePath = controlPanel.getMovieDirectory() + File.separator + movieFilename;
         try {
             JPEGDirectoryFetcher fetcher = new JPEGDirectoryFetcher(controlPanel.getImageDirectory());
             source = new ImagesDataSource(fetcher, fetcher.getSuggestedSize(), controlPanel.getCapturedFrameRate());

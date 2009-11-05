@@ -38,7 +38,6 @@ import org.jdesktop.wonderland.modules.movierecorder.client.utils.MovieCreator;
  */
 public class MovieControlPanel extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger(MovieControlPanel.class.getName());
-    private String movieFilename;
     private MovieRecorderCell recorderCell;
 
     /** Creates new form MovieControlPanel
@@ -172,26 +171,10 @@ public class MovieControlPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void recordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recordButtonActionPerformed
-        recorderStatusLabel.setText("Recording");
-        recorderStatusLabel.setForeground(Color.red);
-        stopButton.setEnabled(true);
-        disableLocalButtons();
-
-        File imageDirectoryFile = getImageDirectory();
-        logger.info("imageDirectory: " + imageDirectoryFile);
-
-        if (!imageDirectoryFile.exists()) {
-            logger.info("Creating image directory");
-            imageDirectoryFile.mkdirs();
-        }
-
-
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
-        simpleDateFormat.applyPattern("yyyyMMdd_HH.mm");
-        movieFilename = "Wonderland_" + simpleDateFormat.format(calendar.getTime()) + ".mov";
-
-        recorderCell.startRecording();
+        recorderCell.getVideoButtonModel().setSelected(true);
+        //Rest of the action takes place in the videoButtonModel listeners
+        //See this class's inner class VideoButonListener for display updates
+        //See MovieRecorderCell's inner class VideoButtonListener for "model" updates    
     }//GEN-LAST:event_recordButtonActionPerformed
 
     private void disableLocalButtons() {
@@ -203,25 +186,17 @@ public class MovieControlPanel extends javax.swing.JPanel {
     }
 
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
-        stopButton.setEnabled(false);
-        recorderCell.stopRecording();
-        recorderStatusLabel.setText("Offline");
-        recorderStatusLabel.setForeground(Color.BLACK);
-        try {
-            createMovie();
-        } catch (EncodeException e) {
-            logger.log(Level.SEVERE, "Failed to create movie, caused by", e.getCause());
-        }
-        deleteImageDirectory();
-        enableLocalButtons();
+        recorderCell.getVideoButtonModel().setSelected(false);
+        //Rest of the action takes place in the videoButtonModel listeners
+        //See this class's inner class VideoButonListener for display updates
+        //See MovieRecorderCell's inner class VideoButtonListener for "model" updates
+
+        
 }//GEN-LAST:event_stopButtonActionPerformed
 
-    private void createMovie() throws EncodeException {
-        MovieCreator mCreator = new MovieCreator(this);
-        mCreator.createMovie();
-    }
+    
 
-    private void enableLocalButtons() {
+    void enableLocalButtons() {
         enableLocalButtons(true);
     }
 
@@ -234,14 +209,6 @@ public class MovieControlPanel extends javax.swing.JPanel {
     private void enableAllButtons(boolean enable) {
         enableLocalButtons(enable);
         stopButton.setEnabled(enable);
-    }
-
-    /**
-     * Just the name of the movie (not the path)
-     * @return Only the name of the movie
-     */
-    public String getMovieFilename() {
-        return movieFilename;
     }
 
     /**
@@ -260,16 +227,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
         return movieDirectoryField.getText();
     }
 
-    private void deleteImageDirectory() {
-        File dir = getImageDirectory();
-        String[] children = dir.list();
-        for (int i=0; i<children.length; i++) {
-            new File(dir, children[i]).delete();
-
-        }
-        // The directory is now empty so delete it
-        dir.delete();
-    }
+    
 
     /**
      * The frames per second at which the JPEGs were recorded
@@ -335,7 +293,17 @@ public class MovieControlPanel extends javax.swing.JPanel {
         public void itemStateChanged(ItemEvent event) {
             //update the control panel
             logger.info("event: " + event);
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+                recorderStatusLabel.setText("Recording");
+                recorderStatusLabel.setForeground(Color.red);
+                stopButton.setEnabled(true);
+                disableLocalButtons();
+            } else {
+                stopButton.setEnabled(false);
+                recorderCell.stopRecording();
+                recorderStatusLabel.setText("Offline");
+                recorderStatusLabel.setForeground(Color.BLACK);
+            }
         }
-
     }
 }
