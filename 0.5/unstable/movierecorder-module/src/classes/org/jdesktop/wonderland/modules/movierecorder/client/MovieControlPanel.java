@@ -23,13 +23,8 @@ import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import org.jdesktop.wonderland.modules.movierecorder.client.utils.EncodeException;
-import org.jdesktop.wonderland.modules.movierecorder.client.utils.MovieCreator;
 
 /**
  * Control panel for movie recorder. Provides buttons to start & stop recording, and

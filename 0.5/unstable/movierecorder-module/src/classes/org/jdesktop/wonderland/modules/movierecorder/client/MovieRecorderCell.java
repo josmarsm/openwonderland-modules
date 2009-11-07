@@ -183,6 +183,9 @@ public class MovieRecorderCell extends Cell {
 
     void startRecording() {
         logger.info("start recording");
+        if (remoteRecording) {
+            logger.warning("Can't record if someone else is already recording");
+        }
         File imageDirectoryFile = getImageDirectory();
         logger.info("imageDirectory: " + imageDirectoryFile);
 
@@ -328,6 +331,7 @@ public class MovieRecorderCell extends Cell {
                 startRecording();
             } else {
                 cellLogger.info("should stop recording");
+                stopRecording();
             }
         }
    }
