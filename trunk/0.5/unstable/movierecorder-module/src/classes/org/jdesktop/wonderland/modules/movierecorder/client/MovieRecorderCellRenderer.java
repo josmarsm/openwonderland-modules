@@ -50,6 +50,7 @@ import org.jdesktop.mtgame.RenderUpdater;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ItemListener;
 import java.net.URL;
 import java.util.HashMap;
@@ -93,7 +94,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     private TextureRenderBuffer textureBuffer = null;
     private CaptureComponent captureComponent = null;
     private BufferedImage captureImage = null;
-    private Spatial videoSpatial, videoSpatialOn, stillSpatial;
+    private Spatial videoSpatial, videoSpatialOn, recordStatus, recordStatusOn, stillSpatial, stillSpatialOn;
 
     public MovieRecorderCellRenderer(Cell cell) {
         super(cell);
@@ -107,12 +108,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         root.updateModelBound();
         //Set the name of the buttonRoot node
         root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
-        printTree(root, 0);
-        HashMap<String,Spatial> nodeMap = new HashMap<String, Spatial>();
-        ScenegraphUtils.getNamedNodes(rootNode, nodeMap);
-        for(String key: nodeMap.keySet()) {
-            rendererLogger.info("key: " + key + " node: " + nodeMap.get(key));
-        }
+        
         
         return root;
     }
@@ -136,17 +132,29 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
 
     private void addCameraModel(Node device, Entity entity) throws IOException {
         LoaderManager manager = LoaderManager.getLoaderManager();
-        URL url = AssetUtils.getAssetURL("wla://movierecorder/pwl_3d_videorecorder_006.dae/pwl_3d_videorecorder_006.dae.gz.dep", this.getCell());
+        URL url = AssetUtils.getAssetURL("wla://movierecorder/pwl_3d_videorecorder_009.dae/pwl_3d_videorecorder_009.dae.gz.dep", this.getCell());
         DeployedModel dm = manager.getLoaderFromDeployment(url);
         Node cameraModel = dm.getModelLoader().loadDeployedModel(dm, entity);
-        device.attachChild(cameraModel);
-        videoSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideo_001-vrBtnVideo");
-        rendererLogger.info("videoSpatial visibility: " + videoSpatial.isVisible());
+        printTree(cameraModel, 0);
+        HashMap<String,Spatial> nodeMap = new HashMap<String, Spatial>();
+        ScenegraphUtils.getNamedNodes(cameraModel, nodeMap);
+        for(String key: nodeMap.keySet()) {
+            rendererLogger.info("key: " + key + " node: " + nodeMap.get(key));
+        }
+        
+        recordStatus = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrRecordStatus_002-vrRecordStatus");
+        recordStatusOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrRecordStatusOn-Geometry-vrRecordStatusOn");
+        recordStatusOn.setVisible(false);
+        videoSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideo_002-vrBtnVideo");
         videoSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideoOn-Geometry-vrBtnVideoOn");
+        videoSpatialOn.setVisible(false);
         ((MovieRecorderCell)cell).getVideoButtonModel().addItemListener(new VideoButtonListener());
-        stillSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_001-vrBtnStill");
+        stillSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_002-vrBtnStill");
+        stillSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_002-vrBtnStill");
+        stillSpatialOn.setVisible(false);
         CameraListener listener = new CameraListener();
         listener.addToEntity(entity);
+        device.attachChild(cameraModel);
     }
 
     private Entity createLCDPanel(Node device) {
@@ -227,22 +235,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     private void createCaptureComponent(int width, int height) {
         captureComponent = new CaptureComponent();
         captureComponent.setPreferredSize(new Dimension(width, height));
-    }
-
-    private void toggleRecording() {
-        MovieRecorderCell mrCell = (MovieRecorderCell) getCell();
-        if (mrCell.isRemoteRecording()) {
-            //do nothing, can't stop the recording, and can't start it either
-            rendererLogger.warning("Someone else is recording, you are powerless");
-            return;
-        }
-        if (mrCell.isLocalRecording()) {
-            mrCell.stopRecording();
-        } else {
-            mrCell.startRecording();
-        }
-    }
-    
+    }    
 
     private void printTree(Node root, int indent) {
         StringBuffer buffer = new StringBuffer();
@@ -375,6 +368,24 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         public void itemStateChanged(ItemEvent event) {
             //update the renderer
             rendererLogger.info("event: " + event);
+            WorldManager wm = ClientContextJME.getWorldManager();
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+
+                Toolkit.getDefaultToolkit().beep();
+                videoSpatial.setVisible(false);
+                videoSpatialOn.setVisible(true);
+                recordStatus.setVisible(false);
+                recordStatusOn.setVisible(true);
+
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+                videoSpatial.setVisible(true);
+                videoSpatialOn.setVisible(false);
+                recordStatus.setVisible(false);
+                recordStatusOn.setVisible(false);
+            }
+            wm.addToUpdateList(videoSpatial);
+            wm.addToUpdateList(videoSpatialOn);
         }
 
     }
