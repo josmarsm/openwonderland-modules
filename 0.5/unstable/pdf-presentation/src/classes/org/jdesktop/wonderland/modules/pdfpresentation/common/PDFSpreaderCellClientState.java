@@ -18,20 +18,17 @@
 
 package org.jdesktop.wonderland.modules.pdfpresentation.common;
 
+import java.util.List;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage.LayoutType;
 
 public class PDFSpreaderCellClientState extends CellClientState {
 
     private String pdfURI;
-
-    private float scale;
-    private float spacing;
-
     private String creatorName;
 
-    private LayoutType layout;
-    
+    private PresentationLayout layout;
+
     public PDFSpreaderCellClientState() {
         
     }
@@ -44,28 +41,12 @@ public class PDFSpreaderCellClientState extends CellClientState {
         this.pdfURI = pdfURI;
     }
 
-    public LayoutType getLayout() {
+    public PresentationLayout getLayout() {
         return layout;
     }
 
-    public void setLayout(LayoutType layout) {
+    public void setLayout(PresentationLayout layout) {
         this.layout = layout;
-    }
-
-    public float getScale() {
-        return scale;
-    }
-
-    public void setScale(float scale) {
-        this.scale = scale;
-    }
-
-    public float getSpacing() {
-        return spacing;
-    }
-
-    public void setSpacing(float spacing) {
-        this.spacing = spacing;
     }
 
     public String getCreatorName() {
@@ -75,6 +56,4 @@ public class PDFSpreaderCellClientState extends CellClientState {
     public void setCreatorName(String creatorName) {
         this.creatorName = creatorName;
     }
-
-
 }

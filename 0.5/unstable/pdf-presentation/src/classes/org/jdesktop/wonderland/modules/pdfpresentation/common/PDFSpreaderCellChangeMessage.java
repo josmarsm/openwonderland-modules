@@ -36,47 +36,20 @@ public class PDFSpreaderCellChangeMessage extends CellMessage {
 
     private MessageType type;
 
-    private float scale;
-    private float spacing;
-    private LayoutType layout;
-
-    private int numPages;
     private float slideWidth;
+
+    private PresentationLayout layout;
 
     public PDFSpreaderCellChangeMessage(MessageType type) {
         this.type = type;
     }
 
-    public LayoutType getLayout() {
+    public PresentationLayout getLayout() {
         return layout;
     }
 
-    public void setLayout(LayoutType layout) {
+    public void setLayout(PresentationLayout layout) {
         this.layout = layout;
-    }
-
-    public float getScale() {
-        return scale;
-    }
-
-    public void setScale(float scale) {
-        this.scale = scale;
-    }
-
-    public float getSpacing() {
-        return spacing;
-    }
-
-    public void setSpacing(float spacing) {
-        this.spacing = spacing;
-    }
-
-    public int getNumPages() {
-        return numPages;
-    }
-
-    public void setNumPages(int numPages) {
-        this.numPages = numPages;
     }
 
     public MessageType getType() {

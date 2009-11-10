@@ -19,7 +19,11 @@
 package org.jdesktop.wonderland.modules.pdfpresentation.client;
 
 import com.sun.pdfview.PDFFile;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -30,11 +34,13 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.pdf.client.PDFDeployer;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.PDFSpreaderCellRenderer;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage.MessageType;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellClientState;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout;
 
 /**
  * The client side component of the PDFSpreaderCell. When a user drops a PDF,
@@ -53,20 +59,29 @@ public class PDFSpreaderCell extends Cell {
 
     private PDFFile pdfDocument;
 
-    private LayoutType layout = LayoutType.LINEAR;
+    private PresentationLayout layout;
 
     private String creatorName;
-
-    private float spacing = 4.0f;
-    private float scale = 1.0f;
-
 
     public PDFSpreaderCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
 
     protected void updateLayout() {
-        renderer.updateLayout();
+
+        try {
+            // On updateLayout, trigger a refresh based on current settings.
+            this.layout.setSlides(PDFLayoutHelper.generateLayoutMetadata(this.layout.getLayout(), PDFDeployer.loadDeployedPDF(pdfURI), this.layout.getSpacing()));
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(PDFSpreaderCell.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(PDFSpreaderCell.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (JAXBException ex) {
+            Logger.getLogger(PDFSpreaderCell.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        // WRITE THIS METHOD
+        renderer.layoutUpdated();
     }
 
     protected void sendCurrentLayoutToServer() {
@@ -74,9 +89,9 @@ public class PDFSpreaderCell extends Cell {
         // we know that a local change has occured that we need to send
         // to the server.
         PDFSpreaderCellChangeMessage msg = new PDFSpreaderCellChangeMessage(MessageType.LAYOUT);
+ 
         msg.setLayout(layout);
-        msg.setScale(scale);
-        msg.setSpacing(spacing);
+
         this.sendCellMessage(msg);
 
         logger.finer("just sent cell message to server: " + msg);
@@ -87,10 +102,9 @@ public class PDFSpreaderCell extends Cell {
         super.setClientState(state);
 
         this.pdfURI = ((PDFSpreaderCellClientState)state).getPdfURI();
-        this.spacing = ((PDFSpreaderCellClientState)state).getSpacing();
         this.layout = ((PDFSpreaderCellClientState)state).getLayout();
-        this.scale = ((PDFSpreaderCellClientState)state).getScale();
         this.creatorName = ((PDFSpreaderCellClientState)state).getCreatorName();
+        
     }
 
     @Override
@@ -112,35 +126,40 @@ public class PDFSpreaderCell extends Cell {
 
     }
 
-    public LayoutType getLayout() {
+    public PresentationLayout getLayout() {
         return layout;
     }
 
-    public void setLayout(LayoutType layout) {
+    public void setLayout(PresentationLayout layout) {
         logger.finer("Setting layout to: " + layout);
         this.layout = layout;
-        renderer.updateLayout();
+
+        // This gets called only when messages come in from other clients
+        // who have presumably caused a relayout operation.
+        // This means we should update the positions (but not textures
+        // or node properties) of all our slides.
+    }
+
+    public void setLayoutType(LayoutType layout) {
+        this.layout.setLayout(layout);
     }
 
     public float getScale() {
-        return scale;
+        return this.layout.getScale();
     }
 
     public void setScale(float scale) {
-        this.scale = scale;
+        this.layout.setScale(scale);
         logger.finer("Setting scale to: " + scale);
-        renderer.updateLayout();
-
     }
 
     public float getSpacing() {
-        return spacing;
+        return this.layout.getSpacing();
     }
 
     public void setSpacing(float spacing) {
         logger.finer("Setting spacing to: " + spacing);
-        this.spacing = spacing;
-        renderer.updateLayout();
+        this.layout.setSpacing(spacing);
     }
 
     public String getSourceURI() {
@@ -166,18 +185,17 @@ public class PDFSpreaderCell extends Cell {
         public void messageReceived(CellMessage message) {
             PDFSpreaderCellChangeMessage msg = (PDFSpreaderCellChangeMessage)message;
             
-            // if we got a message, unpack it and apply the settings as specified.
-            setScale(msg.getScale());
-            setSpacing(msg.getSpacing());
+            // if we got a message, grab the layout data and push it into the cell.
+            
             setLayout(msg.getLayout());
         }
     }
 
-    public PDFFile getDocument() {
-        return this.pdfDocument;
-    }
-
-    private void setDocument(PDFFile document) {
-        this.pdfDocument = document;
-    }
+//    public PDFFile getDocument() {
+//        return this.pdfDocument;
+//    }
+//
+//    private void setDocument(PDFFile document) {
+//        this.pdfDocument = document;
+//    }
 }

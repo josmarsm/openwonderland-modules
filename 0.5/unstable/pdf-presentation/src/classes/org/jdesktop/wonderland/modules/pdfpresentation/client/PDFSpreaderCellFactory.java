@@ -21,14 +21,22 @@ package org.jdesktop.wonderland.modules.pdfpresentation.client;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import java.awt.Image;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.pdf.client.DeployedPDF;
+import org.jdesktop.wonderland.modules.pdf.client.PDFDeployer;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellServerState;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout;
 
 @CellFactory
 public class PDFSpreaderCellFactory implements CellFactorySPI{
@@ -40,10 +48,6 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
 
         PDFSpreaderCellServerState state = new PDFSpreaderCellServerState();
 
-        // set reasonable defaults here. 
-        state.setLayout(LayoutType.LINEAR);
-        state.setScale(1.0f);
-        state.setSpacing(4.0f);
         state.setCreatorName(LoginManager.getPrimary().getUsername());
 
         // XXX HACK XXX
@@ -60,9 +64,30 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
                state.setSourceURI(uri);
            }
        }
+        
+        try {
+            DeployedPDF pdf = PDFDeployer.loadDeployedPDF(state.getSourceURI());
+
+            PresentationLayout layout = new PresentationLayout(LayoutType.LINEAR);
+            layout.setScale(1.0f);
+            layout.setSpacing(4.0f);
+            layout.setSlides(PDFLayoutHelper.generateLayoutMetadata(layout.getLayout(), null, layout.getSpacing()));
+
+            // TODO Do some fallback handling here - what happens if we don't have
+            // a proper PDF at this stage? there will be no layout information.
+            state.setLayout(layout);
+            
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (JAXBException ex) {
+            Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         return (T)state;
     }
+
 
     public String getDisplayName() {
         // if null, won't show in the insert component dialog

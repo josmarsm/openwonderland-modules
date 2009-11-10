@@ -58,7 +58,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
         layoutButtons.add(circleButton);
 
         // Make sure the HUD has the right intial state. 
-        switch(c.getLayout()) {
+        switch(c.getLayout().getLayout()) {
             case LINEAR:
                 linearButton.setSelected(true);
                 break;
@@ -100,7 +100,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
                 // scale appropriately here - the slider is 0-100, and we want
                 // scale to be bounded 0->4.0
                 float spacing = 0.0f;
-                if(cell.getLayout()==LayoutType.LINEAR) {
+                if(cell.getLayout().getLayout()==LayoutType.LINEAR) {
                     spacing = (float) (spacingSlider.getValue() / 100.0 * 15.0);
                 }
                 else {
@@ -261,11 +261,11 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
 
     public void actionPerformed(ActionEvent arg0) {
         if(arg0.getActionCommand().equals(LINEAR_COMMAND)) {
-           cell.setLayout(LayoutType.LINEAR);
+           cell.setLayoutType(LayoutType.LINEAR);
         } else if(arg0.getActionCommand().equals(SEMICIRCLE_COMMAND)) {
-            cell.setLayout(LayoutType.SEMICIRCLE);
+            cell.setLayoutType(LayoutType.SEMICIRCLE);
         } else if(arg0.getActionCommand().equals(CIRCLE_COMMAND)) {
-            cell.setLayout(LayoutType.CIRCLE);
+            cell.setLayoutType(LayoutType.CIRCLE);
         }
 
         cell.sendCurrentLayoutToServer();
