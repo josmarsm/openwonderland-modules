@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.pdfpresentation.common;
 
+import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -33,20 +34,14 @@ public class PDFSpreaderCellServerState extends CellServerState {
     @XmlElement(name="pdfURI")
     private String pdfURI = null;
 
-    @XmlElement(name="scale")
-    private float scale;
-
-    @XmlElement(name="spacing")
-    private float spacing;
-
-    @XmlElement(name="layout")
-    private LayoutType layout;
-
     @XmlElement(name="creator-name")
     private String creatorName;
 
     @XmlElement(name="num-pages")
     private int numPages;
+
+    @XmlElement(name="layout")
+    private PresentationLayout layout;
 
     public PDFSpreaderCellServerState() {
     }
@@ -61,18 +56,8 @@ public class PDFSpreaderCellServerState extends CellServerState {
         this.pdfURI = uri;
     }
 
-    @XmlTransient public float getScale() { return this.scale; }
-    public void setScale (float scale) {
-        this.scale = scale;
-    }
-
-    @XmlTransient public float getSpacing() { return this.spacing; }
-    public void setSpacing(float spacing) {
-        this.spacing = spacing;
-    }
-
-    @XmlTransient public LayoutType getLayout() { return this.layout; }
-    public void setLayout(LayoutType layout) {
+    @XmlTransient public PresentationLayout getLayout() { return this.layout; }
+    public void setLayout(PresentationLayout layout) {
         this.layout = layout;
     }
 
@@ -85,5 +70,4 @@ public class PDFSpreaderCellServerState extends CellServerState {
     public void setNumPages(int numPages) {
         this.numPages = numPages;
     }
-
 }

@@ -16,6 +16,7 @@
 
     <pathconvert property="module-client.classpath">
         <path location="lib/PDFRenderer.jar"/>
+	<path location="${current.dir}/../pdf-deployer/build/client/pdf-deployer-client.jar"/>
         <!--<path location="${current.dir}/../presentation-base/build/client/presentation-base-client.jar"/>-->
     </pathconvert>
 
@@ -34,7 +35,7 @@
                 description="${module.description}" builddir="${build.dir}">
 
             <!-- Depends on the presentation-base module to provide some interface bits. -->
-            <!-- <requires name="presentation-base" version="1"/> -->
+            <requires name="pdf-deployer" version="1"/>
 
 	    <client dir="${current.dir}/lib">
                 <include name="*.jar"/>
