@@ -1,0 +1,1 @@
+Bridge-Module-Info: org.jdesktop.wonderland.modules.bridgerecordermodule.server.BridgeRecorderInitializer
