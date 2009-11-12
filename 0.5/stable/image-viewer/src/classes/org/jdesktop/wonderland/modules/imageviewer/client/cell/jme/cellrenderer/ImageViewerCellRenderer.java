@@ -23,6 +23,7 @@ import com.jme.image.Texture;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Box;
+import com.jme.scene.state.BlendState;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.TextureState;
 import com.jme.util.TextureManager;
@@ -45,7 +46,7 @@ import org.jdesktop.wonderland.modules.imageviewer.client.cell.ImageViewerCell;
 public class ImageViewerCellRenderer extends BasicRenderer {
 
     /** The depth of the box that displays the image */
-    public static final float IMAGE_DEPTH = 0.1f;
+    public static final float IMAGE_DEPTH = 0.00001f;
 
     public ImageViewerCellRenderer(Cell cell) {
         super(cell);
@@ -112,6 +113,14 @@ public class ImageViewerCellRenderer extends BasicRenderer {
         ts.setTexture(texture);
         ts.setEnabled(true);
         box.setRenderState(ts);
+
+        // Set the blend state so that transparent images work properly
+        BlendState bs = (BlendState)rm.createRendererState(StateType.Blend);
+        bs.setBlendEnabled(false);
+        bs.setReference(0.5f);
+        bs.setTestFunction(BlendState.TestFunction.GreaterThan);
+        bs.setTestEnabled(true);
+        node.setRenderState(bs);
 
         // Make sure we do not cache the texture in memory, this will mess
         // up asset caching with WL (if the URL stays the same, but the
