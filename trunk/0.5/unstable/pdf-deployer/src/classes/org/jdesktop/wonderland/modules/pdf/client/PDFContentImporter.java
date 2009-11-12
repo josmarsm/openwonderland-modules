@@ -33,8 +33,9 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
+import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.content.ContentImportManager;
-import org.jdesktop.wonderland.client.content.spi.ContentImporterSPI;
+import org.jdesktop.wonderland.client.jme.content.AbstractContentImporter;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
@@ -53,26 +54,61 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
  * @author Jordan Slott <jslott@dev.java.net>
  */
 @Plugin
-public class PDFContentImporter extends BaseClientPlugin implements ContentImporterSPI {
+public class PDFContentImporter extends AbstractContentImporter
+        implements ClientPlugin {
 
     // The error logger
     private static final Logger LOGGER =
             Logger.getLogger(PDFContentImporter.class.getName());
 
+    // The current session to the server, needed to fetch the content repo
+    private ServerSessionManager loginInfo = null;
+
+    // An internal BaseClientPlugin that handles activate and deactivate by
+    // delegating to the superclass methods
+    private BaseClientPlugin plugin = null;
+
     /**
-     * {@inheritDoc}
+     * @inheritDoc()
      */
-    @Override
-    protected void activate() {
+    public void initialize(ServerSessionManager loginInfo) {
+        this.loginInfo = loginInfo;
+        this.plugin = new BaseClientPlugin() {
+            @Override
+            protected void activate() {
+                PDFContentImporter.this.register();
+            }
+
+            @Override
+            protected void deactivate() {
+                PDFContentImporter.this.deregister();
+            }
+
+        };
+
+        // initialize our plugin
+        plugin.initialize(loginInfo);
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void cleanup() {
+        plugin.cleanup();
+    }
+
+    /**
+     * Registers the content importer.
+     */
+    protected void register() {
         ContentImportManager m = ContentImportManager.getContentImportManager();
         m.registerContentImporter(this);
     }
 
     /**
-     * {@inheritDoc}
+     * Deregisters the content importer.
      */
-    @Override
-    protected void deactivate() {
+    protected void deregister() {
         ContentImportManager m = ContentImportManager.getContentImportManager();
         m.unregisterContentImporter(this);
     }
@@ -87,7 +123,31 @@ public class PDFContentImporter extends BaseClientPlugin implements ContentImpor
     /**
      * {@inheritDoc}
      */
-    public String importFile(File file, String extension) {
+    @Override
+    public String isContentExists(File file) {
+        // Fetch the pdf/ directory in the user's WebDav area. Check to see if
+        // a <File Name>.pdf/<File Name>pdf file exists. If so, return its URI
+        // otherwise, return null.
+        String pdfName = file.getName() + "/" + file.getName();
+        try {
+            ContentCollection pdfRoot = getPDFRoot();
+            if (pdfRoot.getChild(pdfName) != null) {
+                return "wlcontent://users/" + loginInfo.getUsername() + "/" +
+                        pdfName;
+            }
+            return null;
+        } catch (ContentRepositoryException excp) {
+            LOGGER.log(Level.WARNING, "Error while try to find " + pdfName +
+                    " in content repository", excp);
+            return null;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String uploadContent(File file) throws IOException {
         // Load in the file and parse as a PDF file. Upon error log and error
         // and return null;
         String pdfFileName = file.getName();
@@ -166,7 +226,7 @@ public class PDFContentImporter extends BaseClientPlugin implements ContentImpor
 
         // Return a URI referring to the PDF file
         ServerSessionManager session = LoginManager.getPrimary();
-        return "wlcontent://users/" + session.getUsername() + "/pdf/ " +
+        return "wlcontent://users/" + session.getUsername() + "/pdf/" +
                 pdfFileName + "/" + pdfFileName;
     }
 
