@@ -220,7 +220,7 @@ public class MovieRecorderCell extends Cell {
     }
 
     void captureImage() {
-        ((MovieRecorderCellRenderer)renderer).captureImage(ui.getControlPanel().getDefaultStillCaptureDirectory());
+        ((MovieRecorderCellRenderer)renderer).captureImage(ui.getControlPanel().getPicturesDirectory());
     }
 
     /**

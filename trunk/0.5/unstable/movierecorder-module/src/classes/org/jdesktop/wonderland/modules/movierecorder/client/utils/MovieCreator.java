@@ -83,7 +83,7 @@ public class MovieCreator {
             logger.info("Creating movie directory");
             movieDirectory.mkdirs();
         }
-        String movieFilePath = controlPanel.getMovieDirectory() + File.separator + movieFilename;
+        String movieFilePath = movieDirectory + File.separator + movieFilename;
         try {
             JPEGDirectoryFetcher fetcher = new JPEGDirectoryFetcher(controlPanel.getImageDirectory());
             source = new ImagesDataSource(fetcher, fetcher.getSuggestedSize(), controlPanel.getCapturedFrameRate());

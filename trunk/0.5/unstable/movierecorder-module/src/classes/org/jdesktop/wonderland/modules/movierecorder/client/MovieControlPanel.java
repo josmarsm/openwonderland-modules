@@ -42,6 +42,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
         this.recorderCell = recorderCell;
         initComponents();
         movieDirectoryField.setText(getDefaultMovieDirectory());
+        picturesDirectoryField.setText(getDefaultStillCaptureDirectory());
         previewPanel.setLayout(new GridBagLayout());
         previewPanel.add(recorderCell.getCaptureComponent());
         if (recorderCell.isRemoteRecording()) {
@@ -72,8 +73,11 @@ public class MovieControlPanel extends javax.swing.JPanel {
         recordButton = new javax.swing.JButton();
         stopButton = new javax.swing.JButton();
         movieDirectoryField = new javax.swing.JTextField();
-        outputDirectoryLabel1 = new javax.swing.JLabel();
+        movieDirectoryLabel = new javax.swing.JLabel();
         moviePathBrowseButton = new javax.swing.JButton();
+        picturesLabelDirectory = new javax.swing.JLabel();
+        picturesDirectoryField = new javax.swing.JTextField();
+        picturesPathBrowseButton = new javax.swing.JButton();
         previewPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
@@ -100,15 +104,28 @@ public class MovieControlPanel extends javax.swing.JPanel {
         });
 
         movieDirectoryField.setEditable(false);
-        movieDirectoryField.setToolTipText("Directory for saving the movie");
+        movieDirectoryField.setToolTipText("Directory for saving the Movie");
 
-        outputDirectoryLabel1.setText("Output Directory:");
+        movieDirectoryLabel.setText("Movie Directory:");
 
         moviePathBrowseButton.setText("Select...");
-        moviePathBrowseButton.setToolTipText("Browse");
+        moviePathBrowseButton.setToolTipText("Select Directory for Movies");
         moviePathBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moviePathBrowseButtonActionPerformed(evt);
+            }
+        });
+
+        picturesLabelDirectory.setText("Pictures Directory");
+
+        picturesDirectoryField.setEditable(false);
+        picturesDirectoryField.setToolTipText("Directory for saving the Pictures");
+
+        picturesPathBrowseButton.setText("Select...");
+        picturesPathBrowseButton.setToolTipText("Select Directory for Pictures");
+        picturesPathBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                picturesPathBrowseButtonActionPerformed(evt);
             }
         });
 
@@ -117,28 +134,38 @@ public class MovieControlPanel extends javax.swing.JPanel {
         controlPanelLayout.setHorizontalGroup(
             controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(controlPanelLayout.createSequentialGroup()
-                .addGap(16, 16, 16)
+                .addContainerGap()
                 .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(controlPanelLayout.createSequentialGroup()
-                        .addComponent(recordButton)
+                        .addComponent(picturesLabelDirectory)
                         .addGap(18, 18, 18)
-                        .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(recorderStatusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(picturesDirectoryField))
                     .addGroup(controlPanelLayout.createSequentialGroup()
-                        .addComponent(outputDirectoryLabel1)
+                        .addComponent(movieDirectoryLabel)
+                        .addGap(28, 28, 28)
+                        .addComponent(movieDirectoryField, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(controlPanelLayout.createSequentialGroup()
+                        .addComponent(recordButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(movieDirectoryField, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(moviePathBrowseButton)))
-                .addContainerGap(19, Short.MAX_VALUE))
+                        .addComponent(stopButton, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(moviePathBrowseButton)
+                    .addComponent(recorderStatusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(picturesPathBrowseButton))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
         controlPanelLayout.setVerticalGroup(
             controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(controlPanelLayout.createSequentialGroup()
-                .addGap(15, 15, 15)
+                .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(picturesLabelDirectory)
+                    .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(picturesDirectoryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(picturesPathBrowseButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(outputDirectoryLabel1)
+                    .addComponent(movieDirectoryLabel)
                     .addComponent(movieDirectoryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(moviePathBrowseButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -146,7 +173,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
                     .addComponent(recordButton)
                     .addComponent(stopButton)
                     .addComponent(recorderStatusLabel))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         add(controlPanel, java.awt.BorderLayout.PAGE_END);
@@ -184,9 +211,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
         recorderCell.getVideoButtonModel().setSelected(false);
         //Rest of the action takes place in the videoButtonModel listeners
         //See this class's inner class VideoButonListener for display updates
-        //See MovieRecorderCell's inner class VideoButtonListener for "model" updates
-
-        
+        //See MovieRecorderCell's inner class VideoButtonListener for "model" updates       
 }//GEN-LAST:event_stopButtonActionPerformed
 
     
@@ -199,6 +224,8 @@ public class MovieControlPanel extends javax.swing.JPanel {
         recordButton.setEnabled(enable);
         moviePathBrowseButton.setEnabled(enable);
         movieDirectoryField.setEnabled(enable);
+        picturesPathBrowseButton.setEnabled(enable);
+        picturesDirectoryField.setEnabled(enable);
     }
 
     private void enableAllButtons(boolean enable) {
@@ -222,7 +249,13 @@ public class MovieControlPanel extends javax.swing.JPanel {
         return movieDirectoryField.getText();
     }
 
-    
+    /**
+     * The direcotry into which the movie should be created
+     * @return The absolute path of the location of the hdirectory in which the movie should be saved
+     */
+    public String getPicturesDirectory() {
+        return picturesDirectoryField.getText();
+    }
 
     /**
      * The frames per second at which the JPEGs were recorded
@@ -257,7 +290,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
         return home;
     }
 
-    String getDefaultStillCaptureDirectory() {
+    private String getDefaultStillCaptureDirectory() {
         String home = System.getProperty("user.home");
         //
         //Are we on a PC?
@@ -296,12 +329,29 @@ public class MovieControlPanel extends javax.swing.JPanel {
         }
 }//GEN-LAST:event_moviePathBrowseButtonActionPerformed
 
+    private void picturesPathBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_picturesPathBrowseButtonActionPerformed
+        JFileChooser outputPathFileChooser = new JFileChooser();
+
+        outputPathFileChooser.setDialogTitle("Pictures Directory");
+        outputPathFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        outputPathFileChooser.setAcceptAllFileFilterUsed(false);
+
+        int outputPath = outputPathFileChooser.showOpenDialog(this);
+
+        if (outputPath == JFileChooser.APPROVE_OPTION) {
+            picturesDirectoryField.setText(outputPathFileChooser.getSelectedFile().getAbsolutePath());
+        }
+}//GEN-LAST:event_picturesPathBrowseButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel controlPanel;
     private javax.swing.JTextField movieDirectoryField;
+    private javax.swing.JLabel movieDirectoryLabel;
     private javax.swing.JButton moviePathBrowseButton;
-    private javax.swing.JLabel outputDirectoryLabel1;
+    private javax.swing.JTextField picturesDirectoryField;
+    private javax.swing.JLabel picturesLabelDirectory;
+    private javax.swing.JButton picturesPathBrowseButton;
     private javax.swing.JPanel previewPanel;
     private javax.swing.JButton recordButton;
     private javax.swing.JLabel recorderStatusLabel;
