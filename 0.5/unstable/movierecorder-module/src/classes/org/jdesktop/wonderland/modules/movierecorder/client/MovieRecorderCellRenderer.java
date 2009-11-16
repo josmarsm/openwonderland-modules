@@ -165,7 +165,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
 
         //Get the still buttons and set it to off
         stillSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_002-vrBtnStill");
-        stillSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_002-vrBtnStill");
+        stillSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStillOn-Geometry-vrBtnStillOn");
         stillSpatialOn.setVisible(false);
 
         //Listen for mouse events
@@ -342,7 +342,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         // Note: we don't override computeEvent because we don't do any computation in this listener.
         @Override
         public void commitEvent(Event event) {
-            rendererLogger.info("commit " + event + " for " + this);
+            //rendererLogger.info("commit " + event + " for " + this);
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
             if (!mbe.isClicked()) {
                 return;
@@ -363,7 +363,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
                 return;
             }
             if (mesh == stillSpatial || mesh == stillSpatialOn) {
-                rendererLogger.info("video button pressed");
+                rendererLogger.info("still button pressed");
                 DefaultButtonModel stillButtonModel = ((MovieRecorderCell)cell).getStillButtonModel();
                 if (stillButtonModel.isEnabled()) {
                     stillButtonModel.setSelected(!stillButtonModel.isSelected());
