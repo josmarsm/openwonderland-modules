@@ -18,14 +18,24 @@
 
 package org.jdesktop.wonderland.modules.movierecorder.client;
 
+import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -94,10 +104,13 @@ public class MovieRecorderCell extends Cell {
         localRecording = false;
         remoteRecording = false;
         videoButtonModel = new DefaultButtonModel();
-        videoButtonModel.setPressed(false);
+        videoButtonModel.setSelected(false);
         videoButtonModel.setEnabled(true);
         videoButtonModel.addItemListener(new VideoButtonChangeListener());
         stillButtonModel = new DefaultButtonModel();
+        stillButtonModel.setSelected(false);
+        stillButtonModel.setEnabled(true);
+        stillButtonModel.addItemListener(new StillButtonChangeListener());
     }
 
     @Override
@@ -185,6 +198,7 @@ public class MovieRecorderCell extends Cell {
         logger.info("start recording");
         if (remoteRecording) {
             logger.warning("Can't record if someone else is already recording");
+            return;
         }
         File imageDirectoryFile = getImageDirectory();
         logger.info("imageDirectory: " + imageDirectoryFile);
@@ -203,7 +217,11 @@ public class MovieRecorderCell extends Cell {
         localRecording = true;
         MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), localRecording);
         getChannel().send(msg);
-    }   
+    }
+
+    void captureImage() {
+        ((MovieRecorderCellRenderer)renderer).captureImage(ui.getControlPanel().getDefaultStillCaptureDirectory());
+    }
 
     /**
      * Reset the time at which the canvas began recordinig JPEGs
@@ -271,6 +289,10 @@ public class MovieRecorderCell extends Cell {
         return videoButtonModel;
     }
 
+    DefaultButtonModel getStillButtonModel() {
+        return stillButtonModel;
+    }
+
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
@@ -332,6 +354,45 @@ public class MovieRecorderCell extends Cell {
             } else {
                 cellLogger.info("should stop recording");
                 stopRecording();
+            }
+        }
+   }
+
+    class StillButtonChangeListener implements ItemListener {
+
+        public void itemStateChanged(ItemEvent event) {
+            //The state of the still button model has changed
+            //Take some action. Rendering issues are dealth with by other listeners in
+            //the renderer and the control panel
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+                cellLogger.info("should take a still");
+                
+                AudioInputStream audioInputStream = null;
+                try {
+                    URL url = MovieRecorderCell.class.getResource("resources/Camera_Shutter.au");
+                    audioInputStream = AudioSystem.getAudioInputStream(url);
+                    AudioFormat audioFormat = audioInputStream.getFormat();
+                    DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
+                    Clip clip = (Clip) AudioSystem.getLine(dataLineInfo);
+                    clip.open(audioInputStream);
+                    clip.start();
+                } catch (UnsupportedAudioFileException ex) {
+                    cellLogger.log(Level.SEVERE, null, ex);
+                } catch (LineUnavailableException ex) {
+                    cellLogger.log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    cellLogger.log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        audioInputStream.close();
+                    } catch (IOException ex) {
+                        cellLogger.log(Level.SEVERE, null, ex);
+                    }
+                }
+                captureImage();
+                
+            } else {
+                //Nothing to do
             }
         }
    }

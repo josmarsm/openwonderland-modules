@@ -52,10 +52,20 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ItemListener;
+import java.io.FileNotFoundException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JComponent;
@@ -313,8 +323,14 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
                 //jpegEncoder.setJPEGEncodeParam(jpegParam);
                 //jpegEncoder.encode(outputImage);
                 File outputFile = new File(MovieRecorderCell.getImageDirectory()  + File.separator + imageCounter + ".jpg");
-                ImageIO.write(outputImage, "jpg", outputFile);
+                if (outputFile != null) {
+                    ImageIO.write(outputImage, "jpg", outputFile);
+                } else {
+                    rendererLogger.warning("Failed to create temporary image file");
+                }
                 //outputFile.close();
+            } catch (FileNotFoundException e) {
+                rendererLogger.log(Level.WARNING, "failed to write temporary file", e);
             } catch ( IOException e ) {
                 System.err.println("I/O exception in postSwap: " + e);
                 e.printStackTrace();
@@ -324,6 +340,24 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             imageCounter++;
             frameCounter++;
         }
+    }
+
+    void captureImage(String stillCaptureDirectory) {
+        BufferedImage outputImage = createBufferedImage(textureBuffer.getTextureData());
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+        simpleDateFormat.applyPattern("yyyyMMdd_HH.mm.ss");
+        String imageFilename = "Wonderland_" + simpleDateFormat.format(calendar.getTime()) + ".jpg";
+        try {
+
+                File outputFile = new File(stillCaptureDirectory  + File.separator + imageFilename);
+                ImageIO.write(outputImage, "jpg", outputFile);
+                //outputFile.close();
+            } catch ( IOException e ) {
+                System.err.println("I/O exception in postSwap: " + e);
+                e.printStackTrace();
+                ((MovieRecorderCell) cell).stopRecording();
+            }
     }
 
     class CameraListener extends EventClassListener {
@@ -360,6 +394,15 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
                 //done
                 return;
             }
+            if (mesh == stillSpatial || mesh == stillSpatialOn) {
+                rendererLogger.info("video button pressed");
+                DefaultButtonModel stillButtonModel = ((MovieRecorderCell)cell).getStillButtonModel();
+                if (stillButtonModel.isEnabled()) {
+                    stillButtonModel.setSelected(!stillButtonModel.isSelected());
+                }
+                //done
+                return;
+            }
         }
     }
 
@@ -371,14 +414,14 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             WorldManager wm = ClientContextJME.getWorldManager();
             if (event.getStateChange() == ItemEvent.SELECTED) {
 
-                Toolkit.getDefaultToolkit().beep();
+                playAudioResource("movierecorder-start.au");
                 videoSpatial.setVisible(false);
                 videoSpatialOn.setVisible(true);
                 recordStatus.setVisible(false);
                 recordStatusOn.setVisible(true);
 
             } else {
-                Toolkit.getDefaultToolkit().beep();
+                playAudioResource("movierecorder-stop.au");
                 videoSpatial.setVisible(true);
                 videoSpatialOn.setVisible(false);
                 recordStatus.setVisible(false);
@@ -387,6 +430,33 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             wm.addToUpdateList(videoSpatial);
             wm.addToUpdateList(videoSpatialOn);
         }
+
+        private void playAudioResource(String audioResource) {
+            AudioInputStream audioInputStream = null;
+                try {
+                    URL url = MovieRecorderCell.class.getResource("resources/" + audioResource);
+                    audioInputStream = AudioSystem.getAudioInputStream(url);
+                    AudioFormat audioFormat = audioInputStream.getFormat();
+                    DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
+                    Clip clip = (Clip) AudioSystem.getLine(dataLineInfo);
+                    clip.open(audioInputStream);
+                    clip.start();
+                } catch (UnsupportedAudioFileException ex) {
+                    rendererLogger.log(Level.SEVERE, null, ex);
+                } catch (LineUnavailableException ex) {
+                    rendererLogger.log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    rendererLogger.log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        audioInputStream.close();
+                    } catch (IOException ex) {
+                        rendererLogger.log(Level.SEVERE, null, ex);
+                    }
+                }
+        }
+
+
 
     }
 }

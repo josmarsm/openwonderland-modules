@@ -257,6 +257,31 @@ public class MovieControlPanel extends javax.swing.JPanel {
         return home;
     }
 
+    String getDefaultStillCaptureDirectory() {
+        String home = System.getProperty("user.home");
+        //
+        //Are we on a PC?
+        File myDocuments = new File(home + File.separator + "My Documents");
+        if (myDocuments.exists()) {
+            return myDocuments.toString();
+        }
+        //
+        //Or a Mac?
+        File pictures = new File(home + File.separator + "Pictures");
+        if (pictures.exists()) {
+            return pictures.toString();
+        }
+        //
+        //Or Gnome?
+        File documents = new File(home + File.separator + "Documents");
+        if (documents.exists()) {
+            return documents.toString();
+        }
+        //
+        //Otherwise
+        return home;
+    }
+
     private void moviePathBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moviePathBrowseButtonActionPerformed
         JFileChooser outputPathFileChooser = new JFileChooser();
 
