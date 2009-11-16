@@ -85,6 +85,8 @@ import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUpdater {
 
     private static final Logger rendererLogger = Logger.getLogger(MovieRecorderCellRenderer.class.getName());
+    private static final SimpleDateFormat STILL_IMAGE_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HH.mm.ss");
+
 
     //Use 16:9 aspect ratio
     public static final float WIDTH = 0.8f; //x-extent
@@ -141,30 +143,34 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     }
 
     private void addCameraModel(Node device, Entity entity) throws IOException {
+        //Load the cameramodel and add it to the scenegraph
         LoaderManager manager = LoaderManager.getLoaderManager();
         URL url = AssetUtils.getAssetURL("wla://movierecorder/pwl_3d_videorecorder_009.dae/pwl_3d_videorecorder_009.dae.gz.dep", this.getCell());
         DeployedModel dm = manager.getLoaderFromDeployment(url);
         Node cameraModel = dm.getModelLoader().loadDeployedModel(dm, entity);
-        printTree(cameraModel, 0);
-        HashMap<String,Spatial> nodeMap = new HashMap<String, Spatial>();
-        ScenegraphUtils.getNamedNodes(cameraModel, nodeMap);
-        for(String key: nodeMap.keySet()) {
-            rendererLogger.info("key: " + key + " node: " + nodeMap.get(key));
-        }
-        
+        device.attachChild(cameraModel);
+
+        //Get the record status nodes and set it to off
         recordStatus = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrRecordStatus_002-vrRecordStatus");
         recordStatusOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrRecordStatusOn-Geometry-vrRecordStatusOn");
         recordStatusOn.setVisible(false);
+
+        //Get the video buttons and set it to off
         videoSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideo_002-vrBtnVideo");
         videoSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideoOn-Geometry-vrBtnVideoOn");
         videoSpatialOn.setVisible(false);
+        
+        //create a listener to control the appearance of the video buttons
         ((MovieRecorderCell)cell).getVideoButtonModel().addItemListener(new VideoButtonListener());
+
+        //Get the still buttons and set it to off
         stillSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_002-vrBtnStill");
         stillSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_002-vrBtnStill");
         stillSpatialOn.setVisible(false);
+
+        //Listen for mouse events
         CameraListener listener = new CameraListener();
         listener.addToEntity(entity);
-        device.attachChild(cameraModel);
     }
 
     private Entity createLCDPanel(Node device) {
@@ -180,7 +186,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         //Set the quad node position so that it is directly in front of the camera model
         //To give the appearance of an LCD panel
         quadNode.setLocalTranslation(0.0f, -0.15f,  -0.045f);
-        
+        //Create the texture buffer
         textureBuffer = (TextureRenderBuffer) wm.getRenderManager().createRenderBuffer(RenderBuffer.Target.TEXTURE_2D, IMAGE_WIDTH, IMAGE_HEIGHT);
         textureBuffer.setIncludeOrtho((false));
         //Create a camera node
@@ -197,10 +203,8 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         //Translate the camera so it's in front of the model
         cameraSG.setLocalTranslation(0f, 0f, -0.5f);
         //Create a camera component
-        //NOT SURE ABOUT THE FRONT AND BACK CLIPPING
-        float frontClipping = 10000f;
         CameraComponent cc = wm.getRenderManager().createCameraComponent(cameraSG, cn,
-                IMAGE_WIDTH, IMAGE_HEIGHT, 90.0f, 16/9, 0.1f, frontClipping, false);
+                IMAGE_WIDTH, IMAGE_HEIGHT, 90.0f, 16/9, 0.1f, 10000f, false);
         //Set the camera for the render buffer
         textureBuffer.setCameraComponent(cc);
         //Add the render buffer to the render manager
@@ -247,34 +251,15 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         captureComponent.setPreferredSize(new Dimension(width, height));
     }    
 
-    private void printTree(Node root, int indent) {
-        StringBuffer buffer = new StringBuffer();
-        for (int i = 0; i < indent; i++) {
-           buffer.append('\t');
-        }
-        rendererLogger.info(buffer.toString() + "node: " + root);
-        List<Spatial> children = root.getChildren();
-        if (children == null) {
-            return;
-        }
-        for (Spatial spatial : children) {
-            if (spatial instanceof Node) {
-                printTree((Node)spatial, indent + 1);
-            } else {
-                rendererLogger.info("spatial: " + spatial);
-            }
-        }
-    }
-
     public class CaptureComponent extends JComponent {
         public CaptureComponent() {
             setBorder(BorderFactory.createLineBorder(Color.black));
         }
         
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             g.setColor(Color.BLACK);
-            //g.fillRect(0, 0, 400, 300);
             if (captureImage != null) {
                 g.drawImage(captureImage, 0, 0, null);
             }
@@ -305,34 +290,22 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     public void update(Object arg0) {
         //System.err.println("Update object: " + arg0);
         captureImage = createBufferedImage(textureBuffer.getTextureData());
-        captureComponent.repaint();
-        
+        captureComponent.repaint();       
 
         if (((MovieRecorderCell) cell).isLocalRecording()) {
-                //System.err.println("Capturing image " + imageCounter);
                 BufferedImage outputImage = createBufferedImage(textureBuffer.getTextureData());
-                //System.err.println("image: " + outputImage);
-                // write to disk....
+            // write to disk....
             try {
-
-                //FileOutputStream outputFile = new FileOutputStream(((MovieRecorderCell)cell).getImageDirectory()  + File.separator + imageCounter + ".jpg");
-                //JPEGImageEncoder jpegEncoder = JPEGCodec.createJPEGEncoder(outputFile);
-                //JPEGEncodeParam jpegParam = jpegEncoder.getDefaultJPEGEncodeParam(outputImage);
-                //jpegParam.setQuality(0.9f,false); // 90% quality JPEG
-
-                //jpegEncoder.setJPEGEncodeParam(jpegParam);
-                //jpegEncoder.encode(outputImage);
                 File outputFile = new File(MovieRecorderCell.getImageDirectory()  + File.separator + imageCounter + ".jpg");
                 if (outputFile != null) {
                     ImageIO.write(outputImage, "jpg", outputFile);
                 } else {
                     rendererLogger.warning("Failed to create temporary image file");
                 }
-                //outputFile.close();
             } catch (FileNotFoundException e) {
                 rendererLogger.log(Level.WARNING, "failed to write temporary file", e);
             } catch ( IOException e ) {
-                System.err.println("I/O exception in postSwap: " + e);
+                System.err.println("I/O exception in update: " + e);
                 e.printStackTrace();
                 ((MovieRecorderCell) cell).stopRecording();
             }
@@ -345,19 +318,14 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     void captureImage(String stillCaptureDirectory) {
         BufferedImage outputImage = createBufferedImage(textureBuffer.getTextureData());
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
-        simpleDateFormat.applyPattern("yyyyMMdd_HH.mm.ss");
-        String imageFilename = "Wonderland_" + simpleDateFormat.format(calendar.getTime()) + ".jpg";
+        String imageFilename = "Wonderland_" + STILL_IMAGE_DATE_FORMAT.format(calendar.getTime()) + ".jpg";
         try {
-
-                File outputFile = new File(stillCaptureDirectory  + File.separator + imageFilename);
-                ImageIO.write(outputImage, "jpg", outputFile);
-                //outputFile.close();
-            } catch ( IOException e ) {
-                System.err.println("I/O exception in postSwap: " + e);
-                e.printStackTrace();
-                ((MovieRecorderCell) cell).stopRecording();
-            }
+            File outputFile = new File(stillCaptureDirectory + File.separator + imageFilename);
+            ImageIO.write(outputImage, "jpg", outputFile);
+        } catch (IOException e) {
+            System.err.println("I/O exception in update: " + e);
+            e.printStackTrace();
+        }
     }
 
     class CameraListener extends EventClassListener {
@@ -413,13 +381,11 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             rendererLogger.info("event: " + event);
             WorldManager wm = ClientContextJME.getWorldManager();
             if (event.getStateChange() == ItemEvent.SELECTED) {
-
                 playAudioResource("movierecorder-start.au");
                 videoSpatial.setVisible(false);
                 videoSpatialOn.setVisible(true);
                 recordStatus.setVisible(false);
                 recordStatusOn.setVisible(true);
-
             } else {
                 playAudioResource("movierecorder-stop.au");
                 videoSpatial.setVisible(true);
@@ -455,8 +421,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
                     }
                 }
         }
-
-
 
     }
 }
