@@ -45,9 +45,9 @@ public class MovieControlPanel extends javax.swing.JPanel {
         picturesDirectoryField.setText(getDefaultStillCaptureDirectory());
         previewPanel.setLayout(new GridBagLayout());
         previewPanel.add(recorderCell.getCaptureComponent());
-        if (recorderCell.isRemoteRecording()) {
-            disableAllButtons();
-        }
+//        if (recorderCell.isRemoteRecording()) {
+//            disableAllButtons();
+//        }
         recorderCell.getVideoButtonModel().addItemListener(new VideoButtonListener());
     }
 
