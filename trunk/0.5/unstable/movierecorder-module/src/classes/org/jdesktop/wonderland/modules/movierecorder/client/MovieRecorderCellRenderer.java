@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
@@ -50,14 +51,12 @@ import org.jdesktop.mtgame.RenderUpdater;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
 import javax.imageio.ImageIO;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -67,8 +66,10 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
@@ -86,7 +87,6 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
 
     private static final Logger rendererLogger = Logger.getLogger(MovieRecorderCellRenderer.class.getName());
     private static final SimpleDateFormat STILL_IMAGE_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HH.mm.ss");
-
 
     //Use 16:9 aspect ratio
     public static final float WIDTH = 0.8f; //x-extent
@@ -119,9 +119,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         root.setModelBound(new BoundingBox());
         root.updateModelBound();
         //Set the name of the buttonRoot node
-        root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
-        
-        
+        root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());               
         return root;
     }
 
@@ -168,9 +166,15 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         //Get the still buttons
         stillSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_002-vrBtnStill");
         stillSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStillOn-Geometry-vrBtnStillOn");
+        //locate "on" button so that it appears "pressed"
+        stillSpatialOn.setLocalTranslation(0, -0.015f, 0);
+        //"on" button is initially invisible
         stillSpatialOn.setVisible(false);
-        //create a listener to control the appearance of the video buttons
-        ((MovieRecorderCell)cell).getStillButtonModel().addItemListener(new StillButtonListener());
+        //create a listener to control the appearance of the still buttons
+        ButtonModel stillButtonModel = ((MovieRecorderCell)cell).getStillButtonModel();
+        StillButtonListener buttonListener = new StillButtonListener();
+        stillButtonModel.addChangeListener(buttonListener);
+        stillButtonModel.addItemListener(buttonListener);
 
         //Listen for mouse events
         CameraListener listener = new CameraListener();
@@ -333,29 +337,29 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     }
 
     private void playAudioResource(String audioResource) {
-            AudioInputStream audioInputStream = null;
-                try {
-                    URL url = MovieRecorderCell.class.getResource("resources/" + audioResource);
-                    audioInputStream = AudioSystem.getAudioInputStream(url);
-                    AudioFormat audioFormat = audioInputStream.getFormat();
-                    DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
-                    Clip clip = (Clip) AudioSystem.getLine(dataLineInfo);
-                    clip.open(audioInputStream);
-                    clip.start();
-                } catch (UnsupportedAudioFileException ex) {
-                    rendererLogger.log(Level.SEVERE, null, ex);
-                } catch (LineUnavailableException ex) {
-                    rendererLogger.log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    rendererLogger.log(Level.SEVERE, null, ex);
-                } finally {
-                    try {
-                        audioInputStream.close();
-                    } catch (IOException ex) {
-                        rendererLogger.log(Level.SEVERE, null, ex);
-                    }
-                }
+        AudioInputStream audioInputStream = null;
+        try {
+            URL url = MovieRecorderCell.class.getResource("resources/" + audioResource);
+            audioInputStream = AudioSystem.getAudioInputStream(url);
+            AudioFormat audioFormat = audioInputStream.getFormat();
+            DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
+            Clip clip = (Clip) AudioSystem.getLine(dataLineInfo);
+            clip.open(audioInputStream);
+            clip.start();
+        } catch (UnsupportedAudioFileException ex) {
+            rendererLogger.log(Level.SEVERE, null, ex);
+        } catch (LineUnavailableException ex) {
+            rendererLogger.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            rendererLogger.log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                audioInputStream.close();
+            } catch (IOException ex) {
+                rendererLogger.log(Level.SEVERE, null, ex);
+            }
         }
+    }
 
     class CameraListener extends EventClassListener {
 
@@ -373,32 +377,55 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         public void commitEvent(Event event) {
             //rendererLogger.info("commit " + event + " for " + this);
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
-            if (!mbe.isClicked()) {
-                return;
-            }
             //ignore any mouse button that isn't the left one
             if (mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
             TriMesh mesh = mbe.getPickDetails().getTriMesh();
-            rendererLogger.info("mesh: " + mesh);
+            //rendererLogger.info("mesh: " + mesh);
+            switch (mbe.getID()) {
+                case MouseEvent.MOUSE_PRESSED:
+                    mousePressed(mesh);
+                    break;
+                case MouseEvent.MOUSE_RELEASED:
+                    mouseReleased(mesh);
+                    break;
+                case MouseEvent.MOUSE_CLICKED:
+                    mouseClicked(mesh);
+                    break;
+                default:
+                    rendererLogger.warning("Unhandled event: " + mbe);
+            }
+        }
+
+        private void mouseClicked(TriMesh mesh) {
             if (mesh == videoSpatial || mesh == videoSpatialOn) {
-                rendererLogger.info("video button pressed");
+                //rendererLogger.info("video button clicked");
                 DefaultButtonModel videoButtonModel = ((MovieRecorderCell)cell).getVideoButtonModel();
                 if (videoButtonModel.isEnabled()) {
                     videoButtonModel.setSelected(!videoButtonModel.isSelected());
                 }
-                //done
-                return;
             }
+        }
+
+        private void mousePressed(TriMesh mesh) {
             if (mesh == stillSpatial || mesh == stillSpatialOn) {
-                rendererLogger.info("still button pressed");
                 DefaultButtonModel stillButtonModel = ((MovieRecorderCell)cell).getStillButtonModel();
                 if (stillButtonModel.isEnabled()) {
-                    stillButtonModel.setSelected(!stillButtonModel.isSelected());
+                    stillButtonModel.setPressed(true);
+                    stillButtonModel.setSelected(true);
                 }
-                //done
-                return;
+            }
+        }
+
+        private void mouseReleased(TriMesh mesh) {
+            if (mesh == stillSpatial || mesh == stillSpatialOn) {
+                //rendererLogger.info("still button released");
+                DefaultButtonModel stillButtonModel = ((MovieRecorderCell)cell).getStillButtonModel();
+                if (stillButtonModel.isEnabled()) {
+                    stillButtonModel.setPressed(false);
+                    stillButtonModel.setSelected(false);
+                }
             }
         }
     }
@@ -407,7 +434,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
 
         public void itemStateChanged(ItemEvent event) {
             //update the renderer
-            rendererLogger.info("event: " + event);
+            //rendererLogger.info("event: " + event);
             WorldManager wm = ClientContextJME.getWorldManager();
             if (event.getStateChange() == ItemEvent.SELECTED) {
                 playAudioResource("movierecorder-start.au");
@@ -429,14 +456,28 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         
     }
 
-    class StillButtonListener implements ItemListener {
+    class StillButtonListener implements ChangeListener, ItemListener {
 
         public void itemStateChanged(ItemEvent event) {
-            rendererLogger.info("event: " + event);
+            //rendererLogger.info("event: " + event);
             if (event.getStateChange() == ItemEvent.SELECTED) {
-                playAudioResource("resources/Camera_Shutter.au");
+                playAudioResource("Camera_Shutter.au");
             }
         }
 
+        public void stateChanged(ChangeEvent event) {
+            //rendererLogger.info("event: " + event);
+            WorldManager wm = ClientContextJME.getWorldManager();
+            DefaultButtonModel stillButtonModel = ((MovieRecorderCell)cell).getStillButtonModel();
+            if (stillButtonModel.isPressed()) {
+                stillSpatial.setVisible(false);
+                stillSpatialOn.setVisible(true);
+            } else {
+                stillSpatial.setVisible(true);
+                stillSpatialOn.setVisible(false);
+            }
+            wm.addToUpdateList(stillSpatial);
+            wm.addToUpdateList(stillSpatialOn);
+        }
     }
 }

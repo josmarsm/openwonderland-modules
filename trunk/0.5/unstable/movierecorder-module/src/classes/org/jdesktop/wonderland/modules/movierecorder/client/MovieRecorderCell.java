@@ -349,7 +349,7 @@ public class MovieRecorderCell extends Cell {
             //Take some action. Rendering issues are dealth with by other listeners in
             //the renderer and the control panel
             if (event.getStateChange() == ItemEvent.SELECTED) {
-                cellLogger.info("should start recording");
+                //cellLogger.info("should start recording");
                 startRecording();
             } else {
                 cellLogger.info("should stop recording");
@@ -365,7 +365,7 @@ public class MovieRecorderCell extends Cell {
             //Take some action. Rendering issues are dealth with by other listeners in
             //the renderer and the control panel
             if (event.getStateChange() == ItemEvent.SELECTED) {
-                cellLogger.info("should take a still");
+                //cellLogger.info("should take a still");
                 captureImage();
                 
             } else {

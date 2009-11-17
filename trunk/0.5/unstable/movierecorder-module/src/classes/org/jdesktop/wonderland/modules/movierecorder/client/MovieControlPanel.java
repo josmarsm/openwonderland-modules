@@ -362,7 +362,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
 
         public void itemStateChanged(ItemEvent event) {
             //update the control panel
-            logger.info("event: " + event);
+            //logger.info("event: " + event);
             if (event.getStateChange() == ItemEvent.SELECTED) {
                 recorderStatusLabel.setText("Recording");
                 recorderStatusLabel.setForeground(Color.red);
