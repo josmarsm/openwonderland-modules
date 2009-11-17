@@ -366,29 +366,6 @@ public class MovieRecorderCell extends Cell {
             //the renderer and the control panel
             if (event.getStateChange() == ItemEvent.SELECTED) {
                 cellLogger.info("should take a still");
-                
-                AudioInputStream audioInputStream = null;
-                try {
-                    URL url = MovieRecorderCell.class.getResource("resources/Camera_Shutter.au");
-                    audioInputStream = AudioSystem.getAudioInputStream(url);
-                    AudioFormat audioFormat = audioInputStream.getFormat();
-                    DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
-                    Clip clip = (Clip) AudioSystem.getLine(dataLineInfo);
-                    clip.open(audioInputStream);
-                    clip.start();
-                } catch (UnsupportedAudioFileException ex) {
-                    cellLogger.log(Level.SEVERE, null, ex);
-                } catch (LineUnavailableException ex) {
-                    cellLogger.log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    cellLogger.log(Level.SEVERE, null, ex);
-                } finally {
-                    try {
-                        audioInputStream.close();
-                    } catch (IOException ex) {
-                        cellLogger.log(Level.SEVERE, null, ex);
-                    }
-                }
                 captureImage();
                 
             } else {

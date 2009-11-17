@@ -155,18 +155,22 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         recordStatusOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrRecordStatusOn-Geometry-vrRecordStatusOn");
         recordStatusOn.setVisible(false);
 
-        //Get the video buttons and set it to off
+        //Get the video buttons
         videoSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideo_002-vrBtnVideo");
         videoSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideoOn-Geometry-vrBtnVideoOn");
-        videoSpatialOn.setVisible(false);
-        
+        //locate "on" button so that it appears "pressed"
+        videoSpatialOn.setLocalTranslation(0, -0.015f, 0);
+        //"on" button is initially invisible
+        videoSpatialOn.setVisible(false);        
         //create a listener to control the appearance of the video buttons
         ((MovieRecorderCell)cell).getVideoButtonModel().addItemListener(new VideoButtonListener());
 
-        //Get the still buttons and set it to off
+        //Get the still buttons
         stillSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_002-vrBtnStill");
         stillSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStillOn-Geometry-vrBtnStillOn");
         stillSpatialOn.setVisible(false);
+        //create a listener to control the appearance of the video buttons
+        ((MovieRecorderCell)cell).getStillButtonModel().addItemListener(new StillButtonListener());
 
         //Listen for mouse events
         CameraListener listener = new CameraListener();
@@ -328,6 +332,31 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         }
     }
 
+    private void playAudioResource(String audioResource) {
+            AudioInputStream audioInputStream = null;
+                try {
+                    URL url = MovieRecorderCell.class.getResource("resources/" + audioResource);
+                    audioInputStream = AudioSystem.getAudioInputStream(url);
+                    AudioFormat audioFormat = audioInputStream.getFormat();
+                    DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
+                    Clip clip = (Clip) AudioSystem.getLine(dataLineInfo);
+                    clip.open(audioInputStream);
+                    clip.start();
+                } catch (UnsupportedAudioFileException ex) {
+                    rendererLogger.log(Level.SEVERE, null, ex);
+                } catch (LineUnavailableException ex) {
+                    rendererLogger.log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    rendererLogger.log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        audioInputStream.close();
+                    } catch (IOException ex) {
+                        rendererLogger.log(Level.SEVERE, null, ex);
+                    }
+                }
+        }
+
     class CameraListener extends EventClassListener {
 
         CameraListener() {
@@ -397,29 +426,16 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             wm.addToUpdateList(videoSpatialOn);
         }
 
-        private void playAudioResource(String audioResource) {
-            AudioInputStream audioInputStream = null;
-                try {
-                    URL url = MovieRecorderCell.class.getResource("resources/" + audioResource);
-                    audioInputStream = AudioSystem.getAudioInputStream(url);
-                    AudioFormat audioFormat = audioInputStream.getFormat();
-                    DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
-                    Clip clip = (Clip) AudioSystem.getLine(dataLineInfo);
-                    clip.open(audioInputStream);
-                    clip.start();
-                } catch (UnsupportedAudioFileException ex) {
-                    rendererLogger.log(Level.SEVERE, null, ex);
-                } catch (LineUnavailableException ex) {
-                    rendererLogger.log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    rendererLogger.log(Level.SEVERE, null, ex);
-                } finally {
-                    try {
-                        audioInputStream.close();
-                    } catch (IOException ex) {
-                        rendererLogger.log(Level.SEVERE, null, ex);
-                    }
-                }
+        
+    }
+
+    class StillButtonListener implements ItemListener {
+
+        public void itemStateChanged(ItemEvent event) {
+            rendererLogger.info("event: " + event);
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+                playAudioResource("resources/Camera_Shutter.au");
+            }
         }
 
     }
