@@ -86,10 +86,9 @@ public class WhiteboardUtils {
     public static Document xmlStringToDocument(String xmlString) {
         Document result = null;
 
-        byte[] bArray = xmlString.getBytes();
-        InputStream inStream = new ByteArrayInputStream(bArray);
-
         try {
+            byte[] bArray = xmlString.getBytes("UTF-8");
+            InputStream inStream = new ByteArrayInputStream(bArray);
             result = factory.createDocument(null, inStream);
         } catch (IOException ioe) {
             ioe.printStackTrace();
