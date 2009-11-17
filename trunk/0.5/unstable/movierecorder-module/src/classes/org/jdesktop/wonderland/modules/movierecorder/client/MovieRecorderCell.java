@@ -18,24 +18,14 @@
 
 package org.jdesktop.wonderland.modules.movierecorder.client;
 
-import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JComponent;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -120,6 +110,7 @@ public class MovieRecorderCell extends Cell {
             if (ui == null) {
                 initUI();
                 ui.setVisible(true);
+                renderer.setRemoteRecording(remoteRecording);
             }
             if (menuFactory == null) {
                 final ContextMenuActionListener l = new ContextMenuActionListener() {
@@ -165,7 +156,7 @@ public class MovieRecorderCell extends Cell {
     @Override
     public void setClientState(CellClientState cellClientState) {
         super.setClientState(cellClientState);
-        remoteRecording = ((MovieRecorderCellClientState) cellClientState).isRecording();       
+        remoteRecording = ((MovieRecorderCellClientState) cellClientState).isRecording();
     }
 
     private void initUI () {
@@ -272,8 +263,9 @@ public class MovieRecorderCell extends Cell {
     }
 
     private void setRemoteRecording(boolean b) {
-        logger.info("setRecording: " + b);
+        logger.info("setRemoteRecording: " + b);
         ui.setRemoteRecording(b);
+        renderer.setRemoteRecording(b);
         remoteRecording = b;
     }
 

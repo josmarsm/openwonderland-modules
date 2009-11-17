@@ -131,6 +131,11 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         return frameCounter;
     }
 
+    void setRemoteRecording(boolean b) {
+        videoSpatial.setVisible(!b);
+        videoSpatialOn.setVisible(!b);
+    }
+
     private void attachRecordingDevice(Node device, Entity entity) {
         try {
             addCameraModel(device, entity);
