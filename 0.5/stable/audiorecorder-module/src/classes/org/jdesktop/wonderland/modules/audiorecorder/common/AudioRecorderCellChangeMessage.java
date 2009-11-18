@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.audiorecorder.common;
@@ -49,7 +49,7 @@ public class AudioRecorderCellChangeMessage extends CellMessage {
     private boolean isPlaying;
     private String userName;
     private double volume;
-    private String tapeName;
+    private Tape aTape;
 
     public AudioRecorderAction getAction() {
         return action;
@@ -72,34 +72,26 @@ public class AudioRecorderCellChangeMessage extends CellMessage {
     }
 
     public String getTapeName() {
-        return tapeName;
+        return aTape.getTapeName();
     }
 
-    /**
-     * Static method used to create an instance of AudioRecorderCellMessage that has an action type
-     * <code>NEW_TAPE</code>.
-     * @param cellID The id of the cell for which this message is created
-     * @param tapeName the name of the new tape
-     * @return a message with appropriate state
-     */
-    public static AudioRecorderCellChangeMessage newTape(CellID cellID, String tapeName) {
-        AudioRecorderCellChangeMessage msg = new AudioRecorderCellChangeMessage(cellID);
-        msg.action = AudioRecorderAction.NEW_TAPE;
-        msg.tapeName = tapeName;
-        return msg;
+    public Tape getTape() {
+        return aTape;
     }
+
+    
 
     /**
      * Static method used to create an instance of AudioRecorderCellMessage that has an action type
      * <code>TAPE_SELECTED</code>.
      * @param cellID The id of the cell for which this message is created
-     * @param tapeName the name of the selected tape
+     * @param aTape the selected tape
      * @return a message with appropriate state
      */
-    public static AudioRecorderCellChangeMessage tapeSelected(CellID cellID, String tapeName) {
+    public static AudioRecorderCellChangeMessage tapeSelected(CellID cellID, Tape aTape) {
         AudioRecorderCellChangeMessage msg = new AudioRecorderCellChangeMessage(cellID);
         msg.action = AudioRecorderAction.TAPE_SELECTED;
-        msg.tapeName = tapeName;
+        msg.aTape = aTape;
         return msg;
     }
 
@@ -107,12 +99,14 @@ public class AudioRecorderCellChangeMessage extends CellMessage {
      * Static method used to create an instance of AudioRecorderCellChangeMessage that has an action type
      * <code>RECORD</code>.
      * @param cellID The id of the cell for which this message is created
+     * @param aTape the tape onto which we are recording
      * @param recording boolean to indicate the state of the recorder
      * @param userName the name of the user that initiated this change
      * @return a message with appropriate state
      */
-    public static AudioRecorderCellChangeMessage recordingMessage(CellID cellID, boolean recording, String userName) {
+    public static AudioRecorderCellChangeMessage recording(CellID cellID, Tape aTape, boolean recording, String userName) {
         AudioRecorderCellChangeMessage msg = new AudioRecorderCellChangeMessage(cellID);
+        msg.aTape = aTape;
         msg.userName = userName;
         msg.action = AudioRecorderAction.RECORD;
         msg.isRecording = recording;
@@ -121,31 +115,33 @@ public class AudioRecorderCellChangeMessage extends CellMessage {
 
     /**
      * Static method used to create an instance of AudioRecorderCellMessage that has an action type
-     * <code>TAPE_USED</code>.
+     * <code>PLAY</code>.
      * @param cellID The id of the cell for which this message is created
-     * @param tapeName the name of the tape that is no longer fresh
+     * @param aTape the tape to play
+     * @param playing boolean to indicate the state of the recorder
+     * @param userName the name of the user that initiated this change
      * @return a message with appropriate state
      */
-    public static AudioRecorderCellChangeMessage setTapeUsed(CellID cellID, String tapeName) {
+    public static AudioRecorderCellChangeMessage playing(CellID cellID, Tape aTape, boolean playing, String userName) {
         AudioRecorderCellChangeMessage msg = new AudioRecorderCellChangeMessage(cellID);
-        msg.action = AudioRecorderAction.TAPE_USED;
-        msg.tapeName = tapeName;
+        msg.aTape = aTape;
+        msg.userName = userName;
+        msg.action = AudioRecorderAction.PLAY;
+        msg.isPlaying = playing;
         return msg;
     }
 
     /**
      * Static method used to create an instance of AudioRecorderCellMessage that has an action type
-     * <code>PLAY</code>.
+     * <code>TAPE_USED</code>.
      * @param cellID The id of the cell for which this message is created
-     * @param playing boolean to indicate the state of the recorder
-     * @param userName the name of the user that initiated this change
+     * @param aTape the tape that is no longer fresh
      * @return a message with appropriate state
      */
-    public static AudioRecorderCellChangeMessage playingMessage(CellID cellID, boolean playing, String userName) {
+    public static AudioRecorderCellChangeMessage setTapeUsed(CellID cellID, Tape aTape) {
         AudioRecorderCellChangeMessage msg = new AudioRecorderCellChangeMessage(cellID);
-        msg.userName = userName;
-        msg.action = AudioRecorderAction.PLAY;
-        msg.isPlaying = playing;
+        msg.action = AudioRecorderAction.TAPE_USED;
+        msg.aTape = aTape;
         return msg;
     }
 
@@ -155,7 +151,7 @@ public class AudioRecorderCellChangeMessage extends CellMessage {
      * @param cellID The id of the cell for which this message is created
      * @return a message with appropriate state
      */
-    public static AudioRecorderCellChangeMessage playbackDoneMessage(CellID cellID) {
+    public static AudioRecorderCellChangeMessage playbackDone(CellID cellID) {
         AudioRecorderCellChangeMessage msg = new AudioRecorderCellChangeMessage(cellID);
         msg.action = AudioRecorderAction.PLAYBACK_DONE;
         return msg;
@@ -178,14 +174,8 @@ public class AudioRecorderCellChangeMessage extends CellMessage {
             case PLAY:
                 builder.append("isPlaying: " + isPlaying);
                 break;
-            case TAPE_USED:
-                builder.append(tapeName);
-                break;
             case TAPE_SELECTED:
-                builder.append(tapeName);
-                break;
-            case NEW_TAPE:
-                builder.append(tapeName);
+                builder.append(aTape.getTapeName());
                 break;
             default:
                 throw new RuntimeException("Invalid action");

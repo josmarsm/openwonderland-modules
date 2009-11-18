@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,14 +11,15 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
 import java.awt.Component;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -33,6 +34,7 @@ import org.jdesktop.wonderland.modules.audiorecorder.common.Tape;
  * @author  Bernard Horan
  */
 public class ReelForm extends javax.swing.JFrame {
+    private static final Logger reelFormLogger = Logger.getLogger(ReelForm.class.getName());
     
     private AudioRecorderCell audioRecorderCell;
     private boolean selectionChanged = false;
@@ -55,13 +57,17 @@ public class ReelForm extends javax.swing.JFrame {
         tapeSelectionModel.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
+                reelFormLogger.info("value changed");
                 selectionChanged = true;
             }
         });
     }
 
-    void selectTape(Tape aTape) {
-        tapesList.setSelectedValue(aTape, true);
+    void selectTape(final Tape aTape) {
+        reelFormLogger.info("select tape: " + aTape);
+//        tapesList.clearSelection();
+//        tapesList.setSelectedValue(aTape, true);
+//        reelFormLogger.info("selected tape: " + tapesList.getSelectedValue());
         selectionChanged = false;
     }
     
@@ -77,11 +83,16 @@ public class ReelForm extends javax.swing.JFrame {
         tapesList = new javax.swing.JList();
         doneButton = new javax.swing.JButton();
         addButton = new javax.swing.JButton();
-        deleteButton = new javax.swing.JButton();
 
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Tapes");
         setAlwaysOnTop(true);
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+        });
 
         tapesList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -106,15 +117,6 @@ public class ReelForm extends javax.swing.JFrame {
             }
         });
 
-        deleteButton.setText("Delete");
-        deleteButton.setToolTipText("Delete the selected Tape (TODO)");
-        deleteButton.setEnabled(false);
-        deleteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteButtonActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -125,11 +127,9 @@ public class ReelForm extends javax.swing.JFrame {
                     .add(layout.createSequentialGroup()
                         .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 174, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                            .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(deleteButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .add(addButton))
                     .add(doneButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -137,9 +137,7 @@ public class ReelForm extends javax.swing.JFrame {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(29, 29, 29)
-                        .add(addButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(deleteButton))
+                        .add(addButton))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
@@ -163,21 +161,23 @@ public class ReelForm extends javax.swing.JFrame {
                                     JOptionPane.ERROR_MESSAGE);
         } else {
             Tape newTape = audioRecorderCell.addTape(tapeName);
+            reelFormLogger.info("added a tape: " + newTape);
             tapesList.setSelectedValue(newTape, true);
         }
 }//GEN-LAST:event_addButtonActionPerformed
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
         if (selectionChanged) {
-            audioRecorderCell.selectedTapeChanged();
+            reelFormLogger.info("selection has changed");
+            audioRecorderCell.listSelectionChanged();
             selectionChanged = false;
         }
         setVisible(false);
 }//GEN-LAST:event_doneButtonActionPerformed
 
-    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_deleteButtonActionPerformed
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        doneButtonActionPerformed(null);
+    }//GEN-LAST:event_formWindowClosed
    
     /**
      * @param args the command line arguments
@@ -192,7 +192,6 @@ public class ReelForm extends javax.swing.JFrame {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JButton deleteButton;
     private javax.swing.JButton doneButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JList tapesList;
