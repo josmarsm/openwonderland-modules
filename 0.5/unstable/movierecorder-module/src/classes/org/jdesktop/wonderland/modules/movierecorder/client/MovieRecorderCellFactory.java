@@ -49,9 +49,9 @@ public class MovieRecorderCellFactory implements CellFactorySPI {
         // Set a bounding hint based upon the width x height x depth of the
         // movie recorder
         BoundingBox box = new BoundingBox(Vector3f.ZERO,
-                MovieRecorderCellRenderer.WIDTH,
-                MovieRecorderCellRenderer.HEIGHT,
-                MovieRecorderCellRenderer.DEPTH);
+                1f,
+                0.7f,
+                0.2f);
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
 

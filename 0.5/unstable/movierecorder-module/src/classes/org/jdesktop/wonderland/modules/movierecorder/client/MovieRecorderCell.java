@@ -64,6 +64,8 @@ public class MovieRecorderCell extends Cell {
      *Directory to hold images when recording, deleted when finished
      **/
     private static final File IMAGE_DIRECTORY = ClientContext.getUserDirectory("MovieRecording");
+    private static final SimpleDateFormat VIDEO_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd_HH.mm.ss");
+
 
     private ContextMenuFactorySPI menuFactory = null;
 
@@ -86,6 +88,7 @@ public class MovieRecorderCell extends Cell {
     /** the message handler, or null if no message handler is registered */
     private MovieRecorderCellMessageReceiver receiver = null;
     private DefaultButtonModel videoButtonModel, stillButtonModel;
+    private String videoRecordingName;
     
     
 
@@ -199,14 +202,14 @@ public class MovieRecorderCell extends Cell {
             imageDirectoryFile.mkdirs();
         }
 
-
-        
+        Calendar calendar = Calendar.getInstance();
+        videoRecordingName = "Wonderland_" + VIDEO_DATE_FORMAT.format(calendar.getTime());
 
         ((MovieRecorderCellRenderer)renderer).resetImageCounter();
         ((MovieRecorderCellRenderer)renderer).resetFrameCounter();
         resetStartTime();
         localRecording = true;
-        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), localRecording);
+        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), videoRecordingName, localRecording);
         getChannel().send(msg);
     }
 
@@ -244,19 +247,15 @@ public class MovieRecorderCell extends Cell {
             //logger.warning("no reason to stop, not recording");
             return;
         }
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
-        simpleDateFormat.applyPattern("yyyyMMdd_HH.mm");
-        String movieFilename = "Wonderland_" + simpleDateFormat.format(calendar.getTime()) + ".mov";
         try {
-            createMovie(movieFilename);
+            createMovie(videoRecordingName);
         } catch (EncodeException e) {
             logger.log(Level.SEVERE, "Failed to create movie, caused by", e.getCause());
         }
         deleteImageDirectory();
         ui.enableLocalButtons();
         localRecording = false;
-        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), localRecording);
+        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), videoRecordingName, localRecording);
         getChannel().send(msg);
         calculateActualFrameRate();
         logger.info("Stop recording");
@@ -297,9 +296,9 @@ public class MovieRecorderCell extends Cell {
         }
     }
 
-    private void createMovie(String movieFilename) throws EncodeException {
+    private void createMovie(String movieName) throws EncodeException {
         MovieCreator mCreator = new MovieCreator(ui.getControlPanel());
-        mCreator.createMovie(movieFilename);
+        mCreator.createMovie(movieName);
     }
 
     private void deleteImageDirectory() {

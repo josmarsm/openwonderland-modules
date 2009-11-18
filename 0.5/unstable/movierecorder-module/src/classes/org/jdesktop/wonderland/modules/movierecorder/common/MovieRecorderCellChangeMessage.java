@@ -30,6 +30,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 public class MovieRecorderCellChangeMessage extends CellMessage {
 
+
     private MovieRecorderCellChangeMessage(CellID cellID) {
         super(cellID);
     }
@@ -40,6 +41,7 @@ public class MovieRecorderCellChangeMessage extends CellMessage {
 
     private MovieRecorderAction action;
     private boolean isRecording;
+    private String recordingName;
 
     public MovieRecorderAction getAction() {
         return action;
@@ -49,18 +51,23 @@ public class MovieRecorderCellChangeMessage extends CellMessage {
         return isRecording;
     }
 
+    public String getRecordingName() {
+        return recordingName;
+    }
+
     /**
      * Static method used to create an instance of MovieRecorderCellChangeMessage that has an action type
      * <code>RECORD</code>.
      * @param cellID The id of the cell for which this message is created
      * @param recording boolean to indicate the state of the recorder
-     * @param userName the name of the user that initiated this change
+     * @param recordingName the name of the tape to record
      * @return a message with appropriate state
      */
-    public static MovieRecorderCellChangeMessage recordingMessage(CellID cellID, boolean recording) {
+    public static MovieRecorderCellChangeMessage recordingMessage(CellID cellID, String recordingName, boolean recording) {
         MovieRecorderCellChangeMessage msg = new MovieRecorderCellChangeMessage(cellID);
         msg.action = MovieRecorderAction.RECORD;
         msg.isRecording = recording;
+        msg.recordingName = recordingName;
         return msg;
     }
 
@@ -71,6 +78,7 @@ public class MovieRecorderCellChangeMessage extends CellMessage {
         switch (action) {
             case RECORD:
                 builder.append("isRecording: " + isRecording);
+                builder.append(" recordingName: " + recordingName);
                 break;
             default:
                 throw new RuntimeException("Invalid action");
