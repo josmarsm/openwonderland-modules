@@ -38,8 +38,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.mpk20.voicelib.app.Recorder;
 import com.sun.mpk20.voicelib.app.RecorderSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.movierecorder.common.MovieRecorderCellServerState;
@@ -61,18 +59,18 @@ public class MovieRecorderCellMO extends CellMO {
     private String callId;
     private Recorder recorder;
     private MovieRecorderCellServerState serverState;
+    private String recordingDirectory;
 
     public MovieRecorderCellMO() {
         super();
         addComponent(new MovableComponentMO(this));
         serverState = new MovieRecorderCellServerState();
         instanceNumber = ++INSTANCE_COUNT;
-        serverState.setRecordingDirectory("/tmp/MovieRecordings/Recorder" + instanceNumber);
+        recordingDirectory = "/tmp/MovieRecordings/Recorder" + instanceNumber;
         serverState.setRecording(false);
         callId = getCellID().toString();
-        int ix;
-
-        if ((ix = callId.indexOf("@")) >= 0) {
+        int ix = callId.indexOf("@");
+        if (ix >= 0) {
             callId = callId.substring(ix + 1);
         }
     }
@@ -136,7 +134,7 @@ public class MovieRecorderCellMO extends CellMO {
         return "org.jdesktop.wonderland.modules.movierecorder.client.MovieRecorderCell";
     }
 
-    private void setRecording(boolean r) {
+    private void setRecording(boolean r, String recordingName) {
         if (serverState.isRecording()) {
             //Already recording
             if (!r) {
@@ -147,7 +145,7 @@ public class MovieRecorderCellMO extends CellMO {
             //Not recording
             if (r) {
                 //Start recording
-                startRecording();
+                startRecording(recordingName);
             }
         }
         serverState.setRecording(r);
@@ -173,7 +171,7 @@ public class MovieRecorderCellMO extends CellMO {
 
         setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
 
-        setup.recordDirectory = serverState.getRecordingDirectory();
+        setup.recordDirectory = recordingDirectory;
         logger.info("record directory: " + setup.recordDirectory);
         logger.info("setup: " + setup);
 
@@ -185,11 +183,10 @@ public class MovieRecorderCellMO extends CellMO {
         }
     }
 
-    private void startRecording() {
-        String filename = getRecordingFilename();
-        movieRecorderLogger.info("Start Recording: " + filename);
+    private void startRecording(String recordingName) {
+        movieRecorderLogger.info("Start Recording: " + recordingName);
         try {
-            recorder.startRecording(filename);
+            recorder.startRecording(recordingName + ".au");
         } catch (IOException e) {
             System.out.println(e);
         }
@@ -204,16 +201,8 @@ public class MovieRecorderCellMO extends CellMO {
         }
     }
 
-    private String getRecordingFilename() {
-        //MUST end in '.au'
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
-        simpleDateFormat.applyPattern("yyyyMMdd_HH.mm");
-        return "Wonderland_" + simpleDateFormat.format(calendar.getTime()) + ".au";
-    }
-
     private void processRecordMessage(WonderlandClientID clientID, MovieRecorderCellChangeMessage arcm) {
-        setRecording(arcm.isRecording());
+        setRecording(arcm.isRecording(), arcm.getRecordingName());
 
         // send a message to all clients
         getChannel().sendAll(clientID, arcm);
