@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,14 +11,13 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.math.BigInteger;
@@ -29,8 +28,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-import javax.swing.DefaultListSelectionModel;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
@@ -50,6 +50,7 @@ import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -58,6 +59,13 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellChangeMessage;
 import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellClientState;
 import org.jdesktop.wonderland.modules.audiorecorder.common.Tape;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 
 /**
  *
@@ -65,6 +73,8 @@ import org.jdesktop.wonderland.modules.audiorecorder.common.Tape;
  * @author Joe Provino
  */
 public class AudioRecorderCell extends Cell {
+    private static final Logger audioRecorderLogger = Logger.getLogger(AudioRecorderCell.class.getName());
+    private static final String AUDIO_RECORDINGS_DIRECTORY = "AudioRecordings";
 
     @UsesCellComponent private ContextMenuComponent contextComp = null;
     private ContextMenuFactorySPI menuFactory = null;
@@ -73,8 +83,9 @@ public class AudioRecorderCell extends Cell {
     private String userName;
     private AudioRecorderCellRenderer renderer;
     private DefaultListModel tapeListModel;
-    private DefaultListSelectionModel tapeSelectionModel;
+    private TapeListSelectionModel tapeSelectionModel;
     private ReelForm reelForm;
+    private Tape selectedTape = null;
 
     /** the message handler, or null if no message handler is registered */
     private AudioRecorderCellMessageReceiver receiver = null;
@@ -83,7 +94,10 @@ public class AudioRecorderCell extends Cell {
         super(cellID, cellCache);
         isRecording = false;
         isPlaying = false;
+    }
 
+    private Tape getUntitledTape() {
+        return new Tape("Untitled Tape");
     }
 
     @Override
@@ -91,16 +105,22 @@ public class AudioRecorderCell extends Cell {
         super.setStatus(status, increasing);
         if (increasing && status == CellStatus.RENDERING) {
             if (menuFactory == null) {
-                    final MenuItemListener l = new MenuItemListener();
-                    menuFactory = new ContextMenuFactorySPI() {
-                        public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                            return new ContextMenuItem[] {
-                                new SimpleContextMenuItem("Open Tape...", l)
-                            };
-                        }
-                    };
-                    contextComp.addContextMenuFactory(menuFactory);
-                }
+                final ContextMenuActionListener l = new ContextMenuActionListener() {
+
+                    public void actionPerformed(ContextMenuItemEvent event) {
+                        setReelFormVisible(true);
+                    }
+                };
+                menuFactory = new ContextMenuFactorySPI() {
+
+                    public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                        return new ContextMenuItem[]{
+                                    new SimpleContextMenuItem("Open Tape...", l)
+                                };
+                    }
+                };
+                contextComp.addContextMenuFactory(menuFactory);
+            }
         }
         if (increasing && status.equals(CellStatus.ACTIVE)) {
             //About to become visible, so add the message receiver
@@ -116,20 +136,15 @@ public class AudioRecorderCell extends Cell {
             }
             receiver = null;
             if (menuFactory != null) {
-                    contextComp.removeContextMenuFactory(menuFactory);
-                    menuFactory = null;
+                contextComp.removeContextMenuFactory(menuFactory);
+                menuFactory = null;
             }
         }
-        //No change in my status, so...
     }
 
     @Override
     public void setClientState(CellClientState cellClientState) {
         super.setClientState(cellClientState);
-
-        Set<Tape> tapes = ((AudioRecorderCellClientState) cellClientState).getTapes();
-        Tape selectedTape = ((AudioRecorderCellClientState) cellClientState).getSelectedTape();
-        createTapeModels(tapes, selectedTape);
 
         isPlaying = ((AudioRecorderCellClientState) cellClientState).isPlaying();
         isRecording = ((AudioRecorderCellClientState) cellClientState).isRecording();
@@ -144,6 +159,8 @@ public class AudioRecorderCell extends Cell {
                 logger.warning("userName should be null");
             }
         }
+        String selectedTapeName = ((AudioRecorderCellClientState) cellClientState).getSelectedTapeName();
+        initializeTapeModels(selectedTapeName);
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
@@ -158,11 +175,9 @@ public class AudioRecorderCell extends Cell {
     }
 
     Tape addTape(String tapeName) {
-        logger.info("add " + tapeName);
+        audioRecorderLogger.info("add " + tapeName);
         Tape newTape = new Tape(tapeName);
         tapeListModel.addElement(newTape);
-        AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.newTape(getCellID(), tapeName);
-        getChannel().send(msg);
         return newTape;
     }
 
@@ -170,7 +185,121 @@ public class AudioRecorderCell extends Cell {
         return tapeListModel;
     }
 
+    private void initializeTapeModels(String selectedTapeName) {
+        audioRecorderLogger.info("selectedTape: " + selectedTapeName);
+        List<Tape> sortedTapes = new ArrayList<Tape>(getTapes());
+        Collections.sort(sortedTapes);
+        tapeListModel = new DefaultListModel();
+        for(Tape t: sortedTapes) {
+            tapeListModel.addElement(t);
+        }
+        initializeSelectedTape(selectedTapeName);
+        tapeSelectionModel = new TapeListSelectionModel();
+        int selectionIndex = sortedTapes.indexOf(selectedTape);
+        tapeSelectionModel.setSelectedTapeIndex(selectionIndex);
+    }
+
+    private void initializeSelectedTape(String selectedTapeName) {
+        if (selectedTapeName != null) {
+            audioRecorderLogger.info("selectedTapeName: " + selectedTapeName);
+            //There is a selected tape, so select the tape with that tape name
+            for (int i = 0; i < tapeListModel.getSize(); i++) {
+                Tape aTape = (Tape) tapeListModel.get(i);
+                if (aTape.getTapeName().equals(selectedTapeName)) {
+                    //Found the tape
+                    audioRecorderLogger.info("found the tape: " + aTape);
+                    selectedTape = aTape;
+                    break;
+                }
+            }
+        }
+        if (selectedTape != null) {
+            return;
+        }
+        audioRecorderLogger.info("no selected tape");
+        //There's no selectedTape on the server, or we can't find the selectedTape
+        if (tapeListModel.isEmpty()) {
+            //there's no tapes, so set the selected tape to be the untitled tape
+            selectedTape = getUntitledTape();
+        } else {
+            //Set the selected tape to be the first tape
+            selectedTape = (Tape) tapeListModel.firstElement();
+        }
+        audioRecorderLogger.info("new selected tape: " + selectedTape);
+        AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.tapeSelected(getCellID(), selectedTape);
+        getChannel().send(msg);
+    }
+
+
+    private void updateTapeModels() {
+        audioRecorderLogger.info("updating tape models");
+        Set<Tape> newTapes = getTapes();
+        Enumeration<Tape> e = (Enumeration<Tape>) tapeListModel.elements();
+        Set<Tape> existingTapes = new HashSet<Tape>();
+        while (e.hasMoreElements()) {
+            existingTapes.add(e.nextElement());
+        }
+        if (existingTapes.equals(newTapes)) {
+            audioRecorderLogger.info("no change in tapes");
+            return;
+        }
+        List<Tape> sortedTapes = new ArrayList<Tape>(newTapes);
+        Collections.sort(sortedTapes);
+        if (!sortedTapes.contains(selectedTape)) {
+            if (!sortedTapes.isEmpty()) {
+                selectedTape = sortedTapes.get(0);
+            } else {
+                selectedTape = getUntitledTape();
+                sortedTapes.add(selectedTape);
+            }
+            audioRecorderLogger.info("new selected tape: " + selectedTape);
+            AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.tapeSelected(getCellID(), selectedTape);
+            getChannel().send(msg);
+        }
+        tapeListModel.clear();
+        for(Tape t: sortedTapes) {
+            tapeListModel.addElement(t);
+        }
+        selectTape(selectedTape);
+    }
+
+    private Set<Tape> getTapes() {
+        Set<Tape> tapes = new HashSet<Tape>();
+        try {
+            ContentCollection recordingRoot = getSystemRoot(getCellCache().getSession().getSessionManager());
+            if (recordingRoot == null) {
+                logger.severe("Failed to get recording root");
+                return tapes;
+            }
+            
+            ContentNode node = recordingRoot.getChild(AUDIO_RECORDINGS_DIRECTORY);
+            if (node == null) {
+                logger.warning("Creating audio recordings directory in webdav");
+                node = recordingRoot.createChild(AUDIO_RECORDINGS_DIRECTORY, Type.COLLECTION);
+            }
+            ContentCollection dirNode = (ContentCollection) node;
+            List<ContentNode> children = dirNode.getChildren();
+            for (Iterator<ContentNode> it = children.iterator(); it.hasNext();) {
+                ContentNode contentNode = it.next();
+                String nodeName = contentNode.getName();
+                if (nodeName.endsWith(".au")) {
+                    int index = nodeName.indexOf(".au");
+                    String tapeName = nodeName.substring(0, index);
+                    Tape aTape = new Tape(tapeName);
+                    ContentResource r = (ContentResource) contentNode;
+                    aTape.setURL(r.getURL());
+                    aTape.setUsed();
+                    tapes.add(aTape);
+                }
+            }
+        } catch (ContentRepositoryException ex) {
+            logger.log(Level.SEVERE, "Failed to read content repository", ex);
+        }
+        return tapes;
+    }
+
     Set<String> getTapeNames() {
+       audioRecorderLogger.info("getting tape names");
        Enumeration tapes = tapeListModel.elements();
        Set<String> tapeNames = new HashSet<String>();
         while (tapes.hasMoreElements()) {
@@ -184,44 +313,34 @@ public class AudioRecorderCell extends Cell {
         return tapeSelectionModel;
     }
 
-    void selectedTapeChanged() {
-        logger.info("selectedTape changed");
+    void listSelectionChanged() {
+        audioRecorderLogger.info("listSelection changed");
         int index = tapeSelectionModel.getMaxSelectionIndex();
         if (index >= 0) {
-            Tape selectedTape = (Tape) tapeListModel.elementAt(index);
-            logger.info("selected tape: " + selectedTape);
-            AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.tapeSelected(getCellID(), selectedTape.getTapeName());
-            getChannel().send(msg);
-        }
-    }
-
-    private void createTapeModels(Set<Tape> tapes, Tape selectedTape) {
-        List sortedTapes = new ArrayList(tapes);
-        Collections.sort(sortedTapes);
-        tapeListModel = new DefaultListModel();
-        for (Iterator it = sortedTapes.iterator(); it.hasNext();) {
-            tapeListModel.addElement(it.next());
-        }
-
-        tapeSelectionModel = new DefaultListSelectionModel();
-        tapeSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        int selectionIndex = sortedTapes.indexOf(selectedTape);
-        tapeSelectionModel.setSelectionInterval(selectionIndex, selectionIndex);
-    }
-
-    private void selectTape(String tapeName) {
-        logger.info("select tape: " + tapeName);
-        Enumeration tapes = tapeListModel.elements();
-        while (tapes.hasMoreElements()) {
-            Tape aTape = (Tape) tapes.nextElement();
-            if (aTape.getTapeName().equals(tapeName)) {
-                reelForm.selectTape(aTape);
+            Tape aTape = (Tape) tapeListModel.elementAt(index);
+            if (!selectedTape.equals(aTape)) {
+                selectedTape = aTape;
+                audioRecorderLogger.info("selected tape: " + selectedTape);
+                AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.tapeSelected(getCellID(), selectedTape);
+                getChannel().send(msg);
             }
         }
     }
 
+    private void selectTape(Tape aTape) {
+        //Received from server
+        audioRecorderLogger.info("select tape: " + aTape);
+        selectedTape = aTape;       
+        
+        int selectionIndex = tapeListModel.indexOf(aTape);
+        tapeSelectionModel.clearSelection();
+        tapeSelectionModel.setSelectedTapeIndex(selectionIndex);
+        reelForm.selectTape(selectedTape);
+        audioRecorderLogger.info("selection: " + tapeListModel.get(tapeSelectionModel.getMaxSelectionIndex()));
+    }
+
     private void setTapeUsed(String tapeName) {
-        logger.info("setTapeUsed: " + tapeName);
+        audioRecorderLogger.info("setTapeUsed: " + tapeName);
         Enumeration tapes = tapeListModel.elements();
         while (tapes.hasMoreElements()) {
             Tape aTape = (Tape) tapes.nextElement();
@@ -232,7 +351,7 @@ public class AudioRecorderCell extends Cell {
     }
 
     void startRecording() {
-        logger.info("start recording");
+        audioRecorderLogger.info("start recording");
         if (reelForm.isVisible()) {
             logger.warning("Can't start recording when the user is selecting a tape");
             Toolkit.getDefaultToolkit().beep();
@@ -240,7 +359,6 @@ public class AudioRecorderCell extends Cell {
             return;
         }
         if (!isPlaying) {
-            Tape selectedTape = getSelectedTape();
             if (selectedTape == null) {
                 logger.warning("Can't record when there's no selected tape");
                 SwingUtilities.invokeLater(new Runnable() {
@@ -261,7 +379,7 @@ public class AudioRecorderCell extends Cell {
             }
             userName = getCurrentUserName();
             setRecording(true);
-            AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.recordingMessage(getCellID(), isRecording, userName);
+            AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.recording(getCellID(), selectedTape, isRecording, userName);
             getChannel().send(msg);
         } else {
             logger.warning("Can't start recording when already playing");
@@ -269,14 +387,14 @@ public class AudioRecorderCell extends Cell {
     }
 
     private void setUsed(Tape aTape) {
-        logger.info("setUsed: " + aTape);
+        audioRecorderLogger.info("setUsed: " + aTape);
         aTape.setUsed();
-        AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.setTapeUsed(getCellID(), aTape.getTapeName());
+        AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.setTapeUsed(getCellID(), aTape);
         getChannel().send(msg);
     }
 
     void startPlaying() {
-        logger.info("start playing");
+        audioRecorderLogger.info("start playing");
         if (reelForm.isVisible()) {
             logger.warning("Can't start playing when the user is selecting a tape");
             Toolkit.getDefaultToolkit().beep();
@@ -284,7 +402,6 @@ public class AudioRecorderCell extends Cell {
             return;
         }
         if (!isRecording) {
-            Tape selectedTape = getSelectedTape();
             if (selectedTape == null) {
                 logger.warning("Can't playback when there's no selected tape");
                 SwingUtilities.invokeLater(new Runnable() {
@@ -312,7 +429,7 @@ public class AudioRecorderCell extends Cell {
             }
             userName = getCurrentUserName();
             setPlaying(true);
-            AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.playingMessage(getCellID(), isPlaying, userName);
+            AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.playing(getCellID(), selectedTape, isPlaying, userName);
             getChannel().send(msg);
         } else {
             logger.warning("Can't start playing when already recording");
@@ -334,10 +451,10 @@ public class AudioRecorderCell extends Cell {
         if (userName != null && userName.equals(getCurrentUserName())) {
             AudioRecorderCellChangeMessage msg = null;
             if (isRecording) {
-                msg = AudioRecorderCellChangeMessage.recordingMessage(getCellID(), false, userName);
+                msg = AudioRecorderCellChangeMessage.recording(getCellID(), selectedTape, false, userName);
             }
             if (isPlaying) {
-                msg = AudioRecorderCellChangeMessage.playingMessage(getCellID(), false, userName);
+                msg = AudioRecorderCellChangeMessage.playing(getCellID(), selectedTape, false, userName);
             }
             if (msg != null) {
                 getChannel().send(msg);
@@ -358,13 +475,13 @@ public class AudioRecorderCell extends Cell {
     }
 
     private void setRecording(boolean b) {
-        logger.info("setRecording: " + b);
+        audioRecorderLogger.info("setRecording: " + b);
         renderer.setRecording(b);
         isRecording = b;
     }
 
     private void setPlaying(boolean b) {
-        logger.info("setPlaying: " + b);
+        audioRecorderLogger.info("setPlaying: " + b);
         renderer.setPlaying(b);
         isPlaying = b;
     }
@@ -377,15 +494,6 @@ public class AudioRecorderCell extends Cell {
         return isRecording;
     }
 
-    private Tape getSelectedTape() {
-       int selectionIndex = tapeSelectionModel.getMaxSelectionIndex();
-       if (selectionIndex == -1) {
-           return null;
-       } else {
-           return (Tape) tapeListModel.elementAt(selectionIndex);
-       }
-   }
-
     private String getCurrentUserName() {
         return getCellCache().getSession().getUserID().getUsername();
     }
@@ -395,7 +503,7 @@ public class AudioRecorderCell extends Cell {
     }
 
     void setReelFormVisible(final boolean aBoolean) {
-        logger.info("set visible: " + aBoolean);
+        audioRecorderLogger.info("set visible: " + aBoolean);
         if (isRecording || isPlaying) {
             logger.warning("Can't select a tape when the user is already playing/recording");
             //See Deron's forum post
@@ -409,13 +517,16 @@ public class AudioRecorderCell extends Cell {
             });
             return;
         }
-        reelForm.pack();
-        Rectangle parentBounds = getParentFrame().getBounds();
-        Rectangle formBounds = reelForm.getBounds();
-        reelForm.setLocation(parentBounds.width/2 - formBounds.width/2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
+        updateTapeModels();
+        
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
+                reelForm = new ReelForm(AudioRecorderCell.this);
+                reelForm.pack();
+                Rectangle parentBounds = getParentFrame().getBounds();
+                Rectangle formBounds = reelForm.getBounds();
+                reelForm.setLocation(parentBounds.width/2 - formBounds.width/2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
                 reelForm.setVisible(aBoolean);
             }
         });
@@ -431,6 +542,25 @@ public class AudioRecorderCell extends Cell {
         }
         else {
             return super.createCellRenderer(rendererType);
+        }
+    }
+
+    /**
+     * Returns the content repository root for the system root, or null upon
+     * error.
+     */
+    private ContentCollection getSystemRoot(ServerSessionManager loginInfo) {
+        ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
+        ContentRepository repo = registry.getRepository(loginInfo);
+        if (repo == null) {
+            logger.severe("Repo is null");
+            return null;
+        }
+        try {
+            return repo.getSystemRoot();
+        } catch (ContentRepositoryException excp) {
+            logger.log(Level.WARNING, "Unable to find repository root", excp);
+            return null;
         }
     }
 
@@ -463,15 +593,8 @@ public class AudioRecorderCell extends Cell {
                         setRecording(sccm.isRecording());
                         userName = sccm.getUserName();
                         break;
-                    case TAPE_USED:
-                        setTapeUsed(sccm.getTapeName());
-                        break;
-                    case NEW_TAPE:
-                        Tape newTape = new Tape(sccm.getTapeName());
-                        tapeListModel.addElement(newTape);
-                        break;
                     case TAPE_SELECTED:
-                        selectTape(sccm.getTapeName());
+                        selectTape(sccm.getTape());
                         break;
                     default:
                         logger.severe("Unknown action type: " + sccm.getAction());
@@ -480,13 +603,5 @@ public class AudioRecorderCell extends Cell {
             }
         }
     }
-
-    class MenuItemListener implements ContextMenuActionListener {
-
-        public void actionPerformed(ContextMenuItemEvent event) {
-            setReelFormVisible(true);
-        }
-    }
-
 }
 

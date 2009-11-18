@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,14 +11,13 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.audiorecorder.common;
 
-import java.util.Set;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
@@ -26,8 +25,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
  * @author Bernard Horan
  */
 public class AudioRecorderCellClientState extends CellClientState {
-    private Set<Tape> tapes;
-    private Tape selectedTape;
+    private String selectedTapeName;
     private boolean isPlaying, isRecording;
     private String userName;
 
@@ -35,20 +33,15 @@ public class AudioRecorderCellClientState extends CellClientState {
     public AudioRecorderCellClientState() {
     }
 
-     public AudioRecorderCellClientState(Set<Tape> tapes, Tape selectedTape, boolean isPlaying, boolean isRecording, String userName) {
-        this.tapes = tapes;
-        this.selectedTape = selectedTape;
+     public AudioRecorderCellClientState(boolean isPlaying, String selectedTapeName, boolean isRecording, String userName) {
         this.isPlaying = isPlaying;
+        this.selectedTapeName = selectedTapeName;
         this.isRecording = isRecording;
         this.userName = userName;
     }
 
-    public Set getTapes() {
-        return tapes;
-    }
-
-    public Tape getSelectedTape() {
-        return selectedTape;
+    public String getSelectedTapeName() {
+        return selectedTapeName;
     }
 
     public boolean isPlaying() {

@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,15 +11,16 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 
 package org.jdesktop.wonderland.modules.audiorecorder.common;
 
 import java.io.Serializable;
+import java.net.URL;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -30,10 +31,11 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType( namespace="audiorecorder" )
-public class Tape implements Serializable, Comparable {
+public class Tape implements Serializable, Comparable<Tape> {
 
     private String tapeName;
     private boolean isFresh;
+    private URL url;
 
     public Tape() {
         isFresh = true;
@@ -42,6 +44,10 @@ public class Tape implements Serializable, Comparable {
     public Tape(String filename) {
         this();
         this.tapeName = filename;
+    }
+
+    public void setURL(URL url) {
+        this.url = url;
     }
 
     public void setUsed() {
@@ -62,12 +68,30 @@ public class Tape implements Serializable, Comparable {
         return isFresh;
     }
 
-    public int compareTo(Object o) {
-        Tape t = (Tape) o;
+    public int compareTo(Tape t) {
         return tapeName.compareToIgnoreCase(t.tapeName);
     }
     
     public String getTapeName() {
         return tapeName;
+    }
+
+    public URL getURL() {
+        return url;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 31 * hash + (this.tapeName != null ? this.tapeName.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Tape) {
+            return ((Tape)o).tapeName.equals(tapeName);
+        }
+        return false;
     }
 }

@@ -16,6 +16,10 @@
     <property name="module.src" value="${module.plugin.src}"/>
     <property name="module.jarname" value="${module.name}"/>
 
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+    </pathconvert>
+
     <pathconvert property="module-server.classpath">
         <path location="${modules.dir}/tools/audio-manager/lib/voicelib.jar"/>
         <path location="${modules.dir}/tools/audio-manager/lib/bridge_connector.jar"/>
