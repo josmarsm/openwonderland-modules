@@ -50,6 +50,8 @@ import org.jdesktop.wonderland.modules.webdav.common.WebdavContentCollection;
  */
 public class BridgeRecorderInitializer implements NewRecorderListener {
     private static final Logger logger = Logger.getLogger(BridgeRecorderInitializer.class.getName());
+    /** The property with the password file location */
+    private static final String PASSWORD_FILE_PROP = "voicebridge.password.file";
 
     /**
      * The login object provides an abstraction for creating a session with
@@ -71,14 +73,21 @@ public class BridgeRecorderInitializer implements NewRecorderListener {
     }
 
     private void createConnection() {
-        String serverURL = System.getProperty("com.sun.voip.server.WEBSERVER_URL");
-        //TODO--need to provide the user name and password
+        // read the server URL property
+        String serverURL = System.getProperty("com.sun.voip.server.WEBSERVER_URL", "http://localhost:8080");
+        // parse the password file from the system property.  This may be
+        // null if no password file is specified (for insecure deployments)
+        String passwordFileName = System.getProperty(PASSWORD_FILE_PROP);
+        File passwordFile = null;
+        if (passwordFileName != null && passwordFileName.trim().length() > 0) {
+            passwordFile = new File(passwordFileName);
+        }
         String username = "admin";
         // initialize the login object
         login = new ProgrammaticLogin<WonderlandSession>(serverURL);
         // log in to the server
         logger.info("Logging in");
-        session = login.login(username, null);
+        session = login.login(username, passwordFile);
 
         logger.info("Login succeeded, registering repository");
         registerRepository();
