@@ -17,10 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.client;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
@@ -35,7 +39,7 @@ import org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.common.Clic
  * @author Ben (shavnir)
  */
 @PropertiesFactory(ClickableLinkComponentServerState.class)
-public class ClickableLinkComponentProperties extends javax.swing.JPanel
+public class ClickableLinkComponentProperties extends JPanel
 		implements PropertiesFactorySPI{
 
 	private CellPropertiesEditor editor = null;
@@ -81,49 +85,39 @@ public class ClickableLinkComponentProperties extends javax.swing.JPanel
 	@SuppressWarnings("unchecked")
 	// <editor-fold defaultstate="collapsed"
 	// desc="Generated Code">//GEN-BEGIN:initComponents
-	private void initComponents() {
+	   private void initComponents() {
 
-		jLabel1 = new javax.swing.JLabel();
-		urlTF = new javax.swing.JTextField();
+        jLabel1 = new JLabel();
+        urlTF = new JTextField();
 
-		jLabel1.setText("Link URL:");
+        jLabel1.setText("Link URL:");
 
-		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-		this.setLayout(layout);
-		layout.setHorizontalGroup(layout.createParallelGroup(
-				javax.swing.GroupLayout.Alignment.LEADING).addGroup(
-				layout.createSequentialGroup().addContainerGap().addComponent(
-						jLabel1).addPreferredGap(
-						javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-						.addComponent(urlTF,
-								javax.swing.GroupLayout.DEFAULT_SIZE, 282,
-								Short.MAX_VALUE)));
-		layout
-				.setVerticalGroup(layout
-						.createParallelGroup(
-								javax.swing.GroupLayout.Alignment.LEADING)
-						.addGroup(
-								layout
-										.createSequentialGroup()
-										.addContainerGap()
-										.addGroup(
-												layout
-														.createParallelGroup(
-																javax.swing.GroupLayout.Alignment.BASELINE)
-														.addComponent(jLabel1)
-														.addComponent(
-																urlTF,
-																javax.swing.GroupLayout.PREFERRED_SIZE,
-																javax.swing.GroupLayout.DEFAULT_SIZE,
-																javax.swing.GroupLayout.PREFERRED_SIZE))
-										.addContainerGap(
-												javax.swing.GroupLayout.DEFAULT_SIZE,
-												Short.MAX_VALUE)));
-	}// </editor-fold>//GEN-END:initComponents
+        GroupLayout layout = new GroupLayout(this);
+        this.setLayout(layout);
+
+        layout.setHorizontalGroup(layout.createParallelGroup(
+                GroupLayout.LEADING).add(
+                layout.createSequentialGroup().addContainerGap().add(
+                jLabel1).addPreferredGap(
+                LayoutStyle.RELATED).add(urlTF,
+                GroupLayout.DEFAULT_SIZE, 282,
+                Short.MAX_VALUE)));
+        layout.setVerticalGroup(layout.createParallelGroup(
+                GroupLayout.LEADING).add(
+                layout.createSequentialGroup().addContainerGap().add(
+                layout.createParallelGroup(
+                GroupLayout.BASELINE).add(jLabel1).add(
+                urlTF,
+                GroupLayout.PREFERRED_SIZE,
+                GroupLayout.DEFAULT_SIZE,
+                GroupLayout.PREFERRED_SIZE)).addContainerGap(
+                GroupLayout.DEFAULT_SIZE,
+                Short.MAX_VALUE)));
+    }// </editor-fold>//GEN-END:initComponents
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables
-	private javax.swing.JLabel jLabel1;
-	private javax.swing.JTextField urlTF;
+	private JLabel jLabel1;
+	private JTextField urlTF;
 
 	// End of variables declaration//GEN-END:variables
 	
