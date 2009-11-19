@@ -274,8 +274,8 @@ public class AudioRecorderCell extends Cell {
             
             ContentNode node = recordingRoot.getChild(AUDIO_RECORDINGS_DIRECTORY);
             if (node == null) {
-                logger.warning("Creating audio recordings directory in webdav");
-                node = recordingRoot.createChild(AUDIO_RECORDINGS_DIRECTORY, Type.COLLECTION);
+                logger.severe("No audio recordings directory in webdav");
+                return tapes;
             }
             ContentCollection dirNode = (ContentCollection) node;
             List<ContentNode> children = dirNode.getChildren();
