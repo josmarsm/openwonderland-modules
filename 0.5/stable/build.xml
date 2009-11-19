@@ -35,6 +35,7 @@
                 <file name="image-viewer/dist/imageviewer.jar"/>
                 <file name="audiorecorder-module/dist/audiorecorder.jar"/>
                 <file name="stickynote/dist/stickynote.jar"/>
+                <file name="clickablelink/dist/clickable-link.jar"/>
             </filelist>
             <mapper type="flatten"/>
         </copy>
