@@ -3,18 +3,18 @@
     
 
     <!-- current directory needed in all scripts -->
-	<dirname property="current.dir" file="${ant.file.clickableLinkComponent}"/>
+    <dirname property="current.dir" file="${ant.file.clickableLinkComponent}"/>
 	
-	<property file="${current.dir}/my.module.properties"/>
-	<property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property file="${current.dir}/my.module.properties"/>
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
 	
-	<property name="module.packagename" value="org.jdesktop.wonderland.modules.rockwellcollins.clickablelink"/>
+    <property name="module.packagename" value="org.jdesktop.wonderland.modules.rockwellcollins.clickablelink"/>
     <property name="module.src" value="${module.plugin.src}"/>
     <property name="module.jarname" value="${module.name}"/>
-	<pathconvert property="module-common.classpath">
-      <path location="${current.dir}/../../foundation/appbase/build/client/appbase-client.jar"/>
-      <path location="${current.dir}/../../foundation/appbase/build/client/appbase-client-cell.jar"/>
-	  <path location="${current.dir}/lib/BrowserLauncher2-1_3.jar"/>
+    <pathconvert property="module-common.classpath">
+        <path location="${current.dir}/../../foundation/appbase/build/client/appbase-client.jar"/>
+        <path location="${current.dir}/../../foundation/appbase/build/client/appbase-client-cell.jar"/>
+        <path location="${current.dir}/lib/BrowserLauncher2-1_3.jar"/>
     </pathconvert>
 
     <property name="module-client.classpath" value="${module-common.classpath}"/>
@@ -24,7 +24,7 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
-    <target name="build" depends="-module-init, -module-compile-common, 
+    <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
                                                 -module-compile-client"/>
     
@@ -36,22 +36,21 @@
                 description="${module.description}" builddir="${build.dir}">
                     
         	
-        	<client dir="${current.dir}/lib">
-        	                <include name="*.jar"/>
+            <client dir="${current.dir}/lib">
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
-                </clientjar> 
-	    </client>
+                </clientjar>
+            </client>
                 
-	    <server>
+            <server>
                 <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
                     <include name="${module.src}/server/**"/>
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
         </module>
-    </target>                                  
+    </target>
                                            
     <target name="deploy" depends="dist, -module-deploy"/>
     <target name="clean" depends="-module-clean"/>
