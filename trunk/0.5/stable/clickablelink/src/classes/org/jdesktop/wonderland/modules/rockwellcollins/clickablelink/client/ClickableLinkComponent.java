@@ -17,8 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.client;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

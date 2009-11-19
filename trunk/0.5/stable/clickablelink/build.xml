@@ -13,19 +13,9 @@
     <property file="${current.dir}/my.module.properties"/>
     <property name="modules.dir" location="${wonderland.dir}/modules"/>
 	
-    <!--<property name="module.packagename" value="org.jdesktop.wonderland.modules.rockwellcollins.clickablelink"/>-->
     <property name="module.src" value="${module.plugin.src}"/>
     <property name="module.jarname" value="${module.name}"/>
-    
-    <pathconvert property="module-client.classpath">
-        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
-        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
-    </pathconvert>
-
-    <pathconvert property="module-server.classpath">
-        <path location="${modules.dir}/foundation/appbase/build/server/appbase-server.jar"/>
-    </pathconvert>
-    	
+       	
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
