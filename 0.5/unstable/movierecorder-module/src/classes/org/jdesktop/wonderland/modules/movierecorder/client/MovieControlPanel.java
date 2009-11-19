@@ -25,6 +25,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import org.jdesktop.wonderland.client.cell.Cell;
 
 /**
  * Control panel for movie recorder. Provides buttons to start & stop recording, and
@@ -49,6 +50,10 @@ public class MovieControlPanel extends javax.swing.JPanel {
 //            disableAllButtons();
 //        }
         recorderCell.getVideoButtonModel().addItemListener(new VideoButtonListener());
+    }
+
+    public Cell getCell() {
+        return recorderCell;
     }
 
     void setRemoteRecording(boolean b) {

@@ -247,6 +247,21 @@ public class MovieRecorderCell extends Cell {
             //logger.warning("no reason to stop, not recording");
             return;
         }
+        localRecording = false;
+        calculateActualFrameRate();
+        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), videoRecordingName, localRecording);
+        getChannel().send(msg);
+        logger.info("Stop recording");
+    }
+
+    private void setLocalRecording(boolean recording) {
+        cellLogger.info("recording: " + recording);
+        if (!recording) {
+            stopLocalRecording();
+        }
+    }
+
+    private void stopLocalRecording() {
         try {
             createMovie(videoRecordingName);
         } catch (EncodeException e) {
@@ -254,11 +269,6 @@ public class MovieRecorderCell extends Cell {
         }
         deleteImageDirectory();
         ui.enableLocalButtons();
-        localRecording = false;
-        MovieRecorderCellChangeMessage msg = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), videoRecordingName, localRecording);
-        getChannel().send(msg);
-        calculateActualFrameRate();
-        logger.info("Stop recording");
     }
 
     private void setRemoteRecording(boolean b) {
@@ -329,8 +339,19 @@ public class MovieRecorderCell extends Cell {
                     default:
                         logger.severe("Unknown action type: " + sccm.getAction());
                 }
+            } else {
+                cellLogger.info("it's from me to me!");
+                switch (sccm.getAction()) {
+                    case RECORD:
+                        setLocalRecording(sccm.isRecording());
+                        break;
+                    default:
+                        logger.severe("Unknown action type: " + sccm.getAction());
+                }
             }
         }
+
+
     }
 
     class VideoButtonChangeListener implements ItemListener {

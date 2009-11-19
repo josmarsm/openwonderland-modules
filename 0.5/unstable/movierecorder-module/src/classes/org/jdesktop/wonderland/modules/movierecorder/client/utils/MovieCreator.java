@@ -27,6 +27,7 @@ import javax.media.protocol.ContentDescriptor;
 import javax.media.protocol.DataSource;
 import javax.media.protocol.FileTypeDescriptor;
 import java.io.IOException;
+import java.util.logging.Level;
 import javax.media.ControllerEvent;
 import javax.media.ControllerListener;
 import javax.media.DataSink;
@@ -39,7 +40,16 @@ import javax.media.ProcessorModel;
 import javax.media.datasink.DataSinkEvent;
 import javax.media.datasink.DataSinkListener;
 import javax.media.datasink.EndOfStreamEvent;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.modules.movierecorder.client.MovieControlPanel;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
+import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 
 /**
  * Create a Movie from a directory of JPEGs and an audio file.
@@ -54,13 +64,14 @@ public class MovieCreator {
      * Static field for logging messages.
      */
     public static final Logger logger = Logger.getLogger(MovieCreator.class.getName());
+    private static final String AUDIO_RECORDINGS_DIRECTORY = "AudioRecordings";
+
     
     /**
      * An instance of a RecordingWindow, from which the user has selected the location of the output
      * directory and other preferences.
      */
-    private MovieControlPanel controlPanel;
-    
+    private MovieControlPanel controlPanel;  
     
     
     /**
@@ -91,15 +102,65 @@ public class MovieCreator {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        
-        //if (controlPanel.recordsAudio()) {
-            //record(source, new File(controlPanel.getAudioFilename()), new File(movieFilePath));
-        //} else {
+        ContentResource audioResource = getAudioResource(movieName);
+        if (audioResource != null) {
+            try {
+                URL soundURL = audioResource.getURL();
+                record(source, soundURL, new File(movieFilePath));
+                removeAudioResource(movieName);
+            } catch (ContentRepositoryException ex) {
+                logger.log(Level.SEVERE, "Problem with audio resource", ex);
+            }
+        } else {
             record(source, new File(movieFilePath));
-        //}
-        
-        
+        }      
+    }
+
+    private ContentResource getAudioResource(String movieName) {
+        try {
+            ContentCollection dirNode = getAudioDirectoryNode();
+            ContentNode audioNode = dirNode.getChild(movieName + ".au");
+            return (ContentResource) audioNode;
+        } catch (ContentRepositoryException ex) {
+            logger.log(Level.SEVERE, "Failed to retrieve audio resource", ex);
+        }
+        return null;
+    }
     
+    private void removeAudioResource(String movieName) throws ContentRepositoryException {
+        ContentCollection dirNode = getAudioDirectoryNode();
+        dirNode.removeChild(movieName + ".au");
+    }
+
+    private ContentCollection getAudioDirectoryNode() throws ContentRepositoryException {
+        Cell cell = controlPanel.getCell();
+        ContentCollection recordingRoot = getSystemRoot(cell.getCellCache().getSession().getSessionManager());
+        ContentNode node = recordingRoot.getChild(AUDIO_RECORDINGS_DIRECTORY);
+        if (node == null) {
+            logger.severe("No recordings directory in webdav");
+            return null;
+        }
+        return(ContentCollection) node;
+    }
+
+
+    /**
+     * Returns the content repository root for the system root, or null upon
+     * error.
+     */
+    private ContentCollection getSystemRoot(ServerSessionManager loginInfo) {
+        ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
+        ContentRepository repo = registry.getRepository(loginInfo);
+        if (repo == null) {
+            logger.severe("Repo is null");
+            return null;
+        }
+        try {
+            return repo.getSystemRoot();
+        } catch (ContentRepositoryException excp) {
+            logger.log(Level.WARNING, "Unable to find repository root", excp);
+            return null;
+        }
     }
 
     
@@ -110,13 +171,7 @@ public class MovieCreator {
      * @param outputFile the output file to store the movie to
      * @throws org.jdesktop.lg3d.wonderland.recorder.utility.EncodeException If there's a problem encoding the movie (or finding the data sources)
      */
-    private void record(ImagesDataSource imagesSource, File soundFile, File outputFile) throws EncodeException {
-        logger.info("Sound file is expected to be at: " + soundFile);
-        if (!soundFile.exists()) {
-            logger.warning("No sound file: " + soundFile);
-            record(imagesSource, outputFile);
-            return;
-        }
+    private void record(ImagesDataSource imagesSource, URL soundURL, File outputFile) throws EncodeException {
         logger.info("Output file is expected to be written to: " + outputFile);
         try {
             logger.fine("Creating images datasource...");
@@ -126,7 +181,6 @@ public class MovieCreator {
             logger.fine("Successfully created images datasource.");
 
             logger.fine("Creating sound datasource...");
-            URL soundURL = soundFile.toURL();
             logger.info("URL for sound file: " + soundURL);
             DataSource ds = Manager.createDataSource(soundURL);
             pmodel = new ProcessorModel(ds, new Format[]{new AudioFormat(AudioFormat.LINEAR)}, new ContentDescriptor(ContentDescriptor.RAW));
@@ -267,6 +321,8 @@ public class MovieCreator {
             }
         }
     }
+
+
     
     
     
