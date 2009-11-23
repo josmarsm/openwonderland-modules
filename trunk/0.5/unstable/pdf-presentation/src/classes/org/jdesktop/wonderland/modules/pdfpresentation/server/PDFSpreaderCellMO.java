@@ -239,6 +239,7 @@ public class PDFSpreaderCellMO extends CellMO implements SlidesCell {
                 clients.remove(clientID);
 
                 sender.send(clients, message);
+                logger.info("Sending new layout to clients: " + clients);
             }
 
             cellMO.updateBounds();
