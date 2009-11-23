@@ -56,7 +56,6 @@ import org.jdesktop.wonderland.modules.pdf.client.DeployedPDF;
 import org.jdesktop.wonderland.modules.pdf.client.PDFContentImporter;
 import org.jdesktop.wonderland.modules.pdf.client.PDFDeployer;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.PDFSpreaderCell;
-import org.jdesktop.wonderland.modules.pdfpresentation.common.SlideMetadata;
 
 public class PDFSpreaderCellRenderer extends BasicRenderer {
     private Node node = null;
@@ -255,12 +254,18 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         // Go through each of the slides and move them to their current position.
 
 //        List<SlideMetadata> slidesMetadata = pdfCell.getLayout().getSlides();
-
+        logger.warning("Layout updated trigger.");
+        
         int i=0;
         for(Spatial s : this.slides) {
             placeSlide(s, i);
             i++;
         }
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg) {
+               node.setLocalScale(pdfCell.getLayout().getScale());
+            }
+        }, null);
     }
 
     private class PageLoadingThread extends Thread {
@@ -309,7 +314,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
             PDFContentImporter pdfContentImporter = ((PDFContentImporter)ContentImportManager.getContentImportManager().getContentImporter("pdf", true));
 
             // centered around 0,0, calculate starting position.            
-            for (int i = 1; i <= pdf.getNumberOfSlides(); i++) {
+            for (int i = 0; i < pdf.getNumberOfSlides(); i++) {
 
                 // logger.warning("currentCenter: " + currentCenter + " (page " + i + ")");
                 // for each page, we need to:
@@ -322,7 +327,9 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 URL pageTextureURI;
                 BufferedImage pageTexture = null;
                 try {
-                    pageTextureURI = PDFDeployer.loadPDFPage(pdfURI, i);
+                    // the +1 is because pages are actually 1 based, but all our internal
+                    // representations are 0 based.
+                    pageTextureURI = PDFDeployer.loadPDFPage(pdfURI, i+1);
                         // Get a buffered image from that URI.
                     pageTexture = ImageIO.read(pageTextureURI);
                 } catch (MalformedURLException ex) {
@@ -356,12 +363,24 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
      * @param slide
      * @param index
      */
-    private void placeSlide(Spatial slide, int index) {
-//        slide.setTransform(pdfCell.getLayout()..get(i).getTransform());
-        CellTransform transform = pdfCell.getLayout().getSlides().get(index).getTransform();
+    private void placeSlide(final Spatial slide, final int index) {
 
-        slide.setLocalRotation(transform.getRotation(null));
-        slide.setLocalTranslation(transform.getTranslation(Vector3f.ZERO));
+        logger.warning("Kicking off slide(" + index + ") placement at: " + slide.getLocalTranslation() + "with rotation " + slide.getLocalRotation());
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg) {
+                CellTransform transform = pdfCell.getLayout().getSlides().get(index).getTransform();
+
+                slide.setLocalRotation(transform.getRotation(null));
+                slide.setLocalTranslation(transform.getTranslation(null));
+
+                logger.warning("Placing slide(" + index + ") at: " + slide.getLocalTranslation() + "with rotation " + slide.getLocalRotation());
+
+                ClientContextJME.getWorldManager().addToUpdateList(slide);
+            }
+            },null);
+            
+//        slide.setTransform(pdfCell.getLayout()..get(i).getTransform());
     }
 
 
@@ -480,6 +499,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 
                 // This interfaces with the layout stored in the
                 // pdfCell to put it in the right place.
+                logger.warning("About to place slides in a new slide updater context.");
                 placeSlide(currentSlide, index);
 
                 currentSlide.setModelBound(new BoundingBox());

@@ -22,9 +22,9 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.pdf.client.DeployedPDF;
-import org.jdesktop.wonderland.modules.pdf.client.PDFDeployer;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage.LayoutType;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.SlideMetadata;
 
@@ -47,6 +47,7 @@ public class PDFLayoutHelper {
         SlideMetadata current = null;
 
         int numSlides = pdf.getNumberOfSlides();
+        Logger.getLogger(PDFLayoutHelper.class.getName()).warning("Number of slides: " + numSlides);
 
         // Loop through the slides, generating a metadata object for each one.
         for(int i=0; i<numSlides; i++) {
@@ -57,6 +58,7 @@ public class PDFLayoutHelper {
             current.setTransform(trans);
             current.setPageIndex(i);
 
+            Logger.getLogger(PDFLayoutHelper.class.getName()).warning("Placing slide: " + i + " at " + trans.getTranslation(null));
             slidesMetadata.add(current);
         }
 
@@ -88,10 +90,9 @@ public class PDFLayoutHelper {
                 break;
 
             case LINEAR:
-                // i->1 because pages is 1->n, not 0->(n-1)
-                // the other negative bit recenters the line around the middle
+                // the second negative bit recenters the line around the middle
                 // of the set of slides, not the start point.
-                pos = new Vector3f(0, 0, (spacing * (i-1) + (spacing*((numSlides-1)/2.0f)*-1)));
+                pos = new Vector3f(0, 0, (spacing * (i) + (spacing*((numSlides-1)/2.0f)*-1)));
                 rot = new Quaternion();
                 break;
 

@@ -94,7 +94,9 @@ public class PDFSpreaderCell extends Cell {
 
         this.sendCellMessage(msg);
 
-        logger.finer("just sent cell message to server: " + msg);
+        // Also, trigger a local relayout operation here.
+        this.updateLayout();
+        logger.info("just sent cell message to server: " + msg);
     }
 
     @Override

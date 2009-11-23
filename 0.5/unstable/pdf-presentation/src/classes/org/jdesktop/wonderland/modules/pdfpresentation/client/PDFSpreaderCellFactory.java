@@ -46,6 +46,8 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
 
+        Logger.getLogger(PDFSpreaderCellFactory.class.getName()).warning("In PDFSpreaderCellFactory!");
+
         PDFSpreaderCellServerState state = new PDFSpreaderCellServerState();
 
         state.setCreatorName(LoginManager.getPrimary().getUsername());
@@ -58,32 +60,33 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
 
+        DeployedPDF deployedPDF = null;
         if (props != null) {
            String uri = props.getProperty("content-uri");
            if (uri != null) {
-               state.setSourceURI(uri);
+                try {
+                    Logger.getLogger(PDFSpreaderCellFactory.class.getName()).warning("PDF URI is: " + uri);
+                    deployedPDF = PDFDeployer.loadDeployedPDF(uri);
+
+                    state.setSourceURI(uri);
+                } catch (MalformedURLException ex) {
+                    Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (JAXBException ex) {
+                    Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+                }
            }
        }
         
-        try {
-            DeployedPDF pdf = PDFDeployer.loadDeployedPDF(state.getSourceURI());
+        PresentationLayout layout = new PresentationLayout(LayoutType.LINEAR);
+        layout.setScale(1.0f);
+        layout.setSpacing(4.0f);
+        layout.setSlides(PDFLayoutHelper.generateLayoutMetadata(layout.getLayout(), deployedPDF, layout.getSpacing()));
 
-            PresentationLayout layout = new PresentationLayout(LayoutType.LINEAR);
-            layout.setScale(1.0f);
-            layout.setSpacing(4.0f);
-            layout.setSlides(PDFLayoutHelper.generateLayoutMetadata(layout.getLayout(), null, layout.getSpacing()));
-
-            // TODO Do some fallback handling here - what happens if we don't have
-            // a proper PDF at this stage? there will be no layout information.
-            state.setLayout(layout);
-            
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (JAXBException ex) {
-            Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        // TODO Do some fallback handling here - what happens if we don't have
+        // a proper PDF at this stage? there will be no layout information.
+        state.setLayout(layout);
 
         return (T)state;
     }
@@ -91,7 +94,7 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
 
     public String getDisplayName() {
         // if null, won't show in the insert component dialog
-        return null;
+        return "PDF Spreader";
     }
 
     public Image getPreviewImage() {
