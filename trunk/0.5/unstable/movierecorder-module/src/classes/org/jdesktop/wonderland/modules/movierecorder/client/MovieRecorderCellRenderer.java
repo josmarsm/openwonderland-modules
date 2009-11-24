@@ -303,10 +303,11 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
 
     public void update(Object arg0) {
         //System.err.println("Update object: " + arg0);
+        captureImage = createBufferedImage(textureBuffer.getTextureData());
+                    
          try {
             SwingUtilities.invokeLater(new Runnable () {
                 public void run () {
-                    captureImage = createBufferedImage(textureBuffer.getTextureData());
                     captureComponent.repaint();
                 }
             });
