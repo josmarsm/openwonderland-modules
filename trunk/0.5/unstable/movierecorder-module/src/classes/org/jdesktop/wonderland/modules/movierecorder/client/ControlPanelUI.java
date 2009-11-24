@@ -45,7 +45,7 @@ public class ControlPanelUI {
         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
         try {
-            SwingUtilities.invokeAndWait(new Runnable () {
+            SwingUtilities.invokeLater(new Runnable () {
                 public void run () {
                     controlPanel = new MovieControlPanel(cell);
                     hudComponent = mainHUD.createComponent(controlPanel);
