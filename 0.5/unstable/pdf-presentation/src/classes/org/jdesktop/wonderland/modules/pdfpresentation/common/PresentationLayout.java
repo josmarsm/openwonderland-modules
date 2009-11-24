@@ -36,6 +36,10 @@ public class PresentationLayout implements Serializable {
     private float spacing = 0.0f;
     private LayoutType layout;
 
+    /** Default constructor, required by JAXB */
+    public PresentationLayout() {
+    }
+    
     public PresentationLayout(LayoutType layout) {
         this.layout = layout;
     }
