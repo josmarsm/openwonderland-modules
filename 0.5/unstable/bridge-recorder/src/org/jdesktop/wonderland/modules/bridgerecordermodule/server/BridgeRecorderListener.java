@@ -69,6 +69,8 @@ public class BridgeRecorderListener implements RecorderListener {
         try {
             logger.info("Stop recording " + recorder.getRecordPath() + " records " + records + " bytes " + bytes);
             copyFileToWebDav();
+            logger.info("Copied file, now recordingDone");
+            recorder.recorderDone();
         } catch (ContentRepositoryException ex) {
             logger.log(Level.SEVERE, "Failed to copy file to web dav, problem with content repository", ex);
         } catch (IOException ex) {
