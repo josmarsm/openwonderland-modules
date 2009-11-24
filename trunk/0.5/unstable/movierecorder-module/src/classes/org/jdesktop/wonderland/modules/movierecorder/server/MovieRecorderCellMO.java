@@ -19,7 +19,9 @@
 package org.jdesktop.wonderland.modules.movierecorder.server;
 
 import com.jme.math.Vector3f;
+import com.sun.mpk20.voicelib.app.ManagedCallStatusListener;
 import com.sun.sgs.app.AppContext;
+import com.sun.voip.client.connector.CallStatus;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -38,6 +40,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import com.sun.mpk20.voicelib.app.Recorder;
 import com.sun.mpk20.voicelib.app.RecorderSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import java.util.logging.Level;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.movierecorder.common.MovieRecorderCellServerState;
@@ -51,7 +54,7 @@ import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
  * @author Joe Provino
  * 
  */
-public class MovieRecorderCellMO extends CellMO {
+public class MovieRecorderCellMO extends CellMO implements ManagedCallStatusListener {
     
     private static final Logger movieRecorderLogger = Logger.getLogger(MovieRecorderCellMO.class.getName());
     private static int INSTANCE_COUNT = 0;
@@ -159,7 +162,7 @@ public class MovieRecorderCellMO extends CellMO {
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        //vm.addCallStatusListener(this, callId);
+        vm.addCallStatusListener(this, callId);
 
         RecorderSetup setup = new RecorderSetup();
 
@@ -167,19 +170,19 @@ public class MovieRecorderCellMO extends CellMO {
         setup.y = origin.y;
         setup.z = origin.z;
 
-        logger.info("Recorder Origin is " + "(" + origin.x + ":" + origin.y + ":" + origin.z + ")");
+        movieRecorderLogger.info("Movie recorder Origin is " + "(" + origin.x + ":" + origin.y + ":" + origin.z + ")");
 
         setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
 
-        setup.recordDirectory = recordingDirectory;
-        logger.info("record directory: " + setup.recordDirectory);
-        logger.info("setup: " + setup);
+        //setup.recordDirectory = recordingDirectory;
+        //movieRecorderLogger.info("record directory: " + setup.recordDirectory);
+        movieRecorderLogger.info("movie recorder setup: " + setup);
 
         try {
             recorder = vm.createRecorder(callId, setup);
-            logger.info("recorder: " + recorder);
+            movieRecorderLogger.info("Created new recorder: " + recorder);
         } catch (IOException e) {
-            System.out.println(e);
+            movieRecorderLogger.log(Level.SEVERE, "Failed to create recorder", e);
         }
     }
 
@@ -193,7 +196,7 @@ public class MovieRecorderCellMO extends CellMO {
     }
 
     private void stopRecording() {
-        movieRecorderLogger.fine("Stop Recording");
+        movieRecorderLogger.info("Stop Recording");
         try {
             recorder.stopRecording();
         } catch (IOException e) {
@@ -210,6 +213,16 @@ public class MovieRecorderCellMO extends CellMO {
 
     private ChannelComponentMO getChannel() {
         return getComponent(ChannelComponentMO.class);
+    }
+
+    public void callStatusChanged(CallStatus status) {
+        movieRecorderLogger.info("Got call status " + status);
+
+        switch (status.getCode()) {
+            case CallStatus.RECORDERDONE:
+                movieRecorderLogger.info("THE RECORDING IS DONE!");
+                break;
+        }
     }
 
     private static class MovieRecorderCellMOMessageReceiver extends AbstractComponentMessageReceiver {
