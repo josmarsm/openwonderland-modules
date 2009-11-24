@@ -59,7 +59,7 @@ public class ControlPanelUI {
         hudComponent.setPreferredLocation(Layout.SOUTHWEST);
 
          try {
-            SwingUtilities.invokeAndWait(new Runnable () {
+            SwingUtilities.invokeLater(new Runnable () {
                 public void run () {
                     mainHUD.addComponent(hudComponent);
                 }
