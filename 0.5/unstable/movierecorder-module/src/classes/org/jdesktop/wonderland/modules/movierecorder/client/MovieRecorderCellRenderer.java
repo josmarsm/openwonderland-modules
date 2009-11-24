@@ -69,6 +69,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.input.Event;
@@ -302,8 +303,18 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
 
     public void update(Object arg0) {
         //System.err.println("Update object: " + arg0);
-        captureImage = createBufferedImage(textureBuffer.getTextureData());
-        captureComponent.repaint();       
+         try {
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    captureImage = createBufferedImage(textureBuffer.getTextureData());
+                    captureComponent.repaint();
+                }
+            });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException("Cannot capture texture buffer image");
+        }
+             
 
         if (((MovieRecorderCell) cell).isLocalRecording()) {
                 BufferedImage outputImage = createBufferedImage(textureBuffer.getTextureData());
