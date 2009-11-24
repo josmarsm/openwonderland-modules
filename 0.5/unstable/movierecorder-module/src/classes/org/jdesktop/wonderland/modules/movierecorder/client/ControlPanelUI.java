@@ -48,6 +48,9 @@ public class ControlPanelUI {
             SwingUtilities.invokeAndWait(new Runnable () {
                 public void run () {
                     controlPanel = new MovieControlPanel(cell);
+                    hudComponent = mainHUD.createComponent(controlPanel);
+                    hudComponent.setPreferredLocation(Layout.SOUTHWEST);
+                    mainHUD.addComponent(hudComponent);
                 }
             });
         } catch (Exception ex) {
@@ -55,10 +58,7 @@ public class ControlPanelUI {
             throw new RuntimeException("Cannot create construct panel");
         }
 
-        hudComponent = mainHUD.createComponent(controlPanel);
-        hudComponent.setPreferredLocation(Layout.SOUTHWEST);
-
-        mainHUD.addComponent(hudComponent);
+        
     }
 
     /** Control the visibility of the window.
