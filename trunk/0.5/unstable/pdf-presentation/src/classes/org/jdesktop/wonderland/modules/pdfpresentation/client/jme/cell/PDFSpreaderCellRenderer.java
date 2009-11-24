@@ -114,71 +114,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         node.setModelBound(new BoundingBox());
         return node;
 }
-
-//    /**
-//     * Triggers a re-layout process based on the latest values from the cell.
-//     *
-//     * Executes asynchronously in the main rendering thread.
-//     */
-//    public void updateLayout() {
-//
-//        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
-//
-//            public void update(Object arg) {
-//                // update scale of root node
-//                node.setLocalScale(pdfCell.getScale());
-//
-//                // redo layout.
-//                int i = 0;
-//                for (Spatial s : slides) {
-//                    setSpatialPosition(s, i);
-//                    i++;
-//                }
-//            }},null);
-//}
-
-    /**
-     * Get an image of a specific page
-     *
-     * Taken from PDFViewerApp.java, with some modifications.
-     *
-     * @param p the page number
-     * @return the image of the specified page
-     */
-//    public BufferedImage getPageImage(int p) {
-//        BufferedImage image = null;
-//
-//        PDFPage currentPage;
-//        try {
-//            if (isValidPage(p)) {
-//                currentPage = pdf.getPage(p, true);
-//
-//                // Set the size at which we want to render the image texture.
-//                // Doing it *2 right now beacuse that renders at double resolution,
-//                // which looks better when you zoom in.
-//                double ph = currentPage.getWidth()*2;
-//                double pw = currentPage.getHeight()*2;
-//
-//                Image img = pdf.getPage(p).getImage((int)pw, (int)ph, null, null, true, true);
-//
-//                logger.info("img from pdfpage: " + img);
-//
-//                if (img != null) {
-//                    // convert the page image into a buffered image
-//                    image = new BufferedImage((int)pw, (int)ph, BufferedImage.TYPE_INT_ARGB);
-//                    Graphics2D g2 = image.createGraphics();
-//                    g2.drawImage(img, 0, 0, (int)pw, (int)ph, null);
-//                } else {
-//                    logger.warning("PDF viewer failed to get image for page: " + p);
-//                }
-//            }
-//        } catch (Exception e) {
-//            logger.severe("PDF viewer failed to get page image: " + e);
-//        }
-//
-//        return image;
-//    }
-
+    
     /**
      * Get the validity of the specified page in the currently open document
      * @return true if the page is within the range of pages of the current
@@ -188,72 +124,10 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         return ((pdf != null) && (p > 0) && (p <= pdf.getNumberOfSlides()));
     }
 
-
-    /**
-     * Get the PDF document data from a URL
-     *
-     * (Taken verbatim from PDFViewerApp.java)
-     *
-     * @param docURL the URL of the PDF document to open
-     * @return the PDF document data
-     */
-//    public ByteBuffer getDocumentData(String docURL) throws IOException {
-//        ByteBuffer buf = null;
-//
-//        if (docURL != null) {
-//            // connect to the URL
-//            URL url = AssetUtils.getAssetURL(docURL, cell);
-//            URLConnection conn = url.openConnection();
-//            conn.connect();
-//
-//            // create a buffer to load the document into
-//            int docSize = conn.getContentLength();
-//
-//            // Just try reading from it, first.
-//
-//            // create a buffered stream for reading the document
-//            DataInputStream is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
-//
-//            Vector<Byte> bytesVec = new Vector<Byte>();
-//            byte b;
-//            int numBytes = 0;
-//            while(true) {
-//                try {
-//                    b = is.readByte();
-//
-//                    bytesVec.add(b);
-//                    numBytes++;
-//                } catch (EOFException e) {
-//                    break;
-//                } catch (Exception e) {
-//                    logger.warning("Error reading PDF in loop: " + e.getMessage());
-//                    e.printStackTrace();
-//                    break;
-//                }
-//
-//            }
-//
-//            byte[] bytes = new byte[bytesVec.size()];
-//            int i = 0;
-//            for(Byte curB : bytesVec) {
-//                bytes[i] = bytesVec.get(i);
-//                i++;
-//            }
-//
-//            buf = ByteBuffer.wrap((byte[]) bytes, 0, ((byte[]) bytes).length);
-//        }
-//
-//        logger.fine("returning buffer: " + buf + " with length: " + buf.array().length);
-//
-//        return buf;
-//    }
-
     // Called when the layout of slides is updated. Triggered by some other user changing the
     // layout parameters or tpe.
     public void layoutUpdated() {
         // Go through each of the slides and move them to their current position.
-
-//        List<SlideMetadata> slidesMetadata = pdfCell.getLayout().getSlides();
         logger.warning("Layout updated trigger.");
         
         int i=0;
@@ -261,6 +135,8 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
             placeSlide(s, i);
             i++;
         }
+
+        // Set the overall scale of the cell in a proper render thread.
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg) {
                node.setLocalScale(pdfCell.getLayout().getScale());
@@ -283,20 +159,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
             String name = cell.getCellID().toString();
 
             String pdfURI = ((PDFSpreaderCell) cell).getSourceURI();
-//            try {
-//                Date then = new Date();
-//                pdf = new PDFFile(getDocumentData(pdfURI));
-//                Date now = new Date();
-//
-//                logger.fine("PDF loaded in: " + (now.getTime() - then.getTime()) + "ms");
-//            } catch (Exception e) {
-//                logger.warning("PDF failed to load: " + e.getMessage());
-//                e.printStackTrace();
-//            }
 
-
-
-//            DeployedPDF pdf = null;
             try {
                 pdf = PDFDeployer.loadDeployedPDF(pdfURI);
             } catch (MalformedURLException ex) {
@@ -319,7 +182,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
                 // logger.warning("currentCenter: " + currentCenter + " (page " + i + ")");
                 // for each page, we need to:
                 //   1. make a new Box
-                //   2. get the image for this page and make it into a texture
+                //   2. get the texture for this page from WebDAV
                 //   3. apply the texture to the box
                 //   4. move the position pointer for the next box
 
@@ -340,7 +203,7 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 
                 // Dispatch the JME specific stuff to a thread that we can run inside
                 // the RenderingThread.
-                ClientContextJME.getWorldManager().addRenderUpdater((RenderUpdater)new NewSlideUpdater(node, pageTexture, i), null);
+                ClientContextJME.getWorldManager().addRenderUpdater((RenderUpdater)new NewSlideUpdater(node, pageTexture, i, (int)maxHeight, (int)maxWidth), null);
 
                 if(pageTexture.getHeight()*SLIDE_SIZE_FACTOR>maxHeight)
                     maxHeight = pageTexture.getHeight()*SLIDE_SIZE_FACTOR;
@@ -383,74 +246,6 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 //        slide.setTransform(pdfCell.getLayout()..get(i).getTransform());
     }
 
-
-    /**
-     * Given a layout type, a node, and an index, move/rotate the node
-     * so it's in the right place. This parameterised abstraction makes it
-     * easier to update the postions of things to different layout types on
-     * the fly.
-     * 
-     * @param layout
-     * @param n
-     * @param i
-     */
-//    private void setSpatialPosition(Spatial s, int i) {
-//        Vector3f pos = null;
-//        Quaternion rot = null;
-//
-//        float curAngle;
-//        LayoutType layout = this.pdfCell.getLayout();
-//        switch(layout) {
-//            case CIRCLE:
-//                curAngle = (float) (i * (2*Math.PI / this.pdf.getNumPages()));
-//                rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
-//                pos = new Vector3f((float)(pdfCell.getSpacing()*Math.sin(curAngle)), 0.0f, (float)(pdfCell.getSpacing()*Math.cos(curAngle)));
-//                break;
-//
-//            case SEMICIRCLE:
-//                int n = this.pdf.getNumPages() - i;
-//                curAngle = (float) (n * (Math.PI / this.pdf.getNumPages()));
-//                pos = new Vector3f((float)(pdfCell.getSpacing()*Math.sin(curAngle)), 0.0f, (float)(pdfCell.getSpacing()*Math.cos(curAngle)));
-//                rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
-//                break;
-//
-//            case LINEAR:
-//                // i->1 because pages is 1->n, not 0->(n-1)
-//                // the other negative bit recenters the line around the middle
-//                // of the set of slides, not the start point.
-//                pos = new Vector3f(0, 0, (pdfCell.getSpacing() * (i-1) + (pdfCell.getSpacing()*((pdf.getNumPages()-1)/2.0f)*-1)));
-//                rot = new Quaternion();
-//                break;
-//
-//            default:
-//                break;
-//        }
-//
-//        logger.finer("(" + i + ") pos: " + s.getLocalTranslation() + " -> " + pos);
-//        s.setLocalTranslation(pos);
-//        s.setLocalRotation(rot);
-//        ClientContextJME.getWorldManager().addToUpdateList(s);
-//    }
-
-//    protected void setSlideDimensions(float width, float height) {
-//
-//
-//        // Once we know the first slide's dimensoin, trigger a message that
-//        // informs the server what it is (as well as the num pages)
-//        // This data will allow the server to figure out how to place
-//        // the platform.
-//
-//        // Trigger a message to the server with the number of pages.
-//        PDFSpreaderCellChangeMessage msg = new PDFSpreaderCellChangeMessage(MessageType.DOCUMENT);
-//        msg.setNumPages(pdf.getNumPages());
-//
-//        // Thought a little bit here about how scaling will work. If you scale up the
-//        // PDFCell, should that scale transfer to the PresentationCell? Probably.
-//        msg.setSlideWidth(width);
-//
-//        pdfCell.sendCellMessage(msg);
-//    }
-
     /**
      * This updater is used to create nodes when the cell is first loaded. It shouldn't be called
      * when slides are just being moved around.
@@ -461,11 +256,15 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
         private Node parent;
         private BufferedImage page;
         private int index;
+        private int height;
+        private int width;
 
-        public NewSlideUpdater(Node p, BufferedImage texture, int i) {
+        public NewSlideUpdater(Node p, BufferedImage texture, int i, int h, int w) {
             parent = p;
             page = texture;
             index = i;
+            height = h;
+            width = w;
         }
 
         public void update(Object arg0) {
@@ -476,8 +275,10 @@ public class PDFSpreaderCellRenderer extends BasicRenderer {
 
                 // Figure out what the size of the texture is, scale it down to something
                 // reasonable.
-                float width = texture.getImage().getWidth() * SLIDE_SIZE_FACTOR;
-                float height = texture.getImage().getHeight() * SLIDE_SIZE_FACTOR;
+//                float width = texture.getImage().getWidth() * SLIDE_SIZE_FACTOR;
+//                float height = texture.getImage().getHeight() * SLIDE_SIZE_FACTOR;
+                width = (int) (width * SLIDE_SIZE_FACTOR);
+                height = (int) (height * SLIDE_SIZE_FACTOR);
 
                 TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + index, new Vector3f(), 0.1f, width, height);
                 node.attachChild(currentSlide);

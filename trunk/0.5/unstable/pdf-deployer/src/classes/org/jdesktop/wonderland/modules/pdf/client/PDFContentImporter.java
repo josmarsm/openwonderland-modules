@@ -68,6 +68,12 @@ public class PDFContentImporter extends AbstractContentImporter
     // delegating to the superclass methods
     private BaseClientPlugin plugin = null;
 
+    // Used to increase the resolution at which we render PDF pages. If this
+    // is 1, then the rendered page is the same as the reported dimensions
+    // of the page. For pages with text, this is often way too low resolution
+    // to read it at any distance, hence the 2.5 default.
+    private static final float RESOLUTION_RENDER_FACTOR = 2.0f;
+
     /**
      * @inheritDoc()
      */
@@ -261,8 +267,8 @@ public class PDFContentImporter extends AbstractContentImporter
 
         // Fetch the current page and the width and height and image from that
         PDFPage page = pdfFile.getPage(pageNumber, true);
-        int height = (int)page.getHeight();
-        int width = (int)page.getWidth();
+        int height = (int)(page.getHeight() *RESOLUTION_RENDER_FACTOR);
+        int width = (int)(page.getWidth() *RESOLUTION_RENDER_FACTOR);
         Image image = page.getImage(width, height, null, null, true, true);
 
         // Convert into a buffered image and return

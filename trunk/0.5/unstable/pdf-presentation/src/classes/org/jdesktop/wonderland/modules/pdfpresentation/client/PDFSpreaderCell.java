@@ -80,7 +80,6 @@ public class PDFSpreaderCell extends Cell {
             Logger.getLogger(PDFSpreaderCell.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        // WRITE THIS METHOD
         renderer.layoutUpdated();
     }
 
@@ -188,16 +187,9 @@ public class PDFSpreaderCell extends Cell {
             PDFSpreaderCellChangeMessage msg = (PDFSpreaderCellChangeMessage)message;
             
             // if we got a message, grab the layout data and push it into the cell.
-            
+            logger.info("Received a new layout: " + msg.getLayout());
             setLayout(msg.getLayout());
+            updateLayout();
         }
     }
-
-//    public PDFFile getDocument() {
-//        return this.pdfDocument;
-//    }
-//
-//    private void setDocument(PDFFile document) {
-//        this.pdfDocument = document;
-//    }
 }
