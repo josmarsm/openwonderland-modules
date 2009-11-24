@@ -25,6 +25,7 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 
 /**
@@ -365,20 +366,31 @@ public class MovieControlPanel extends javax.swing.JPanel {
 
     class VideoButtonListener implements ItemListener {
 
-        public void itemStateChanged(ItemEvent event) {
+        public void itemStateChanged(final ItemEvent event) {
             //update the control panel
             //logger.info("event: " + event);
-            if (event.getStateChange() == ItemEvent.SELECTED) {
-                recorderStatusLabel.setText("Recording");
-                recorderStatusLabel.setForeground(Color.red);
-                stopButton.setEnabled(true);
-                disableLocalButtons();
-            } else {
-                stopButton.setEnabled(false);
-                recorderCell.stopRecording();
-                recorderStatusLabel.setText("Offline");
-                recorderStatusLabel.setForeground(Color.BLACK);
+            try {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        if (event.getStateChange() == ItemEvent.SELECTED) {
+                            recorderStatusLabel.setText("Recording");
+                            recorderStatusLabel.setForeground(Color.red);
+                            stopButton.setEnabled(true);
+                            disableLocalButtons();
+                        } else {
+                            stopButton.setEnabled(false);
+                            recorderCell.stopRecording();
+                            recorderStatusLabel.setText("Offline");
+                            recorderStatusLabel.setForeground(Color.BLACK);
+                        }
+                    }
+                });
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                throw new RuntimeException("Cannot update state of UI");
             }
+
         }
     }
 }
