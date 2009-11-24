@@ -45,12 +45,9 @@ public class ControlPanelUI {
         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
         try {
-            SwingUtilities.invokeLater(new Runnable () {
+            SwingUtilities.invokeAndWait(new Runnable () {
                 public void run () {
                     controlPanel = new MovieControlPanel(cell);
-                    hudComponent = mainHUD.createComponent(controlPanel);
-                    hudComponent.setPreferredLocation(Layout.SOUTHWEST);
-                    mainHUD.addComponent(hudComponent);
                 }
             });
         } catch (Exception ex) {
@@ -58,7 +55,20 @@ public class ControlPanelUI {
             throw new RuntimeException("Cannot create construct panel");
         }
 
-        
+        hudComponent = mainHUD.createComponent(controlPanel);
+        hudComponent.setPreferredLocation(Layout.SOUTHWEST);
+
+         try {
+            SwingUtilities.invokeAndWait(new Runnable () {
+                public void run () {
+                    mainHUD.addComponent(hudComponent);
+                }
+            });
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new RuntimeException("Cannot add hud component to main hud");
+        }
+
     }
 
     /** Control the visibility of the window.
