@@ -34,21 +34,21 @@ import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.pdf.client.DeployedPDF;
 import org.jdesktop.wonderland.modules.pdf.client.PDFDeployer;
-import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage.LayoutType;
-import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellServerState;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellServerState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout.LayoutType;
 
 @CellFactory
-public class PDFSpreaderCellFactory implements CellFactorySPI{
+public class PresentationCellFactory implements CellFactorySPI{
     public String[] getExtensions() {
         return new String[] {"pdf"};
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
 
-        Logger.getLogger(PDFSpreaderCellFactory.class.getName()).warning("In PDFSpreaderCellFactory!");
+        Logger.getLogger(PresentationCellFactory.class.getName()).warning("In PDFSpreaderCellFactory!");
 
-        PDFSpreaderCellServerState state = new PDFSpreaderCellServerState();
+        PresentationCellServerState state = new PresentationCellServerState();
 
         state.setCreatorName(LoginManager.getPrimary().getUsername());
 
@@ -65,16 +65,16 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
            String uri = props.getProperty("content-uri");
            if (uri != null) {
                 try {
-                    Logger.getLogger(PDFSpreaderCellFactory.class.getName()).warning("PDF URI is: " + uri);
+                    Logger.getLogger(PresentationCellFactory.class.getName()).warning("PDF URI is: " + uri);
                     deployedPDF = PDFDeployer.loadDeployedPDF(uri);
 
                     state.setSourceURI(uri);
                 } catch (MalformedURLException ex) {
-                    Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(PresentationCellFactory.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (IOException ex) {
-                    Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(PresentationCellFactory.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (JAXBException ex) {
-                    Logger.getLogger(PDFSpreaderCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(PresentationCellFactory.class.getName()).log(Level.SEVERE, null, ex);
                 }
            }
        }
@@ -88,13 +88,15 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
         // a proper PDF at this stage? there will be no layout information.
         state.setLayout(layout);
 
+
+
         return (T)state;
     }
 
 
     public String getDisplayName() {
         // if null, won't show in the insert component dialog
-        return "PDF Spreader";
+        return "Presentation Cell";
     }
 
     public Image getPreviewImage() {
@@ -112,6 +114,6 @@ public class PDFSpreaderCellFactory implements CellFactorySPI{
         // from appearing in a list of Cells when more than one supports the
         // the PDF extension. So we return a good display name here
         // XXX
-        return "PDF Slide Spreader";
+        return "Presentation Cell ";
     }
 }

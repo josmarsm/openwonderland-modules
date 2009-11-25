@@ -35,23 +35,23 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 
 /**
- *
+ * Manages the HUD for presentation cells. 
  * @author Drew Harry <drew_harry@dev.java.net>
  */
 
 @ContextMenuFactory
-public class PDFSpreaderClientPlugin implements ContextMenuFactorySPI {
+public class PresentationCellMenuFactory implements ContextMenuFactorySPI {
 
 
     private static final Logger logger =
-        Logger.getLogger(PDFSpreaderClientPlugin.class.getName());
+        Logger.getLogger(PresentationCellMenuFactory.class.getName());
 
     private static PDFLayoutHUDPanel layoutPanel = null;
     private static HUDComponent layoutHUD = null;
 
 
 
-    private void createHUD(PDFSpreaderCell cell) {
+    private void createHUD(PresentationCell cell) {
         logger.warning("Creating HUD for cell: " + cell);
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
@@ -77,7 +77,7 @@ public class PDFSpreaderClientPlugin implements ContextMenuFactorySPI {
     }
 
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-        if(event.getPrimaryCell() instanceof PDFSpreaderCell) {
+        if(event.getPrimaryCell() instanceof PresentationCell) {
             final SimpleContextMenuItem editLayoutItem = new SimpleContextMenuItem("Edit Slide Layout...",(ContextMenuActionListener) new EditLayoutContextListener());
             return new ContextMenuItem[] {editLayoutItem};
         }
@@ -93,13 +93,13 @@ public class PDFSpreaderClientPlugin implements ContextMenuFactorySPI {
             // make a new one first.
 
             // This should always be true, but just making sure.
-            assert(event.getCell() instanceof PDFSpreaderCell);
+            assert(event.getCell() instanceof PresentationCell);
 
             if(layoutHUD==null) {
-                createHUD((PDFSpreaderCell)event.getCell());
+                createHUD((PresentationCell)event.getCell());
             } else {
                 // update the cell on the current HUD object.
-                layoutPanel.setCell((PDFSpreaderCell) event.getCell());
+                layoutPanel.setCell((PresentationCell) event.getCell());
             }
 
 
@@ -108,4 +108,5 @@ public class PDFSpreaderClientPlugin implements ContextMenuFactorySPI {
             logger.info("PDFSpreaderLayoutHUD now visible.");
         }    
     }
+
 }

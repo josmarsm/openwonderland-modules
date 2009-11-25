@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.pdf.client.DeployedPDF;
-import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage.LayoutType;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout.LayoutType;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.SlideMetadata;
 
 /**

@@ -33,17 +33,21 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class PresentationCellServerState extends CellServerState {
 
-
-    // Transient because CellID isn't jaxb serializable, and we only
-    // need this field for the initial construction of the cell.
-    @XmlTransient
-    private CellID slidesCellID;
-
-    @XmlElement(name="initialized")
-    private boolean initialized;
-
     @XmlElement(name="cur-slide")
     private int curSlide;
+
+    @XmlElement(name="pdfURI")
+    private String pdfURI = null;
+
+    @XmlElement(name="creator-name")
+    private String creatorName;
+
+    @XmlElement(name="num-pages")
+    private int numPages;
+
+    @XmlElement(name="layout")
+    private PresentationLayout layout;
+
     
     public PresentationCellServerState() {
     }
@@ -52,18 +56,28 @@ public class PresentationCellServerState extends CellServerState {
         return "org.jdesktop.wonderland.modules.pdfpresentation.server.PresentationCellMO";
     }
 
-    @XmlTransient public CellID getSlidesCellID() { return this.slidesCellID; }
-    public void setSlidesCellID(CellID cellID) {
-        this.slidesCellID = cellID;
-    }
-
-    @XmlTransient public boolean isInitialized() { return this.initialized; }
-    public void setInitialized(boolean initialized) {
-        this.initialized = initialized;
-    }
-
     @XmlTransient public int getCurSlide() { return this.curSlide; }
     public void setCurslide(int curSlide) {
         this.curSlide = curSlide;
+    }
+
+        @XmlTransient public String getSourceURI() { return this.pdfURI; }
+    public void setSourceURI(String uri) {
+        this.pdfURI = uri;
+    }
+
+    @XmlTransient public PresentationLayout getLayout() { return this.layout; }
+    public void setLayout(PresentationLayout layout) {
+        this.layout = layout;
+    }
+
+    @XmlTransient public String getCreatorName() { return this.creatorName; }
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
+    }
+
+    @XmlTransient public int getNumPages() { return this.numPages; }
+    public void setNumPages(int numPages) {
+        this.numPages = numPages;
     }
 }

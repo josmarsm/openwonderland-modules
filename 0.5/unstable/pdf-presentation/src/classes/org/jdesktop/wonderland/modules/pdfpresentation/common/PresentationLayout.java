@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.pdfpresentation.common;
 
 import java.io.Serializable;
 import java.util.List;
-import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage.LayoutType;
 
 /**
  * A wrapper for a set of slides' layout information. Also contains descriptive paramters for
@@ -29,6 +28,12 @@ import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellCha
  * @author Drew Harry <dharry@media.mit.edu>
  */
 public class PresentationLayout implements Serializable {
+
+    public enum LayoutType {
+        LINEAR,
+        SEMICIRCLE,
+        CIRCLE
+    }
 
     private List<SlideMetadata> slides;
 
