@@ -26,11 +26,47 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  */
 public class PresentationCellChangeMessage extends CellMessage {
 
+    public enum MessageType {
+       LAYOUT,
+       DOCUMENT,
+       SLIDE_CHANGE
+    }
+
+    private MessageType type;
+
+    private float slideWidth;
+
+    private PresentationLayout layout;
+
+    public PresentationCellChangeMessage(MessageType type) {
+        this.type = type;
+    }
+
+    public PresentationLayout getLayout() {
+        return layout;
+    }
+
+    public void setLayout(PresentationLayout layout) {
+        this.layout = layout;
+    }
+
+    public MessageType getType() {
+        return type;
+    }
+
+    public float getSlideWidth() {
+        return slideWidth;
+    }
+
+    public void setSlideWidth(float slideWidth) {
+        this.slideWidth = slideWidth;
+    }
+
     /**
      * +1 to go to next slide, -1 to go to previous slide.
      */
     private int slideIncrement;
-    
+
     public int getSlideIncrement() {
         return slideIncrement;
     }
@@ -38,6 +74,4 @@ public class PresentationCellChangeMessage extends CellMessage {
     public void setSlideIncrement(int slideIncrement) {
         this.slideIncrement = slideIncrement;
     }
-
-    
 }

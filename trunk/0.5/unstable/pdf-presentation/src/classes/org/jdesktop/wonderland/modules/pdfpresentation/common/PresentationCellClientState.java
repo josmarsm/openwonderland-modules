@@ -16,21 +16,43 @@
  * this code.
  */
 
-
 package org.jdesktop.wonderland.modules.pdfpresentation.common;
 
+import java.util.List;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
-/**
- *
- * @author Drew Harry <drew_harry@dev.java.net>
- */
 public class PresentationCellClientState extends CellClientState {
+
+    private String pdfURI;
+    private String creatorName;
+
+    private PresentationLayout layout;
 
     public PresentationCellClientState() {
         
     }
 
-    
+    public String getPdfURI() {
+        return pdfURI;
+    }
 
+    public void setPdfURI(String pdfURI) {
+        this.pdfURI = pdfURI;
+    }
+
+    public PresentationLayout getLayout() {
+        return layout;
+    }
+
+    public void setLayout(PresentationLayout layout) {
+        this.layout = layout;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
+    }
 }

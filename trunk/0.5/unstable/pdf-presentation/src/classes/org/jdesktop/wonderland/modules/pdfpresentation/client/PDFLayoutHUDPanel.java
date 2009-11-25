@@ -24,9 +24,7 @@ import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFSpreaderCellChangeMessage.LayoutType;
-import org.jdesktop.wonderland.modules.pdfpresentation.client.PresentationCell;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout.LayoutType;
 
 /**
  *
@@ -38,7 +36,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
         Logger.getLogger(PDFLayoutHUDPanel.class.getName());
 
 
-    private PDFSpreaderCell cell;
+    private PresentationCell cell;
 
     private ButtonGroup layoutButtons;
 
@@ -47,7 +45,7 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
     private final static String CIRCLE_COMMAND = "cicle";
 
     /** Creates new form PDFLayoutHUDPanel */
-    public PDFLayoutHUDPanel(PDFSpreaderCell c) {
+    public PDFLayoutHUDPanel(PresentationCell c) {
         initComponents();
 
         this.cell = c;
@@ -115,8 +113,10 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
 
     }
 
-    public void setCell(PDFSpreaderCell cell) {
-        this.cell = cell;
+    // Does this actually get called in the new regime?
+    // CHECK AND POTENTIALLY DELETE
+    public void setCell(PresentationCell c) {
+        this.cell = c;
 
         // this should get the current values for scale / spacing
         // although given the poor behavior of the embedded slider it
@@ -241,7 +241,8 @@ public class PDFLayoutHUDPanel extends javax.swing.JPanel implements ActionListe
         // Make a call into the presentation manager to tell it that this PDF wants to be
         // turned into a full presentation space.
 
-        PresentationCell.createPresentationSpace((Cell)cell);
+        // rip this button out once everything is functionally merged
+//        PresentationCell.createPresentationSpace((Cell)cell);
 
     }//GEN-LAST:event_createPresentationButtonActionPerformed
 
