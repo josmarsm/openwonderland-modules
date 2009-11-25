@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.bridgerecordermodule.server;
 
 import com.sun.voip.Recorder;
@@ -34,23 +33,21 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 
-
 /**
  * Represents a listener that listens when the recording is started and stopped.
  * @author Joe Provino
  * @author Bernard Horan
  */
 public class BridgeRecorderListener implements RecorderListener {
+
     private static final Logger logger = Logger.getLogger(BridgeRecorderInitializer.class.getName());
     private static final String AUDIO_RECORDINGS_DIRECTORY = "AudioRecordings";
-
-
     private Recorder recorder;
     private BridgeRecorderInitializer brInitializer;
     private int records;
     private int bytes;
 
-    public BridgeRecorderListener(Recorder recorder , BridgeRecorderInitializer brInitializer) {
+    public BridgeRecorderListener(Recorder recorder, BridgeRecorderInitializer brInitializer) {
         this.recorder = recorder;
         this.brInitializer = brInitializer;
         logger.info("adding recorder listener...");
@@ -59,7 +56,6 @@ public class BridgeRecorderListener implements RecorderListener {
 
     public void recorderStarted() {
         logger.info("Start recording " + recorder.getRecordPath() + " " + recorder.getMediaInfo());
-        
     }
 
     /**
@@ -77,7 +73,6 @@ public class BridgeRecorderListener implements RecorderListener {
             logger.log(Level.SEVERE, "Failed to copy file due to an IO exception", ex);
         }
     }
-    
 
     /**
      * Mainly logging
@@ -102,16 +97,16 @@ public class BridgeRecorderListener implements RecorderListener {
             throw new FileNotFoundException();
         }
         ContentNode node = recordingRoot.getChild(AUDIO_RECORDINGS_DIRECTORY);
-            if (node == null) {
-                node = recordingRoot.createChild(AUDIO_RECORDINGS_DIRECTORY, Type.COLLECTION);
-            }
-        ContentCollection dirNode = (ContentCollection)node;
+        if (node == null) {
+            node = recordingRoot.createChild(AUDIO_RECORDINGS_DIRECTORY, Type.COLLECTION);
+        }
+        ContentCollection dirNode = (ContentCollection) node;
         logger.info("directory for audio recordings: " + dirNode);
         String recordingName = audioFile.getName();
         logger.info("recording name: " + recordingName);
         node = dirNode.getChild(recordingName);
         if (node != null) {
-            logger.info("removing: " + recordingName);
+            logger.info("recording already exists, so removing: " + recordingName);
             dirNode.removeChild(recordingName);
         }
         node = dirNode.createChild(recordingName, Type.RESOURCE);
@@ -120,16 +115,15 @@ public class BridgeRecorderListener implements RecorderListener {
         resource.put(audioFile);
     }
 
-
     /**
      * Returns the content repository root for the system root, or null upon
      * error.
      */
     private ContentCollection getSystemRoot(ServerSessionManager loginInfo) {
         ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
-         ContentRepository repo = registry.getRepository(loginInfo);
+        ContentRepository repo = registry.getRepository(loginInfo);
         if (repo == null) {
-            logger.severe("Repo is null");
+            logger.severe("Repository is null");
             return null;
         }
         try {

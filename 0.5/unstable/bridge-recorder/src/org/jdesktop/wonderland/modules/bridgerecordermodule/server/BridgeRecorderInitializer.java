@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.bridgerecordermodule.server;
 
 import com.sun.voip.NewRecorderListener;
@@ -49,10 +48,10 @@ import org.jdesktop.wonderland.modules.webdav.common.WebdavContentCollection;
  * @author Bernard Horan
  */
 public class BridgeRecorderInitializer implements NewRecorderListener {
+
     private static final Logger logger = Logger.getLogger(BridgeRecorderInitializer.class.getName());
     /** The property with the password file location */
     private static final String PASSWORD_FILE_PROP = "voicebridge.password.file";
-
     /**
      * The login object provides an abstraction for creating a session with
      * the server.
@@ -91,9 +90,7 @@ public class BridgeRecorderInitializer implements NewRecorderListener {
 
         logger.info("Login succeeded, registering repository");
         registerRepository();
-
         logger.info("Registering repository succeeded");
-        
     }
 
     private void registerRepository() {
@@ -104,28 +101,26 @@ public class BridgeRecorderInitializer implements NewRecorderListener {
 
             // get the authentication service for this session
             AuthenticationService as =
-                AuthenticationManager.get(loginInfo.getCredentialManager().getAuthenticationURL());
+                    AuthenticationManager.get(loginInfo.getCredentialManager().getAuthenticationURL());
 
             // activate the webdav repository for this session
             String authCookieName = as.getCookieName();
             String authCookieValue = as.getAuthenticationToken();
             AuthenticatedWebdavResource wdr =
                     new AuthenticatedWebdavResource(baseURL,
-                                                    authCookieName,
-                                                    authCookieValue);
+                    authCookieName,
+                    authCookieValue);
             WebdavContentCollection root =
-                    new WebdavContentCollection(wdr, null)
-            {
-                // don't include the root node in the path
-                @Override
-                public String getPath() {
-                    return "";
-                }
-            };
+                    new WebdavContentCollection(wdr, null) {
+                        // don't include the root node in the path
+
+                        @Override
+                        public String getPath() {
+                            return "";
+                        }
+                    };
             WebdavContentRepository repo =
                     new WebdavContentRepository(root, loginInfo.getUsername());
-
-            //logger.fine("[WebdavClientPlugin] Register repository with root " + baseURL + " and resource " + wdr);
 
             ContentRepositoryRegistry.getInstance().registerRepository(loginInfo, repo);
         } catch (AuthenticationException ae) {
@@ -137,6 +132,7 @@ public class BridgeRecorderInitializer implements NewRecorderListener {
         String dirName = "localRepo/" + loginInfo.getUsername();
         final File userDir = ClientContext.getUserDirectory(dirName);
         localRepo = new FileContentCollection(userDir, null) {
+
             @Override
             protected URL getBaseURL() {
                 try {
@@ -151,7 +147,6 @@ public class BridgeRecorderInitializer implements NewRecorderListener {
             public String getPath() {
                 return "";
             }
-
         };
         ContentRepositoryRegistry.getInstance().registerLocalRepository(localRepo);
     }
