@@ -112,6 +112,7 @@ public class MovieRecorderCell extends Cell {
         if (increasing && status == CellStatus.RENDERING) {
             if (ui == null) {
                 initUI();
+                cellLogger.info("setting ui to be visible");
                 ui.setVisible(true);
                 renderer.setRemoteRecording(remoteRecording);
             }
@@ -119,6 +120,7 @@ public class MovieRecorderCell extends Cell {
                 final ContextMenuActionListener l = new ContextMenuActionListener() {
 
                     public void actionPerformed(ContextMenuItemEvent event) {
+                        cellLogger.info("setting ui to be visible");
                         ui.setVisible(true);
                     }
                 };
