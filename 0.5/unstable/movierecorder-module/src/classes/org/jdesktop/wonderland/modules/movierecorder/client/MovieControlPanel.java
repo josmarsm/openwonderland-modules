@@ -287,7 +287,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
         }
         //
         //Or Gnome?
-        File documents = new File(home + File.separator + "Documents");
+        File documents = new File(home + File.separator + "Videos");
         if (documents.exists()) {
             return documents.toString();
         }

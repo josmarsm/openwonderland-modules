@@ -63,6 +63,7 @@ public class MovieRecorderCellMO extends CellMO implements ManagedCallStatusList
     private Recorder recorder;
     private MovieRecorderCellServerState serverState;
     private String recordingDirectory;
+    private WonderlandClientID recordingClientID;
 
     public MovieRecorderCellMO() {
         super();
@@ -206,9 +207,14 @@ public class MovieRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     private void processRecordMessage(WonderlandClientID clientID, MovieRecorderCellChangeMessage arcm) {
         setRecording(arcm.isRecording(), arcm.getRecordingName());
-
-        // send a message to all clients
-        getChannel().sendAll(clientID, arcm);
+        if (arcm.isRecording()) {
+            // send a message to all clients
+            getChannel().sendAll(clientID, arcm);
+            recordingClientID = clientID;
+        }
+        //We don't send a message to all clients immediately we stop recording
+        //We send it when we hear from the voicebridge that the recording is done
+        //see callStatusChanged)(
     }
 
     private ChannelComponentMO getChannel() {
@@ -217,11 +223,12 @@ public class MovieRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     public void callStatusChanged(CallStatus status) {
         movieRecorderLogger.info("Got call status " + status);
-
-        switch (status.getCode()) {
-            case CallStatus.RECORDERDONE:
-                movieRecorderLogger.info("THE RECORDING IS DONE!");
-                break;
+        if (status.getCode() == CallStatus.RECORDERDONE) {
+            //We can tell clients that the recording has finished
+            movieRecorderLogger.info("Recording is done");
+            MovieRecorderCellChangeMessage arcm = MovieRecorderCellChangeMessage.recordingMessage(getCellID(), null, false);
+            getChannel().sendAll(recordingClientID, arcm);
+            recordingClientID = null;
         }
     }
 

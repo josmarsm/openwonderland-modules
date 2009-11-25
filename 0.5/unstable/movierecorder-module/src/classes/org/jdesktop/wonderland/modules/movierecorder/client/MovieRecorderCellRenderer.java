@@ -366,7 +366,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         } catch (UnsupportedAudioFileException ex) {
             rendererLogger.log(Level.SEVERE, null, ex);
         } catch (LineUnavailableException ex) {
-            rendererLogger.log(Level.SEVERE, null, ex);
+            rendererLogger.warning("cannot play audio resource, due to " + ex.getLocalizedMessage());
         } catch (IOException ex) {
             rendererLogger.log(Level.SEVERE, null, ex);
         } finally {
