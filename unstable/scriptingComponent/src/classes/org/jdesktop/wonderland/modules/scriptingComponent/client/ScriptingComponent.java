@@ -74,7 +74,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
@@ -94,6 +93,7 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 //import org.jdesktop.wonderland.modules.npc.client.cell.NpcCell;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentCellCreateMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentNpcMoveMessage;
 //import org.jdesktop.wonderland.modules.scriptingImager.client.jme.cellrenderer.ScriptingImagerCellRenderer;
 
@@ -292,6 +292,14 @@ public class ScriptingComponent extends CellComponent
         System.out.println("ScriptingComponent - enter executeAction - no parms");
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.setSingleInt(a);
+        runny.run();
+        }
+
+    public void executeAction(String Name, String avatar)
+        {
+        System.out.println("ScriptingComponent - enter executeAction - no parms");
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.setAvatar(avatar);
         runny.run();
         }
 
@@ -741,7 +749,7 @@ public class ScriptingComponent extends CellComponent
             {
             case RENDERING:
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING");
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - increasing = " + increasing);
 /* Get local node */
                 if(!firstEntry)
                     {
@@ -760,9 +768,8 @@ public class ScriptingComponent extends CellComponent
                         myListener.addToEntity(mye);
                         KeyEventListener myKeyListener = new KeyEventListener();
                         myKeyListener.addToEntity(mye);
-
-//                        ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
                         }
+                    ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
                     System.out.println("In component setStatus - renderer = " + ret);
 /* Execute the startup script */
                     executeScript(STARTUP_EVENT, null);
@@ -773,9 +780,9 @@ public class ScriptingComponent extends CellComponent
                 }
             case ACTIVE:
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE");
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE - increasing = " + increasing);
  /* Register the intercell listener */
-                ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
+////                ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
 /* Get local node */
 //                CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
 
@@ -2111,10 +2118,18 @@ public class ScriptingComponent extends CellComponent
 //        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
         }
 
-    public void createNPCInstance()
+    public void createCellInstance(String className, float x, float y, float z, String cellName)
         {
+        System.out.println("Enter createCellInstance");
+//        ScriptingComponentCellCreateMessage msg =
+//                new ScriptingComponentCellCreateMessage("org.jdesktop.wonderland.modules.scriptingImager.common.ScriptingImagerCellServerState",
+//                2.0f, 0.0f, 2.0f, "morris");
+        ScriptingComponentCellCreateMessage msg =
+                new ScriptingComponentCellCreateMessage(className, x, y, z, cellName);
+        channelComp.send(msg);
 
         }
+
     class KeyEventListener extends EventClassListener
         {
         @Override

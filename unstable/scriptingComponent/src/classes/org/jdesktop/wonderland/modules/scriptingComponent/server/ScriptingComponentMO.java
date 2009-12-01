@@ -22,18 +22,27 @@ import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentClientState;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentServerState;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentCellCreateMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentChangeMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentICEMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentNpcMoveMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentTransformMessage;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
@@ -172,6 +181,7 @@ public class ScriptingComponentMO extends CellComponentMO
             channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentICEMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
             channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentTransformMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
             channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentNpcMoveMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
+            channelComponentRef.getForUpdate().addMessageReceiver(ScriptingComponentCellCreateMessage.class, new ScriptingComponentChangeReceiver(cellRef, this));
             } 
         else 
             {
@@ -179,6 +189,7 @@ public class ScriptingComponentMO extends CellComponentMO
             channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentICEMessage.class);
             channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentTransformMessage.class);
             channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentNpcMoveMessage.class);
+            channelComponentRef.getForUpdate().removeMessageReceiver(ScriptingComponentCellCreateMessage.class);
             }
         System.out.println("ScriptingComponentMO : In setLive = live = " + live);
         }
@@ -227,8 +238,68 @@ public class ScriptingComponentMO extends CellComponentMO
         eventScriptType = ((ScriptingComponentServerState)state).getScriptType();
         System.out.println("ScriptingComponentMO - : In setServerState");
         }
-    
-     private static class ScriptingComponentChangeReceiver implements ComponentMessageReceiver, ManagedObject
+
+    public void createInstance(String className, float x, float y, float z, String cellName) throws IOException, MultipleParentException
+        {
+        CellServerState ccs = null;
+
+        try
+            {
+            Class cl = getClass().forName(className);
+            System.out.println("In createInstance - cl = " + cl);
+            ccs =     (CellServerState) cl.newInstance();
+            System.out.println("In createInstance - ccs = " + ccs);
+            }
+        catch (InstantiationException ex)
+            {
+            System.out.println("InstantaitionException doing newInstance - " + ex);
+            }
+        catch (IllegalAccessException ex)
+            {
+            System.out.println("IllegalAccessException doing newInstance - " + ex);
+            }
+        catch (ClassNotFoundException ex)
+            {
+            System.out.println("ClassNotFoundExcpetion doing newInstance - " + ex);
+            }
+    // get the current position of the cell
+
+        PositionComponentServerState pcss = (PositionComponentServerState)
+        ccs.getComponentServerState(PositionComponentServerState.class);
+        if (pcss == null)
+            {
+        // add the position component if it doesn't exist
+            pcss = new PositionComponentServerState();
+            ccs.addComponentServerState(pcss);
+            }
+
+    // set the position
+        pcss.setTranslation(new Vector3f(x, y, z));
+
+        String newClassName = ccs.getServerClassName();
+        System.out.println("In createCell - class name = " + newClassName);
+        CellMO cellMO = CellMOFactory.loadCellMO(newClassName);
+        System.out.println("In createCell - cellMO = " + cellMO);
+        if(cellMO == null)
+            {
+            throw new IOException("Unable to load cell MO: " + newClassName);
+            }
+        try
+            {
+            cellMO.setServerState(ccs);
+            }
+        catch(ClassCastException cce)
+            {
+            throw new IOException("Error setting up new cell " + cellMO.getName() + " of type " + cellMO.getClass(), cce);
+            }
+
+        cellMO.setName(cellName);
+        
+        WonderlandContext.getCellManager().insertCellInWorld(cellMO);
+        System.out.println("In createCell - cell inserted");
+        }
+
+    private static class ScriptingComponentChangeReceiver implements ComponentMessageReceiver, ManagedObject
         {
         private ManagedReference<ScriptingComponentMO> compRef;
         private ManagedReference<CellMO> cellRef;
@@ -299,6 +370,29 @@ public class ScriptingComponentMO extends CellComponentMO
                 CellMO underlyingCellMO = cellRef.getForUpdate();
 //                underlyingCellMO.setLocalTransform(ent.getCellTransform());
                 chanMO.sendAll(clientID, message);
+                }
+            else if(message instanceof ScriptingComponentCellCreateMessage)
+                {
+                ScriptingComponentCellCreateMessage ent = (ScriptingComponentCellCreateMessage) message;
+                System.out.println("CellMO with cell create message");
+                String ClassName = ent.getClassName();
+                float x = ent.getX();
+                float y = ent.getY();
+                float z = ent.getZ();
+                String CellName = ent.getCellName();
+
+                try
+                    {
+                    cellMO.createInstance(ClassName, x, y, z, CellName);
+                    }
+                catch (IOException ex)
+                    {
+                    System.out.println("IOException doing createInstance - " + ex);
+                    }
+                catch (MultipleParentException ex)
+                    {
+                    System.out.println("MultipleParentException doing createInstance - " + ex);
+                    }
                 }
             }
         public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) 

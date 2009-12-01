@@ -15,7 +15,13 @@ public class ScriptingRunnable implements Runnable
     public float y;
     public float z;
     public int a;
+    public String avatar;
 
+    public void setAvatar(String Avatar)
+        {
+        avatar = Avatar;
+        }
+    
     public void setPoint(float X, float Y, float Z)
         {
         x = X;
