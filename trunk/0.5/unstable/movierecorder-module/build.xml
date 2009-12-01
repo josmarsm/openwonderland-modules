@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="wonderland-${module.name}-module" default="dist" basedir=".">
+<project name="wonderland-movierecorder-module" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.wonderland-${module.name}-module}"/>
+    <dirname property="current.dir" file="${ant.file.wonderland-movierecorder-module}"/>
     
     <!-- import properties from the common modules properties. These values
          may overwrite some values in my.module.properties, such as the
