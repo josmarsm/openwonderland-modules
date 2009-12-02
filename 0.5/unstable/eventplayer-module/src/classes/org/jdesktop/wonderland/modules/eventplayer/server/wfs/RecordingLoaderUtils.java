@@ -59,11 +59,11 @@ public class RecordingLoaderUtils {
      * @throws IOException
      */
     public static CellMap<CellImportEntry> loadCellMap(String tapeName) throws JAXBException, IOException {
-        //logger.info("tapeName: " + tapeName);
+        logger.info("tapeName: " + tapeName);
         RecordingRoot recordingRoot = getRecordingRoot(tapeName);
-        //logger.info("recordingRoot: " + recordingRoot);
+        logger.info("recordingRoot: " + recordingRoot);
         String recordingName = recordingRoot.getRootPath();
-        //logger.info("recordingName: " + recordingName);
+        logger.info("recordingName: " + recordingName);
         CellMap<CellImportEntry> cellMOMap = new CellMap<CellImportEntry>();
         //logger.info("rootName: " + recorderName);
         /* A queue (last-in, first-out) containing a list of cell to search down */
@@ -73,7 +73,7 @@ public class RecordingLoaderUtils {
         CellList dir = CellImporterUtils.getWFSRootChildren(recordingName);
         if (dir == null) {
             /* Log an error and return, though this should never happen */
-            logger.warning("WFSLoader: did not find root directory for wfs " + recordingName);
+            logger.warning("RecordingLoader: did not find root directory for wfs " + recordingName);
             return null;
         }
         children.addFirst(dir);
@@ -96,7 +96,9 @@ public class RecordingLoaderUtils {
 
             /* Recursively load the cells for this child */
             CellMap<CellImportEntry> map = loadCellMap(recordingName, childdir, children);
-            cellMOMap.putAll(map);
+            if (map != null) {
+                cellMOMap.putAll(map);
+            }
         }
          return cellMOMap;
     }
@@ -120,9 +122,11 @@ public class RecordingLoaderUtils {
          * instead.
          */
         Cell childs[] = dir.getChildren();
-        //logger.info("childs length: " + childs.length);
+        if (childs != null) {
+            logger.info("childs length: " + childs.length);
+        }
         if (childs == null) {
-            logger.warning("WSLoader: could not read children in WFS " + root);
+            logger.warning("RecordingLoader: no children in " + dir.getRelativePath());
             return null;
         }
 
@@ -132,7 +136,7 @@ public class RecordingLoaderUtils {
          * exists and the last time it was modified on disk.
          */
         for (Cell child : childs) {
-            //logger.info("WFSLoader: processing child " + child.name);
+            logger.info("RecordingLoader: processing child " + child.name);
             CellImportEntry importEntry = new CellImportEntry(child.name);
             /*
              * Fetch the relative path of the parent. Check if null, although
@@ -153,7 +157,7 @@ public class RecordingLoaderUtils {
                 logger.warning("unable to read cell serverState info " + importEntry.relativePath + "/" + importEntry.name);
                 continue;
             }
-            //logger.info(setup.toString());
+            logger.info("server state: " + importEntry.serverState.toString());
 
             /*
              * If the cell is at the root, then the relative path will be "/"
@@ -166,7 +170,7 @@ public class RecordingLoaderUtils {
 
 
             cellMOMap.put(cellPath, importEntry);
-            //logger.info("WFSLoader: putting " + cellPath + " into map with " + importEntry);
+            logger.info("RecordingLoader: putting " + cellPath + " into map with " + importEntry);
 
 
             /*
