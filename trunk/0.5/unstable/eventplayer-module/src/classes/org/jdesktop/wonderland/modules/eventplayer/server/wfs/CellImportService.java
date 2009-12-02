@@ -274,8 +274,10 @@ public class CellImportService extends AbstractService implements CellImportMana
         }
 
         private void notifyCellRetrieval(CellMap<CellImportEntry> cellMOMap, Exception ex) {
-            //logger.getLogger().info("cellMap: " + cellMOMap);
-            //logger.getLogger().info("exception: " + ex);
+            logger.getLogger().info("cellMap: " + cellMOMap);
+            if (ex != null) {
+                logger.getLogger().log(Level.SEVERE, "failed to retrieve cells", ex);
+            }
 
             CellMap<CellID> cellPathMap = new CellMap<CellID>();
             CellMap<CellImportEntry> subMap = new CellMap<CellImportEntry>();
