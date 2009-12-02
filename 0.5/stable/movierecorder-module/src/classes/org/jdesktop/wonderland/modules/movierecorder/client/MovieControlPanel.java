@@ -277,7 +277,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
         String home = System.getProperty("user.home");
         //
         //Are we on a PC?
-        File myDocuments = new File(home + File.separator + "My Documents");
+        File myDocuments = new File(home + File.separator + "My Documents" + File.separator + "My Videos");
         if (myDocuments.exists()) {
             return myDocuments.toString();
         }
@@ -302,7 +302,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
         String home = System.getProperty("user.home");
         //
         //Are we on a PC?
-        File myDocuments = new File(home + File.separator + "My Documents");
+        File myDocuments = new File(home + File.separator + "My Documents" + File.separator + "My Pictures");
         if (myDocuments.exists()) {
             return myDocuments.toString();
         }
