@@ -64,6 +64,8 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.Mixer;
+import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
@@ -360,7 +362,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             audioInputStream = AudioSystem.getAudioInputStream(url);
             AudioFormat audioFormat = audioInputStream.getFormat();
             DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
-            Clip clip = (Clip) AudioSystem.getLine(dataLineInfo);
+            Clip clip = getClip(dataLineInfo);
             clip.open(audioInputStream);
             clip.start();
         } catch (UnsupportedAudioFileException ex) {
@@ -377,6 +379,21 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             }
         }
     }
+
+    private Clip getClip(DataLine.Info info) throws LineUnavailableException {
+        for (Mixer.Info mi : AudioSystem.getMixerInfo()) {
+            Mixer mixer = AudioSystem.getMixer(mi);
+            try {
+                return (Clip) mixer.getLine(info);
+            } catch (LineUnavailableException ex) {
+                rendererLogger.warning("Matching line not available: " + ex.getLocalizedMessage());
+            } catch (IllegalArgumentException ex) {
+                rendererLogger.warning("Mixer does not support this format. " + ex.getLocalizedMessage());
+            }
+        }
+        throw new LineUnavailableException("Failed to get any line for info: " + info);
+    }
+
 
     class CameraListener extends EventClassListener {
 
