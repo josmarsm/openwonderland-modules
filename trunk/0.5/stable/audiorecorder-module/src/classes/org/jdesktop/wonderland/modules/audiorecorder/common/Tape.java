@@ -61,6 +61,8 @@ public class Tape implements Serializable, Comparable<Tape> {
         sb.append(tapeName);
         sb.append(" isFresh=");
         sb.append(isFresh);
+        sb.append(" url=");
+        sb.append(url);
         return sb.toString();
     }
 
@@ -89,8 +91,18 @@ public class Tape implements Serializable, Comparable<Tape> {
 
     @Override
     public boolean equals(Object o) {
+        //I am the same as some other tape iff my name is the same, my freshness is the same and my url is the same
         if (o instanceof Tape) {
-            return ((Tape)o).tapeName.equals(tapeName);
+            boolean sameName = ((Tape)o).tapeName.equals(tapeName);
+            boolean sameFreshness = ((Tape)o).isFresh == isFresh;
+            URL otherURL = ((Tape)o).url;
+            boolean sameURL = false;
+            if (otherURL != null) {
+                sameURL = ((Tape)o).url.equals(url);
+            } else {
+                sameURL = url == null;
+            }
+            return sameName && sameFreshness && sameURL;
         }
         return false;
     }

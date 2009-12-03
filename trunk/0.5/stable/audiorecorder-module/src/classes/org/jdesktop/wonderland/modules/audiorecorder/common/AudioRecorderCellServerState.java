@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
- *
+ * Class to represent the state of the audio recorder cell on the server
  * @author Bernard Horan
  */
 @XmlRootElement(name="audiorecorder-cell")
