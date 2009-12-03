@@ -163,19 +163,24 @@ public class AudioRecorderCellChangeMessage extends CellMessage {
         builder.append(": ");
         switch (action) {
             case SET_VOLUME:
-                builder.append(volume);
+                builder.append("set volume: " + volume);
                 break;
             case PLAYBACK_DONE:
                 //do nothing
                 break;
             case RECORD:
                 builder.append("isRecording: " + isRecording);
+                builder.append("tape: " + aTape);
                 break;
             case PLAY:
                 builder.append("isPlaying: " + isPlaying);
+                builder.append("tape: " + aTape);
                 break;
             case TAPE_SELECTED:
-                builder.append(aTape.getTapeName());
+                builder.append("tape selected: " + aTape);
+                break;
+            case TAPE_USED:
+                builder.append("tape used: " + aTape);
                 break;
             default:
                 throw new RuntimeException("Invalid action");

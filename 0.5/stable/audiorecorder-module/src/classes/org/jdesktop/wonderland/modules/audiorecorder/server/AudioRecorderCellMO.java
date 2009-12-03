@@ -248,6 +248,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     }
 
     private void processPlayMessage(WonderlandClientID clientID, AudioRecorderCellChangeMessage arcm) {
+        audioRecorderLogger.info("message: " + arcm.getDescription());
         setPlaying(arcm.isPlaying(), arcm.getTape());
         serverState.setUserName(arcm.getUserName());
 

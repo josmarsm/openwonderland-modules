@@ -402,6 +402,7 @@ public class AudioRecorderCell extends Cell {
             return;
         }
         if (!isRecording) {
+            updateTapeModels();
             if (selectedTape == null) {
                 logger.warning("Can't playback when there's no selected tape");
                 SwingUtilities.invokeLater(new Runnable() {
@@ -430,6 +431,7 @@ public class AudioRecorderCell extends Cell {
             userName = getCurrentUserName();
             setPlaying(true);
             AudioRecorderCellChangeMessage msg = AudioRecorderCellChangeMessage.playing(getCellID(), selectedTape, isPlaying, userName);
+            audioRecorderLogger.info("message: " + msg.getDescription());
             getChannel().send(msg);
         } else {
             logger.warning("Can't start playing when already recording");
