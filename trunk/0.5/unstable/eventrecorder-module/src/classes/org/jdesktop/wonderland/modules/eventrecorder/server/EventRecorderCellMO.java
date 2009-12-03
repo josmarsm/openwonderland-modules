@@ -25,6 +25,7 @@ import com.sun.mpk20.voicelib.app.RecorderSetup;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
@@ -322,7 +323,7 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
 
         setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
 
-        setup.recordDirectory = getAudioRecordingDirectory();
+        //setup.recordDirectory = getAudioRecordingDirectory();
 
         try {
             audioRecorder = vm.createRecorder(callId, setup);
@@ -340,11 +341,15 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         //logger.info("cellCacheRef for " + recorderName + ": " + eventRecorderCellCacheRef);
         String tapeName = serverState.getSelectedTape().getTapeName();
         try {
-            audioRecorder.startRecording(tapeName + ".au");
+            audioRecorder.startRecording(getAudioRecorderFilename(tapeName));
         } catch (IOException ex) {
             eventRecorderLogger.log(Level.SEVERE, "Failed to start audio recording", ex);
         }
         recorderRef.get().startRecording(tapeName, eventRecorderCellCacheRef.get().getLoadedCells());
+    }
+
+    private String getAudioRecorderFilename(String tapeName) {
+        return getAudioRecordingDirectory() + File.separator + "EventRecording_" + tapeName + ".au";
     }
 
 
