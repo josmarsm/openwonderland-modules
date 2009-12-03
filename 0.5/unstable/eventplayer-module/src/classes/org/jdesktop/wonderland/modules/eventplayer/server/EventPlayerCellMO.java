@@ -26,6 +26,8 @@ import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -48,6 +50,7 @@ import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerCellServerS
 import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerClientState;
 import org.jdesktop.wonderland.modules.eventplayer.common.Tape;
 import org.jdesktop.wonderland.modules.eventplayer.common.TapeStateMessageResponse;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.wfs.exporter.CellExportManager;
@@ -284,7 +287,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
 
         setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
 
-        setup.recordDirectory = getAudioRecordingDirectory();
+        //setup.recordDirectory = getAudioRecordingDirectory();
 
         try {
             audioRecorder = vm.createRecorder(callId, setup);
@@ -321,11 +324,19 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         eventPlayerLogger.info("Start Playing");
         playerRef.get().startPlaying();
         try {
-            audioRecorder.playRecording(serverState.getSelectedTape().getTapeName() + ".au");
+            audioRecorder.playRecording(getAudioRecordingURL(serverState.getSelectedTape().getTapeName()));
         } catch (IOException ex) {
             eventPlayerLogger.log(Level.SEVERE, "Failed to play recording", ex);
         }
 
+    }
+
+    private String getAudioRecordingURL(String tapeName) {
+        //TODO this is too much of a hack
+        String resourceName = "EventRecording_" + tapeName + ".au";
+        String webserverURL = System.getProperty("wonderland.web.server.url", "http://localhost:8080");
+        String recordingURL = webserverURL + "/webdav/content/system/AudioRecordings/" + resourceName;
+        return recordingURL;
     }
 
     private void stopPlaying() {
