@@ -113,7 +113,7 @@ public class MovieRecorderCell extends Cell {
             if (ui == null) {
                 initUI();
                 cellLogger.info("setting ui to be visible");
-                ui.setVisible(true);
+                //ui.setVisible(true);
                 renderer.setRemoteRecording(remoteRecording);
             }
             if (menuFactory == null) {

@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.movierecorder.client;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -48,10 +49,7 @@ public class MovieRecorderCellFactory implements CellFactorySPI {
 
         // Set a bounding hint based upon the width x height x depth of the
         // movie recorder
-        BoundingBox box = new BoundingBox(Vector3f.ZERO,
-                1f,
-                0.7f,
-                0.2f);
+        BoundingSphere box = new BoundingSphere(1.0f, new Vector3f(1f, 0.7f, 0.2f));
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
 
