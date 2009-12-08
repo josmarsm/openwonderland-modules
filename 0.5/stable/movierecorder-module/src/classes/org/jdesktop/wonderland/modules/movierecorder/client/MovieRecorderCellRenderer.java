@@ -219,8 +219,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         //Translate the camera so it's in front of the model
         cameraSG.setLocalTranslation(0f, 0.5f, -0.5f);
         //Create a camera component
-        CameraComponent cc = wm.getRenderManager().createCameraComponent(cameraSG, cn,
-                IMAGE_WIDTH, IMAGE_HEIGHT, 90.0f, (float) IMAGE_WIDTH/ (float) IMAGE_HEIGHT, 0.1f, 10000f, false);
+        CameraComponent cc = wm.getRenderManager().createCameraComponent(cameraSG, cn, IMAGE_WIDTH, IMAGE_HEIGHT, 45.0f, (float) IMAGE_WIDTH/ (float) IMAGE_HEIGHT, 0.1f, 10000f, false);
         //Set the camera for the render buffer
         textureBuffer.setCameraComponent(cc);
         //Add the render buffer to the render manager

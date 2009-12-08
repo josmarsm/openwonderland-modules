@@ -24,6 +24,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.logging.Logger;
+import javax.swing.DefaultButtonModel;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -84,11 +85,13 @@ public class MovieControlPanel extends javax.swing.JPanel {
         picturesLabelDirectory = new javax.swing.JLabel();
         picturesDirectoryField = new javax.swing.JTextField();
         picturesPathBrowseButton = new javax.swing.JButton();
+        snapshotButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
         previewPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
 
-        recorderStatusLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        recorderStatusLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         recorderStatusLabel.setText("Offline");
         recorderStatusLabel.setToolTipText("Recorder Status");
 
@@ -135,6 +138,16 @@ public class MovieControlPanel extends javax.swing.JPanel {
             }
         });
 
+        snapshotButton.setText("Snapshot");
+        snapshotButton.setToolTipText("Click to take a picture");
+        snapshotButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                snapshotButtonActionPerformed(evt);
+            }
+        });
+
+        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+
         org.jdesktop.layout.GroupLayout controlPanelLayout = new org.jdesktop.layout.GroupLayout(controlPanel);
         controlPanel.setLayout(controlPanelLayout);
         controlPanelLayout.setHorizontalGroup(
@@ -143,26 +156,30 @@ public class MovieControlPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(controlPanelLayout.createSequentialGroup()
-                        .add(recordButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 155, Short.MAX_VALUE)
-                        .add(recorderStatusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(52, 52, 52))
-                    .add(controlPanelLayout.createSequentialGroup()
                         .add(picturesLabelDirectory)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(picturesDirectoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(picturesPathBrowseButton)
-                        .addContainerGap())
-                    .add(controlPanelLayout.createSequentialGroup()
-                        .add(movieDirectoryLabel)
-                        .add(18, 18, 18)
-                        .add(movieDirectoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+                        .add(picturesPathBrowseButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, controlPanelLayout.createSequentialGroup()
+                        .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, controlPanelLayout.createSequentialGroup()
+                                .add(recordButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(stopButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(recorderStatusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 75, Short.MAX_VALUE)
+                                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(controlPanelLayout.createSequentialGroup()
+                                .add(movieDirectoryLabel)
+                                .add(18, 18, 18)
+                                .add(movieDirectoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(moviePathBrowseButton)
-                        .addContainerGap())))
+                        .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, moviePathBrowseButton)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, snapshotButton))))
+                .addContainerGap())
         );
         controlPanelLayout.setVerticalGroup(
             controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -177,10 +194,13 @@ public class MovieControlPanel extends javax.swing.JPanel {
                     .add(movieDirectoryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(moviePathBrowseButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(recordButton)
-                    .add(stopButton)
-                    .add(recorderStatusLabel))
+                .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(recordButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(stopButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(recorderStatusLabel)
+                        .add(snapshotButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -351,9 +371,20 @@ public class MovieControlPanel extends javax.swing.JPanel {
         }
 }//GEN-LAST:event_picturesPathBrowseButtonActionPerformed
 
+    private void snapshotButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_snapshotButtonActionPerformed
+        DefaultButtonModel stillButtonModel = recorderCell.getStillButtonModel();
+        //simulate a press
+        stillButtonModel.setPressed(true);
+        stillButtonModel.setSelected(true);
+        //simulate a release
+        stillButtonModel.setPressed(false);
+        stillButtonModel.setSelected(false);
+}//GEN-LAST:event_snapshotButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel controlPanel;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField movieDirectoryField;
     private javax.swing.JLabel movieDirectoryLabel;
     private javax.swing.JButton moviePathBrowseButton;
@@ -363,6 +394,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
     private javax.swing.JPanel previewPanel;
     private javax.swing.JButton recordButton;
     private javax.swing.JLabel recorderStatusLabel;
+    private javax.swing.JButton snapshotButton;
     private javax.swing.JButton stopButton;
     // End of variables declaration//GEN-END:variables
 
