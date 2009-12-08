@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JComponent;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
@@ -42,6 +43,7 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
@@ -216,7 +218,12 @@ public class MovieRecorderCell extends Cell {
     }
 
     void captureImage() {
-        ((MovieRecorderCellRenderer)renderer).captureImage(ui.getControlPanel().getPicturesDirectory());
+        SceneWorker.addWorker(new WorkCommit() {
+
+            public void commit() {
+                ((MovieRecorderCellRenderer) renderer).captureImage(ui.getControlPanel().getPicturesDirectory());
+            }
+        });
     }
 
     /**
