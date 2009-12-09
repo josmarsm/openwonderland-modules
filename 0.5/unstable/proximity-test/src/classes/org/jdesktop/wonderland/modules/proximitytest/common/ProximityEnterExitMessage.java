@@ -15,28 +15,28 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.proximitytest.common;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- *
- * @author Drew Harry <drew_harry@dev.java.net>
+ * Message to notify the client when it enters or exits server bounds
+ * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-@XmlRootElement(name="platform-cell")
-@ServerState
-public class PlatformCellServerState extends CellServerState {
+public class ProximityEnterExitMessage extends CellMessage {
+    private int index;
+    private boolean enter;
 
-    public PlatformCellServerState() {
+    public ProximityEnterExitMessage(int index, boolean enter) {
+        this.index = index;
+        this.enter = enter;
     }
 
-    public String getServerClassName() {
-        return "org.jdesktop.wonderland.modules.proximitytest.server.PlatformCellMO";
+    public int getIndex() {
+        return index;
     }
 
+    public boolean isEnter() {
+        return enter;
+    }
 }
