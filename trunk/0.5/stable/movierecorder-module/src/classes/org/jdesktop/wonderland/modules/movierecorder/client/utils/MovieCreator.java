@@ -219,6 +219,7 @@ public class MovieCreator {
             mergingProc.start();
             sinkListener.waitUntilFinished();
             logger.info("Successfully encoded movie.");
+            controlPanel.notifyHUD();
 
             logger.fine("Closing JMF processors.");
             outSink.stop();
