@@ -28,6 +28,10 @@ import javax.swing.DefaultButtonModel;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 /**
  * Control panel for movie recorder. Provides buttons to start & stop recording, and
@@ -37,6 +41,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 public class MovieControlPanel extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger(MovieControlPanel.class.getName());
     private MovieRecorderCell recorderCell;
+    private HUDComponent messageComponent;
 
     /** Creates new form MovieControlPanel
      * @param recorderCell the movie recorder cell controlled by this panel
@@ -343,10 +348,32 @@ public class MovieControlPanel extends javax.swing.JPanel {
         return home;
     }
 
+    public void notifyHUD() {
+        if (messageComponent == null) {
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+            messageComponent = mainHUD.createMessage("Saved Movie");
+            messageComponent.setPreferredLocation(Layout.NORTHEAST);
+            messageComponent.setDecoratable(false);
+            mainHUD.addComponent(messageComponent);
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                messageComponent.setVisible(true);
+            }
+        });
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                messageComponent.setVisible(false, 2000);
+            }
+        });
+    }
+
     private void moviePathBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moviePathBrowseButtonActionPerformed
         JFileChooser outputPathFileChooser = new JFileChooser();
 
-        outputPathFileChooser.setDialogTitle("Movie Directory");
+        outputPathFileChooser.setDialogTitle("Movies Directory");
         outputPathFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         outputPathFileChooser.setAcceptAllFileFilterUsed(false);
 
