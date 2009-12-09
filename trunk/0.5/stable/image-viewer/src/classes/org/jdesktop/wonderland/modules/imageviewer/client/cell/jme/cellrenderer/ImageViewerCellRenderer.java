@@ -24,6 +24,7 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Box;
 import com.jme.scene.state.BlendState;
+import com.jme.scene.state.CullState;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.TextureState;
 import com.jme.util.TextureManager;
@@ -121,6 +122,12 @@ public class ImageViewerCellRenderer extends BasicRenderer {
         bs.setTestFunction(BlendState.TestFunction.GreaterThan);
         bs.setTestEnabled(true);
         node.setRenderState(bs);
+
+        // issue #1109: prevent flickering by removing back faces
+        CullState cs = (CullState)rm.createRendererState(StateType.Cull);
+        cs.setCullFace(CullState.Face.Back);
+        cs.setEnabled(true);
+        node.setRenderState(cs);
 
         // Make sure we do not cache the texture in memory, this will mess
         // up asset caching with WL (if the URL stays the same, but the
