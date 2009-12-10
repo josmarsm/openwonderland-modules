@@ -1,4 +1,4 @@
- /**
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,27 +17,41 @@
  */
 package org.jdesktop.wonderland.modules.quickreference.client;
 
-import java.net.URL;
+import imi.character.avatar.AvatarContext.TriggerNames;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.view.ViewCell;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 
 /**
  * A JPanel to display simple navigation controls for an Avatar
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author nsimpson
  */
 public class QuickReferenceJPanel extends javax.swing.JPanel {
 
     // The error logger
     private static final Logger LOGGER =
             Logger.getLogger(QuickReferenceJPanel.class.getName());
-
     // The I18N resource bundle
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/quickreference/client/resources/Bundle");
+    // The avatar character, needed to given input to
+    private WlAvatarCharacter avatarCharacter = null;
+    private Font labelFont = new java.awt.Font("Arial", Font.PLAIN, 10);
+    private Font labelFontBold = new java.awt.Font("Arial", Font.BOLD, 10);
+    private Font buttonFont = new java.awt.Font("Arial", Font.ITALIC, 12);
+    private Font buttonFontBold = new java.awt.Font("Arial", Font.BOLD | Font.ITALIC, 12);
+    private Font buttonFontSmall = new java.awt.Font("Arial", Font.ITALIC, 11);
+    private Font buttonFontSmallBold = new java.awt.Font("Arial", Font.BOLD | Font.ITALIC, 11);
+    private boolean highlightActions = false;
 
     /**
      * Creates a new JPanel. This method assumes there is a primary view Cell
@@ -46,37 +60,18 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     public QuickReferenceJPanel() {
         initComponents();
 
-        // Set the proper localized icon labels
-        setJLabelIcon("Ctrl_Key_Image", controlLabel);
-        setJLabelIcon("Down_Key_Image", wLabel);
-        setJLabelIcon("E_Key_Image", eLabel);
-        setJLabelIcon("Left_Key_Image", leftLabel);
-        setJLabelIcon("Mouse_Wheel_Image", scrollWheelLabel);
-        setJLabelIcon("PageDown_Key_Image", pageDownLabel);
-        setJLabelIcon("PageUp_Key_Image", pageUpLabel);
-        setJLabelIcon("Q_Key_Image", qLabel);
-        setJLabelIcon("Right_Key_Image", aLabel);
-        setJLabelIcon("Shift_Key_Image", shiftLabel);
-        setJLabelIcon("Up_Key_Image", upLabel);
-        setJLabelIcon("Up_Key_Image", upLabel2);
-        setJLabelIcon("W_Key_Image", wLabel);
-        setJLabelIcon("S_Key_Image", sLabel);
-        setJLabelIcon("A_Key_Image", aLabel);
-        setJLabelIcon("D_Key_Image", dLabel);
-    }
+        // Fetch the primary view Cell, assume it exists.
+        ViewManager viewManager = ViewManager.getViewManager();
+        ViewCell viewCell = viewManager.getPrimaryViewCell();
+        CellRenderer rend = viewCell.getCellRenderer(RendererType.RENDERER_JME);
+        if (!(rend instanceof AvatarImiJME)) {
+            LOGGER.warning("Cell renderer for view " + viewCell.getName() +
+                    " is not of type AvatarImiJME.");
+            return;
+        }
 
-    /**
-     * Given the name of the key in the resource bundle and the JLabel, loads
-     * the image pointed to in the resource bundle and sets it as the JLabel
-     * icon.
-     *
-     * @param key The key string in the resource bundle
-     * param jlabel The label whose icon to set
-     */
-    private void setJLabelIcon(String key, JLabel jlabel) {
-        String resource = "resources/" + BUNDLE.getString(key);
-        URL url = QuickReferenceJPanel.class.getResource(resource);
-        jlabel.setIcon(new ImageIcon(url));
+        // Fetch out the avatar character from this
+        avatarCharacter = ((AvatarImiJME) rend).getAvatarCharacter();
     }
 
     /** This method is called from within the constructor to
@@ -87,389 +82,892 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        shiftLabel = new javax.swing.JLabel();
-        pageUpLabel = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        pageDownLabel = new javax.swing.JLabel();
-        qeLabel1 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        upLabel2 = new javax.swing.JLabel();
         runLabel = new javax.swing.JLabel();
-        leftLabel = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        aLabel = new javax.swing.JLabel();
-        turnLeftLabel = new javax.swing.JLabel();
-        upLabel = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        wLabel = new javax.swing.JLabel();
+        runButtonLabel = new javax.swing.JLabel();
+        shiftButton = new javax.swing.JButton();
+        runShadowLabel = new javax.swing.JLabel();
+        stepLabel1 = new javax.swing.JLabel();
+        leftLabel1 = new javax.swing.JLabel();
+        stepLeftButtonLabel = new javax.swing.JLabel();
+        stepLeftButton = new javax.swing.JButton();
+        stepLeftShadowLabel = new javax.swing.JLabel();
+        stepLabel2 = new javax.swing.JLabel();
+        rightLabel1 = new javax.swing.JLabel();
+        stepRightButtonLabel = new javax.swing.JLabel();
+        stepRightButton = new javax.swing.JButton();
+        stepRightShadowLabel = new javax.swing.JLabel();
         forwardLabel = new javax.swing.JLabel();
-        qLabel = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        eLabel = new javax.swing.JLabel();
-        qeLabel = new javax.swing.JLabel();
-        scrollWheelLabel = new javax.swing.JLabel();
+        stepForwardButtonLabel = new javax.swing.JLabel();
+        stepForwardButton = new javax.swing.JButton();
+        stepForwardShadowLabel = new javax.swing.JLabel();
+        backwardLabel = new javax.swing.JLabel();
+        stepBackwardButtonLabel = new javax.swing.JLabel();
+        stepBackwardButton = new javax.swing.JButton();
+        stepBackwardShadowLabel = new javax.swing.JLabel();
+        turnLabel1 = new javax.swing.JLabel();
+        leftLabel2 = new javax.swing.JLabel();
+        turnLeftButtonLabel = new javax.swing.JLabel();
+        turnLeftButton = new javax.swing.JButton();
+        turnLeftShadowLabel = new javax.swing.JLabel();
+        runningLabel = new javax.swing.JLabel();
+        turnLabel2 = new javax.swing.JLabel();
+        rightLabel2 = new javax.swing.JLabel();
+        turnRightButtonLabel = new javax.swing.JLabel();
+        turnRightButton = new javax.swing.JButton();
+        turnRightShadowLabel = new javax.swing.JLabel();
+        goUpLabel = new javax.swing.JLabel();
+        pageButtonLabel = new javax.swing.JLabel();
+        upButtonLabel = new javax.swing.JLabel();
+        goUpButton = new javax.swing.JButton();
+        pageButtonLabel2 = new javax.swing.JLabel();
+        downButtonLabel = new javax.swing.JLabel();
+        goDownButton = new javax.swing.JButton();
+        goDownLabel = new javax.swing.JLabel();
+        goUpDownShadowLabel = new javax.swing.JLabel();
+        lookUpDownLabel = new javax.swing.JLabel();
+        ctrlButtonLabel = new javax.swing.JLabel();
+        ctrlButton = new javax.swing.JButton();
+        leftMouseButtonShadowLabel = new javax.swing.JLabel();
+        mouseShadowLabel = new javax.swing.JLabel();
+        stepBackwardShadowLabel1 = new javax.swing.JLabel();
         zoomInOutLabel = new javax.swing.JLabel();
-        controlLabel = new javax.swing.JLabel();
-        plusLabel2 = new javax.swing.JLabel();
-        lookLabel = new javax.swing.JLabel();
-        dragLabel = new javax.swing.JLabel();
-        downLabel = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        sLabel = new javax.swing.JLabel();
-        backLabel = new javax.swing.JLabel();
-        rightLabel = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        dLabel = new javax.swing.JLabel();
-        turnRightLabel = new javax.swing.JLabel();
+        zoomInOutButton = new javax.swing.JButton();
+        zoomArrowLabel = new javax.swing.JLabel();
+        mouseShadowLabel1 = new javax.swing.JLabel();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
-        setLayout(new java.awt.GridBagLayout());
+        setBackground(new java.awt.Color(237, 236, 236));
+        setPreferredSize(new java.awt.Dimension(500, 240));
+        setLayout(null);
 
-        shiftLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Shift-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(shiftLabel, gridBagConstraints);
-
-        pageUpLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageUp-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(pageUpLabel, gridBagConstraints);
-
-        jLabel5.setFont(new java.awt.Font("Lucida Grande", 0, 24));
+        runLabel.setFont(new java.awt.Font("Arial", 0, 10));
+        runLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/quickreference/client/resources/Bundle"); // NOI18N
-        jLabel5.setText(bundle.getString("Slash")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        add(jLabel5, gridBagConstraints);
+        runLabel.setText(bundle.getString("RUN")); // NOI18N
+        add(runLabel);
+        runLabel.setBounds(100, 3, 70, 16);
 
-        pageDownLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/PageDown-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(pageDownLabel, gridBagConstraints);
+        runButtonLabel.setBackground(new java.awt.Color(255, 255, 255));
+        runButtonLabel.setFont(new java.awt.Font("Arial", 2, 12)); // NOI18N
+        runButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        runButtonLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        runButtonLabel.setText(bundle.getString("SHIFT")); // NOI18N
+        runButtonLabel.setFocusable(false);
+        add(runButtonLabel);
+        runButtonLabel.setBounds(120, 37, 30, 14);
 
-        qeLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 14));
-        qeLabel1.setText(bundle.getString("Go_Up_Down")); // NOI18N
-        qeLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(qeLabel1, gridBagConstraints);
+        shiftButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_shift.png"))); // NOI18N
+        shiftButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        shiftButton.setBorderPainted(false);
+        shiftButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                shiftButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                shiftButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                shiftButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                shiftButtonMouseEntered(evt);
+            }
+        });
+        add(shiftButton);
+        shiftButton.setBounds(103, 23, 66, 34);
 
-        jLabel4.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
-        jLabel4.setText(bundle.getString("Plus")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        add(jLabel4, gridBagConstraints);
+        runShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_run.png"))); // NOI18N
+        runShadowLabel.setFocusable(false);
+        runShadowLabel.setRequestFocusEnabled(false);
+        runShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(runShadowLabel);
+        runShadowLabel.setBounds(100, 20, 72, 65);
 
-        upLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(upLabel2, gridBagConstraints);
+        stepLabel1.setFont(new java.awt.Font("Arial", 0, 10)); // NOI18N
+        stepLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        stepLabel1.setText(bundle.getString("STEP")); // NOI18N
+        add(stepLabel1);
+        stepLabel1.setBounds(38, 95, 70, 16);
 
-        runLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        runLabel.setText(bundle.getString("Run")); // NOI18N
-        runLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(runLabel, gridBagConstraints);
+        leftLabel1.setFont(new java.awt.Font("Arial", 0, 10)); // NOI18N
+        leftLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        leftLabel1.setText(bundle.getString("LEFT")); // NOI18N
+        add(leftLabel1);
+        leftLabel1.setBounds(38, 108, 70, 16);
 
-        leftLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Left-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(leftLabel, gridBagConstraints);
+        stepLeftButtonLabel.setFont(new java.awt.Font("Arial", 2, 12));
+        stepLeftButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        stepLeftButtonLabel.setText(bundle.getString("Q")); // NOI18N
+        stepLeftButtonLabel.setFocusable(false);
+        stepLeftButtonLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        add(stepLeftButtonLabel);
+        stepLeftButtonLabel.setBounds(60, 74, 20, 14);
 
-        jLabel3.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
-        jLabel3.setText(bundle.getString("Or")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        add(jLabel3, gridBagConstraints);
+        stepLeftButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_alphanum.png"))); // NOI18N
+        stepLeftButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        stepLeftButton.setBorderPainted(false);
+        stepLeftButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                stepLeftButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                stepLeftButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                stepLeftButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                stepLeftButtonMouseEntered(evt);
+            }
+        });
+        add(stepLeftButton);
+        stepLeftButton.setBounds(53, 58, 34, 34);
 
-        aLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/A-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(aLabel, gridBagConstraints);
+        stepLeftShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_stepleft.png"))); // NOI18N
+        stepLeftShadowLabel.setFocusable(false);
+        stepLeftShadowLabel.setRequestFocusEnabled(false);
+        stepLeftShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(stepLeftShadowLabel);
+        stepLeftShadowLabel.setBounds(34, 45, 57, 60);
 
-        turnLeftLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        turnLeftLabel.setText(bundle.getString("Turn_Left")); // NOI18N
-        turnLeftLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(turnLeftLabel, gridBagConstraints);
+        stepLabel2.setFont(new java.awt.Font("Arial", 0, 10)); // NOI18N
+        stepLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        stepLabel2.setText(bundle.getString("STEP")); // NOI18N
+        add(stepLabel2);
+        stepLabel2.setBounds(165, 95, 70, 16);
 
-        upLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Up-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(upLabel, gridBagConstraints);
+        rightLabel1.setFont(new java.awt.Font("Arial", 0, 10));
+        rightLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        rightLabel1.setText(bundle.getString("RIGHT")); // NOI18N
+        add(rightLabel1);
+        rightLabel1.setBounds(165, 108, 70, 16);
 
-        jLabel1.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
-        jLabel1.setText(bundle.getString("Or")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        add(jLabel1, gridBagConstraints);
+        stepRightButtonLabel.setFont(new java.awt.Font("Arial", 2, 12));
+        stepRightButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        stepRightButtonLabel.setText(bundle.getString("E")); // NOI18N
+        stepRightButtonLabel.setFocusable(false);
+        stepRightButtonLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        add(stepRightButtonLabel);
+        stepRightButtonLabel.setBounds(190, 74, 20, 14);
 
-        wLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/W-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(wLabel, gridBagConstraints);
+        stepRightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_alphanum.png"))); // NOI18N
+        stepRightButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        stepRightButton.setBorderPainted(false);
+        stepRightButton.setRequestFocusEnabled(false);
+        stepRightButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                stepRightButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                stepRightButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                stepRightButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                stepRightButtonMouseEntered(evt);
+            }
+        });
+        add(stepRightButton);
+        stepRightButton.setBounds(183, 58, 34, 34);
 
-        forwardLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        forwardLabel.setText(bundle.getString("Walk_Forward")); // NOI18N
-        forwardLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(forwardLabel, gridBagConstraints);
+        stepRightShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_stepright.png"))); // NOI18N
+        stepRightShadowLabel.setFocusable(false);
+        stepRightShadowLabel.setRequestFocusEnabled(false);
+        stepRightShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(stepRightShadowLabel);
+        stepRightShadowLabel.setBounds(180, 45, 57, 60);
 
-        qLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Q-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(qLabel, gridBagConstraints);
+        forwardLabel.setFont(new java.awt.Font("Arial", 0, 10));
+        forwardLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        forwardLabel.setText(bundle.getString("FORWARD")); // NOI18N
+        add(forwardLabel);
+        forwardLabel.setBounds(100, 120, 70, 16);
 
-        jLabel2.setFont(new java.awt.Font("Lucida Grande", 0, 24));
-        jLabel2.setText(bundle.getString("Slash")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        add(jLabel2, gridBagConstraints);
+        stepForwardButtonLabel.setFont(new java.awt.Font("Arial", 2, 12)); // NOI18N
+        stepForwardButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        stepForwardButtonLabel.setText(bundle.getString("W")); // NOI18N
+        stepForwardButtonLabel.setFocusable(false);
+        stepForwardButtonLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        add(stepForwardButtonLabel);
+        stepForwardButtonLabel.setBounds(125, 105, 20, 14);
 
-        eLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/E-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(eLabel, gridBagConstraints);
+        stepForwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_forward.png"))); // NOI18N
+        stepForwardButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        stepForwardButton.setBorderPainted(false);
+        stepForwardButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                stepForwardButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                stepForwardButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                stepForwardButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                stepForwardButtonMouseEntered(evt);
+            }
+        });
+        add(stepForwardButton);
+        stepForwardButton.setBounds(119, 88, 34, 34);
 
-        qeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
-        qeLabel.setText(bundle.getString("Step_Left_Right")); // NOI18N
-        qeLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(qeLabel, gridBagConstraints);
+        stepForwardShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_forward.png"))); // NOI18N
+        stepForwardShadowLabel.setFocusable(false);
+        stepForwardShadowLabel.setRequestFocusEnabled(false);
+        stepForwardShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(stepForwardShadowLabel);
+        stepForwardShadowLabel.setBounds(106, 76, 57, 60);
 
-        scrollWheelLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/MouseWheel_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 2;
-        add(scrollWheelLabel, gridBagConstraints);
+        backwardLabel.setFont(new java.awt.Font("Arial", 0, 10));
+        backwardLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        backwardLabel.setText(bundle.getString("BACKWARD")); // NOI18N
+        add(backwardLabel);
+        backwardLabel.setBounds(100, 220, 70, 16);
 
-        zoomInOutLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
-        zoomInOutLabel.setText(bundle.getString("Zoom_In_Out")); // NOI18N
-        zoomInOutLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        add(zoomInOutLabel, gridBagConstraints);
+        stepBackwardButtonLabel.setFont(new java.awt.Font("Arial", 2, 12));
+        stepBackwardButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        stepBackwardButtonLabel.setText(bundle.getString("S")); // NOI18N
+        stepBackwardButtonLabel.setFocusable(false);
+        stepBackwardButtonLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        add(stepBackwardButtonLabel);
+        stepBackwardButtonLabel.setBounds(125, 186, 20, 14);
 
-        controlLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Ctrl-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(controlLabel, gridBagConstraints);
+        stepBackwardButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_backward.png"))); // NOI18N
+        stepBackwardButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        stepBackwardButton.setBorderPainted(false);
+        stepBackwardButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                stepBackwardButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                stepBackwardButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                stepBackwardButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                stepBackwardButtonMouseEntered(evt);
+            }
+        });
+        add(stepBackwardButton);
+        stepBackwardButton.setBounds(119, 170, 34, 34);
 
-        plusLabel2.setFont(new java.awt.Font("Lucida Grande", 0, 24));
-        plusLabel2.setText(bundle.getString("Plus")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        add(plusLabel2, gridBagConstraints);
+        stepBackwardShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_backward.png"))); // NOI18N
+        stepBackwardShadowLabel.setFocusable(false);
+        stepBackwardShadowLabel.setRequestFocusEnabled(false);
+        stepBackwardShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(stepBackwardShadowLabel);
+        stepBackwardShadowLabel.setBounds(106, 160, 57, 60);
 
-        lookLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
-        lookLabel.setText(bundle.getString("Look_Up_Down")); // NOI18N
-        lookLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(lookLabel, gridBagConstraints);
+        turnLabel1.setFont(new java.awt.Font("Arial", 0, 10));
+        turnLabel1.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        turnLabel1.setText(bundle.getString("TURN_LEFT")); // NOI18N
+        add(turnLabel1);
+        turnLabel1.setBounds(0, 135, 63, 16);
 
-        dragLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14));
-        dragLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        dragLabel.setText(bundle.getString("Drag")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(dragLabel, gridBagConstraints);
+        leftLabel2.setFont(new java.awt.Font("Arial", 0, 10)); // NOI18N
+        leftLabel2.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        leftLabel2.setText(bundle.getString("TO_LEFT")); // NOI18N
+        add(leftLabel2);
+        leftLabel2.setBounds(0, 148, 63, 16);
 
-        downLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Down-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(downLabel, gridBagConstraints);
+        turnLeftButtonLabel.setFont(new java.awt.Font("Arial", 2, 12));
+        turnLeftButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        turnLeftButtonLabel.setText(bundle.getString("A")); // NOI18N
+        turnLeftButtonLabel.setFocusable(false);
+        turnLeftButtonLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        add(turnLeftButtonLabel);
+        turnLeftButtonLabel.setBounds(85, 150, 20, 14);
 
-        jLabel6.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
-        jLabel6.setText(bundle.getString("Or")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        add(jLabel6, gridBagConstraints);
+        turnLeftButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_stepleft.png"))); // NOI18N
+        turnLeftButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        turnLeftButton.setBorderPainted(false);
+        turnLeftButton.setFocusPainted(false);
+        turnLeftButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                turnLeftButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                turnLeftButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                turnLeftButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                turnLeftButtonMouseEntered(evt);
+            }
+        });
+        add(turnLeftButton);
+        turnLeftButton.setBounds(78, 133, 34, 34);
 
-        sLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/S-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(sLabel, gridBagConstraints);
+        turnLeftShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_turnleft.png"))); // NOI18N
+        turnLeftShadowLabel.setFocusable(false);
+        turnLeftShadowLabel.setRequestFocusEnabled(false);
+        turnLeftShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(turnLeftShadowLabel);
+        turnLeftShadowLabel.setBounds(68, 118, 57, 60);
 
-        backLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        backLabel.setText(bundle.getString("Walk_Backward")); // NOI18N
-        backLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(backLabel, gridBagConstraints);
+        runningLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/bg_runningman.png"))); // NOI18N
+        add(runningLabel);
+        runningLabel.setBounds(127, 138, 18, 20);
 
-        rightLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/Right-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(rightLabel, gridBagConstraints);
+        turnLabel2.setFont(new java.awt.Font("Arial", 0, 10));
+        turnLabel2.setText(bundle.getString("TURN_RIGHT")); // NOI18N
+        add(turnLabel2);
+        turnLabel2.setBounds(209, 135, 80, 16);
 
-        jLabel7.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
-        jLabel7.setText(bundle.getString("Or")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 3);
-        add(jLabel7, gridBagConstraints);
+        rightLabel2.setFont(new java.awt.Font("Arial", 0, 10));
+        rightLabel2.setText(bundle.getString("TO_RIGHT")); // NOI18N
+        add(rightLabel2);
+        rightLabel2.setBounds(209, 148, 60, 16);
 
-        dLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/D-key_en.png"))); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(dLabel, gridBagConstraints);
+        turnRightButtonLabel.setFont(new java.awt.Font("Arial", 2, 12));
+        turnRightButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        turnRightButtonLabel.setText(bundle.getString("D")); // NOI18N
+        turnRightButtonLabel.setFocusable(false);
+        turnRightButtonLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        add(turnRightButtonLabel);
+        turnRightButtonLabel.setBounds(165, 150, 20, 14);
 
-        turnRightLabel.setFont(new java.awt.Font("Lucida Grande", 1, 14)); // NOI18N
-        turnRightLabel.setText(bundle.getString("Turn_Right")); // NOI18N
-        turnRightLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
-        add(turnRightLabel, gridBagConstraints);
+        turnRightButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_stepright.png"))); // NOI18N
+        turnRightButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        turnRightButton.setBorderPainted(false);
+        turnRightButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                turnRightButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                turnRightButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                turnRightButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                turnRightButtonMouseEntered(evt);
+            }
+        });
+        add(turnRightButton);
+        turnRightButton.setBounds(160, 133, 34, 34);
+
+        turnRightShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_turnright.png"))); // NOI18N
+        turnRightShadowLabel.setFocusable(false);
+        turnRightShadowLabel.setRequestFocusEnabled(false);
+        turnRightShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(turnRightShadowLabel);
+        turnRightShadowLabel.setBounds(150, 118, 57, 60);
+
+        goUpLabel.setFont(new java.awt.Font("Arial", 0, 10));
+        goUpLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        goUpLabel.setText(bundle.getString("GO_UP")); // NOI18N
+        add(goUpLabel);
+        goUpLabel.setBounds(227, 75, 140, 16);
+
+        pageButtonLabel.setFont(new java.awt.Font("Arial", 2, 11)); // NOI18N
+        pageButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        pageButtonLabel.setText(bundle.getString("PAGE")); // NOI18N
+        pageButtonLabel.setFocusable(false);
+        add(pageButtonLabel);
+        pageButtonLabel.setBounds(285, 90, 30, 16);
+
+        upButtonLabel.setFont(new java.awt.Font("Arial", 2, 11)); // NOI18N
+        upButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        upButtonLabel.setText(bundle.getString("UP")); // NOI18N
+        upButtonLabel.setFocusable(false);
+        add(upButtonLabel);
+        upButtonLabel.setBounds(285, 102, 30, 16);
+
+        goUpButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_alphanum.png"))); // NOI18N
+        goUpButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        goUpButton.setBorderPainted(false);
+        goUpButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                goUpButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                goUpButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                goUpButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                goUpButtonMouseEntered(evt);
+            }
+        });
+        add(goUpButton);
+        goUpButton.setBounds(281, 89, 34, 34);
+
+        pageButtonLabel2.setFont(new java.awt.Font("Arial", 2, 11)); // NOI18N
+        pageButtonLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        pageButtonLabel2.setText(bundle.getString("PAGE")); // NOI18N
+        pageButtonLabel2.setFocusable(false);
+        add(pageButtonLabel2);
+        pageButtonLabel2.setBounds(285, 125, 30, 16);
+
+        downButtonLabel.setFont(new java.awt.Font("Arial", 2, 11)); // NOI18N
+        downButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        downButtonLabel.setText(bundle.getString("DOWN")); // NOI18N
+        downButtonLabel.setFocusable(false);
+        add(downButtonLabel);
+        downButtonLabel.setBounds(285, 137, 30, 16);
+
+        goDownButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_alphanum.png"))); // NOI18N
+        goDownButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        goDownButton.setBorderPainted(false);
+        goDownButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                goDownButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                goDownButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                goDownButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                goDownButtonMouseEntered(evt);
+            }
+        });
+        add(goDownButton);
+        goDownButton.setBounds(281, 124, 34, 34);
+
+        goDownLabel.setFont(new java.awt.Font("Arial", 0, 10));
+        goDownLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        goDownLabel.setText(bundle.getString("GO_DOWN")); // NOI18N
+        add(goDownLabel);
+        goDownLabel.setBounds(228, 159, 140, 16);
+
+        goUpDownShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_goupgodown.png"))); // NOI18N
+        goUpDownShadowLabel.setFocusable(false);
+        goUpDownShadowLabel.setRequestFocusEnabled(false);
+        goUpDownShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(goUpDownShadowLabel);
+        goUpDownShadowLabel.setBounds(247, 70, 104, 127);
+
+        lookUpDownLabel.setFont(new java.awt.Font("Arial", 0, 10));
+        lookUpDownLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lookUpDownLabel.setText(bundle.getString("LOOK_UP_/_DOWN")); // NOI18N
+        add(lookUpDownLabel);
+        lookUpDownLabel.setBounds(330, 130, 180, 16);
+
+        ctrlButtonLabel.setBackground(new java.awt.Color(255, 255, 255));
+        ctrlButtonLabel.setFont(new java.awt.Font("Arial", 2, 12)); // NOI18N
+        ctrlButtonLabel.setForeground(new java.awt.Color(255, 255, 255));
+        ctrlButtonLabel.setText(bundle.getString("CTRL")); // NOI18N
+        ctrlButtonLabel.setFocusable(false);
+        add(ctrlButtonLabel);
+        ctrlButtonLabel.setBounds(367, 162, 30, 14);
+
+        ctrlButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_ctrl.png"))); // NOI18N
+        ctrlButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        ctrlButton.setBorderPainted(false);
+        ctrlButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                ctrlButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                ctrlButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                ctrlButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                ctrlButtonMouseEntered(evt);
+            }
+        });
+        add(ctrlButton);
+        ctrlButton.setBounds(362, 149, 42, 34);
+
+        leftMouseButtonShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_lookupdown.png"))); // NOI18N
+        leftMouseButtonShadowLabel.setFocusable(false);
+        leftMouseButtonShadowLabel.setRequestFocusEnabled(false);
+        leftMouseButtonShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(leftMouseButtonShadowLabel);
+        leftMouseButtonShadowLabel.setBounds(421, 150, 26, 36);
+
+        mouseShadowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/bg_mouse.png"))); // NOI18N
+        mouseShadowLabel.setFocusable(false);
+        mouseShadowLabel.setRequestFocusEnabled(false);
+        mouseShadowLabel.setVerifyInputWhenFocusTarget(false);
+        add(mouseShadowLabel);
+        mouseShadowLabel.setBounds(420, 148, 70, 52);
+
+        stepBackwardShadowLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_lookupdown.png"))); // NOI18N
+        stepBackwardShadowLabel1.setFocusable(false);
+        stepBackwardShadowLabel1.setRequestFocusEnabled(false);
+        stepBackwardShadowLabel1.setVerifyInputWhenFocusTarget(false);
+        add(stepBackwardShadowLabel1);
+        stepBackwardShadowLabel1.setBounds(360, 146, 91, 43);
+
+        zoomInOutLabel.setFont(new java.awt.Font("Arial", 0, 10)); // NOI18N
+        zoomInOutLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        zoomInOutLabel.setText(bundle.getString("ZOOM_IN_/_OUT")); // NOI18N
+        zoomInOutLabel.setMaximumSize(new java.awt.Dimension(150, 13));
+        add(zoomInOutLabel);
+        zoomInOutLabel.setBounds(260, 27, 220, 16);
+
+        zoomInOutButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/btn_zoominout.png"))); // NOI18N
+        zoomInOutButton.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 255, 255), 1, true));
+        zoomInOutButton.setBorderPainted(false);
+        zoomInOutButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                zoomInOutButtonMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                zoomInOutButtonMouseReleased(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                zoomInOutButtonMouseExited(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                zoomInOutButtonMouseEntered(evt);
+            }
+        });
+        add(zoomInOutButton);
+        zoomInOutButton.setBounds(447, 63, 15, 28);
+
+        zoomArrowLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/arw_zoominout.png"))); // NOI18N
+        zoomArrowLabel.setFocusable(false);
+        zoomArrowLabel.setRequestFocusEnabled(false);
+        zoomArrowLabel.setVerifyInputWhenFocusTarget(false);
+        add(zoomArrowLabel);
+        zoomArrowLabel.setBounds(444, 46, 22, 66);
+
+        mouseShadowLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/quickreference/client/resources/bg_mouse.png"))); // NOI18N
+        mouseShadowLabel1.setFocusable(false);
+        mouseShadowLabel1.setRequestFocusEnabled(false);
+        mouseShadowLabel1.setVerifyInputWhenFocusTarget(false);
+        add(mouseShadowLabel1);
+        mouseShadowLabel1.setBounds(420, 60, 70, 52);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void stepLeftButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepLeftButtonMousePressed
+        avatarCharacter.triggerActionStart(TriggerNames.Move_Strafe_Left);
+    }//GEN-LAST:event_stepLeftButtonMousePressed
+
+    private void stepLeftButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepLeftButtonMouseReleased
+        avatarCharacter.triggerActionStop(TriggerNames.Move_Strafe_Left);
+    }//GEN-LAST:event_stepLeftButtonMouseReleased
+
+    private void stepLeftButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepLeftButtonMouseEntered
+        if (highlightActions) {
+            stepLabel1.setFont(labelFontBold);
+            leftLabel1.setFont(labelFontBold);
+        }
+        stepLeftButtonLabel.setFont(buttonFontBold);
+        stepLeftButton.setBorderPainted(true);
+    }//GEN-LAST:event_stepLeftButtonMouseEntered
+
+    private void stepLeftButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepLeftButtonMouseExited
+        if (highlightActions) {
+            stepLabel1.setFont(labelFont);
+            leftLabel1.setFont(labelFont);
+        }
+        stepLeftButtonLabel.setFont(buttonFont);
+        stepLeftButton.setBorderPainted(false);
+    }//GEN-LAST:event_stepLeftButtonMouseExited
+
+    private void stepRightButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepRightButtonMousePressed
+        avatarCharacter.triggerActionStart(TriggerNames.Move_Strafe_Right);
+    }//GEN-LAST:event_stepRightButtonMousePressed
+
+    private void stepRightButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepRightButtonMouseReleased
+        avatarCharacter.triggerActionStop(TriggerNames.Move_Strafe_Right);
+    }//GEN-LAST:event_stepRightButtonMouseReleased
+
+    private void stepRightButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepRightButtonMouseEntered
+        if (highlightActions) {
+            stepLabel2.setFont(labelFontBold);
+            rightLabel1.setFont(labelFontBold);
+        }
+        stepRightButtonLabel.setFont(buttonFontBold);
+        stepRightButton.setBorderPainted(true);
+    }//GEN-LAST:event_stepRightButtonMouseEntered
+
+    private void stepRightButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepRightButtonMouseExited
+        if (highlightActions) {
+            stepLabel2.setFont(labelFont);
+            rightLabel1.setFont(labelFont);
+        }
+        stepRightButtonLabel.setFont(buttonFont);
+        stepRightButton.setBorderPainted(false);
+    }//GEN-LAST:event_stepRightButtonMouseExited
+
+    private void stepForwardButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepForwardButtonMousePressed
+        avatarCharacter.triggerActionStart(TriggerNames.Move_Forward);
+    }//GEN-LAST:event_stepForwardButtonMousePressed
+
+    private void stepForwardButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepForwardButtonMouseReleased
+        avatarCharacter.triggerActionStop(TriggerNames.Move_Forward);
+    }//GEN-LAST:event_stepForwardButtonMouseReleased
+
+    private void stepForwardButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepForwardButtonMouseEntered
+        if (highlightActions) {
+            forwardLabel.setFont(labelFontBold);
+        }
+        stepForwardButtonLabel.setFont(buttonFontBold);
+        stepForwardButton.setBorderPainted(true);
+    }//GEN-LAST:event_stepForwardButtonMouseEntered
+
+    private void stepForwardButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepForwardButtonMouseExited
+        if (highlightActions) {
+            forwardLabel.setFont(labelFont);
+        }
+        stepForwardButtonLabel.setFont(buttonFont);
+        stepForwardButton.setBorderPainted(false);
+    }//GEN-LAST:event_stepForwardButtonMouseExited
+
+    private void turnLeftButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_turnLeftButtonMousePressed
+        avatarCharacter.triggerActionStart(TriggerNames.Move_Left);
+    }//GEN-LAST:event_turnLeftButtonMousePressed
+
+    private void turnLeftButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_turnLeftButtonMouseReleased
+        avatarCharacter.triggerActionStop(TriggerNames.Move_Left);
+    }//GEN-LAST:event_turnLeftButtonMouseReleased
+
+    private void turnLeftButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_turnLeftButtonMouseEntered
+        if (highlightActions) {
+            turnLabel1.setFont(labelFontBold);
+            leftLabel2.setFont(labelFontBold);
+        }
+        turnLeftButtonLabel.setFont(buttonFontBold);
+        turnLeftButton.setBorderPainted(true);
+    }//GEN-LAST:event_turnLeftButtonMouseEntered
+
+    private void turnLeftButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_turnLeftButtonMouseExited
+        if (highlightActions) {
+            turnLabel1.setFont(labelFont);
+            leftLabel2.setFont(labelFont);
+        }
+        turnLeftButtonLabel.setFont(buttonFont);
+        turnLeftButton.setBorderPainted(false);
+    }//GEN-LAST:event_turnLeftButtonMouseExited
+
+    private void turnRightButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_turnRightButtonMousePressed
+        avatarCharacter.triggerActionStart(TriggerNames.Move_Right);
+    }//GEN-LAST:event_turnRightButtonMousePressed
+
+    private void turnRightButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_turnRightButtonMouseReleased
+        avatarCharacter.triggerActionStop(TriggerNames.Move_Right);
+    }//GEN-LAST:event_turnRightButtonMouseReleased
+
+    private void turnRightButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_turnRightButtonMouseEntered
+        if (highlightActions) {
+            turnLabel2.setFont(labelFontBold);
+            rightLabel2.setFont(labelFontBold);
+        }
+        turnRightButtonLabel.setFont(buttonFontBold);
+        turnRightButton.setBorderPainted(true);
+    }//GEN-LAST:event_turnRightButtonMouseEntered
+
+    private void turnRightButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_turnRightButtonMouseExited
+        if (highlightActions) {
+            turnLabel2.setFont(labelFont);
+            rightLabel2.setFont(labelFont);
+        }
+        turnLeftButtonLabel.setFont(buttonFont);
+        turnRightButton.setBorderPainted(false);
+    }//GEN-LAST:event_turnRightButtonMouseExited
+
+    private void stepBackwardButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepBackwardButtonMousePressed
+        avatarCharacter.triggerActionStart(TriggerNames.Move_Back);
+    }//GEN-LAST:event_stepBackwardButtonMousePressed
+
+    private void stepBackwardButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepBackwardButtonMouseReleased
+        avatarCharacter.triggerActionStop(TriggerNames.Move_Back);
+    }//GEN-LAST:event_stepBackwardButtonMouseReleased
+
+    private void stepBackwardButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepBackwardButtonMouseEntered
+        if (highlightActions) {
+            backwardLabel.setFont(labelFontBold);
+        }
+        stepBackwardButtonLabel.setFont(buttonFontBold);
+        stepBackwardButton.setBorderPainted(true);
+    }//GEN-LAST:event_stepBackwardButtonMouseEntered
+
+    private void stepBackwardButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_stepBackwardButtonMouseExited
+        if (highlightActions) {
+            backwardLabel.setFont(labelFont);
+        }
+        stepBackwardButtonLabel.setFont(buttonFont);
+        stepBackwardButton.setBorderPainted(false);
+    }//GEN-LAST:event_stepBackwardButtonMouseExited
+
+    private void shiftButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiftButtonMousePressed
+        // TODO: run don't just walk
+        avatarCharacter.triggerActionStart(TriggerNames.Move_Forward);
+    }//GEN-LAST:event_shiftButtonMousePressed
+
+    private void shiftButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiftButtonMouseReleased
+        // TODO: stop running
+        avatarCharacter.triggerActionStop(TriggerNames.Move_Forward);
+    }//GEN-LAST:event_shiftButtonMouseReleased
+
+    private void shiftButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiftButtonMouseEntered
+        if (highlightActions) {
+            runLabel.setFont(labelFontBold);
+        }
+        runButtonLabel.setFont(buttonFontBold);
+        shiftButton.setBorderPainted(true);
+    }//GEN-LAST:event_shiftButtonMouseEntered
+
+    private void shiftButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiftButtonMouseExited
+        if (highlightActions) {
+            runLabel.setFont(labelFont);
+        }
+        runButtonLabel.setFont(buttonFont);
+        shiftButton.setBorderPainted(false);
+    }//GEN-LAST:event_shiftButtonMouseExited
+
+    private void goUpButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_goUpButtonMousePressed
+        avatarCharacter.triggerActionStart(TriggerNames.Move_Down);
+    }//GEN-LAST:event_goUpButtonMousePressed
+
+    private void goUpButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_goUpButtonMouseReleased
+        avatarCharacter.triggerActionStop(TriggerNames.Move_Down);
+    }//GEN-LAST:event_goUpButtonMouseReleased
+
+    private void goUpButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_goUpButtonMouseEntered
+        if (highlightActions) {
+            goUpLabel.setFont(labelFontBold);
+        }
+        pageButtonLabel.setFont(buttonFontSmallBold);
+        upButtonLabel.setFont(buttonFontSmallBold);
+        goUpButton.setBorderPainted(true);
+    }//GEN-LAST:event_goUpButtonMouseEntered
+
+    private void goUpButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_goUpButtonMouseExited
+        if (highlightActions) {
+            goUpLabel.setFont(labelFont);
+        }
+        pageButtonLabel.setFont(buttonFontSmall);
+        upButtonLabel.setFont(buttonFontSmall);
+        goUpButton.setBorderPainted(false);
+    }//GEN-LAST:event_goUpButtonMouseExited
+
+    private void goDownButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_goDownButtonMousePressed
+        avatarCharacter.triggerActionStart(TriggerNames.Move_Up);
+    }//GEN-LAST:event_goDownButtonMousePressed
+
+    private void goDownButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_goDownButtonMouseReleased
+        avatarCharacter.triggerActionStop(TriggerNames.Move_Up);
+    }//GEN-LAST:event_goDownButtonMouseReleased
+
+    private void goDownButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_goDownButtonMouseEntered
+        if (highlightActions) {
+            goDownLabel.setFont(labelFontBold);
+        }
+        pageButtonLabel2.setFont(buttonFontSmallBold);
+        downButtonLabel.setFont(buttonFontSmallBold);
+        goDownButton.setBorderPainted(true);
+    }//GEN-LAST:event_goDownButtonMouseEntered
+
+    private void goDownButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_goDownButtonMouseExited
+        if (highlightActions) {
+            goDownLabel.setFont(labelFont);
+        }
+        pageButtonLabel2.setFont(buttonFontSmall);
+        downButtonLabel.setFont(buttonFontSmall);
+        goDownButton.setBorderPainted(false);
+    }//GEN-LAST:event_goDownButtonMouseExited
+
+    private void ctrlButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ctrlButtonMousePressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ctrlButtonMousePressed
+
+    private void ctrlButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ctrlButtonMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_ctrlButtonMouseReleased
+
+    private void ctrlButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ctrlButtonMouseEntered
+        if (highlightActions) {
+            lookUpDownLabel.setFont(labelFontBold);
+        }
+        ctrlButtonLabel.setFont(buttonFontBold);
+        ctrlButton.setBorderPainted(true);
+    }//GEN-LAST:event_ctrlButtonMouseEntered
+
+    private void ctrlButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ctrlButtonMouseExited
+        if (highlightActions) {
+            lookUpDownLabel.setFont(labelFont);
+        }
+        ctrlButtonLabel.setFont(buttonFont);
+        ctrlButton.setBorderPainted(false);
+    }//GEN-LAST:event_ctrlButtonMouseExited
+
+    private void zoomInOutButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_zoomInOutButtonMousePressed
+        // TODO: zoom in/out
+    }//GEN-LAST:event_zoomInOutButtonMousePressed
+
+    private void zoomInOutButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_zoomInOutButtonMouseReleased
+        // TODO add your handling code here:
+    }//GEN-LAST:event_zoomInOutButtonMouseReleased
+
+    private void zoomInOutButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_zoomInOutButtonMouseEntered
+        if (highlightActions) {
+            zoomInOutLabel.setFont(labelFontBold);
+        }
+        zoomInOutButton.setBorderPainted(true);
+    }//GEN-LAST:event_zoomInOutButtonMouseEntered
+
+    private void zoomInOutButtonMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_zoomInOutButtonMouseExited
+        if (highlightActions) {
+            zoomInOutLabel.setFont(labelFont);
+        }
+        zoomInOutButton.setBorderPainted(false);
+    }//GEN-LAST:event_zoomInOutButtonMouseExited
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel aLabel;
-    private javax.swing.JLabel backLabel;
-    private javax.swing.JLabel controlLabel;
-    private javax.swing.JLabel dLabel;
-    private javax.swing.JLabel downLabel;
-    private javax.swing.JLabel dragLabel;
-    private javax.swing.JLabel eLabel;
+    private javax.swing.JLabel backwardLabel;
+    private javax.swing.JButton ctrlButton;
+    private javax.swing.JLabel ctrlButtonLabel;
+    private javax.swing.JLabel downButtonLabel;
     private javax.swing.JLabel forwardLabel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel leftLabel;
-    private javax.swing.JLabel lookLabel;
-    private javax.swing.JLabel pageDownLabel;
-    private javax.swing.JLabel pageUpLabel;
-    private javax.swing.JLabel plusLabel2;
-    private javax.swing.JLabel qLabel;
-    private javax.swing.JLabel qeLabel;
-    private javax.swing.JLabel qeLabel1;
-    private javax.swing.JLabel rightLabel;
+    private javax.swing.JButton goDownButton;
+    private javax.swing.JLabel goDownLabel;
+    private javax.swing.JButton goUpButton;
+    private javax.swing.JLabel goUpDownShadowLabel;
+    private javax.swing.JLabel goUpLabel;
+    private javax.swing.JLabel leftLabel1;
+    private javax.swing.JLabel leftLabel2;
+    private javax.swing.JLabel leftMouseButtonShadowLabel;
+    private javax.swing.JLabel lookUpDownLabel;
+    private javax.swing.JLabel mouseShadowLabel;
+    private javax.swing.JLabel mouseShadowLabel1;
+    private javax.swing.JLabel pageButtonLabel;
+    private javax.swing.JLabel pageButtonLabel2;
+    private javax.swing.JLabel rightLabel1;
+    private javax.swing.JLabel rightLabel2;
+    private javax.swing.JLabel runButtonLabel;
     private javax.swing.JLabel runLabel;
-    private javax.swing.JLabel sLabel;
-    private javax.swing.JLabel scrollWheelLabel;
-    private javax.swing.JLabel shiftLabel;
-    private javax.swing.JLabel turnLeftLabel;
-    private javax.swing.JLabel turnRightLabel;
-    private javax.swing.JLabel upLabel;
-    private javax.swing.JLabel upLabel2;
-    private javax.swing.JLabel wLabel;
+    private javax.swing.JLabel runShadowLabel;
+    private javax.swing.JLabel runningLabel;
+    private javax.swing.JButton shiftButton;
+    private javax.swing.JButton stepBackwardButton;
+    private javax.swing.JLabel stepBackwardButtonLabel;
+    private javax.swing.JLabel stepBackwardShadowLabel;
+    private javax.swing.JLabel stepBackwardShadowLabel1;
+    private javax.swing.JButton stepForwardButton;
+    private javax.swing.JLabel stepForwardButtonLabel;
+    private javax.swing.JLabel stepForwardShadowLabel;
+    private javax.swing.JLabel stepLabel1;
+    private javax.swing.JLabel stepLabel2;
+    private javax.swing.JButton stepLeftButton;
+    private javax.swing.JLabel stepLeftButtonLabel;
+    private javax.swing.JLabel stepLeftShadowLabel;
+    private javax.swing.JButton stepRightButton;
+    private javax.swing.JLabel stepRightButtonLabel;
+    private javax.swing.JLabel stepRightShadowLabel;
+    private javax.swing.JLabel turnLabel1;
+    private javax.swing.JLabel turnLabel2;
+    private javax.swing.JButton turnLeftButton;
+    private javax.swing.JLabel turnLeftButtonLabel;
+    private javax.swing.JLabel turnLeftShadowLabel;
+    private javax.swing.JButton turnRightButton;
+    private javax.swing.JLabel turnRightButtonLabel;
+    private javax.swing.JLabel turnRightShadowLabel;
+    private javax.swing.JLabel upButtonLabel;
+    private javax.swing.JLabel zoomArrowLabel;
+    private javax.swing.JButton zoomInOutButton;
     private javax.swing.JLabel zoomInOutLabel;
     // End of variables declaration//GEN-END:variables
 }
