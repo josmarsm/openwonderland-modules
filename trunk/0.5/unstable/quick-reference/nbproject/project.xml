@@ -11,14 +11,14 @@
             <properties/>
             <folders>
                 <source-folder>
-                    <label>src/classes</label>
-                    <type>java</type>
-                    <location>src/classes</location>
+                    <label>wonderland-quickreference-module</label>
+                    <location>.</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
-                    <label>wonderland-quickreference-module</label>
-                    <location>.</location>
+                    <label>src/classes</label>
+                    <type>java</type>
+                    <location>src/classes</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
             </folders>
@@ -59,7 +59,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar</classpath>
+                <classpath mode="compile">../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/modules/world/avatarbase/lib/avatars.jar:../../../wonderland/modules/world/avatarbase/dist/avatarbase.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
