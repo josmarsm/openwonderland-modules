@@ -52,7 +52,7 @@ public class MovieRecorderCellFactory implements CellFactorySPI {
         BoundingSphere box = new BoundingSphere(1.0f, new Vector3f(1f, 0.7f, 0.2f));
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
-
+        state.setName("Movie Recorder");
         return (T)state;
     }
 
