@@ -20,8 +20,6 @@ package org.jdesktop.wonderland.modules.marbleous.client.cell;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -40,7 +38,7 @@ public class TrackCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         TrackCellServerState state = new TrackCellServerState();
-
+        state.setName("Marbleous");
         return (T)state;
     }
 
