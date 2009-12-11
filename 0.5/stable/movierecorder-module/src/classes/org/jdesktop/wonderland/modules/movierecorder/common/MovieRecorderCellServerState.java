@@ -41,7 +41,6 @@ public class MovieRecorderCellServerState extends CellServerState implements Ser
 
     public MovieRecorderCellServerState() {
         super();
-        setName("Movie Recorder");
     }
 
     public String getServerClassName() {
