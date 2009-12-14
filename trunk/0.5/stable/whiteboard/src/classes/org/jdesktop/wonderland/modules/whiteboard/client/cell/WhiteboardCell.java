@@ -21,6 +21,8 @@ import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.modules.whiteboard.client.*;
 import java.awt.Point;
 import java.math.BigInteger;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -55,6 +57,9 @@ public class WhiteboardCell extends App2DCell {
     private String myUID;
     private boolean synced = false;
     protected final Object actionLock = new Object();
+
+    /** executor to put messages onto a separate queue */
+    private Executor msgExecutor = Executors.newSingleThreadExecutor();
 
     /**
      * Create an instance of WhiteboardCell.
@@ -147,7 +152,19 @@ public class WhiteboardCell extends App2DCell {
      *
      * @param msg a whiteboard message
      */
-    public void processMessage(WhiteboardCellMessage msg) {
+    public void processMessage(final WhiteboardCellMessage msg) {
+        // issue 1017: since message processing can be quite involved, do
+        // it off of the Darkstar message handling thread.  The single
+        // threaded executor guarantees that messages will be processed
+        // in the order they are received.
+        msgExecutor.execute(new Runnable() {
+            public void run() {
+                processQueuedMessage(msg);
+            }
+        });
+    }
+
+    protected void processQueuedMessage(WhiteboardCellMessage msg) {
         String msgUID = msg.getCellID().toString();
 
         if (isSynced()) {
