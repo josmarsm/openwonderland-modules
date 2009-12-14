@@ -76,7 +76,6 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         public void run() {
             if (uri != null) {
                 svgDocument = (SVGDocument) WhiteboardClientUtils.openDocument(uri);
-                svgDocumentDialog.setDocumentURL(uri);
                 // loaded an external document
                 whiteboardWindow.setDocument(svgDocument, false);
             }
@@ -341,8 +340,9 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     }
 
     private void setSVGDialogDocumentURL(String docURI) {
-        if (svgDocumentDialog!=null)
+        if (svgDocumentDialog != null) {
             svgDocumentDialog.setDocumentURL(docURI);
+        }
     }
 
     /**
