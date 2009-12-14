@@ -46,13 +46,12 @@ public class WhiteboardClientUtils {
         // We need to make sure we "annotate" the asset uri with the host name and port
         // of the server.
         AssetURI assetURI = AssetURI.uriFactory(uri);
+        WhiteboardClientUtils.annotateURI(assetURI);
         Asset asset = AssetManager.getAssetManager().getAsset(assetURI);
 
         if (asset == null) {
             logger.warning("Null AssetURI for " + uri);
         } else {
-            WhiteboardClientUtils.annotateURI(assetURI);
-
             // Fetch the asset and wait for it to download
             if (AssetManager.getAssetManager().waitForAsset(asset) == true) {
                 try {
