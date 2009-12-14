@@ -157,13 +157,13 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         device.attachChild(cameraModel);
 
         //Get the record status nodes and set it to off
-        recordStatus = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrRecordStatus_002-vrRecordStatus");
-        recordStatusOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrRecordStatusOn-Geometry-vrRecordStatusOn");
+        recordStatus = ScenegraphUtils.findNamedNode(cameraModel, "vrRecordStatus_002-vrRecordStatus");
+        recordStatusOn = ScenegraphUtils.findNamedNode(cameraModel, "vrRecordStatusOn-Geometry-vrRecordStatusOn");
         recordStatusOn.setVisible(false);
 
         //Get the video buttons
-        videoSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideo_002-vrBtnVideo");
-        videoSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnVideoOn-Geometry-vrBtnVideoOn");
+        videoSpatial = ScenegraphUtils.findNamedNode(cameraModel, "vrBtnVideo_002-vrBtnVideo");
+        videoSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "vrBtnVideoOn-Geometry-vrBtnVideoOn");
         //locate "on" button so that it appears "pressed"
         videoSpatialOn.setLocalTranslation(0, -0.015f, 0);
         //"on" button is initially invisible
@@ -172,8 +172,8 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         ((MovieRecorderCell)cell).getVideoButtonModel().addItemListener(new VideoButtonListener());
 
         //Get the still buttons
-        stillSpatial = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStill_002-vrBtnStill");
-        stillSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "combinedMesh_vrBtnStillOn-Geometry-vrBtnStillOn");
+        stillSpatial = ScenegraphUtils.findNamedNode(cameraModel, "vrBtnStill_002-vrBtnStill");
+        stillSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "vrBtnStillOn-Geometry-vrBtnStillOn");
         //locate "on" button so that it appears "pressed"
         stillSpatialOn.setLocalTranslation(0, -0.015f, 0);
         //"on" button is initially invisible
