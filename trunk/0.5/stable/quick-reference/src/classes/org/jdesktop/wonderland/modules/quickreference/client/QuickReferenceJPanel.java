@@ -19,7 +19,6 @@ package org.jdesktop.wonderland.modules.quickreference.client;
 
 import imi.character.avatar.AvatarContext.TriggerNames;
 import java.awt.Font;
-import java.awt.Toolkit;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -795,12 +794,14 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
 
     private void shiftButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiftButtonMousePressed
         // TODO: run don't just walk
+        avatarCharacter.triggerActionStart(TriggerNames.Movement_Modifier);
         avatarCharacter.triggerActionStart(TriggerNames.Move_Forward);
     }//GEN-LAST:event_shiftButtonMousePressed
 
     private void shiftButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiftButtonMouseReleased
         // TODO: stop running
         avatarCharacter.triggerActionStop(TriggerNames.Move_Forward);
+        avatarCharacter.triggerActionStop(TriggerNames.Movement_Modifier);
     }//GEN-LAST:event_shiftButtonMouseReleased
 
     private void shiftButtonMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiftButtonMouseEntered
