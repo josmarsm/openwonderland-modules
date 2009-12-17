@@ -793,13 +793,11 @@ public class QuickReferenceJPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_stepBackwardButtonMouseExited
 
     private void shiftButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiftButtonMousePressed
-        // TODO: run don't just walk
         avatarCharacter.triggerActionStart(TriggerNames.Movement_Modifier);
         avatarCharacter.triggerActionStart(TriggerNames.Move_Forward);
     }//GEN-LAST:event_shiftButtonMousePressed
 
     private void shiftButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_shiftButtonMouseReleased
-        // TODO: stop running
         avatarCharacter.triggerActionStop(TriggerNames.Move_Forward);
         avatarCharacter.triggerActionStop(TriggerNames.Movement_Modifier);
     }//GEN-LAST:event_shiftButtonMouseReleased
