@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,17 +11,20 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
-import org.jdesktop.mtgame.*;
-import com.jme.scene.Node;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.scene.Spatial;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.NewFrameCondition;
+import org.jdesktop.mtgame.ProcessorArmingCollection;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
@@ -52,15 +55,15 @@ public class RotationAnimationProcessor extends AnimationProcessorComponent {
     /**
      * The rotation target
      */
-    private Node target = null;
+    private Spatial target = null;
     
     /**
      * The constructor
      */
-    public RotationAnimationProcessor(Entity entity, Node target, float startDegrees, float endDegrees) {
+    public RotationAnimationProcessor(Entity entity, Spatial target, float startDegrees, float endDegrees) {
         this(entity, target, startDegrees, endDegrees, new Vector3f(0f,1f,0f));
     }
-    public RotationAnimationProcessor(Entity entity, Node target, float startDegrees, float endDegrees, Vector3f axis) {
+    public RotationAnimationProcessor(Entity entity, Spatial target, float startDegrees, float endDegrees, Vector3f axis) {
         super(entity);
         this.worldManager = ClientContextJME.getWorldManager();
         this.target = target;

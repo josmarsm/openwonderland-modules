@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2008, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,44 +11,44 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * $Revision$
- * $Date$
- * $State$
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
-import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
-import com.jme.scene.shape.Box;
-import com.jme.scene.shape.Cylinder;
-import com.jme.scene.state.BlendState;
-import com.jme.scene.state.CullState;
-import com.jme.scene.state.MaterialState;
-import com.jme.scene.state.RenderState.StateType;
+import com.jme.scene.TriMesh;
 import com.sun.scenario.animation.Animation;
 import com.sun.scenario.animation.Clip;
 import com.sun.scenario.animation.Clip.RepeatBehavior;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.JMECollisionSystem;
-import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
+import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 
 
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
+import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 
 /**
  * Renderer for the AudioRecorder Cell
@@ -59,22 +59,12 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
     private static final Logger rendererLogger = Logger.getLogger(AudioRecorderCellRenderer.class.getName());
 
     public static final float WIDTH = 0.6f; //x-extent
-    public static final float HEIGHT = WIDTH /2 ; //y-extent was 0.3f
-    public static final float DEPTH = 0.05f; //z-extent
-    private static final float REEL_RADIUS = HEIGHT * 0.9f;  //was 0.16f
-    private static final float BUTTON_WIDTH = WIDTH / 3; //x
-    private static final float BUTTON_HEIGHT = 0.05f; //y
-    private static final float BUTTON_DEPTH = DEPTH; //y
-    private static final ColorRGBA RECORD_BUTTON_DEFAULT = new ColorRGBA(0.5f, 0, 0, 1f);
-    private static final ColorRGBA RECORD_BUTTON_SELECTED = ColorRGBA.red.clone();
-    private static final ColorRGBA STOP_BUTTON_DEFAULT = new ColorRGBA(0.2f, 0.2f, 0.2f, 1f);
-    private static final ColorRGBA STOP_BUTTON_SELECTED = ColorRGBA.black.clone();
-    private static final ColorRGBA PLAY_BUTTON_DEFAULT = new ColorRGBA(0, 0.5f, 0.2f, 1f);
-    private static final ColorRGBA PLAY_BUTTON_SELECTED = ColorRGBA.green.clone();
-    private Node root = null;
+    public static final float HEIGHT = 0.2f ; //y-extent
+    public static final float DEPTH = WIDTH; //z-extent
     private Button recordButton;
     private Button stopButton;
     private Button playButton;
+    private Set<Button> buttons = new HashSet<Button>();
     private Set<Animation> animations = new HashSet<Animation>();
 
     public AudioRecorderCellRenderer(Cell cell) {
@@ -83,7 +73,7 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
 
     protected Node createSceneGraph(Entity entity) {
         /* Create the scene graph object*/
-        root = new Node();
+        Node root = new Node("Audio Recorder Root");
         attachRecordingDevice(root, entity);
         root.setModelBound(new BoundingBox());
         root.updateModelBound();
@@ -101,103 +91,63 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
     }
 
     private void attachRecordingDevice(Node device, Entity entity) {
-        addOuterCasing(device);
-        entity.addEntity(createReel(device, new Vector3f(0-REEL_RADIUS, 0, 0.0f)));
-        entity.addEntity(createReel(device, new Vector3f(WIDTH - REEL_RADIUS, 0, 0.0f)));
-        entity.addEntity(createRecordButton(device, new Vector3f(-(WIDTH - (BUTTON_WIDTH)), HEIGHT + BUTTON_HEIGHT, 0f)));
-        entity.addEntity(createStopButton(device, new Vector3f(0, HEIGHT + BUTTON_HEIGHT, 0f)));
-        entity.addEntity(createPlayButton(device, new Vector3f(WIDTH - BUTTON_WIDTH, HEIGHT + BUTTON_HEIGHT, 0f)));
+        try {
+            addRecorderModel(device, entity);
+        } catch (IOException ex) {
+            rendererLogger.log(Level.SEVERE, "Failed to load audio recorder model", ex);
+        }
     }
 
-    private void addOuterCasing(Node device) {
-        Box casing = new Box("Audio Recorder Casing", new Vector3f(0, 0, 0), WIDTH, HEIGHT, DEPTH); //x, y, z
-        casing.setModelBound(new BoundingBox());
-        casing.updateModelBound();
-        ColorRGBA casingColour = new ColorRGBA(0f, 0f, 1f, 0.2f);
-        MaterialState matState = (MaterialState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Material);
-        matState.setDiffuse(casingColour);
-        casing.setRenderState(matState);
-        //casing.setLightCombineMode(Spatial.LightCombineMode.Off);
-        BlendState as = (BlendState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Blend);
-        as.setEnabled(true);
-        as.setBlendEnabled(true);
-        as.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
-        as.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
-        casing.setRenderState(as);
+    private void addRecorderModel(Node device, Entity entity) throws IOException {
+        LoaderManager manager = LoaderManager.getLoaderManager();
+        URL url = AssetUtils.getAssetURL("wla://audiorecorder/pwl_3d_audiorecorder_012a.dae/pwl_3d_audiorecorder_012a.dae.gz.dep", this.getCell());
+        DeployedModel dm = manager.getLoaderFromDeployment(url);
+        Node cameraModel = dm.getModelLoader().loadDeployedModel(dm, entity);
+        //translate the model so that it's in the centre of the cell
+        cameraModel.setLocalTranslation(0, 0, 0.3f);
+        device.attachChild(cameraModel);
 
-        CullState cs = (CullState) ClientContextJME.getWorldManager().getRenderManager().createRendererState(StateType.Cull);
-        cs.setEnabled(true);
-        cs.setCullFace(CullState.Face.Back);
-        casing.setRenderState(cs);
-        device.attachChild(casing);
+        //Create the record button and set to off
+        Spatial recordSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "btnRecordOn_001-btnOn-symbol");
+        Spatial recordSpatialOff = ScenegraphUtils.findNamedNode(cameraModel, "btnRecord_001-arUV-symbol");
+        recordButton = new Button(recordSpatialOn, recordSpatialOff, false);
+        buttons.add(recordButton);
         
+        //Get the play button and set to off
+        Spatial playSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "btnPlayOn_001-btnOn-symbol");
+        Spatial playSpatialOff = ScenegraphUtils.findNamedNode(cameraModel, "btnPlay_001-arUV-symbol");
+        playButton = new Button(playSpatialOn, playSpatialOff, false);
+        buttons.add(playButton);
+
+        //Get the stop button and set to on
+        Spatial stopSpatialOn = ScenegraphUtils.findNamedNode(cameraModel, "btnStopOn_001-btnOn-symbol");
+        Spatial stopSpatialOff = ScenegraphUtils.findNamedNode(cameraModel, "btnStop_001-arUV-symbol");
+        stopButton = new Button(stopSpatialOn, stopSpatialOff, true);
+        buttons.add(stopButton);
+
+        //set up the animations
+        Spatial spool1 = ScenegraphUtils.findNamedNode(cameraModel, "spoolLg1-Geometry-arUV-symbol");
+        createSpool(spool1, entity);
+        Spatial spool2 = ScenegraphUtils.findNamedNode(cameraModel, "spoolLg2-Geometry-arUV-symbol");
+        createSpool(spool2, entity);
+        Spatial spool3 = ScenegraphUtils.findNamedNode(cameraModel, "spoolSm_001-spoolSm-symbol");
+        createSpool(spool3, entity);
+        Spatial spool4 = ScenegraphUtils.findNamedNode(cameraModel, "spoolSm1-Geometry-spoolSm-symbol");
+        createSpool(spool4, entity);
+        Spatial spool5 = ScenegraphUtils.findNamedNode(cameraModel, "spoolSm2-Geometry-spoolSm-symbol");
+        createSpool(spool5, entity);
+
+        //Listen for mouse events
+        RecorderListener listener = new RecorderListener();
+        listener.addToEntity(entity);
     }
 
-    private Entity createReel(Node device, Vector3f position) {
-        Node reelRoot = new Node();
-        Entity reelEntity = new Entity("Reel");
-        Cylinder outerReel = new Cylinder("Outer Reel", 10, 100, REEL_RADIUS, DEPTH * 2f, true);
-        Cylinder innerReel = new Cylinder("Inner Reel", 10, 5, REEL_RADIUS/3, DEPTH * 2.10f, true);
-        reelRoot.attachChild(outerReel);
-        reelRoot.attachChild(innerReel);
-        ColorRGBA outerReelColour = ColorRGBA.brown.clone();
-        outerReel.setSolidColor(outerReelColour);
-        ColorRGBA innerReelColour = ColorRGBA.white.clone();
-        innerReel.setSolidColor(innerReelColour);
-        reelRoot.setLightCombineMode(Spatial.LightCombineMode.Off);
-        reelRoot.setModelBound(new BoundingBox());
-        // Calculate the best bounds for the object you gave it
-        reelRoot.updateModelBound();
-        // Move the box to its position
-        reelRoot.setLocalTranslation(position);
-
-        device.attachChild(reelRoot);
-        
-        RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(reelRoot);
-        reelEntity.addComponent(RenderComponent.class, rc);
-
-        RotationAnimationProcessor spinner = new RotationAnimationProcessor(reelEntity, reelRoot, 0f, 360, new Vector3f(0f,0f,1f));
+    private void createSpool(Spatial spool, Entity entity) {
+        RotationAnimationProcessor spinner = new RotationAnimationProcessor(entity, spool, 0f, 360, new Vector3f(0f,1f,0f));
         Clip clip = Clip.create(1000, Clip.INDEFINITE, spinner);
         clip.setRepeatBehavior(RepeatBehavior.LOOP);
         clip.start();
         animations.add(clip);
-
-        return reelEntity;
-    }
-
-    private Entity createRecordButton(Node device, Vector3f position) {
-        recordButton = addButton(device, "Record", position);
-        recordButton.setColor(RECORD_BUTTON_DEFAULT);
-        recordButton.setSelectedColor(RECORD_BUTTON_SELECTED);
-        recordButton.setDefaultColor(RECORD_BUTTON_DEFAULT);
-        return recordButton.getEntity();
-    }
-
-    private Entity createStopButton(Node device, Vector3f position) {
-        stopButton = addButton(device, "Stop", position);
-        stopButton.setColor(STOP_BUTTON_DEFAULT);
-        stopButton.setSelectedColor(STOP_BUTTON_SELECTED);
-        stopButton.setDefaultColor(STOP_BUTTON_DEFAULT);
-        return stopButton.getEntity();
-    }
-
-    private Entity createPlayButton(Node device, Vector3f position) {
-        playButton = addButton(device, "Play", position);
-        playButton.setColor(PLAY_BUTTON_DEFAULT);
-        playButton.setSelectedColor(PLAY_BUTTON_SELECTED);
-        playButton.setDefaultColor(PLAY_BUTTON_DEFAULT);
-        return playButton.getEntity();
-    }
-
-    private Button addButton(Node device, String name, final Vector3f position) {
-        Button aButton = new Button(name, new Vector3f(0, 0, 0), BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_DEPTH);
-        
-        // Move the button
-        aButton.getRoot().setLocalTranslation(position);
-
-        device.attachChild(aButton.getRoot());
-        
-        return aButton;
     }
 
     void setRecording(boolean b) {
@@ -222,100 +172,10 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
         }
     }
 
-    // Make this buttonEntity pickable by adding a collision component to it
-        protected void makeEntityPickable(Entity entity, Node node) {
-            JMECollisionSystem collisionSystem = (JMECollisionSystem) ClientContextJME.getWorldManager().getCollisionManager().
-                    loadCollisionSystem(JMECollisionSystem.class);
+   class RecorderListener extends EventClassListener {
 
-            CollisionComponent cc = collisionSystem.createCollisionComponent(node);
-            entity.addComponent(CollisionComponent.class, cc);
-        }
-
-    class Button {
-
-        private boolean isSelected;
-        private Box box;
-        private Node buttonRoot;
-        private Entity buttonEntity;
-        private ColorRGBA selectedColor;
-        private ColorRGBA defaultColor;
-
-        private Button(String name, Vector3f vector3f, float f, float BUTTON_WIDTH, float BUTTON_HEIGHT) {
-            box = new Box(name, vector3f, f, BUTTON_WIDTH, BUTTON_HEIGHT);
-            box.setLightCombineMode(Spatial.LightCombineMode.Off);
-            box.setModelBound(new BoundingSphere());
-            // Calculate the best bounds for the object you gave it
-            box.updateModelBound();
-            buttonRoot = new Node();
-            buttonRoot.attachChild(box);
-            buttonEntity = new Entity(name);
-            RenderComponent rc = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(buttonRoot);
-            buttonEntity.addComponent(RenderComponent.class, rc);
-
-            //Listen to mouse events
-            ButtonListener listener = new ButtonListener(this);
-            listener.addToEntity(buttonEntity);
-
-            // Make the secondary object pickable separately from the primary object
-            makeEntityPickable(buttonEntity, buttonRoot);
-        }
-
-        Node getRoot() {
-            return buttonRoot;
-        }
-
-        Entity getEntity() {
-            return buttonEntity;
-        }
-
-        boolean isSelected() {
-            return isSelected;
-        }
-
-        void setSelected(boolean selected) {
-            //rendererLogger.info("setSelected: " + selected);
-            this.isSelected = selected;
-            updateColor();
-        }
-
-        
-
-        void setSelectedColor(ColorRGBA selectedColor) {
-            this.selectedColor = selectedColor;
-        }
-        
-        void setDefaultColor(ColorRGBA defaultColor) {
-            this.defaultColor = defaultColor;
-        }
-
-        void setColor(ColorRGBA color) {
-            box.setSolidColor(color);
-        }
-
-        public void updateColor() {
-            if (isSelected) {
-                setColor(selectedColor);
-            } else {
-                setColor(defaultColor);
-            }
-            ClientContextJME.getWorldManager().addToUpdateList(box);
-        }
-
-        private void printComponents() {
-            //System.out.println(buttonEntity);
-            //Iterator entityComponents = buttonEntity.getComponents().iterator();
-            //while (entityComponents.hasNext()) {
-            //    System.out.println(entityComponents.next());
-            //}
-        }
-    }
-
-    class ButtonListener extends EventClassListener {
-        private Button button; 
-
-        ButtonListener(Button aButton) {
+        RecorderListener() {
             super();
-            button = aButton;
         }
 
         @Override
@@ -326,34 +186,88 @@ public class AudioRecorderCellRenderer extends BasicRenderer {
         // Note: we don't override computeEvent because we don't do any computation in this listener.
         @Override
         public void commitEvent(Event event) {
-            //rendererLogger.info("commit " + event + " for ");
-            //button.printComponents();
+            //rendererLogger.info("commit " + event + " for " + this);
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
-            if (mbe.isClicked() == false) {
-                return;
-            }
-            //Ignore if it's not the left mouse button
+            //ignore any mouse button that isn't the left one
             if (mbe.getButton() != ButtonId.BUTTON1) {
                 return;
             }
+            //Ignore any mouse event that isn't a click
+            if (mbe.getID() != MouseEvent.MOUSE_CLICKED) {
+                return;
+            }
+            TriMesh mesh = mbe.getPickDetails().getTriMesh();
+            Button selectedButton = getSelectedButton(mesh);
+            if (selectedButton == null) {
+                rendererLogger.warning("no button for mesh: " + mesh);
+                return;
+            }
 
-            if (button == stopButton) {
-                /*
-                 * We always handle the stop button.
-                 */
-                ((AudioRecorderCell) cell).stop();
+            if (selectedButton == playButton) {
+                rendererLogger.info("play button clicked");
+                ((AudioRecorderCell)cell).startPlaying();
                 return;
             }
-            //
-            //Only care about the case when the button isn't already selected'
-            if (!button.isSelected()) {
-                if (button == recordButton) {
-                    ((AudioRecorderCell) cell).startRecording();
-                } else if (button == playButton) {
-                    ((AudioRecorderCell) cell).startPlaying();
+            if (selectedButton == stopButton) {
+                rendererLogger.info("stop button clicked");
+                ((AudioRecorderCell)cell).stop();
+                return;
+            }
+            if (selectedButton == recordButton) {
+                rendererLogger.info("record button clicked");
+                ((AudioRecorderCell)cell).startRecording();
+                return;
+            }
+
+        }
+
+        private Button getSelectedButton(TriMesh mesh) {
+            for (Button button : buttons) {
+                if (button.usesMesh(mesh)) {
+                    return button;
                 }
-                return;
             }
+            return null;
+        }
+
+        
+    }
+
+    class Button {
+
+        private Spatial onSpatial,  offSpatial;
+
+        Button(Spatial onSpatial, Spatial offSpatial, boolean selected) {
+            this.onSpatial = onSpatial;
+            this.offSpatial = offSpatial;
+            //locate "on" button so that it appears "pressed"
+            onSpatial.setLocalTranslation(0, 0.015f, 0);
+            setBasicSelected(selected);
+        }
+
+        private void setBasicSelected(boolean selected) {
+            onSpatial.setVisible(selected);
+            offSpatial.setVisible(!selected);
+        }
+
+        void setSelected(boolean selected) {
+            setBasicSelected(selected);
+            WorldManager wm = ClientContextJME.getWorldManager();
+            wm.addToUpdateList(offSpatial);
+            wm.addToUpdateList(onSpatial);
+        }
+
+        private boolean usesMesh(TriMesh mesh) {
+            if (mesh == onSpatial) {
+                return true;
+            }
+            if (mesh == offSpatial) {
+                return true;
+            }
+            return false;
         }
     }
+        
+
+    
 }
