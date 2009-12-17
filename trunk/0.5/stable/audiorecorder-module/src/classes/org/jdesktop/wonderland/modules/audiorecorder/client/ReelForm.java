@@ -134,15 +134,13 @@ public class ReelForm extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(addButton)
                     .add(layout.createSequentialGroup()
-                        .add(29, 29, 29)
-                        .add(addButton))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(doneButton)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(doneButton)))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -198,31 +196,30 @@ public class ReelForm extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     class TapeListRenderer extends JLabel implements ListCellRenderer {
-     // This is the only method defined by ListCellRenderer.
-     // We just reconfigure the JLabel each time we're called.
+        // This is the only method defined by ListCellRenderer.
+        // We just reconfigure the JLabel each time we're called.
 
-     public Component getListCellRendererComponent(
-       JList list,
-       Object value,            // value to display
-       int index,               // cell index
-       boolean isSelected,      // is the cell selected
-       boolean cellHasFocus)    // the list and the cell have the focus
-     {
-         Tape tape = (Tape) value;
-         String s = tape.getTapeName();
-         setText(s);
-   	   if (isSelected) {
-             setBackground(list.getSelectionBackground());
-	       setForeground(list.getSelectionForeground());
-	   }
-         else {
-	       setBackground(list.getBackground());
-	       setForeground(list.getForeground());
-	   }
-	   setEnabled(list.isEnabled());
-	   setFont(list.getFont());
-         setOpaque(true);
-         return this;
-     }
- }
+        public Component getListCellRendererComponent(
+                JList list,
+                Object value, // value to display
+                int index, // cell index
+                boolean isSelected, // is the cell selected
+                boolean cellHasFocus) // the list and the cell have the focus
+        {
+            Tape tape = (Tape) value;
+            String s = tape.getTapeName();
+            setText(s);
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            setEnabled(list.isEnabled());
+            setFont(list.getFont());
+            setOpaque(true);
+            return this;
+        }
+    }
 }

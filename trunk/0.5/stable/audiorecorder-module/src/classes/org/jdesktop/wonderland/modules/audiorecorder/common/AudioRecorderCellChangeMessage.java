@@ -170,11 +170,15 @@ public class AudioRecorderCellChangeMessage extends CellMessage {
                 break;
             case RECORD:
                 builder.append("isRecording: " + isRecording);
-                builder.append("tape: " + aTape);
+                if (isRecording) {
+                    builder.append(" tape: " + aTape);
+                }
                 break;
             case PLAY:
                 builder.append("isPlaying: " + isPlaying);
-                builder.append("tape: " + aTape);
+                if (isPlaying) {
+                    builder.append("tape: " + aTape);
+                }
                 break;
             case TAPE_SELECTED:
                 builder.append("tape selected: " + aTape);
