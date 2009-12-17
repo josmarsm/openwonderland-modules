@@ -82,12 +82,16 @@ import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.cell.messages.SimulationStateMessage.SimulationState;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author paulby
  */
 public class TrackRenderer extends BasicRenderer {
+
+    private static Logger logger = Logger.getLogger(TrackRenderer.class.getName());
 
 
     public interface MarbleMouseEventListener {
@@ -177,7 +181,7 @@ public class TrackRenderer extends BasicRenderer {
             ((TrackCell)cell).getKnotTableModel().addTableModelListener(new TableModelListener() {
 
                 public void tableChanged(TableModelEvent arg0) {
-                    System.out.println("Table changed in renderer");
+                    logger.info("Table changed in renderer");
                     update();
                 }
             });
@@ -202,7 +206,7 @@ public class TrackRenderer extends BasicRenderer {
     }
 
     private void update() {
-        System.out.println("Updating track renderer");
+        logger.info("Updating track renderer");
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
 
             public void update(Object arg0) {
@@ -441,8 +445,8 @@ public class TrackRenderer extends BasicRenderer {
 
         Matrix4f mat = new Matrix4f();
         Vector3f pos;
-        ArrayList<Vector3f> path = new ArrayList();
-        ArrayList<Vector3f> upList = new ArrayList();
+        ArrayList<Vector3f> path = new ArrayList<Vector3f>();
+        ArrayList<Vector3f> upList = new ArrayList<Vector3f>();
         for (float s = 0; s <= 1; s += step) {
             spline.computeTransform(s, mat);
             pos = mat.mult(Vector3f.ZERO);
@@ -560,7 +564,7 @@ public class TrackRenderer extends BasicRenderer {
                         MouseButtonEvent3D.ButtonId.BUTTON1) {
                     MouseEvent awtButtonEvent = (MouseEvent) buttonEvent.getAwtEvent();
                     if (buttonEvent.getPickDetails()!=null) {
-                        System.err.println(buttonEvent.getPickDetails().getTriMesh().getName());
+                        logger.warning(buttonEvent.getPickDetails().getTriMesh().getName());
                     }
 
 //                    if (buttonEvent.getPickDetails().getTriMesh().getName().equals(sourceNodeName)) {
@@ -709,8 +713,8 @@ public class TrackRenderer extends BasicRenderer {
 
             try {
                 url = AssetUtils.getAssetURL("wla://marbleous/flaresmall.jpg", getCell());
-            } catch (MalformedURLException e) {
-                System.out.println(e);
+            } catch (MalformedURLException ex) {
+                logger.log(Level.SEVERE, "Failed to load flare", ex);
             }
 
 

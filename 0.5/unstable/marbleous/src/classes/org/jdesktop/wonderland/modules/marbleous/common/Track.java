@@ -75,7 +75,7 @@ public class Track implements Serializable {
     }
 
     public Collection<TCBKeyFrame> buildTrack() {
-        ArrayList<TCBKeyFrame> keyFrames = new ArrayList();
+        ArrayList<TCBKeyFrame> keyFrames = new ArrayList<TCBKeyFrame>();
         Matrix4f currentEndpoint = new Matrix4f();
         int segmentNumber = 0;
         for(TrackSegment segment : segments) {

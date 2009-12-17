@@ -84,7 +84,7 @@ public class TrackSegment implements Serializable {
      * @return collection of KeyFrames in world coordinates
      */
     Collection<TCBKeyFrame> computeWorldKeyFrames(Matrix4f worldTransform, int segmentNumber, int totalSegments) {
-        ArrayList<TCBKeyFrame> ret = new ArrayList();
+        ArrayList<TCBKeyFrame> ret = new ArrayList<TCBKeyFrame>();
 
         for(TCBKeyFrame f : keyFrames) {
             TCBKeyFrame worldFrame = new TCBKeyFrame(f);
@@ -125,7 +125,7 @@ public class TrackSegment implements Serializable {
     }
 
     public Object saveToMemento() {
-        System.out.println("Originator: Saving to Memento.");
+        //System.out.println("Originator: Saving to Memento.");
         TCBKeyFrame[] savedKeyFrames = new TCBKeyFrame[keyFrames.length];
         for (int i = 0; i < keyFrames.length; i++) {
             savedKeyFrames[i] = new TCBKeyFrame(keyFrames[i]);
@@ -137,7 +137,7 @@ public class TrackSegment implements Serializable {
         if (m instanceof Memento) {
             Memento memento = (Memento) m;
             keyFrames = memento.getSavedKeyFrames();
-            System.out.println("Originator: State after restoring from Memento: " + keyFrames);
+            //System.out.println("Originator: State after restoring from Memento: " + keyFrames);
         }
     }
 

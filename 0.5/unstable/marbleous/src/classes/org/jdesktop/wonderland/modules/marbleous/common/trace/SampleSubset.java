@@ -31,5 +31,5 @@ public class SampleSubset implements Serializable {
 
     public int firstSample = 0;
     public int numberSamples = 0;
-    public List<SampleInfo> sampleSubet = null;
+    public List<SampleInfo> sampleSubset = null;
 }

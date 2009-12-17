@@ -164,7 +164,7 @@ public class SampleDisplayEntity extends Entity {
             // collect events
             MouseEvent3D me3d = (MouseEvent3D) event;
             MouseEvent me = (MouseEvent) me3d.getAwtEvent();
-            logger.info("got mouse event!");
+            //logger.info("got mouse event!");
 
             // click events - display context menu, cycle display mode
             if(me.getID() == MouseEvent.MOUSE_CLICKED){
@@ -288,15 +288,15 @@ public class SampleDisplayEntity extends Entity {
     private synchronized void setDisplayMode(DisplayMode newDisplayMode) {
         if (displayMode == newDisplayMode) return;
 
-        logger.info(" setting display mode: " + newDisplayMode);
-        logger.info(" current display mode: " + displayMode);
+        //logger.info(" setting display mode: " + newDisplayMode);
+        //logger.info(" current display mode: " + displayMode);
 
         // if node is currently HIDDEN and the new mode is not HIDDEN (is visible),
         //     make the node visible in the world
         if (newDisplayMode != DisplayMode.HIDDEN) {
-            logger.info(" will display");
+            //logger.info(" will display");
             displayMode = newDisplayMode;
-            logger.info(" display mode is now:" + displayMode);
+            //logger.info(" display mode is now:" + displayMode);
 
             // First, remove the current from the world
             ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
@@ -335,7 +335,7 @@ public class SampleDisplayEntity extends Entity {
             RenderUpdater updater = new RenderUpdater() {
                     public void update(Object arg0) {
                         SampleDisplayEntity ent = (SampleDisplayEntity)arg0;
-                        logger.info(" adding entity");
+                        //logger.info(" adding entity");
                         ClientContextJME.getWorldManager().addEntity(ent);
                         entityAdded = true;
                         ClientContextJME.getWorldManager().addToUpdateList(transformNode);
@@ -352,7 +352,7 @@ public class SampleDisplayEntity extends Entity {
         // If we want to make the affordance invisible and it already is
         // visible, then make it invisible
         if (newDisplayMode == displayMode.HIDDEN && displayMode != displayMode.HIDDEN) {
-            logger.info(" will be hidden");
+            //logger.info(" will be hidden");
             RenderUpdater updater = new RenderUpdater() {
                     public void update(Object arg0) {
                         SampleDisplayEntity ent = (SampleDisplayEntity)arg0;

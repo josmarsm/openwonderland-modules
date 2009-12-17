@@ -36,7 +36,7 @@ public class TrackManager {
         return trackManager;
     }
 
-    private ArrayList supportedTypes = new ArrayList();
+    private ArrayList<TrackSegmentType> supportedTypes = new ArrayList<TrackSegmentType>();
 
     private TrackManager() {
         supportedTypes.add(new LoopTrackSegmentType());

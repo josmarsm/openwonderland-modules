@@ -381,7 +381,7 @@ public class ConstructPanel extends javax.swing.JPanel {
      * simulation
      */
     public void externalSimulationState(SimulationState state) {
-        System.err.println("EXTERNAL SIM STATE " + state);
+        logger.info("sim state " + state);
         if (state == SimulationState.STARTED) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -466,7 +466,7 @@ public class ConstructPanel extends javax.swing.JPanel {
                 return;
             }
 
-            System.out.println("Selected Type: " + selectedType);
+            logger.info("Selected Type: " + selectedType);
 
             // Enable the Insert button
             addButton.setEnabled(true);
@@ -481,7 +481,7 @@ public class ConstructPanel extends javax.swing.JPanel {
          */
         public void valueChanged(ListSelectionEvent e) {
             TrackSegment selectedSegment = (TrackSegment) segmentList.getSelectedValue();
-            System.out.println("Selected Segment: " + selectedSegment);
+            logger.info("Selected Segment: " + selectedSegment);
             if (selectedSegment == null) {
                 editButton.setEnabled(false);
             } else {
@@ -608,13 +608,13 @@ public class ConstructPanel extends javax.swing.JPanel {
             // Fetch the rigid body, if null, then log an error and return
             RigidBody rb = cell.getMarbleRigidBody();
             if (rb == null) {
-                logger.warning("Unable to find marble's rigid body");
+                logger.severe("Unable to find marble's rigid body");
                 return;
             }
 
             // Make sure there is a SimTrace object, otherwise just return
             if (simTrace == null) {
-                logger.warning("No active SimTrace object.");
+                logger.severe("No active SimTrace object.");
                 return;
             }
 

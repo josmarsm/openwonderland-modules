@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.marbleous.client.cell;
 import com.bulletphysics.dynamics.RigidBody;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.JBulletDynamicCollisionSystem;
 import org.jdesktop.mtgame.JBulletPhysicsSystem;
@@ -55,6 +56,8 @@ import org.jdesktop.wonderland.modules.marbleous.common.trace.SimTrace;
  * Client-side cell for rendering JME content
  */
 public class TrackCell extends Cell {
+        private final static Logger trackLogger = Logger.getLogger(TrackCell.class.getName());
+
 
     @UsesCellComponent
     private MarblePhysicsComponent marblePhysicsComponent;
@@ -136,7 +139,7 @@ public class TrackCell extends Cell {
     public void setClientState(CellClientState clientState) {
         super.setClientState(clientState);
         track = ((TrackCellClientState)clientState).getTrack();
-        System.out.println("TrackCell, track: " + track);
+        //trackLogger.info("track: " + track);
         trackListModel = new TrackListModel(track);
         knotTableModel = new KnotTableModel();
     }
@@ -224,17 +227,7 @@ public class TrackCell extends Cell {
 
     private void initUI () {
         uiTimeSlider = new TimeSliderUI(this);
-        System.err.println("******** uiTimeSlider = " + uiTimeSlider);
-
         ui = new UI(this, uiTimeSlider);
-        System.err.println("******** ui = " + ui);
-
-    /*
-    SimTrace trace = new SimTrace(2f, 60);
-    trace.appendSample(5f, new Vector3f(0f, 2f, 0f), new Vector3f(1f, 2f, 3f));
-    trace.appendSample(5f, new Vector3f(0f, 3f, 0f), new Vector3f(4f, 5f, 6f));
-    trace.appendSample(5f, new Vector3f(0f, 4f, 0f), new Vector3f(7f, 8f, 9f));
-     */
     }
 
     /**
@@ -243,7 +236,7 @@ public class TrackCell extends Cell {
      */
     public void setSimulationState(SimulationState simulationState) {
 
-        logger.warning("New simulation state " + simulationState);
+        //trackLogger.info("New simulation state " + simulationState);
         if (simulationState.equals(getSimulationState())) {
             return;
         }
@@ -267,14 +260,14 @@ public class TrackCell extends Cell {
         JBulletPhysicsSystem physicsSystem = getPhysicsSystem();
         if (physicsSystem != null) {
             if (simulationState == SimulationState.STARTED) {
-                logger.warning("Starting physics system...");
+                //trackLogger.info("Starting physics system...");
 
                 physicsSystem.setStarted(true);
             } else {
                 physicsSystem.setStarted(false);
             }
         } else {
-            logger.warning("Marble physics system not yet initialized!");
+            trackLogger.info("Marble physics system not yet initialized!");
         }
         fireSimulationStateChanged(simulationState);
 
@@ -396,7 +389,7 @@ public class TrackCell extends Cell {
          */
         @Override
         public void messageReceived(CellMessage message) {
-            System.out.println("TrackCellMessageReceiver, received message: " + message);
+            trackLogger.info("received message: " + message);
             TrackCellMessage tcm = (TrackCellMessage) message;
             TrackSegment aSegment;
 
@@ -409,7 +402,7 @@ public class TrackCell extends Cell {
                     aSegment = tcm.getTrackSegment();
                     trackListModel.removeSegment(aSegment);
                     if (aSegment.equals(knotTableModel.getSegment())) {
-                        System.err.println("The segment you are editing has been removed by another user");
+                        trackLogger.severe("The segment you are editing has been removed by another user");
                     }
                     break;
                 case MODIFY_SEGMENT:
@@ -420,7 +413,7 @@ public class TrackCell extends Cell {
                     }
                     break;
                 default:
-                    logger.severe("Unknown action type: " + tcm.getAction());
+                    trackLogger.severe("Unknown action type: " + tcm.getAction());
             }
         }
     }
@@ -501,7 +494,7 @@ public class TrackCell extends Cell {
      */
     public void setMarbleRigidBody(RigidBody rigidBody) {
         if (marblePhysicsComponent == null) {
-            logger.warning("Unable to find marble physics component.");
+            trackLogger.severe("Unable to find marble physics component.");
             return;
         }
         marblePhysicsComponent.setMarbleRigidBody(rigidBody);
@@ -515,7 +508,7 @@ public class TrackCell extends Cell {
      */
     public RigidBody getMarbleRigidBody() {
         if (marblePhysicsComponent == null) {
-            logger.warning("Unable to find marble physics component.");
+            trackLogger.severe("Unable to find marble physics component.");
             return null;
         }
         return marblePhysicsComponent.getMarbleRigidBody();
