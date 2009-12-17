@@ -187,7 +187,7 @@ public class SampleDisplayNode extends BillboardNode {
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {
                 if (descender != null) {
-                    MaterialState ms = (MaterialState) descender.getRenderState(RenderState.RS_MATERIAL);
+                    MaterialState ms = (MaterialState) descender.getRenderState(RenderState.StateType.Material);
                     if (ms == null) {
                         ms = DisplaySystem.getDisplaySystem().getRenderer().createMaterialState();
                         descender.setRenderState(ms);
@@ -342,16 +342,16 @@ public class SampleDisplayNode extends BillboardNode {
             actualTextLineHeight = (int)(aLine.getAscent() + aLine.getDescent());
         }
 
-        logger.info("[sample node] actual height/width:" + totalHeight + "/" + totalWidth);
-        logger.info("[sample node] desired height/width:" + totalHeight + "/" + totalWidth);
-        logger.info("[sample node] time:" + time);
-        logger.info("[sample node] position:" + position);
-        logger.info("[sample node] text:" + text);
+        //logger.info("[sample node] actual height/width:" + totalHeight + "/" + totalWidth);
+        //logger.info("[sample node] desired height/width:" + totalHeight + "/" + totalWidth);
+        //logger.info("[sample node] time:" + time);
+        //logger.info("[sample node] position:" + position);
+        //logger.info("[sample node] text:" + text);
 
         // create an image to render the text onto
         BufferedImage tmp0 = new BufferedImage(totalWidth+BORDER_WIDTH*2, totalHeight+BORDER_WIDTH*2, BufferedImage.TYPE_INT_ARGB);
-        logger.info("[sample node] image height: " + tmp0.getHeight());
-        logger.info("[sample node] image width: " + tmp0.getWidth());
+        //logger.info("[sample node] image height: " + tmp0.getHeight());
+        //logger.info("[sample node] image width: " + tmp0.getWidth());
         Graphics2D g2d = (Graphics2D) tmp0.getGraphics();
         g2d.setFont(font);
 
@@ -366,8 +366,8 @@ public class SampleDisplayNode extends BillboardNode {
 
         // draw background rectangle
         g2d.setColor(bgColor);
-        logger.info("[sample node] w: " + w);
-        logger.info("[sample node] w - bw2: " + (w-BORDER_WIDTH*2));
+        //logger.info("[sample node] w: " + w);
+        //logger.info("[sample node] w - bw2: " + (w-BORDER_WIDTH*2));
         g2d.fillRoundRect(x, y, w, h, arc, arc);
 
         // draw background rectangle's gradient
@@ -376,7 +376,7 @@ public class SampleDisplayNode extends BillboardNode {
         Color lg = new Color(100,100,100,125);
         GradientPaint p = new GradientPaint(0, (h * 0.20f), lg, 0, (h), dg);
         g2d.setPaint(p);
-        logger.info("[sample node] filling rounded rec: x y w h " + x + " " + y + " " + w+ " " +h + " ");
+        //logger.info("[sample node] filling rounded rec: x y w h " + x + " " + y + " " + w+ " " +h + " ");
         g2d.fillRoundRect(x, y, w, h, arc, arc);
 
         // reset paint
@@ -406,7 +406,7 @@ public class SampleDisplayNode extends BillboardNode {
         BufferedImage ret = tmp0;
 
         // draw time text and shadow always
-        logger.info("[sample node] draw time");
+        //logger.info("[sample node] draw time");
         textX = 0 + PADDING_LEFT;
         textY = actualTimeHeight + PADDING_TOP;// + paddingTop + borderWidth;
 
@@ -433,7 +433,7 @@ public class SampleDisplayNode extends BillboardNode {
         g2d.drawString(time, textX, textY);
     
         // draw position string always
-        logger.info("[sample node] draw position");
+        //logger.info("[sample node] draw position");
 
         // draw position text
         // make same left-justification, but different y
@@ -447,7 +447,7 @@ public class SampleDisplayNode extends BillboardNode {
 
         // draw the message text if necessary
         if(mode != DisplayMode.BASIC){
-            logger.info("[sample node] draw message");
+            //logger.info("[sample node] draw message");
             textY += actualPositionHeight + PADDING_LINE;
       
             g2d.setFont(font);
@@ -456,7 +456,7 @@ public class SampleDisplayNode extends BillboardNode {
             g2d.setColor(fontColor);
             for(TextLayout t:chunks){
                 t.draw(g2d, textX, textY);
-                logger.info("[sample node] drawing string:" + t.toString());
+                //logger.info("[sample node] drawing string:" + t.toString());
                 textY += actualTextLineHeight + PADDING_LINE;
             }
         }
@@ -484,11 +484,11 @@ public class SampleDisplayNode extends BillboardNode {
     private int getImageWidth(Rectangle2D timeRect, Rectangle2D positionRect){
         int actualWidth = PADDING_LEFT + PADDING_RIGHT; // 18
         if(timeRect.getWidth() > positionRect.getWidth()){
-            logger.info("an: time had larger width " + timeRect.getWidth() + " vs " + positionRect.getWidth());
+            //logger.info("an: time had larger width " + timeRect.getWidth() + " vs " + positionRect.getWidth());
             actualWidth += timeRect.getWidth();
         }
         else{
-            logger.info("an: position had equal or larger width " + positionRect.getWidth() + " " +  timeRect.getWidth());
+            //logger.info("an: position had equal or larger width " + positionRect.getWidth() + " " +  timeRect.getWidth());
             actualWidth += positionRect.getWidth();
         }
         return actualWidth;
@@ -506,21 +506,21 @@ public class SampleDisplayNode extends BillboardNode {
     private int getImageHeight(TextLayout timeLayout, TextLayout positionLayout, ArrayList<TextLayout> chunks) {
         int ret = PADDING_BOTTOM + PADDING_TOP;
         // add position and text to height for medium and large versions
-        logger.info("[sample node] display mode here is: " + mode);
+        //logger.info("[sample node] display mode here is: " + mode);
         ret += (int) (timeLayout.getAscent() + timeLayout.getDescent() +
                       positionLayout.getAscent() + positionLayout.getDescent() +
                       kernelSize + 1 + SHADOW_OFFSET_Y + PADDING_LINE);
 
         // also add lines of text from chunks to height for large versions
         if(mode != DisplayMode.BASIC){
-            logger.info("[sample node] large, adding chunks inside");
+            //logger.info("[sample node] large, adding chunks inside");
             for(TextLayout t:chunks){
                 //        logger.info("chunk: " + t.getAscent() + " " + t.getDescent());
                 ret += (int)(t.getAscent() + t.getDescent());
                 ret += PADDING_LINE;
             }
         }
-        logger.info("[sample node] ret is finally: " + ret);
+        //logger.info("[sample node] ret is finally: " + ret);
         return ret;
     }
 
@@ -586,8 +586,8 @@ public class SampleDisplayNode extends BillboardNode {
         height3D = h * fontSizeModifier;
         //    Quad ret = new Quad("anno node", w * factor, h * factor);
         final Quad ret = new Quad("anno node", w * fontSizeModifier, height3D);
-        logger.info("[sample node] width, height of quad:" + w + " " + h + "mod size is: " + fontSizeModifier);
-        logger.info("[sample node] factored width, height of quad:" + w*factor + " " + h*factor + " factor is:" + factor);
+        //logger.info("[sample node] width, height of quad:" + w + " " + h + "mod size is: " + fontSizeModifier);
+        //logger.info("[sample node] factored width, height of quad:" + w*factor + " " + h*factor + " factor is:" + factor);
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg0) {

@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
 
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import org.jdesktop.wonderland.modules.marbleous.common.Track;
 import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
@@ -26,6 +27,8 @@ import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
  * @author Bernard Horan
  */
 public class TrackListModel extends AbstractListModel {
+    private static Logger logger = Logger.getLogger(TrackListModel.class.getName());
+
 
     private Track track;
 
@@ -52,7 +55,7 @@ public class TrackListModel extends AbstractListModel {
     }
 
     public void modifySegment(TrackSegment segment) {
-        System.out.println("TrackListModel modify segment");
+        logger.info("TrackListModel modify segment");
         int index = track.indexOf(segment);
         track.replaceTrackSegment(segment);
         fireContentsChanged(this, index, index);

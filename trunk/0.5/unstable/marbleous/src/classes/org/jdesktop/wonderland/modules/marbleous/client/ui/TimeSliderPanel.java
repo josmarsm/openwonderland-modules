@@ -1,12 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * TimeSliderPanel.java
+/**
+ * Project Wonderland
  *
- * Created on Aug 12, 2009, 10:07:15 AM
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
  */
 
 package org.jdesktop.wonderland.modules.marbleous.client.ui;
@@ -334,7 +341,9 @@ public class TimeSliderPanel extends javax.swing.JPanel {
         setSliderValue(0);
         // TODO: dispose all entities, not just current
         sampleEntities.clear();
-        currentSampleEntity.dispose();
+        if (currentSampleEntity != null) {
+            currentSampleEntity.dispose();
+        }
         currentSampleEntity = null;
         SampleDisplayEntity.disposeAll();
         currentSampleInfo = null;

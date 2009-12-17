@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.text.DecimalFormat;
+import java.util.logging.Logger;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -45,6 +46,8 @@ import org.jdesktop.wonderland.modules.marbleous.common.TrackSegment;
  * @author Bernard Horan
  */
 public class KnotFrame extends javax.swing.JFrame {
+    private static Logger logger = Logger.getLogger(KnotFrame.class.getName());
+
     //The preferred width of the columns
     private static final int[] COLUMN_WIDTHS = {10, 50, 10, 10, 10, 10};
     //Use a formatter to display doubles to 2 decimal places
@@ -67,7 +70,7 @@ public class KnotFrame extends javax.swing.JFrame {
 
             public void tableChanged(TableModelEvent tme) {
                 if (tme.getType() == TableModelEvent.UPDATE) {
-                    System.out.println("Updated table");
+                    logger.info("Updated table");
                     
                 }
                 //We don't care which row or column has been updated
@@ -177,9 +180,9 @@ public class KnotFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-        System.out.println("OK Button");
+        logger.info("OK Button");
         if (segmentModified) {
-            System.out.println("Segment modified");
+            logger.info("Segment modified");
             cell.modifySegment(tableModel.getSegment());
         }
     }//GEN-LAST:event_okButtonActionPerformed
@@ -460,31 +463,31 @@ public class KnotFrame extends javax.swing.JFrame {
             String delims = "[,]";
             String[] tokens = aString.split(delims);
             if (tokens.length != 3) {
-                System.err.println("Invalid number of dimensions");
+                logger.warning("Invalid number of dimensions");
                 return null;
             }
             float x,y,z;
             try {
                 x = Float.parseFloat(tokens[0]);
             } catch (NumberFormatException e) {
-                System.err.println("Invalid x variable");
+                logger.warning("Invalid x variable");
                 return null;
             }
             try {
                 y = Float.parseFloat(tokens[1]);
             } catch (NumberFormatException e) {
-                System.err.println("Invalid y variable");
+                logger.warning("Invalid y variable");
                 return null;
             }
             try {
                 z = Float.parseFloat(tokens[2]);
             } catch (NumberFormatException e) {
-                System.err.println("Invalid x variable");
+                logger.warning("Invalid x variable");
                 return null;
             }
             Vector3f vector = new Vector3f(x, y, z);
             if (!Vector3f.isValidVector(vector)) {
-                System.err.println("Invalid vector");
+                logger.warning("Invalid vector");
                 return null;
             }
             return vector;

@@ -34,7 +34,7 @@ public class SimTrace implements Serializable {
     private static Logger logger = Logger.getLogger(SimTrace.class.getName());
 
     // An array of samples
-    private Vector<SampleInfo> sampleList = new Vector();
+    private Vector<SampleInfo> sampleList = new Vector<SampleInfo>();
 
     // The acceleration due to gravity (g), a negative value in the +y axis
     private float g = 0.0f;
@@ -165,7 +165,7 @@ public class SimTrace implements Serializable {
         SampleSubset subset = new SampleSubset();
         subset.firstSample = firstSample;
         subset.numberSamples = numberSamples;
-        subset.sampleSubet = new Vector(sampleList.subList(firstSample, firstSample + numberSamples));
+        subset.sampleSubset = new Vector<SampleInfo>(sampleList.subList(firstSample, firstSample + numberSamples));
         return subset;
     }
 
@@ -178,7 +178,7 @@ public class SimTrace implements Serializable {
         // Just loop through and manually set each element
         sampleList.setSize(subset.firstSample + subset.numberSamples);
         for (int index = 0; index < subset.numberSamples; index++) {
-            sampleList.set(index + subset.firstSample, subset.sampleSubet.get(index));
+            sampleList.set(index + subset.firstSample, subset.sampleSubset.get(index));
         }
     }
 }
