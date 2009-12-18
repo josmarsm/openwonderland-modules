@@ -23,6 +23,7 @@ import com.jme.math.Vector3f;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Toolkit;
 import java.text.DecimalFormat;
 import java.util.logging.Logger;
 import javax.swing.AbstractCellEditor;
@@ -108,6 +109,7 @@ public class KnotFrame extends javax.swing.JFrame {
         segmentEditorPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Segment Editor");
         setAlwaysOnTop(true);
         setName("Editing Track Segment"); // NOI18N
 
@@ -126,14 +128,14 @@ public class KnotFrame extends javax.swing.JFrame {
         knotTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(knotTable);
 
-        okButton.setText("OK");
+        okButton.setText("Save");
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 okButtonActionPerformed(evt);
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText("Restore");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -334,6 +336,9 @@ public class KnotFrame extends javax.swing.JFrame {
             float angleDegrees = (float) Math.toDegrees(angleRadians);
             textfield.setText(twoDForm.format(angleDegrees));
 
+            //Set the tooltip for the textfield
+            textfield.setToolTipText("0 <= x <= 360");
+
             // Return the configured textfield
             return textfield;
         }
@@ -383,6 +388,9 @@ public class KnotFrame extends javax.swing.JFrame {
             // Configure the textfield with the specified value
             textfield.setText(value.toString());
 
+            //Set the tooltip of the textfield
+            textfield.setToolTipText("-1 <= x <= 1");
+
             // Return the configured textfield
             return textfield;
         }
@@ -399,9 +407,11 @@ public class KnotFrame extends javax.swing.JFrame {
         public boolean stopCellEditing() {
             float angleDegrees = Float.parseFloat(textfield.getText());
             if (angleDegrees > 1.0) {
+                Toolkit.getDefaultToolkit().beep();
                 return false;
             }
             if (angleDegrees < -1.0) {
+                Toolkit.getDefaultToolkit().beep();
                 return false;
             }
             return super.stopCellEditing();
@@ -440,6 +450,9 @@ public class KnotFrame extends javax.swing.JFrame {
             buffer.append(position.z);
             textfield.setText(buffer.toString());
 
+            //Set the tooltip for the position text field
+            textfield.setToolTipText("x, y, z");
+
             // Return the configured textfield
             return textfield;
         }
@@ -454,6 +467,7 @@ public class KnotFrame extends javax.swing.JFrame {
         // is saved. If the value is not valid, false should be returned.
         public boolean stopCellEditing() {
             if (parse(textfield.getText()) == null) {
+                Toolkit.getDefaultToolkit().beep();
                 return false;
             }
             return super.stopCellEditing();

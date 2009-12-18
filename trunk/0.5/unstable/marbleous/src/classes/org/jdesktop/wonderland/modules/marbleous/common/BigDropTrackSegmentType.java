@@ -30,7 +30,7 @@ public class BigDropTrackSegmentType extends TrackSegmentType {
     private BigDropSegmentSettings settings = new BigDropSegmentSettings();
 
     public BigDropTrackSegmentType() {
-        super("BigDrop");
+        super("Big Drop");
         imageName = "RampDown.png";
         settings.setHeight(20);
         settings.setRadius(9);

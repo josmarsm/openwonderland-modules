@@ -29,7 +29,7 @@ public class StraightLevelTrackSegmentType extends TrackSegmentType {
     private Matrix4f endpoint;
 
     public StraightLevelTrackSegmentType() {
-        super("StraightLevel");
+        super("Straight Level");
         imageName = "Straight.png";
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
           createKeyFrame(0, new Vector3f(0,0,0)),

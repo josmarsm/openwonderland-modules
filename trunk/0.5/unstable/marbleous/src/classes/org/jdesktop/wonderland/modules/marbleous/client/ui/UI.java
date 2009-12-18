@@ -60,6 +60,7 @@ public class UI {
 
         hudComponent = mainHUD.createComponent(constructPanel);
         hudComponent.setPreferredLocation(Layout.SOUTHWEST);
+        hudComponent.setName("Marbleous Control Panel");
 
         mainHUD.addComponent(hudComponent);
     }

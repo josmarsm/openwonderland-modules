@@ -143,7 +143,7 @@ public class TrackCellMO extends CellMO {
 
     private void processAddSegmentMessage(WonderlandClientID clientID, TrackCellMessage tcm) {
         TrackSegment segment = tcm.getTrackSegment();
-        trackLogger.info("adding " + segment);
+        //trackLogger.info("adding " + segment);
         serverState.getTrack().addTrackSegment(segment);
         sendCellMessage(clientID, tcm);
     }
@@ -157,7 +157,7 @@ public class TrackCellMO extends CellMO {
 
     private void processRemoveSegmentMessage(WonderlandClientID clientID, TrackCellMessage tcm) {
         TrackSegment segment = tcm.getTrackSegment();
-        trackLogger.info("removing " + segment);
+        //trackLogger.info("removing " + segment);
         serverState.getTrack().removeTrackSegment(segment);
         sendCellMessage(clientID, tcm);
     }
