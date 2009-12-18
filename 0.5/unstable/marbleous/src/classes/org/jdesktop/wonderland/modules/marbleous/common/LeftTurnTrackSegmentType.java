@@ -30,7 +30,7 @@ public class LeftTurnTrackSegmentType extends TrackSegmentType {
     private Matrix4f endpoint;
 
     public LeftTurnTrackSegmentType() {
-        super("LeftTurn");
+        super("Left Turn");
         imageName = "TurnLeft.png";
 
         TCBKeyFrame[] keys = new TCBKeyFrame[] {

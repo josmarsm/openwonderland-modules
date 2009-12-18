@@ -29,7 +29,7 @@ public class StraightDropTrackSegmentType extends TrackSegmentType {
     private Matrix4f endpoint;
 
     public StraightDropTrackSegmentType() {
-        super("StraightDrop");
+        super("Straight Drop");
         imageName = "RampDown.png";
         TCBKeyFrame[] keys = new TCBKeyFrame[] {
           createKeyFrame(0, new Vector3f(0,4,0)),

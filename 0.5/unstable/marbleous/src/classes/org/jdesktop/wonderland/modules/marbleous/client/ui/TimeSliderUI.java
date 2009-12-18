@@ -66,6 +66,7 @@ public class TimeSliderUI {
 
         hudComponent = mainHUD.createComponent(panel);
         hudComponent.setPreferredLocation(Layout.SOUTH);
+        hudComponent.setName("Time Slider");
 
         mainHUD.addComponent(hudComponent);
     }
