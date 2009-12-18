@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.marbleous.server.cell;
 
 import com.sun.sgs.app.ManagedReference;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -46,8 +47,10 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * @author paulby, Bernard Horan
  */
 public class TrackCellMO extends CellMO {
+    private final static Logger trackLogger = Logger.getLogger(TrackCellMO.class.getName());
 
     @UsesCellComponentMO(AudioPlaybackComponentMO.class)
+    private ManagedReference<AudioPlaybackComponentMO> audioPlaybackCompRef;
     private SimulationState simulationState = SimulationState.STOPPED;
     private TrackCellServerState serverState;
 
@@ -56,7 +59,6 @@ public class TrackCellMO extends CellMO {
         super();
         serverState = new TrackCellServerState();
         Track track = new Track();
-//        track.addTrackSegment(new StraightDropTrackSegmentType().createSegment());
         track.addTrackSegment(new BigDropTrackSegmentType().createSegment());
         track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
         track.addTrackSegment(new LoopTrackSegmentType().createSegment());
@@ -64,9 +66,6 @@ public class TrackCellMO extends CellMO {
         track.addTrackSegment(new BumpTrackSegmentType().createSegment());
         track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
         track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
-//        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
-//        track.addTrackSegment(new StraightLevelTrackSegmentType().createSegment());
-//        track.addTrackSegment(new RightTurnTrackSegmentType().createSegment());
         track.buildTrack();
         serverState.setTrack(track);
     }
@@ -144,21 +143,21 @@ public class TrackCellMO extends CellMO {
 
     private void processAddSegmentMessage(WonderlandClientID clientID, TrackCellMessage tcm) {
         TrackSegment segment = tcm.getTrackSegment();
-        System.out.println("TrackCellMO, adding " + segment);
+        trackLogger.info("adding " + segment);
         serverState.getTrack().addTrackSegment(segment);
         sendCellMessage(clientID, tcm);
     }
 
     private void processModifySegmentMessage(WonderlandClientID clientID, TrackCellMessage tcm) {
         TrackSegment segment = tcm.getTrackSegment();
-        System.out.println("TrackCellMO, modifying " + segment);
+        trackLogger.info("modifying " + segment);
         serverState.getTrack().replaceTrackSegment(segment);
         sendCellMessage(clientID, tcm);
     }
 
     private void processRemoveSegmentMessage(WonderlandClientID clientID, TrackCellMessage tcm) {
         TrackSegment segment = tcm.getTrackSegment();
-        System.out.println("TrackCellMO, removing " + segment);
+        trackLogger.info("removing " + segment);
         serverState.getTrack().removeTrackSegment(segment);
         sendCellMessage(clientID, tcm);
     }
