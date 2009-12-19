@@ -69,18 +69,6 @@ public class TooltipClientPlugin extends BaseClientPlugin {
      */
     @Override
     protected void activate() {
-        // Create a new HUDComponent that displays a simple label with tooltip
-        // text. We add the component to the HUD here, but do not make it
-        // visible quite yet. We put some text in there, so the panel does not
-        // have a zero size.
-        HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-        tooltipPanel = new TooltipJPanel();
-        tooltipPanel.setText(" ");
-        hudComponent = mainHUD.createComponent(tooltipPanel);
-        hudComponent.setName("Tooltip");
-        hudComponent.setDecoratable(false);
-        hudComponent.setVisible(false);
-        mainHUD.addComponent(hudComponent);
 
         // Add the tooltip hover listener to the Scene Manager
         SceneManager.getSceneManager().addSceneListener(listener);
@@ -91,6 +79,7 @@ public class TooltipClientPlugin extends BaseClientPlugin {
      */
     @Override
     protected void deactivate() {
+        
         // Remove the tooltip hover listener from the Scene Manager
         SceneManager.getSceneManager().removeSceneListener(listener);
 
@@ -161,7 +150,10 @@ public class TooltipClientPlugin extends BaseClientPlugin {
         private void hideTooltipHUDComponent() {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
+                    HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
                     hudComponent.setVisible(false);
+                    hud.removeComponent(hudComponent);
+                    hudComponent = null;
                 }
             });
         }
@@ -174,11 +166,25 @@ public class TooltipClientPlugin extends BaseClientPlugin {
         private void showTooltipHUDComponent(final String text, final Point point) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    // We immediately show the HUDComponent at the location,
-                    // making sure to compact the size first.
+                    // If there is an existing tooltip hud component, then set
+                    // it to invisible, remove it from the hud.
+                    HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
+                    if (hudComponent != null) {
+                        hudComponent.setVisible(false);
+                        hud.removeComponent(hudComponent);
+                        hudComponent = null;
+                    }
+
+                    // Create the hud component with the panel to display the
+                    // text
+                    tooltipPanel = new TooltipJPanel();
                     tooltipPanel.setText((text != null) ? text : "");
-                    tooltipPanel.validate();
+                    hudComponent = hud.createComponent(tooltipPanel);
+                    hudComponent.setName("Tooltip");
+                    hudComponent.setDecoratable(false);
+                    hudComponent.setVisible(false);
                     hudComponent.setLocation(point);
+                    hud.addComponent(hudComponent);
 
                     // We set it visible, and the immediately set it to be
                     // invisible after some delay.
