@@ -69,7 +69,8 @@ public class PresentationBaseClientPlugin extends BaseClientPlugin
     /**
      * {@inheritDoc}
      */
-    public void primaryViewCellChanged(ViewCell oldViewCell, ViewCell newViewCell) {
+    public void primaryViewCellChanged(ViewCell oldViewCell,
+            ViewCell newViewCell) {
 
         // If there is an old view cell, then remove the component from the
         // avatar. If not present, this should fail silently.
@@ -81,7 +82,8 @@ public class PresentationBaseClientPlugin extends BaseClientPlugin
         // present (none should be), then log an error message and continue
         if (newViewCell != null) {
             try {
-                newViewCell.addComponent(new MovingPlatformAvatarComponent(newViewCell));
+                newViewCell.addComponent(
+                        new MovingPlatformAvatarComponent(newViewCell));
             } catch (IllegalArgumentException excp) {
                 LOGGER.log(Level.WARNING, "Adding a duplicate moving platform" +
                         " avatar component", excp);
