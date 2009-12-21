@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.tooltip.client;
 
 import java.awt.Canvas;
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
@@ -118,15 +117,20 @@ public class TooltipClientPlugin extends BaseClientPlugin {
             // If there is no Cell or if the hover event has ended, then just
             // hide the HUD Component.
             if (cell == null || hoverEvent.isStart() == false) {
-                hideTooltipHUDComponent();
+                if (hudComponent != null) {
+                    hideTooltipHUDComponent();
+                }
                 return;
             }
 
             // Fetch the Tooltip Cell Component. If there is none, then hide
             // the component for good measure.
-            TooltipCellComponent comp = cell.getComponent(TooltipCellComponent.class);
+            TooltipCellComponent comp =
+                    cell.getComponent(TooltipCellComponent.class);
             if (comp == null) {
-                hideTooltipHUDComponent();
+                if (hudComponent != null) {
+                    hideTooltipHUDComponent();
+                }
                 return;
             }
 
