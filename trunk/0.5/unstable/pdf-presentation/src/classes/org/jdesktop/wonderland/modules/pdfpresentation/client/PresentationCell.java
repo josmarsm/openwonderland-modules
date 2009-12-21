@@ -23,10 +23,16 @@ import com.jme.math.Vector3f;
 import com.sun.pdfview.PDFFile;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -38,22 +44,31 @@ import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
-import org.jdesktop.wonderland.client.comms.ClientConnection;
-import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.common.cell.CellEditConnectionType;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.messages.CellCreateMessage;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.pdf.client.DeployedPDF;
 import org.jdesktop.wonderland.modules.pdf.client.PDFDeployer;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.MovingPlatformCellRenderer;
-import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.PresentationCellRenderer;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.PresentationCellRenderer;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellClientState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellChangeMessage.MessageType;
-import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellServerState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout.LayoutType;
 
@@ -67,8 +82,10 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
     
     private MovingPlatformCellRenderer platformRenderer = null;
 
-    private static final Logger logger =
-            Logger.getLogger(PresentationCell.class.getName());
+    // The I18N resource bundle
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/pdfpresentation/client/" +
+            "resources/Bundle");
 
     @UsesCellComponent
     private ProximityComponent prox;
@@ -92,6 +109,20 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 
     private PresentationCellRenderer pdfRenderer = null;
 
+    // The Cell-specific context menu items
+    @UsesCellComponent
+    private ContextMenuComponent contextMenuComp;
+
+    // The factory that generates context menu items for this Cell
+    private ContextMenuFactorySPI contextMenuFactory;
+
+    // The HUD panel displaying the presenter tools, null if it has not yet
+    // been created
+    private HUDComponent pdfPresenterHUDComponent;
+
+    // The JPanel and HUD component that displays the slide layout
+    private static PDFLayoutHUDPanel layoutPanel = null;
+    private static HUDComponent layoutHUD = null;
 
     public PresentationCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -108,6 +139,25 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
         // on status changes.
         if(status==CellStatus.ACTIVE && increasing) {
 
+            // Add the Cell-specific context menu item to display the presenter
+            // tools.
+            contextMenuFactory = new ContextMenuFactorySPI() {
+
+                public ContextMenuItem[] getContextMenuItems(ContextEvent evt) {
+                    return new ContextMenuItem[] {
+                        new SimpleContextMenuItem(
+                                BUNDLE.getString("Presenter_Tools_Menu_Item"),
+                                new PresenterToolsListener()),
+
+                        new SimpleContextMenuItem(
+                                BUNDLE.getString("Slide_Layout_Menu_Item"),
+                                new EditLayoutListener())
+
+                    };
+                }
+            };
+            contextMenuComp.addContextMenuFactory(contextMenuFactory);
+
 //            this.setLocalBounds(new BoundingBox(Vector3f.ZERO, 10.0f, 20.0f, 10.0f));
 
             logger.warning("About to init proximity listener to bounds: " + this.getLocalBounds());
@@ -121,6 +171,12 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
             // from the old PDF spreader cells, which did need to pass
             // messages around.
             channel.addMessageReceiver(PresentationCellChangeMessage.class, new PresentationCellMessageReceived());
+
+        } else if (status == CellStatus.ACTIVE && increasing == false) {
+
+            // Remove the Cell-specific context mneu items.
+            contextMenuComp.removeContextMenuFactory(contextMenuFactory);
+            contextMenuFactory = null;
 
         } else if (status==CellStatus.DISK && !increasing) {
             prox.removeProximityListener(this);
@@ -366,6 +422,123 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
             logger.info("Received a new layout: " + msg.getLayout());
             setLayout(msg.getLayout());
             updateLayout();
+        }
+    }
+
+    /**
+     * Inner class that receives events when the Presenter Tools context menu
+     * item has been selected. Displays the panel on the HUD, if not already
+     * visible.
+     */
+    private class PresenterToolsListener implements ContextMenuActionListener {
+
+        /**
+         * {@inheritDoc}
+         */
+        public void actionPerformed(ContextMenuItemEvent event) {
+
+            // Check to see if the presenter tools HUD panel has already been
+            // create and if so, display it if not already visible
+            if (pdfPresenterHUDComponent != null) {
+                if (pdfPresenterHUDComponent.isVisible() == false) {
+                    pdfPresenterHUDComponent.setVisible(true);
+                }
+                return;
+            }
+
+            // Otherwise, fetch the URI of the PDF file. We will need this to
+            // load each slide image.
+            String pdfURI = ((PresentationCell)event.getCell()).getSourceURI();
+            DeployedPDF deployedPDF = null;
+            try {
+                deployedPDF = PDFDeployer.loadDeployedPDF(pdfURI);
+            } catch (java.lang.Exception excp) {
+                logger.log(Level.WARNING, "Unable to load deployed PDF " +
+                        pdfURI, excp);
+                return;
+            }
+            int numberOfSlides = deployedPDF.getNumberOfSlides();
+
+            // Load in each of the slide image. Put each slide on an ordered
+            // list of images
+            List<BufferedImage> imageList = new LinkedList<BufferedImage>();
+            for (int slide = 1; slide <= numberOfSlides; slide++) {
+                try {
+                    URL pageURL = PDFDeployer.loadPDFPage(pdfURI, slide);
+                    BufferedImage image = ImageIO.read(pageURL);
+                    imageList.add(image);
+                } catch (java.lang.Exception excp) {
+                    logger.log(Level.WARNING, "Unable to load PDF page " +
+                            slide + " from PDF " + pdfURI);
+                    return;
+                }
+            }
+
+            // Create the presenter tools panel, passing it the list of images
+            // to display as slides.
+            PDFPresenterHUDPanel hudPanel = new PDFPresenterHUDPanel(imageList);
+            HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
+            pdfPresenterHUDComponent = hud.createComponent(hudPanel);
+            pdfPresenterHUDComponent.setName(
+                    BUNDLE.getString("Presenter_Tools_Title"));
+            pdfPresenterHUDComponent.setPreferredLocation(Layout.NORTHWEST);
+            hud.addComponent(pdfPresenterHUDComponent);
+            pdfPresenterHUDComponent.setVisible(true);
+        }
+    }
+
+    /**
+     * Inner class that receives events when the Slide Layout context menu
+     * item has been selected. Displays the panel on the HUD, if not already
+     * visible.
+     */
+    private class EditLayoutListener implements ContextMenuActionListener {
+
+        /**
+         * Creates the HUD component for the slide layout.
+         */
+        private void createHUD(PresentationCell cell) {
+            logger.warning("Creating HUD for cell: " + cell);
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+            layoutPanel = new PDFLayoutHUDPanel(cell);
+
+            layoutHUD = mainHUD.createComponent(layoutPanel);
+            layoutHUD.setPreferredLocation(Layout.SOUTH);
+            layoutHUD.setName(BUNDLE.getString("Slide_Layout_Title"));
+            layoutHUD.addEventListener(new HUDEventListener() {
+                public void HUDObjectChanged(HUDEvent event) {
+                    if (event.getEventType() == HUDEventType.DISAPPEARED) {
+                        layoutPanel.closed();
+                    }
+                }
+            });
+
+            // add affordances HUD panel to main HUD
+            mainHUD.addComponent(layoutHUD);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void actionPerformed(ContextMenuItemEvent event) {
+            // If our panel exists alreay, reshow it. Otherwise,
+            // make a new one first.
+
+            // This should always be true, but just making sure.
+            assert (event.getCell() instanceof PresentationCell);
+
+            if (layoutHUD == null) {
+                createHUD((PresentationCell) event.getCell());
+            } else {
+                // update the cell on the current HUD object.
+                layoutPanel.setCell((PresentationCell) event.getCell());
+            }
+
+
+            layoutHUD.setVisible(true);
+
+            logger.info("PDFSpreaderLayoutHUD now visible.");
         }
     }
 }
