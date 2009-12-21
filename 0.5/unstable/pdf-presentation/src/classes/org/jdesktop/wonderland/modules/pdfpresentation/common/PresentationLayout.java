@@ -22,13 +22,23 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * A wrapper for a set of slides' layout information. Also contains descriptive paramters for
- * the layout.
+ * A wrapper for a set of slides' layout information. Also contains descriptive
+ * paramters for the layout.
  *
  * @author Drew Harry <dharry@media.mit.edu>
  */
 public class PresentationLayout implements Serializable {
 
+    /**
+     * The default slide scale
+     */
+    public static float DEFAULT_SCALE = 1.0f;
+
+    /**
+     * The default slide spacing (meters)
+     */
+    public static float DEFAULT_SPACING = 4.0f;
+    
     public enum LayoutType {
         LINEAR,
         SEMICIRCLE,
@@ -81,8 +91,9 @@ public class PresentationLayout implements Serializable {
         this.spacing = spacing;
     }
 
+    @Override
     public String toString() {
-        return "[PresentationLayout scale: " + this.scale + "; spacing: " + this.spacing + "]";
+        return "[PresentationLayout scale: " + this.scale + "; spacing: " +
+                this.spacing + "]";
     }
-
 }

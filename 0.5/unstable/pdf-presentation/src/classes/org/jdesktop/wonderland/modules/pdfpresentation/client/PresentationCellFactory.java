@@ -15,18 +15,15 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.pdfpresentation.client;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import java.awt.Image;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -38,18 +35,44 @@ import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellSe
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout.LayoutType;
 
+/**
+ * Cell factory to create a presentation Cell. This factory returns null for the
+ * getDisplayName() method so that it does not appear in the Insert -> Object
+ * dialog box: the only way to create a presentation Cell is to DnD a PDF file.
+ *
+ * @author Drew Harry <drew_harry@dev.java.net>
+ * @author Jordan Slott <jslott@dev.java.net>
+ */
 @CellFactory
-public class PresentationCellFactory implements CellFactorySPI{
+public class PresentationCellFactory implements CellFactorySPI {
+
+    // The I18N resource bundle
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/pdfpresentation/client/" +
+            "resources/Bundle");
+
+    // The error logger
+    private static final Logger LOGGER =
+            Logger.getLogger(PresentationCellFactory.class.getName());
+    
+    /**
+     * {@inheritDoc}
+     */
     public String[] getExtensions() {
-        return new String[] {"pdf"};
+        return new String[]{"pdf"};
     }
 
-    public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
+    /**
+     * {@inheritDoc}
+     */
+    public <T extends CellServerState> T getDefaultCellServerState(
+            Properties props) {
 
-        Logger.getLogger(PresentationCellFactory.class.getName()).warning("In PDFSpreaderCellFactory!");
+        LOGGER.warning("In PDFSpreaderCellFactory!");
 
+        // Create a new server state for the presentation Cell, to be used to
+        // create the Cell.
         PresentationCellServerState state = new PresentationCellServerState();
-
         state.setCreatorName(LoginManager.getPrimary().getUsername());
 
         // XXX HACK XXX
@@ -60,45 +83,48 @@ public class PresentationCellFactory implements CellFactorySPI{
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
 
+        // Using the URI specified in the "content-uri" attribute, fetch the
+        // PDF and deploy it.
         DeployedPDF deployedPDF = null;
         if (props != null) {
-           String uri = props.getProperty("content-uri");
-           if (uri != null) {
+            String uri = props.getProperty("content-uri");
+            if (uri != null) {
                 try {
-                    Logger.getLogger(PresentationCellFactory.class.getName()).warning("PDF URI is: " + uri);
+                    LOGGER.warning("PDF URI is: " + uri);
                     deployedPDF = PDFDeployer.loadDeployedPDF(uri);
-
                     state.setSourceURI(uri);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(PresentationCellFactory.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(PresentationCellFactory.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (JAXBException ex) {
-                    Logger.getLogger(PresentationCellFactory.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (java.lang.Exception excp) {
+                    LOGGER.log(Level.WARNING, "Unable to load PDF from " +
+                            uri, excp);
+                    return null;
                 }
-           }
-       }
-        
+            }
+        }
+
+        // Create a new default layout based upon the parsed PDF File.
         PresentationLayout layout = new PresentationLayout(LayoutType.LINEAR);
-        layout.setScale(1.0f);
-        layout.setSpacing(4.0f);
-        layout.setSlides(PDFLayoutHelper.generateLayoutMetadata(layout.getLayout(), deployedPDF, layout.getSpacing()));
+        layout.setScale(PresentationLayout.DEFAULT_SCALE);
+        layout.setSpacing(PresentationLayout.DEFAULT_SPACING);
+        layout.setSlides(PDFLayoutHelper.generateLayoutMetadata(
+                layout.getLayout(), deployedPDF, layout.getSpacing()));
 
         // TODO Do some fallback handling here - what happens if we don't have
         // a proper PDF at this stage? there will be no layout information.
         state.setLayout(layout);
-
-
-
-        return (T)state;
+        return (T) state;
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     public String getDisplayName() {
         // if null, won't show in the insert component dialog
-        return "Presentation Cell";
+        return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Image getPreviewImage() {
         return null;
     }
@@ -114,6 +140,6 @@ public class PresentationCellFactory implements CellFactorySPI{
         // from appearing in a list of Cells when more than one supports the
         // the PDF extension. So we return a good display name here
         // XXX
-        return "Presentation Cell ";
+        return BUNDLE.getString("Presentation_Cell");
     }
 }
