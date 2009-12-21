@@ -506,13 +506,6 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
             layoutHUD = mainHUD.createComponent(layoutPanel);
             layoutHUD.setPreferredLocation(Layout.SOUTH);
             layoutHUD.setName(BUNDLE.getString("Slide_Layout_Title"));
-            layoutHUD.addEventListener(new HUDEventListener() {
-                public void HUDObjectChanged(HUDEvent event) {
-                    if (event.getEventType() == HUDEventType.DISAPPEARED) {
-                        layoutPanel.closed();
-                    }
-                }
-            });
 
             // add affordances HUD panel to main HUD
             mainHUD.addComponent(layoutHUD);
@@ -522,20 +515,15 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
          * {@inheritDoc}
          */
         public void actionPerformed(ContextMenuItemEvent event) {
-            // If our panel exists alreay, reshow it. Otherwise,
-            // make a new one first.
 
-            // This should always be true, but just making sure.
-            assert (event.getCell() instanceof PresentationCell);
-
+            // If our panel exists alreay, reshow it. Otherwise, make a new one
+            // first.
             if (layoutHUD == null) {
                 createHUD((PresentationCell) event.getCell());
             } else {
                 // update the cell on the current HUD object.
                 layoutPanel.setCell((PresentationCell) event.getCell());
             }
-
-
             layoutHUD.setVisible(true);
 
             logger.info("PDFSpreaderLayoutHUD now visible.");
