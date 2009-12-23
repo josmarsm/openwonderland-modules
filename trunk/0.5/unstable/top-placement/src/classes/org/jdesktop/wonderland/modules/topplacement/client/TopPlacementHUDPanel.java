@@ -45,7 +45,7 @@ public class TopPlacementHUDPanel extends javax.swing.JPanel {
 
         jLabel4.setText("Drag - move");
 
-        jLabel5.setText("Shift + Drag - rotate");
+        jLabel5.setText("Alt + Drag - rotate");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
