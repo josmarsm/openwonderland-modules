@@ -70,7 +70,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Shift + Drag - rotate"/>
+        <Property name="text" type="java.lang.String" value="Alt + Drag - rotate"/>
       </Properties>
     </Component>
   </SubComponents>

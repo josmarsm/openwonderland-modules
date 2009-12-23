@@ -8,7 +8,6 @@ package org.jdesktop.wonderland.modules.topplacement.client;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
-import java.awt.event.MouseEvent;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -19,11 +18,10 @@ import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassFocusListener;
-import org.jdesktop.wonderland.client.jme.CellRefComponent;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.scenemanager.SceneManager;
+import org.jdesktop.wonderland.client.scenemanager.event.SelectionEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
@@ -33,7 +31,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
  *
  * @author jkaplan
  */
-public class CellSelectionManager extends EventClassFocusListener {
+public class CellSelectionManager extends EventClassListener {
     private static Logger logger = 
             Logger.getLogger(CellSelectionManager.class.getName());
 
@@ -42,20 +40,29 @@ public class CellSelectionManager extends EventClassFocusListener {
     private CellSelectionEntity hover;
 
     public void register() {
-        ClientContextJME.getInputManager().addGlobalEventListener(this);
+        SceneManager.getSceneManager().addSceneListener(this);
     }
 
     public void unregister() {
-        ClientContextJME.getInputManager().removeGlobalEventListener(this);
+        SceneManager.getSceneManager().removeSceneListener(this);
 
         // clear selection on the commit thread, so we don't have to worry
         // about synchronization
         SceneWorker.addWorker(new WorkCommit() {
             public void commit() {
-                deselectAll();
+                SceneManager.getSceneManager().clearSelection();
                 setHover(null);
+                
+                // we won't get the message about clearing the selection,
+                // so make sure to manually remove all selection we have
+                // made
+                deselectAll();
             }
         });
+    }
+
+    public synchronized boolean areCellsSelected() {
+        return !selected.isEmpty();
     }
 
     public synchronized Set<Cell> getSelectedCells() {
@@ -65,22 +72,34 @@ public class CellSelectionManager extends EventClassFocusListener {
 
     @Override
     public Class[] eventClassesToConsume() {
-        return new Class[]{ MouseEvent3D.class };
+        return new Class[]{ SelectionEvent.class };
     }
 
     @Override
     public void commitEvent(Event event) {
-        MouseEvent mouse = (MouseEvent) ((MouseEvent3D) event).getAwtEvent();
-        Cell cell = findCell(event.getEntity());
+        Set<Cell> addList = new LinkedHashSet<Cell>();
+        Set<Cell> removeList = new LinkedHashSet<Cell>(selected.keySet());
 
-        if (mouse.getID() == MouseEvent.MOUSE_CLICKED) {
-            if (mouse.isShiftDown()) {
-                addRemoveSelection(cell);
-            } else {
-                setSelection(cell);
+        // sync up our view of selected entities with the scene manager's
+        for (Entity e : SceneManager.getSceneManager().getSelectedEntities()) {
+            Cell cell = SceneManager.getCellForEntity(e);
+            if (cell != null) {
+                addList.add(cell);
             }
-        } else {
-            // setHover(cell);
+        }
+
+        // remove all cells that should be there from the list of current cells.
+        // The remaining cells are the cells that need to be removed.
+        removeList.removeAll(addList);
+        for (Cell cell : removeList) {
+            deselect(cell);
+        }
+
+        // remove all cells that were previously added from the list of cells to
+        // add.  This gives just the new cells.
+        addList.removeAll(selected.keySet());
+        for (Cell cell : addList) {
+            select(cell);
         }
     }
 
@@ -118,31 +137,6 @@ public class CellSelectionManager extends EventClassFocusListener {
         }
     }
 
-    private synchronized void addRemoveSelection(Cell cell) {
-        if (cell == null) {
-            return;
-        }
-
-        if (selected.containsKey(cell)) {
-            deselect(cell);
-        } else {
-            select(cell);
-        }
-    }
-
-    private synchronized void setSelection(Cell cell) {
-        // clear the current selection
-        deselectAll();
-
-        // if nothing is selected we are done
-        if (cell == null) {
-            return;
-        }
-
-        // select the forced cell
-        select(cell);
-    }
-
     private synchronized void deselectAll() {
         for (Cell cell : selected.keySet().toArray(new Cell[selected.size()])) {
             deselect(cell);
@@ -168,19 +162,6 @@ public class CellSelectionManager extends EventClassFocusListener {
     private void deselect(Cell cell) {
         CellSelectionEntity cse = selected.remove(cell);
         cse.dispose();
-    }
-
-    private Cell findCell(Entity e) {
-        if (e == null) {
-            return null;
-        }
-
-        CellRefComponent ref = e.getComponent(CellRefComponent.class);
-        if (ref != null) {
-            return ref.getCell();
-        }
-
-        return findCell(e.getParent());
     }
 
     private void checkMovableComponent(final Cell cell) {

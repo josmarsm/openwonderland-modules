@@ -31,6 +31,8 @@ public class CellDragManager extends EventClassFocusListener {
     private CellSelectionManager selection;
     private boolean dragging = false;
     private boolean rotating = false;
+    private boolean armed = false;
+
     private Vector3f dragStartWorld;
     private Vector3f dragEndWorld;
     private Quaternion dragEndRotation;
@@ -60,29 +62,39 @@ public class CellDragManager extends EventClassFocusListener {
         MouseEvent3D m3d = (MouseEvent3D) event;
         MouseEvent mouse = (MouseEvent) m3d.getAwtEvent();
 
-        // only pay attention to left clicks
-        if (mouse.getButton() != MouseEvent.BUTTON1) {
-            return;
-        }
-
-        if (mouse.getID() == MouseEvent.MOUSE_PRESSED) {
+        if (mouse.getID() == MouseEvent.MOUSE_PRESSED &&
+                mouse.getButton() == MouseEvent.BUTTON1 &&
+                selection.areCellsSelected())
+        {
             // record the position of the start of a
             // potential drag
             dragStartWorld = m3d.getIntersectionPointWorld();
             dragStartScreen = new Point(mouse.getX(), mouse.getY());
-        } else if (mouse.getID() == MouseEvent.MOUSE_RELEASED && dragging) {
-            endDrag();
-        } else if (mouse.getID() == MouseEvent.MOUSE_RELEASED && rotating) {
-            endRotate();
+
+            // we are now potentially ready for a drag or rotate
+            armed = true;
+        } else if (mouse.getID() == MouseEvent.MOUSE_RELEASED) {
+            // we are no longer ready for a drag or rotate to start
+            armed = false;
+
+            if (rotating) {
+                endRotate();
+                rotating = false;
+            }
+            
+            if (dragging) {
+                endDrag();
+                dragging = false;
+            }
         } else if (mouse.getID() == MouseEvent.MOUSE_DRAGGED) {
             if (dragging) {
                 doDrag(m3d);
             } else if (rotating) {
                 doRotate(m3d);
-            } else if (mouse.isShiftDown()) {
+            } else if (armed && mouse.isAltDown()) {
                 rotating = true;
                 doRotate(m3d);
-            } else {
+            } else if (armed) {
                 dragging = true;
                 doDrag(m3d);
             }
@@ -99,7 +111,6 @@ public class CellDragManager extends EventClassFocusListener {
     private void endDrag() {
         // drag finished
         selection.resetAll();
-        dragging = false;
 
         // move the cells
         for (Cell cell : selection.getSelectedCells()) {
@@ -123,7 +134,6 @@ public class CellDragManager extends EventClassFocusListener {
     private void endRotate() {
         // rotate finished
         selection.resetAll();
-        rotating = false;
 
         // rotate the cells
         for (Cell cell : selection.getSelectedCells()) {
