@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="dist" name="wonderland-modules-stable"> 
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-modules-stable}"/>
+    
+    <!-- all projects -->
+    <fileset dir="${current.dir}" id="all.projects">
+        <include name="*/**/build.xml"/>
+    </fileset> 
+
+    <target name="dist" depends="-modules-stable-dist-build, 
+                                 -modules-stable-dist-copy-selected,
+                                 -modules-stable-dist-copy-all"/>
+    <target name="-modules-stable-dist-build">
+        <!-- build all projects -->
+        <build-subprojects fileset="all.projects" target="dist"/>
+
+        <!-- create the dist directory that is used by the wonderland project
+             build scripts to find modules to include in a core build
+        -->
+        <mkdir dir="dist"/>
+    </target>
+
+    <!--
+         copy only the selected modules to the dist directory.  This is the
+         default action, unless the modules.include.all property is set
+    -->
+    <target name="-modules-stable-dist-copy-selected" unless="modules.include.all">
+        <copy todir="dist">
+            <filelist dir=".">
+                <file name="orientationworld/dist/orientationworld.jar"/>
+                <file name="pdfviewer/dist/pdfviewer.jar"/>
+                <file name="telepointer/dist/telepointer.jar"/>
+                <file name="whiteboard/dist/whiteboard.jar"/>
+                <file name="image-viewer/dist/imageviewer.jar"/>
+                <file name="audiorecorder-module/dist/audiorecorder.jar"/>
+                <file name="stickynote/dist/stickynote.jar"/>
+                <file name="clickablelink/dist/clickable-link.jar"/>
+		<file name="quick-reference/dist/quick-reference.jar"/>
+            </filelist>
+            <mapper type="flatten"/>
+        </copy>
+    </target>
+
+    <!-- copy all the modules into a common dist directory -->
+    <target name="-modules-stable-dist-copy-all" if="modules.include.all">
+        <mkdir dir="dist"/>
+        <copy todir="dist">
+            <fileset dir=".">
+                <include name="**/dist/*.jar"/>
+                <exclude name="/dist/**"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </copy>
+    </target>
+    
+    <!-- clean all sub-projects -->
+    <target name="clean">
+        <!-- delete dist directory -->
+        <delete dir="dist" failonerror="false"/>
+        
+        <!-- clean sub-projects -->
+        <build-subprojects fileset="all.projects" target="clean"/>
+ 
+        <!-- delete leftover module dist directories. This will guarantee
+             that modules that have been deleted do not show up in our
+             builds due to leftover dist directories -->
+        <delete>
+            <fileset dir=".">
+                <include name="**/dist/*.jar"/>
+            </fileset>
+        </delete>
+    </target>
+
+    <!-- macro to iterate across all subprojects -->
+    <macrodef name="build-subprojects">
+        <!-- the reference id of the fileset to iterate over -->
+        <attribute name="fileset"/>
+        
+        <!-- the build target to run -->
+        <attribute name="target"/>
+        <sequential>
+            <subant target="@{target}" inheritall="false">
+                <fileset refid="@{fileset}"/>
+            </subant>
+        </sequential>
+    </macrodef>
+</project>

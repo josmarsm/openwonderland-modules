@@ -1,0 +1,192 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
+ */
+package org.jdesktop.wonderland.modules.tooltip.client;
+
+import java.util.ResourceBundle;
+import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
+import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
+import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.tooltip.common.TooltipCellComponentServerState;
+
+/**
+ * The property sheet for the Tooltip Cell Component.
+ *
+ * @author Jordan Slott <jslott@dev.java.net>
+ */
+@PropertiesFactory(TooltipCellComponentServerState.class)
+public class TooltipCellComponentProperties extends JPanel implements PropertiesFactorySPI {
+
+    // The I18N resource bundle
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/tooltip/client/resources/Bundle");
+
+    // The editor window
+    private CellPropertiesEditor editor = null;
+
+    // The original value for the tooltip text, before any editing
+    private String originalText = null;
+
+    /** Creates new form TooltipComponentProperties */
+    public TooltipCellComponentProperties() {
+        // Initialize the GUI
+        initComponents();
+
+        // Listen for changes to the info text field
+        tooltipTextArea.getDocument().addDocumentListener(new InfoTextFieldListener());
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public String getDisplayName() {
+        return BUNDLE.getString("Tooltip_Cell_Component");
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public JPanel getPropertiesJPanel() {
+        return this;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void setCellPropertiesEditor(CellPropertiesEditor editor) {
+        this.editor = editor;
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void open() {
+        CellServerState state = editor.getCellServerState();
+        CellComponentServerState compState = state.getComponentServerState(TooltipCellComponentServerState.class);
+        if (state != null) {
+            TooltipCellComponentServerState tss = (TooltipCellComponentServerState) compState;
+            originalText = tss.getText();
+            tooltipTextArea.setText(originalText);
+        }
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void close() {
+        // Do nothing for now.
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void apply() {
+        // Fetch the latest from the info text field and set it.
+        CellServerState state = editor.getCellServerState();
+        CellComponentServerState compState = state.getComponentServerState(TooltipCellComponentServerState.class);
+        ((TooltipCellComponentServerState) compState).setText(tooltipTextArea.getText());
+        editor.addToUpdateList(compState);
+    }
+
+    /**
+     * @inheritDoc()
+     */
+    public void restore() {
+        // Restore from the original state stored.
+        tooltipTextArea.setText(originalText);
+    }
+
+    /**
+     * Inner class to listen for changes to the text field and fire off dirty
+     * or clean indications to the cell properties editor.
+     */
+    class InfoTextFieldListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            checkDirty();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            checkDirty();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            checkDirty();
+        }
+
+        private void checkDirty() {
+            String name = tooltipTextArea.getText();
+            if (editor != null && name.equals(originalText) == false) {
+                editor.setPanelDirty(TooltipCellComponentProperties.class, true);
+            }
+            else if (editor != null) {
+                editor.setPanelDirty(TooltipCellComponentProperties.class, false);
+            }
+        }
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        jLabel1 = new javax.swing.JLabel();
+        tooltipScrollPane = new javax.swing.JScrollPane();
+        tooltipTextArea = new javax.swing.JTextArea();
+
+        setLayout(new java.awt.GridBagLayout());
+
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/tooltip/client/resources/Bundle"); // NOI18N
+        jLabel1.setText(bundle.getString("Tooltip_Text_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
+        add(jLabel1, gridBagConstraints);
+
+        tooltipTextArea.setColumns(20);
+        tooltipTextArea.setRows(5);
+        tooltipScrollPane.setViewportView(tooltipTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        add(tooltipScrollPane, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane tooltipScrollPane;
+    private javax.swing.JTextArea tooltipTextArea;
+    // End of variables declaration//GEN-END:variables
+}

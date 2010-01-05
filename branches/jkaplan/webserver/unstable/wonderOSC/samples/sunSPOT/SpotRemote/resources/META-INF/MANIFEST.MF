@@ -1,0 +1,6 @@
+MIDlet-Name: SpotRemote
+MIDlet-Version: 1.0.0
+MIDlet-Vendor: Sun Microsystems Inc
+MIDlet-1: Wonderland Remote Control SPOT, , org.jdesktop.lg3d.wonderland.spot.WonderlandRemote
+MicroEdition-Profile: IMP-1.0
+MicroEdition-Configuration: CLDC-1.1
