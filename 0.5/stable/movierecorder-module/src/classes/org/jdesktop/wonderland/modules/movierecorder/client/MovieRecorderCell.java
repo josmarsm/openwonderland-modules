@@ -24,6 +24,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultButtonModel;
@@ -73,6 +74,7 @@ public class MovieRecorderCell extends Cell {
 
     private boolean localRecording;
     private boolean remoteRecording;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle");
     private MovieRecorderCellRenderer renderer;
     private ControlPanelUI ui;
     
@@ -129,7 +131,7 @@ public class MovieRecorderCell extends Cell {
 
                     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                         return new ContextMenuItem[]{
-                                    new SimpleContextMenuItem("Open HUD Control Panel", l)
+                                    new SimpleContextMenuItem(bundle.getString("OPEN_HUD_CONTROL_PANEL"), l)
                                 };
                     }
                 };
