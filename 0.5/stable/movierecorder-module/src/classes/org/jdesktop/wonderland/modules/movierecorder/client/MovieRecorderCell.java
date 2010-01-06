@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -114,9 +114,8 @@ public class MovieRecorderCell extends Cell {
         if (increasing && status == CellStatus.RENDERING) {
             if (ui == null) {
                 initUI();
-                cellLogger.info("setting ui to be visible");
-                //ui.setVisible(true);
                 renderer.setRemoteRecording(remoteRecording);
+                renderer.setCameraEnabled(true);
             }
             if (menuFactory == null) {
                 final ContextMenuActionListener l = new ContextMenuActionListener() {
@@ -156,6 +155,10 @@ public class MovieRecorderCell extends Cell {
             }
             ui.setVisible(false);
             ui = null;
+            //disable the camera
+            if (renderer != null) {
+                renderer.setCameraEnabled(false);
+            }
         }
     
     }
@@ -168,9 +171,7 @@ public class MovieRecorderCell extends Cell {
 
     private void initUI () {
         ui = new ControlPanelUI(this);
-    }
-
-    
+    }   
 
     /**
      * Return the frames per second at which JPEGs were recorded
@@ -188,6 +189,10 @@ public class MovieRecorderCell extends Cell {
         return IMAGE_DIRECTORY;
     }
 
+    /**
+     * Return the capture component from the renderer
+     * @return a JComponent that renders the captured image from the camera
+     */
     public JComponent getCaptureComponent() {
         return renderer.getCaptureComponent();
     }
@@ -359,8 +364,6 @@ public class MovieRecorderCell extends Cell {
                 }
             }
         }
-
-
     }
 
     class VideoButtonChangeListener implements ItemListener {
@@ -389,9 +392,7 @@ public class MovieRecorderCell extends Cell {
                 //cellLogger.info("should take a still");
                 captureImage();
                 
-            } else {
-                //Nothing to do
-            }
+            } 
         }
    }
 }

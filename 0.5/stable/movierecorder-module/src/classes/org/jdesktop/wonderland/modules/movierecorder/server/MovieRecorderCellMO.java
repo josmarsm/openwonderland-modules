@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -58,19 +58,15 @@ public class MovieRecorderCellMO extends CellMO implements ManagedCallStatusList
     
     private static final Logger movieRecorderLogger = Logger.getLogger(MovieRecorderCellMO.class.getName());
     private static int INSTANCE_COUNT = 0;
-    private int instanceNumber;
     private String callId;
     private Recorder recorder;
     private MovieRecorderCellServerState serverState;
-    private String recordingDirectory;
     private WonderlandClientID recordingClientID;
 
     public MovieRecorderCellMO() {
         super();
         addComponent(new MovableComponentMO(this));
         serverState = new MovieRecorderCellServerState();
-        instanceNumber = ++INSTANCE_COUNT;
-        recordingDirectory = "/tmp/MovieRecordings/Recorder" + instanceNumber;
         serverState.setRecording(false);
         callId = getCellID().toString();
         int ix = callId.indexOf("@");
@@ -157,9 +153,6 @@ public class MovieRecorderCellMO extends CellMO implements ManagedCallStatusList
     }
 
     private void setupRecorder(Vector3f origin) {
-//       Vector3d currentPosition = new Vector3d();
-//       getOriginWorld().get(currentPosition);
-//
 
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
@@ -175,8 +168,6 @@ public class MovieRecorderCellMO extends CellMO implements ManagedCallStatusList
 
         setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
 
-        //setup.recordDirectory = recordingDirectory;
-        //movieRecorderLogger.info("record directory: " + setup.recordDirectory);
         movieRecorderLogger.info("movie recorder setup: " + setup);
 
         try {
@@ -253,8 +244,6 @@ public class MovieRecorderCellMO extends CellMO implements ManagedCallStatusList
             UserMO user = UserManager.getUserManager().getUser(clientID);
             RecorderManager.getDefaultManager().recordMetadata(message,  arcm.getDescription() + " initiated by " + user.getUsername() + "[" + user.getIdentity().getFullName() + "]");
         }
-    }
-
-    
+    }   
 
 }
