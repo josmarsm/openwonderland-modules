@@ -23,6 +23,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JFileChooser;
@@ -41,6 +42,7 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 public class MovieControlPanel extends javax.swing.JPanel {
     private static final Logger logger = Logger.getLogger(MovieControlPanel.class.getName());
     private MovieRecorderCell recorderCell;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle");
     private HUDComponent messageComponent;
 
     /** Creates new form MovieControlPanel
@@ -97,19 +99,19 @@ public class MovieControlPanel extends javax.swing.JPanel {
         setLayout(new java.awt.BorderLayout());
 
         recorderStatusLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        recorderStatusLabel.setText("Offline");
-        recorderStatusLabel.setToolTipText("Recorder Status");
+        recorderStatusLabel.setText(bundle.getString("OFFLINE")); // NOI18N
+        recorderStatusLabel.setToolTipText(bundle.getString("RECORDER_STATUS")); // NOI18N
 
-        recordButton.setText("Record");
-        recordButton.setToolTipText("Click to start recording the world");
+        recordButton.setText(bundle.getString("RECORD")); // NOI18N
+        recordButton.setToolTipText(bundle.getString("CLICK_TO_START_RECORDING_THE_WORLD")); // NOI18N
         recordButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 recordButtonActionPerformed(evt);
             }
         });
 
-        stopButton.setText("Stop");
-        stopButton.setToolTipText("Click to stop recording and create a movie");
+        stopButton.setText(bundle.getString("STOP")); // NOI18N
+        stopButton.setToolTipText(bundle.getString("CLICK_TO_STOP_RECORDING_AND_CREATE_A_MOVIE")); // NOI18N
         stopButton.setEnabled(false);
         stopButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -118,33 +120,33 @@ public class MovieControlPanel extends javax.swing.JPanel {
         });
 
         movieDirectoryField.setEditable(false);
-        movieDirectoryField.setToolTipText("Directory for saving the Movie");
+        movieDirectoryField.setToolTipText(bundle.getString("DIRECTORY_FOR_SAVING_THE_MOVIE")); // NOI18N
 
-        movieDirectoryLabel.setText("Movie Directory:");
+        movieDirectoryLabel.setText(bundle.getString("MOVIE_DIRECTORY:")); // NOI18N
 
-        moviePathBrowseButton.setText("Select...");
-        moviePathBrowseButton.setToolTipText("Select Directory for Movies");
+        moviePathBrowseButton.setText(bundle.getString("SELECT...")); // NOI18N
+        moviePathBrowseButton.setToolTipText(bundle.getString("SELECT_DIRECTORY_FOR_MOVIES")); // NOI18N
         moviePathBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moviePathBrowseButtonActionPerformed(evt);
             }
         });
 
-        picturesLabelDirectory.setText("Pictures Directory:");
+        picturesLabelDirectory.setText(bundle.getString("PICTURES_DIRECTORY:")); // NOI18N
 
         picturesDirectoryField.setEditable(false);
-        picturesDirectoryField.setToolTipText("Directory for saving the Pictures");
+        picturesDirectoryField.setToolTipText(bundle.getString("DIRECTORY_FOR_SAVING_THE_PICTURES")); // NOI18N
 
-        picturesPathBrowseButton.setText("Select...");
-        picturesPathBrowseButton.setToolTipText("Select Directory for Pictures");
+        picturesPathBrowseButton.setText(bundle.getString("SELECT...")); // NOI18N
+        picturesPathBrowseButton.setToolTipText(bundle.getString("SELECT_DIRECTORY_FOR_PICTURES")); // NOI18N
         picturesPathBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 picturesPathBrowseButtonActionPerformed(evt);
             }
         });
 
-        snapshotButton.setText("Snapshot");
-        snapshotButton.setToolTipText("Click to take a picture");
+        snapshotButton.setText(bundle.getString("SNAPSHOT")); // NOI18N
+        snapshotButton.setToolTipText(bundle.getString("CLICK_TO_TAKE_A_PICTURE")); // NOI18N
         snapshotButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 snapshotButtonActionPerformed(evt);
@@ -302,19 +304,19 @@ public class MovieControlPanel extends javax.swing.JPanel {
         String home = System.getProperty("user.home");
         //
         //Are we on a PC?
-        File myDocuments = new File(home + File.separator + "My Documents" + File.separator + "My Videos");
+        File myDocuments = new File(home + File.separator + bundle.getString("MY_DOCUMENTS") + File.separator + bundle.getString("MY_VIDEOS"));
         if (myDocuments.exists()) {
             return myDocuments.toString();
         }
         //
         //Or a Mac?
-        File movies = new File(home + File.separator + "Movies");
+        File movies = new File(home + File.separator + bundle.getString("MOVIES"));
         if (movies.exists()) {
             return movies.toString();
         }
         //
         //Or Gnome?
-        File documents = new File(home + File.separator + "Videos");
+        File documents = new File(home + File.separator + bundle.getString("VIDEOS"));
         if (documents.exists()) {
             return documents.toString();
         }
@@ -327,19 +329,19 @@ public class MovieControlPanel extends javax.swing.JPanel {
         String home = System.getProperty("user.home");
         //
         //Are we on a PC?
-        File myDocuments = new File(home + File.separator + "My Documents" + File.separator + "My Pictures");
+        File myDocuments = new File(home + File.separator + bundle.getString("MY_DOCUMENTS") + File.separator + bundle.getString("MY_PICTURES"));
         if (myDocuments.exists()) {
             return myDocuments.toString();
         }
         //
         //Or a Mac?
-        File pictures = new File(home + File.separator + "Pictures");
+        File pictures = new File(home + File.separator + bundle.getString("PICTURES"));
         if (pictures.exists()) {
             return pictures.toString();
         }
         //
         //Or Gnome?
-        File documents = new File(home + File.separator + "Documents");
+        File documents = new File(home + File.separator + bundle.getString("DOCUMENTS"));
         if (documents.exists()) {
             return documents.toString();
         }
@@ -351,7 +353,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
     public void notifyHUD() {
         if (messageComponent == null) {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-            messageComponent = mainHUD.createMessage("Saved Movie");
+            messageComponent = mainHUD.createMessage(bundle.getString("SAVED_MOVIE"));
             messageComponent.setPreferredLocation(Layout.NORTHEAST);
             messageComponent.setDecoratable(false);
             mainHUD.addComponent(messageComponent);
@@ -373,7 +375,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
     private void moviePathBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moviePathBrowseButtonActionPerformed
         JFileChooser outputPathFileChooser = new JFileChooser();
 
-        outputPathFileChooser.setDialogTitle("Movies Directory");
+        outputPathFileChooser.setDialogTitle(bundle.getString("MOVIES_DIRECTORY"));
         outputPathFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         outputPathFileChooser.setAcceptAllFileFilterUsed(false);
 
@@ -387,7 +389,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
     private void picturesPathBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_picturesPathBrowseButtonActionPerformed
         JFileChooser outputPathFileChooser = new JFileChooser();
 
-        outputPathFileChooser.setDialogTitle("Pictures Directory");
+        outputPathFileChooser.setDialogTitle(bundle.getString("PICTURES_DIRECTORY"));
         outputPathFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         outputPathFileChooser.setAcceptAllFileFilterUsed(false);
 
@@ -435,14 +437,14 @@ public class MovieControlPanel extends javax.swing.JPanel {
 
                     public void run() {
                         if (event.getStateChange() == ItemEvent.SELECTED) {
-                            recorderStatusLabel.setText("Recording");
+                            recorderStatusLabel.setText(bundle.getString("RECORDING"));
                             recorderStatusLabel.setForeground(Color.red);
                             stopButton.setEnabled(true);
                             disableLocalButtons();
                         } else {
                             stopButton.setEnabled(false);
                             recorderCell.stopRecording();
-                            recorderStatusLabel.setText("Offline");
+                            recorderStatusLabel.setText(bundle.getString("OFFLINE"));
                             recorderStatusLabel.setForeground(Color.BLACK);
                         }
                     }
