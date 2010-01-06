@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.movierecorder.client;
 
+import org.jdesktop.wonderland.client.utils.AudioResource;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -58,15 +59,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import javax.imageio.ImageIO;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.Mixer;
-import javax.sound.sampled.SourceDataLine;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultButtonModel;
@@ -110,9 +102,13 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
     private CaptureComponent captureComponent = null;
     private BufferedImage captureImage = null;
     private Spatial videoSpatial, videoSpatialOn, recordStatus, recordStatusOn, stillSpatial, stillSpatialOn;
+    private AudioResource recorderStart, recorderStop, cameraShutter;
 
     public MovieRecorderCellRenderer(Cell cell) {
         super(cell);
+        recorderStart = createAudioResource("movierecorder-start.au");
+        recorderStop = createAudioResource("movierecorder-stop.au");
+        cameraShutter = createAudioResource("Camera_Shutter.au");
     }
 
     protected Node createSceneGraph(Entity entity) {
@@ -354,45 +350,10 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         }
     }
 
-    private void playAudioResource(String audioResource) {
-        AudioInputStream audioInputStream = null;
-        try {
-            URL url = MovieRecorderCell.class.getResource("resources/" + audioResource);
-            audioInputStream = AudioSystem.getAudioInputStream(url);
-            AudioFormat audioFormat = audioInputStream.getFormat();
-            DataLine.Info dataLineInfo = new DataLine.Info(Clip.class, audioFormat);
-            Clip clip = getClip(dataLineInfo);
-            clip.open(audioInputStream);
-            clip.start();
-        } catch (UnsupportedAudioFileException ex) {
-            rendererLogger.log(Level.SEVERE, null, ex);
-        } catch (LineUnavailableException ex) {
-            rendererLogger.warning("cannot play audio resource, due to " + ex.getLocalizedMessage());
-        } catch (IOException ex) {
-            rendererLogger.log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                audioInputStream.close();
-            } catch (IOException ex) {
-                rendererLogger.log(Level.SEVERE, null, ex);
-            }
-        }
+    private AudioResource createAudioResource(String audioResource) {
+        URL url = MovieRecorderCell.class.getResource("resources/" + audioResource);
+        return new AudioResource(url);
     }
-
-    private Clip getClip(DataLine.Info info) throws LineUnavailableException {
-        for (Mixer.Info mi : AudioSystem.getMixerInfo()) {
-            Mixer mixer = AudioSystem.getMixer(mi);
-            try {
-                return (Clip) mixer.getLine(info);
-            } catch (LineUnavailableException ex) {
-                rendererLogger.warning("Matching line not available: " + ex.getLocalizedMessage());
-            } catch (IllegalArgumentException ex) {
-                rendererLogger.warning("Mixer does not support this format. " + ex.getLocalizedMessage());
-            }
-        }
-        throw new LineUnavailableException("Failed to get any line for info: " + info);
-    }
-
 
     class CameraListener extends EventClassListener {
 
@@ -470,13 +431,13 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
             //rendererLogger.info("event: " + event);
             WorldManager wm = ClientContextJME.getWorldManager();
             if (event.getStateChange() == ItemEvent.SELECTED) {
-                playAudioResource("movierecorder-start.au");
+                recorderStart.play();
                 videoSpatial.setVisible(false);
                 videoSpatialOn.setVisible(true);
                 recordStatus.setVisible(false);
                 recordStatusOn.setVisible(true);
             } else {
-                playAudioResource("movierecorder-stop.au");
+                recorderStop.play();
                 videoSpatial.setVisible(true);
                 videoSpatialOn.setVisible(false);
                 recordStatus.setVisible(false);
@@ -494,7 +455,7 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         public void itemStateChanged(ItemEvent event) {
             //rendererLogger.info("event: " + event);
             if (event.getStateChange() == ItemEvent.SELECTED) {
-                playAudioResource("Camera_Shutter.au");
+                cameraShutter.play();
             }
         }
 
