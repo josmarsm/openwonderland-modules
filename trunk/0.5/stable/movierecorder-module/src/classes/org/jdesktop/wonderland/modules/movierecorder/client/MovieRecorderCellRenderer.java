@@ -218,9 +218,11 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         CameraComponent cc = wm.getRenderManager().createCameraComponent(cameraSG, cn, IMAGE_WIDTH, IMAGE_HEIGHT, 45.0f, (float) IMAGE_WIDTH/ (float) IMAGE_HEIGHT, 0.1f, 10000f, false);
         //Set the camera for the render buffer
         textureBuffer.setCameraComponent(cc);
-        //Add the render buffer to the render manager
+        // Associated the texture buffer with the render manager, but keep it
+        // off initially.
         wm.getRenderManager().addRenderBuffer(textureBuffer);
         textureBuffer.setRenderUpdater(this);
+        textureBuffer.setEnable(false);
 
         //Add the camera component to the quad entity
         quadEntity.addComponent(CameraComponent.class, cc);
@@ -243,7 +245,19 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         return quadEntity;
     }
 
-    /**x
+    /**
+     * Sets whether the camera is enabled (true) or disabled (false).
+     *
+     * @param isEnabled True to enable the camera, false to disable
+     */
+    public void setCameraEnabled(boolean isEnabled) {
+        // If it is enabled, then turn on the rendering and the buffer
+        if (textureBuffer != null) {
+            textureBuffer.setEnable(isEnabled);
+        }
+    }
+
+    /**
      * Reset the counter that's used to name the images
      */
     void resetImageCounter() {

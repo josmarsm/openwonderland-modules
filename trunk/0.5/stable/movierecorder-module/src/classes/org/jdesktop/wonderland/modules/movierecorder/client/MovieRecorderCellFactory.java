@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.movierecorder.client;
 
-import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import java.awt.Image;
