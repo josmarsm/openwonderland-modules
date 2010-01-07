@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -77,7 +77,7 @@ public class MovieCreator {
     /**
      * Create a new MovieCreator using the controlPanel to provide details of the location of the
      * JPEGs, audio file and output directory.
-     * @param aWindow a RecordingWindow from which the user has initiated recording
+     * @param aPanel a MovieControlPanel from which the user may have initiated recording
      */
     public MovieCreator(MovieControlPanel aPanel) {
         controlPanel = aPanel;
@@ -85,6 +85,7 @@ public class MovieCreator {
 
     /**
      * Create the movie, using the <CODE>controlPanel</CODE> as the provider of paths etc.
+     * @param movieName the name of the movie to create
      * @throws EncodeException if the recording fails
      */
     public void createMovie(String movieName) throws EncodeException {
@@ -167,9 +168,9 @@ public class MovieCreator {
         /**
      * Creates a quicktime JPEG-movie from the specified ImagesDataSource and sound file.
      * @param imagesSource the images source to store in the movie
-     * @param soundFile the sound to add to the movie
+     * @param soundURL the sound to add to the movie
      * @param outputFile the output file to store the movie to
-     * @throws org.jdesktop.lg3d.wonderland.recorder.utility.EncodeException If there's a problem encoding the movie (or finding the data sources)
+     * @throws EncodeException If there's a problem encoding the movie (or finding the data sources)
      */
     private void record(ImagesDataSource imagesSource, URL soundURL, File outputFile) throws EncodeException {
         logger.info("Output file is expected to be written to: " + outputFile);
@@ -235,7 +236,7 @@ public class MovieCreator {
      * Creates a quicktime JPEG-movie from the specified ImagesDataSource.
      * @param imagesSource the images source to store in the movie
      * @param outputFile the output file to store the movie to
-     * @throws org.jdesktop.lg3d.wonderland.recorder.utility.EncodeException If there's a problem encoding the movie (or finding the data sources)
+     * @throws EncodeException If there's a problem encoding the movie (or finding the data sources)
      */
     public static void record(ImagesDataSource imagesSource, File outputFile) throws EncodeException {
         /**

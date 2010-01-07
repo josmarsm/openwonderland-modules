@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -44,7 +44,6 @@ import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.voip.client.connector.CallStatus;
 import java.io.File;
-import java.io.FilenameFilter;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellServerState;
@@ -184,10 +183,6 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     }
 
     private void setupRecorder(Vector3f origin) {
-//       Vector3d currentPosition = new Vector3d();
-//       getOriginWorld().get(currentPosition);
-//
-
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
         vm.addCallStatusListener(this, callId);
@@ -201,8 +196,6 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
         logger.fine("Recorder Origin is " + "(" + origin.x + ":" + origin.y + ":" + origin.z + ")");
 
         setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
-
-        //setup.recordDirectory = serverState.getRecordingDirectory();
 
         try {
             recorder = vm.createRecorder(callId, setup);
