@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -30,7 +30,7 @@ import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.modules.audiorecorder.common.Tape;
 
 /**
- *
+ * A form from which the user can select a tape, or add a new tape
  * @author  Bernard Horan
  */
 public class ReelForm extends javax.swing.JFrame {
@@ -43,8 +43,9 @@ public class ReelForm extends javax.swing.JFrame {
         initComponents();
     }
     
-    /** Creates new form AvatatarOrbNameForm
-     * @param audioRecorderCell 
+    /** 
+     * Creates new form ReelForm
+     * @param audioRecorderCell the cell to which the form is connected
      */
     public ReelForm(AudioRecorderCell audioRecorderCell) {
         this.audioRecorderCell = audioRecorderCell;
@@ -65,9 +66,6 @@ public class ReelForm extends javax.swing.JFrame {
 
     void selectTape(final Tape aTape) {
         reelFormLogger.info("select tape: " + aTape);
-//        tapesList.clearSelection();
-//        tapesList.setSelectedValue(aTape, true);
-//        reelFormLogger.info("selected tape: " + tapesList.getSelectedValue());
         selectionChanged = false;
     }
     
@@ -125,11 +123,11 @@ public class ReelForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 174, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 186, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addButton))
                     .add(doneButton))
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
