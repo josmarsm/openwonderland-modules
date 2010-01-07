@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
 import java.awt.Component;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -30,21 +31,23 @@ import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.modules.audiorecorder.common.Tape;
 
 /**
- *
+ * A form from which the user can select a tape, or add a new tape
  * @author  Bernard Horan
  */
 public class ReelForm extends javax.swing.JFrame {
     private static final Logger reelFormLogger = Logger.getLogger(ReelForm.class.getName());
     
     private AudioRecorderCell audioRecorderCell;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiorecorder/client/resources/Bundle");
     private boolean selectionChanged = false;
 
     public ReelForm() {
         initComponents();
     }
     
-    /** Creates new form AvatatarOrbNameForm
-     * @param audioRecorderCell 
+    /** 
+     * Creates new form ReelForm
+     * @param audioRecorderCell the cell to which the form is connected
      */
     public ReelForm(AudioRecorderCell audioRecorderCell) {
         this.audioRecorderCell = audioRecorderCell;
@@ -65,9 +68,6 @@ public class ReelForm extends javax.swing.JFrame {
 
     void selectTape(final Tape aTape) {
         reelFormLogger.info("select tape: " + aTape);
-//        tapesList.clearSelection();
-//        tapesList.setSelectedValue(aTape, true);
-//        reelFormLogger.info("selected tape: " + tapesList.getSelectedValue());
         selectionChanged = false;
     }
     
@@ -85,7 +85,7 @@ public class ReelForm extends javax.swing.JFrame {
         addButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Tapes");
+        setTitle(bundle.getString("TAPES")); // NOI18N
         setAlwaysOnTop(true);
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -99,18 +99,18 @@ public class ReelForm extends javax.swing.JFrame {
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        tapesList.setToolTipText("List of Available Tapes");
+        tapesList.setToolTipText(bundle.getString("LIST_OF_AVAILABLE_TAPES")); // NOI18N
         jScrollPane1.setViewportView(tapesList);
 
-        doneButton.setText("Done");
+        doneButton.setText(bundle.getString("DONE")); // NOI18N
         doneButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 doneButtonActionPerformed(evt);
             }
         });
 
-        addButton.setText("Add");
-        addButton.setToolTipText("Add a new Tape");
+        addButton.setText(bundle.getString("ADD")); // NOI18N
+        addButton.setToolTipText(bundle.getString("ADD_A_NEW_TAPE")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -125,11 +125,11 @@ public class ReelForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 174, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 186, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addButton))
                     .add(doneButton))
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -148,14 +148,14 @@ public class ReelForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        String tapeName=JOptionPane.showInputDialog(this, "Add New Tape", "Untitled");
+        String tapeName=JOptionPane.showInputDialog(this, bundle.getString("ADD_NEW_TAPE"), bundle.getString("UNTITLED"));
         if (tapeName == null) {
             return;
         }
         if (audioRecorderCell.getTapeNames().contains(tapeName)) {
             JOptionPane.showMessageDialog(this,
-                                    "A Tape with that Name already exists",
-                                    "Failed to add Tape",
+                                    bundle.getString("A_TAPE_WITH_THAT_NAME_ALREADY_EXISTS"),
+                                    bundle.getString("FAILED_TO_ADD_TAPE"),
                                     JOptionPane.ERROR_MESSAGE);
         } else {
             Tape newTape = audioRecorderCell.addTape(tapeName);

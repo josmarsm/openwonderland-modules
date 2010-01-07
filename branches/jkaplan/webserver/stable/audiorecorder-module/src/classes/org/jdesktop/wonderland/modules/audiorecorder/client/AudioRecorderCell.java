@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -27,6 +27,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,7 +64,6 @@ import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
-import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 
@@ -77,6 +77,7 @@ public class AudioRecorderCell extends Cell {
     private static final String AUDIO_RECORDINGS_DIRECTORY = "AudioRecordings";
 
     @UsesCellComponent private ContextMenuComponent contextComp = null;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiorecorder/client/resources/Bundle");
     private ContextMenuFactorySPI menuFactory = null;
 
     private boolean isPlaying, isRecording;
@@ -97,7 +98,7 @@ public class AudioRecorderCell extends Cell {
     }
 
     private Tape getUntitledTape() {
-        return new Tape("Untitled Tape");
+        return new Tape(bundle.getString("UNTITLED_TAPE"));
     }
 
     @Override
@@ -115,7 +116,7 @@ public class AudioRecorderCell extends Cell {
 
                     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                         return new ContextMenuItem[]{
-                                    new SimpleContextMenuItem("Open Tape...", l)
+                                    new SimpleContextMenuItem(bundle.getString("OPEN_TAPE..."), l)
                                 };
                     }
                 };
@@ -365,7 +366,7 @@ public class AudioRecorderCell extends Cell {
 
                     public void run() {
                         Toolkit.getDefaultToolkit().beep();
-                        JOptionPane.showMessageDialog(getParentFrame(), "Please select a Tape");
+                        JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("PLEASE_SELECT_A_TAPE"));
                     }
                 });
                 return;
@@ -409,7 +410,7 @@ public class AudioRecorderCell extends Cell {
 
                     public void run() {
                         Toolkit.getDefaultToolkit().beep();
-                        JOptionPane.showMessageDialog(getParentFrame(), "Please select a Tape");
+                        JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("PLEASE_SELECT_A_TAPE"));
                     }
                 });
                 return;
@@ -420,7 +421,7 @@ public class AudioRecorderCell extends Cell {
 
                     public void run() {
                         Toolkit.getDefaultToolkit().beep();
-                        JOptionPane.showMessageDialog(getParentFrame(), "Can't playback a tape that's not ben recorded");
+                        JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("CAN'T_PLAYBACK_A_TAPE_THAT'S_NOT_BEN_RECORDED"));
                     }
                 });
                 return;
@@ -470,7 +471,7 @@ public class AudioRecorderCell extends Cell {
 
                     public void run() {
                         Toolkit.getDefaultToolkit().beep();
-                        JOptionPane.showMessageDialog(getParentFrame(), "You can't stop a tape that's being used by another user");
+                        JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("YOU_CAN'T_STOP_A_TAPE_THAT'S_BEING_USED_BY_ANOTHER_USER"));
                     }
                 });
         }
@@ -514,7 +515,7 @@ public class AudioRecorderCell extends Cell {
 
                 public void run() {
                     Toolkit.getDefaultToolkit().beep();
-                    JOptionPane.showMessageDialog(getParentFrame(), "Can't select a tape when the audio recorder is in use");
+                    JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("CAN'T_SELECT_A_TAPE_WHEN_THE_AUDIO_RECORDER_IS_IN_USE"));
                 }
             });
             return;
@@ -555,7 +556,7 @@ public class AudioRecorderCell extends Cell {
         ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
         ContentRepository repo = registry.getRepository(loginInfo);
         if (repo == null) {
-            logger.severe("Repo is null");
+            logger.severe("Repository is null");
             return null;
         }
         try {

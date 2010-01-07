@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
  * Rotation Processor for use with Scenario Timing framework
  *
  * @author paulby
+ * @author Bernard Horan
  */
 public class RotationAnimationProcessor extends AnimationProcessorComponent {
     /**

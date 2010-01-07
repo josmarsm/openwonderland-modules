@@ -76,6 +76,7 @@
                     <fileset dir="${current.dir}/src/classes">
                         <include name="${module.src}/client/resources/**/*.png"/>
                         <include name="${module.src}/client/resources/**/*.au"/>
+                        <include name="${module.src}/client/resources/**/*.properties"/>
                     </fileset>
                 </clientjar> 
             </client>

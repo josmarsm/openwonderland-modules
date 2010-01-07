@@ -97,14 +97,22 @@
         <Component class="javax.swing.JLabel" name="recorderStatusLabel">
           <Properties>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="text" type="java.lang.String" value="Offline"/>
-            <Property name="toolTipText" type="java.lang.String" value="Recorder Status"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="OFFLINE" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="RECORDER_STATUS" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="recordButton">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Record"/>
-            <Property name="toolTipText" type="java.lang.String" value="Click to start recording the world"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="RECORD" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="CLICK_TO_START_RECORDING_THE_WORLD" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="recordButtonActionPerformed"/>
@@ -112,8 +120,12 @@
         </Component>
         <Component class="javax.swing.JButton" name="stopButton">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Stop"/>
-            <Property name="toolTipText" type="java.lang.String" value="Click to stop recording and create a movie"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="STOP" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="CLICK_TO_STOP_RECORDING_AND_CREATE_A_MOVIE" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
@@ -123,18 +135,26 @@
         <Component class="javax.swing.JTextField" name="movieDirectoryField">
           <Properties>
             <Property name="editable" type="boolean" value="false"/>
-            <Property name="toolTipText" type="java.lang.String" value="Directory for saving the Movie"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="DIRECTORY_FOR_SAVING_THE_MOVIE" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="movieDirectoryLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Movie Directory:"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="MOVIE_DIRECTORY:" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="moviePathBrowseButton">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Select..."/>
-            <Property name="toolTipText" type="java.lang.String" value="Select Directory for Movies"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="SELECT..." replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="SELECT_DIRECTORY_FOR_MOVIES" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="moviePathBrowseButtonActionPerformed"/>
@@ -142,19 +162,27 @@
         </Component>
         <Component class="javax.swing.JLabel" name="picturesLabelDirectory">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Pictures Directory:"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="PICTURES_DIRECTORY:" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="picturesDirectoryField">
           <Properties>
             <Property name="editable" type="boolean" value="false"/>
-            <Property name="toolTipText" type="java.lang.String" value="Directory for saving the Pictures"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="DIRECTORY_FOR_SAVING_THE_PICTURES" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JButton" name="picturesPathBrowseButton">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Select..."/>
-            <Property name="toolTipText" type="java.lang.String" value="Select Directory for Pictures"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="SELECT..." replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="SELECT_DIRECTORY_FOR_PICTURES" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="picturesPathBrowseButtonActionPerformed"/>
@@ -162,8 +190,12 @@
         </Component>
         <Component class="javax.swing.JButton" name="snapshotButton">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Snapshot"/>
-            <Property name="toolTipText" type="java.lang.String" value="Click to take a picture"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="SNAPSHOT" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle.properties" key="CLICK_TO_TAKE_A_PICTURE" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="snapshotButtonActionPerformed"/>
