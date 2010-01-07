@@ -24,6 +24,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
@@ -38,6 +39,7 @@ import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellSer
  */
 @CellFactory
 public class AudioRecorderCellFactory implements CellFactorySPI {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiorecorder/client/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[] {};
@@ -54,12 +56,12 @@ public class AudioRecorderCellFactory implements CellFactorySPI {
                 AudioRecorderCellRenderer.DEPTH);
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
-        state.setName("Audio Recorder");
+        state.setName(bundle.getString("AUDIO_RECORDER"));
         return (T)state;
     }
 
     public String getDisplayName() {
-        return "Audio Recorder";
+        return bundle.getString("AUDIO_RECORDER");
     }
 
     public Image getPreviewImage() {

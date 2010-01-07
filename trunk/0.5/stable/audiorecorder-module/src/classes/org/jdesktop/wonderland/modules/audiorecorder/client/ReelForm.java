@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.audiorecorder.client;
 
 import java.awt.Component;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -37,6 +38,7 @@ public class ReelForm extends javax.swing.JFrame {
     private static final Logger reelFormLogger = Logger.getLogger(ReelForm.class.getName());
     
     private AudioRecorderCell audioRecorderCell;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiorecorder/client/resources/Bundle");
     private boolean selectionChanged = false;
 
     public ReelForm() {
@@ -83,7 +85,7 @@ public class ReelForm extends javax.swing.JFrame {
         addButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Tapes");
+        setTitle(bundle.getString("TAPES")); // NOI18N
         setAlwaysOnTop(true);
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -97,18 +99,18 @@ public class ReelForm extends javax.swing.JFrame {
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
-        tapesList.setToolTipText("List of Available Tapes");
+        tapesList.setToolTipText(bundle.getString("LIST_OF_AVAILABLE_TAPES")); // NOI18N
         jScrollPane1.setViewportView(tapesList);
 
-        doneButton.setText("Done");
+        doneButton.setText(bundle.getString("DONE")); // NOI18N
         doneButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 doneButtonActionPerformed(evt);
             }
         });
 
-        addButton.setText("Add");
-        addButton.setToolTipText("Add a new Tape");
+        addButton.setText(bundle.getString("ADD")); // NOI18N
+        addButton.setToolTipText(bundle.getString("ADD_A_NEW_TAPE")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -146,14 +148,14 @@ public class ReelForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        String tapeName=JOptionPane.showInputDialog(this, "Add New Tape", "Untitled");
+        String tapeName=JOptionPane.showInputDialog(this, bundle.getString("ADD_NEW_TAPE"), bundle.getString("UNTITLED"));
         if (tapeName == null) {
             return;
         }
         if (audioRecorderCell.getTapeNames().contains(tapeName)) {
             JOptionPane.showMessageDialog(this,
-                                    "A Tape with that Name already exists",
-                                    "Failed to add Tape",
+                                    bundle.getString("A_TAPE_WITH_THAT_NAME_ALREADY_EXISTS"),
+                                    bundle.getString("FAILED_TO_ADD_TAPE"),
                                     JOptionPane.ERROR_MESSAGE);
         } else {
             Tape newTape = audioRecorderCell.addTape(tapeName);
