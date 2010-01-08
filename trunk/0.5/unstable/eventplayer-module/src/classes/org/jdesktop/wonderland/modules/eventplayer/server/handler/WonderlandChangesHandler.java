@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -41,6 +41,7 @@ public class WonderlandChangesHandler extends DefaultTagHandler {
         changeReplayer.startChanges(timestamp, semaphore);
     }
 
+    @Override
     public void characters(char[] ch, int start, int length, Semaphore semaphore) {
         super.characters(ch, start, length, semaphore);
         logger.info("releasing semaphore");
@@ -48,6 +49,7 @@ public class WonderlandChangesHandler extends DefaultTagHandler {
     }
 
 
+    @Override
     public void endTag(Semaphore semaphore) {
        super.endTag(semaphore);
        logger.info("releasing semaphore");

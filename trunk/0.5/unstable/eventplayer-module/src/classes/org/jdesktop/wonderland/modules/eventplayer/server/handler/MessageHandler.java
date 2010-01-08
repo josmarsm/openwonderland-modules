@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.messages.MessagePacker;
 import org.jdesktop.wonderland.common.messages.MessagePacker.PackerException;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
@@ -38,7 +37,6 @@ import sun.misc.BASE64Decoder;
  */
 public class MessageHandler extends DefaultTagHandler {
     private final static BASE64Decoder Base64_Decoder = new BASE64Decoder();
-    private static final Logger logger = Logger.getLogger(MessageHandler.class.getName());
     private long timestamp;
     
     public MessageHandler(ChangeReplayer changeReplayer) {
@@ -56,6 +54,7 @@ public class MessageHandler extends DefaultTagHandler {
     
     }
 
+    @Override
     public void characters(char[] ch, int start, int length, Semaphore semaphore) {
         super.characters(ch, start, length, semaphore);
         logger.info("releasing semaphore");

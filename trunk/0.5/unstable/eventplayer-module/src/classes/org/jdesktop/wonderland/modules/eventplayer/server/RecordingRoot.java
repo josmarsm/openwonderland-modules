@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -55,7 +55,9 @@ public class RecordingRoot extends WorldRoot {
         super();
     }
 
-    /** Constructor, takes the root path */
+    /** Constructor, takes the root path
+     * @param rootPath the path to the root of the recording
+     */
     public RecordingRoot(String rootPath) {
         super(rootPath);
     }
@@ -85,8 +87,9 @@ public class RecordingRoot extends WorldRoot {
      * Takes a reader for the XML stream and returns an instance of this class
      * <p>
      * @param r The reader of the XML stream
+     * @return a RecordingRoot that's been decoded
      * @throw ClassCastException If the input file does not map to this class
-     * @throw JAXBException Upon error reading the XML stream
+     * @throws JAXBException Upon error reading the XML stream
      */
     public static RecordingRoot decode(Reader r) throws JAXBException {
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -97,8 +100,9 @@ public class RecordingRoot extends WorldRoot {
      * Writes the XML representation of this class to a writer.
      * <p>
      * @param w The output writer to write to
-     * @throw JAXBException Upon error writing the XML file
+     * @throws JAXBException Upon error writing the XML file
      */
+    @Override
     public void encode(Writer w) throws JAXBException {
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty("jaxb.formatted.output", true);
