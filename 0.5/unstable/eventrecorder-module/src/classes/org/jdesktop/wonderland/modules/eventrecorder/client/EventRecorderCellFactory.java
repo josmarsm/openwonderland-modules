@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -42,7 +42,9 @@ public class EventRecorderCellFactory implements CellFactorySPI {
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        return (T)new EventRecorderCellServerState();
+        CellServerState state = new EventRecorderCellServerState();
+        state.setName("Event Recorder");
+        return (T) state;
     }
 
     
