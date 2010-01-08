@@ -29,6 +29,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,6 +76,7 @@ public class EventRecorderCell extends Cell {
 
     @UsesCellComponent private ContextMenuComponent contextComp = null;
     private ContextMenuFactorySPI menuFactory = null;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/eventrecorder/client/resources/Bundle");
 
     private boolean isRecording;
     private String userName;
@@ -133,7 +135,7 @@ public class EventRecorderCell extends Cell {
                     menuFactory = new ContextMenuFactorySPI() {
                         public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                             return new ContextMenuItem[] {
-                                new SimpleContextMenuItem("Open Tape...", l)
+                                new SimpleContextMenuItem(bundle.getString("OPEN_TAPE..."), l)
                             };
                         }
                     };
@@ -299,7 +301,7 @@ public class EventRecorderCell extends Cell {
 
                 public void run() {
                     if (!selectedTape.isFresh()) {
-                        int response = JOptionPane.showConfirmDialog(getParentFrame(), "Overwrite Existing recording named " + selectedTape.getTapeName() + "?", "Existing Tape", JOptionPane.YES_NO_OPTION);
+                        int response = JOptionPane.showConfirmDialog(getParentFrame(), bundle.getString("OVERWRITE_EXISTING_RECORDING_NAMED_") + selectedTape.getTapeName() + bundle.getString("?"), bundle.getString("EXISTING_TAPE"), JOptionPane.YES_NO_OPTION);
                         if (response == JOptionPane.NO_OPTION) {
                             return;
                         }
@@ -338,7 +340,7 @@ public class EventRecorderCell extends Cell {
 
                     public void run() {
                         Toolkit.getDefaultToolkit().beep();
-                        JOptionPane.showMessageDialog(getParentFrame(), "You can't stop a recording started by another user");
+                        JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("YOU_CAN'T_STOP_A_RECORDING_STARTED_BY_ANOTHER_USER"));
                     }
                 });
         }

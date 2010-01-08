@@ -23,6 +23,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.modules.eventrecorder.common.EventRecorderCellSer
  */
 @CellFactory
 public class EventRecorderCellFactory implements CellFactorySPI {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/eventrecorder/client/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[] {};
@@ -43,14 +45,14 @@ public class EventRecorderCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         CellServerState state = new EventRecorderCellServerState();
-        state.setName("Event Recorder");
+        state.setName(bundle.getString("EVENT_RECORDER"));
         return (T) state;
     }
 
     
 
     public String getDisplayName() {
-        return "Event Recorder";
+        return bundle.getString("EVENT_RECORDER");
     }
 
     public Image getPreviewImage() {
