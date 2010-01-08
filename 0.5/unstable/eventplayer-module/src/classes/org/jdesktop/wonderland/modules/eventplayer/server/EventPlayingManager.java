@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -29,6 +29,11 @@ import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
  */
 public interface EventPlayingManager {
 
+    /**
+     * Pause the replaying of changes
+     * @param tapeName the name of the recording to pause
+     * @param listener the object that should be notified for callbacks
+     */
     public void pauseChanges(String tapeName, ChangeReplayingListener listener);
 
     /**
@@ -50,6 +55,11 @@ public interface EventPlayingManager {
          */
         public void allChangesPlayed();
 
+        /**
+         * Load a cell
+         * @param setup the server state of the cell
+         * @param parentID the parent of the cell
+         */
         public void loadCell(CellServerState setup, CellID parentID);
 
         
@@ -68,6 +78,10 @@ public interface EventPlayingManager {
 
     }
 
+    /**
+     * Unload a recording. (I.e. remove its cells)
+     * @param tapeName the name of the recording to unload
+     */
     public void unloadRecording(String tapeName);
 
 

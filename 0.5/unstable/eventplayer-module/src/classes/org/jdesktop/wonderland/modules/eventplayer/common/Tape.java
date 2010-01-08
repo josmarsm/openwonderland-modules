@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -63,7 +63,7 @@ public class Tape implements Serializable, Comparable<Tape> {
     /**
      * Compare this object with the argument<br>
      * Used to order tapes in a sorted collection
-     * @param o the object against which to compare this object
+     * @param t the object against which to compare this object
      * @return an int indicating if this object sorts before, after or same as the argument
      */
     public int compareTo(Tape t) {

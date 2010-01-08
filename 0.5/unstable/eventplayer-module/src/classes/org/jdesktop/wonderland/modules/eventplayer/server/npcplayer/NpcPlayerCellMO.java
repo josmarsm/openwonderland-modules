@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -50,18 +50,12 @@ public class NpcPlayerCellMO extends CellMO {
 
   
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected String getClientCellClassName(WonderlandClientID clientID,
                                             ClientCapabilities capabilities) {
         return "org.jdesktop.wonderland.modules.eventplayer.client.npcplayer.NpcPlayerCell";
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public CellServerState getServerState(CellServerState state) {
         // Create an appropriate NPC server state if one does not exist
@@ -71,9 +65,6 @@ public class NpcPlayerCellMO extends CellMO {
         return super.getServerState(state);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setServerState(CellServerState state) {
         userName = ((NpcPlayerCellServerState)state).getUserName();
@@ -81,9 +72,6 @@ public class NpcPlayerCellMO extends CellMO {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public CellClientState getClientState(CellClientState state,
             WonderlandClientID clientID, ClientCapabilities capabilities) {

@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -44,7 +44,9 @@ public class EventPlayerClientState extends CellClientState {
      * @param tapes the initial state of the tapes field
      * @param selectedTape the initial state of the selectedTape field
      * @param isPlaying the initial state of the isPlaying boolean field
+     * @param isPaused the initial state of the isPaused boolean field
      * @param userName the initial state of the userName field
+     * @param replayedChildren the number of replayed children
      */
     public EventPlayerClientState(Set<Tape> tapes, Tape selectedTape, boolean isPlaying, boolean isPaused, String userName, int replayedChildren) {
         this();

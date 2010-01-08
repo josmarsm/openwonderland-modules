@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -55,6 +55,7 @@ public abstract class ChangeReplayer {
     /**
      * I have reached the end of the changes
      * @param timestamp the timestamp when the changes finished playing
+     * @param semaphore the semaphore to be signalled
      */
     public abstract void endChanges(long timestamp, Semaphore semaphore);
     
@@ -74,6 +75,7 @@ public abstract class ChangeReplayer {
      * @param setupInfo an XML representation of the cellserverstate of a cell
      * @param timestamp the timestamp at which the cell was loaded
      * @param parentID the CellID of the parent of the cell to be loaded, can be null
+     * @param semaphore the semaphore to be signalled
      */
     public abstract void loadCell(String setupInfo, long timestamp, CellID parentID, Semaphore semaphore);
 
@@ -81,6 +83,7 @@ public abstract class ChangeReplayer {
      * Play a message
      * @param rMessage the message to be played
      * @param timestamp the timestamp at which it is to be played
+     * @param semaphore the semaphore to be signalled
      */
     public abstract void playMessage(ReceivedMessage rMessage, long timestamp, Semaphore semaphore);
 
@@ -88,6 +91,7 @@ public abstract class ChangeReplayer {
      * Indiates the timestamp at which the changes begin playing<br>
      * Used for computing when to replay later messages
      * @param timestamp a timestamp to indicate the start of the message playback
+     * @param semaphore the semaphore to be signalled
      */
     public abstract void startChanges(long timestamp, Semaphore semaphore);
 
@@ -95,6 +99,7 @@ public abstract class ChangeReplayer {
      * Unload the cell identified by the cellID at the time given by the timestamp
      * @param cellID the id of the cell to be unloaded
      * @param timestamp the timestamnp at which the cell was unloaded
+     * @param semaphore the semaphore to be signalled
      */
     public abstract void unloadCell(CellID cellID, long timestamp, Semaphore semaphore);
     
