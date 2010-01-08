@@ -13,13 +13,13 @@
         <path location="${wonderland.dir}/modules/tools/audio-manager/lib/voip.jar"/>
         <path location="${wonderland.dir}/modules/tools/audio-manager/lib/bridge_connector.jar"/>
         <path location="${wonderland.dir}/modules/samples/image-viewer/build/server/imageviewer-server.jar"/>
-        <path location="${current.dir}/../stickynote/build/server/stickynote-server.jar"/>
+        <path location="${current.dir}/../../stable/stickynote/build/server/stickynote-server.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/server/appbase-server.jar"/>
         <path location="${wonderland.dir}/modules/world/jmecolladaloader/build/server/jmecolladaloader-server.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
-        <path location="${current.dir}/../stickynote/build/client/stickynote-client.jar"/>
+        <path location="${current.dir}/../../stable/stickynote/build/client/stickynote-client.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/client/appbase-client-cell.jar"/>
     </pathconvert>
 
@@ -27,7 +27,7 @@
         <path location="${wonderland.dir}/modules/samples/image-viewer/build/client/imageviewer-client.jar"/>
         <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${wonderland.dir}/modules/world/jmecolladaloader/build/client/jmecolladaloader-client.jar"/>
-        <path location="${current.dir}/../stickynote/build/client/stickynote-client.jar"/>
+        <path location="${current.dir}/../../stable/stickynote/build/client/stickynote-client.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/client/appbase-client-cell.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/client/appbase-client.jar"/>
         <path location="${wonderland.dir}/modules/world/jmecolladaloader/build/client/jmecolladaloader-client.jar"/>
