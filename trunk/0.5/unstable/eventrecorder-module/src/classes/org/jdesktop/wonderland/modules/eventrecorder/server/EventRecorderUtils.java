@@ -214,6 +214,7 @@ public class EventRecorderUtils {
      * Get a loaded cell descriptor for the given cell.
      * @param tapeName the name of the recording for the descriptor
      * @param cellMO the cell to get a descriptor for
+     * @param parentID the id of the parent cell
      * @param timestamp the timestamp for the change
      * @return a LoadedCellDescriptor that describes the loaded cell
      * @throws IOException
