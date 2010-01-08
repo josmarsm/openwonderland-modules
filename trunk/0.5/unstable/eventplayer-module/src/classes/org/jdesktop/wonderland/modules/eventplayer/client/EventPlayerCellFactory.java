@@ -22,6 +22,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -35,6 +36,7 @@ import org.jdesktop.wonderland.modules.eventplayer.common.EventPlayerCellServerS
  */
 @CellFactory
 public class EventPlayerCellFactory implements CellFactorySPI {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/eventplayer/client/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[] {};
@@ -42,14 +44,14 @@ public class EventPlayerCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         CellServerState state =  new EventPlayerCellServerState();
-        state.setName("Event Player");
+        state.setName(bundle.getString("EVENT_PLAYER"));
         return (T) state;
     }
 
     
 
     public String getDisplayName() {
-        return "Event Player";
+        return bundle.getString("EVENT_PLAYER");
     }
 
     public Image getPreviewImage() {

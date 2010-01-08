@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.client;
 
+import java.util.ResourceBundle;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -28,6 +29,7 @@ import org.jdesktop.wonderland.modules.eventplayer.common.Tape;
  * @author  Bernard Horan
  */
 public class ReelForm extends javax.swing.JFrame {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/eventplayer/client/resources/Bundle");
     
     private EventPlayerCell eventPlayerCell;
     private boolean selectionChanged = false;
@@ -72,7 +74,7 @@ public class ReelForm extends javax.swing.JFrame {
         tapesList = new javax.swing.JList();
         doneButton = new javax.swing.JButton();
 
-        setTitle("Tapes");
+        setTitle(bundle.getString("TAPES")); // NOI18N
         setAlwaysOnTop(true);
         setResizable(false);
 
@@ -82,10 +84,10 @@ public class ReelForm extends javax.swing.JFrame {
             public Object getElementAt(int i) { return strings[i]; }
         });
         tapesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        tapesList.setToolTipText("List of Available Tapes");
+        tapesList.setToolTipText(bundle.getString("LIST_OF_AVAILABLE_TAPES")); // NOI18N
         jScrollPane1.setViewportView(tapesList);
 
-        doneButton.setText("Done");
+        doneButton.setText(bundle.getString("DONE")); // NOI18N
         doneButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 doneButtonActionPerformed(evt);
