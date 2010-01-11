@@ -330,6 +330,7 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
 
     private String getAudioRecordingURL(String tapeName) {
         //TODO this is too much of a hack
+        tapeName = tapeName.replace(' ', '_');
         String resourceName = "EventRecording_" + tapeName + ".au";
         String webserverURL = System.getProperty("wonderland.web.server.url", "http://localhost:8080");
         String recordingURL = webserverURL + "/webdav/content/system/AudioRecordings/" + resourceName;
