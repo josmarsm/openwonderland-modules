@@ -28,6 +28,7 @@
         <path location="${current.dir}/lib/moveandturn.jar"/>
         <path location="${current.dir}/lib/ide.jar"/>
         <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
+        <path location="${current.dir}/lib/stage.jar"/>
     </pathconvert>
 
     <pathconvert property="module-weblib.classpath">
@@ -43,6 +44,7 @@
         <path location="${current.dir}/lib/moveandturn.jar"/>
         <path location="${current.dir}/lib/ide.jar"/>
         <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
+        <path location="${current.dir}/lib/stage.jar"/>
         <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar"/>
     </pathconvert>
@@ -98,6 +100,7 @@
             <zipfileset file="${current.dir}/lib/moveandturn.jar" prefix="lib"/>
             <zipfileset file="${current.dir}/lib/ide.jar" prefix="lib"/>
             <zipfileset file="${current.dir}/lib/lg_walkandtouch.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/stage.jar" prefix="lib"/>
             <!-- include content repository stuff -->
             <zipfileset file="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar" prefix="modules"/>
             <zipfileset file="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar" prefix="modules"/>

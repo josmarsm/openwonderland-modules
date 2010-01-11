@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CMUEventResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.MouseClickMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
@@ -74,10 +75,14 @@ public class ProgramConnection extends BaseConnection {
                 } // Mouse click
                 else if (message instanceof MouseClickMessage) {
                     handleMouseClick((MouseClickMessage) message);
+                } // Wonderland event
+                else if (message instanceof CMUEventResponseMessage) {
+                    handleWonderlandEvent((CMUEventResponseMessage) message);
                 } // Delete program
                 else if (message instanceof DeleteProgramMessage) {
                     handleDeleteProgram((DeleteProgramMessage) message);
-                } else {
+                } // Unrecognized message
+                else {
                     Logger.getLogger(ProgramConnection.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
                 }
             }
@@ -123,5 +128,9 @@ public class ProgramConnection extends BaseConnection {
      */
     protected void handleMouseClick(MouseClickMessage message) {
         programManager.click(message.getCellID(), message.getNodeID());
+    }
+
+    protected void handleWonderlandEvent(CMUEventResponseMessage message) {
+        programManager.eventResponse(message.getCellID(), message.getResponse());
     }
 }
