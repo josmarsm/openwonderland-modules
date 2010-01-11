@@ -15,18 +15,25 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client.events;
+package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
+
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
 
 /**
- * Interface to listen for changes in playback status (i.e. playback
- * speed, play/pause status) for a particular cell.
+ * Message to inform the server that a Wonderland event has ocurred, and that
+ * a particular response should be taken.
  * @author kevin
  */
-public interface PlaybackChangeListener {
+public class EventResponseMessage extends CellMessage {
 
-    /**
-     * Callback function when scene playback status is changed.
-     * @param e The event representing the playback change
-     */
-    public void playbackChanged(PlaybackChangeEvent e);
+    private final WonderlandEventResponse response;
+
+    public EventResponseMessage(WonderlandEventResponse response) {
+        this.response = response;
+    }
+
+    public WonderlandEventResponse getResponse() {
+        return response;
+    }
 }

@@ -18,8 +18,6 @@
 package org.jdesktop.wonderland.modules.cmu.client;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
@@ -60,6 +58,8 @@ public class CMUCellFactory implements CellFactorySPI {
             state.setSceneTitle(uri.substring(uri.lastIndexOf('/') + 1));
         }
         state.setGroundPlaneShowing(false);
+
+        // Create a bounding box so that scenes match vertically with the world
         BoundingBox defaultBounds = new BoundingBox();
         defaultBounds.yExtent = 0;
         state.setBoundingVolumeHint(new BoundingVolumeHint(true, defaultBounds));

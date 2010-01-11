@@ -15,19 +15,18 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client.events;
+package org.jdesktop.wonderland.modules.cmu.client.events.cmu;
 
 /**
- * Listener for changes in the amount of a scene which has been loaded.
+ * Interface to listen for changes in playback status (i.e. playback
+ * speed, play/pause status) for a particular cell.
  * @author kevin
  */
-public interface SceneLoadedChangeListener {
+public interface PlaybackChangeListener {
 
     /**
-     * Callback function when the amount of a scene which has been loaded
-     * changes.
-     * @param e The event representing the change in loaded amount
+     * Callback function when scene playback status is changed.
+     * @param e The event representing the playback change
      */
-    public void sceneLoadedChanged(SceneLoadedChangeEvent e);
-
+    public void playbackChanged(PlaybackChangeEvent e);
 }

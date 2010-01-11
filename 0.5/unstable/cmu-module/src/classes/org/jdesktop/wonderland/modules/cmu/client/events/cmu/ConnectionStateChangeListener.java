@@ -15,23 +15,17 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
-
-import java.io.Serializable;
+package org.jdesktop.wonderland.modules.cmu.client.events.cmu;
 
 /**
- * Simple class to categorize messages from CMU players to clients.
+ * Interface to listen for changes in a CMU cell's connection state.
  * @author kevin
  */
-public abstract class CMUClientMessage implements Serializable {
+public interface ConnectionStateChangeListener {
 
     /**
-     * Get the String representation of this message, containing
-     * debugging information.
-     * @return Message as String
+     * Callback function when the connection state of a cell has changed.
+     * @param e The event representing the change in connection state
      */
-    @Override
-    public String toString() {
-        return this.getClass().getName();
-    }
+    public void connectionStateChanged(ConnectionStateChangeEvent e);
 }
