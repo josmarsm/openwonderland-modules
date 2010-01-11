@@ -251,7 +251,7 @@ public class PDFLayoutHUDPanel extends JPanel implements ActionListener {
         linearButton = new javax.swing.JRadioButton();
         semicircleButton = new javax.swing.JRadioButton();
         circleButton = new javax.swing.JRadioButton();
-        createPresentationButton = new javax.swing.JButton();
+        showPlatformCheckbox = new javax.swing.JCheckBox();
 
         jRadioButton2.setText("jRadioButton2");
 
@@ -271,13 +271,13 @@ public class PDFLayoutHUDPanel extends JPanel implements ActionListener {
         jLabel1.setText("Slide Scale");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setText("Slide Spacing");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         add(jLabel2, gridBagConstraints);
 
         linearButton.setText("Linear");
@@ -286,60 +286,58 @@ public class PDFLayoutHUDPanel extends JPanel implements ActionListener {
 
         circleButton.setText("Circle");
 
+        showPlatformCheckbox.setText("Show Platform");
+        showPlatformCheckbox.setMargin(new java.awt.Insets(0, 1, 0, 1));
+        showPlatformCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showPlatformCheckboxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(2, 2, 2)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(semicircleButton)
-                    .addComponent(circleButton)
-                    .addComponent(linearButton)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(semicircleButton)
+                            .addComponent(circleButton)
+                            .addComponent(linearButton)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(showPlatformCheckbox)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(5, 5, 5)
+                .addContainerGap()
                 .addComponent(linearButton)
                 .addGap(5, 5, 5)
                 .addComponent(semicircleButton)
                 .addGap(5, 5, 5)
-                .addComponent(circleButton))
+                .addComponent(circleButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(showPlatformCheckbox, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         add(jPanel1, gridBagConstraints);
-
-        createPresentationButton.setText("Create Presentation Space");
-        createPresentationButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createPresentationButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.ipadx = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        add(createPresentationButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void createPresentationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPresentationButtonActionPerformed
-        // Make a call into the presentation manager to tell it that this PDF wants to be
-        // turned into a full presentation space.
-
-        // rip this button out once everything is functionally merged
-//        PresentationCell.createPresentationSpace((Cell)cell);
-
-    }//GEN-LAST:event_createPresentationButtonActionPerformed
+    private void showPlatformCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showPlatformCheckboxActionPerformed
+        cell.showPlatformCell(showPlatformCheckbox.isSelected());
+    }//GEN-LAST:event_showPlatformCheckboxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton circleButton;
-    private javax.swing.JButton createPresentationButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -347,6 +345,7 @@ public class PDFLayoutHUDPanel extends JPanel implements ActionListener {
     private javax.swing.JRadioButton linearButton;
     private javax.swing.JSlider scaleSlider;
     private javax.swing.JRadioButton semicircleButton;
+    private javax.swing.JCheckBox showPlatformCheckbox;
     private javax.swing.JSlider spacingSlider;
     // End of variables declaration//GEN-END:variables
 }

@@ -43,6 +43,8 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageRece
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -53,19 +55,18 @@ import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDEvent;
-import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
-import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.pdf.client.DeployedPDF;
 import org.jdesktop.wonderland.modules.pdf.client.PDFDeployer;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.MovingPlatformCellRenderer;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.PresentationCellRenderer;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCellServerState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellClientState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellChangeMessage.MessageType;
@@ -319,6 +320,7 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
     }
 
     public void setPlatformCell(MovingPlatformCell platform) {
+        logger.info("Child platform cell discovered and referenced saved.");
         this.platform = platform;
     }
 
@@ -412,6 +414,22 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 
     public String getCreatorName() {
         return this.creatorName;
+    }
+
+    public void showPlatformCell(boolean selected) {
+        if(selected) {
+            MovingPlatformCellServerState state = new MovingPlatformCellServerState();
+            state.setPlatformWidth(10.0f);
+            state.setPlatformDepth(10.0f);
+            try {
+                CellUtils.createCell((CellServerState) state, this.getCellID());
+            } catch (CellCreationException ex) {
+                Logger.getLogger(PresentationCell.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            CellUtils.deleteCell(platform);
+        }
+
     }
 
     class PresentationCellMessageReceived implements ComponentMessageReceiver {
