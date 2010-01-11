@@ -28,6 +28,8 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CMUEventResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.MouseClickMessage;
@@ -122,6 +124,10 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
      */
     static public void sendClick(CellID cellID, NodeID nodeID) {
         getInstance().sendMessage(new MouseClickMessage(cellID, nodeID));
+    }
+
+    static public void sendEventResponse(CellID cellID, WonderlandEventResponse response) {
+        getInstance().sendMessage(new CMUEventResponseMessage(cellID, response));
     }
 
     /**

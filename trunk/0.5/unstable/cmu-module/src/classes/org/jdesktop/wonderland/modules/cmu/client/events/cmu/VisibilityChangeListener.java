@@ -15,16 +15,18 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client.events;
+package org.jdesktop.wonderland.modules.cmu.client.events.cmu;
 
 /**
- * Interface to listen for changes in the title of a scene.
+ * Interface to listen for changes in visibility of particular visual node
+ * types.
  * @author kevin
  */
-public interface SceneTitleChangeListener {
+public interface VisibilityChangeListener {
+
     /**
-     * Callback function when a scene title is changed.
-     * @param e Event representing the change in title
+     * Callback function when the visibility of a visual type is changed.
+     * @param e The event representing the change in visibility
      */
-    public void sceneTitleChanged(SceneTitleChangeEvent e);
+    public void visibilityChanged(VisibilityChangeEvent e);
 }

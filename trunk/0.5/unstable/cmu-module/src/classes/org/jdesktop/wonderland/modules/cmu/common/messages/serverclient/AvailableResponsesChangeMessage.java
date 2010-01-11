@@ -17,33 +17,22 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
+import java.util.ArrayList;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+
 /**
- *
+ * Message containing a list of available responses to Wonderland events.
  * @author kevin
  */
-public final class ServerClientMessageTypes {
-
-    /**
-     * A list of message types that cells/cellMOs should expect
-     * to send and receive when they become active.
-     */
-    public static final Class[] MESSAGE_TYPES_TO_RECEIVE = {
-        ConnectionChangeMessage.class,
-        VisibilityChangeMessage.class,
-        MouseButtonEventMessage.class,
-        PlaybackSpeedChangeMessage.class,
-        RestartProgramMessage.class,
-        SceneTitleChangeMessage.class,
-        EventListMessage.class,
-        EventResponseMessage.class,
-        AvailableResponsesChangeMessage.class,
-    };
-
-    /**
-     * Class should never be instantiated
-     */
-    private ServerClientMessageTypes() {
-
+public class AvailableResponsesChangeMessage extends CellMessage {
+    private final ArrayList<WonderlandEventResponse> responses;
+    
+    public AvailableResponsesChangeMessage(ArrayList<WonderlandEventResponse> responses) {
+        this.responses = responses;
     }
 
+    public ArrayList<WonderlandEventResponse> getResponses() {
+        return responses;
+    }
 }

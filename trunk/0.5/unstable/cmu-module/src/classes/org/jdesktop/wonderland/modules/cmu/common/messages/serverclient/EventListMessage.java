@@ -17,33 +17,25 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventList;
+
 /**
- *
+ * Message informing the server or clients of an update to the list of
+ * Wonderland events to respond to.  Updates are sent simply by resending
+ * the entire event list - this is less efficient, but we don't have to deal
+ * with merging changes.
  * @author kevin
  */
-public final class ServerClientMessageTypes {
+public class EventListMessage extends CellMessage {
 
-    /**
-     * A list of message types that cells/cellMOs should expect
-     * to send and receive when they become active.
-     */
-    public static final Class[] MESSAGE_TYPES_TO_RECEIVE = {
-        ConnectionChangeMessage.class,
-        VisibilityChangeMessage.class,
-        MouseButtonEventMessage.class,
-        PlaybackSpeedChangeMessage.class,
-        RestartProgramMessage.class,
-        SceneTitleChangeMessage.class,
-        EventListMessage.class,
-        EventResponseMessage.class,
-        AvailableResponsesChangeMessage.class,
-    };
+    private final WonderlandEventList list;
 
-    /**
-     * Class should never be instantiated
-     */
-    private ServerClientMessageTypes() {
-
+    public EventListMessage(WonderlandEventList list) {
+        this.list = list;
     }
 
+    public WonderlandEventList getList() {
+        return list;
+    }
 }

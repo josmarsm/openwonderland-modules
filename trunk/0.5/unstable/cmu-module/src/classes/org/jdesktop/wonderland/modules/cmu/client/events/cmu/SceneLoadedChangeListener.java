@@ -15,23 +15,19 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient;
-
-import java.io.Serializable;
+package org.jdesktop.wonderland.modules.cmu.client.events.cmu;
 
 /**
- * Simple class to categorize messages from CMU players to clients.
+ * Listener for changes in the amount of a scene which has been loaded.
  * @author kevin
  */
-public abstract class CMUClientMessage implements Serializable {
+public interface SceneLoadedChangeListener {
 
     /**
-     * Get the String representation of this message, containing
-     * debugging information.
-     * @return Message as String
+     * Callback function when the amount of a scene which has been loaded
+     * changes.
+     * @param e The event representing the change in loaded amount
      */
-    @Override
-    public String toString() {
-        return this.getClass().getName();
-    }
+    public void sceneLoadedChanged(SceneLoadedChangeEvent e);
+
 }

@@ -15,17 +15,24 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client.events;
+package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
+
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
 
 /**
- * Interface to listen for changes in a CMU cell's connection state.
+ * Message containing an event response, sent to the CMU player for processing.
  * @author kevin
  */
-public interface ConnectionStateChangeListener {
+public class CMUEventResponseMessage extends ServerCMUMessage {
+    private final WonderlandEventResponse response;
 
-    /**
-     * Callback function when the connection state of a cell has changed.
-     * @param e The event representing the change in connection state
-     */
-    public void connectionStateChanged(ConnectionStateChangeEvent e);
+    public CMUEventResponseMessage(CellID cellID, WonderlandEventResponse response) {
+        super(cellID);
+        this.response = response;
+    }
+
+    public WonderlandEventResponse getResponse() {
+        return response;
+    }
 }
