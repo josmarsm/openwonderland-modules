@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCell
 
 /**
  *
- * @author Drew Harry <drew_harry@dev.java.net
+ * @author Drew Harry <drew_harry@dev.java.net>
  */
 public class MovingPlatformCell extends Cell implements ProximityListener {
     
