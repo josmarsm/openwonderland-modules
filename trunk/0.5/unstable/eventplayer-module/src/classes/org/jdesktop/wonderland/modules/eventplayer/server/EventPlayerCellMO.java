@@ -321,16 +321,17 @@ public class EventPlayerCellMO extends CellMO implements ListRecordingsListener 
         eventPlayerLogger.info("Start Playing");
         playerRef.get().startPlaying();
         try {
-            audioRecorder.playRecording(getAudioRecordingURL(serverState.getSelectedTape().getTapeName()));
+            audioRecorder.playRecording(getAudioRecordingURL());
         } catch (IOException ex) {
             eventPlayerLogger.log(Level.SEVERE, "Failed to play recording", ex);
         }
 
     }
 
-    private String getAudioRecordingURL(String tapeName) {
+    private String getAudioRecordingURL() {
+        String tapeName = serverState.getSelectedTape().getTapeName();
         //TODO this is too much of a hack
-        tapeName = tapeName.replace(' ', '_');
+        //tapeName = tapeName.replace(' ', '_');
         String resourceName = "EventRecording_" + tapeName + ".au";
         String webserverURL = System.getProperty("wonderland.web.server.url", "http://localhost:8080");
         String recordingURL = webserverURL + "/webdav/content/system/AudioRecordings/" + resourceName;
