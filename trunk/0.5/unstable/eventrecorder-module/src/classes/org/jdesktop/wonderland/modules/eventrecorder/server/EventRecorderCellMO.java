@@ -346,7 +346,7 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
 
     private String getAudioRecorderFilename(String tapeName) {
         //TODO nasty hack
-        tapeName = tapeName.replace(' ', '_');
+        //tapeName = tapeName.replace(' ', '_');
         return getAudioRecordingDirectory() + File.separator + "EventRecording_" + tapeName + ".au";
     }
 
