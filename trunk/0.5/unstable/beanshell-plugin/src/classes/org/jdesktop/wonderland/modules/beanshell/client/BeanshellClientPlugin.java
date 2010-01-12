@@ -45,7 +45,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 /**
  * Client-side plugin for the bean shell.
  * 
- * @author Bernard Horan
+ * @author Bernard Horan (adapted from Jordan's top map)
  */
 @Plugin
 public class BeanshellClientPlugin extends BaseClientPlugin {
@@ -59,7 +59,7 @@ public class BeanshellClientPlugin extends BaseClientPlugin {
             "org/jdesktop/wonderland/modules/beanshell/client/resources/Bundle");
     private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/beanshell/client/resources/Bundle");
 
-    // The top map menu item to add to the Tools menu
+    // The beanshell menu item to add to the Tools menu
     private JMenuItem beanShellMI = null;
 
     // The HUD Component displaying the beanshell console.
@@ -70,14 +70,13 @@ public class BeanshellClientPlugin extends BaseClientPlugin {
 
     @Override
     public void initialize(final ServerSessionManager loginInfo) {
-        // Create the Top Map menu item. Upon activation, create the HUD window
-        // that displays the map.
+        // Create the beanshell menu item. Upon activation, create the HUD window
+        // that displays the beanshell console.
         beanShellMI = new JCheckBoxMenuItem(bundle.getString("BEANSHELL_CONSOLE"));
         beanShellMI.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Depending upon whether the checkbox is selected or not,
-                // either hide or show the HUD Component and turn on/off the
-                // camera taking the snapshots for the map.
+                // either hide or show the HUD Component
                 if (beanShellMI.isSelected() == true) {
                     if (hudComponent == null) {
                         hudComponent = createHUDComponent(loginInfo);
@@ -94,12 +93,12 @@ public class BeanshellClientPlugin extends BaseClientPlugin {
     }
 
     /**
-     * Creates and returns the top map HUD component.
+     * Creates and returns the beanshell HUD component.
      */
     private HUDComponent createHUDComponent(ServerSessionManager loginInfo) {
         pluginLogger.warning("CREATING BEAN SHELL HUD");
 
-        // Create the HUD Panel that displays the map.
+        // Create the HUD Panel that displays the beanshell console.
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         JConsole console = new JConsole();
         console.setPreferredSize(new Dimension(200, 300));
