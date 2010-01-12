@@ -38,7 +38,10 @@ public class PresentationLayout implements Serializable {
      * The default slide spacing (meters)
      */
     public static float DEFAULT_SPACING = 4.0f;
-    
+
+    private float maxWidth;
+    private float maxHeight;
+
     public enum LayoutType {
         LINEAR,
         SEMICIRCLE,
@@ -89,6 +92,22 @@ public class PresentationLayout implements Serializable {
 
     public void setSpacing(float spacing) {
         this.spacing = spacing;
+    }
+
+    public void setMaxSlideWidth(float maxWidth) {
+        this.maxWidth = maxWidth;
+    }
+
+    public void setMaxSlideHeight(float maxHeight) {
+        this.maxHeight = maxHeight;
+    }
+
+    public float getMaxSlideHeight() {
+        return maxHeight;
+    }
+
+    public float getMaxSlideWidth() {
+        return maxWidth;
     }
 
     @Override
