@@ -17,13 +17,19 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.wonderland.CMUContextListener;
 import org.jdesktop.wonderland.modules.cmu.client.ui.events.EventEditor;
+import org.jdesktop.wonderland.modules.cmu.common.events.ContextMenuEvent;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
  * Factory for a CMU cell's context menu.
@@ -32,7 +38,6 @@ import org.jdesktop.wonderland.modules.cmu.client.ui.events.EventEditor;
 public class CMUContextFactory implements ContextMenuFactorySPI {
 
     private final CMUCell parent;
-    private EventEditor eventEditor = null;
 
     /**
      * Standard constructor; needs parent for e.g. HUD manager access.
@@ -42,6 +47,10 @@ public class CMUContextFactory implements ContextMenuFactorySPI {
         this.parent = parent;
     }
 
+    public CMUCell getParent() {
+        return parent;
+    }
+
     /**
      * {@inheritDoc}
      * @param event {@inheritDoc}
@@ -49,9 +58,26 @@ public class CMUContextFactory implements ContextMenuFactorySPI {
      */
     @Override
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-        return new ContextMenuItem[]{
-                    new HUDToggleMenuItem(),
-                    new EditEventsMenuItem()};
+        List<ContextMenuItem> items = new ArrayList<ContextMenuItem>();
+        items.add(new HUDToggleMenuItem());
+        items.add(new EditEventsMenuItem());
+
+        // Add context events from parent cell
+        for (EventResponsePair pair : getParent().getEventList()) {
+            if (pair.getEvent() instanceof ContextMenuEvent) {
+                items.add(new ContextEventMenuItem((ContextMenuEvent) pair.getEvent(),
+                        pair.getResponse()));
+            }
+        }
+
+        return items.toArray(new ContextMenuItem[] { });
+    }
+
+    protected class ContextEventMenuItem extends SimpleContextMenuItem {
+
+        public ContextEventMenuItem(ContextMenuEvent event, WonderlandResponse response) {
+            super(event.getMenuText(), new CMUContextListener(getParent(), response));
+        }
     }
 
     /**
@@ -60,34 +86,26 @@ public class CMUContextFactory implements ContextMenuFactorySPI {
     protected class HUDToggleMenuItem extends SimpleContextMenuItem {
 
         public HUDToggleMenuItem() {
-            super("Show controls", new HUDActionListener());
-            ((HUDActionListener) this.getActionListener()).setParent(this);
+            super("", new HUDActionListener());
+            this.setLabel(getAppropriateLabel());
         }
 
         public String getAppropriateLabel() {
-            if (parent.getHudControl().isHUDShowing()) {
-                return "Show controls";
-            } else {
+            System.out.println("Getting appropriate HUD toggle menu label");
+            if (getParent().getHudControl().isHUDShowing()) {
                 return "Hide controls";
+            } else {
+                return "Show controls";
             }
         }
     }
 
     protected class HUDActionListener implements ContextMenuActionListener {
 
-        private HUDToggleMenuItem parentItem = null;
-
-        public void setParent(HUDToggleMenuItem parentItem) {
-            this.parentItem = parentItem;
-        }
-
         @Override
         public void actionPerformed(ContextMenuItemEvent event) {
-            boolean desiredShowingState = !(parent.getHudControl().isHUDShowing());
-            parent.getHudControl().setHUDShowing(desiredShowingState);
-            if (this.parentItem != null) {
-                parentItem.setLabel(parentItem.getAppropriateLabel());
-            }
+            boolean desiredShowingState = !(getParent().getHudControl().isHUDShowing());
+            getParent().getHudControl().setHUDShowing(desiredShowingState);
         }
     }
 
@@ -106,11 +124,7 @@ public class CMUContextFactory implements ContextMenuFactorySPI {
 
                 @Override
                 public void run() {
-                    //TODO: make a listener interface for changes to available responses, so we don't have to defer creation like this
-                    if (eventEditor == null) {
-                        eventEditor = new EventEditor(parent);
-                    }
-                    eventEditor.setVisible(true);
+                    new EventEditor(parent).setVisible(true);
                 }
             });
         }

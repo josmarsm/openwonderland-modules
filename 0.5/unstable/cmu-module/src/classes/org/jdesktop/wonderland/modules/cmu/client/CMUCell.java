@@ -66,6 +66,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Playback
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
+import org.jdesktop.wonderland.modules.cmu.common.events.ContextMenuEvent;
 import org.jdesktop.wonderland.modules.cmu.common.events.ProximityEvent;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
@@ -891,6 +892,8 @@ public class CMUCell extends Cell {
         synchronized (this.eventListLock) {
             this.eventList = eventList;
 
+            ///// Add necessary listeners, etc. /////
+
             // Only perform these actions if we know we have valid components
             if (this.isComponentsValid()) {
                 // Remove existing proximity listeners, if any
@@ -918,6 +921,9 @@ public class CMUCell extends Cell {
                         // Add listener
                         this.proximityComp.addProximityListener(l, volume);
                         this.proximityListeners.add(l);
+                    } // Context menu event
+                    else if (pair.getEvent() instanceof ContextMenuEvent) {
+                        // Handled by context factory for this cell
                     } // Unrecognized event
                     else {
                         logger.severe("Unrecognized event: " + pair.getEvent());
