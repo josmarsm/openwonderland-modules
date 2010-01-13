@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
  * Listener for context a context menu event, which sends an appropriate response.
  * @author kevin
  */
-public class CMUContextListener extends WonderlandClientEventListener2
+public class CMUContextListener extends WonderlandClientEventListener
         implements ContextMenuActionListener {
 
     public CMUContextListener(CMUCell parent, WonderlandResponse response) {
