@@ -28,7 +28,7 @@ import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.alice.stageide.apis.moveandturn.event.MouseButtonAdapter;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
  * A standard CMU program which can access its scene graph via a
@@ -93,11 +93,11 @@ public class ProgramPlayer extends Program {
         return this.sceneConnectionHandler.getHostname();
     }
 
-    public ArrayList<WonderlandEventResponse> getAllowedResponses() {
-        ArrayList<WonderlandEventResponse> allowedResponses = new ArrayList<WonderlandEventResponse>();
+    public ArrayList<WonderlandResponse> getAllowedResponses() {
+        ArrayList<WonderlandResponse> allowedResponses = new ArrayList<WonderlandResponse>();
 
         for (AbstractMethod method : this.sceneType.getDeclaredMethods()) {
-            allowedResponses.add(new WonderlandEventResponse(method.getName()));
+            allowedResponses.add(new WonderlandResponse(method.getName()));
         }
 
         return allowedResponses;
@@ -112,7 +112,7 @@ public class ProgramPlayer extends Program {
         this.sceneConnectionHandler.click(id);
     }
 
-    public void eventResponse(WonderlandEventResponse response) {
+    public void eventResponse(WonderlandResponse response) {
         System.out.println("Calling method: " + response.getFunctionName());
         System.out.println("For type: " + this.sceneType.getName());
         this.vm.invokeEntryPoint(this.sceneType.getDeclaredMethod(response.getFunctionName()), this.scene);

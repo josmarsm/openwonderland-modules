@@ -24,10 +24,10 @@ import java.io.Serializable;
  * function to call when that event occurs.
  * @author kevin
  */
-public class WonderlandEventResponse implements Serializable {
+public class WonderlandResponse implements Serializable {
     private String functionName;
 
-    public WonderlandEventResponse(String functionName) {
+    public WonderlandResponse(String functionName) {
         this.setFunctionName(functionName);
     }
 

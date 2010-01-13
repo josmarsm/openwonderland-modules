@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
  * Message to inform the server that a Wonderland event has ocurred, and that
@@ -27,13 +27,13 @@ import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse
  */
 public class EventResponseMessage extends CellMessage {
 
-    private final WonderlandEventResponse response;
+    private final WonderlandResponse response;
 
-    public EventResponseMessage(WonderlandEventResponse response) {
+    public EventResponseMessage(WonderlandResponse response) {
         this.response = response;
     }
 
-    public WonderlandEventResponse getResponse() {
+    public WonderlandResponse getResponse() {
         return response;
     }
 }

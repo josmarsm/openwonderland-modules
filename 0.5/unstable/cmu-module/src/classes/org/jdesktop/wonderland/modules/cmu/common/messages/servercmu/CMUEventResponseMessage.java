@@ -18,21 +18,21 @@
 package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
 
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
  * Message containing an event response, sent to the CMU player for processing.
  * @author kevin
  */
 public class CMUEventResponseMessage extends ServerCMUMessage {
-    private final WonderlandEventResponse response;
+    private final WonderlandResponse response;
 
-    public CMUEventResponseMessage(CellID cellID, WonderlandEventResponse response) {
+    public CMUEventResponseMessage(CellID cellID, WonderlandResponse response) {
         super(cellID);
         this.response = response;
     }
 
-    public WonderlandEventResponse getResponse() {
+    public WonderlandResponse getResponse() {
         return response;
     }
 }

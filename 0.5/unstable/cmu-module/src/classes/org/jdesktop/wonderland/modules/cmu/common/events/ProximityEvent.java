@@ -26,8 +26,8 @@ public class ProximityEvent extends WonderlandEvent {
     private int distance;
     private boolean eventOnEnter;
 
-    public ProximityEvent(int distance, boolean eventOnEnter, WonderlandEventResponse response) {
-        super(response);
+    public ProximityEvent(int distance, boolean eventOnEnter) {
+        super();
         this.setDistance(distance);
         this.setEventOnEnter(eventOnEnter);
     }

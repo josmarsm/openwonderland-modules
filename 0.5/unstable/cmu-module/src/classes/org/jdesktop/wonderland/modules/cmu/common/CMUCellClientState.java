@@ -19,8 +19,8 @@ package org.jdesktop.wonderland.modules.cmu.common;
 
 import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventList;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
  * Client state for the CMU class; contains connection information
@@ -36,8 +36,8 @@ public class CMUCellClientState extends CellClientState {
     private String server;
     private int port;
     private String sceneTitle;
-    private WonderlandEventList eventList;
-    private ArrayList<WonderlandEventResponse> allowedResponses;
+    private EventResponseList eventList;
+    private ArrayList<WonderlandResponse> allowedResponses;
 
     /**
      * Get the title of the scene.
@@ -59,7 +59,7 @@ public class CMUCellClientState extends CellClientState {
      * Get the list of Wonderland events which this scene should respond to.
      * @return List of Wonderland events with responses
      */
-    public synchronized WonderlandEventList getEventList() {
+    public synchronized EventResponseList getEventList() {
         return eventList;
     }
 
@@ -67,15 +67,15 @@ public class CMUCellClientState extends CellClientState {
      * Set the list of Wonderland events which this scene should respond to.
      * @param eventList List of Wonderland events with responses
      */
-    public synchronized void setEventList(WonderlandEventList eventList) {
+    public synchronized void setEventList(EventResponseList eventList) {
         this.eventList = eventList;
     }
 
-    public ArrayList<WonderlandEventResponse> getAllowedResponses() {
+    public ArrayList<WonderlandResponse> getAllowedResponses() {
         return allowedResponses;
     }
 
-    public void setAllowedResponses(ArrayList<WonderlandEventResponse> allowedResponses) {
+    public void setAllowedResponses(ArrayList<WonderlandResponse> allowedResponses) {
         this.allowedResponses = allowedResponses;
     }
 

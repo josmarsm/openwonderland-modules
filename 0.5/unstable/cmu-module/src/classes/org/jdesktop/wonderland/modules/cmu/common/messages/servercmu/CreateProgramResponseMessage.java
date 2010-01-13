@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
  * Response message sent by a CMU program manager to a CMUCellMO after a
@@ -35,7 +35,7 @@ public class CreateProgramResponseMessage extends ResponseMessage {
     private static final long serialVersionUID = 1L;
     private String hostname;
     private int port;
-    private ArrayList<WonderlandEventResponse> allowedResponses = null;
+    private ArrayList<WonderlandResponse> allowedResponses = null;
     private boolean creationSuccessful = false;
     private CellID cellID;
 
@@ -59,7 +59,7 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      * @param port The port to connect to
      */
     public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String hostname, int port,
-            ArrayList<WonderlandEventResponse> allowedResponses) {
+            ArrayList<WonderlandResponse> allowedResponses) {
         this(messageID, cellID);
         this.setHostnameAndPort(hostname, port);
         this.setAllowedResponses(allowedResponses);
@@ -111,11 +111,11 @@ public class CreateProgramResponseMessage extends ResponseMessage {
         this.creationSuccessful = true;
     }
 
-    public ArrayList<WonderlandEventResponse> getAllowedResponses() {
+    public ArrayList<WonderlandResponse> getAllowedResponses() {
         return allowedResponses;
     }
 
-    public void setAllowedResponses(ArrayList<WonderlandEventResponse> allowedResponses) {
+    public void setAllowedResponses(ArrayList<WonderlandResponse> allowedResponses) {
         this.allowedResponses = allowedResponses;
     }
 

@@ -67,9 +67,9 @@ import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
 import org.jdesktop.wonderland.modules.cmu.common.events.ProximityEvent;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEvent;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventList;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
@@ -113,8 +113,9 @@ public class CMUCell extends Cell {
     private VisualChangeReceiverThread cmuConnectionThread = null;
     private final CMUCellMessageReceiver messageReceiver = new CMUCellMessageReceiver();
     // Event response information
-    private WonderlandEventList eventList = null;
-    private Collection<WonderlandEventResponse> allowedResponses = null;
+    private EventResponseList eventList = null;
+    private final Object eventListLock = new Object();
+    private Collection<WonderlandResponse> allowedResponses = null;
     @UsesCellComponent
     private ProximityComponent proximityComp = null;
     private final Set<CMUProximityListener> proximityListeners = new HashSet<CMUProximityListener>();
@@ -561,20 +562,35 @@ public class CMUCell extends Cell {
         }
     }
 
-    public boolean isComponentsValid() {
+    /**
+     * Find out whether the components for this cell have been initialized,
+     * e.g. whether setStatus() has been called.
+     * @return Whether the components for this cell have been initialized
+     */
+    protected boolean isComponentsValid() {
         return componentsValid;
     }
 
-    public void setComponentsValid(boolean componentsValid) {
+    /**
+     * Set the
+     * @param componentsValid
+     */
+    private void setComponentsValid(boolean componentsValid) {
         boolean oldComponentsValid = this.componentsValid;
         this.componentsValid = componentsValid;
 
-        // If we're activating the components, perform delayed processing
+        // If we're activating the components for the first time, perform any delayed processing
         if (componentsValid && !oldComponentsValid) {
+            // Add listeners based on our event list
             this.setEventListInternal(this.getEventList());
         }
     }
 
+    /**
+     * Get the HUD control object for this cell, which can be used to get/set
+     * the HUD state and visibility.
+     * @return HUD control for this cell
+     */
     public HUDControl getHudControl() {
         return hudControl;
     }
@@ -838,56 +854,89 @@ public class CMUCell extends Cell {
         }
     }
 
-    public WonderlandEventList getEventList() {
-        return this.eventList;
+    /**
+     * Get the list of events (and responses) which this cell is listening for.
+     * @return List of events we're listening for
+     */
+    public EventResponseList getEventList() {
+        synchronized (this.eventListLock) {
+            return this.eventList;
+        }
     }
 
-    public void setEventList(WonderlandEventList eventList) {
+    /**
+     * Set the list of events (and responses) which this cell should listen for,
+     * and create the appropriate listeners/mechanisms (and remove old ones).
+     * Propagate this change back to the server and other users.
+     * @param eventList New list of events to listen for
+     */
+    public void setEventList(EventResponseList eventList) {
         this.setEventListInternal(eventList);
+        //TODO: propagate change
     }
 
-    private void setEventListInternal(WonderlandEventList eventList) {
-        this.eventList = eventList;
+    /**
+     * Set the list of events (and responses) which this cell should listen for,
+     * but do not propagate this change to the server.
+     * @param eventList New list of events to listen for
+     */
+    private void setEventListInternal(EventResponseList eventList) {
+        synchronized (this.eventListLock) {
+            this.eventList = eventList;
 
-        // Only perform these actions if we know we have valid components
-        if (this.isComponentsValid()) {
-            // Remove existing proximity listeners, if any
-            for (CMUProximityListener l : this.proximityListeners) {
-                this.proximityComp.removeProximityListener(l);
-            }
-            this.proximityListeners.clear();
+            // Only perform these actions if we know we have valid components
+            if (this.isComponentsValid()) {
+                // Remove existing proximity listeners, if any
+                for (CMUProximityListener l : this.proximityListeners) {
+                    this.proximityComp.removeProximityListener(l);
+                }
+                this.proximityListeners.clear();
 
 
-            for (WonderlandEvent event : eventList) {
-                // Proximity event
-                if (event instanceof ProximityEvent) {
-                    ProximityEvent proximityEvent = (ProximityEvent) event;
+                for (EventResponsePair pair : eventList) {
+                    // Proximity event
+                    if (pair.getEvent() instanceof ProximityEvent) {
+                        ProximityEvent proximityEvent = (ProximityEvent) pair.getEvent();
 
-                    // Compute desired bounding volume
-                    BoundingVolume[] volume = new BoundingSphere[1];
-                    volume[0] = new BoundingSphere(proximityEvent.getDistance(), Vector3f.ZERO);
+                        // Compute desired bounding volume
+                        BoundingVolume[] volume = new BoundingSphere[1];
+                        volume[0] = new BoundingSphere(proximityEvent.getDistance(), Vector3f.ZERO);
 
-                    // Create listener
-                    CMUProximityListener l = new CMUProximityListener(this, event.getResponse(), proximityEvent.isEventOnEnter());
+                        // Create listener
+                        CMUProximityListener l = new CMUProximityListener(this, pair.getResponse(), proximityEvent.isEventOnEnter());
 
-                    // Add listener
-                    this.proximityComp.addProximityListener(l, volume);
-                    this.proximityListeners.add(l);
-                } // Unrecognized event
-                else {
-                    logger.severe("Unrecognized event: " + event);
+                        // Add listener
+                        this.proximityComp.addProximityListener(l, volume);
+                        this.proximityListeners.add(l);
+                    } // Unrecognized event
+                    else {
+                        logger.severe("Unrecognized event: " + pair);
+                    }
                 }
             }
         }
     }
 
-    public Collection<WonderlandEventResponse> getAllowedResponses() {
-        return allowedResponses;
+    /**
+     * Get the collection of responses which are available for the scene loaded
+     * by this cell.
+     * @return Collection of allowed responses for this cell
+     */
+    public Collection<WonderlandResponse> getAllowedResponses() {
+        synchronized (this.eventListLock) {
+            return allowedResponses;
+        }
     }
 
-    public void setAllowedResponses(Collection<WonderlandEventResponse> allowedResponses) {
-        System.out.println("\n\nSETTING ALLLOWED RESPONSES: " + allowedResponses + "\n\n");
-        this.allowedResponses = allowedResponses;
+    /**
+     * Set the collection of responses which are available to the scene loaded by
+     * this cell.
+     * @param allowedResponses New collection of allowed responses
+     */
+    public void setAllowedResponses(Collection<WonderlandResponse> allowedResponses) {
+        synchronized (this.eventListLock) {
+            this.allowedResponses = allowedResponses;
+        }
     }
 
     /**
