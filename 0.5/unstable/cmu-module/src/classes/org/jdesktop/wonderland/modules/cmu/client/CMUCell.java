@@ -17,9 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
-import com.jme.bounding.BoundingSphere;
-import com.jme.bounding.BoundingVolume;
-import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.cmu.client.events.cmu.PlaybackChangeEvent;
 import org.jdesktop.wonderland.modules.cmu.client.events.cmu.PlaybackChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneTitleChangeListener;
@@ -38,7 +35,6 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
-import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
@@ -57,7 +53,6 @@ import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneLoadedChangeEv
 import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneLoadedChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.events.cmu.VisibilityChangeEvent;
 import org.jdesktop.wonderland.modules.cmu.client.events.cmu.VisibilityChangeListener;
-import org.jdesktop.wonderland.modules.cmu.client.events.wonderland.CMUProximityListener;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.CMUCellRenderer;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
@@ -95,6 +90,7 @@ public class CMUCell extends Cell {
 
     // Whether cell components can be treated as valid (e.g. whether setStatus() has been called)
     private boolean componentsValid = false;
+    private final Object componentsValidLock = new Object();
     // Renderer info
     private CMUCellRenderer renderer = null;
     private final VisualParent sceneRoot = new VisualParent();      // We synchronize incoming visual changes and connection changes on this object.
@@ -118,9 +114,6 @@ public class CMUCell extends Cell {
     private EventResponseList eventList = null;
     private final Object eventListLock = new Object();
     private Collection<WonderlandResponse> allowedResponses = null;
-    @UsesCellComponent
-    private ProximityComponent proximityComp = null;
-    private final Set<CMUProximityListener> proximityListeners = new HashSet<CMUProximityListener>();
     // Context menu
     @UsesCellComponent
     private ContextMenuComponent contextComp = null;
@@ -576,7 +569,9 @@ public class CMUCell extends Cell {
      * @return Whether the components for this cell have been initialized
      */
     protected boolean isComponentsValid() {
-        return componentsValid;
+        synchronized (componentsValidLock) {
+            return componentsValid;
+        }
     }
 
     /**
@@ -584,8 +579,11 @@ public class CMUCell extends Cell {
      * @param componentsValid
      */
     private void setComponentsValid(boolean componentsValid) {
-        boolean oldComponentsValid = this.componentsValid;
-        this.componentsValid = componentsValid;
+        boolean oldComponentsValid = false;
+        synchronized (componentsValidLock) {
+            oldComponentsValid = this.componentsValid;
+            this.componentsValid = componentsValid;
+        }
 
         // If we're activating the components for the first time, perform any delayed processing
         if (componentsValid && !oldComponentsValid) {
@@ -896,31 +894,13 @@ public class CMUCell extends Cell {
 
             // Only perform these actions if we know we have valid components
             if (this.isComponentsValid()) {
-                // Remove existing proximity listeners, if any
-                for (CMUProximityListener l : this.proximityListeners) {
-                    this.proximityComp.removeProximityListener(l);
-                }
-                this.proximityListeners.clear();
-
 
                 for (EventResponsePair pair : eventList) {
                     System.out.println("Adding event: " + pair.getEvent() + " / " + pair.getResponse());
 
                     // Proximity event
                     if (pair.getEvent() instanceof ProximityEvent) {
-
-                        ProximityEvent proximityEvent = (ProximityEvent) pair.getEvent();
-
-                        // Compute desired bounding volume
-                        BoundingVolume[] volume = new BoundingSphere[1];
-                        volume[0] = new BoundingSphere(proximityEvent.getDistance(), Vector3f.ZERO);
-
-                        // Create listener
-                        CMUProximityListener l = new CMUProximityListener(this, pair.getResponse(), proximityEvent.isEventOnEnter());
-
-                        // Add listener
-                        this.proximityComp.addProximityListener(l, volume);
-                        this.proximityListeners.add(l);
+                        // Handled by server
                     } // Context menu event
                     else if (pair.getEvent() instanceof ContextMenuEvent) {
                         // Handled by context factory for this cell

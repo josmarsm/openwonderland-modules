@@ -77,10 +77,12 @@ public class SingleEventPanel extends javax.swing.JPanel {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void setEventAndResponse(EventResponsePair pair) {
         // Find the event menu item corresponding to this event type
         for (int i = 0; i < this.eventTypeSelection.getItemCount(); i++) {
             EventMenuItem item = (EventMenuItem) this.eventTypeSelection.getItemAt(i);
+
 
             if (pair.getEvent().getClass().isAssignableFrom(item.getEventPanel().getEventClass())) {
                 this.eventTypeSelection.setSelectedIndex(i);

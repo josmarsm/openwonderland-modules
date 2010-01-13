@@ -15,26 +15,26 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
-package org.jdesktop.wonderland.modules.cmu.client.events.wonderland;
+package org.jdesktop.wonderland.modules.cmu.server.events.wonderland;
 
 import com.jme.bounding.BoundingVolume;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.ProximityListener;
+import com.sun.sgs.app.ManagedObject;
+import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.server.CMUCellMO;
+import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 
 /**
- * Listener for Wonderland proximity events.  Passes the appropriate response
- * on to the server when they are received.
+ * Listener for Wonderland proximity events.
  * @author kevin
  */
-public class CMUProximityListener extends CMUWonderlandEventListener implements ProximityListener {
+public class CMUProximityListener extends WonderlandServerEventListener
+        implements ProximityListenerSrv, ManagedObject {
 
     private final boolean eventOnEnter;
 
-    public CMUProximityListener(CMUCell parent, WonderlandResponse response, boolean eventOnEnter) {
+    public CMUProximityListener(ManagedReference<CMUCellMO> parent, WonderlandResponse response, boolean eventOnEnter) {
         super(parent, response);
         this.eventOnEnter = eventOnEnter;
     }
@@ -43,7 +43,7 @@ public class CMUProximityListener extends CMUWonderlandEventListener implements 
         return eventOnEnter;
     }
 
-    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
+    public void viewEnterExit(boolean entered, CellID cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
         System.out.println("Proximity event occurred!");
         if (entered == this.isEventOnEnter()) {
             this.eventOccurred();
