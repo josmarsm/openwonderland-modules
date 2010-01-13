@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -36,9 +36,6 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
-import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerConfigComponentServerState;
 import org.jdesktop.wonderland.modules.eventplayer.common.npcplayer.NpcPlayerCellServerState;
 import org.jdesktop.wonderland.modules.eventplayer.server.wfs.RecordingLoaderUtils.CellImportEntry;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -493,15 +490,6 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
         Vector3f newTranslation = cellTranslation.subtract(recorderTranslation);
         cellPositionState.setTranslation(newTranslation);
         logger.info("new translation: " + cellPositionState.getTranslation());
-
-//        Quaternion cellQuat = cellPositionState.getRotation();
-//        Quaternion playerQuat = originalRecorderPosition.getRotation();
-//        Quaternion newQuat = cellQuat.subtract(playerQuat);
-//        cellPositionState.setRotation(newQuat);
     }
-
-
-    
-    
 
 }

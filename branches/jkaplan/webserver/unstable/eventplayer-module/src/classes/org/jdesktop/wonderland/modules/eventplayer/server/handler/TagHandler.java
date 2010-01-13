@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -29,6 +29,7 @@ public interface TagHandler {
     /**
      * Called by the SAX handler when it has its startElement() method called
      * @param atts the attributes of an XML element
+     * @param semaphore the semaphore to be signalled
      */
     public void startTag(Attributes atts, Semaphore semaphore);
 
@@ -37,11 +38,13 @@ public interface TagHandler {
      * @param ch the characters enclosed by the XML element
      * @param start the start of the array of chars
      * @param length the length of the chars
+     * @param semaphore the semaphore to be signalled
      */
     public void characters(char ch[], int start, int length, Semaphore semaphore);
 
     /**
      * Called by the SAX handler when it has its endElement() method called
+     * @param semaphore the semaphore to be signalled
      */
     public void endTag(Semaphore semaphore);
 }

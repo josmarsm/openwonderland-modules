@@ -34,6 +34,9 @@ public final class ServerClientMessageTypes {
         PlaybackSpeedChangeMessage.class,
         RestartProgramMessage.class,
         SceneTitleChangeMessage.class,
+        EventListMessage.class,
+        EventResponseMessage.class,
+        AvailableResponsesChangeMessage.class,
     };
 
     /**

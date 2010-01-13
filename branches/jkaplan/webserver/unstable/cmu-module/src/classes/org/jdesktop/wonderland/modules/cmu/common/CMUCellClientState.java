@@ -17,7 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common;
 
+import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
  * Client state for the CMU class; contains connection information
@@ -33,6 +36,8 @@ public class CMUCellClientState extends CellClientState {
     private String server;
     private int port;
     private String sceneTitle;
+    private EventResponseList eventList;
+    private ArrayList<WonderlandResponse> allowedResponses;
 
     /**
      * Get the title of the scene.
@@ -43,7 +48,7 @@ public class CMUCellClientState extends CellClientState {
     }
 
     /**
-     * Set hte title of the scene.
+     * Set the title of the scene.
      * @param sceneTitle Title of the scene
      */
     public synchronized void setSceneTitle(String sceneTitle) {
@@ -51,9 +56,33 @@ public class CMUCellClientState extends CellClientState {
     }
 
     /**
+     * Get the list of Wonderland events which this scene should respond to.
+     * @return List of Wonderland events with responses
+     */
+    public synchronized EventResponseList getEventList() {
+        return eventList;
+    }
+
+    /**
+     * Set the list of Wonderland events which this scene should respond to.
+     * @param eventList List of Wonderland events with responses
+     */
+    public synchronized void setEventList(EventResponseList eventList) {
+        this.eventList = eventList;
+    }
+
+    public ArrayList<WonderlandResponse> getAllowedResponses() {
+        return allowedResponses;
+    }
+
+    public void setAllowedResponses(ArrayList<WonderlandResponse> allowedResponses) {
+        this.allowedResponses = allowedResponses;
+    }
+
+    /**
      * Set the server and port on which the relevant socket is running,
      * and store that these have been set.  Note that we can only
-     * set values at once.
+     * set both values at once.
      * @param server The host address to connect to
      * @param port The port on which to connect
      */
@@ -125,7 +154,7 @@ public class CMUCellClientState extends CellClientState {
      * Find out whether the ground plane is showing in this cell.
      * @return Whether the ground plane is showing
      */
-    public boolean isGroundPlaneShowing() {
+    public synchronized boolean isGroundPlaneShowing() {
         return groundPlaneShowing;
     }
 
@@ -133,7 +162,7 @@ public class CMUCellClientState extends CellClientState {
      * Set the ground plane visibility for this cell.
      * @param groundPlaneShowing Whether the ground plane is showing
      */
-    public void setGroundPlaneShowing(boolean groundPlaneShowing) {
+    public synchronized void setGroundPlaneShowing(boolean groundPlaneShowing) {
         this.groundPlaneShowing = groundPlaneShowing;
     }
 }

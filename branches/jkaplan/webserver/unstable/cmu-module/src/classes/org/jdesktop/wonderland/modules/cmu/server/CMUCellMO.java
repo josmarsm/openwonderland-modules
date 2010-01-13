@@ -17,7 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.cmu.server;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -32,14 +39,25 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Connecti
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
+import org.jdesktop.wonderland.modules.cmu.common.events.ContextMenuEvent;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
+import org.jdesktop.wonderland.modules.cmu.common.events.ProximityEvent;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.AvailableResponsesChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventListMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.VisibilityChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.SceneTitleChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ServerClientMessageTypes;
+import org.jdesktop.wonderland.modules.cmu.server.events.wonderland.CMUProximityListener;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -52,28 +70,39 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class CMUCellMO extends CellMO {
 
+    /**
+     * Filename to store Wonderland-specific data inside Alice files
+     */
+    private static final String wonderlandDataFileName = "wonderland.xml";
+    // Whether components can be treated as valid (e.g. whether setLive() has been called)
+    private boolean componentsValid = false;
+    private final Serializable componentsValidLock = new String();
     // CMU file URI
     private String cmuURI;
     private final Serializable uriLock = new String();
-
     // Connection information
     private String hostName;
     private int port;
     private boolean socketInitialized = false;  // False until a CMU instance informs us with valid socket information.
     private final Serializable socketLock = new String();
-
     // Scene title
     private String sceneTitle;
     private final Serializable sceneTitleLock = new String();
-
     // Playback information
     private boolean playing;
     private float playbackSpeed;
     private final Serializable playbackSpeedLock = new String();
-
     // Ground plane information
     private boolean groundPlaneShowing;
     private final Serializable groundPlaneLock = new String();
+    // Wonderland events
+    private EventResponseList eventList = null;
+    private ArrayList<WonderlandResponse> allowedEventResponses = null;
+    private final Serializable eventListLock = new String();
+    @UsesCellComponentMO(ProximityComponentMO.class)
+    private ManagedReference<ProximityComponentMO> proximityComponent = null;
+    private final HashSet<ManagedReference<CMUProximityListener>> proximityListeners = 
+            new HashSet<ManagedReference<CMUProximityListener>>();
 
     /**
      * Receives and processes messages about playback speed change.
@@ -114,6 +143,12 @@ public class CMUCellMO extends CellMO {
             } // Mouse button event
             else if (message instanceof MouseButtonEventMessage) {
                 cellMO.sendMouseClick(((MouseButtonEventMessage) message).getNodeID());
+            } // Event list update
+            else if (message instanceof EventListMessage) {
+                cellMO.setEventListFromMessage(clientID, (EventListMessage) message);
+            } // Generic Wonderland event
+            else if (message instanceof EventResponseMessage) {
+                cellMO.processEventResponse(((EventResponseMessage) message).getResponse());
             } // Unknown message
             else {
                 Logger.getLogger(CMUCellMO.CMUCellMessageReceiver.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
@@ -159,6 +194,8 @@ public class CMUCellMO extends CellMO {
             }
         }
         cmuClientState.setSceneTitle(this.getSceneTitle());
+        cmuClientState.setEventList(this.getEventList());
+        cmuClientState.setAllowedResponses(this.getAllowedEventResponses());
 
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -199,6 +236,7 @@ public class CMUCellMO extends CellMO {
     @SuppressWarnings("unchecked")
     protected void setLive(boolean live) {
         super.setLive(live);
+        this.setComponentsValid(live);
 
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if (live == true) {
@@ -212,6 +250,26 @@ public class CMUCellMO extends CellMO {
                 channel.removeMessageReceiver(c);
             }
             ProgramConnectionHandlerMO.removeProgram(this.getCellID(), UnloadSceneReason.DISCONNECTING);
+        }
+    }
+
+    protected boolean isComponentsValid() {
+        synchronized (this.componentsValidLock) {
+            return this.componentsValid;
+        }
+    }
+
+    protected void setComponentsValid(boolean componentsValid) {
+        boolean oldValid = false;
+        synchronized (this.componentsValidLock) {
+            oldValid = this.componentsValid;
+            this.componentsValid = componentsValid;
+        }
+
+        // If the components are just being activated, perform any delayed processing
+        if (componentsValid && !oldValid) {
+            // Add listeners based on our current event list
+            this.setEventList(this.getEventList());
         }
     }
 
@@ -235,6 +293,16 @@ public class CMUCellMO extends CellMO {
     }
 
     /**
+     * Process a response to a Wonderland event by passing it on to the
+     * CMU player.
+     * @param response The response to propagate
+     */
+    public void processEventResponse(WonderlandResponse response) {
+        System.out.println("Server received event response: " + response);
+        ProgramConnectionHandlerMO.sendEventResponse(getCellID(), response);
+    }
+
+    /**
      * Get the URI of the loaded CMU file.
      * @return The URI of the loaded CMU file
      */
@@ -252,6 +320,62 @@ public class CMUCellMO extends CellMO {
         synchronized (uriLock) {
             cmuURI = uri;
         }
+
+        if (this.eventList == null) {
+            this.eventList = new EventResponseList();
+        }
+
+        //TODO: Get zip file from URI
+        // Read Wonderland-specific data from CMU file
+        /*
+        try {
+        URL url = AssetUtils.getAssetURL(uri);
+        Asset a = AssetManager.getAssetManager().getAsset(new ContentURI(url.toString()));
+        if (AssetManager.getAssetManager().waitForAsset(a)) {
+        // Create program
+        File localFile = a.getLocalCacheFile();
+        ZipFile zipFile = new ZipFile(localFile, ZipFile.OPEN_READ);
+
+        ZipEntry wonderlandData = zipFile.getEntry(wonderlandDataFileName);
+        synchronized (eventListLock) {
+        if (wonderlandData != null) {
+        this.eventList = WonderlandEventList.readFromStream(zipFile.getInputStream(wonderlandData));
+        } else {
+        this.eventList = new WonderlandEventList();
+        }
+        }
+
+        zipFile.close();
+        }
+        } catch (ZipException ex) {
+        Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+        Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (URISyntaxException ex) {
+        Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+         */
+
+    }
+
+    /**
+     * Get the list of possible event responses for this cell.
+     * @return List of possible event responses
+     */
+    public ArrayList<WonderlandResponse> getAllowedEventResponses() {
+        return allowedEventResponses;
+    }
+
+    /**
+     * Set the possible event responses for this cell.  Note that these responses
+     * are not enforced to be the only possible responses; this is merely a
+     * convenience to aid in displaying the responses which the player will be
+     * able to handle gracefully.
+     * @param allowedEventResponses List of possible event responses
+     */
+    public void setAllowedEventResponses(ArrayList<WonderlandResponse> allowedEventResponses) {
+        this.allowedEventResponses = allowedEventResponses;
+        sendCellMessage(null, new AvailableResponsesChangeMessage(allowedEventResponses));
     }
 
     /**
@@ -309,8 +433,9 @@ public class CMUCellMO extends CellMO {
         synchronized (playbackSpeedLock) {
             this.playbackSpeed = message.getPlaybackSpeed();
             this.playing = message.isPlaying();
-            actualPlaybackSpeed = getActualPlaybackSpeed();
+            actualPlaybackSpeed = this.getActualPlaybackSpeed();
         }
+
         // Inform the associated program of the change
         ProgramConnectionHandlerMO.changePlaybackSpeed(getCellID(), actualPlaybackSpeed);
         // Send a message to clients
@@ -347,6 +472,78 @@ public class CMUCellMO extends CellMO {
         synchronized (groundPlaneLock) {
             this.groundPlaneShowing = message.isShowing();
         }
+        sendCellMessage(notifier, message);
+    }
+
+    /**
+     * Get the list of Wonderland events that this cell should respond to (with
+     * the appropriate responses).
+     * @return List of events to respond to
+     */
+    public EventResponseList getEventList() {
+        synchronized (eventListLock) {
+            return this.eventList;
+        }
+    }
+
+    /**
+     * Set the list of Wonderland events that this cell should respond to.
+     * @param eventList List of events to respond to
+     */
+    public void setEventList(EventResponseList eventList) {
+        setEventListFromMessage(null, new EventListMessage(eventList));
+    }
+
+    /**
+     * Set the list of Wonderland events that the cell should respond to,
+     * then pass this message on to clients.
+     * @param notifier The client who originally notified of the change
+     * @param message The message to send
+     */
+    private void setEventListFromMessage(WonderlandClientID notifier, EventListMessage message) {
+        synchronized (eventListLock) {
+            this.eventList = message.getList();
+
+            ///// Add nececssary listeners, etc. /////
+
+            // Only do this if the components of the cell MO have been initialized
+            if (this.isComponentsValid()) {
+
+                // Clear existing proximity listeners
+                for (ManagedReference<CMUProximityListener> listener : this.proximityListeners) {
+                    this.proximityComponent.get().removeProximityListener(listener.get());
+                }
+                this.proximityListeners.clear();
+
+                for (EventResponsePair pair : this.getEventList()) {
+
+                    // Proximity listeners
+                    if (pair.getEvent() instanceof ProximityEvent) {
+                        ProximityEvent proximityEvent = (ProximityEvent) pair.getEvent();
+
+                        // Compute desired bounding volume
+                        BoundingVolume[] volume = new BoundingSphere[1];
+                        volume[0] = new BoundingSphere(proximityEvent.getDistance(), Vector3f.ZERO);
+
+                        // Create listener
+                        ManagedReference<CMUProximityListener> l = AppContext.getDataManager()
+                                .createReference(new CMUProximityListener(AppContext.getDataManager().createReference(this),
+                                pair.getResponse(), proximityEvent.isEventOnEnter()));
+
+                        // Add listener
+                        this.proximityComponent.get().addProximityListener(l.get(), volume);
+                        this.proximityListeners.add(l);
+                    } // Context menu listeners
+                    else if (pair.getEvent() instanceof ContextMenuEvent) {
+                        // Handled by clients
+                    } // Unrecognized event
+                    else {
+                        logger.severe("Unrecognized event: " + pair.getEvent());
+                    }
+                }
+            }
+        }
+
         sendCellMessage(notifier, message);
     }
 

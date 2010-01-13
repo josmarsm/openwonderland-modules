@@ -16,7 +16,7 @@
  * this code.
  */
 /*
- * WaitingHUD.java
+ * LoadingHUD.java
  *
  * Created on Aug 25, 2009, 2:53:44 PM
  */
@@ -24,8 +24,9 @@ package org.jdesktop.wonderland.modules.cmu.client.hud;
 
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
-import org.jdesktop.wonderland.modules.cmu.client.events.SceneLoadedChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.SceneLoadedChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneLoadedChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneLoadedChangeListener;
+
 
 /**
  *

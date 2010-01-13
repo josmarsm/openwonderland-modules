@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -64,7 +64,7 @@ import org.jdesktop.wonderland.server.wfs.exporter.CellExporterUtils;
 
 /**
  *
- * Server side cell that represents the event audioRecorder object in world.
+ * Server side cell that represents the event recorder object in world.
  * Reponsible for receiving and sending messages to and from the client cell and managing the eventrecorder object
  * that actually does the work of recording.
  * @author Bernard Horan
@@ -311,8 +311,6 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     private void setupAudioRecorder(Vector3f origin) {
         VoiceManager vm = AppContext.getManager(VoiceManager.class);
 
-        //vm.addCallStatusListener(this, callId);
-
         RecorderSetup setup = new RecorderSetup();
 
         setup.x = origin.x;
@@ -322,8 +320,6 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
         logger.info("Recorder Origin is " + "(" + origin.x + ":" + origin.y + ":" + origin.z + ")");
 
         setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
-
-        //setup.recordDirectory = getAudioRecordingDirectory();
 
         try {
             audioRecorder = vm.createRecorder(callId, setup);
@@ -349,6 +345,8 @@ public class EventRecorderCellMO extends ViewCellMO implements ChangesFileCreati
     }
 
     private String getAudioRecorderFilename(String tapeName) {
+        //TODO nasty hack
+        //tapeName = tapeName.replace(' ', '_');
         return getAudioRecordingDirectory() + File.separator + "EventRecording_" + tapeName + ".au";
     }
 

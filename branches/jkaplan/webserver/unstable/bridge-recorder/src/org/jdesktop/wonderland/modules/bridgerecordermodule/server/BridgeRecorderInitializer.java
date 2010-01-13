@@ -155,3 +155,4 @@ public class BridgeRecorderInitializer implements NewRecorderListener {
         return session.getSessionManager();
     }
 }
+

@@ -102,6 +102,7 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
         if (message.isCreationSuccessful()) {
             CMUCellMO cmuCellMO = (CMUCellMO) cellMO;
             cmuCellMO.setHostnameAndPort(message.getHostname(), message.getPort());
+            cmuCellMO.setAllowedEventResponses(message.getAllowedResponses());
         } else {
             Logger.getLogger(ProgramConnectionHandler.class.getName()).severe("Error creating program for cell: " + message.getCellID());
         }

@@ -220,8 +220,8 @@ public class EventPlayingService extends AbstractService {
     }
 
     /**
-     * 
-     * @param tapeName
+     * Unload the recording
+     * @param tapeName the name of the recording to unload
      */
     public void unloadRecording(String tapeName) {
         logger.getLogger().info("unload recording: " + tapeName);

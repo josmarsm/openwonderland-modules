@@ -15,18 +15,30 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client.events;
+package org.jdesktop.wonderland.modules.cmu.common.events;
 
 /**
- * Interface to listen for changes in visibility of particular visual node
- * types.
+ * Event representing a click on an entry of the right-click context menu for
+ * a cell.
  * @author kevin
  */
-public interface VisibilityChangeListener {
+public class ContextMenuEvent extends WonderlandEvent {
+    private String menuText;
+    
+    public ContextMenuEvent(String menuText) {
+        this.setMenuText(menuText);
+    }
 
-    /**
-     * Callback function when the visibility of a visual type is changed.
-     * @param e The event representing the change in visibility
-     */
-    public void visibilityChanged(VisibilityChangeEvent e);
+    public String getMenuText() {
+        return menuText;
+    }
+
+    public void setMenuText(String menuText) {
+        this.menuText = menuText;
+    }
+
+    @Override
+    public String toString() {
+        return "Context menu event: " + this.getMenuText();
+    }
 }

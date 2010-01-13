@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.eventplayer.server;
 
-import org.jdesktop.wonderland.modules.eventplayer.server.handler.DefaultTagHandler;
 import org.jdesktop.wonderland.modules.eventplayer.server.handler.TagHandler;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +27,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.eventplayer.server.handler.NoTagHandler;
 import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * An XML SAX handler for handing changes/events that have been recorded by the
@@ -48,17 +46,39 @@ public class EventHandler  {
         this.messageReplayer = messageReplayer;
     }
     
-    public void startElement (String uri, String name,
+    /**
+     * Notification of the start of an XML element
+     * @param uri the uri of the element
+     * @param name the name of the element
+     * @param qName the qualified name of the element
+     * @param atts the attributes in the element
+     * @param semaphore the semaphore to be signalled
+     */
+    public void startElement(String uri, String name,
 			      String qName, Attributes atts, Semaphore semaphore) {
         TagHandler tagHandler= newTagHandler(qName);
         tagHandlerStack.push(tagHandler);
         tagHandler.startTag(atts, semaphore);
     }
     
-    public void characters (char ch[], int start, int length, Semaphore semaphore) {
+    /**
+     * Notification of characters in an XML document
+     * @param ch the array of characters
+     * @param start the starting index of the characters in the array
+     * @param length the length of characters in the array
+     * @param semaphore the semaphore to be signalled
+     */
+    public void characters(char ch[], int start, int length, Semaphore semaphore) {
         tagHandlerStack.peek().characters(ch, start, length, semaphore);
     }
     
+    /**
+     * Notification of the end of an XML element
+     * @param uri the uri of the element
+     * @param name the name of the element
+     * @param qName the qualified name of the element
+     * @param semaphore the semaphore to be signalled
+     */
     public void endElement(String uri, String name,String qName, Semaphore semaphore) {
         tagHandlerStack.pop().endTag(semaphore);
     }

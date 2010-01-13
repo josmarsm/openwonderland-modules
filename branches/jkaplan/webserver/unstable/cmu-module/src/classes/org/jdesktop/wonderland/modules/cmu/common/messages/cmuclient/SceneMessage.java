@@ -23,7 +23,7 @@ import java.util.Vector;
 
 /**
  * Message containing data to load an entire scene; contains visual messages,
- * as well a root address to access messages in the content repository.  Visuals
+ * as well a root address to access visuals in the content repository.  Visuals
  * (in the form of VisualAttributes objects) should be uploaded to the
  * repository before this message is sent.
  * @author kevin

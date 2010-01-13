@@ -17,11 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player.conversions.scenegraph;
 
+import edu.cmu.cs.dennisc.alice.ast.AbstractType;
 import edu.cmu.cs.dennisc.property.event.PropertyListener;
 import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.AbsoluteTransformationListener;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
@@ -48,6 +47,9 @@ public abstract class TransformableConverter<TransformableType extends org.alice
 
     // Unique ID
     private final NodeID nodeID;
+
+    // CMU class identifier
+    //private final AbstractType type;
 
     // Scene graph objects
     private final TransformableType transformable;

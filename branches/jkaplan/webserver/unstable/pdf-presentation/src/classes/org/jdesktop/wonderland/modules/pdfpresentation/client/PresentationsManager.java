@@ -67,22 +67,25 @@ public class PresentationsManager {
      * Passthrough method that looks for the first platform that contains the
      * specified point and returns it. If there are no presentation cells,
      * or those presentation cells don't have platforms that contain pos.
-     * 
+     *
+     * DEPRECATED (I think... Not called anymore, and part of what I'm pretty
+     * sure is an entirely deprecated pathway, but need to make sure.
+     *
      * @param pos
      * @return
      */
-    public Cell getParentCellByPosition(Vector3f pos) {
-        for(PresentationCell pc : this.presentationCells) {
-            
-            logger.warning("checking presentationcell: " + pc);
-            Cell parent = pc.getParentCellByPosition(pos);
-
-            if(parent != null)
-                return parent;
-        }
-
-        // If we get through the whole search without having returned a platform,
-        // then just return null.
-        return null;
-    }
+//    public Cell getParentCellByPosition(Vector3f pos) {
+//        for(PresentationCell pc : this.presentationCells) {
+//
+//            logger.warning("checking presentationcell: " + pc);
+//            Cell parent = pc.getParentCellByPosition(pos);
+//
+//            if(parent != null)
+//                return parent;
+//        }
+//
+//        // If we get through the whole search without having returned a platform,
+//        // then just return null.
+//        return null;
+//    }
 }

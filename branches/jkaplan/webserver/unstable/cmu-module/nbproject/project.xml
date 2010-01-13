@@ -23,12 +23,6 @@
                     <location>src/classes</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
-                <source-folder>
-                    <label>src-ignore</label>
-                    <type>java</type>
-                    <location>src-ignore</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">
@@ -55,10 +49,6 @@
                         <label>src/classes</label>
                         <location>src/classes</location>
                     </source-folder>
-                    <source-folder style="packages">
-                        <label>src-ignore</label>
-                        <location>src-ignore</location>
-                    </source-folder>
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
@@ -80,12 +70,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/jme20/target/jme-audio.jar:../../../wonderland/core/ext/jme20/target/jme-awt.jar:../../../wonderland/core/ext/jme20/target/jme-collada.jar:../../../wonderland/core/ext/jme20/target/jme-editors.jar:../../../wonderland/core/ext/jme20/target/jme-effects.jar:../../../wonderland/core/ext/jme20/target/jme-font.jar:../../../wonderland/core/ext/jme20/target/jme-gamestates.jar:../../../wonderland/core/ext/jme20/target/jme-model.jar:../../../wonderland/core/ext/jme20/target/jme-scene.jar:../../../wonderland/core/ext/jme20/target/jme-swt.jar:../../../wonderland/core/ext/jme20/target/jme-terrain.jar:../../../wonderland/core/ext/jme20/target/jme-xml.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.10/lib/sgs-client.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.10/lib/sgs-shared-1.3.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-0.9.10.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-shared-1.3.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/lib/jaxb/activation.jar:../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jaxb-impl.jar:../../../wonderland/lib/jaxb/jaxb-xjc.jar:../../../wonderland/lib/jaxb/jaxb1-impl.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../../../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar:../../../wonderland/modules/tools/sharedstate/build/client/sharedstate-client.jar:src-ignore:../../../wonderland/modules/foundation/content-repository/build/client/contentrepo-client.jar:../../../wonderland/modules/tools/webdav/build/client/webdav-client.jar:../../../wonderland/modules/tools/webdav/lib/webdavclient4j-core-0.92.jar:../../../wonderland/modules/tools/webdav/lib/commons-httpclient-3.0.1.jar:../../../wonderland/web/runner/dist/wonderland-runner-api.jar:../../../wonderland/web/runner/dist/wonderland-runner-core.jar:../../../wonderland/web/utils/dist/wonderland-web-utils.jar</classpath>
-                <source-level>1.5</source-level>
-            </compilation-unit>
-            <compilation-unit>
-                <package-root>src-ignore</package-root>
-                <classpath mode="compile">lib-ignore/activation.jar:lib-ignore/AppleJavaExtensions.jar:lib-ignore/dsn.jar:lib-ignore/gluegen-rt.jar:lib-ignore/imap.jar:lib-ignore/jira-soapclient-4.0-with-dependencies.jar:lib-ignore/jogl.jar:lib-ignore/mail.jar:lib-ignore/mailapi.jar:lib-ignore/pop3.jar:lib-ignore/smtp.jar:lib-ignore/swing-worker-1.2.jar:lib-ignore/xmlrpc-client-1.1.jar</classpath>
+                <classpath mode="compile">../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/jme20/target/jme-audio.jar:../../../wonderland/core/ext/jme20/target/jme-awt.jar:../../../wonderland/core/ext/jme20/target/jme-collada.jar:../../../wonderland/core/ext/jme20/target/jme-editors.jar:../../../wonderland/core/ext/jme20/target/jme-effects.jar:../../../wonderland/core/ext/jme20/target/jme-font.jar:../../../wonderland/core/ext/jme20/target/jme-gamestates.jar:../../../wonderland/core/ext/jme20/target/jme-model.jar:../../../wonderland/core/ext/jme20/target/jme-scene.jar:../../../wonderland/core/ext/jme20/target/jme-swt.jar:../../../wonderland/core/ext/jme20/target/jme-terrain.jar:../../../wonderland/core/ext/jme20/target/jme-xml.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.10/lib/sgs-client.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.10/lib/sgs-shared-1.3.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-0.9.10.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-shared-1.3.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/lib/jaxb/activation.jar:../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jaxb-impl.jar:../../../wonderland/lib/jaxb/jaxb-xjc.jar:../../../wonderland/lib/jaxb/jaxb1-impl.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../../../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar:../../../wonderland/modules/tools/sharedstate/build/client/sharedstate-client.jar:src-ignore:../../../wonderland/modules/foundation/content-repository/build/client/contentrepo-client.jar:../../../wonderland/modules/tools/webdav/build/client/webdav-client.jar:../../../wonderland/modules/tools/webdav/lib/webdavclient4j-core-0.92.jar:../../../wonderland/modules/tools/webdav/lib/commons-httpclient-3.0.1.jar:../../../wonderland/web/runner/dist/wonderland-runner-api.jar:../../../wonderland/web/runner/dist/wonderland-runner-core.jar:../../../wonderland/web/utils/dist/wonderland-web-utils.jar:lib/foundation.jar:lib/ide.jar:lib/lg_walkandtouch.jar:lib/moveandturn.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

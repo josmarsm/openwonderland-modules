@@ -39,6 +39,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.player.connections.VisualUploadManager;
 
@@ -120,7 +121,8 @@ public class ProgramManager {
                 ":" + newProgram.getPort());
 
         // Create and send response message.
-        return new CreateProgramResponseMessage(messageID, cellID, newProgram.getHostname(), newProgram.getPort());
+        return new CreateProgramResponseMessage(messageID, cellID, newProgram.getHostname(), newProgram.getPort(),
+                newProgram.getAllowedResponses());
     }
 
     /**
@@ -146,6 +148,13 @@ public class ProgramManager {
         ProgramPlayer program = getProgram(cellID);
         if (program != null) {
             program.click(nodeID);
+        }
+    }
+
+    public void eventResponse(CellID cellID, WonderlandResponse response) {
+        ProgramPlayer program = getProgram(cellID);
+        if (program != null) {
+            program.eventResponse(response);
         }
     }
 

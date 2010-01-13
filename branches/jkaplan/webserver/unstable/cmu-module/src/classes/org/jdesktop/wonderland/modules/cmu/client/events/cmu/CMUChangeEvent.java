@@ -15,13 +15,16 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client.events;
+package org.jdesktop.wonderland.modules.cmu.client.events.cmu;
 
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 
 /**
  * Event representing a change in a particular CMU scene (i.e. a particular
- * CMU cell).
+ * CMU cell).  In general these are changes that should be processed
+ * client-side, and are not the result of permanent changes to the CMU scene
+ * data - e.g. changes in the scene title, visibility of a particular visual
+ * type, etc.
  * @author kevin
  */
 public abstract class CMUChangeEvent {

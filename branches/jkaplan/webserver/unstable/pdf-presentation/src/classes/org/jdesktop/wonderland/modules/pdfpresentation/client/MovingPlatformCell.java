@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCell
 
 /**
  *
- * @author Drew Harry <drew_harry@dev.java.net
+ * @author Drew Harry <drew_harry@dev.java.net>
  */
 public class MovingPlatformCell extends Cell implements ProximityListener {
     
@@ -56,7 +56,6 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
     public MovingPlatformCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-
     }
 
     @Override
@@ -90,17 +89,19 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
             prox.addProximityListener(this, bounds);
 
-//            logger.warning("Added proximity listener, sending: " + bounds[0] + "; local: " + this.getLocalBounds() + " world: " + this.getWorldBounds());
-
+            logger.warning("Added proximity listener, sending: " + bounds[0] + "; local: " + this.getLocalBounds() + " world: " + this.getWorldBounds());
 
             // check to see if we have a parent. If we do, phone home.
             if(this.getParent()!=null) {
                 if(this.getParent() instanceof PresentationCell) {
                     PresentationCell presentationCell = (PresentationCell)this.getParent();
 
+                    logger.warning("Letting parent presentation cell know that we're alive.");
                     presentationCell.setPlatformCell(this);
                 }
             }
+
+            logger.warning("Ending set status. Current position: " + this.getLocalTransform().getTranslation(null));
 
 
         } else if (status==CellStatus.DISK && !increasing) {

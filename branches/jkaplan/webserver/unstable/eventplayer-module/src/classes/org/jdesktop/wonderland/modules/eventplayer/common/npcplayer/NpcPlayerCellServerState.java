@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -68,7 +68,7 @@ public class NpcPlayerCellServerState extends CellServerState {
         Map<String, String> metadata = setup.getMetaData();
 
         //Get the name from the setup state
-        String userName = setup.getUserName();
+        String name = setup.getUserName();
 
         // Attach an avatar config component. This will
         // configure the appearance of the NPC.
@@ -83,7 +83,7 @@ public class NpcPlayerCellServerState extends CellServerState {
         setMetaData(metadata);
 
         //Set my name
-        setUserName(userName);
+        setUserName(name);
     }
 
     
@@ -97,6 +97,10 @@ public class NpcPlayerCellServerState extends CellServerState {
         this.userName = userName;
     }
 
+    /**
+     * Get the user name
+     * @return the user name for the npc
+     */
     public String getUserName() {
         return userName;
     }

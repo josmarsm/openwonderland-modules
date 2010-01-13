@@ -34,7 +34,7 @@
                 description="${module.description}" builddir="${build.dir}">
 
             <!-- Depends on the presentation-base module to provide some interface bits. -->
-            <requires name="presentation-base" version="1"/>
+            <requires name="presentation-base" version="0" minorVersion="1"/>
 
 	    <client dir="${current.dir}/lib">
                 <include name="*.jar"/>

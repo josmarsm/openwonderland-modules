@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player.conversions.pattern;
 
+import edu.cmu.cs.dennisc.alice.ast.AbstractType;
 import edu.cmu.cs.dennisc.pattern.DefaultInstancePropertyOwner;
 import edu.cmu.cs.dennisc.property.Property;
 import java.util.ArrayList;
@@ -31,7 +32,6 @@ import java.util.logging.Logger;
  * @author kevin
  */
 public abstract class PropertyOwnerConverter {
-
     /**
      * Standard constructor.
      * @param propertyOwner The property owner to convert

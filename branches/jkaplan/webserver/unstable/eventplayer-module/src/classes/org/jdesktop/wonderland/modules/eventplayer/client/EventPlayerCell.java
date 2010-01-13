@@ -28,6 +28,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,6 +73,7 @@ public class EventPlayerCell extends Cell {
     private static final Logger eventPlayerLogger = Logger.getLogger(EventPlayerCell.class.getName());
 
     @UsesCellComponent private ContextMenuComponent contextComp = null;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/eventplayer/client/resources/Bundle");
     private ContextMenuFactorySPI menuFactory = null;
 
     private boolean isPlaying;
@@ -146,7 +148,7 @@ public class EventPlayerCell extends Cell {
 
                     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                         return new ContextMenuItem[]{
-                                    new SimpleContextMenuItem("Open Tape...", l)
+                                    new SimpleContextMenuItem(bundle.getString("OPEN_TAPE..."), l)
                                 };
                     }
                 };
@@ -339,7 +341,7 @@ public class EventPlayerCell extends Cell {
 
                     public void run() {
                         Toolkit.getDefaultToolkit().beep();
-                        JOptionPane.showMessageDialog(getParentFrame(), "You can't stop a playback started by another user");
+                        JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("YOU_CAN'T_STOP_A_PLAYBACK_STARTED_BY_ANOTHER_USER"));
                     }
                 });
         }
@@ -387,7 +389,7 @@ public class EventPlayerCell extends Cell {
             //Still showing child cells that are being replayed
             logger.warning("can't load a new tape when there's cells from an earlier replay replayed");
             //Ask the user if s/he wishes to remove the existing cells
-            int response = JOptionPane.showConfirmDialog(getParentFrame(), "Delete cells from replaying " + getSelectedTape().getTapeName() + "?", "Existing Cells", JOptionPane.YES_NO_OPTION);
+            int response = JOptionPane.showConfirmDialog(getParentFrame(), bundle.getString("DELETE_CELLS_FROM_REPLAYING_") + getSelectedTape().getTapeName() + bundle.getString("?"), bundle.getString("EXISTING_CELLS"), JOptionPane.YES_NO_OPTION);
             if (response == JOptionPane.NO_OPTION) {
                 return;
             } else {
