@@ -17,13 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.hud;
 
-import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
-import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.*;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.PlaybackChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.PlaybackChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.VisibilityChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.VisibilityChangeListener;
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
 

@@ -33,8 +33,8 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Connecti
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventList;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.AvailableResponsesChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventListMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventResponseMessage;
@@ -81,8 +81,8 @@ public class CMUCellMO extends CellMO {
     private boolean groundPlaneShowing;
     private final Serializable groundPlaneLock = new String();
     // Wonderland events
-    private WonderlandEventList eventList = null;
-    private ArrayList<WonderlandEventResponse> allowedEventResponses = null;
+    private EventResponseList eventList = null;
+    private ArrayList<WonderlandResponse> allowedEventResponses = null;
     private final Serializable eventListLock = new String();
 
     /**
@@ -257,7 +257,7 @@ public class CMUCellMO extends CellMO {
      * CMU player.
      * @param response The response to propagate
      */
-    public void processEventResponse(WonderlandEventResponse response) {
+    public void processEventResponse(WonderlandResponse response) {
         ProgramConnectionHandlerMO.sendEventResponse(getCellID(), response);
     }
 
@@ -281,7 +281,7 @@ public class CMUCellMO extends CellMO {
         }
 
         if (this.eventList == null) {
-            this.eventList = new WonderlandEventList();
+            this.eventList = new EventResponseList();
         }
 
         //TODO: Get zip file from URI
@@ -321,7 +321,7 @@ public class CMUCellMO extends CellMO {
      * Get the list of possible event responses for this cell.
      * @return List of possible event responses
      */
-    public ArrayList<WonderlandEventResponse> getAllowedEventResponses() {
+    public ArrayList<WonderlandResponse> getAllowedEventResponses() {
         return allowedEventResponses;
     }
 
@@ -332,7 +332,7 @@ public class CMUCellMO extends CellMO {
      * able to handle gracefully.
      * @param allowedEventResponses List of possible event responses
      */
-    public void setAllowedEventResponses(ArrayList<WonderlandEventResponse> allowedEventResponses) {
+    public void setAllowedEventResponses(ArrayList<WonderlandResponse> allowedEventResponses) {
         this.allowedEventResponses = allowedEventResponses;
         sendCellMessage(null, new AvailableResponsesChangeMessage(allowedEventResponses));
     }
@@ -439,7 +439,7 @@ public class CMUCellMO extends CellMO {
      * the appropriate responses).
      * @return List of events to respond to
      */
-    public WonderlandEventList getEventList() {
+    public EventResponseList getEventList() {
         synchronized (eventListLock) {
             return this.eventList;
         }
@@ -449,7 +449,7 @@ public class CMUCellMO extends CellMO {
      * Set the list of Wonderland events that this cell should respond to.
      * @param eventList List of events to respond to
      */
-    public void setEventList(WonderlandEventList eventList) {
+    public void setEventList(EventResponseList eventList) {
         setEventListFromMessage(null, new EventListMessage(eventList));
     }
 

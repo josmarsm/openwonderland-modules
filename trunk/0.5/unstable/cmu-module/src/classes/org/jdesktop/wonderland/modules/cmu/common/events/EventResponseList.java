@@ -20,7 +20,6 @@ package org.jdesktop.wonderland.modules.cmu.common.events;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -34,10 +33,10 @@ import java.util.List;
  * A collection of event/response pairs for a particular cell.
  * @author kevin
  */
-public class WonderlandEventList extends AbstractList<WonderlandEvent>
+public class EventResponseList extends AbstractList<EventResponsePair>
         implements Serializable {
 
-    private final List<WonderlandEvent> events = new ArrayList<WonderlandEvent>();
+    private final List<EventResponsePair> events = new ArrayList<EventResponsePair>();
 
     /**
      * Write this collection to the given file.
@@ -56,9 +55,9 @@ public class WonderlandEventList extends AbstractList<WonderlandEvent>
      * @return A newly created EventResponseCollection from the file
      * @throws FileNotFoundException If the specified file does not exist
      */
-    public static WonderlandEventList readFromStream(InputStream inStream) {
+    public static EventResponseList readFromStream(InputStream inStream) {
         XMLDecoder decoder = new XMLDecoder(inStream);
-        return (WonderlandEventList) decoder.readObject();
+        return (EventResponseList) decoder.readObject();
     }
 
     /**
@@ -66,7 +65,7 @@ public class WonderlandEventList extends AbstractList<WonderlandEvent>
      * @return Iterator for the event/response pairs in this collection
      */
     @Override
-    public Iterator<WonderlandEvent> iterator() {
+    public Iterator<EventResponsePair> iterator() {
         return events.iterator();
     }
 
@@ -85,7 +84,7 @@ public class WonderlandEventList extends AbstractList<WonderlandEvent>
      * @return true, since this will change the collection
      */
     @Override
-    public boolean add(WonderlandEvent erp) {
+    public boolean add(EventResponsePair erp) {
         return this.events.add(erp);
     }
 
@@ -95,7 +94,7 @@ public class WonderlandEventList extends AbstractList<WonderlandEvent>
      * @return The desired list element
      */
     @Override
-    public WonderlandEvent get(int n) {
+    public EventResponsePair get(int n) {
         return this.events.get(n);
     }
 }

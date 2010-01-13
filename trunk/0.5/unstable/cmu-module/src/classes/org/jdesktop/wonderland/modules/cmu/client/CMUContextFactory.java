@@ -34,17 +34,30 @@ public class CMUContextFactory implements ContextMenuFactorySPI {
     private final CMUCell parent;
     private EventEditor eventEditor = null;
 
+    /**
+     * Standard constructor; needs parent for e.g. HUD manager access.
+     * @param parent The cell to which this context factory belongs
+     */
     public CMUContextFactory(CMUCell parent) {
         this.parent = parent;
     }
 
+    /**
+     * {@inheritDoc}
+     * @param event {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
         return new ContextMenuItem[]{
                     new HUDToggleMenuItem(),
                     new EditEventsMenuItem()};
     }
 
-    private class HUDToggleMenuItem extends SimpleContextMenuItem {
+    /**
+     * Menu item which can toggle the visibility of the HUD for this cell.
+     */
+    protected class HUDToggleMenuItem extends SimpleContextMenuItem {
 
         public HUDToggleMenuItem() {
             super("Show controls", new HUDActionListener());
@@ -60,7 +73,7 @@ public class CMUContextFactory implements ContextMenuFactorySPI {
         }
     }
 
-    private class HUDActionListener implements ContextMenuActionListener {
+    protected class HUDActionListener implements ContextMenuActionListener {
 
         private HUDToggleMenuItem parentItem = null;
 
@@ -78,14 +91,14 @@ public class CMUContextFactory implements ContextMenuFactorySPI {
         }
     }
 
-    private class EditEventsMenuItem extends SimpleContextMenuItem {
+    protected class EditEventsMenuItem extends SimpleContextMenuItem {
 
         public EditEventsMenuItem() {
             super("Edit events", new EditEventsActionListener());
         }
     }
 
-    private class EditEventsActionListener implements ContextMenuActionListener {
+    protected class EditEventsActionListener implements ContextMenuActionListener {
 
         @Override
         public void actionPerformed(ContextMenuItemEvent event) {

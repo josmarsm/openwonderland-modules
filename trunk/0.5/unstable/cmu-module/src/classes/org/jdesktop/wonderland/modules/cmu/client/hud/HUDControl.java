@@ -22,8 +22,6 @@ import java.awt.GridLayout;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeListener;
-import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeEvent;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -35,8 +33,10 @@ import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell.ConnectionState;
-import org.jdesktop.wonderland.modules.cmu.client.events.ConnectionStateChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.ConnectionStateChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.ConnectionStateChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.ConnectionStateChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneTitleChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneTitleChangeListener;
 
 /**
  * Class to manage the HUD for a CMU Cell; listens to changes in

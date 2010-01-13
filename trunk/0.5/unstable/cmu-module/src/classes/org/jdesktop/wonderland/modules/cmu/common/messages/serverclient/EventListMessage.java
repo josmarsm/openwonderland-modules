@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventList;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
 
 /**
  * Message informing the server or clients of an update to the list of
@@ -29,13 +29,13 @@ import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventList;
  */
 public class EventListMessage extends CellMessage {
 
-    private final WonderlandEventList list;
+    private final EventResponseList list;
 
-    public EventListMessage(WonderlandEventList list) {
+    public EventListMessage(EventResponseList list) {
         this.list = list;
     }
 
-    public WonderlandEventList getList() {
+    public EventResponseList getList() {
         return list;
     }
 }

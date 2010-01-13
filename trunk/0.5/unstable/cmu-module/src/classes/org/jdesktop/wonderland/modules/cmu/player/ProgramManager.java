@@ -39,7 +39,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.player.connections.VisualUploadManager;
 
@@ -151,7 +151,7 @@ public class ProgramManager {
         }
     }
 
-    public void eventResponse(CellID cellID, WonderlandEventResponse response) {
+    public void eventResponse(CellID cellID, WonderlandResponse response) {
         ProgramPlayer program = getProgram(cellID);
         if (program != null) {
             program.eventResponse(response);

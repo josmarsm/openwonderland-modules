@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
  * Listener for Wonderland proximity events.  Passes the appropriate response
@@ -34,7 +34,7 @@ public class CMUProximityListener extends CMUWonderlandEventListener implements 
 
     private final boolean eventOnEnter;
 
-    public CMUProximityListener(CMUCell parent, WonderlandEventResponse response, boolean eventOnEnter) {
+    public CMUProximityListener(CMUCell parent, WonderlandResponse response, boolean eventOnEnter) {
         super(parent, response);
         this.eventOnEnter = eventOnEnter;
     }

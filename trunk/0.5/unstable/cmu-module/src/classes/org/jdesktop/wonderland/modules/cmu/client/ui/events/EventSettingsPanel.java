@@ -15,12 +15,20 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.events;
+package org.jdesktop.wonderland.modules.cmu.client.ui.events;
+
+import javax.swing.JPanel;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEvent;
 
 /**
- * Abstraction for an event which can occur in Wonderland.
+ * Base class for a a panel containing options for a particular event type.
  * @author kevin
  */
-public abstract class WonderlandEvent {
+public abstract class EventSettingsPanel<EventType extends WonderlandEvent> extends JPanel {
 
+    /**
+     * Get the event associated with these settings.
+     * @return Event for these settings
+     */
+    public abstract EventType getEvent();
 }

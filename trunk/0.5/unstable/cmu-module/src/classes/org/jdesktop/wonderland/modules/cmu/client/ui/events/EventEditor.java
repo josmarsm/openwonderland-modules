@@ -10,10 +10,12 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.ui.events;
 
+import java.awt.GridLayout;
+import java.util.ArrayList;
+import java.util.List;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
-import org.jdesktop.wonderland.modules.cmu.common.events.ProximityEvent;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventList;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
 
 /**
  *
@@ -22,47 +24,41 @@ import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEventResponse
 public class EventEditor extends javax.swing.JFrame {
 
     private final CMUCell parentCell;
+    private final List<SingleEventFrame> eventPanels = new ArrayList<SingleEventFrame>();
 
     /** Creates new form EventEditor */
     public EventEditor(CMUCell parentCell) {
         initComponents();
         this.parentCell = parentCell;
-        this.populateResponseList();
+        this.eventsPanel.setLayout(new GridLayout());
+        SingleEventPanel frame = new SingleEventPanel(this);
+        //frame.pack();
+        //frame.setVisible(true);
+        this.eventsPanel.add(frame);
+        this.eventsPanel.setSize(this.eventsPanel.getPreferredSize());
+        //this.setPreferredSize(null);
     }
 
     public CMUCell getParentCell() {
         return parentCell;
     }
 
-    private void populateResponseList() {
-        for (WonderlandEventResponse response : this.getParentCell().getAllowedResponses()) {
-            this.responseList.addItem(new ResponseMenuItem(response));
+
+    public EventResponseList getEventResponseList() {
+        EventResponseList list = new EventResponseList();
+
+        for (SingleEventFrame frame : this.eventPanels) {
+            EventResponsePair pair = frame.getEventAndResponse();
+            if (pair != null) {
+                list.add(pair);
+            }
         }
+
+        return list;
     }
 
     public void applyList() {
-        WonderlandEventList list = new WonderlandEventList();
-
-        list.add(new ProximityEvent(((Integer) distanceSpinner.getValue()).intValue(), true,
-                ((ResponseMenuItem)responseList.getSelectedItem()).getResponse()));
-
-        this.getParentCell().setEventList(list);
-    }
-
-    private class ResponseMenuItem {
-        private final WonderlandEventResponse response;
-        public ResponseMenuItem(WonderlandEventResponse response) {
-            this.response = response;
-        }
-
-        public WonderlandEventResponse getResponse() {
-            return this.response;
-        }
-
-        @Override
-        public String toString() {
-            return this.response.getFunctionName();
-        }
+        this.getParentCell().setEventList(this.getEventResponseList());
     }
 
     /** This method is called from within the constructor to
@@ -74,16 +70,11 @@ public class EventEditor extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        distanceSpinner = new javax.swing.JSpinner();
-        jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        responseList = new javax.swing.JComboBox();
-
-        jLabel1.setText("Distance:");
-
-        jLabel2.setText("Function to call:");
+        jScrollPane1 = new javax.swing.JScrollPane();
+        eventsPanel = new javax.swing.JPanel();
+        jButton3 = new javax.swing.JButton();
 
         jButton1.setText("Cancel");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -99,40 +90,50 @@ public class EventEditor extends javax.swing.JFrame {
             }
         });
 
+        jScrollPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jScrollPane1.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+
+        eventsPanel.setPreferredSize(new java.awt.Dimension(100, 100));
+
+        javax.swing.GroupLayout eventsPanelLayout = new javax.swing.GroupLayout(eventsPanel);
+        eventsPanel.setLayout(eventsPanelLayout);
+        eventsPanelLayout.setHorizontalGroup(
+            eventsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 458, Short.MAX_VALUE)
+        );
+        eventsPanelLayout.setVerticalGroup(
+            eventsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 322, Short.MAX_VALUE)
+        );
+
+        jScrollPane1.setViewportView(eventsPanel);
+
+        jButton3.setText("New Event");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addComponent(distanceSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1))
-                    .addComponent(responseList, 0, 248, Short.MAX_VALUE))
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(distanceSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2)
-                    .addComponent(responseList, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
-                    .addComponent(jButton2))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton2)
+                    .addComponent(jButton3))
+                .addContainerGap())
         );
 
         pack();
@@ -147,12 +148,20 @@ public class EventEditor extends javax.swing.JFrame {
         this.setVisible(false);
     }//GEN-LAST:event_cancelButtonPressed
 
+    public static void main(String[] args) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                new EventEditor(null).setVisible(true);
+            }
+        });
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JSpinner distanceSpinner;
+    private javax.swing.JPanel eventsPanel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JComboBox responseList;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 }

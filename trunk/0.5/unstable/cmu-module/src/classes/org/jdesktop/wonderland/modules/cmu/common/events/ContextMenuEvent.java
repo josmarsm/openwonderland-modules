@@ -15,24 +15,25 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
-
-import java.util.ArrayList;
-import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+package org.jdesktop.wonderland.modules.cmu.common.events;
 
 /**
- * Message containing a list of available responses to Wonderland events.
+ * Event representing a click on an entry of the right-click context menu for
+ * a cell.
  * @author kevin
  */
-public class AvailableResponsesChangeMessage extends CellMessage {
-    private final ArrayList<WonderlandResponse> responses;
+public class ContextMenuEvent extends WonderlandEvent {
+    private String menuText;
     
-    public AvailableResponsesChangeMessage(ArrayList<WonderlandResponse> responses) {
-        this.responses = responses;
+    public ContextMenuEvent(String menuText) {
+        this.setMenuText(menuText);
     }
 
-    public ArrayList<WonderlandResponse> getResponses() {
-        return responses;
+    public String getMenuText() {
+        return menuText;
+    }
+
+    public void setMenuText(String menuText) {
+        this.menuText = menuText;
     }
 }
