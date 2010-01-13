@@ -27,8 +27,19 @@ import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEvent;
 public abstract class EventSettingsPanel<EventType extends WonderlandEvent> extends JPanel {
 
     /**
-     * Get the event associated with these settings.
-     * @return Event for these settings
+     * Get the event associated with these settings.  Should return null if
+     * no valid event can be constructed.
+     * @return Event for these settings, or null if the settings are invalid
      */
     public abstract EventType getEvent();
+
+    /**
+     * Update the fields of this panel to represent the given event (e.g.
+     * so that if getEvent() were called, it would return an event equivalent
+     * to the one provided).
+     * @param event Event to represent
+     */
+    public abstract void setEvent(EventType event);
+
+    public abstract Class getEventClass();
 }

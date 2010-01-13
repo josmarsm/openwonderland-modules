@@ -26,6 +26,7 @@ package org.jdesktop.wonderland.modules.cmu.client.ui.events;
 import java.awt.GridLayout;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEvent;
 import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
@@ -65,23 +66,53 @@ public class SingleEventPanel extends javax.swing.JPanel {
         if (this.settingsPanel == null) {
             return null;
         } else {
-            return new EventResponsePair(settingsPanel.getEvent(),
-                    ((ResponseMenuItem) responseList.getSelectedItem()).getResponse());
+            WonderlandEvent event = settingsPanel.getEvent();
+            WonderlandResponse response = ((ResponseMenuItem) responseList.getSelectedItem()).getResponse();
+
+            if (event == null || response == null) {
+                return null;
+            }
+
+            return new EventResponsePair(event, response);
+        }
+    }
+
+    public void setEventAndResponse(EventResponsePair pair) {
+        // Find the event menu item corresponding to this event type
+        for (int i = 0; i < this.eventTypeSelection.getItemCount(); i++) {
+            EventMenuItem item = (EventMenuItem) this.eventTypeSelection.getItemAt(i);
+
+            if (pair.getEvent().getClass().isAssignableFrom(item.getEventPanel().getEventClass())) {
+                this.eventTypeSelection.setSelectedIndex(i);
+            }
+        }
+
+        // Set the settings fields appropriately
+        this.settingsPanel.setEvent(pair.getEvent());
+
+        // Find the response corresponding the the provided value, and select it
+        for (int i = 0; i < this.responseList.getItemCount(); i++) {
+            ResponseMenuItem item = (ResponseMenuItem) this.responseList.getItemAt(i);
+
+            if (item.getResponse().equals(pair.getResponse())) {
+                this.responseList.setSelectedIndex(i);
+            }
         }
     }
 
     private void loadSettingsPanel() {
-        
+
         if (this.settingsPanel != null) {
             this.settingsContainer.remove(this.settingsPanel);
         }
 
         this.settingsPanel = ((EventMenuItem) this.eventTypeSelection.getSelectedItem()).getEventPanel();
         this.settingsContainer.add(this.settingsPanel);
-        //this.settingsContainer.setSize(this.settingsContainer.getPreferredSize());
-        //this.setSize(this.getPreferredSize());
+
+        // Repack parent frame to update with new panel
         this.getParentFrame().setPreferredSize(this.getParentFrame().getSize());
         this.getParentFrame().pack();
+
         this.getParentFrame().repaint();
     }
 
@@ -162,11 +193,12 @@ public class SingleEventPanel extends javax.swing.JPanel {
         settingsContainer = new javax.swing.JPanel();
 
         setBorder(null);
+        setMinimumSize(new java.awt.Dimension(0, 119));
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
         jPanel2.setPreferredSize(new java.awt.Dimension(390, 150));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jLabel2.setText("Event type:");
 
@@ -179,7 +211,7 @@ public class SingleEventPanel extends javax.swing.JPanel {
         removeButton.setText("Remove");
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeButtonActionPerformed(evt);
+                removeButtonPressed(evt);
             }
         });
 
@@ -216,7 +248,7 @@ public class SingleEventPanel extends javax.swing.JPanel {
         settingsContainer.setLayout(settingsContainerLayout);
         settingsContainerLayout.setHorizontalGroup(
             settingsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 502, Short.MAX_VALUE)
+            .addGap(0, 504, Short.MAX_VALUE)
         );
         settingsContainerLayout.setVerticalGroup(
             settingsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -232,7 +264,7 @@ public class SingleEventPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addGap(6, 6, 6)
-                .addComponent(responseList, 0, 366, Short.MAX_VALUE)
+                .addComponent(responseList, 0, 368, Short.MAX_VALUE)
                 .addContainerGap())
             .addComponent(settingsContainer, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -261,9 +293,9 @@ public class SingleEventPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_removeButtonActionPerformed
+    private void removeButtonPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonPressed
+        this.getParentFrame().removeEvent(this);
+    }//GEN-LAST:event_removeButtonPressed
 
     private void eventTypeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventTypeChanged
         this.loadSettingsPanel();

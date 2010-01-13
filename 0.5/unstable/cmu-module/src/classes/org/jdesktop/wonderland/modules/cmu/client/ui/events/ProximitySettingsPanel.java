@@ -25,13 +25,15 @@
 package org.jdesktop.wonderland.modules.cmu.client.ui.events;
 
 import org.jdesktop.wonderland.modules.cmu.common.events.ProximityEvent;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEvent;
 
 /**
  * Settings panel for proximity events
  * @author kevin
  */
 public class ProximitySettingsPanel extends EventSettingsPanel<ProximityEvent> {
+
+    private static final int EVENT_ON_ENTER_INDEX = 0;
+    private static final int EVENT_ON_EXIT_INDEX = 1;
 
     /** Creates new form ProximitySettingsPanel */
     public ProximitySettingsPanel() {
@@ -47,11 +49,11 @@ public class ProximitySettingsPanel extends EventSettingsPanel<ProximityEvent> {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         eventOnEnterBox = new javax.swing.JComboBox();
         distanceSpinner = new javax.swing.JSpinner();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
 
         jLabel1.setText("When avatar");
 
@@ -103,17 +105,29 @@ public class ProximitySettingsPanel extends EventSettingsPanel<ProximityEvent> {
 
     @Override
     public ProximityEvent getEvent() {
-        boolean eventOnEnter = (this.eventOnEnterBox.getSelectedIndex() == 0);
+        boolean eventOnEnter = (this.eventOnEnterBox.getSelectedIndex() == EVENT_ON_ENTER_INDEX);
         return new ProximityEvent(((Integer)this.distanceSpinner.getValue()).intValue(), eventOnEnter);
+    }
+
+    @Override
+    public void setEvent(ProximityEvent event) {
+        this.distanceSpinner.setValue(new Integer((int)event.getDistance()));
+        if (event.isEventOnEnter()) {
+            this.eventOnEnterBox.setSelectedIndex(EVENT_ON_ENTER_INDEX);
+        } else {
+            this.eventOnEnterBox.setSelectedIndex(EVENT_ON_EXIT_INDEX);
+        }
+    }
+
+    @Override
+    public Class getEventClass() {
+        return ProximityEvent.class;
     }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSpinner distanceSpinner;
     private javax.swing.JComboBox eventOnEnterBox;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -17,10 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.events;
 
+import java.io.Serializable;
+
 /**
  * Abstraction for an event which can occur in Wonderland.
  * @author kevin
  */
-public abstract class WonderlandEvent {
+public abstract class WonderlandEvent implements Serializable {
 
 }

@@ -258,6 +258,7 @@ public class CMUCellMO extends CellMO {
      * @param response The response to propagate
      */
     public void processEventResponse(WonderlandResponse response) {
+        System.out.println("Server received event response: " + response);
         ProgramConnectionHandlerMO.sendEventResponse(getCellID(), response);
     }
 

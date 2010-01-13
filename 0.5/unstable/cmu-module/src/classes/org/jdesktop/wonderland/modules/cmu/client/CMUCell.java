@@ -77,6 +77,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Connecti
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.AvailableResponsesChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventListMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.VisibilityChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
@@ -232,6 +233,12 @@ public class CMUCell extends Cell {
             else if (message instanceof AvailableResponsesChangeMessage) {
                 AvailableResponsesChangeMessage change = (AvailableResponsesChangeMessage) message;
                 setAllowedResponses(change.getResponses());
+            } // Change in events to respond to
+            else if (message instanceof EventListMessage) {
+                if (!fromMe) {
+                    EventListMessage change = (EventListMessage) message;
+                    setEventListInternal(change.getList());
+                }
             } // Unknown message
             else {
                 Logger.getLogger(CMUCell.class.getName()).log(Level.SEVERE, "Unkown message: " + message);
@@ -872,7 +879,7 @@ public class CMUCell extends Cell {
      */
     public void setEventList(EventResponseList eventList) {
         this.setEventListInternal(eventList);
-        //TODO: propagate change
+        sendCellMessage(new EventListMessage(eventList));
     }
 
     /**
@@ -894,8 +901,11 @@ public class CMUCell extends Cell {
 
 
                 for (EventResponsePair pair : eventList) {
+                    System.out.println("Adding event: " + pair.getEvent() + " / " + pair.getResponse());
+
                     // Proximity event
                     if (pair.getEvent() instanceof ProximityEvent) {
+
                         ProximityEvent proximityEvent = (ProximityEvent) pair.getEvent();
 
                         // Compute desired bounding volume
@@ -910,7 +920,7 @@ public class CMUCell extends Cell {
                         this.proximityListeners.add(l);
                     } // Unrecognized event
                     else {
-                        logger.severe("Unrecognized event: " + pair);
+                        logger.severe("Unrecognized event: " + pair.getEvent());
                     }
                 }
             }

@@ -38,4 +38,30 @@ public class WonderlandResponse implements Serializable {
     public void setFunctionName(String functionName) {
         this.functionName = functionName;
     }
+
+    @Override
+    public boolean equals (Object other) {
+        if (super.equals(other)) return true;
+
+        if (other instanceof WonderlandResponse) {
+            WonderlandResponse otherResponse = (WonderlandResponse) other;
+            if (this.getFunctionName().equals(otherResponse.getFunctionName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + (this.functionName != null ? this.functionName.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "Response: " + getFunctionName();
+    }
 }

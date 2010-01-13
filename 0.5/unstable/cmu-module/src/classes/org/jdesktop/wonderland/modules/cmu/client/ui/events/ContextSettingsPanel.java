@@ -21,7 +21,6 @@
  *
  * Created on Jan 11, 2010, 1:15:52 PM
  */
-
 package org.jdesktop.wonderland.modules.cmu.client.ui.events;
 
 import org.jdesktop.wonderland.modules.cmu.common.events.ContextMenuEvent;
@@ -46,9 +45,9 @@ public class ContextSettingsPanel extends EventSettingsPanel<ContextMenuEvent> {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         contextMenuText = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
 
         jLabel1.setText("When user selects");
 
@@ -78,14 +77,22 @@ public class ContextSettingsPanel extends EventSettingsPanel<ContextMenuEvent> {
 
     @Override
     public ContextMenuEvent getEvent() {
+        if (this.contextMenuText.getText().isEmpty()) {
+            return null;
+        }
         return new ContextMenuEvent(this.contextMenuText.getText());
     }
 
+    @Override
+    public void setEvent(ContextMenuEvent event) {
+        this.contextMenuText.setText(event.getMenuText());
+    }
 
+    @Override
+    public Class getEventClass() {
+        return ContextMenuEvent.class;
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField contextMenuText;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
-
 }
