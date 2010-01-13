@@ -22,15 +22,15 @@ import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventResponseMessage;
 
 /**
- * Base class for listeners to Wonderland events which send CMU responses.
+ * Base class for listeners to client-side Wonderland events which send CMU responses.
  * @author kevin
  */
-public abstract class CMUWonderlandEventListener {
+public abstract class WonderlandClientEventListener {
 
     private WonderlandResponse response = null;
     private final CMUCell parent;
 
-    public CMUWonderlandEventListener(CMUCell parent, WonderlandResponse response) {
+    public WonderlandClientEventListener(CMUCell parent, WonderlandResponse response) {
         this.parent = parent;
         this.setResponse(response);
     }
