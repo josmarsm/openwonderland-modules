@@ -17,24 +17,37 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client.events.wonderland;
 
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
-import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventResponseMessage;
 
 /**
- * Listener for context a context menu event, which sends an appropriate response.
+ * Base class for listeners to client-side Wonderland events which send CMU responses.
  * @author kevin
  */
-public class CMUContextListener extends WonderlandClientEventListener2
-        implements ContextMenuActionListener {
+public abstract class WonderlandClientEventListener2 {
 
-    public CMUContextListener(CMUCell parent, WonderlandResponse response) {
-        super(parent, response);
+    private WonderlandResponse response = null;
+    private final CMUCell parent;
+
+    public WonderlandClientEventListener2(CMUCell parent, WonderlandResponse response) {
+        this.parent = parent;
+        this.setResponse(response);
     }
 
-    @Override
-    public void actionPerformed(ContextMenuItemEvent event) {
-        this.eventOccurred();
+    public WonderlandResponse getResponse() {
+        return response;
+    }
+
+    public void setResponse(WonderlandResponse response) {
+        this.response = response;
+    }
+
+    public CMUCell getParent() {
+        return parent;
+    }
+
+    public void eventOccurred() {
+        this.getParent().sendCellMessage(new EventResponseMessage(this.getResponse()));
     }
 }
