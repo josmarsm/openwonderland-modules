@@ -114,6 +114,10 @@ public class PresentationCellRenderer extends BasicRenderer {
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
 
+        // This makes the slides appear perpandicular to the user's view, instead of
+        // parallel to it. This causes some trouble with children cell, because
+        // this is a node rotation, not a cell rotation it doesn't propegate
+        // to children of the cell, ie the moving platform. 
         node.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
         node.setLocalScale(cell.getScale());
 

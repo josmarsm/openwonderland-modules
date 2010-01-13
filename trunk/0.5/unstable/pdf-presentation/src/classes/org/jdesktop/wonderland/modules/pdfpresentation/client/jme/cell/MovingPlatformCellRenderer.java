@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
@@ -49,6 +50,8 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         Node root = new Node();
 
+
+
         logger.warning("About to create PLATFORM TRIMESH with dimensions: " + platformCell.getPlatformWidth() + "x" + platformCell.getPlatformDepth());
         TriMesh platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.25f, platformCell.getPlatformDepth());
 
@@ -58,6 +61,11 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
         root.updateModelBound();
 
         logger.warning("Updated bounds.");
+
+
+        // Per comments in PresentationCellRenderer, we need to apply a rotation
+        // to the node so our coordiante system matches that of our parent cell.
+        root.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
 
         return root;
     }
