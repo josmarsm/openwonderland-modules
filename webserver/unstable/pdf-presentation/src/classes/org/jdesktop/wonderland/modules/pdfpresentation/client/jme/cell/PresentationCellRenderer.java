@@ -114,6 +114,10 @@ public class PresentationCellRenderer extends BasicRenderer {
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
 
+        // This makes the slides appear perpandicular to the user's view, instead of
+        // parallel to it. This causes some trouble with children cell, because
+        // this is a node rotation, not a cell rotation it doesn't propegate
+        // to children of the cell, ie the moving platform. 
         node.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
         node.setLocalScale(cell.getScale());
 
@@ -176,9 +180,13 @@ public class PresentationCellRenderer extends BasicRenderer {
                 Logger.getLogger(PresentationCellRenderer.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-            float maxHeight = pdf.getMaximumSlideHeight();
-            float maxWidth = pdf.getMaximumSlideWidth();
+            int maxHeight = (int) (pdf.getMaximumSlideHeight() * SLIDE_SIZE_FACTOR);
+            int maxWidth = (int) (pdf.getMaximumSlideWidth() * SLIDE_SIZE_FACTOR);
 
+            // Push this data into the layout, since we need it
+            // for managing the moving platform.
+            cell.getLayout().setMaxSlideWidth(maxWidth);
+            cell.getLayout().setMaxSlideHeight(maxHeight);
 
             PDFContentImporter pdfContentImporter = ((PDFContentImporter)ContentImportManager.getContentImportManager().getContentImporter("pdf", true));
 
@@ -209,13 +217,15 @@ public class PresentationCellRenderer extends BasicRenderer {
 
                 // Dispatch the JME specific stuff to a thread that we can run inside
                 // the RenderingThread.
-                ClientContextJME.getWorldManager().addRenderUpdater((RenderUpdater)new NewSlideUpdater(node, pageTexture, i, (int)maxHeight, (int)maxWidth), null);
+                ClientContextJME.getWorldManager().addRenderUpdater((RenderUpdater)new NewSlideUpdater(node, pageTexture, i, maxHeight, maxWidth), null);
 
-                if(pageTexture.getHeight()*SLIDE_SIZE_FACTOR>maxHeight)
-                    maxHeight = pageTexture.getHeight()*SLIDE_SIZE_FACTOR;
-
-                if(pageTexture.getWidth()*SLIDE_SIZE_FACTOR>maxWidth)
-                    maxWidth = pageTexture.getWidth()*SLIDE_SIZE_FACTOR;
+                // Knocking this code out for now. Not sure why it's here or
+                // what it's doing. 
+//                if(pageTexture.getHeight()*SLIDE_SIZE_FACTOR>maxHeight)
+//                    maxHeight = pageTexture.getHeight()*SLIDE_SIZE_FACTOR;
+//
+//                if(pageTexture.getWidth()*SLIDE_SIZE_FACTOR>maxWidth)
+//                    maxWidth = pageTexture.getWidth()*SLIDE_SIZE_FACTOR;
             }
         }
     }
@@ -283,8 +293,8 @@ public class PresentationCellRenderer extends BasicRenderer {
                 // reasonable.
 //                float width = texture.getImage().getWidth() * SLIDE_SIZE_FACTOR;
 //                float height = texture.getImage().getHeight() * SLIDE_SIZE_FACTOR;
-                width = (int) (width * SLIDE_SIZE_FACTOR);
-                height = (int) (height * SLIDE_SIZE_FACTOR);
+//                width = (int) (width * SLIDE_SIZE_FACTOR);
+//                height = (int) (height * SLIDE_SIZE_FACTOR);
 
                 TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + index, new Vector3f(), 0.1f, width, height);
                 node.attachChild(currentSlide);

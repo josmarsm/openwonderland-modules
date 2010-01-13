@@ -188,7 +188,7 @@ public class ManualObjectCreator {
                     new ModelDndContentImporter(TimelineProviderClientPlugin.getServerSessionManager(),
                                                 new String[] { "kmz" })
             {
-                @Override
+                //@Override
                 public void createCell(DeployedModel deployedModel) {
                     // don't creat the cell, just rememer the model
                     ModelCreator.this.dm = deployedModel;

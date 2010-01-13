@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.eventrecorder.server;
 
-import org.jdesktop.wonderland.server.cell.view.ViewCellMO;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
@@ -35,7 +34,7 @@ import org.jdesktop.wonderland.server.spatial.UniverseManagerFactory;
  * Container for the cell cache for an event recorder.
  *
  * @author paulby
- * Bernard Horan
+ * @author Bernard Horan
  */
 @InternalAPI
 public class EventRecorderCellCacheMO extends ViewCellCacheMO implements ManagedObject, Serializable {
@@ -70,6 +69,7 @@ public class EventRecorderCellCacheMO extends ViewCellCacheMO implements Managed
      * Get the set of loaded cells
      * @return a set of loaded cells
      */
+    @Override
     public Set<CellID> getLoadedCells() {
         return super.getLoadedCells();
     }

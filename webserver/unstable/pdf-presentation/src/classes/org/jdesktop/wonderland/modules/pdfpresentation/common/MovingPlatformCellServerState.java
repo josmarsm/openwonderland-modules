@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.pdfpresentation.common;
 
+import com.jme.math.Vector3f;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -38,6 +39,8 @@ public class MovingPlatformCellServerState extends CellServerState {
     @XmlElement(name="platform-depth")
     private float platformDepth;
 
+//    @XmlElement(name="translation")
+//    private Vector3f translation;
 
     public MovingPlatformCellServerState() {
     }
@@ -55,5 +58,10 @@ public class MovingPlatformCellServerState extends CellServerState {
     public void setPlatformDepth(float platformDepth) {
         this.platformDepth = platformDepth;
     }
+
+//    @XmlTransient public Vector3f getTranslation() { return this.translation; }
+//    public void setTranslation(Vector3f translation) {
+//        this.translation = translation;
+//    }
 
 }

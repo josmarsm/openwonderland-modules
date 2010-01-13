@@ -15,17 +15,14 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client.events;
+package org.jdesktop.wonderland.modules.cmu.common.events;
+
+import java.io.Serializable;
 
 /**
- * Interface to listen for changes in a CMU cell's connection state.
+ * Abstraction for an event which can occur in Wonderland.
  * @author kevin
  */
-public interface ConnectionStateChangeListener {
+public abstract class WonderlandEvent implements Serializable {
 
-    /**
-     * Callback function when the connection state of a cell has changed.
-     * @param e The event representing the change in connection state
-     */
-    public void connectionStateChanged(ConnectionStateChangeEvent e);
 }

@@ -2,7 +2,7 @@
 <project name="wonderland-annotations-module" default="dist" basedir=".">
     <property file="my.module.properties"/>
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.wonderland-${module.name}-module}"/>
+    <dirname property="current.dir" file="${ant.file.annotations}"/>
     
     <property name="modules.dir" location="${wonderland.dir}/modules"/>   
     <property name="module.src" value="${module.plugin.src}"/>

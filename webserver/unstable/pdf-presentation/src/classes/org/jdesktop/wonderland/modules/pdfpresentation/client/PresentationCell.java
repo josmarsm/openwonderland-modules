@@ -40,9 +40,12 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -53,24 +56,26 @@ import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDEvent;
-import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
-import org.jdesktop.wonderland.client.hud.HUDEventListener;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.pdf.client.DeployedPDF;
 import org.jdesktop.wonderland.modules.pdf.client.PDFDeployer;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.MovingPlatformCellRenderer;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.PresentationCellRenderer;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCellServerState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellClientState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellChangeMessage.MessageType;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout.LayoutType;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.SlideMetadata;
 
 /**
  * This cell encapsulates the PDF spreading functionality, as well as managing
@@ -295,30 +300,33 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 
     /**
      *
+     * DEPRECATED
+     *
      * @param pos The position to test for a potential moving platform parent. Specified in world coordinates.
      * @return A MovingPlatformCell object that contains the specified point, or null if this PresentationCell's MovingPlatformCell doesn't contain that position.
      */
-    public Cell getParentCellByPosition(Vector3f pos) {
-        // This may have troubles until issue 497 is resolved, but I assume
-        // a setLocalTransform will get called.
-
-        if(this.platform==null)
-            return null;
-
-        logger.warning("Checking to see if " + pos + " is within our platform cell: " + this.platform.getWorldBounds());
-
-        logger.warning("Alternatively, is it in our presentation cell? " + this.getWorldBounds());
-
-        if(this.platform.getWorldBounds().contains(pos))
-            return this.platform;
-        else {
-            if(this.getWorldBounds().contains(pos))
-                return this;
-            return null;
-        }
-    }
+//    public Cell getParentCellByPosition(Vector3f pos) {
+//        // This may have troubles until issue 497 is resolved, but I assume
+//        // a setLocalTransform will get called.
+//
+//        if(this.platform==null)
+//            return null;
+//
+//        logger.warning("Checking to see if " + pos + " is within our platform cell: " + this.platform.getWorldBounds());
+//
+//        logger.warning("Alternatively, is it in our presentation cell? " + this.getWorldBounds());
+//
+//        if(this.platform.getWorldBounds().contains(pos))
+//            return this.platform;
+//        else {
+//            if(this.getWorldBounds().contains(pos))
+//                return this;
+//            return null;
+//        }
+//    }
 
     public void setPlatformCell(MovingPlatformCell platform) {
+        logger.info("Child platform cell discovered and referenced saved.");
         this.platform = platform;
     }
 
@@ -412,6 +420,53 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 
     public String getCreatorName() {
         return this.creatorName;
+    }
+
+    public void showPlatformCell(boolean selected) {
+        if(selected) {
+
+            logger.warning("Creating new platform cell object!");
+
+            MovingPlatformCellServerState state = new MovingPlatformCellServerState();
+
+            // Get the width from the layed out PDF. This value is(?) guaranteed
+            // to be good, beause the PDF has to be laid out befor you can show
+            // the platform. Don't need to multiply by the scale, because
+            // that's being set at the cell level. Using the width on both
+            // so it's square. Will probably want to oversize it later.
+            state.setPlatformWidth(this.layout.getMaxSlideWidth());
+            state.setPlatformDepth(this.layout.getMaxSlideWidth());
+
+            // We also need to throw in a starting position for the platform,
+            // taking it from the layout listing.
+            PositionComponentServerState pos = new PositionComponentServerState();
+
+            SlideMetadata slide = layout.getSlides().get(0);
+
+
+            logger.warning("About to place movable platform at: " + slide.getTransform().getTranslation(null));
+
+            pos.setTranslation(slide.getTransform().getTranslation(null));
+            pos.setRotation(slide.getTransform().getRotation(null));
+            pos.setScaling(new Vector3f(this.getScale(), this.getScale(), this.getScale()));
+            state.addComponentServerState(pos);
+
+//            state.setTranslation(slide.getTransform().getTranslation(null));
+
+            // Now do some set up to short circuit the placement algorithm.
+            BoundingVolumeHint hint = new BoundingVolumeHint(false, null);
+            state.setBoundingVolumeHint(hint);
+           
+
+            try {
+                CellUtils.createCell((CellServerState) state, this.getCellID());
+            } catch (CellCreationException ex) {
+                Logger.getLogger(PresentationCell.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            CellUtils.deleteCell(platform);
+        }
+
     }
 
     class PresentationCellMessageReceived implements ComponentMessageReceiver {

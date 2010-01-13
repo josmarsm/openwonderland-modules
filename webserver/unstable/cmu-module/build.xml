@@ -28,6 +28,7 @@
         <path location="${current.dir}/lib/moveandturn.jar"/>
         <path location="${current.dir}/lib/ide.jar"/>
         <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
+        <path location="${current.dir}/lib/stage.jar"/>
     </pathconvert>
 
     <pathconvert property="module-weblib.classpath">
@@ -43,6 +44,7 @@
         <path location="${current.dir}/lib/moveandturn.jar"/>
         <path location="${current.dir}/lib/ide.jar"/>
         <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
+        <path location="${current.dir}/lib/stage.jar"/>
         <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar"/>
     </pathconvert>
@@ -65,18 +67,18 @@
         </wl-compile>
     </target>
 
-    <target name="-cmu-compile-player" depends="-module-init, -module-compile-common">
-        <wl-compile>
-            <compile-classes>
-                <include name="${module.src}/player/**"/>
-                <include name="${module.src}/common/**"/>
-            </compile-classes>
-            <compile-classpath>
-                <pathelement path="${cmu-player.classpath}"/>
-                <pathelement path="${core-client.classpath}"/>
-            </compile-classpath>
-        </wl-compile>
-    </target>
+<target name="-cmu-compile-player" depends="-module-init, -module-compile-common">
+    <wl-compile>
+        <compile-classes>
+            <include name="${module.src}/player/**"/>
+            <include name="${module.src}/common/**"/>
+        </compile-classes>
+        <compile-classpath>
+            <pathelement path="${cmu-player.classpath}"/>
+            <pathelement path="${core-client.classpath}"/>
+        </compile-classpath>
+    </wl-compile>
+</target>
 
     <target name="-cmu-jar-player" depends="-cmu-compile-player">
         <mkdir dir="${current.dir}/${cmu-player.build.dir}"/>
@@ -98,6 +100,7 @@
             <zipfileset file="${current.dir}/lib/moveandturn.jar" prefix="lib"/>
             <zipfileset file="${current.dir}/lib/ide.jar" prefix="lib"/>
             <zipfileset file="${current.dir}/lib/lg_walkandtouch.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/stage.jar" prefix="lib"/>
             <!-- include content repository stuff -->
             <zipfileset file="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar" prefix="modules"/>
             <zipfileset file="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar" prefix="modules"/>
@@ -126,7 +129,7 @@
     <target name="dist" depends="build, -cmu-jar-player">
         <mkdir dir="${module.dist.dir}"/>
         
-        <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}" jarfile="${module.dist.dir}/${module.jarname}.jar"
+        <module name="${module.name}" majorVersion="0" minorVersion="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="${module.description}" builddir="${build.dir}">
 
             <requires name="content-repository" version="1"/>

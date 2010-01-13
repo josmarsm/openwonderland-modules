@@ -17,13 +17,14 @@
  */
 package org.jdesktop.wonderland.modules.cmu.client;
 
-import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.PlaybackChangeListener;
-import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeListener;
-import org.jdesktop.wonderland.modules.cmu.client.events.SceneTitleChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.hud.HUDControl;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.PlaybackChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.PlaybackChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneTitleChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneTitleChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.ui.hud.HUDControl;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -34,6 +35,9 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -43,12 +47,12 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.cmu.client.events.ConnectionStateChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.ConnectionStateChangeListener;
-import org.jdesktop.wonderland.modules.cmu.client.events.SceneLoadedChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.SceneLoadedChangeListener;
-import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeEvent;
-import org.jdesktop.wonderland.modules.cmu.client.events.VisibilityChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.ConnectionStateChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.ConnectionStateChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneLoadedChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.SceneLoadedChangeListener;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.VisibilityChangeEvent;
+import org.jdesktop.wonderland.modules.cmu.client.events.cmu.VisibilityChangeListener;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.CMUCellRenderer;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualNode;
 import org.jdesktop.wonderland.modules.cmu.client.jme.cellrenderer.VisualParent;
@@ -57,12 +61,19 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Playback
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
+import org.jdesktop.wonderland.modules.cmu.common.events.ContextMenuEvent;
+import org.jdesktop.wonderland.modules.cmu.common.events.ProximityEvent;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ConnectionChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualDeletedMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.VisualMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.AvailableResponsesChangeMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventListMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.VisibilityChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseButtonEventMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
@@ -77,41 +88,44 @@ import org.jdesktop.wonderland.modules.cmu.common.web.VisualAttributes.VisualAtt
  */
 public class CMUCell extends Cell {
 
+    // Whether cell components can be treated as valid (e.g. whether setStatus() has been called)
+    private boolean componentsValid = false;
+    private final Object componentsValidLock = new Object();
     // Renderer info
     private CMUCellRenderer renderer = null;
     private final VisualParent sceneRoot = new VisualParent();      // We synchronize incoming visual changes and connection changes on this object.
-
     // Connection info
     private ConnectionState connectionState = ConnectionState.DISCONNECTED;
-
     // Scene title info
     private String sceneTitle = null;
     private final Object sceneTitleLock = new Object();
-
     // Playback info
     private float playbackSpeed = 0.0f;
     private boolean playing = false;
     private final Object playbackSpeedLock = new Object();
-
     // Ground plane info
     private boolean groundPlaneShowing = false;
     private final Object groundPlaneLock = new Object();
-
     // Message receivers/listeners
     private MouseEventListener mouseListener = null;
     private VisualChangeReceiverThread cmuConnectionThread = null;
     private final CMUCellMessageReceiver messageReceiver = new CMUCellMessageReceiver();
-
+    // Event response information
+    private EventResponseList eventList = null;
+    private final Object eventListLock = new Object();
+    private Collection<WonderlandResponse> allowedResponses = null;
+    // Context menu
+    @UsesCellComponent
+    private ContextMenuComponent contextComp = null;
+    private ContextMenuFactorySPI menuFactory = null;
     // Listener sets
     private final Set<PlaybackChangeListener> playbackChangeListeners = new HashSet<PlaybackChangeListener>();
     private final Set<VisibilityChangeListener> visibilityChangeListeners = new HashSet<VisibilityChangeListener>();
     private final Set<SceneTitleChangeListener> sceneTitleChangeListeners = new HashSet<SceneTitleChangeListener>();
     private final Set<SceneLoadedChangeListener> sceneLoadedChangeListeners = new HashSet<SceneLoadedChangeListener>();
     private final Set<ConnectionStateChangeListener> connectionStateChangeListeners = new HashSet<ConnectionStateChangeListener>();
-
     // HUD Stuff
     private final HUDControl hudControl = new HUDControl(this);
-
     // Content repository information
     private String visualRepoRoot = null;
 
@@ -139,7 +153,6 @@ public class CMUCell extends Cell {
 
             // We only process left clicks
             if (mbe.isClicked() && mbe.getButton() == ButtonId.BUTTON1) {
-                hudControl.setHUDShowing(true);
                 TriMesh clickedMesh = mbe.getPickDetails().getTriMesh();
 
                 // Walk up the scene graph until we find the VisualNode that was clicked
@@ -210,6 +223,16 @@ public class CMUCell extends Cell {
                     SceneTitleChangeMessage change = (SceneTitleChangeMessage) message;
                     setSceneTitleInternal(change.getSceneTitle());
                 }
+            } // Change in available responses
+            else if (message instanceof AvailableResponsesChangeMessage) {
+                AvailableResponsesChangeMessage change = (AvailableResponsesChangeMessage) message;
+                setAllowedResponses(change.getResponses());
+            } // Change in events to respond to
+            else if (message instanceof EventListMessage) {
+                if (!fromMe) {
+                    EventListMessage change = (EventListMessage) message;
+                    setEventListInternal(change.getList());
+                }
             } // Unknown message
             else {
                 Logger.getLogger(CMUCell.class.getName()).log(Level.SEVERE, "Unkown message: " + message);
@@ -275,6 +298,8 @@ public class CMUCell extends Cell {
         }
         this.setGroundPlaneShowingInternal(cmuClientState.isGroundPlaneShowing());
         this.setSceneTitle(cmuClientState.getSceneTitle());
+        this.setEventListInternal(cmuClientState.getEventList());
+        this.setAllowedResponses(cmuClientState.getAllowedResponses());
     }
 
     /**
@@ -306,6 +331,8 @@ public class CMUCell extends Cell {
     @SuppressWarnings("unchecked")
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
+        this.setComponentsValid(true);
+
         ChannelComponent channel = getComponent(ChannelComponent.class);
         if (status == CellStatus.DISK) {
             if (!increasing) {
@@ -333,6 +360,16 @@ public class CMUCell extends Cell {
                         channel.addMessageReceiver(messageClass, messageReceiver);
                     }
                 }
+            }
+
+            if (this.menuFactory != null) {
+                this.contextComp.removeContextMenuFactory(this.menuFactory);
+                this.menuFactory = null;
+            }
+        } else if (status == CellStatus.RENDERING) {
+            if (this.menuFactory == null) {
+                this.menuFactory = new CMUContextFactory(this);
+                this.contextComp.addContextMenuFactory(this.menuFactory);
             }
         } else if (status == CellStatus.ACTIVE) {
             // Add mouse listener.
@@ -381,7 +418,7 @@ public class CMUCell extends Cell {
                 this.applyUnloadSceneMessage((UnloadSceneMessage) message);
             } // Unknown message
             else {
-                Logger.getLogger(CMUCell.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
+                logger.severe("Unknown message: " + message);
             }
         }
     }
@@ -477,7 +514,8 @@ public class CMUCell extends Cell {
     }
 
     /**
-     * Unload an entire scene, and mark this scene as reconnecting.
+     * Unload an entire scene, and set the connected state of the scene
+     * according to information in the supplied message.
      * @param message Message to apply
      */
     private void applyUnloadSceneMessage(UnloadSceneMessage message) {
@@ -523,6 +561,44 @@ public class CMUCell extends Cell {
                 setConnectionState(ConnectionState.DISCONNECTED);
             }
         }
+    }
+
+    /**
+     * Find out whether the components for this cell have been initialized,
+     * e.g. whether setStatus() has been called.
+     * @return Whether the components for this cell have been initialized
+     */
+    protected boolean isComponentsValid() {
+        synchronized (componentsValidLock) {
+            return componentsValid;
+        }
+    }
+
+    /**
+     * Set the
+     * @param componentsValid
+     */
+    private void setComponentsValid(boolean componentsValid) {
+        boolean oldComponentsValid = false;
+        synchronized (componentsValidLock) {
+            oldComponentsValid = this.componentsValid;
+            this.componentsValid = componentsValid;
+        }
+
+        // If we're activating the components for the first time, perform any delayed processing
+        if (componentsValid && !oldComponentsValid) {
+            // Add listeners based on our event list
+            this.setEventListInternal(this.getEventList());
+        }
+    }
+
+    /**
+     * Get the HUD control object for this cell, which can be used to get/set
+     * the HUD state and visibility.
+     * @return HUD control for this cell
+     */
+    public HUDControl getHudControl() {
+        return hudControl;
     }
 
     /**
@@ -781,6 +857,81 @@ public class CMUCell extends Cell {
     private String getVisualRepoRoot() {
         synchronized (sceneRoot) {
             return visualRepoRoot;
+        }
+    }
+
+    /**
+     * Get the list of events (and responses) which this cell is listening for.
+     * @return List of events we're listening for
+     */
+    public EventResponseList getEventList() {
+        synchronized (this.eventListLock) {
+            return this.eventList;
+        }
+    }
+
+    /**
+     * Set the list of events (and responses) which this cell should listen for,
+     * and create the appropriate listeners/mechanisms (and remove old ones).
+     * Propagate this change back to the server and other users.
+     * @param eventList New list of events to listen for
+     */
+    public void setEventList(EventResponseList eventList) {
+        this.setEventListInternal(eventList);
+        sendCellMessage(new EventListMessage(eventList));
+    }
+
+    /**
+     * Set the list of events (and responses) which this cell should listen for,
+     * but do not propagate this change to the server.
+     * @param eventList New list of events to listen for
+     */
+    private void setEventListInternal(EventResponseList eventList) {
+        synchronized (this.eventListLock) {
+            this.eventList = eventList;
+
+            ///// Add necessary listeners, etc. /////
+
+            // Only perform these actions if we know we have valid components
+            if (this.isComponentsValid()) {
+
+                for (EventResponsePair pair : eventList) {
+                    System.out.println("Adding event: " + pair.getEvent() + " / " + pair.getResponse());
+
+                    // Proximity event
+                    if (pair.getEvent() instanceof ProximityEvent) {
+                        // Handled by server
+                    } // Context menu event
+                    else if (pair.getEvent() instanceof ContextMenuEvent) {
+                        // Handled by context factory for this cell
+                    } // Unrecognized event
+                    else {
+                        logger.severe("Unrecognized event: " + pair.getEvent());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the collection of responses which are available for the scene loaded
+     * by this cell.
+     * @return Collection of allowed responses for this cell
+     */
+    public Collection<WonderlandResponse> getAllowedResponses() {
+        synchronized (this.eventListLock) {
+            return allowedResponses;
+        }
+    }
+
+    /**
+     * Set the collection of responses which are available to the scene loaded by
+     * this cell.
+     * @param allowedResponses New collection of allowed responses
+     */
+    public void setAllowedResponses(Collection<WonderlandResponse> allowedResponses) {
+        synchronized (this.eventListLock) {
+            this.allowedResponses = allowedResponses;
         }
     }
 

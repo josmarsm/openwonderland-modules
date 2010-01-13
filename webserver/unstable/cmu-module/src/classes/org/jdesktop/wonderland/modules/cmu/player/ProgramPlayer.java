@@ -17,8 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player;
 
+import edu.cmu.cs.dennisc.alice.ast.AbstractMethod;
 import org.jdesktop.wonderland.modules.cmu.player.connections.SceneConnectionHandler;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.alice.apis.moveandturn.Program;
@@ -26,6 +28,7 @@ import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.alice.stageide.apis.moveandturn.event.MouseButtonAdapter;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
+import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
  * A standard CMU program which can access its scene graph via a
@@ -90,6 +93,16 @@ public class ProgramPlayer extends Program {
         return this.sceneConnectionHandler.getHostname();
     }
 
+    public ArrayList<WonderlandResponse> getAllowedResponses() {
+        ArrayList<WonderlandResponse> allowedResponses = new ArrayList<WonderlandResponse>();
+
+        for (AbstractMethod method : this.sceneType.getDeclaredMethods()) {
+            allowedResponses.add(new WonderlandResponse(method.getName()));
+        }
+
+        return allowedResponses;
+    }
+
     /**
      * Simulate a mouse click on a particular node.  Only left-click is
      * supported.
@@ -97,6 +110,12 @@ public class ProgramPlayer extends Program {
      */
     public void click(NodeID id) {
         this.sceneConnectionHandler.click(id);
+    }
+
+    public void eventResponse(WonderlandResponse response) {
+        System.out.println("Calling method: " + response.getFunctionName());
+        System.out.println("For type: " + this.sceneType.getName());
+        this.vm.invokeEntryPoint(this.sceneType.getDeclaredMethod(response.getFunctionName()), this.scene);
     }
 
     /**
@@ -107,9 +126,27 @@ public class ProgramPlayer extends Program {
         edu.cmu.cs.dennisc.alice.Project project = edu.cmu.cs.dennisc.alice.io.FileUtilities.readProject(cmuFile);
         edu.cmu.cs.dennisc.alice.ast.AbstractType programType = project.getProgramType();
 
+        
+
         this.vm = new edu.cmu.cs.dennisc.alice.virtualmachine.ReleaseVirtualMachine();
+
+        System.out.println("Printing declared fields...");
+        for (Object o : programType.getDeclaredFields()) {
+            System.out.println(o);
+        }
+        System.out.println("done!");
+
         this.sceneType = programType.getDeclaredFields().get(0).getValueType();
+
+        System.out.println("Printing scene type: ");
+        System.out.println(sceneType);
+        System.out.println("done!");
+
         this.scene = this.vm.createInstanceEntryPoint(this.sceneType);
+
+        System.out.println("Printing scene:");
+        System.out.println(scene);
+        System.out.println("done!");
 
         Object sceneInstance = ((edu.cmu.cs.dennisc.alice.virtualmachine.InstanceInAlice) this.scene).getInstanceInJava();
 

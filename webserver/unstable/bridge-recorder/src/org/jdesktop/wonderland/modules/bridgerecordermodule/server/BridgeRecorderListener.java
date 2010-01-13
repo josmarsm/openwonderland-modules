@@ -74,6 +74,9 @@ public class BridgeRecorderListener implements RecorderListener {
         }
     }
 
+    public void recorderDone() {
+    }
+    
     /**
      * Mainly logging
      * @param buffer

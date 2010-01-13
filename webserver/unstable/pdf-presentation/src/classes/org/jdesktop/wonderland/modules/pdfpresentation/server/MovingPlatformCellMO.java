@@ -18,8 +18,10 @@
 package org.jdesktop.wonderland.modules.pdfpresentation.server;
 
 import com.jme.bounding.BoundingBox;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ManagedReference;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -56,6 +58,12 @@ public class MovingPlatformCellMO extends CellMO {
 
         platformWidth = ((MovingPlatformCellServerState)state).getPlatformWidth();
         platformDepth = ((MovingPlatformCellServerState)state).getPlatformDepth();
+
+//        CellTransform transform = new CellTransform(new Quaternion(), ((MovingPlatformCellServerState)state).getTranslation());
+
+//        Logger.getLogger();
+
+//        this.moveRef.get().moveRequest(null, transform);
     }
 
     @Override

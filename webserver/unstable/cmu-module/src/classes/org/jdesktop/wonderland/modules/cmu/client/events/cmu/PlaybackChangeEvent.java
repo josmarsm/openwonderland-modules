@@ -15,7 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.client.events;
+package org.jdesktop.wonderland.modules.cmu.client.events.cmu;
 
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 
