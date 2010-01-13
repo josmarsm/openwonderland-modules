@@ -101,7 +101,7 @@ public class BeanshellClientPlugin extends BaseClientPlugin {
         // Create the HUD Panel that displays the beanshell console.
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         JConsole console = new JConsole();
-        console.setPreferredSize(new Dimension(200, 300));
+        console.setPreferredSize(new Dimension(400, 600));
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(console, BorderLayout.CENTER);
