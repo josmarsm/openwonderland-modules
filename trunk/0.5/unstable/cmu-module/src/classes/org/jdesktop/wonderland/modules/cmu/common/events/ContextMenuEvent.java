@@ -36,4 +36,9 @@ public class ContextMenuEvent extends WonderlandEvent {
     public void setMenuText(String menuText) {
         this.menuText = menuText;
     }
+
+    @Override
+    public String toString() {
+        return "Context menu event: " + this.getMenuText();
+    }
 }

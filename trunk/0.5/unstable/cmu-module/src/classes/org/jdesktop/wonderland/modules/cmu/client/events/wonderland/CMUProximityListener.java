@@ -44,6 +44,7 @@ public class CMUProximityListener extends CMUWonderlandEventListener implements 
     }
 
     public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
+        System.out.println("Proximity event occurred!");
         if (entered == this.isEventOnEnter()) {
             this.eventOccurred();
         }
