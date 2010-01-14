@@ -479,30 +479,34 @@ public class CMUCellMO extends CellMO {
                 }
                 this.proximityListeners.clear();
 
-                for (EventResponsePair pair : this.getEventList()) {
+                if (this.getEventList() != null) {
+                    for (EventResponsePair pair : this.getEventList()) {
 
-                    // Proximity listeners
-                    if (pair.getEvent() instanceof ProximityEvent) {
-                        ProximityEvent proximityEvent = (ProximityEvent) pair.getEvent();
+                        // Proximity listeners
+                        if (pair.getEvent() instanceof ProximityEvent) {
+                            ProximityEvent proximityEvent = (ProximityEvent) pair.getEvent();
 
-                        // Compute desired bounding volume
-                        BoundingVolume[] volume = new BoundingSphere[1];
-                        volume[0] = new BoundingSphere(proximityEvent.getDistance(), Vector3f.ZERO);
+                            // Compute desired bounding volume
+                            BoundingVolume[] volume = new BoundingSphere[1];
+                            volume[0] = new BoundingSphere(proximityEvent.getDistance(), Vector3f.ZERO);
 
-                        // Create listener
-                        ManagedReference<CMUProximityListener> l = AppContext.getDataManager().createReference(new CMUProximityListener(AppContext.getDataManager().createReference(this),
-                                pair.getResponse(), proximityEvent.isEventOnEnter()));
+                            // Create listener
+                            ManagedReference<CMUProximityListener> l = AppContext.getDataManager().createReference(new CMUProximityListener(AppContext.getDataManager().createReference(this),
+                                    pair.getResponse(), proximityEvent.isEventOnEnter()));
 
-                        // Add listener
-                        this.proximityComponent.get().addProximityListener(l.get(), volume);
-                        this.proximityListeners.add(l);
-                    } // Context menu listeners
-                    else if (pair.getEvent() instanceof ContextMenuEvent) {
-                        // Handled by clients
-                    } // Unrecognized event
-                    else {
-                        logger.severe("Unrecognized event: " + pair.getEvent());
+                            // Add listener
+                            this.proximityComponent.get().addProximityListener(l.get(), volume);
+                            this.proximityListeners.add(l);
+                        } // Context menu listeners
+                        else if (pair.getEvent() instanceof ContextMenuEvent) {
+                            // Handled by clients
+                        } // Unrecognized event
+                        else {
+                            logger.severe("Unrecognized event: " + pair.getEvent());
+                        }
                     }
+                } else {
+                    System.out.println("CMUCellMO received NULL event list");
                 }
             }
 

@@ -61,7 +61,7 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      * @param port The port to connect to
      */
     public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String hostname, int port,
-            ArrayList<WonderlandResponse> allowedResponses, EventResponseList intialEventList) {
+            ArrayList<WonderlandResponse> allowedResponses, EventResponseList initialEventList) {
         this(messageID, cellID);
         this.setHostnameAndPort(hostname, port);
         this.setAllowedResponses(allowedResponses);
@@ -127,6 +127,7 @@ public class CreateProgramResponseMessage extends ResponseMessage {
     }
 
     public void setInitialEventList(EventResponseList initialEventList) {
+        System.out.println("Setting initial event list: " + initialEventList);
         this.initialEventList = initialEventList;
     }
 

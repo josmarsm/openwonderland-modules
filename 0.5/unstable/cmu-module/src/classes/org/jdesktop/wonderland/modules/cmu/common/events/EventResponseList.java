@@ -97,4 +97,43 @@ public class EventResponseList extends AbstractList<EventResponsePair>
     public EventResponsePair get(int n) {
         return this.events.get(n);
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (other instanceof EventResponseList && this.getClass().equals(other.getClass())) {
+            EventResponseList otherList = (EventResponseList) other;
+
+            // Compare list sizes
+            if (otherList.size() != this.size()) {
+                return false;
+            }
+
+            // Check all entries
+            for (int i = 0; i < this.size(); i++) {
+                if (!(this.get(i).equals(otherList.get(i)))) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 89 * hash + (this.events != null ? this.events.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "Event response list: " + this.events;
+    }
 }
