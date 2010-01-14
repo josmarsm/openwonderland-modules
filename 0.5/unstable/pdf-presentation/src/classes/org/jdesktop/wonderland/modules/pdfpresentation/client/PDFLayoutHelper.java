@@ -78,15 +78,17 @@ public class PDFLayoutHelper {
         switch(layout) {
             case CIRCLE:
                 curAngle = (float) (i * (2*Math.PI / numSlides));
-                rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
+                rot = new Quaternion().fromAngleNormalAxis((float) (curAngle), new Vector3f(0, 1, 0));
                 pos = new Vector3f((float)(spacing*Math.sin(curAngle)), 0.0f, (float)(spacing*Math.cos(curAngle)));
+//                rot = new Quaternion();
                 break;
 
             case SEMICIRCLE:
                 int n = numSlides - i;
                 curAngle = (float) (n * (Math.PI / numSlides));
                 pos = new Vector3f((float)(spacing*Math.sin(curAngle)), 0.0f, (float)(spacing*Math.cos(curAngle)));
-                rot = new Quaternion().fromAngleNormalAxis((float) (curAngle + Math.PI / 2), new Vector3f(0, 1, 0));
+                rot = new Quaternion().fromAngleNormalAxis((float) (curAngle), new Vector3f(0, 1, 0));
+//                rot = new Quaternion();
                 break;
 
             case LINEAR:

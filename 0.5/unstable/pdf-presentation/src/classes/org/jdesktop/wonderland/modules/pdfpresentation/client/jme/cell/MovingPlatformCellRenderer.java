@@ -39,6 +39,9 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
 
     private static final Logger logger = Logger.getLogger(MovingPlatformCellRenderer.class.getName());
 
+    private TriMesh platform;
+    private Node root;
+
     MovingPlatformCell platformCell;
 
     public MovingPlatformCellRenderer(Cell cell) {
@@ -48,16 +51,16 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
     }
 
     protected Node createSceneGraph(Entity entity) {
-        Node root = new Node();
+        root = new Node();
 
 
 
         logger.warning("About to create PLATFORM TRIMESH with dimensions: " + platformCell.getPlatformWidth() + "x" + platformCell.getPlatformDepth());
-        TriMesh platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.25f, platformCell.getPlatformDepth());
+        platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.10f, platformCell.getPlatformDepth());
 
         root.attachChild(platform);
         logger.warning("Attached platform.");
-        root.setModelBound(new BoundingBox(Vector3f.ZERO, platformCell.getPlatformWidth(), 0.25f, platformCell.getPlatformDepth()));
+        root.setModelBound(new BoundingBox(Vector3f.ZERO, platformCell.getPlatformWidth(), 0.15f, platformCell.getPlatformDepth()));
         root.updateModelBound();
 
         logger.warning("Updated bounds.");
@@ -74,5 +77,15 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
     public void setStatus(CellStatus status,boolean increasing) {
         super.setStatus(status, increasing);
         logger.warning("setting renderer status: " + status + "; increasisng? " + increasing);
+    }
+
+    public void layoutUpdated() {
+
+        // Might not need to do this dance; maybe just changing platform is
+        // good enough. 
+//        root.detachChild(platform);
+        platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.10f, platformCell.getPlatformDepth());
+        logger.warning("Created new platform box with width: " + platformCell.getPlatformWidth());
+//        root.attachChild(platform);
     }
 }

@@ -179,11 +179,19 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 
         } else if (status == CellStatus.ACTIVE && increasing == false) {
 
+            // This doesn't work here because the reference is already dead at this point.
+            // Where can I actually do this? (ALSO: The close button on the HUD doesn't work
+            // for some reason.
+
+            //this.layoutPanel.setVisible(false);
+
             // Remove the Cell-specific context mneu items.
             contextMenuComp.removeContextMenuFactory(contextMenuFactory);
             contextMenuFactory = null;
 
         } else if (status==CellStatus.DISK && !increasing) {
+
+ 
             prox.removeProximityListener(this);
             PresentationsManager.getPresentationsManager().removePresentationCell(this);
             
@@ -348,6 +356,10 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
         }
 
         pdfRenderer.layoutUpdated();
+
+        // Resize the platform appropriately and make sure it's in the right place.
+        if(platform != null)
+            platform.renderer.layoutUpdated();
     }
 
     protected void sendCurrentLayoutToServer() {
@@ -446,7 +458,16 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 
             logger.warning("About to place movable platform at: " + slide.getTransform().getTranslation(null));
 
-            pos.setTranslation(slide.getTransform().getTranslation(null));
+            Vector3f translation = slide.getTransform().getTranslation(null);
+            translation.setY(-(layout.getMaxSlideHeight() / 2 + 1));
+
+            // This is going to have to change to some vector math in non-liner
+            // layouts. Basically, we want to add on a vector that is
+            // perpandicular to the slide's orientation. But this will
+            // work for now. 
+            translation.setZ(translation.getZ() + layout.getMaxSlideHeight() / 2 + 1);
+
+            pos.setTranslation(translation);
             pos.setRotation(slide.getTransform().getRotation(null));
             pos.setScaling(new Vector3f(this.getScale(), this.getScale(), this.getScale()));
             state.addComponentServerState(pos);

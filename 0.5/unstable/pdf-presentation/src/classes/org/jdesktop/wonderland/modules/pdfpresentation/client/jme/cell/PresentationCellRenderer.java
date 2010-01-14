@@ -253,10 +253,17 @@ public class PresentationCellRenderer extends BasicRenderer {
             public void update(Object arg) {
                 CellTransform transform = cell.getLayout().getSlides().get(index).getTransform();
 
+
+//                Quaternion baseRotation = new Quaternion().fromAngleAxis(
+//                    (float) (Math.PI / 2), new Vector3f(0, 1, 0));
+
+//                slide.setLocalRotation(baseRotation.mult(transform.getRotation(null)));
+
                 slide.setLocalRotation(transform.getRotation(null));
                 slide.setLocalTranslation(transform.getTranslation(null));
 
                 logger.warning("Placing slide(" + index + ") at: " + slide.getLocalTranslation() + "with rotation " + slide.getLocalRotation());
+                logger.warning("World translation: " + slide.getWorldTranslation());
 
                 ClientContextJME.getWorldManager().addToUpdateList(slide);
             }
@@ -292,27 +299,8 @@ public class PresentationCellRenderer extends BasicRenderer {
             texture.setWrap(Texture.WrapMode.BorderClamp);
             texture.setTranslation(new Vector3f());
 
-            // Figure out what the size of the texture is, scale it down to something
-            // reasonable.
-//                float width = texture.getImage().getWidth() * SLIDE_SIZE_FACTOR;
-//                float height = texture.getImage().getHeight() * SLIDE_SIZE_FACTOR;
-//                width = (int) (width * SLIDE_SIZE_FACTOR);
-//                height = (int) (height * SLIDE_SIZE_FACTOR);
-
-            // Create a node to hold the slide, apply a translation on the node
-            // so that the Boxes are in the right position
-            Node transformNode = new Node();
-
-            // Create another node to hold the slide, apply a rotation so the
-            // slides face the right way
-            Node slideNode = new Node();
-            slideNode.setLocalRotation(new Quaternion().fromAngleAxis(
-                    (float) (Math.PI / 2), new Vector3f(0, 1, 0)));
-            transformNode.attachChild(slideNode);
-
-            TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + index, new Vector3f(), 0.1f, width, height);
-            slideNode.attachChild(currentSlide);
-            node.attachChild(transformNode);
+            TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + index, new Vector3f(),  width, height, 0.1f);
+            node.attachChild(currentSlide);
             logger.finer("Just attached slide to node, with (" + width + "," + height + ")");
 
             RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
@@ -332,7 +320,7 @@ public class PresentationCellRenderer extends BasicRenderer {
             // This interfaces with the layout stored in the
             // pdfCell to put it in the right place.
             logger.warning("About to place slides in a new slide updater context.");
-            placeSlide(transformNode, index);
+            placeSlide(currentSlide, index);
 
             currentSlide.setModelBound(new BoundingBox());
             currentSlide.updateModelBound();
