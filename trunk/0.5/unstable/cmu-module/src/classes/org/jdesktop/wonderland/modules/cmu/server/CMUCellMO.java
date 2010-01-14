@@ -70,10 +70,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class CMUCellMO extends CellMO {
 
-    /**
-     * Filename to store Wonderland-specific data inside Alice files
-     */
-    private static final String wonderlandDataFileName = "wonderland.xml";
     // Whether components can be treated as valid (e.g. whether setLive() has been called)
     private boolean componentsValid = false;
     private final Serializable componentsValidLock = new String();
@@ -101,7 +97,7 @@ public class CMUCellMO extends CellMO {
     private final Serializable eventListLock = new String();
     @UsesCellComponentMO(ProximityComponentMO.class)
     private ManagedReference<ProximityComponentMO> proximityComponent = null;
-    private final HashSet<ManagedReference<CMUProximityListener>> proximityListeners = 
+    private final HashSet<ManagedReference<CMUProximityListener>> proximityListeners =
             new HashSet<ManagedReference<CMUProximityListener>>();
 
     /**
@@ -118,8 +114,8 @@ public class CMUCellMO extends CellMO {
         }
 
         /**
-         * Process messages from CMU client cells; currently playback
-         * speed changes and mouse clicks are received.
+         * Process messages from CMU client cells, such as playback speed
+         * changes, mouse clicks, and event list updates.
          * @param sender {@inheritDoc}
          * @param clientID {@inheritDoc}
          * @param message {@inheritDoc}
@@ -324,38 +320,6 @@ public class CMUCellMO extends CellMO {
         if (this.eventList == null) {
             this.eventList = new EventResponseList();
         }
-
-        //TODO: Get zip file from URI
-        // Read Wonderland-specific data from CMU file
-        /*
-        try {
-        URL url = AssetUtils.getAssetURL(uri);
-        Asset a = AssetManager.getAssetManager().getAsset(new ContentURI(url.toString()));
-        if (AssetManager.getAssetManager().waitForAsset(a)) {
-        // Create program
-        File localFile = a.getLocalCacheFile();
-        ZipFile zipFile = new ZipFile(localFile, ZipFile.OPEN_READ);
-
-        ZipEntry wonderlandData = zipFile.getEntry(wonderlandDataFileName);
-        synchronized (eventListLock) {
-        if (wonderlandData != null) {
-        this.eventList = WonderlandEventList.readFromStream(zipFile.getInputStream(wonderlandData));
-        } else {
-        this.eventList = new WonderlandEventList();
-        }
-        }
-
-        zipFile.close();
-        }
-        } catch (ZipException ex) {
-        Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-        Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (URISyntaxException ex) {
-        Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-         */
-
     }
 
     /**
@@ -526,8 +490,7 @@ public class CMUCellMO extends CellMO {
                         volume[0] = new BoundingSphere(proximityEvent.getDistance(), Vector3f.ZERO);
 
                         // Create listener
-                        ManagedReference<CMUProximityListener> l = AppContext.getDataManager()
-                                .createReference(new CMUProximityListener(AppContext.getDataManager().createReference(this),
+                        ManagedReference<CMUProximityListener> l = AppContext.getDataManager().createReference(new CMUProximityListener(AppContext.getDataManager().createReference(this),
                                 pair.getResponse(), proximityEvent.isEventOnEnter()));
 
                         // Add listener
@@ -542,9 +505,11 @@ public class CMUCellMO extends CellMO {
                     }
                 }
             }
-        }
 
-        sendCellMessage(notifier, message);
+            // Send updates to clients and to the CMU player
+            sendCellMessage(notifier, message);
+            ProgramConnectionHandlerMO.sendEventList(getCellID(), getEventList());
+        }
     }
 
     /**
