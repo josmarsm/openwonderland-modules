@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.pdfpresentation.client;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -31,6 +32,7 @@ import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.MovingPlatformCellRenderer;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCellClientState;
@@ -52,6 +54,8 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
     protected float platformWidth = 10.0f;
     protected float platformDepth = 10.0f;
+
+    CellTransform currentSlideTransform;
 
     public MovingPlatformCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -159,6 +163,9 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
         BoundingVolume[] bounds = new BoundingVolume[]{box.clone(null)};
         prox.addProximityListener(this, bounds);
 
+        currentSlideTransform = layout.getSlides().get(0).getTransform();
+        logger.warning("Setting current slide transform: " + currentSlideTransform);
+
         renderer.layoutUpdated();
     }
 
@@ -168,5 +175,9 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
     public float getPlatformDepth() {
         return platformDepth;
+    }
+
+    public CellTransform getPlatformTransform() {
+        return currentSlideTransform;
     }
 }
