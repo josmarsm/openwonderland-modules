@@ -20,15 +20,21 @@ package org.jdesktop.wonderland.modules.cmu.player;
 import edu.cmu.cs.dennisc.alice.ast.AbstractMethod;
 import org.jdesktop.wonderland.modules.cmu.player.connections.SceneConnectionHandler;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 import org.alice.apis.moveandturn.Program;
 import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.alice.stageide.apis.moveandturn.event.MouseButtonAdapter;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
 import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.server.CMUCellMO;
 
 /**
  * A standard CMU program which can access its scene graph via a
@@ -39,7 +45,13 @@ import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
  */
 public class ProgramPlayer extends Program {
 
+    /**
+     * Filename to store Wonderland-specific data inside Alice files
+     */
+    public static final String wonderlandDataFileName = "wonderland.xml";
     private static final long DEFAULT_ADVANCE_DURATION = 2000;
+    private File cmuFile;
+    private final Object cmuFileLock = new Object();
     private edu.cmu.cs.dennisc.alice.virtualmachine.VirtualMachine vm;
     private edu.cmu.cs.dennisc.alice.ast.AbstractType sceneType;
     private Object scene;
@@ -49,6 +61,8 @@ public class ProgramPlayer extends Program {
     private float playbackSpeed = 0;        // The current playback speed.
     private long timeOfLastSpeedChange;     // System time at the last speed change (in milliseconds).
     private final Object speedChangeLock = new Object();    // Used to prevent multiple threads from changing the program speed.
+    private EventResponseList eventList = null;
+    private final Object eventListLock = new Object();
 
     /**
      * Standard constructor.
@@ -103,6 +117,18 @@ public class ProgramPlayer extends Program {
         return allowedResponses;
     }
 
+    public EventResponseList getEventList() {
+        synchronized (this.eventListLock) {
+            return eventList;
+        }
+    }
+
+    public void setEventList(EventResponseList eventList) {
+        synchronized (this.eventListLock) {
+            this.eventList = eventList;
+        }
+    }
+
     /**
      * Simulate a mouse click on a particular node.  Only left-click is
      * supported.
@@ -123,10 +149,14 @@ public class ProgramPlayer extends Program {
      * @param cmuFile The file to load
      */
     protected void setFile(File cmuFile) {
+        synchronized (cmuFileLock) {
+            this.cmuFile = cmuFile;
+        }
+
         edu.cmu.cs.dennisc.alice.Project project = edu.cmu.cs.dennisc.alice.io.FileUtilities.readProject(cmuFile);
         edu.cmu.cs.dennisc.alice.ast.AbstractType programType = project.getProgramType();
 
-        
+
 
         this.vm = new edu.cmu.cs.dennisc.alice.virtualmachine.ReleaseVirtualMachine();
 
@@ -155,6 +185,33 @@ public class ProgramPlayer extends Program {
         this.setScene((org.alice.apis.moveandturn.Scene) sceneInstance);
 
         this.init();
+
+        synchronized (this.eventListLock) {
+            // Read Wonderland-specific data from CMU file
+            try {
+                ZipFile zipFile = new ZipFile(cmuFile, ZipFile.OPEN_READ);
+
+                ZipEntry wonderlandData = zipFile.getEntry(wonderlandDataFileName);
+                if (wonderlandData != null) {
+                    this.eventList = EventResponseList.readFromStream(zipFile.getInputStream(wonderlandData));
+                } else {
+                    this.eventList = new EventResponseList();
+                }
+
+                zipFile.close();
+
+            } catch (ZipException ex) {
+                Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public File getFile() {
+        synchronized (cmuFileLock) {
+            return this.cmuFile;
+        }
     }
 
     /**

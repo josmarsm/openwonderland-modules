@@ -18,10 +18,24 @@
 
 package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
 
+import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
+
 /**
- * 
+ * Message to notify the server or the CMU player of an update to the
+ * event list to respond to.
  * @author kevin
  */
-public class EventListUpdateMessage {
+public class EventListUpdateMessage extends ServerCMUMessage {
 
+    public final EventResponseList eventList;
+
+    public EventListUpdateMessage(CellID cellID, EventResponseList eventList) {
+        super(cellID);
+        this.eventList = eventList;
+    }
+
+    public EventResponseList getEventList() {
+        return eventList;
+    }
 }

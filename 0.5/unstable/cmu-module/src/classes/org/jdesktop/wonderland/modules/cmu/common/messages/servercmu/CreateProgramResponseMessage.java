@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
 import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 
 /**
@@ -33,11 +34,12 @@ import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 public class CreateProgramResponseMessage extends ResponseMessage {
 
     private static final long serialVersionUID = 1L;
-    private String hostname;
-    private int port;
+    private String hostname = null;
+    private int port = 0;
     private ArrayList<WonderlandResponse> allowedResponses = null;
     private boolean creationSuccessful = false;
-    private CellID cellID;
+    private CellID cellID = null;
+    private EventResponseList initialEventList = null;
 
     /**
      * Basic constructor.  Initializes the message as representing unsuccessful
@@ -59,10 +61,11 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      * @param port The port to connect to
      */
     public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String hostname, int port,
-            ArrayList<WonderlandResponse> allowedResponses) {
+            ArrayList<WonderlandResponse> allowedResponses, EventResponseList intialEventList) {
         this(messageID, cellID);
         this.setHostnameAndPort(hostname, port);
         this.setAllowedResponses(allowedResponses);
+        this.setInitialEventList(initialEventList);
     }
 
     /**
@@ -117,6 +120,14 @@ public class CreateProgramResponseMessage extends ResponseMessage {
 
     public void setAllowedResponses(ArrayList<WonderlandResponse> allowedResponses) {
         this.allowedResponses = allowedResponses;
+    }
+
+    public EventResponseList getInitialEventList() {
+        return initialEventList;
+    }
+
+    public void setInitialEventList(EventResponseList initialEventList) {
+        this.initialEventList = initialEventList;
     }
 
     /**

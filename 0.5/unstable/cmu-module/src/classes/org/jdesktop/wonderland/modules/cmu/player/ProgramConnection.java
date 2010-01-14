@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgr
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CMUEventResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.EventListUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.MouseClickMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 
@@ -81,6 +82,9 @@ public class ProgramConnection extends BaseConnection {
                 } // Delete program
                 else if (message instanceof DeleteProgramMessage) {
                     handleDeleteProgram((DeleteProgramMessage) message);
+                } // Update event list
+                else if (message instanceof EventListUpdateMessage) {
+                    handleEventListUpdate((EventListUpdateMessage) message);
                 } // Unrecognized message
                 else {
                     Logger.getLogger(ProgramConnection.class.getName()).log(Level.SEVERE, "Unknown message: " + message);
@@ -133,5 +137,10 @@ public class ProgramConnection extends BaseConnection {
     protected void handleWonderlandEvent(CMUEventResponseMessage message) {
         System.out.println("ProgramConnection received event response: " + message.getResponse());
         programManager.eventResponse(message.getCellID(), message.getResponse());
+    }
+
+    protected void handleEventListUpdate(EventListUpdateMessage message) {
+        System.out.println("Updating event list to: " + message.getEventList());
+        
     }
 }
