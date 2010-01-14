@@ -92,7 +92,7 @@ public class PDFLayoutHelper {
             case LINEAR:
                 // the second negative bit recenters the line around the middle
                 // of the set of slides, not the start point.
-                pos = new Vector3f(0, 0, (spacing * (i) + (spacing*((numSlides-1)/2.0f)*-1)));
+                pos = new Vector3f((spacing * (i) + (spacing*((numSlides-1)/2.0f)*-1)), 0, 0);
                 rot = new Quaternion();
                 break;
 

@@ -23,8 +23,12 @@ package org.jdesktop.wonderland.modules.cmu.common.events;
  */
 public class ProximityEvent extends WonderlandEvent {
 
-    private float distance;
-    private boolean eventOnEnter;
+    private float distance = 0;
+    private boolean eventOnEnter = true;
+
+    public ProximityEvent() {
+        
+    }
 
     public ProximityEvent(float distance, boolean eventOnEnter) {
         super();
@@ -46,6 +50,32 @@ public class ProximityEvent extends WonderlandEvent {
 
     public void setEventOnEnter(boolean eventOnEnter) {
         this.eventOnEnter = eventOnEnter;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (other instanceof ProximityEvent && this.getClass().equals(other.getClass())) {
+            ProximityEvent otherEvent = (ProximityEvent) other;
+
+            if (this.getDistance() == otherEvent.getDistance() &&
+                    this.isEventOnEnter() == otherEvent.isEventOnEnter()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Float.floatToIntBits(this.distance);
+        hash = 53 * hash + (this.eventOnEnter ? 1 : 0);
+        return hash;
     }
 
     @Override

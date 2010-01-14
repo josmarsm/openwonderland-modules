@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.cmu.common.web;
 
 import com.jme.scene.Geometry;
-import com.jme.scene.TriMesh;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.MemoryImageSource;
@@ -197,7 +196,7 @@ public class VisualAttributes implements Serializable {
          */
         @Override
         public boolean equals(Object other) {
-            if (super.equals(other)) {
+            if (this == other) {
                 return true;
             }
             if (other instanceof VisualAttributesIdentifier &&
