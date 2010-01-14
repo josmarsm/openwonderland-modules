@@ -114,11 +114,14 @@ public class PresentationCellRenderer extends BasicRenderer {
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
 
+        // XXX NO LONGER NEEDED, DELETE?
         // This makes the slides appear perpandicular to the user's view, instead of
         // parallel to it. This causes some trouble with children cell, because
         // this is a node rotation, not a cell rotation it doesn't propegate
         // to children of the cell, ie the moving platform. 
-        node.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
+//        node.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
+        // XXX END NO LONGER NEEDED
+        
         node.setLocalScale(cell.getScale());
 
         node.setModelBound(new BoundingBox());
@@ -284,58 +287,70 @@ public class PresentationCellRenderer extends BasicRenderer {
         }
 
         public void update(Object arg0) {
-                Texture texture = TextureManager.loadTexture(page, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
+            Texture texture = TextureManager.loadTexture(page, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
 
-                texture.setWrap(Texture.WrapMode.BorderClamp);
-                texture.setTranslation(new Vector3f());
+            texture.setWrap(Texture.WrapMode.BorderClamp);
+            texture.setTranslation(new Vector3f());
 
-                // Figure out what the size of the texture is, scale it down to something
-                // reasonable.
+            // Figure out what the size of the texture is, scale it down to something
+            // reasonable.
 //                float width = texture.getImage().getWidth() * SLIDE_SIZE_FACTOR;
 //                float height = texture.getImage().getHeight() * SLIDE_SIZE_FACTOR;
 //                width = (int) (width * SLIDE_SIZE_FACTOR);
 //                height = (int) (height * SLIDE_SIZE_FACTOR);
 
-                TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + index, new Vector3f(), 0.1f, width, height);
-                node.attachChild(currentSlide);
-                logger.finer("Just attached slide to node, with (" + width + "," + height + ")");
+            // Create a node to hold the slide, apply a translation on the node
+            // so that the Boxes are in the right position
+            Node transformNode = new Node();
 
-                RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+            // Create another node to hold the slide, apply a rotation so the
+            // slides face the right way
+            Node slideNode = new Node();
+            slideNode.setLocalRotation(new Quaternion().fromAngleAxis(
+                    (float) (Math.PI / 2), new Vector3f(0, 1, 0)));
+            transformNode.attachChild(slideNode);
 
-                TextureState ts = (TextureState) rm.createRendererState(RenderState.StateType.Texture);
-                ts.setTexture(texture);
-                ts.setEnabled(true);
+            TriMesh currentSlide = new Box(cell.getCellID().toString() + "_" + index, new Vector3f(), 0.1f, width, height);
+            slideNode.attachChild(currentSlide);
+            node.attachChild(transformNode);
+            logger.finer("Just attached slide to node, with (" + width + "," + height + ")");
 
-                MaterialState ms = (MaterialState) rm.createRendererState(RenderState.StateType.Material);
-                ms.setDiffuse(ColorRGBA.white);
-                ms.setColorMaterial(MaterialState.ColorMaterial.Diffuse);
-                currentSlide.setRenderState(ms);
+            RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
 
-                currentSlide.setRenderState(ts);
-                currentSlide.setSolidColor(ColorRGBA.white);
+            TextureState ts = (TextureState) rm.createRendererState(RenderState.StateType.Texture);
+            ts.setTexture(texture);
+            ts.setEnabled(true);
 
-                // This interfaces with the layout stored in the
-                // pdfCell to put it in the right place.
-                logger.warning("About to place slides in a new slide updater context.");
-                placeSlide(currentSlide, index);
+            MaterialState ms = (MaterialState) rm.createRendererState(RenderState.StateType.Material);
+            ms.setDiffuse(ColorRGBA.white);
+            ms.setColorMaterial(MaterialState.ColorMaterial.Diffuse);
+            currentSlide.setRenderState(ms);
 
-                currentSlide.setModelBound(new BoundingBox());
-                currentSlide.updateModelBound();
+            currentSlide.setRenderState(ts);
+            currentSlide.setSolidColor(ColorRGBA.white);
+
+            // This interfaces with the layout stored in the
+            // pdfCell to put it in the right place.
+            logger.warning("About to place slides in a new slide updater context.");
+            placeSlide(transformNode, index);
+
+            currentSlide.setModelBound(new BoundingBox());
+            currentSlide.updateModelBound();
 
 
-                ClientContextJME.getWorldManager().addToUpdateList(currentSlide);
+            ClientContextJME.getWorldManager().addToUpdateList(currentSlide);
 
-                // This is not the right place to be doing this - it really only
-                // needs to get done after the last slide. But it's easier than
-                // making sure we run an update only at the end, and it keeps
-                // the bounds constantly up to date as slides get added.
-                node.setLocalScale(cell.getScale());
-                node.updateModelBound();
-                node.updateRenderState();
-                
-                ClientContextJME.getWorldManager().addToUpdateList(node);
+            // This is not the right place to be doing this - it really only
+            // needs to get done after the last slide. But it's easier than
+            // making sure we run an update only at the end, and it keeps
+            // the bounds constantly up to date as slides get added.
+            node.setLocalScale(cell.getScale());
+            node.updateModelBound();
+            node.updateRenderState();
 
-                newSlide(currentSlide);
+            ClientContextJME.getWorldManager().addToUpdateList(node);
+
+            newSlide(currentSlide);
         }
     }
 }

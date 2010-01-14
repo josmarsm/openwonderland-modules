@@ -65,7 +65,7 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
 
         // Per comments in PresentationCellRenderer, we need to apply a rotation
         // to the node so our coordiante system matches that of our parent cell.
-        root.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
+//        root.setLocalRotation(new Quaternion().fromAngleNormalAxis((float) (Math.PI / 2), new Vector3f(0,1,0)));
 
         return root;
     }
