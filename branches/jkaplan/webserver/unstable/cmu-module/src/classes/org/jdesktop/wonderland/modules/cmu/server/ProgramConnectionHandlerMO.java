@@ -28,10 +28,12 @@ import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.ProgramConnectionType;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
 import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CMUEventResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.DeleteProgramMessage;
+import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.EventListUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.MouseClickMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.ProgramPlaybackSpeedChangeMessage;
 import org.jdesktop.wonderland.server.WonderlandContext;
@@ -128,6 +130,10 @@ public final class ProgramConnectionHandlerMO implements ManagedObject, Serializ
 
     static public void sendEventResponse(CellID cellID, WonderlandResponse response) {
         getInstance().sendMessage(new CMUEventResponseMessage(cellID, response));
+    }
+
+    static public void sendEventList(CellID cellID, EventResponseList eventList) {
+        getInstance().sendMessage(new EventListUpdateMessage(cellID, eventList));
     }
 
     /**

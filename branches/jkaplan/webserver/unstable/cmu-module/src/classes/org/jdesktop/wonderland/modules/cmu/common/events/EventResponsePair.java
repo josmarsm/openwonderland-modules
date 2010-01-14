@@ -30,6 +30,10 @@ public class EventResponsePair implements Serializable {
     private WonderlandEvent event = null;
     private WonderlandResponse response = null;
 
+    public EventResponsePair() {
+        
+    }
+
     public EventResponsePair(WonderlandEvent event, WonderlandResponse response) {
         this.setEvent(event);
         this.setResponse(response);
@@ -49,5 +53,33 @@ public class EventResponsePair implements Serializable {
 
     public void setResponse(WonderlandResponse response) {
         this.response = response;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (other instanceof EventResponsePair && this.getClass().equals(other.getClass())) {
+            EventResponsePair otherPair = (EventResponsePair) other;
+
+            if (this.getEvent().equals(otherPair.getEvent()) &&
+                    this.getResponse().equals(otherPair.getResponse())) {
+                return true;
+            }
+
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + (this.event != null ? this.event.hashCode() : 0);
+        hash = 23 * hash + (this.response != null ? this.response.hashCode() : 0);
+        return hash;
     }
 }

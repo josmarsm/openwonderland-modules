@@ -98,11 +98,15 @@ public class ProgramConnectionHandler implements ClientConnectionHandler, Serial
         CellMO cellMO = CellManagerMO.getCell(message.getCellID());
         assert (cellMO != null) && CMUCellMO.class.isAssignableFrom(cellMO.getClass());
 
-        // Set server and port information if the program was successfully created
+        // Set initial information if the program was successfully created
         if (message.isCreationSuccessful()) {
             CMUCellMO cmuCellMO = (CMUCellMO) cellMO;
             cmuCellMO.setHostnameAndPort(message.getHostname(), message.getPort());
             cmuCellMO.setAllowedEventResponses(message.getAllowedResponses());
+
+            // Set event list - note that this change will be propagated back
+            // to the CMU player redundantly, but this only happens once per program
+            cmuCellMO.setEventList(message.getInitialEventList());
         } else {
             Logger.getLogger(ProgramConnectionHandler.class.getName()).severe("Error creating program for cell: " + message.getCellID());
         }
