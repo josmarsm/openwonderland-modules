@@ -19,16 +19,18 @@
 package org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.MovingPlatformCell;
 
 /**
@@ -84,8 +86,37 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
         // Might not need to do this dance; maybe just changing platform is
         // good enough. 
 //        root.detachChild(platform);
-        platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.10f, platformCell.getPlatformDepth());
-        logger.warning("Created new platform box with width: " + platformCell.getPlatformWidth());
-//        root.attachChild(platform);
+
+        logger.warning("about to update platform position: " + platform);
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg) {
+//                CellTransform transform = cell.getLayout().getSlides().get(0).getTransform();
+//                CellTransform transform = platformCell.getPlatformTransform();
+
+
+//                Quaternion baseRotation = new Quaternion().fromAngleAxis(
+//                    (float) (Math.PI / 2), new Vector3f(0, 1, 0));
+
+//                slide.setLocalRotation(baseRotation.mult(transform.getRotation(null)));
+
+//                root.setLocalRotation(transform.getRotation(null));
+//                root.setLocalTranslation(transform.getTranslation(null));
+
+                platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.10f, platformCell.getPlatformDepth());
+
+//                logger.warning("Placing platform at: " + root.getLocalTranslation() + "with rotation " + root.getLocalRotation());
+
+                ClientContextJME.getWorldManager().addToUpdateList(root);
+            }
+            },null);
+
+//        slide.setTransform(pdfCell.getLayout()..get(i).getTransform());
     }
+
+
+//        platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.10f, platformCell.getPlatformDepth());
+//        logger.warning("Created new platform box with width: " + platformCell.getPlatformWidth());
+//        root.attachChild(platform);
 }
+

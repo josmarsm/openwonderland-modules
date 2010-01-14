@@ -358,8 +358,11 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
         pdfRenderer.layoutUpdated();
 
         // Resize the platform appropriately and make sure it's in the right place.
-        if(platform != null)
-            platform.renderer.layoutUpdated();
+//        if(platform != null) {
+//            platform.
+//        }
+
+//            platform.layoutUpdated(this.layout);
     }
 
     protected void sendCurrentLayoutToServer() {

@@ -130,14 +130,18 @@ public class PresentationCellMO extends CellMO {
      */
     protected Vector3f getPositionForIndex(SlidesCell cell, int i) {
 //        Vector3f newPosition = new Vector3f(0, -1.0f, (cell.getCenterSpacing() * (i-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)/2.0f)*-1)));
-        Vector3f newPosition = new Vector3f((cell.getCenterSpacing() * (i-1)*1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)))/(-2.0f), -1.5f, 0.0f);
+
+        Vector3f newPosition = this.layout.getSlides().get(i).getTransform().getTranslation(null);
+
+//        Vector3f newPosition = new Vector3f((cell.getCenterSpacing() * (i-1)*1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)))/(-2.0f), -1.5f, 0.0f);
         logger.info("scaling by " + cell.getScale());
         
         newPosition = newPosition.mult(cell.getScale());
 
         // make this larger to push the platform further back from the slides.
         // this isn't a function of the scale
-        newPosition.z = 9.0f;
+//        newPosition.z = 9.0f;
+        newPosition.z -= this.layout.getMaxSlideWidth() / 2 + 1;
 
         logger.info("returning position for platform: " + newPosition);
         return newPosition;
@@ -287,6 +291,7 @@ public class PresentationCellMO extends CellMO {
     public void setCurSlide(int curSlide) {
         this.curSlide = curSlide;
 
+        logger.info("CurrentSlide: " + curSlide);
         // Update the position of the MovingPlatformCell.
         if (this.platformCellMORef != null) {
             logger.info("Updating platform position.");
@@ -319,6 +324,7 @@ public class PresentationCellMO extends CellMO {
 
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             // do something.
+            logger.info("RECEIVED MESSAGE");
             PresentationCellMO cellMO = (PresentationCellMO)getCell();
 
             PresentationCellChangeMessage msg = (PresentationCellChangeMessage)message;
@@ -347,6 +353,11 @@ public class PresentationCellMO extends CellMO {
 
                 sender.send(clients, message);
                 logger.info("Sending new layout to clients: " + clients);
+
+                // This is semantically kind of wrong, but triggers
+                // a relayout of the platform, which is what we need
+                // for now.
+                cellMO.setCurSlide(cellMO.getCurSlide());
             } else if(msg.getType() == MessageType.SLIDE_CHANGE) {
                 if (msg.getSlideIncrement() == 1)
                     cellMO.setCurSlide(cellMO.getCurSlide() + 1);
