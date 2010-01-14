@@ -138,8 +138,7 @@ public class MovieCreator {
         ContentCollection recordingRoot = getSystemRoot(cell.getCellCache().getSession().getSessionManager());
         ContentNode node = recordingRoot.getChild(AUDIO_RECORDINGS_DIRECTORY);
         if (node == null) {
-            logger.severe("No recordings directory in webdav");
-            return null;
+            throw new ContentRepositoryException("No such directory: " + AUDIO_RECORDINGS_DIRECTORY);
         }
         return(ContentCollection) node;
     }
