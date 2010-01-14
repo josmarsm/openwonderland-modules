@@ -25,7 +25,12 @@ import java.io.Serializable;
  * @author kevin
  */
 public class WonderlandResponse implements Serializable {
-    private String functionName;
+
+    private String functionName = "";
+
+    public WonderlandResponse() {
+        
+    }
 
     public WonderlandResponse(String functionName) {
         this.setFunctionName(functionName);
@@ -40,10 +45,12 @@ public class WonderlandResponse implements Serializable {
     }
 
     @Override
-    public boolean equals (Object other) {
-        if (super.equals(other)) return true;
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
 
-        if (other instanceof WonderlandResponse) {
+        if (other instanceof WonderlandResponse && this.getClass().equals(other.getClass())) {
             WonderlandResponse otherResponse = (WonderlandResponse) other;
             if (this.getFunctionName().equals(otherResponse.getFunctionName())) {
                 return true;

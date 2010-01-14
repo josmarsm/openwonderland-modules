@@ -141,6 +141,6 @@ public class ProgramConnection extends BaseConnection {
 
     protected void handleEventListUpdate(EventListUpdateMessage message) {
         System.out.println("Updating event list to: " + message.getEventList());
-        
+        programManager.eventListUpdate(message.getCellID(), message.getEventList());
     }
 }

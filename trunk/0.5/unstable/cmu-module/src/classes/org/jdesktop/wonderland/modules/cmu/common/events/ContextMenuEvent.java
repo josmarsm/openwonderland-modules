@@ -23,8 +23,13 @@ package org.jdesktop.wonderland.modules.cmu.common.events;
  * @author kevin
  */
 public class ContextMenuEvent extends WonderlandEvent {
-    private String menuText;
-    
+
+    private String menuText = "";
+
+    public ContextMenuEvent() {
+        
+    }
+
     public ContextMenuEvent(String menuText) {
         this.setMenuText(menuText);
     }
@@ -35,6 +40,29 @@ public class ContextMenuEvent extends WonderlandEvent {
 
     public void setMenuText(String menuText) {
         this.menuText = menuText;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (other instanceof ContextMenuEvent && this.getClass().equals(other.getClass())) {
+            ContextMenuEvent otherEvent = (ContextMenuEvent) other;
+            if (this.getMenuText().equals(otherEvent.getMenuText())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 83 * hash + (this.menuText != null ? this.menuText.hashCode() : 0);
+        return hash;
     }
 
     @Override

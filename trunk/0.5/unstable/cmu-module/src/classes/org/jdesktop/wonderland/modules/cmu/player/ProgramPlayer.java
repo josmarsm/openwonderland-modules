@@ -18,8 +18,12 @@
 package org.jdesktop.wonderland.modules.cmu.player;
 
 import edu.cmu.cs.dennisc.alice.ast.AbstractMethod;
+import java.beans.XMLEncoder;
+import java.io.FileNotFoundException;
 import org.jdesktop.wonderland.modules.cmu.player.connections.SceneConnectionHandler;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -27,6 +31,8 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import org.alice.apis.moveandturn.Program;
 import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.alice.stageide.apis.moveandturn.event.MouseButtonAdapter;
@@ -48,8 +54,9 @@ public class ProgramPlayer extends Program {
     /**
      * Filename to store Wonderland-specific data inside Alice files
      */
-    public static final String wonderlandDataFileName = "wonderland.xml";
+    public static final String WONDERLAND_DATA_FILENAME = "wonderland.xml";
     private static final long DEFAULT_ADVANCE_DURATION = 2000;
+    private static final Logger logger = Logger.getLogger(ProgramPlayer.class.getName());
     private File cmuFile;
     private final Object cmuFileLock = new Object();
     private edu.cmu.cs.dennisc.alice.virtualmachine.VirtualMachine vm;
@@ -119,14 +126,126 @@ public class ProgramPlayer extends Program {
 
     public EventResponseList getEventList() {
         synchronized (this.eventListLock) {
+            System.out.println("getEventList called, returning: " + eventList);
             return eventList;
         }
     }
 
     public void setEventList(EventResponseList eventList) {
+
+        System.out.println("setEventList called, setting: " + eventList);
+
+        EventResponseList oldList = null;
+
         synchronized (this.eventListLock) {
+            oldList = this.eventList;
             this.eventList = eventList;
         }
+
+        // If a change was made, update the .a3p file
+        if (!(eventList.equals(oldList))) {
+            this.updateZIPFile();
+        }
+    }
+
+    /**
+     * Update the Wonderland annotations in the file for this scene based on
+     * the current data in this object (e.g. the event list).
+     */
+    protected void updateZIPFile() {
+        /*
+         * Code to update ZIP file adapted from
+         * http://snippets.dzone.com/posts/show/3468
+         *
+         * We move the existing file to a temporary one, copy all files
+         * into a new archive except for the Wonderland annotations,
+         * then add the new Wonderland annotations.
+         */
+
+        System.out.println("Updating ZIP file.");
+
+        //TODO: get rid of this...
+        /*
+        FileOutputStream outStream = null;
+        try {
+            outStream = new FileOutputStream("/home/kevin/wonderland.xml");
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        XMLEncoder enc = new XMLEncoder(outStream);
+        enc.writeObject(this.getEventList());
+        enc.close();
+        */
+
+        synchronized (this.cmuFileLock) {
+            try {
+                // Get a temporary file with the same name as the current archive
+                File tempFile = File.createTempFile(this.getFile().getName(), null);
+
+                // Delete it if it already exists, so we can rename the existing archive
+                tempFile.delete();
+
+                // Rename the existing archive
+                boolean renameOk = this.getFile().renameTo(tempFile);
+                if (!renameOk) {
+                    logger.severe("Could not rename file: " + getFile().getAbsolutePath() + " to: " + tempFile.getAbsolutePath());
+                    return;
+                }
+
+                byte[] buf = new byte[1024];
+
+                // Read from old archive
+                ZipInputStream zin = new ZipInputStream(new FileInputStream(tempFile));
+
+                // Read into new archive, with the same name as the original one
+                ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(getFile()));
+
+                // Iterate through entries of old archive
+                ZipEntry entry = zin.getNextEntry();
+                while (entry != null) {
+
+                    // Copy all entries except for the Wonderland annotations
+                    if (!(entry.getName().equals(WONDERLAND_DATA_FILENAME))) {
+
+                        // Add ZIP entry to output stream.
+                        zout.putNextEntry(new ZipEntry(entry.getName()));
+
+                        // Transfer bytes from the ZIP file to the output file
+                        int len = 0;
+                        while ((len = zin.read(buf)) > 0) {
+                            zout.write(buf, 0, len);
+                        }
+
+                        // Close entry
+                        zout.closeEntry();
+                    }
+
+                    // Advance entry
+                    entry = zin.getNextEntry();
+                }
+
+                // Close old archive
+                zin.close();
+
+                // Write the Wonderland annotations
+                zout.putNextEntry(new ZipEntry(WONDERLAND_DATA_FILENAME));
+                XMLEncoder encoder = new XMLEncoder(zout);
+                encoder.writeObject(this.getEventList());
+                encoder.close();
+                zout.closeEntry();
+
+                // Close ZIP file
+                zout.close();
+
+                // Clean up temporary file
+                tempFile.delete();
+
+                int len = 0;
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+
     }
 
     /**
@@ -186,24 +305,29 @@ public class ProgramPlayer extends Program {
 
         this.init();
 
-        synchronized (this.eventListLock) {
-            // Read Wonderland-specific data from CMU file
-            try {
-                ZipFile zipFile = new ZipFile(cmuFile, ZipFile.OPEN_READ);
+        synchronized (this.cmuFileLock) {
+            synchronized (this.eventListLock) {
+                // Read Wonderland-specific data from CMU file
+                try {
+                    ZipFile zipFile = new ZipFile(cmuFile, ZipFile.OPEN_READ);
 
-                ZipEntry wonderlandData = zipFile.getEntry(wonderlandDataFileName);
-                if (wonderlandData != null) {
-                    this.eventList = EventResponseList.readFromStream(zipFile.getInputStream(wonderlandData));
-                } else {
-                    this.eventList = new EventResponseList();
+                    ZipEntry wonderlandData = zipFile.getEntry(WONDERLAND_DATA_FILENAME);
+                    if (wonderlandData != null) {
+                        this.eventList = EventResponseList.readFromStream(zipFile.getInputStream(wonderlandData));
+                    } else {
+                        this.eventList = new EventResponseList();
+                    }
+
+                    System.out.println("Program player event list: " + this.eventList);
+                    System.out.println("Alternately: " + this.getEventList());
+
+                    zipFile.close();
+
+                } catch (ZipException ex) {
+                    Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
-                zipFile.close();
-
-            } catch (ZipException ex) {
-                Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
