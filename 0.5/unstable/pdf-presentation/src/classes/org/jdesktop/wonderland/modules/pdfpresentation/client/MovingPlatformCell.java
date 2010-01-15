@@ -163,10 +163,10 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
         BoundingVolume[] bounds = new BoundingVolume[]{box.clone(null)};
         prox.addProximityListener(this, bounds);
 
-        currentSlideTransform = layout.getSlides().get(0).getTransform();
-        logger.warning("Setting current slide transform: " + currentSlideTransform);
+//        currentSlideTransform = layout.getSlides().get(0).getTransform();
+//        logger.warning("Setting current slide transform: " + currentSlideTransform);
 
-        renderer.layoutUpdated();
+        renderer.layoutUpdated(this.platformWidth, this.platformDepth, layout.getScale());
     }
 
     public float getPlatformWidth() {

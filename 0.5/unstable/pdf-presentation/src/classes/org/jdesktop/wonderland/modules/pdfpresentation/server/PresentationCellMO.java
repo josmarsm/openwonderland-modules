@@ -141,7 +141,7 @@ public class PresentationCellMO extends CellMO {
         // make this larger to push the platform further back from the slides.
         // this isn't a function of the scale
 //        newPosition.z = 9.0f;
-        newPosition.z += this.layout.getMaxSlideWidth() / 2 + 1;
+        newPosition.z += this.layout.getMaxSlideWidth() / 2 + 1*this.layout.getScale();
 
         newPosition.y -= (this.layout.getMaxSlideHeight()/2 + 1);
 
@@ -298,24 +298,9 @@ public class PresentationCellMO extends CellMO {
         if (this.platformCellMORef != null) {
             logger.info("Updating platform position.");
             MovableComponentMO mc = this.platformCellMORef.get().getComponent(MovableComponentMO.class);
-
-//            logger.info("movable component: " + mc + "; slidesCell: " + this.slidesCellRef + "; resolved: " + this.slidesCellRef.get());
             mc.moveRequest(null, new CellTransform(new Quaternion(), this.getPositionForIndex(curSlide)));
         }
     }
-
-//    private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
-//        public PresentationCellChangeMessageReceiver(PresentationCellMO cellMO) {
-//            super(cellMO);
-//        }
-//
-//        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-//            PresentationCellMO cellMO = (PresentationCellMO) getCell();
-//            PresentationCellChangeMessage msg = (PresentationCellChangeMessage) message;
-//
-//
-//        }
-//    }
 
     //***********************************//
     // METHODS FROM PDF SPREADER CELL MO //
@@ -335,15 +320,6 @@ public class PresentationCellMO extends CellMO {
 
             logger.info("Received PDFSpreader message from client: " + msg.getLayout());
             // when we get a message, change our internal state and send it back to everyone else.
-
-            // Either a message contains a numPages bit, or the other info.
-            // Probably
-//            if(msg.getType() == MessageType.DOCUMENT) {
-//                if(!cellMO.isDocumentSetup()) {
-//                cellMO.setNumPages(msg.getNumPages());
-//                cellMO.setSlideWidth(msg.getSlideWidth());
-//                logger.warning("Setting document data. numpages: " + msg.getNumPages() + "; slideWidth: " + msg.getSlideWidth());
-//                }
             
             if(msg.getType() == MessageType.LAYOUT) {
 
