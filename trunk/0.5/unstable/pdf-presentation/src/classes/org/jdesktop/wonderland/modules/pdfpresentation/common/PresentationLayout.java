@@ -103,11 +103,11 @@ public class PresentationLayout implements Serializable {
     }
 
     public float getMaxSlideHeight() {
-        return maxHeight;
+        return maxHeight * this.scale;
     }
 
     public float getMaxSlideWidth() {
-        return maxWidth;
+        return maxWidth * this.scale;
     }
 
     @Override

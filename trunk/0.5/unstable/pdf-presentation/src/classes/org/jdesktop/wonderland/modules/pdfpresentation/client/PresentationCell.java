@@ -362,7 +362,12 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 //            platform.
 //        }
 
-//            platform.layoutUpdated(this.layout);
+
+        if(platform!=null) {
+
+            logger.warning("about to do a platform update");
+             platform.layoutUpdated(this.layout);
+        }
     }
 
     protected void sendCurrentLayoutToServer() {

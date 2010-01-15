@@ -81,31 +81,18 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
         logger.warning("setting renderer status: " + status + "; increasisng? " + increasing);
     }
 
-    public void layoutUpdated() {
+    public void layoutUpdated(final float platformWidth, final float platformDepth, final float scale) {
 
         // Might not need to do this dance; maybe just changing platform is
         // good enough. 
 //        root.detachChild(platform);
 
-        logger.warning("about to update platform position: " + platform);
+        logger.warning("about to update platform size to " + platformWidth + "x" + platformDepth);
 
         ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
             public void update(Object arg) {
-//                CellTransform transform = cell.getLayout().getSlides().get(0).getTransform();
-//                CellTransform transform = platformCell.getPlatformTransform();
 
-
-//                Quaternion baseRotation = new Quaternion().fromAngleAxis(
-//                    (float) (Math.PI / 2), new Vector3f(0, 1, 0));
-
-//                slide.setLocalRotation(baseRotation.mult(transform.getRotation(null)));
-
-//                root.setLocalRotation(transform.getRotation(null));
-//                root.setLocalTranslation(transform.getTranslation(null));
-
-                platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.10f, platformCell.getPlatformDepth());
-
-//                logger.warning("Placing platform at: " + root.getLocalTranslation() + "with rotation " + root.getLocalRotation());
+                platform.setLocalScale(scale);
 
                 ClientContextJME.getWorldManager().addToUpdateList(root);
             }
