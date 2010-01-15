@@ -43,13 +43,18 @@ public class PDFPresenterHUDPanel extends javax.swing.JPanel {
     // The size of the image
     private static final int SIZE = 48;
 
+    // The cell this panel is attached to.
+    private PresentationCell cell;
+
     /**
      * Constructor, takes an ordered list of slides to display
      *
      * @param imageList An ordered list of images to display
      */
-    public PDFPresenterHUDPanel(List<BufferedImage> imageList) {
+    public PDFPresenterHUDPanel(List<BufferedImage> imageList, PresentationCell cell) {
         initComponents();
+
+        this.cell = cell;
 
         // Put the list of images in a default list model, in order
         model = new DefaultListModel();
@@ -110,11 +115,21 @@ public class PDFPresenterHUDPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        prevButton = new javax.swing.JButton();
         slideScrollPane = new javax.swing.JScrollPane();
         slideList = new javax.swing.JList();
+        nextButton = new javax.swing.JButton();
 
         setPreferredSize(new java.awt.Dimension(530, 75));
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
+
+        prevButton.setText("Prev");
+        prevButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                prevButtonActionPerformed(evt);
+            }
+        });
+        add(prevButton);
 
         slideScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
@@ -125,8 +140,27 @@ public class PDFPresenterHUDPanel extends javax.swing.JPanel {
         slideScrollPane.setViewportView(slideList);
 
         add(slideScrollPane);
+
+        nextButton.setText("Next");
+        nextButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nextButtonActionPerformed(evt);
+            }
+        });
+        add(nextButton);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void prevButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_prevButtonActionPerformed
+        cell.incrementCurCell(-1);
+    }//GEN-LAST:event_prevButtonActionPerformed
+
+    private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
+        cell.incrementCurCell(1);
+    }//GEN-LAST:event_nextButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton nextButton;
+    private javax.swing.JButton prevButton;
     private javax.swing.JList slideList;
     private javax.swing.JScrollPane slideScrollPane;
     // End of variables declaration//GEN-END:variables
