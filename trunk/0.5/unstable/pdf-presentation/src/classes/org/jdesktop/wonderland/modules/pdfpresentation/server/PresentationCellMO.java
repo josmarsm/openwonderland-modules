@@ -47,7 +47,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class PresentationCellMO extends CellMO {
 
-    protected int curSlide = 1;
+    protected int curSlide = 0;
     
     private ManagedReference<MovingPlatformCellMO> platformCellMORef;
     private ManagedReference<SlidesCell> slidesCellRef;
@@ -128,22 +128,24 @@ public class PresentationCellMO extends CellMO {
      * @param i
      * @return
      */
-    protected Vector3f getPositionForIndex(SlidesCell cell, int i) {
+    protected Vector3f getPositionForIndex(int i) {
 //        Vector3f newPosition = new Vector3f(0, -1.0f, (cell.getCenterSpacing() * (i-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)/2.0f)*-1)));
 
         Vector3f newPosition = this.layout.getSlides().get(i).getTransform().getTranslation(null);
 
 //        Vector3f newPosition = new Vector3f((cell.getCenterSpacing() * (i-1)*1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)))/(-2.0f), -1.5f, 0.0f);
-        logger.info("scaling by " + cell.getScale());
+        logger.info("Slide position: " + newPosition);
         
-        newPosition = newPosition.mult(cell.getScale());
+        newPosition = newPosition.mult(this.layout.getScale());
 
         // make this larger to push the platform further back from the slides.
         // this isn't a function of the scale
 //        newPosition.z = 9.0f;
-        newPosition.z -= this.layout.getMaxSlideWidth() / 2 + 1;
+        newPosition.z += this.layout.getMaxSlideWidth() / 2 + 1;
 
-        logger.info("returning position for platform: " + newPosition);
+        newPosition.y -= (this.layout.getMaxSlideHeight()/2 + 1);
+
+        logger.info("final position for platform: " + newPosition);
         return newPosition;
     }
 
@@ -296,29 +298,31 @@ public class PresentationCellMO extends CellMO {
         if (this.platformCellMORef != null) {
             logger.info("Updating platform position.");
             MovableComponentMO mc = this.platformCellMORef.get().getComponent(MovableComponentMO.class);
-            mc.moveRequest(null, new CellTransform(new Quaternion(), this.getPositionForIndex(this.slidesCellRef.get(), curSlide)));
+
+//            logger.info("movable component: " + mc + "; slidesCell: " + this.slidesCellRef + "; resolved: " + this.slidesCellRef.get());
+            mc.moveRequest(null, new CellTransform(new Quaternion(), this.getPositionForIndex(curSlide)));
         }
     }
 
-    private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
-        public PresentationCellChangeMessageReceiver(PresentationCellMO cellMO) {
-            super(cellMO);
-        }
-
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            PresentationCellMO cellMO = (PresentationCellMO) getCell();
-            PresentationCellChangeMessage msg = (PresentationCellChangeMessage) message;
-
-
-        }
-    }
+//    private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
+//        public PresentationCellChangeMessageReceiver(PresentationCellMO cellMO) {
+//            super(cellMO);
+//        }
+//
+//        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+//            PresentationCellMO cellMO = (PresentationCellMO) getCell();
+//            PresentationCellChangeMessage msg = (PresentationCellChangeMessage) message;
+//
+//
+//        }
+//    }
 
     //***********************************//
     // METHODS FROM PDF SPREADER CELL MO //
     //***********************************//
 
-        private static class PresentationCellMessageReceiver extends AbstractComponentMessageReceiver {
-        public PresentationCellMessageReceiver(PresentationCellMO cellMO) {
+        private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
+        public PresentationCellChangeMessageReceiver(PresentationCellMO cellMO) {
             super(cellMO);
         }
 
@@ -340,6 +344,7 @@ public class PresentationCellMO extends CellMO {
 //                cellMO.setSlideWidth(msg.getSlideWidth());
 //                logger.warning("Setting document data. numpages: " + msg.getNumPages() + "; slideWidth: " + msg.getSlideWidth());
 //                }
+            
             if(msg.getType() == MessageType.LAYOUT) {
 
                 cellMO.setPresentationLayout(msg.getLayout());
