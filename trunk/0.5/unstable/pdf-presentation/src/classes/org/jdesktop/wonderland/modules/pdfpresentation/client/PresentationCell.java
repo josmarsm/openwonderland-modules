@@ -83,7 +83,7 @@ import org.jdesktop.wonderland.modules.pdfpresentation.common.SlideMetadata;
  * 
  * @author Drew Harry <drew_harry@dev.java.net>
  */
-public class PresentationCell extends Cell implements ProximityListener, ActionListener {
+public class PresentationCell extends Cell {
     
     private MovingPlatformCellRenderer platformRenderer = null;
 
@@ -165,10 +165,10 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 
 //            this.setLocalBounds(new BoundingBox(Vector3f.ZERO, 10.0f, 20.0f, 10.0f));
 
-            logger.warning("About to init proximity listener to bounds: " + this.getLocalBounds());
-            BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds().clone(null)};
-            prox.addProximityListener(this, bounds);
-            logger.warning("Added proximity listener.");
+//            logger.warning("About to init proximity listener to bounds: " + this.getLocalBounds());
+//            BoundingVolume[] bounds = new BoundingVolume[]{this.getLocalBounds().clone(null)};
+//            prox.addProximityListener(this, bounds);
+//            logger.warning("Added proximity listener.");
 
             // register with the global list of presentation cells.
             PresentationsManager.getPresentationsManager().addPresentationCell(this);
@@ -192,7 +192,7 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
         } else if (status==CellStatus.DISK && !increasing) {
 
  
-            prox.removeProximityListener(this);
+//            prox.removeProximityListener(this);
             PresentationsManager.getPresentationsManager().removePresentationCell(this);
             
             // from the old PDF spreader cells, which did need to pass
@@ -217,43 +217,49 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
         }
     }
 
-    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
-
-        logger.warning("view enter/exit. entered: " + entered);
-        
-        // Check to see if the avatar entering/exiting is the local one.
-        if (cell.getCellCache().getViewCell().getCellID() == viewCellID) {
-            if (entered) {
-                logger.warning("Local user in presentation space.");
-
-                AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
-
-                // Add in next/previous slide buttons.
-                if(nextSlideButton==null && prevSlideButton == null) {
-                    nextSlideButton = new JButton("Next Slide");
-                    nextSlideButton.setActionCommand(NEXT_SLIDE_ACTION);
-                    nextSlideButton.addActionListener(this);
-
-                    prevSlideButton = new JButton("Previous Slide");
-                    prevSlideButton.setActionCommand(PREV_SLIDE_ACTION);
-                    prevSlideButton.addActionListener(this);
-                }
-
-                   PresentationToolbarManager.getManager().addToolbarButton(nextSlideButton);
-                   PresentationToolbarManager.getManager().addToolbarButton(prevSlideButton);
-            } else {
-                logger.warning("Local user out of presentation space.");
-
-               AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
-
-               PresentationToolbarManager.getManager().removeToolbarButton(nextSlideButton);
-               PresentationToolbarManager.getManager().removeToolbarButton(prevSlideButton);
-               
-            }
-        }
-
-
+    public void incrementCurCell(int increment) {
+            PresentationCellChangeMessage msg = new PresentationCellChangeMessage(MessageType.SLIDE_CHANGE);
+            msg.setSlideIncrement(increment);
+            this.sendCellMessage(msg);
     }
+
+//    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
+//
+//        logger.warning("view enter/exit. entered: " + entered);
+//
+//        // Check to see if the avatar entering/exiting is the local one.
+//        if (cell.getCellCache().getViewCell().getCellID() == viewCellID) {
+//            if (entered) {
+//                logger.warning("Local user in presentation space.");
+//
+//                AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
+//
+//                // Add in next/previous slide buttons.
+//                if(nextSlideButton==null && prevSlideButton == null) {
+//                    nextSlideButton = new JButton("Next Slide");
+//                    nextSlideButton.setActionCommand(NEXT_SLIDE_ACTION);
+//                    nextSlideButton.addActionListener(this);
+//
+//                    prevSlideButton = new JButton("Previous Slide");
+//                    prevSlideButton.setActionCommand(PREV_SLIDE_ACTION);
+//                    prevSlideButton.addActionListener(this);
+//                }
+//
+//                   PresentationToolbarManager.getManager().addToolbarButton(nextSlideButton);
+//                   PresentationToolbarManager.getManager().addToolbarButton(prevSlideButton);
+//            } else {
+//                logger.warning("Local user out of presentation space.");
+//
+//               AvatarCell avatar = (AvatarCell) cell.getCellCache().getCell(viewCellID);
+//
+//               PresentationToolbarManager.getManager().removeToolbarButton(nextSlideButton);
+//               PresentationToolbarManager.getManager().removeToolbarButton(prevSlideButton);
+//
+//            }
+//        }
+//
+//
+//    }
 
 //    public static void createPresentationSpace(Cell slidesCell) {
 //
@@ -292,19 +298,19 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 //        // setServerState method on the just-created new cell.
 //    }
 
-    public void actionPerformed(ActionEvent arg0) {
-        if(arg0.getActionCommand().equals(NEXT_SLIDE_ACTION)) {
-            // Send a message to the server, teling it to increment the slide count.
-            PresentationCellChangeMessage msg = new PresentationCellChangeMessage(MessageType.SLIDE_CHANGE);
-            msg.setSlideIncrement(+1);
-            this.sendCellMessage(msg);
-            
-        } else if(arg0.getActionCommand().equals(PREV_SLIDE_ACTION)) {
-            PresentationCellChangeMessage msg = new PresentationCellChangeMessage(MessageType.SLIDE_CHANGE);
-            msg.setSlideIncrement(-1);
-            this.sendCellMessage(msg);
-        }
-    }
+//    public void actionPerformed(ActionEvent arg0) {
+//        if(arg0.getActionCommand().equals(NEXT_SLIDE_ACTION)) {
+//            // Send a message to the server, teling it to increment the slide count.
+//            PresentationCellChangeMessage msg = new PresentationCellChangeMessage(MessageType.SLIDE_CHANGE);
+//            msg.setSlideIncrement(+1);
+//            this.sendCellMessage(msg);
+//
+//        } else if(arg0.getActionCommand().equals(PREV_SLIDE_ACTION)) {
+//            PresentationCellChangeMessage msg = new PresentationCellChangeMessage(MessageType.SLIDE_CHANGE);
+//            msg.setSlideIncrement(-1);
+//            this.sendCellMessage(msg);
+//        }
+//    }
 
     /**
      *
@@ -560,7 +566,7 @@ public class PresentationCell extends Cell implements ProximityListener, ActionL
 
             // Create the presenter tools panel, passing it the list of images
             // to display as slides.
-            PDFPresenterHUDPanel hudPanel = new PDFPresenterHUDPanel(imageList);
+            PDFPresenterHUDPanel hudPanel = new PDFPresenterHUDPanel(imageList, ((PresentationCell)event.getCell()));
             HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
             pdfPresenterHUDComponent = hud.createComponent(hudPanel);
             pdfPresenterHUDComponent.setName(

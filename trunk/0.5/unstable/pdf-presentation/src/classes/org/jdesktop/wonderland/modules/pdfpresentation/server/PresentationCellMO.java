@@ -143,6 +143,7 @@ public class PresentationCellMO extends CellMO {
 //        newPosition.z = 9.0f;
         newPosition.z += this.layout.getMaxSlideWidth() / 2 + 1*this.layout.getScale();
 
+
         newPosition.y -= (this.layout.getMaxSlideHeight()/2 + 1);
 
         logger.info("final position for platform: " + newPosition);
@@ -291,6 +292,14 @@ public class PresentationCellMO extends CellMO {
     }
 
     public void setCurSlide(int curSlide) {
+
+        // Clamp the range on possible slide
+        // values.
+        if(curSlide < 0)
+            curSlide = 0;
+        else if(curSlide == this.getNumSlides())
+            curSlide = this.getNumSlides() -1;
+
         this.curSlide = curSlide;
 
         logger.info("CurrentSlide: " + curSlide);
