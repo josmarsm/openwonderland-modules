@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.pdfpresentation.client;
 
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFLayoutHelper;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.pdfview.PDFFile;
@@ -352,7 +353,7 @@ public class PresentationCell extends Cell {
 
         try {
             // On updateLayout, trigger a refresh based on current settings.
-            this.layout.setSlides(PDFLayoutHelper.generateLayoutMetadata(this.layout.getLayout(), PDFDeployer.loadDeployedPDF(pdfURI), this.layout.getSpacing()));
+            this.layout.setSlides(PDFLayoutHelper.generateLayoutMetadata(this.layout.getLayout(), PDFDeployer.loadDeployedPDF(pdfURI).getNumberOfSlides(), this.layout.getSpacing()));
         } catch (MalformedURLException ex) {
             Logger.getLogger(PresentationCell.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -468,8 +469,7 @@ public class PresentationCell extends Cell {
             PositionComponentServerState pos = new PositionComponentServerState();
 
             SlideMetadata slide = layout.getSlides().get(0);
-
-
+            
             logger.warning("About to place movable platform at: " + slide.getTransform().getTranslation(null));
 
             Vector3f translation = slide.getTransform().getTranslation(null);
