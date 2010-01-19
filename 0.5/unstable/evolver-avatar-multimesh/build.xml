@@ -24,27 +24,68 @@
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
         <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
+        <path location="${current.dir}/lib/nux.jar"/>
+        <path location="${current.dir}/lib/xom.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
-                                                -module-compile-client"/>
+                                                -module-compile-client,
+                                                -evolver-compile-encoder"/>
+
+    <target name="-evolver-compile-encoder" depends="-module-init">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/encoder/**"/>
+            </compile-classes>
+
+            <compile-classpath>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
 
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
 
         <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
-            <client>
+            <client dir="${current.dir}/lib">
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <fileset dir="${current.dir}/src/classes">
                         <include name="${module.src}/client/evolvermulti/resources/**/*.png"/>
                     </fileset>
                 </clientjar>
+                
+                <!-- include library files -->
+                <include name="*.jar"/>
             </client>
 
 <!--            <art dir="${current.dir}/art"/>-->
         </module>
+
+        <!-- build the encoder binary -->
+        <mkdir dir="${build.dir}/encoder"/>
+        <jar jarfile="${build.dir}/encoder/encoder.jar" basedir="${build.classes.dir}">
+            <include name="${module.src}/encoder/**"/>
+            <include name="${module.src}/client/evolver/MultimeshEvolverAvatarInfo*.class"/>
+            <include name="${module.src}/client/evolver/config/**"/>
+
+            <zipfileset src="${current.dir}/lib/nux.jar"/>
+            <zipfileset src="${current.dir}/lib/xom.jar"/>
+            <zipfileset src="${modules.dir}/world/avatarbase/lib/avatars.jar">
+                <include name="org/collada/colladaschema/**"/>
+                <include name="imi/character/**"/>
+            </zipfileset>
+            <zipfileset src="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar">
+                <include name="org/jdesktop/wonderland/modules/avatarbase/client/imi/**"/>
+            </zipfileset>
+
+            <manifest>
+                <attribute name="Main-Class" value="org.jdesktop.wonderland.modules.evolvermulti.encoder.EncoderMain"/>
+            </manifest>
+        </jar>
     </target>
 
     <target name="deploy" depends="dist, -module-deploy"/>
