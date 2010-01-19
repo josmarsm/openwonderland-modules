@@ -16,7 +16,7 @@
  * this code.
  */
 
-package org.jdesktop.wonderland.modules.pdfpresentation.client;
+package org.jdesktop.wonderland.modules.pdfpresentation.common;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.modules.pdf.client.DeployedPDF;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout.LayoutType;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.SlideMetadata;
 
@@ -39,14 +38,15 @@ import org.jdesktop.wonderland.modules.pdfpresentation.common.SlideMetadata;
  */
 public class PDFLayoutHelper {
 
-    public static List<SlideMetadata> generateLayoutMetadata(LayoutType layout, DeployedPDF pdf, float spacing) {
+    private static final Logger logger = Logger.getLogger(PDFLayoutHelper.class.getName());
+
+
+    public static List<SlideMetadata> generateLayoutMetadata(LayoutType layout, int numSlides, float spacing) {
 
         List<SlideMetadata> slidesMetadata = new ArrayList<SlideMetadata>();
 
-//        PresentationSlideMetadata previous = null;
         SlideMetadata current = null;
 
-        int numSlides = pdf.getNumberOfSlides();
         Logger.getLogger(PDFLayoutHelper.class.getName()).warning("Number of slides: " + numSlides);
 
         // Loop through the slides, generating a metadata object for each one.
@@ -107,5 +107,48 @@ public class PDFLayoutHelper {
         return new CellTransform(rot, pos, 1.0f);
     }
 
+    /**
+     * Returns the CellTransform that should be used to place the platform
+     * in front of the specified slide in the context of the given layout. 
+     *
+     * @param layout
+     * @param slideIndex
+     * @return
+     */
+    public static CellTransform getPlatformPosition(PresentationLayout layout, int slideIndex) {
 
+        Vector3f slidePosition = layout.getSlides().get(slideIndex).getTransform().getTranslation(null);
+        slidePosition = slidePosition.mult(layout.getScale());
+
+        Vector3f platformPosition = slidePosition.clone();
+
+        Quaternion rot = layout.getSlides().get(slideIndex).getTransform().getRotation(null);
+
+        switch(layout.getLayout()) {
+            case LINEAR:
+                platformPosition = slidePosition.clone();
+
+                platformPosition.z += layout.getMaxSlideWidth() / 2 + 1*layout.getScale();
+                platformPosition.y -= (layout.getMaxSlideHeight()/2 + 1);
+
+
+                break;
+            case CIRCLE:
+            case SEMICIRCLE:
+                // Basic gameplan with these is to draw a vector from the slide
+                // to the center of the circle, normalize it, and then move
+                // slideWidth/2 along that vector to find the center
+                // of the platform location.
+
+                platformPosition = slidePosition.subtract(slidePosition.normalize().mult(layout.getMaxSlideWidth()/2 +1*layout.getScale()));
+                platformPosition.y -= (layout.getMaxSlideHeight()/2 + 1);
+
+                break;
+        }
+
+        logger.warning("Platform position: " + platformPosition + "; rot: " + rot);
+
+        return new CellTransform(rot, platformPosition);
+
+    }
 }
