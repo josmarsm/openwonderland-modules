@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -21,10 +21,6 @@ import com.jme.math.Matrix4f;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JPanel;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -36,8 +32,8 @@ import javax.xml.bind.annotation.XmlType;
  *
  * @author Bernard Horan
  */
-//@XmlAccessorType(XmlAccessType.FIELD)
-//@XmlType( namespace="marbleous" )
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType( namespace="marbleous" )
 public class TrackSegment implements Serializable {
     private String segmentTypeClassName;
     private SegmentSettings segmentProperties;
