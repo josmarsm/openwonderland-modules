@@ -20,12 +20,12 @@ package org.jdesktop.wonderland.modules.pdfpresentation.client;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
@@ -36,6 +36,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.MovingPlatformCellRenderer;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCellClientState;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout;
 
 /**
  *
@@ -54,6 +55,8 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
     protected float platformWidth = 10.0f;
     protected float platformDepth = 10.0f;
 
+    CellTransform currentSlideTransform;
+
     public MovingPlatformCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
     }
@@ -68,22 +71,6 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 //            PresentationToolbarManager.getManager().addPlatform(this);
 
             BoundingBox box = new BoundingBox(Vector3f.ZERO, this.platformWidth, 20.0f, this.platformDepth);
-
-            // move it to the same place to trigger a world bounds cache update.
-//            MovableComponent mc = this.getComponent(MovableComponent.class);
-//            mc.localMoveRequest(this.getLocalTransform());
-
-            // Transform these bounds listeners into world coordinates because proximity listeners seem to not
-            // actually check against local coordinates.
-
-//            CellTransform localToWorld = this.getLocalToWorldTransform();
-//            Vector3f boundsCenter = localToWorld.transform(Vector3f.ZERO);
-
-//            BoundingVolume worldBounds = this.getLocalBounds();
-//
-//            localToWorld.transform(worldBounds);
-//
-
 
             BoundingVolume[] bounds = new BoundingVolume[]{box.clone(null)};
 
@@ -165,12 +152,32 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
     }
 
-    public float getPlatformWidth() {
+    public void layoutUpdated(PresentationLayout layout) {
 
+        this.platformWidth = layout.getMaxSlideWidth();
+        this.platformDepth = layout.getMaxSlideWidth();
+
+        // Now update the proximity sensing stuff.
+        prox.removeProximityListener(this);
+        BoundingBox box = new BoundingBox(Vector3f.ZERO, this.platformWidth, 20.0f, this.platformDepth);
+        BoundingVolume[] bounds = new BoundingVolume[]{box.clone(null)};
+        prox.addProximityListener(this, bounds);
+
+//        currentSlideTransform = layout.getSlides().get(0).getTransform();
+//        logger.warning("Setting current slide transform: " + currentSlideTransform);
+
+        renderer.layoutUpdated(this.platformWidth, this.platformDepth, layout.getScale());
+    }
+
+    public float getPlatformWidth() {
         return this.platformWidth;
     }
 
     public float getPlatformDepth() {
         return platformDepth;
+    }
+
+    public CellTransform getPlatformTransform() {
+        return currentSlideTransform;
     }
 }

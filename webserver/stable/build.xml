@@ -37,7 +37,6 @@
                 <file name="stickynote/dist/stickynote.jar"/>
                 <file name="clickablelink/dist/clickable-link.jar"/>
 		<file name="quick-reference/dist/quick-reference.jar"/>
-                <file name="security-session-auth/dist/security-session-auth.jar"/>
             </filelist>
             <mapper type="flatten"/>
         </copy>

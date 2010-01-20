@@ -106,16 +106,18 @@ public class BeanshellClientPlugin extends BaseClientPlugin {
         panel.setLayout(new BorderLayout());
         panel.add(console, BorderLayout.CENTER);
         interpreter = new Interpreter(console);
-        try {
-            interpreter.set("loginInfo", loginInfo);
-        } catch (EvalError ex) {
-            pluginLogger.log(Level.SEVERE, "Failed to set loginInfo variable in interpreter", ex);
-        }
+        
         Thread beanThread = new Thread(interpreter);
         hudComponent = mainHUD.createComponent(panel);
         hudComponent.setName(BUNDLE.getString("BEANSHELL_CONSOLE"));
         hudComponent.setPreferredLocation(Layout.SOUTHEAST);
         mainHUD.addComponent(hudComponent);
+        try {
+            interpreter.set("loginInfo", loginInfo);
+            interpreter.set("beanHUD", hudComponent);
+        } catch (EvalError ex) {
+            pluginLogger.log(Level.SEVERE, "Failed to set variables in interpreter", ex);
+        }
 
         // Track when the HUD Component is closed. We need to update the state
         // of the check box menu item too. 

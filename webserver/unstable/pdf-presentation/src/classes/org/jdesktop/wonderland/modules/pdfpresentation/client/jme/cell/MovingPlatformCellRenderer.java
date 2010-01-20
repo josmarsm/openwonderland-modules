@@ -19,16 +19,18 @@
 package org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Box;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.MovingPlatformCell;
 
 /**
@@ -39,6 +41,9 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
 
     private static final Logger logger = Logger.getLogger(MovingPlatformCellRenderer.class.getName());
 
+    private TriMesh platform;
+    private Node root;
+
     MovingPlatformCell platformCell;
 
     public MovingPlatformCellRenderer(Cell cell) {
@@ -48,16 +53,16 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
     }
 
     protected Node createSceneGraph(Entity entity) {
-        Node root = new Node();
+        root = new Node();
 
 
 
         logger.warning("About to create PLATFORM TRIMESH with dimensions: " + platformCell.getPlatformWidth() + "x" + platformCell.getPlatformDepth());
-        TriMesh platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.25f, platformCell.getPlatformDepth());
+        platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.10f, platformCell.getPlatformDepth());
 
         root.attachChild(platform);
         logger.warning("Attached platform.");
-        root.setModelBound(new BoundingBox(Vector3f.ZERO, platformCell.getPlatformWidth(), 0.25f, platformCell.getPlatformDepth()));
+        root.setModelBound(new BoundingBox(Vector3f.ZERO, platformCell.getPlatformWidth(), 0.15f, platformCell.getPlatformDepth()));
         root.updateModelBound();
 
         logger.warning("Updated bounds.");
@@ -75,4 +80,30 @@ public class MovingPlatformCellRenderer extends BasicRenderer {
         super.setStatus(status, increasing);
         logger.warning("setting renderer status: " + status + "; increasisng? " + increasing);
     }
+
+    public void layoutUpdated(final float platformWidth, final float platformDepth, final float scale) {
+
+        // Might not need to do this dance; maybe just changing platform is
+        // good enough. 
+//        root.detachChild(platform);
+
+        logger.warning("about to update platform size to " + platformWidth + "x" + platformDepth);
+
+        ClientContextJME.getWorldManager().addRenderUpdater(new RenderUpdater() {
+            public void update(Object arg) {
+
+                platform.setLocalScale(scale);
+
+                ClientContextJME.getWorldManager().addToUpdateList(root);
+            }
+            },null);
+
+//        slide.setTransform(pdfCell.getLayout()..get(i).getTransform());
+    }
+
+
+//        platform = new Box("platform", Vector3f.ZERO, platformCell.getPlatformWidth(), 0.10f, platformCell.getPlatformDepth());
+//        logger.warning("Created new platform box with width: " + platformCell.getPlatformWidth());
+//        root.attachChild(platform);
 }
+
