@@ -31,8 +31,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBException;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.messages.MovableAvatarMessage;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.common.messages.MessagePacker.ReceivedMessage;
@@ -49,6 +51,8 @@ import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.common.cell.state.AvatarCellServerState;
+import org.jdesktop.wonderland.modules.eventplayer.server.npcplayer.NpcPlayerCellMO;
+import org.jdesktop.wonderland.server.cell.view.AvatarCellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.wfs.importer.CellMap;
 
@@ -115,6 +119,22 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
             logger.severe("Could not find cell for ID: " + newCellID);
             return;
         }
+        //TODO workaround for npc player cells that appear to ignore parent coordinates
+        if (targetCell instanceof NpcPlayerCellMO) {
+            logger.info("targetCell: " + targetCell);
+            CellMO parentCell = targetCell.getParent();
+            if (parentCell != null) {
+                logger.info("parentCell: " + parentCell);
+                if (message instanceof MovableAvatarMessage) {
+                    Vector3f messageTranslation = ((MovableAvatarMessage) message).getTranslation();
+                    logger.info("message translation: " + messageTranslation);
+                    Vector3f worldTranslation = parentCell.getWorldTransform(null).getTranslation(null);
+                    logger.info("world translation: " + worldTranslation);
+                    messageTranslation.multLocal(worldTranslation);
+                    logger.info("after multiplication: " + ((MovableAvatarMessage) message).getTranslation());
+                }                
+            }
+        }
         //logger.info("targetCell: " + targetCell);
         ChannelComponentMO channel = targetCell.getComponent(ChannelComponentMO.class);
         //logger.info("channel: " + channel);
@@ -124,7 +144,7 @@ public class EventPlayer implements ManagedObject, RecordingLoadedListener, Cell
         try {
             channel.messageReceived(clientSender, clientID, message);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "failed to replay message: " + rMessage.getMessage(), e);
+            logger.log(Level.SEVERE, "failed to replay message: " + message, e);
         }
     }
 
