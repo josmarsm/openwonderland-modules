@@ -71,7 +71,7 @@ public class PDFContentImporter extends AbstractContentImporter
     // Used to increase the resolution at which we render PDF pages. If this
     // is 1, then the rendered page is the same as the reported dimensions
     // of the page. For pages with text, this is often way too low resolution
-    // to read it at any distance, hence the 2.5 default.
+    // to read it at any distance, hence the 2.0 default.
     private static final float RESOLUTION_RENDER_FACTOR = 2.0f;
 
     /**
@@ -138,8 +138,8 @@ public class PDFContentImporter extends AbstractContentImporter
         try {
             ContentCollection pdfRoot = getPDFRoot();
             if (pdfRoot.getChild(pdfName) != null) {
-                return "wlcontent://users/" + loginInfo.getUsername() + "/" +
-                        pdfName;
+                return "wlcontent://users/" + loginInfo.getUsername() +
+                        "/pdf/" + pdfName;
             }
             return null;
         } catch (ContentRepositoryException excp) {
@@ -272,7 +272,8 @@ public class PDFContentImporter extends AbstractContentImporter
         Image image = page.getImage(width, height, null, null, true, true);
 
         // Convert into a buffered image and return
-        BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage bi = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = bi.createGraphics();
         g.drawImage(image, 0, 0, width, height, null);
         return bi;

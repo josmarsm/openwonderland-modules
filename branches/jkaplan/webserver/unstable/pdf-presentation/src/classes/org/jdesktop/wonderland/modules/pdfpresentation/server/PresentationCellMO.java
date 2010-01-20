@@ -28,6 +28,8 @@ import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFLayoutHelper;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFLayoutHelper;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellChangeMessage.MessageType;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationCellClientState;
@@ -47,7 +49,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class PresentationCellMO extends CellMO {
 
-    protected int curSlide = 1;
+    protected int curSlide = 0;
     
     private ManagedReference<MovingPlatformCellMO> platformCellMORef;
     private ManagedReference<SlidesCell> slidesCellRef;
@@ -128,132 +130,10 @@ public class PresentationCellMO extends CellMO {
      * @param i
      * @return
      */
-    protected Vector3f getPositionForIndex(SlidesCell cell, int i) {
-//        Vector3f newPosition = new Vector3f(0, -1.0f, (cell.getCenterSpacing() * (i-1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)/2.0f)*-1)));
-        Vector3f newPosition = new Vector3f((cell.getCenterSpacing() * (i-1)*1) + (cell.getCenterSpacing()*((cell.getNumSlides()-1)))/(-2.0f), -1.5f, 0.0f);
-        logger.info("scaling by " + cell.getScale());
-        
-        newPosition = newPosition.mult(cell.getScale());
-
-        // make this larger to push the platform further back from the slides.
-        // this isn't a function of the scale
-        newPosition.z = 9.0f;
-
-        logger.info("returning position for platform: " + newPosition);
-        return newPosition;
+    protected CellTransform getPositionForIndex(int i) {
+        return PDFLayoutHelper.getPlatformPosition(layout, i);
     }
 
-//    @Override
-//    public void setServerState(CellServerState state) {
-//        super.setServerState(state);
-//
-//        PresentationCellServerState pcsState = (PresentationCellServerState) state;
-//
-////        // Going to be a little tricksy here. There's a bunch of setup work
-////        // we need to do if this cell was just created. To disambiguate
-////        // cell creation from a normal unload from the disk, or some other
-////        // setServerState situation, we're going to rely on the initialized bit
-////        // in the state.
-////
-////        if(!pcsState.isInitialized()) {
-////
-////            //////////////////////////////////////////////
-////            // Setup process as continued from PresentationCell.createPresentationSpace
-////            ////////////////////
-////            CellMO pdfCell = CellManagerMO.getCell(pcsState.getSlidesCellID());
-////
-////            CellTransform pdfCellTransform = pdfCell.getLocalTransform(null);
-////
-////
-////            CellMO slideParent = pdfCell.getParent();
-////            if(slideParent==null) {
-////                CellManagerMO.getCellManager().removeCellFromWorld(pdfCell);
-////            } else {
-////                slideParent.removeChild(pdfCell);
-////            }
-////
-////            SlidesCell slidesCell = (SlidesCell)pdfCell;
-////
-////            // 0. Setup this cell so it's got the same transform that the PDF
-////            //    cell used to have, but bigger.
-////            BoundingVolume pdfBounds = slidesCell.getPDFBounds();
-////            this.setLocalBounds(pdfBounds);
-////
-////            logger.warning("pdf bounds are: " + pdfBounds);
-////
-////            this.setLocalTransform(pdfCellTransform);
-////
-////
-////
-////
-////            // 1. Reparent the PDF cell to be a child of this cell instead.
-////            //     (this chunk of code is very similar to
-////            //       CellEditConnectionHandler:304 where the REPARENT_CELL
-////            //       cell message is implemented. They should probably
-////            //       be refactored to be the same common utility method.)
-////
-////            try {
-////
-////                PositionComponentServerState posState = new PositionComponentServerState();
-////
-////                posState.setTranslation(Vector3f.ZERO);
-////                posState.setBounds(pdfBounds);
-////
-////                CellServerState pdfCellState = pdfCell.getServerState(null);
-////                pdfCellState.addComponentServerState(posState);
-////
-////                pdfCell.setServerState(pdfCellState);
-////
-////                this.addChild(pdfCell);
-////
-////            } catch (MultipleParentException ex) {
-////                logger.info("MultipleParentException while reparenting the slidesCell: " + ex.getLocalizedMessage());
-////            }
-////
-////            // 2. Create a presentation platform in front of the first slide, sized
-////            //    so it is as wide as the slide + the inter-slide space. Parent to
-////            //    the new PresentationCell.
-////
-////
-////            logger.info("numpages: " + slidesCell.getNumSlides() + " created by: " + slidesCell.getCreatorName());
-////
-////            // The width of the presentation platform is the width of the slide + one spacing distance.
-////            float actualSlideSpacing = slidesCell.getInterslideSpacing();
-////            if(actualSlideSpacing < 0) actualSlideSpacing = 0.0f;
-////
-////            float platformWidth = slidesCell.getMaxSlideWidth() + slidesCell.getInterslideSpacing();
-////
-////            MovingPlatformCellMO platform = new MovingPlatformCellMO();
-////
-////            MovingPlatformCellServerState platformState = new MovingPlatformCellServerState();
-////            platformState.setPlatformWidth(platformWidth);
-////            platformState.setPlatformDepth(8.0f);
-////
-////            PositionComponentServerState posState = new PositionComponentServerState();
-////            posState.setTranslation(getPositionForIndex(slidesCell, curSlide));
-////            posState.setScaling(Vector3f.UNIT_XYZ);
-////            posState.setRotation(new Quaternion());
-////
-////            platformState.addComponentServerState(posState);
-////            platform.setServerState(platformState);
-////
-////            try {
-////                this.addChild(platform);
-////                logger.warning("Just added the platform to the cell.");
-////            } catch (MultipleParentException ex) {
-////                logger.warning("ERROR ADDING MOVING PLATFORM");
-////            }
-////
-////            // 4. Attach a thought bubbles component to the parent cell.
-////
-////            // 5. Add buttons to the main presentation toolbar for setting camera
-////            //    positions (back / top)
-////
-////        } else {
-////
-////        }
-//
-//    }
 
     @Override
     protected void setLive(boolean live) {
@@ -285,26 +165,24 @@ public class PresentationCellMO extends CellMO {
     }
 
     public void setCurSlide(int curSlide) {
+
+        // Clamp the range on possible slide
+        // values.
+        if(curSlide < 0)
+            curSlide = 0;
+        else if(curSlide == this.getNumSlides())
+            curSlide = this.getNumSlides() -1;
+
         this.curSlide = curSlide;
 
+        logger.info("CurrentSlide: " + curSlide);
         // Update the position of the MovingPlatformCell.
         if (this.platformCellMORef != null) {
-            logger.info("Updating platform position.");
+            CellTransform newPlatformPosition = this.getPositionForIndex(curSlide);
             MovableComponentMO mc = this.platformCellMORef.get().getComponent(MovableComponentMO.class);
-            mc.moveRequest(null, new CellTransform(new Quaternion(), this.getPositionForIndex(this.slidesCellRef.get(), curSlide)));
-        }
-    }
-
-    private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
-        public PresentationCellChangeMessageReceiver(PresentationCellMO cellMO) {
-            super(cellMO);
-        }
-
-        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
-            PresentationCellMO cellMO = (PresentationCellMO) getCell();
-            PresentationCellChangeMessage msg = (PresentationCellChangeMessage) message;
-
-
+            mc.moveRequest(null, newPlatformPosition);
+            
+            logger.warning("Updating platform position: " + newPlatformPosition.getTranslation(null) + ", rot: " + newPlatformPosition.getRotation(null));
         }
     }
 
@@ -312,28 +190,21 @@ public class PresentationCellMO extends CellMO {
     // METHODS FROM PDF SPREADER CELL MO //
     //***********************************//
 
-        private static class PresentationCellMessageReceiver extends AbstractComponentMessageReceiver {
-        public PresentationCellMessageReceiver(PresentationCellMO cellMO) {
+        private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
+        public PresentationCellChangeMessageReceiver(PresentationCellMO cellMO) {
             super(cellMO);
         }
 
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             // do something.
+            logger.info("RECEIVED MESSAGE");
             PresentationCellMO cellMO = (PresentationCellMO)getCell();
 
             PresentationCellChangeMessage msg = (PresentationCellChangeMessage)message;
 
             logger.info("Received PDFSpreader message from client: " + msg.getLayout());
             // when we get a message, change our internal state and send it back to everyone else.
-
-            // Either a message contains a numPages bit, or the other info.
-            // Probably
-//            if(msg.getType() == MessageType.DOCUMENT) {
-//                if(!cellMO.isDocumentSetup()) {
-//                cellMO.setNumPages(msg.getNumPages());
-//                cellMO.setSlideWidth(msg.getSlideWidth());
-//                logger.warning("Setting document data. numpages: " + msg.getNumPages() + "; slideWidth: " + msg.getSlideWidth());
-//                }
+            
             if(msg.getType() == MessageType.LAYOUT) {
 
                 cellMO.setPresentationLayout(msg.getLayout());
@@ -347,6 +218,11 @@ public class PresentationCellMO extends CellMO {
 
                 sender.send(clients, message);
                 logger.info("Sending new layout to clients: " + clients);
+
+                // This is semantically kind of wrong, but triggers
+                // a relayout of the platform, which is what we need
+                // for now.
+                cellMO.setCurSlide(cellMO.getCurSlide());
             } else if(msg.getType() == MessageType.SLIDE_CHANGE) {
                 if (msg.getSlideIncrement() == 1)
                     cellMO.setCurSlide(cellMO.getCurSlide() + 1);

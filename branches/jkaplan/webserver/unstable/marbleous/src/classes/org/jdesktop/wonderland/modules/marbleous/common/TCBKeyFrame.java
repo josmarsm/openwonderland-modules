@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -32,21 +32,21 @@ import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
  * (TCB) spline interpolation.
  */
 
-//@XmlAccessorType(XmlAccessType.FIELD)
-//@XmlType( namespace="marbleous" )
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType( namespace="marbleous" )
 public class TCBKeyFrame implements Serializable {
   
     // Position, Rotation and Scale
     /**
      *
      */
-    //@XmlJavaTypeAdapter(Vector3fAdapter.class)
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
     public Vector3f position;
 
-    //@XmlJavaTypeAdapter(QuaternionAdapter.class)
+    @XmlJavaTypeAdapter(QuaternionAdapter.class)
     public Quaternion  quat;
 
-    //@XmlJavaTypeAdapter(Vector3fAdapter.class)
+    @XmlJavaTypeAdapter(Vector3fAdapter.class)
     public Vector3f scale;
 
     // Tension, Continuity & Bias

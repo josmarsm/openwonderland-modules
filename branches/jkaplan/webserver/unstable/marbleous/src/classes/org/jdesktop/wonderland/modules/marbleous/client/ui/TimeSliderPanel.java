@@ -299,7 +299,9 @@ public class TimeSliderPanel extends javax.swing.JPanel {
             if(me3d.getID() == MouseEvent.MOUSE_CLICKED){
                 if(me.getButton() == MouseEvent.BUTTON1 &&
                    me.getModifiersEx() == 0) {
-                    currentSampleEntity.setVisible(! currentSampleEntity.getVisible());
+                    if (currentSampleEntity != null) {
+                        currentSampleEntity.setVisible(! currentSampleEntity.getVisible());
+                    }
                 }
             }
         }

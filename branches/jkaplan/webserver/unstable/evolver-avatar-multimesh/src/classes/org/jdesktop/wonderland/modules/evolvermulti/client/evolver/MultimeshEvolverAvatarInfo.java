@@ -19,10 +19,12 @@ package org.jdesktop.wonderland.modules.evolvermulti.client.evolver;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
@@ -118,5 +120,20 @@ public class MultimeshEvolverAvatarInfo {
 
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
         return (MultimeshEvolverAvatarInfo) unmarshaller.unmarshal(is);
+    }
+
+    /**
+     * Writes this EvolverAvatarInfo class to the output stream as XML.
+     *
+     * @param is The output stream of XML data
+     * @throw IOException Upon I/O error
+     * @throw JAXBException Upon parsing error
+     */
+    public void encode(OutputStream os)
+            throws IOException, JAXBException  {
+
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        marshaller.marshal(this, os);
     }
 }

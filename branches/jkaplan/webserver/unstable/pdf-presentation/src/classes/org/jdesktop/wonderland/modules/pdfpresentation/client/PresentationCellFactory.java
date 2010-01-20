@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.pdfpresentation.client;
 
+import org.jdesktop.wonderland.modules.pdfpresentation.common.PDFLayoutHelper;
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
 import java.awt.Image;
@@ -106,7 +107,7 @@ public class PresentationCellFactory implements CellFactorySPI {
         layout.setScale(PresentationLayout.DEFAULT_SCALE);
         layout.setSpacing(PresentationLayout.DEFAULT_SPACING);
         layout.setSlides(PDFLayoutHelper.generateLayoutMetadata(
-                layout.getLayout(), deployedPDF, layout.getSpacing()));
+                layout.getLayout(), deployedPDF.getNumberOfSlides(), layout.getSpacing()));
 
         // TODO Do some fallback handling here - what happens if we don't have
         // a proper PDF at this stage? there will be no layout information.

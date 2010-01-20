@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -98,6 +98,14 @@ public class TrackCellMO extends CellMO {
     @Override
     public void setServerState(CellServerState state) {
         super.setServerState(state);
+    }
+
+    @Override
+    public CellServerState getServerState(CellServerState cellServerState) {
+        if (cellServerState == null) {
+            cellServerState = serverState;
+        }
+        return super.getServerState(cellServerState);
     }
 
     /**
