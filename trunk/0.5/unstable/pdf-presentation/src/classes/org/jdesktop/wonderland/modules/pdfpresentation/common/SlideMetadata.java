@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.pdfpresentation.common;
 
+import com.jme.math.Vector3f;
 import java.io.Serializable;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 
@@ -53,6 +54,10 @@ public class SlideMetadata implements Serializable {
 
     public void setTransform(CellTransform transform) {
         this.transform = transform;
+    }
+
+    public String toString() {
+        return "[" + pageIndex + "]: " + transform.getTranslation(null) + "; " + transform.getRotation(null);
     }
 
 }
