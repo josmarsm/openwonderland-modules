@@ -227,6 +227,8 @@ public class PDFLayoutHUDPanel extends JPanel implements ActionListener {
         } finally {
             setLocalChanges(false);
         }
+
+        cell.updateLayout();
         
         // Tell the server of the new layout to inform all other clients
         cell.sendCurrentLayoutToServer();

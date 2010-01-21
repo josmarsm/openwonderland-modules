@@ -124,6 +124,8 @@ public class PDFLayoutHelper {
 
         Quaternion rot = layout.getSlides().get(slideIndex).getTransform().getRotation(null);
 
+        logger.warning("Slide (" + slideIndex + ")" + " Position: " + slidePosition + " rot: " + rot);
+
         switch(layout.getLayout()) {
             case LINEAR:
                 platformPosition = slidePosition.clone();

@@ -385,6 +385,8 @@ public class PresentationCell extends Cell {
 
         msg.setLayout(layout);
 
+        logger.warning("about to send layout to server with slides: " + layout.getSlides());
+
         this.sendCellMessage(msg);
 
         // Also, trigger a local relayout operation here.
