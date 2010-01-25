@@ -78,7 +78,7 @@ public class CMUMovementListener extends WonderlandServerEventListener
         }
 
         public void transformChanged(ManagedReference<CellMO> cellRef, CellTransform localTransform, CellTransform worldTransform) {
-            System.out.println("Avatar moved!");
+            //TODO: Make transform match up with CMU transform
             this.getResponse().setAvatarPosition(localTransform.getTranslation(null));
 
             CMUCellMO cellMO = (CMUCellMO) AppContext.getDataManager().getBinding(this.getBinding());

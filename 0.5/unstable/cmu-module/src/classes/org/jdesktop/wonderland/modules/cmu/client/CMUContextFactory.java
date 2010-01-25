@@ -91,7 +91,6 @@ public class CMUContextFactory implements ContextMenuFactorySPI {
         }
 
         public String getAppropriateLabel() {
-            System.out.println("Getting appropriate HUD toggle menu label");
             if (getParent().getHudControl().isHUDShowing()) {
                 return "Hide controls";
             } else {

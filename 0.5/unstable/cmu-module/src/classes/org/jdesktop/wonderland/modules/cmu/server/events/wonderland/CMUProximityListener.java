@@ -44,7 +44,6 @@ public class CMUProximityListener extends WonderlandServerEventListener
     }
 
     public void viewEnterExit(boolean entered, CellID cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
-        System.out.println("Proximity event occurred!");
         if (entered == this.isEventOnEnter()) {
             this.eventOccurred();
         }

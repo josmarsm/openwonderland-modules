@@ -108,13 +108,9 @@ public class ProgramPlayer extends Program {
         ArrayList<CMUResponseFunction> allowedResponses = new ArrayList<CMUResponseFunction>();
 
         for (AbstractMethod method : this.sceneType.getDeclaredMethods()) {
-            System.out.println("\nMethod: " + method);
             for (AbstractParameter parameter : method.getParameters()) {
-                System.out.println("Parameter: " + parameter + " (" + parameter.getValueType() + ")");
                 TypeDeclaredInJava javaType = (TypeDeclaredInJava) parameter.getValueType();
-                System.out.println("Reflection proxy: " + javaType.getClassReflectionProxy().getReification());
             }
-            System.out.println();
 
             for (CMUResponseFunction response : CMUResponseFunctionTypes.RESPONSE_FUNCTION_TYPES) {
                 if (method.getParameters().size() == response.getArgumentClasses().length) {
@@ -144,14 +140,11 @@ public class ProgramPlayer extends Program {
 
     public EventResponseList getEventList() {
         synchronized (this.eventListLock) {
-            System.out.println("getEventList called, returning: " + eventList);
             return eventList;
         }
     }
 
     public void setEventList(EventResponseList eventList) {
-
-        System.out.println("setEventList called, setting: " + eventList);
 
         EventResponseList oldList = null;
 
@@ -171,7 +164,6 @@ public class ProgramPlayer extends Program {
      * the current data in this object (e.g. the event list).
      */
     protected void updatePersistentData() {
-        System.out.println("Updating persistent data.");
         ContentManager.uploadSceneData(new PersistentSceneData(this.getEventList()),
                 this.getPersistentDataFilename());
     }
@@ -186,10 +178,6 @@ public class ProgramPlayer extends Program {
     }
 
     public void eventResponse(CMUResponseFunction response) {
-        System.out.println("Calling method: " + response.getFunctionName());
-        System.out.println("For type: " + this.sceneType.getName());
-        System.out.println("Get method returns: " + this.sceneType.getDeclaredMethod(response.getFunctionName(), response.getArgumentClasses()));
-        System.out.println("Arguments are: " + response.getArgumentValues());
         this.vm.invokeEntryPoint(this.sceneType.getDeclaredMethod(response.getFunctionName(), response.getArgumentClasses()),
                 this.scene, response.getArgumentValues());
     }

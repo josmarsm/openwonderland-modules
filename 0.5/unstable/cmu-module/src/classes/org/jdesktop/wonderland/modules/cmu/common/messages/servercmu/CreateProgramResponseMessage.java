@@ -127,7 +127,6 @@ public class CreateProgramResponseMessage extends ResponseMessage {
     }
 
     public void setInitialEventList(EventResponseList initialEventList) {
-        System.out.println("Setting initial event list: " + initialEventList);
         this.initialEventList = initialEventList;
     }
 

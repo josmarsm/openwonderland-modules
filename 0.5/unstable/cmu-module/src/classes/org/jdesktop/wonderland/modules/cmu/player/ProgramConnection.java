@@ -135,12 +135,10 @@ public class ProgramConnection extends BaseConnection {
     }
 
     protected void handleWonderlandEvent(CMUEventResponseMessage message) {
-        System.out.println("ProgramConnection received event response: " + message.getResponse());
         programManager.eventResponse(message.getCellID(), message.getResponse());
     }
 
     protected void handleEventListUpdate(EventListUpdateMessage message) {
-        System.out.println("Updating event list to: " + message.getEventList());
         programManager.eventListUpdate(message.getCellID(), message.getEventList());
     }
 }
