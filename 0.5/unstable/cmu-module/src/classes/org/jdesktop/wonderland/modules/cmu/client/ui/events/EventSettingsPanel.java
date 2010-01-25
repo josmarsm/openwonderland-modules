@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.cmu.client.ui.events;
 
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEvent;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 
 /**
  * Base class for a a panel containing options for a particular event type.
@@ -42,4 +43,6 @@ public abstract class EventSettingsPanel<EventType extends WonderlandEvent> exte
     public abstract void setEvent(EventType event);
 
     public abstract Class getEventClass();
+
+    public abstract boolean allowsResponse(CMUResponseFunction response);
 }

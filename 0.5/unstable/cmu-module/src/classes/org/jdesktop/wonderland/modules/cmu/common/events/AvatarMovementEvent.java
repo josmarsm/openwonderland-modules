@@ -15,24 +15,31 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
+package org.jdesktop.wonderland.modules.cmu.common.events;
 
 /**
- * Message containing an event response, sent to the CMU player for processing.
+ * Event corresponding to avatar movement within a particular range of the
+ * cell center.
  * @author kevin
  */
-public class CMUEventResponseMessage extends ServerCMUMessage {
-    private final CMUResponseFunction response;
+public class AvatarMovementEvent extends WonderlandEvent {
 
-    public CMUEventResponseMessage(CellID cellID, CMUResponseFunction response) {
-        super(cellID);
-        this.response = response;
+    private float distance = 0;
+
+    public AvatarMovementEvent() {
+        super();
     }
 
-    public CMUResponseFunction getResponse() {
-        return response;
+    public AvatarMovementEvent(float distance) {
+        this.setDistance(distance);
+    }
+
+    public float getDistance() {
+        return distance;
+    }
+
+    public void setDistance(float distance) {
+        this.distance = distance;
     }
 }

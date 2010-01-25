@@ -25,6 +25,8 @@
 package org.jdesktop.wonderland.modules.cmu.client.ui.events;
 
 import org.jdesktop.wonderland.modules.cmu.common.events.ProximityEvent;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.NoArgumentFunction;
 
 /**
  * Settings panel for proximity events
@@ -129,5 +131,10 @@ public class ProximitySettingsPanel extends EventSettingsPanel<ProximityEvent> {
     private javax.swing.JSpinner distanceSpinner;
     private javax.swing.JComboBox eventOnEnterBox;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public boolean allowsResponse(CMUResponseFunction response) {
+        return response instanceof NoArgumentFunction;
+    }
 
 }

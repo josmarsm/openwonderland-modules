@@ -15,24 +15,25 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
 
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
+package org.jdesktop.wonderland.modules.cmu.common.events.responses;
 
 /**
- * Message containing an event response, sent to the CMU player for processing.
+ * Container class for an array containing instances of all CMU response
+ * function types.
  * @author kevin
  */
-public class CMUEventResponseMessage extends ServerCMUMessage {
-    private final CMUResponseFunction response;
+public class CMUResponseFunctionTypes {
 
-    public CMUEventResponseMessage(CellID cellID, CMUResponseFunction response) {
-        super(cellID);
-        this.response = response;
-    }
+    public static final CMUResponseFunction[] RESPONSE_FUNCTION_TYPES = {
+        new AvatarPositionFunction(),
+        new NoArgumentFunction(),
+    };
 
-    public CMUResponseFunction getResponse() {
-        return response;
+    /**
+     * Class should never be instantiated.
+     */
+    private CMUResponseFunctionTypes() {
+        
     }
 }

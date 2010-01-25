@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
 /**
- *
+ * Container class for an array containing all server/client message classes.
  * @author kevin
  */
 public final class ServerClientMessageTypes {
@@ -43,7 +43,5 @@ public final class ServerClientMessageTypes {
      * Class should never be instantiated
      */
     private ServerClientMessageTypes() {
-
     }
-
 }

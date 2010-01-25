@@ -19,20 +19,20 @@ package org.jdesktop.wonderland.modules.cmu.common.messages.serverclient;
 
 import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 
 /**
  * Message containing a list of available responses to Wonderland events.
  * @author kevin
  */
 public class AvailableResponsesChangeMessage extends CellMessage {
-    private final ArrayList<WonderlandResponse> responses;
+    private final ArrayList<CMUResponseFunction> responses;
     
-    public AvailableResponsesChangeMessage(ArrayList<WonderlandResponse> responses) {
+    public AvailableResponsesChangeMessage(ArrayList<CMUResponseFunction> responses) {
         this.responses = responses;
     }
 
-    public ArrayList<WonderlandResponse> getResponses() {
+    public ArrayList<CMUResponseFunction> getResponses() {
         return responses;
     }
 }

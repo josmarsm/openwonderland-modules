@@ -27,7 +27,7 @@ import java.awt.GridLayout;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
 import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandEvent;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 
 /**
  * Panel representing a single Wonderland event, along with the appropriate
@@ -67,7 +67,7 @@ public class SingleEventPanel extends javax.swing.JPanel {
             return null;
         } else {
             WonderlandEvent event = settingsPanel.getEvent();
-            WonderlandResponse response = ((ResponseMenuItem) responseList.getSelectedItem()).getResponse();
+            CMUResponseFunction response = ((ResponseMenuItem) responseList.getSelectedItem()).getResponse();
 
             if (event == null || response == null) {
                 return null;
@@ -111,6 +111,8 @@ public class SingleEventPanel extends javax.swing.JPanel {
         this.settingsPanel = ((EventMenuItem) this.eventTypeSelection.getSelectedItem()).getEventPanel();
         this.settingsContainer.add(this.settingsPanel);
 
+        this.populateResponseList();
+
         // Repack parent frame to update with new panel
         this.getParentFrame().setPreferredSize(this.getParentFrame().getSize());
         this.getParentFrame().pack();
@@ -123,13 +125,16 @@ public class SingleEventPanel extends javax.swing.JPanel {
 
         this.eventTypeSelection.addItem(new EventMenuItem("Proximity", new ProximitySettingsPanel()));
         this.eventTypeSelection.addItem(new EventMenuItem("Menu", new ContextSettingsPanel()));
+        this.eventTypeSelection.addItem(new EventMenuItem("Movement", new MovementSettingsPanel()));
     }
 
     private void populateResponseList() {
         this.responseList.removeAllItems();
         if (this.getParentCell() != null && this.getParentCell().getAllowedResponses() != null) {
-            for (WonderlandResponse response : this.getParentCell().getAllowedResponses()) {
-                this.responseList.addItem(new ResponseMenuItem(response));
+            for (CMUResponseFunction response : this.getParentCell().getAllowedResponses()) {
+                if (this.settingsPanel != null && this.settingsPanel.allowsResponse(response)) {
+                    this.responseList.addItem(new ResponseMenuItem(response));
+                }
             }
         }
     }
@@ -160,13 +165,13 @@ public class SingleEventPanel extends javax.swing.JPanel {
 
     private class ResponseMenuItem {
 
-        private final WonderlandResponse response;
+        private final CMUResponseFunction response;
 
-        public ResponseMenuItem(WonderlandResponse response) {
+        public ResponseMenuItem(CMUResponseFunction response) {
             this.response = response;
         }
 
-        public WonderlandResponse getResponse() {
+        public CMUResponseFunction getResponse() {
             return this.response;
         }
 
@@ -185,13 +190,13 @@ public class SingleEventPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel2 = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
+        javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
+        javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
         eventTypeSelection = new javax.swing.JComboBox();
         removeButton = new javax.swing.JButton();
         responseList = new javax.swing.JComboBox();
-        jLabel1 = new javax.swing.JLabel();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
         settingsContainer = new javax.swing.JPanel();
 
         setBorder(null);
@@ -304,10 +309,6 @@ public class SingleEventPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_eventTypeChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox eventTypeSelection;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JButton removeButton;
     private javax.swing.JComboBox responseList;
     private javax.swing.JPanel settingsContainer;

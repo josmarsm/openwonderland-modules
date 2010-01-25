@@ -21,7 +21,7 @@ import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.NoArgumentFunction;
 import org.jdesktop.wonderland.modules.cmu.server.CMUCellMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 
@@ -34,7 +34,7 @@ public class CMUProximityListener extends WonderlandServerEventListener
 
     private final boolean eventOnEnter;
 
-    public CMUProximityListener(ManagedReference<CMUCellMO> parent, WonderlandResponse response, boolean eventOnEnter) {
+    public CMUProximityListener(ManagedReference<CMUCellMO> parent, NoArgumentFunction response, boolean eventOnEnter) {
         super(parent, response);
         this.eventOnEnter = eventOnEnter;
     }

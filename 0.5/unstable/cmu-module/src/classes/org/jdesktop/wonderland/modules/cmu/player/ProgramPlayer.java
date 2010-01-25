@@ -18,29 +18,23 @@
 package org.jdesktop.wonderland.modules.cmu.player;
 
 import edu.cmu.cs.dennisc.alice.ast.AbstractMethod;
-import java.beans.XMLEncoder;
-import java.io.FileNotFoundException;
+import edu.cmu.cs.dennisc.alice.ast.AbstractParameter;
+import edu.cmu.cs.dennisc.alice.ast.TypeDeclaredInJava;
 import org.jdesktop.wonderland.modules.cmu.player.connections.SceneConnectionHandler;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 import org.alice.apis.moveandturn.Program;
 import org.alice.apis.moveandturn.event.MouseButtonListener;
 import org.alice.stageide.apis.moveandturn.event.MouseButtonAdapter;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
+import org.jdesktop.wonderland.modules.cmu.common.PersistentSceneData;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
-import org.jdesktop.wonderland.modules.cmu.server.CMUCellMO;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunctionTypes;
+import org.jdesktop.wonderland.modules.cmu.player.connections.ContentUploadManager;
 
 /**
  * A standard CMU program which can access its scene graph via a
@@ -51,10 +45,6 @@ import org.jdesktop.wonderland.modules.cmu.server.CMUCellMO;
  */
 public class ProgramPlayer extends Program {
 
-    /**
-     * Filename to store Wonderland-specific data inside Alice files
-     */
-    public static final String WONDERLAND_DATA_FILENAME = "wonderland.xml";
     private static final long DEFAULT_ADVANCE_DURATION = 2000;
     private static final Logger logger = Logger.getLogger(ProgramPlayer.class.getName());
     private File cmuFile;
@@ -114,11 +104,39 @@ public class ProgramPlayer extends Program {
         return this.sceneConnectionHandler.getHostname();
     }
 
-    public ArrayList<WonderlandResponse> getAllowedResponses() {
-        ArrayList<WonderlandResponse> allowedResponses = new ArrayList<WonderlandResponse>();
+    public ArrayList<CMUResponseFunction> getAllowedResponses() {
+        ArrayList<CMUResponseFunction> allowedResponses = new ArrayList<CMUResponseFunction>();
 
         for (AbstractMethod method : this.sceneType.getDeclaredMethods()) {
-            allowedResponses.add(new WonderlandResponse(method.getName()));
+            System.out.println("\nMethod: " + method);
+            for (AbstractParameter parameter : method.getParameters()) {
+                System.out.println("Parameter: " + parameter + " (" + parameter.getValueType() + ")");
+                TypeDeclaredInJava javaType = (TypeDeclaredInJava) parameter.getValueType();
+                System.out.println("Reflection proxy: " + javaType.getClassReflectionProxy().getReification());
+            }
+            System.out.println();
+
+            for (CMUResponseFunction response : CMUResponseFunctionTypes.RESPONSE_FUNCTION_TYPES) {
+                if (method.getParameters().size() == response.getArgumentClasses().length) {
+                    boolean methodMatchesResponse = true;
+                    for (int i = 0; i < method.getParameters().size(); i++) {
+                        AbstractParameter parameter = method.getParameters().get(i);
+                        if (parameter.getValueType() instanceof TypeDeclaredInJava) {
+                            TypeDeclaredInJava javaType = (TypeDeclaredInJava) parameter.getValueType();
+                            if (!javaType.getClassReflectionProxy().getReification().equals(response.getArgumentClasses()[i])) {
+                                methodMatchesResponse = false;
+                            }
+                        } else {
+                            logger.severe("Invalid parameter type: " + parameter.getValueType());
+                            methodMatchesResponse = false;
+                        }
+                    }
+
+                    if (methodMatchesResponse) {
+                        allowedResponses.add(response.createResponse(method.getName()));
+                    }
+                }
+            }
         }
 
         return allowedResponses;
@@ -142,9 +160,9 @@ public class ProgramPlayer extends Program {
             this.eventList = eventList;
         }
 
-        // If a change was made, update the .a3p file
-        if (!(eventList.equals(oldList))) {
-            this.updateZIPFile();
+        // If a change was made, update the data on the server
+        if (eventList != null && !(eventList.equals(oldList))) {
+            this.updatePersistentData();
         }
     }
 
@@ -152,7 +170,7 @@ public class ProgramPlayer extends Program {
      * Update the Wonderland annotations in the file for this scene based on
      * the current data in this object (e.g. the event list).
      */
-    protected void updateZIPFile() {
+    protected void updatePersistentData() {
         /*
          * Code to update ZIP file adapted from
          * http://snippets.dzone.com/posts/show/3468
@@ -162,89 +180,92 @@ public class ProgramPlayer extends Program {
          * then add the new Wonderland annotations.
          */
 
-        System.out.println("Updating ZIP file.");
+        System.out.println("Updating persistent data.");
+        ContentUploadManager.uploadSceneData(new PersistentSceneData(this.getEventList()),
+                this.getPersistentDataFilename());
 
         //TODO: get rid of this...
         /*
         FileOutputStream outStream = null;
         try {
-            outStream = new FileOutputStream("/home/kevin/wonderland.xml");
+        outStream = new FileOutputStream("/home/kevin/wonderland.xml");
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
+        Logger.getLogger(ProgramPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
         XMLEncoder enc = new XMLEncoder(outStream);
         enc.writeObject(this.getEventList());
         enc.close();
-        */
+
 
         synchronized (this.cmuFileLock) {
-            try {
-                // Get a temporary file with the same name as the current archive
-                File tempFile = File.createTempFile(this.getFile().getName(), null);
+        try {
+        // Get a temporary file with the same name as the current archive
+        File tempFile = File.createTempFile(this.getFile().getName(), null);
 
-                // Delete it if it already exists, so we can rename the existing archive
-                tempFile.delete();
+        // Delete it if it already exists, so we can rename the existing archive
+        tempFile.delete();
 
-                // Rename the existing archive
-                boolean renameOk = this.getFile().renameTo(tempFile);
-                if (!renameOk) {
-                    logger.severe("Could not rename file: " + getFile().getAbsolutePath() + " to: " + tempFile.getAbsolutePath());
-                    return;
-                }
-
-                byte[] buf = new byte[1024];
-
-                // Read from old archive
-                ZipInputStream zin = new ZipInputStream(new FileInputStream(tempFile));
-
-                // Read into new archive, with the same name as the original one
-                ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(getFile()));
-
-                // Iterate through entries of old archive
-                ZipEntry entry = zin.getNextEntry();
-                while (entry != null) {
-
-                    // Copy all entries except for the Wonderland annotations
-                    if (!(entry.getName().equals(WONDERLAND_DATA_FILENAME))) {
-
-                        // Add ZIP entry to output stream.
-                        zout.putNextEntry(new ZipEntry(entry.getName()));
-
-                        // Transfer bytes from the ZIP file to the output file
-                        int len = 0;
-                        while ((len = zin.read(buf)) > 0) {
-                            zout.write(buf, 0, len);
-                        }
-
-                        // Close entry
-                        zout.closeEntry();
-                    }
-
-                    // Advance entry
-                    entry = zin.getNextEntry();
-                }
-
-                // Close old archive
-                zin.close();
-
-                // Write the Wonderland annotations
-                zout.putNextEntry(new ZipEntry(WONDERLAND_DATA_FILENAME));
-                XMLEncoder encoder = new XMLEncoder(zout);
-                encoder.writeObject(this.getEventList());
-                encoder.close();
-                zout.closeEntry();
-
-                // Close ZIP file
-                zout.close();
-
-                // Clean up temporary file
-                tempFile.delete();
-
-                int len = 0;
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            }
+        // Rename the existing archive
+        boolean renameOk = this.getFile().renameTo(tempFile);
+        if (!renameOk) {
+        logger.severe("Could not rename file: " + getFile().getAbsolutePath() + " to: " + tempFile.getAbsolutePath());
+        return;
         }
+
+        byte[] buf = new byte[1024];
+
+        // Read from old archive
+        ZipInputStream zin = new ZipInputStream(new FileInputStream(tempFile));
+
+        // Read into new archive, with the same name as the original one
+        ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(getFile()));
+
+        // Iterate through entries of old archive
+        ZipEntry entry = zin.getNextEntry();
+        while (entry != null) {
+
+        // Copy all entries except for the Wonderland annotations
+        if (!(entry.getName().equals(WONDERLAND_DATA_FILENAME))) {
+
+        // Add ZIP entry to output stream.
+        zout.putNextEntry(new ZipEntry(entry.getName()));
+
+        // Transfer bytes from the ZIP file to the output file
+        int len = 0;
+        while ((len = zin.read(buf)) > 0) {
+        zout.write(buf, 0, len);
+        }
+
+        // Close entry
+        zout.closeEntry();
+        }
+
+        // Advance entry
+        entry = zin.getNextEntry();
+        }
+
+        // Close old archive
+        zin.close();
+
+        // Write the Wonderland annotations
+        zout.putNextEntry(new ZipEntry(WONDERLAND_DATA_FILENAME));
+        XMLEncoder encoder = new XMLEncoder(zout);
+        encoder.writeObject(this.getEventList());
+        encoder.close();
+        zout.closeEntry();
+
+        // Close ZIP file
+        zout.close();
+
+        // Clean up temporary file
+        tempFile.delete();
+
+        int len = 0;
+        } catch (IOException ex) {
+        logger.log(Level.SEVERE, null, ex);
+        }
+        }
+         * */
 
     }
 
@@ -257,10 +278,13 @@ public class ProgramPlayer extends Program {
         this.sceneConnectionHandler.click(id);
     }
 
-    public void eventResponse(WonderlandResponse response) {
+    public void eventResponse(CMUResponseFunction response) {
         System.out.println("Calling method: " + response.getFunctionName());
         System.out.println("For type: " + this.sceneType.getName());
-        this.vm.invokeEntryPoint(this.sceneType.getDeclaredMethod(response.getFunctionName()), this.scene);
+        System.out.println("Get method returns: " + this.sceneType.getDeclaredMethod(response.getFunctionName(), response.getArgumentClasses()));
+        System.out.println("Arguments are: " + response.getArgumentValues());
+        this.vm.invokeEntryPoint(this.sceneType.getDeclaredMethod(response.getFunctionName(), response.getArgumentClasses()),
+                this.scene, response.getArgumentValues());
     }
 
     /**
@@ -305,37 +329,51 @@ public class ProgramPlayer extends Program {
 
         this.init();
 
-        synchronized (this.cmuFileLock) {
-            synchronized (this.eventListLock) {
-                // Read Wonderland-specific data from CMU file
-                try {
-                    ZipFile zipFile = new ZipFile(cmuFile, ZipFile.OPEN_READ);
-
-                    ZipEntry wonderlandData = zipFile.getEntry(WONDERLAND_DATA_FILENAME);
-                    if (wonderlandData != null) {
-                        this.eventList = EventResponseList.readFromStream(zipFile.getInputStream(wonderlandData));
-                    } else {
-                        this.eventList = new EventResponseList();
-                    }
-
-                    System.out.println("Program player event list: " + this.eventList);
-                    System.out.println("Alternately: " + this.getEventList());
-
-                    zipFile.close();
-
-                } catch (ZipException ex) {
-                    Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
+        // Read persistent data for this file, if any
+        PersistentSceneData data = ContentUploadManager.downloadSceneData(this.getPersistentDataFilename());
+        if (data != null) {
+            this.setEventList(data.getEventList());
+        } else {
+            this.eventList = new EventResponseList();
         }
+
+        /*
+        synchronized (this.cmuFileLock) {
+        synchronized (this.eventListLock) {
+        // Read Wonderland-specific data from CMU file
+        try {
+        ZipFile zipFile = new ZipFile(cmuFile, ZipFile.OPEN_READ);
+
+        ZipEntry wonderlandData = zipFile.getEntry(WONDERLAND_DATA_FILENAME);
+        if (wonderlandData != null) {
+        this.eventList = EventResponseList.readFromStream(zipFile.getInputStream(wonderlandData));
+        } else {
+        this.eventList = new EventResponseList();
+        }
+
+        System.out.println("Program player event list: " + this.eventList);
+        System.out.println("Alternately: " + this.getEventList());
+
+        zipFile.close();
+
+        } catch (ZipException ex) {
+        Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+        Logger.getLogger(CMUCellMO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        }
+        }
+         * */
     }
 
     public File getFile() {
         synchronized (cmuFileLock) {
             return this.cmuFile;
         }
+    }
+
+    public String getPersistentDataFilename() {
+        return this.getFile().getName() + ".data";
     }
 
     /**

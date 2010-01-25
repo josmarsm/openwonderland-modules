@@ -15,24 +15,35 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.messages.servercmu;
-
-import org.jdesktop.wonderland.common.cell.CellID;
-import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
+package org.jdesktop.wonderland.modules.cmu.common.events.responses;
 
 /**
- * Message containing an event response, sent to the CMU player for processing.
+ * A function response with no arguments.
  * @author kevin
  */
-public class CMUEventResponseMessage extends ServerCMUMessage {
-    private final CMUResponseFunction response;
+public class NoArgumentFunction extends CMUResponseFunction {
 
-    public CMUEventResponseMessage(CellID cellID, CMUResponseFunction response) {
-        super(cellID);
-        this.response = response;
+    public NoArgumentFunction() {
+        super();
     }
 
-    public CMUResponseFunction getResponse() {
-        return response;
+    public NoArgumentFunction(String functionName) {
+        super(functionName);
     }
+
+    @Override
+    public Object[] getArgumentValues() {
+        return new Object[0];
+    }
+
+    @Override
+    public Class[] getArgumentClasses() {
+        return new Class[0];
+    }
+
+    @Override
+    public NoArgumentFunction createResponse(String functionName) {
+        return new NoArgumentFunction(functionName);
+    }
+
 }

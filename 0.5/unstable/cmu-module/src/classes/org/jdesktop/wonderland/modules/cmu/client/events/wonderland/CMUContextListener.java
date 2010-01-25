@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.cmu.client.events.wonderland;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 
 /**
  * Listener for context a context menu event, which sends an appropriate response.
@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
 public class CMUContextListener extends WonderlandClientEventListener
         implements ContextMenuActionListener {
 
-    public CMUContextListener(CMUCell parent, WonderlandResponse response) {
+    public CMUContextListener(CMUCell parent, CMUResponseFunction response) {
         super(parent, response);
     }
 

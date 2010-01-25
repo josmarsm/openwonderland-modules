@@ -15,6 +15,7 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+
 package org.jdesktop.wonderland.modules.cmu.common.events;
 
 import java.io.Serializable;

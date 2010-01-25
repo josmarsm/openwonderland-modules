@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.cmu.common;
 import java.util.ArrayList;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 
 /**
  * Client state for the CMU class; contains connection information
@@ -37,7 +37,7 @@ public class CMUCellClientState extends CellClientState {
     private int port;
     private String sceneTitle;
     private EventResponseList eventList;
-    private ArrayList<WonderlandResponse> allowedResponses;
+    private ArrayList<CMUResponseFunction> allowedResponses;
 
     /**
      * Get the title of the scene.
@@ -71,11 +71,11 @@ public class CMUCellClientState extends CellClientState {
         this.eventList = eventList;
     }
 
-    public ArrayList<WonderlandResponse> getAllowedResponses() {
+    public ArrayList<CMUResponseFunction> getAllowedResponses() {
         return allowedResponses;
     }
 
-    public void setAllowedResponses(ArrayList<WonderlandResponse> allowedResponses) {
+    public void setAllowedResponses(ArrayList<CMUResponseFunction> allowedResponses) {
         this.allowedResponses = allowedResponses;
     }
 

@@ -26,7 +26,7 @@ package org.jdesktop.wonderland.modules.cmu.client.ui.events;
 import java.awt.GridLayout;
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 
 /**
  * Frame representing a single Wonderland event, along with the appropriate
@@ -103,7 +103,7 @@ public class SingleEventFrame extends javax.swing.JInternalFrame {
     private void populateResponseList() {
         this.responseList.removeAllItems();
         if (this.getParentCell() != null && this.getParentCell().getAllowedResponses() != null) {
-            for (WonderlandResponse response : this.getParentCell().getAllowedResponses()) {
+            for (CMUResponseFunction response : this.getParentCell().getAllowedResponses()) {
                 this.responseList.addItem(new ResponseMenuItem(response));
             }
         }
@@ -135,13 +135,13 @@ public class SingleEventFrame extends javax.swing.JInternalFrame {
 
     private class ResponseMenuItem {
 
-        private final WonderlandResponse response;
+        private final CMUResponseFunction response;
 
-        public ResponseMenuItem(WonderlandResponse response) {
+        public ResponseMenuItem(CMUResponseFunction response) {
             this.response = response;
         }
 
-        public WonderlandResponse getResponse() {
+        public CMUResponseFunction getResponse() {
             return this.response;
         }
 

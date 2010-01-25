@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedObjectRemoval;
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -39,11 +40,14 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Connecti
 import org.jdesktop.wonderland.modules.cmu.common.PlaybackDefaults;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
+import org.jdesktop.wonderland.modules.cmu.common.events.AvatarMovementEvent;
 import org.jdesktop.wonderland.modules.cmu.common.events.ContextMenuEvent;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
 import org.jdesktop.wonderland.modules.cmu.common.events.ProximityEvent;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.AvatarPositionFunction;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.NoArgumentFunction;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.AvailableResponsesChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventListMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventResponseMessage;
@@ -52,6 +56,7 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.MouseBut
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.RestartProgramMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.SceneTitleChangeMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.ServerClientMessageTypes;
+import org.jdesktop.wonderland.modules.cmu.server.events.wonderland.CMUMovementListener;
 import org.jdesktop.wonderland.modules.cmu.server.events.wonderland.CMUProximityListener;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -68,7 +73,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * helping to start the program instance initially.
  * @author kevin
  */
-public class CMUCellMO extends CellMO {
+public class CMUCellMO extends CellMO implements ManagedObjectRemoval {
 
     // Whether components can be treated as valid (e.g. whether setLive() has been called)
     private boolean componentsValid = false;
@@ -93,12 +98,14 @@ public class CMUCellMO extends CellMO {
     private final Serializable groundPlaneLock = new String();
     // Wonderland events
     private EventResponseList eventList = null;
-    private ArrayList<WonderlandResponse> allowedEventResponses = null;
+    private ArrayList<CMUResponseFunction> allowedEventResponses = null;
     private final Serializable eventListLock = new String();
     @UsesCellComponentMO(ProximityComponentMO.class)
     private ManagedReference<ProximityComponentMO> proximityComponent = null;
     private final HashSet<ManagedReference<CMUProximityListener>> proximityListeners =
             new HashSet<ManagedReference<CMUProximityListener>>();
+    private final HashSet<ManagedReference<CMUMovementListener>> movementListeners =
+            new HashSet<ManagedReference<CMUMovementListener>>();
 
     /**
      * Receives and processes messages about playback speed change.
@@ -155,6 +162,16 @@ public class CMUCellMO extends CellMO {
     /** Default constructor. */
     public CMUCellMO() {
         super();
+        AppContext.getDataManager().setBinding(this.getBindingText(), this);
+    }
+
+    @Override
+    public void removingObject() {
+        AppContext.getDataManager().removeBinding(this.getBindingText());
+    }
+
+    public String getBindingText() {
+        return CMUCellMO.class.getName() + ".binding." + getCellID();
     }
 
     /**
@@ -293,7 +310,7 @@ public class CMUCellMO extends CellMO {
      * CMU player.
      * @param response The response to propagate
      */
-    public void processEventResponse(WonderlandResponse response) {
+    public void processEventResponse(CMUResponseFunction response) {
         System.out.println("Server received event response: " + response);
         ProgramConnectionHandlerMO.sendEventResponse(getCellID(), response);
     }
@@ -326,7 +343,7 @@ public class CMUCellMO extends CellMO {
      * Get the list of possible event responses for this cell.
      * @return List of possible event responses
      */
-    public ArrayList<WonderlandResponse> getAllowedEventResponses() {
+    public ArrayList<CMUResponseFunction> getAllowedEventResponses() {
         return allowedEventResponses;
     }
 
@@ -337,7 +354,7 @@ public class CMUCellMO extends CellMO {
      * able to handle gracefully.
      * @param allowedEventResponses List of possible event responses
      */
-    public void setAllowedEventResponses(ArrayList<WonderlandResponse> allowedEventResponses) {
+    public void setAllowedEventResponses(ArrayList<CMUResponseFunction> allowedEventResponses) {
         this.allowedEventResponses = allowedEventResponses;
         sendCellMessage(null, new AvailableResponsesChangeMessage(allowedEventResponses));
     }
@@ -479,8 +496,16 @@ public class CMUCellMO extends CellMO {
                 }
                 this.proximityListeners.clear();
 
+                // Clear existing movement listeners
+                for (ManagedReference<CMUMovementListener> listener : this.movementListeners) {
+                    this.proximityComponent.get().removeProximityListener(listener.get());
+                }
+                this.movementListeners.clear();
+
                 if (this.getEventList() != null) {
                     for (EventResponsePair pair : this.getEventList()) {
+
+                        //TODO: improve hierarchy of events - do away with pairs, just have events which carry responses
 
                         // Proximity listeners
                         if (pair.getEvent() instanceof ProximityEvent) {
@@ -492,7 +517,7 @@ public class CMUCellMO extends CellMO {
 
                             // Create listener
                             ManagedReference<CMUProximityListener> l = AppContext.getDataManager().createReference(new CMUProximityListener(AppContext.getDataManager().createReference(this),
-                                    pair.getResponse(), proximityEvent.isEventOnEnter()));
+                                    (NoArgumentFunction) pair.getResponse(), proximityEvent.isEventOnEnter()));
 
                             // Add listener
                             this.proximityComponent.get().addProximityListener(l.get(), volume);
@@ -500,6 +525,20 @@ public class CMUCellMO extends CellMO {
                         } // Context menu listeners
                         else if (pair.getEvent() instanceof ContextMenuEvent) {
                             // Handled by clients
+                        } // Avatar movement event
+                        else if (pair.getEvent() instanceof AvatarMovementEvent) {
+                            AvatarMovementEvent movementEvent = (AvatarMovementEvent) pair.getEvent();
+
+                            // Compute desired bounding volume
+                            BoundingVolume[] volume = new BoundingSphere[1];
+                            volume[0] = new BoundingSphere(movementEvent.getDistance(), Vector3f.ZERO);
+
+                            // Create listener
+                            ManagedReference<CMUMovementListener> l = AppContext.getDataManager().createReference(new CMUMovementListener(AppContext.getDataManager().createReference(this),
+                                    (AvatarPositionFunction) pair.getResponse()));
+
+                            this.proximityComponent.get().addProximityListener(l.get(), volume);
+                            this.movementListeners.add(l);
                         } // Unrecognized event
                         else {
                             logger.severe("Unrecognized event: " + pair.getEvent());
