@@ -122,6 +122,10 @@ public class PDFLayoutHUDPanel extends JPanel implements ActionListener {
                 }
             }
         });
+
+        // set the state of the platform checkbox appropriately, based on the
+        // cell's actual state.
+        this.showPlatformCheckbox.setSelected(c.isPlatformShown());
     }
 
     /**

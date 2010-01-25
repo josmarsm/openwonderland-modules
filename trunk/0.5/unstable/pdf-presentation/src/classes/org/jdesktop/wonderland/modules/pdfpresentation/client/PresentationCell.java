@@ -102,7 +102,7 @@ public class PresentationCell extends Cell {
     protected static final String NEXT_SLIDE_ACTION = "next_slide";
     protected static final String PREV_SLIDE_ACTION = "prev_slide";
 
-    private MovingPlatformCell platform;
+    private MovingPlatformCell platform = null;
 
     // These are the fields pulled from the PDF Spreader.
     private String pdfURI;
@@ -502,8 +502,13 @@ public class PresentationCell extends Cell {
             }
         } else {
             CellUtils.deleteCell(platform);
+            platform = null;
         }
 
+    }
+
+    public boolean isPlatformShown() {
+        return platform != null;
     }
 
     class PresentationCellMessageReceived implements ComponentMessageReceiver {
