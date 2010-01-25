@@ -132,8 +132,8 @@
         <module name="${module.name}" majorVersion="0" minorVersion="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="${module.description}" builddir="${build.dir}">
 
-            <requires name="content-repository" version="1"/>
-            <requires name="webdav" version="1"/>
+            <requires name="content-repository" version="0" minorVersion="5"/>
+            <requires name="webdav" version="0" minorVersion="5"/>
 
             <client>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
