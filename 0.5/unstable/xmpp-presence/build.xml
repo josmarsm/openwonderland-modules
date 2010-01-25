@@ -36,7 +36,7 @@
 	    </client>
 
         <!-- Depends on the text-chat module for bridging XMPP messages into and out of the world. -->
-        <requires name="textchat" version="1"/>
+        <requires name="textchat" version="0" minorVersion="5"/>
 
         <!-- Using ${current.dir}/lib as suggested by jkaplan didn't work, for some reason. Suspect it has something to do with having a dash in
              my module name? Figure out later. -->
