@@ -61,11 +61,12 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.Playback
 import org.jdesktop.wonderland.modules.cmu.common.CMUCellClientState;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.VisualType;
+import org.jdesktop.wonderland.modules.cmu.common.events.AvatarMovementEvent;
 import org.jdesktop.wonderland.modules.cmu.common.events.ContextMenuEvent;
 import org.jdesktop.wonderland.modules.cmu.common.events.ProximityEvent;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.NodeUpdateMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.SceneMessage;
 import org.jdesktop.wonderland.modules.cmu.common.messages.cmuclient.UnloadSceneMessage;
@@ -113,7 +114,7 @@ public class CMUCell extends Cell {
     // Event response information
     private EventResponseList eventList = null;
     private final Object eventListLock = new Object();
-    private Collection<WonderlandResponse> allowedResponses = null;
+    private Collection<CMUResponseFunction> allowedResponses = null;
     // Context menu
     @UsesCellComponent
     private ContextMenuComponent contextComp = null;
@@ -904,6 +905,9 @@ public class CMUCell extends Cell {
                     } // Context menu event
                     else if (pair.getEvent() instanceof ContextMenuEvent) {
                         // Handled by context factory for this cell
+                    } // Movement event
+                    else if (pair.getEvent() instanceof AvatarMovementEvent) {
+                        // Handled by server
                     } // Unrecognized event
                     else {
                         logger.severe("Unrecognized event: " + pair.getEvent());
@@ -918,7 +922,7 @@ public class CMUCell extends Cell {
      * by this cell.
      * @return Collection of allowed responses for this cell
      */
-    public Collection<WonderlandResponse> getAllowedResponses() {
+    public Collection<CMUResponseFunction> getAllowedResponses() {
         synchronized (this.eventListLock) {
             return allowedResponses;
         }
@@ -929,7 +933,7 @@ public class CMUCell extends Cell {
      * this cell.
      * @param allowedResponses New collection of allowed responses
      */
-    public void setAllowedResponses(Collection<WonderlandResponse> allowedResponses) {
+    public void setAllowedResponses(Collection<CMUResponseFunction> allowedResponses) {
         synchronized (this.eventListLock) {
             this.allowedResponses = allowedResponses;
         }

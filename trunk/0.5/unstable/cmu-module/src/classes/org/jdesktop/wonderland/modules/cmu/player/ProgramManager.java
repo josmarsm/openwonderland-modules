@@ -40,9 +40,9 @@ import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.modules.cmu.common.NodeID;
 import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
-import org.jdesktop.wonderland.modules.cmu.player.connections.VisualUploadManager;
+import org.jdesktop.wonderland.modules.cmu.player.connections.ContentUploadManager;
 
 /**
  * Processes messages sent to control CMU programs.
@@ -70,7 +70,7 @@ public class ProgramManager {
 
         // Log in to the server
         WonderlandSession session = login.login(username, passwordFile);
-        VisualUploadManager.initialize(session.getSessionManager(), username);
+        ContentUploadManager.initialize(session.getSessionManager(), username);
 
         // Initialize the connection
         session.connect(new ProgramConnection(this));
@@ -152,7 +152,7 @@ public class ProgramManager {
         }
     }
 
-    public void eventResponse(CellID cellID, WonderlandResponse response) {
+    public void eventResponse(CellID cellID, CMUResponseFunction response) {
         ProgramPlayer program = getProgram(cellID);
         if (program != null) {
             program.eventResponse(response);

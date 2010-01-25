@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.modules.cmu.client.events.wonderland.CMUContextLi
 import org.jdesktop.wonderland.modules.cmu.client.ui.events.EventEditor;
 import org.jdesktop.wonderland.modules.cmu.common.events.ContextMenuEvent;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 
 /**
  * Factory for a CMU cell's context menu.
@@ -75,7 +75,7 @@ public class CMUContextFactory implements ContextMenuFactorySPI {
 
     protected class ContextEventMenuItem extends SimpleContextMenuItem {
 
-        public ContextEventMenuItem(ContextMenuEvent event, WonderlandResponse response) {
+        public ContextEventMenuItem(ContextMenuEvent event, CMUResponseFunction response) {
             super(event.getMenuText(), new CMUContextListener(getParent(), response));
         }
     }

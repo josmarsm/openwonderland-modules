@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.cmu.server.events.wonderland;
 
 import com.sun.sgs.app.ManagedReference;
 import java.io.Serializable;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 import org.jdesktop.wonderland.modules.cmu.server.CMUCellMO;
 
 /**
@@ -28,19 +28,19 @@ import org.jdesktop.wonderland.modules.cmu.server.CMUCellMO;
  * @author kevin
  */
 public abstract class WonderlandServerEventListener implements Serializable {
-    private WonderlandResponse response = null;
+    private CMUResponseFunction response = null;
     private final ManagedReference<CMUCellMO> parent;
 
-    public WonderlandServerEventListener(ManagedReference<CMUCellMO> parent, WonderlandResponse response) {
+    public WonderlandServerEventListener(ManagedReference<CMUCellMO> parent, CMUResponseFunction response) {
         this.parent = parent;
         this.setResponse(response);
     }
 
-    public WonderlandResponse getResponse() {
+    public CMUResponseFunction getResponse() {
         return response;
     }
 
-    public void setResponse(WonderlandResponse response) {
+    public void setResponse(CMUResponseFunction response) {
         this.response = response;
     }
 
@@ -48,7 +48,7 @@ public abstract class WonderlandServerEventListener implements Serializable {
         return parent.get();
     }
 
-    public void eventOccurred() {
+    protected void eventOccurred() {
         this.getParent().processEventResponse(this.getResponse());
     }
 

@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.MessageID;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 
 /**
  * Response message sent by a CMU program manager to a CMUCellMO after a
@@ -36,7 +36,7 @@ public class CreateProgramResponseMessage extends ResponseMessage {
     private static final long serialVersionUID = 1L;
     private String hostname = null;
     private int port = 0;
-    private ArrayList<WonderlandResponse> allowedResponses = null;
+    private ArrayList<CMUResponseFunction> allowedResponses = null;
     private boolean creationSuccessful = false;
     private CellID cellID = null;
     private EventResponseList initialEventList = null;
@@ -61,7 +61,7 @@ public class CreateProgramResponseMessage extends ResponseMessage {
      * @param port The port to connect to
      */
     public CreateProgramResponseMessage(MessageID messageID, CellID cellID, String hostname, int port,
-            ArrayList<WonderlandResponse> allowedResponses, EventResponseList initialEventList) {
+            ArrayList<CMUResponseFunction> allowedResponses, EventResponseList initialEventList) {
         this(messageID, cellID);
         this.setHostnameAndPort(hostname, port);
         this.setAllowedResponses(allowedResponses);
@@ -114,11 +114,11 @@ public class CreateProgramResponseMessage extends ResponseMessage {
         this.creationSuccessful = true;
     }
 
-    public ArrayList<WonderlandResponse> getAllowedResponses() {
+    public ArrayList<CMUResponseFunction> getAllowedResponses() {
         return allowedResponses;
     }
 
-    public void setAllowedResponses(ArrayList<WonderlandResponse> allowedResponses) {
+    public void setAllowedResponses(ArrayList<CMUResponseFunction> allowedResponses) {
         this.allowedResponses = allowedResponses;
     }
 

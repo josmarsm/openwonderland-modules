@@ -15,24 +15,26 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-package org.jdesktop.wonderland.modules.cmu.common.events;
+package org.jdesktop.wonderland.modules.cmu.common.events.responses;
 
 import java.io.Serializable;
 
 /**
  * Object to represent a CMU response to a Wonderland event, e.g. an appropriate
- * function to call when that event occurs.
+ * function to call when that event occurs.  This is an abstract response, containing
+ * only a function name; base classes should correspond to specific function
+ * types.
  * @author kevin
  */
-public class WonderlandResponse implements Serializable {
+public abstract class CMUResponseFunction implements Serializable {
 
     private String functionName = "";
 
-    public WonderlandResponse() {
+    public CMUResponseFunction() {
         
     }
 
-    public WonderlandResponse(String functionName) {
+    public CMUResponseFunction(String functionName) {
         this.setFunctionName(functionName);
     }
 
@@ -44,14 +46,21 @@ public class WonderlandResponse implements Serializable {
         this.functionName = functionName;
     }
 
+    public abstract Object[] getArgumentValues();
+
+    public abstract Class[] getArgumentClasses();
+
+    //TODO: Use factory paradigm
+    public abstract CMUResponseFunction createResponse(String functionName);
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {
             return true;
         }
 
-        if (other instanceof WonderlandResponse && this.getClass().equals(other.getClass())) {
-            WonderlandResponse otherResponse = (WonderlandResponse) other;
+        if (other instanceof CMUResponseFunction && this.getClass().equals(other.getClass())) {
+            CMUResponseFunction otherResponse = (CMUResponseFunction) other;
             if (this.getFunctionName().equals(otherResponse.getFunctionName())) {
                 return true;
             }

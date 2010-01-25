@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.cmu.client.events.wonderland;
 
 import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
-import org.jdesktop.wonderland.modules.cmu.common.events.WonderlandResponse;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventResponseMessage;
 
 /**
@@ -27,19 +27,19 @@ import org.jdesktop.wonderland.modules.cmu.common.messages.serverclient.EventRes
  */
 public abstract class WonderlandClientEventListener {
 
-    private WonderlandResponse response = null;
+    private CMUResponseFunction response = null;
     private final CMUCell parent;
 
-    public WonderlandClientEventListener(CMUCell parent, WonderlandResponse response) {
+    public WonderlandClientEventListener(CMUCell parent, CMUResponseFunction response) {
         this.parent = parent;
         this.setResponse(response);
     }
 
-    public WonderlandResponse getResponse() {
+    public CMUResponseFunction getResponse() {
         return response;
     }
 
-    public void setResponse(WonderlandResponse response) {
+    public void setResponse(CMUResponseFunction response) {
         this.response = response;
     }
 

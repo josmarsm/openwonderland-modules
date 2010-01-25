@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.cmu.common.events;
 
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 import java.io.Serializable;
 
 /**
@@ -28,13 +29,13 @@ import java.io.Serializable;
 public class EventResponsePair implements Serializable {
 
     private WonderlandEvent event = null;
-    private WonderlandResponse response = null;
+    private CMUResponseFunction response = null;
 
     public EventResponsePair() {
         
     }
 
-    public EventResponsePair(WonderlandEvent event, WonderlandResponse response) {
+    public EventResponsePair(WonderlandEvent event, CMUResponseFunction response) {
         this.setEvent(event);
         this.setResponse(response);
     }
@@ -47,11 +48,11 @@ public class EventResponsePair implements Serializable {
         this.event = event;
     }
 
-    public WonderlandResponse getResponse() {
+    public CMUResponseFunction getResponse() {
         return response;
     }
 
-    public void setResponse(WonderlandResponse response) {
+    public void setResponse(CMUResponseFunction response) {
         this.response = response;
     }
 
