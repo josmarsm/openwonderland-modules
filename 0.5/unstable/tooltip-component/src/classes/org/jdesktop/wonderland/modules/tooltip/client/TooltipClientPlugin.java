@@ -190,10 +190,8 @@ public class TooltipClientPlugin extends BaseClientPlugin {
                     hudComponent.setLocation(point);
                     hud.addComponent(hudComponent);
 
-                    // We set it visible, and the immediately set it to be
-                    // invisible after some delay.
+                    // We set it visible
                     hudComponent.setVisible(true);
-                    hudComponent.setVisible(false, 2000);
                 }
             });
         }
