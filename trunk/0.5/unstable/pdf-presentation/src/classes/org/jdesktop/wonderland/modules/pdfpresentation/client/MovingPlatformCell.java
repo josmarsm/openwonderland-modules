@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.pdfpresentation.client.jme.cell.MovingPlatformCellRenderer;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCellClientState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.PresentationLayout;
 
@@ -89,7 +90,7 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
             }
 
             logger.warning("Ending set status. Current position: " + this.getLocalTransform().getTranslation(null));
-
+            logger.warning("PLATFORM SIZE: " + this.platformDepth + "x" + this.platformWidth);
 
         } else if (status==CellStatus.DISK && !increasing) {
 //            PresentationToolbarManager.getManager().removePlatform(this);
@@ -165,6 +166,10 @@ public class MovingPlatformCell extends Cell implements ProximityListener {
 
 //        currentSlideTransform = layout.getSlides().get(0).getTransform();
 //        logger.warning("Setting current slide transform: " + currentSlideTransform);
+
+        // send a message to the server version of this cell with the width/height
+        // to keep it up to date. 
+        this.sendCellMessage(new MovingPlatformCellChangeMessage(platformWidth, platformDepth));
 
         renderer.layoutUpdated(this.platformWidth, this.platformDepth, layout.getScale());
     }

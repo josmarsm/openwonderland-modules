@@ -64,6 +64,8 @@ public class PDFPresenterHUDPanel extends javax.swing.JPanel {
         }
         slideList.setModel(model);
         slideList.setCellRenderer(new ListImageRenderer());
+
+        this.setButtonsEnabled(cell.isPlatformShown());
     }
 
     /**
@@ -82,6 +84,18 @@ public class PDFPresenterHUDPanel extends javax.swing.JPanel {
 
             return (label);
         }
+    }
+
+    /**
+     * Sets whether or not the next/prev buttons are enabled or not.
+     * 
+     * Triggered by whether or not a platform is present.
+     * 
+     * @param enabled
+     */
+    public void setButtonsEnabled(boolean enabled) {
+        this.nextButton.setEnabled(enabled);
+        this.prevButton.setEnabled(enabled);
     }
 
     /**

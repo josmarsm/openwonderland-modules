@@ -122,8 +122,10 @@ public class PresentationCell extends Cell {
     // The factory that generates context menu items for this Cell
     private ContextMenuFactorySPI contextMenuFactory;
 
+
     // The HUD panel displaying the presenter tools, null if it has not yet
     // been created
+    private PDFPresenterHUDPanel presenterHUDPanel;
     private HUDComponent pdfPresenterHUDComponent;
 
     // The JPanel and HUD component that displays the slide layout
@@ -500,9 +502,16 @@ public class PresentationCell extends Cell {
             } catch (CellCreationException ex) {
                 Logger.getLogger(PresentationCell.class.getName()).log(Level.SEVERE, null, ex);
             }
+
+            // Make sure the buttons on the HUD panel are updated,
+            // if necessary.
+            if(presenterHUDPanel != null)
+                presenterHUDPanel.setButtonsEnabled(true);
+
         } else {
             CellUtils.deleteCell(platform);
             platform = null;
+            presenterHUDPanel.setButtonsEnabled(false);
         }
 
     }
@@ -573,9 +582,9 @@ public class PresentationCell extends Cell {
 
             // Create the presenter tools panel, passing it the list of images
             // to display as slides.
-            PDFPresenterHUDPanel hudPanel = new PDFPresenterHUDPanel(imageList, ((PresentationCell)event.getCell()));
+            presenterHUDPanel = new PDFPresenterHUDPanel(imageList, ((PresentationCell)event.getCell()));
             HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
-            pdfPresenterHUDComponent = hud.createComponent(hudPanel);
+            pdfPresenterHUDComponent = hud.createComponent(presenterHUDPanel);
             pdfPresenterHUDComponent.setName(
                     BUNDLE.getString("Presenter_Tools_Title"));
             pdfPresenterHUDComponent.setPreferredLocation(Layout.NORTHWEST);
