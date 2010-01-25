@@ -18,19 +18,22 @@
 package org.jdesktop.wonderland.modules.pdfpresentation.server;
 
 import com.jme.bounding.BoundingBox;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.sun.sgs.app.ManagedReference;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCellChangeMessage;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCellClientState;
 import org.jdesktop.wonderland.modules.pdfpresentation.common.MovingPlatformCellServerState;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 
 
@@ -85,11 +88,19 @@ public class MovingPlatformCellMO extends CellMO {
         ((MovingPlatformCellClientState)cellClientState).setPlatformWidth(platformWidth);
         ((MovingPlatformCellClientState)cellClientState).setPlatformDepth(platformDepth);
 
+        logger.warning("Sending new PLATFORM client state, width/depth: " + platformWidth + "/" + platformDepth);
+
         return super.getClientState(cellClientState, clientID, capabilities);
     }
 
     @Override
     public void setLive(boolean live) {
+        if(live) {
+        BoundingBox box = new BoundingBox(Vector3f.ZERO, this.platformWidth, 20.0f, this.platformDepth);
+        this.setLocalBounds(box);
+        }
+        
+        super.setLive(live);
         
         // When we go live, check to see who our parent is.
         // If our parent is a presentationcell, register
@@ -97,11 +108,48 @@ public class MovingPlatformCellMO extends CellMO {
         if(this.getParent() instanceof PresentationCellMO)
             ((PresentationCellMO)this.getParent()).setPlatformCellMO(this);
 
+        ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if(live) {
-            BoundingBox box = new BoundingBox(Vector3f.ZERO, this.platformWidth, 20.0f, this.platformDepth);
-            this.setLocalBounds(box);
+            channel.addMessageReceiver(MovingPlatformCellChangeMessage.class, (ChannelComponentMO.ComponentMessageReceiver) new MovingPlatformCellChangeMessageReceiver(this));
+        } else {
+            channel.removeMessageReceiver(MovingPlatformCellChangeMessage.class);
+        }
+    }
+
+    public float getPlatformDepth() {
+        return platformDepth;
+    }
+
+    public void setPlatformDepth(float platformDepth) {
+        this.platformDepth = platformDepth;
+    }
+
+    public float getPlatformWidth() {
+        return platformWidth;
+    }
+
+    public void setPlatformWidth(float platformWidth) {
+        this.platformWidth = platformWidth;
+    }
+
+
+
+    private static class MovingPlatformCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
+        public MovingPlatformCellChangeMessageReceiver(MovingPlatformCellMO cellMO) {
+            super(cellMO);
         }
 
-        super.setLive(live);
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            MovingPlatformCellMO cellMO = (MovingPlatformCellMO)getCell();
+
+            cellMO.setPlatformDepth(((MovingPlatformCellChangeMessage)message).getPlatformHeight());
+            cellMO.setPlatformWidth(((MovingPlatformCellChangeMessage)message).getPlatformWidth());
+
+            // We don't need to do anything more sophisicated than store these
+            // values here, because clients will be updating their own platform
+            // sizes based on LAYOUT messages on the PresentationCell itself.
+            // This is just for keeping the state of the PlatformCellMO up to
+            // date for people who come in with the platform already extant.
+        }
     }
 }

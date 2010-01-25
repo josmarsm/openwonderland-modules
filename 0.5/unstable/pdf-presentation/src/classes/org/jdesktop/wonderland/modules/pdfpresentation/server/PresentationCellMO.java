@@ -190,7 +190,7 @@ public class PresentationCellMO extends CellMO {
     // METHODS FROM PDF SPREADER CELL MO //
     //***********************************//
 
-        private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
+    private static class PresentationCellChangeMessageReceiver extends AbstractComponentMessageReceiver {
         public PresentationCellChangeMessageReceiver(PresentationCellMO cellMO) {
             super(cellMO);
         }
