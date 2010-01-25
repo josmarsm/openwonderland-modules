@@ -247,7 +247,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
             for (ModelConverter visual : this.visuals.values()) {
                 visualMessages.add(visual.getVisualMessage());
             }
-            message = new SceneMessage(visualMessages, ContentUploadManager.getVisualRepoRoot());
+            message = new SceneMessage(visualMessages, ContentManager.getVisualRepoRoot());
 
             // Store the connection.
             newConnection = new ClientConnection(this, connection);
@@ -294,7 +294,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
                 ModelConverter visualWrapper = new ModelConverter(model);
                 this.visuals.put(visualWrapper.getNodeID(), visualWrapper);
                 visualWrapper.addNodeUpdateListener(this);
-                ContentUploadManager.uploadVisual(visualWrapper.getVisualAttributes());
+                ContentManager.uploadVisual(visualWrapper.getVisualAttributes());
 
                 // Broadcast it to each connected client.  Don't allow new
                 // connections to be created during this process; this

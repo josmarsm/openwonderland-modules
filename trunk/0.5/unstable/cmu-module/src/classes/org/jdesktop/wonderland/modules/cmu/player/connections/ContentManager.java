@@ -17,11 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.cmu.player.connections;
 
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import org.jdesktop.wonderland.modules.cmu.common.web.*;
@@ -39,10 +40,10 @@ import org.jdesktop.wonderland.modules.webdav.client.WebdavClientPlugin;
 
 /**
  * Interfaces with content repository APIs to upload CMU visual data and
- * persistent scene data to the repository.
+ * upload/download persistent scene data to the repository.
  * @author kevin
  */
-public class ContentUploadManager {
+public class ContentManager {
 
     static private final String VISUAL_REPO_COLLECTION_NAME = "visuals";
     static private final String PERSISTENT_DATA_REPO_COLLECTION_NAME = "data";
@@ -50,7 +51,7 @@ public class ContentUploadManager {
     static private String username = null;
 
     // Should never be instantiated
-    private ContentUploadManager() {
+    private ContentManager() {
     }
 
     /**
@@ -63,7 +64,7 @@ public class ContentUploadManager {
         if (!isInitialized()) {
             WebdavClientPlugin plugin = new WebdavClientPlugin();
             plugin.initialize(manager);
-            ContentUploadManager.manager = manager;
+            ContentManager.manager = manager;
             try {
                 ContentCollection collection = ContentRepositoryRegistry.getInstance().getRepository(manager).getUserRoot();
 
@@ -78,11 +79,11 @@ public class ContentUploadManager {
                 }
 
             } catch (ContentRepositoryException ex) {
-                Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ContentManager.class.getName()).log(Level.SEVERE, null, ex);
             }
-            ContentUploadManager.username = username;
+            ContentManager.username = username;
         } else {
-            Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, "Double initialization of VisualUploadManager!");
+            Logger.getLogger(ContentManager.class.getName()).log(Level.SEVERE, "Double initialization of content manager!");
         }
     }
 
@@ -94,26 +95,42 @@ public class ContentUploadManager {
         return "wlcontent://users/" + username + "/" + VISUAL_REPO_COLLECTION_NAME + "/";
     }
 
+    /**
+     * Get the root directory to which persistent scene data will be uploaded.
+     * @return Name of the directory containing scene data
+     */
     static public String getPersistentDataRepoRoot() {
         return "wlcontent://users/" + username + "/" + PERSISTENT_DATA_REPO_COLLECTION_NAME + "/";
     }
 
-    static private void uploadData(Serializable data, ContentResource resource, String filename) {
+    /**
+     * Serialize the given data and write it to a file in the content repository.
+     * @param data Data to serialize
+     * @param resource The resource in the repository to write to
+     * @param asXML If true, write to XML; otherwise, just serialize to binary
+     */
+    static protected void uploadData(Serializable data, ContentResource resource, boolean asXML) {
         try {
-            File toUpload = File.createTempFile(filename, "");
+            File toUpload = File.createTempFile(resource.getName(), null);
             FileOutputStream fos = new FileOutputStream(toUpload);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(data);
-            oos.close();
+            if (asXML) {
+                XMLEncoder enc = new XMLEncoder(fos);
+                enc.writeObject(data);
+                enc.close();
+            } else {
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(data);
+                oos.close();
+            }
             fos.close();
 
             resource.put(toUpload);
 
             toUpload.delete();
         } catch (ContentRepositoryException ex) {
-            Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContentManager.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContentManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -122,53 +139,41 @@ public class ContentUploadManager {
             try {
                 ContentCollection collection = (ContentCollection) ContentRepositoryRegistry.getInstance().
                         getRepository(manager).getUserRoot().getChild(PERSISTENT_DATA_REPO_COLLECTION_NAME);
+                collection.removeChild(filename);
                 ContentResource resource = (ContentResource) collection.createChild(filename, ContentNode.Type.RESOURCE);
 
-                uploadData(data, resource, filename);
+                uploadData(data, resource, true);
 
             } catch (ContentRepositoryException ex) {
-                Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ContentManager.class.getName()).log(Level.SEVERE, null, ex);
             }
 
         } else {
-            Logger.getLogger(ContentUploadManager.class.getName()).severe("Uninitialized use of CMU visual upload manager");
+            Logger.getLogger(ContentManager.class.getName()).severe("Uninitialized use of content manager");
         }
     }
 
     static public PersistentSceneData downloadSceneData(String filename) {
         if (isInitialized()) {
             {
-                ObjectInputStream ois = null;
                 try {
                     ContentCollection collection = (ContentCollection) ContentRepositoryRegistry.getInstance().
-                        getRepository(manager).getUserRoot().getChild(PERSISTENT_DATA_REPO_COLLECTION_NAME);
+                            getRepository(manager).getUserRoot().getChild(PERSISTENT_DATA_REPO_COLLECTION_NAME);
                     ContentResource resource = (ContentResource) collection.getChild(filename);
                     if (resource != null) {
                         InputStream stream = resource.getInputStream();
-                        ois = new ObjectInputStream(stream);
-                        return (PersistentSceneData) ois.readObject();
+                        XMLDecoder dec = new XMLDecoder(stream);
+                        return (PersistentSceneData) dec.readObject();
                     }
-                } catch (ClassNotFoundException ex) {
-                    Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (ContentRepositoryException ex) {
-                    Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, null, ex);
-                } finally {
-                    try {
-                        if (ois != null) {
-                            ois.close();
-                        }
-                    } catch (IOException ex) {
-                        Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    Logger.getLogger(ContentManager.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
                 return null;
             }
 
         } else {
-            Logger.getLogger(ContentUploadManager.class.getName()).severe("Uninitialized use of CMU visual upload manager");
+            Logger.getLogger(ContentManager.class.getName()).severe("Uninitialized use of content manager");
             return null;
         }
     }
@@ -188,15 +193,16 @@ public class ContentUploadManager {
 
                 // Upload this data if it hasn't already been uploaded.
                 if (collection.getChild(id.getContentNodeName()) == null) {
-                    ContentResource resource = (ContentResource) collection.createChild(id.getContentNodeName(), ContentNode.Type.RESOURCE);
+                    ContentResource resource = (ContentResource) collection.createChild(id.getContentNodeName(),
+                            ContentNode.Type.RESOURCE);
 
-                    uploadData(visual, resource, id.getContentNodeName() + ".cmu");
+                    uploadData(visual, resource, false);
                 }
             } catch (ContentRepositoryException ex) {
-                Logger.getLogger(ContentUploadManager.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ContentManager.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
-            Logger.getLogger(ContentUploadManager.class.getName()).severe("Uninitialized use of CMU visual upload manager");
+            Logger.getLogger(ContentManager.class.getName()).severe("Uninitialized use of CMU visual upload manager");
         }
     }
 

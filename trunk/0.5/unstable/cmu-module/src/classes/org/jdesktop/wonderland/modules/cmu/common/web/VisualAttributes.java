@@ -185,7 +185,7 @@ public class VisualAttributes implements Serializable {
          * @return Name to use with a content node
          */
         public String getContentNodeName() {
-            return contentNodeName;
+            return contentNodeName + ".cmu";
         }
 
         /**
