@@ -42,7 +42,7 @@
                 moduleDescription="Microphone Cell"
                 jarfile="${module.dist.dir}/${module.jarname}.jar"
                 builddir="${build.lib.dir}">
-            <requires name="audiomanager" version="1"/>
+            <requires name="audiomanager" version="0" minorVersion="5"/>
             <client>
                 <clientjar name="microphone-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
