@@ -311,7 +311,6 @@ public class CMUCellMO extends CellMO implements ManagedObjectRemoval {
      * @param response The response to propagate
      */
     public void processEventResponse(CMUResponseFunction response) {
-        System.out.println("Server received event response: " + response);
         ProgramConnectionHandlerMO.sendEventResponse(getCellID(), response);
     }
 
@@ -545,7 +544,7 @@ public class CMUCellMO extends CellMO implements ManagedObjectRemoval {
                         }
                     }
                 } else {
-                    System.out.println("CMUCellMO received NULL event list");
+                    logger.severe("Received NULL event list.");
                 }
             }
 

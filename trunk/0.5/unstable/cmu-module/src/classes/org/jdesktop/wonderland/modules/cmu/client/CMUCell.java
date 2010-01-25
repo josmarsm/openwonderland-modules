@@ -897,8 +897,6 @@ public class CMUCell extends Cell {
             if (this.isComponentsValid()) {
 
                 for (EventResponsePair pair : eventList) {
-                    System.out.println("Adding event: " + pair.getEvent() + " / " + pair.getResponse());
-
                     // Proximity event
                     if (pair.getEvent() instanceof ProximityEvent) {
                         // Handled by server

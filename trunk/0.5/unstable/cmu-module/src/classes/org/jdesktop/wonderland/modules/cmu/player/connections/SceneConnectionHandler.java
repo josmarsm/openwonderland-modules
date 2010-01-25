@@ -28,7 +28,6 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -197,7 +196,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
      */
     public void click(NodeID id) {
         ModelConverter model = null;
-        synchronized(visuals) {
+        synchronized (visuals) {
             model = visuals.get(id);
         }
         if (model != null) {
@@ -216,7 +215,6 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
 
         //TODO: Process camera
         if (c instanceof AbstractCamera) {
-            //System.out.println("Camera: " + c);
         }
 
         if (c instanceof Model) {
@@ -348,7 +346,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
      * @param childrenEvent {@inheritDoc}
      */
     public void childAdded(ChildAddedEvent childrenEvent) {
-        System.out.println("added: " + childrenEvent);
+        Logger.getLogger(SceneConnectionHandler.class.getName()).warning("added: " + childrenEvent);
     }
 
     /**
@@ -356,6 +354,6 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
      * @param childrenEvent {@inheritDoc}
      */
     public void childRemoved(ChildRemovedEvent childrenEvent) {
-        System.out.println("removed: " + childrenEvent);
+        Logger.getLogger(SceneConnectionHandler.class.getName()).warning("removed: " + childrenEvent);
     }
 }
