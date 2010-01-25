@@ -30,7 +30,11 @@ import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
  */
 public class PersistentSceneData implements Serializable {
 
-    private EventResponseList eventList;
+    private EventResponseList eventList = null;
+
+    public PersistentSceneData() {
+        
+    }
 
     public PersistentSceneData(EventResponseList eventList) {
         this.setEventList(eventList);

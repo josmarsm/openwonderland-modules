@@ -42,7 +42,7 @@ import org.jdesktop.wonderland.modules.cmu.common.UnloadSceneReason;
 import org.jdesktop.wonderland.modules.cmu.common.events.EventResponseList;
 import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
 import org.jdesktop.wonderland.modules.cmu.common.messages.servercmu.CreateProgramResponseMessage;
-import org.jdesktop.wonderland.modules.cmu.player.connections.ContentUploadManager;
+import org.jdesktop.wonderland.modules.cmu.player.connections.ContentManager;
 
 /**
  * Processes messages sent to control CMU programs.
@@ -70,7 +70,7 @@ public class ProgramManager {
 
         // Log in to the server
         WonderlandSession session = login.login(username, passwordFile);
-        ContentUploadManager.initialize(session.getSessionManager(), username);
+        ContentManager.initialize(session.getSessionManager(), username);
 
         // Initialize the connection
         session.connect(new ProgramConnection(this));
@@ -101,7 +101,7 @@ public class ProgramManager {
             Asset a = AssetManager.getAssetManager().getAsset(new ContentURI(url.toString()));
             if (AssetManager.getAssetManager().waitForAsset(a)) {
                 // Create program
-                newProgram = new ProgramPlayer(a.getLocalCacheFile());
+                newProgram = new ProgramPlayer(a.getLocalCacheFile(), url.getFile());
 
                 // Set initial playback speed
                 newProgram.setPlaybackSpeed(initialPlaybackSpeed);
