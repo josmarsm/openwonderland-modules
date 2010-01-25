@@ -61,8 +61,8 @@
                 jarfile="${module.dist.dir}/${module.name}.jar"
                 builddir="${build.lib.dir}">
             
-            <requires name="security" version="1"/>
-            <requires name="security-groups" version="1"/>
+            <requires name="security" version="0" minorVersion="5"/>
+            <requires name="security-groups" version="0" minorVersion="5"/>
             
             <part name="web">
                 <jar name="security-session-auth.war">
