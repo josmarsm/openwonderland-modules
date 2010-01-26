@@ -33,8 +33,13 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  */
 public class TooltipCellComponentMO extends CellComponentMO {
 
+    // The tooltip text
     private String text = null;
 
+    // The timeout (in milliseconds) to hide the tooltip even if the mouse has
+    // not moved. If -1 then no timeout.
+    private int timeout = -1;
+    
     /**
      * Constructor, takes the CellMO associated with the Cell Component.
      *
@@ -49,7 +54,8 @@ public class TooltipCellComponentMO extends CellComponentMO {
      */
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.modules.tooltip.client.TooltipCellComponent";
+        return "org.jdesktop.wonderland.modules.tooltip.client" +
+               ".TooltipCellComponent";
     }
 
     /**
@@ -63,7 +69,8 @@ public class TooltipCellComponentMO extends CellComponentMO {
         if (state == null) {
             state = new TooltipCellComponentClientState();
         }
-        ((TooltipCellComponentClientState)state).setText(text);
+        ((TooltipCellComponentClientState) state).setText(text);
+        ((TooltipCellComponentClientState) state).setTimeout(timeout);
         return super.getClientState(state, clientID, capabilities);
     }
 
@@ -71,11 +78,14 @@ public class TooltipCellComponentMO extends CellComponentMO {
      * {@inheritDoc}
      */
     @Override
-    public CellComponentServerState getServerState(CellComponentServerState state) {
+    public CellComponentServerState getServerState(
+            CellComponentServerState state) {
+        
         if (state == null) {
             state = new TooltipCellComponentServerState();
         }
-        ((TooltipCellComponentServerState)state).setText(text);
+        ((TooltipCellComponentServerState) state).setText(text);
+        ((TooltipCellComponentServerState) state).setTimeout(timeout);
         return super.getServerState(state);
     }
 
@@ -85,6 +95,7 @@ public class TooltipCellComponentMO extends CellComponentMO {
     @Override
     public void setServerState(CellComponentServerState state) {
         super.setServerState(state);
-        text = ((TooltipCellComponentServerState)state).getText();
+        text = ((TooltipCellComponentServerState) state).getText();
+        timeout = ((TooltipCellComponentServerState) state).getTimeout();
     }
 }

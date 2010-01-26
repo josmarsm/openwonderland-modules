@@ -143,7 +143,7 @@ public class TooltipClientPlugin extends BaseClientPlugin {
             Point location = mouseEvent.getPoint();
             location.y = canvas.getHeight() - location.y;
             String text = comp.getText();
-            showTooltipHUDComponent(text, location);
+            showTooltipHUDComponent(comp, text, location);
 
         }
 
@@ -167,7 +167,10 @@ public class TooltipClientPlugin extends BaseClientPlugin {
          * designated location. This method performs the action on the AWT
          * Event Thread.
          */
-        private void showTooltipHUDComponent(final String text, final Point point) {
+        private void showTooltipHUDComponent(
+                final TooltipCellComponent component, final String text,
+                final Point point) {
+            
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     // If there is an existing tooltip hud component, then set
@@ -190,8 +193,14 @@ public class TooltipClientPlugin extends BaseClientPlugin {
                     hudComponent.setLocation(point);
                     hud.addComponent(hudComponent);
 
-                    // We set it visible
+                    // We set it visible. If we wish to add a timeout, then
+                    // we immediately set it to invisible after the given
+                    // delay.
                     hudComponent.setVisible(true);
+                    int timeout = component.getTimeout();
+                    if (timeout != -1) {
+                        hudComponent.setVisible(false, timeout);
+                    }
                 }
             });
         }
