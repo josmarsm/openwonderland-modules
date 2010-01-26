@@ -15,7 +15,6 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.tooltip.common;
 
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -29,6 +28,10 @@ public class TooltipCellComponentClientState extends CellComponentClientState {
 
     // The text of the tooltip
     private String text;
+
+    // The timeout (in milliseconds) to hide the tooltip even if the mouse has
+    // not moved. If -1 then no timeout.
+    private int timeout = -1;
 
     /** Default constructor */
     public TooltipCellComponentClientState() {
@@ -50,5 +53,23 @@ public class TooltipCellComponentClientState extends CellComponentClientState {
      */
     public void setText(String text) {
         this.text = text;
+    }
+
+    /**
+     * Returns the tooltip timeout to hide the tooltip, in milliseconds.
+     *
+     * @return The timeout in milliseconds
+     */
+    public int getTimeout() {
+        return timeout;
+    }
+
+    /**
+     * Sets the tooltip timeout to hide the tooltip, in milliseconds.
+     *
+     * @param timeout The timeout in milliseconds
+     */
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 }

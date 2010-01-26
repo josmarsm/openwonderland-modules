@@ -18,7 +18,9 @@
 
 package org.jdesktop.wonderland.modules.tooltip.common;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
@@ -32,7 +34,13 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 public class TooltipCellComponentServerState extends CellComponentServerState {
 
     // The text of the tooltip
+    @XmlElement(name = "text")
     private String text = null;
+
+    // The timeout (in milliseconds) to hide the tooltip even if the mouse has
+    // not moved. If -1 then no timeout.
+    @XmlElement(name = "timeout")
+    private int timeout = -1;
 
     /** Default constructor */
     public TooltipCellComponentServerState() {
@@ -40,7 +48,8 @@ public class TooltipCellComponentServerState extends CellComponentServerState {
 
     @Override
     public String getServerComponentClassName() {
-        return "org.jdesktop.wonderland.modules.tooltip.server.TooltipCellComponentMO";
+        return "org.jdesktop.wonderland.modules.tooltip.server" +
+               ".TooltipCellComponentMO";
     }
 
     /**
@@ -48,6 +57,7 @@ public class TooltipCellComponentServerState extends CellComponentServerState {
      *
      * @return The tooltip text
      */
+    @XmlTransient
     public String getText() {
         return text;
     }
@@ -59,5 +69,24 @@ public class TooltipCellComponentServerState extends CellComponentServerState {
      */
     public void setText(String text) {
         this.text = text;
+    }
+
+    /**
+     * Returns the tooltip timeout to hide the tooltip, in milliseconds.
+     *
+     * @return The timeout in milliseconds
+     */
+    @XmlTransient
+    public int getTimeout() {
+        return timeout;
+    }
+
+    /**
+     * Sets the tooltip timeout to hide the tooltip, in milliseconds.
+     *
+     * @param timeout The timeout in milliseconds
+     */
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 }

@@ -33,6 +33,7 @@
 
         <module name="${module.name}" majorVersion="${module.version.major}"
                 minorVersion="${module.version.minor}"
+                miniVersion="${module.version.mini}"
                 jarfile="${module.dist.dir}/${module.name}.jar"
                 moduleDescription="${module.description}" builddir="${build.dir}">
 

@@ -32,6 +32,10 @@ public class TooltipCellComponent extends CellComponent {
     // The text of the tooltip.
     private String text = null;
 
+    // The timeout (in milliseconds) to hide the tooltip even if the mouse has
+    // not moved. If -1 then no timeout.
+    private int timeout = -1;
+
     /**
      * Constructor, takes the Cell associated with the Cell Component.
      *
@@ -47,7 +51,8 @@ public class TooltipCellComponent extends CellComponent {
     @Override
     public void setClientState(CellComponentClientState clientState) {
         super.setClientState(clientState);
-        text = ((TooltipCellComponentClientState)clientState).getText();
+        text = ((TooltipCellComponentClientState) clientState).getText();
+        timeout = ((TooltipCellComponentClientState) clientState).getTimeout();
     }
 
     /**
@@ -57,5 +62,14 @@ public class TooltipCellComponent extends CellComponent {
      */
     public String getText() {
         return text;
+    }
+
+    /**
+     * Returns the tooltip timeout to hide the tooltip, in milliseconds.
+     *
+     * @return The timeout in milliseconds
+     */
+    public int getTimeout() {
+        return timeout;
     }
 }
