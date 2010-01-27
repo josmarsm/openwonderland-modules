@@ -25,6 +25,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -42,7 +43,10 @@ import org.jdesktop.wonderland.modules.pdfviewer.client.PDFDocumentLoader.PDFDoc
  */
 public class PDFViewerPanel extends JPanel {
 
-    private static final Logger logger = Logger.getLogger(PDFViewerPanel.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(
+            PDFViewerPanel.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/pdfviewer/client/resources/Bundle");
     private String documentURI;
     private PDFDocumentLoader loader;
     private PDFFile currentDocument;
@@ -79,13 +83,13 @@ public class PDFViewerPanel extends JPanel {
         try {
             documentURL = new URL(documentURI);
         } catch (MalformedURLException e) {
-            logger.warning("invalid PDF document: " + documentURI + ": " + e);
+            LOGGER.warning("invalid PDF document: " + documentURI + ": " + e);
             return;
         }
 
         if (messageComponent == null) {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-            messageComponent = mainHUD.createMessage("Loading PDF...");
+            messageComponent = mainHUD.createMessage(BUNDLE.getString("Loading_PDF..."));
             messageComponent.setPreferredLocation(Layout.NORTHEAST);
             messageComponent.setDecoratable(false);
             mainHUD.addComponent(messageComponent);
@@ -108,13 +112,13 @@ public class PDFViewerPanel extends JPanel {
                     }
                 });
                 if (loaded) {
-                    logger.info("successfully loaded: " + url);
+                    LOGGER.info("successfully loaded: " + url);
                     currentDocument = loader.getPDFFile();
                     gotoPage(pageNumber);
                     resizeToFit();
                     repaint();
                 } else {
-                    logger.warning("failed to load: " + url + ": " + e);
+                    LOGGER.warning("failed to load: " + url + ": " + e);
                     // TODO: display message
                 }
             }
@@ -247,18 +251,18 @@ public class PDFViewerPanel extends JPanel {
      * @param p the page to display
      */
     public void showPage(int p) {
-        logger.info("showing page: " + p);
+        LOGGER.info("showing page: " + p);
         if (isValidPage(p)) {
             viewImage = getPageImage(p, getWidth(), getHeight());
             repaint();
 
             // pre-cache the next page
             if (isValidPage(p + 1)) {
-                logger.fine("PDF viewer pre-caching page: " + (p + 1));
+                LOGGER.fine("PDF viewer pre-caching page: " + (p + 1));
                 currentDocument.getPage(p + 1);
             }
         } else {
-            logger.warning("PDF page " + p + " is not a valid page");
+            LOGGER.warning("PDF page " + p + " is not a valid page");
         }
     }
 
@@ -275,7 +279,7 @@ public class PDFViewerPanel extends JPanel {
                 currentPage = currentDocument.getPage(p, true);
                 double pw = currentPage.getWidth();
                 double ph = currentPage.getHeight();
-                logger.fine("page size: " + pw + "x" + ph);
+                LOGGER.fine("page size: " + pw + "x" + ph);
 
                 // request a page that fits the width of the viewer and has
                 // the correct aspect ratio
@@ -287,15 +291,15 @@ public class PDFViewerPanel extends JPanel {
                 if (img != null) {
                     // convert the page image into a buffered image
                     image = new BufferedImage(rw, rh, BufferedImage.TYPE_INT_ARGB);
-                    logger.fine("image size: " + image.getWidth() + "x" + image.getHeight());
+                    LOGGER.fine("image size: " + image.getWidth() + "x" + image.getHeight());
                     Graphics2D g2 = image.createGraphics();
                     g2.drawImage(img, 0, 0, rw, rh, null);
                 } else {
-                    logger.warning("PDF viewer failed to get image for page: " + p);
+                    LOGGER.warning("PDF viewer failed to get image for page: " + p);
                 }
             }
         } catch (Exception e) {
-            logger.severe("PDF viewer failed to get page image: " + e);
+            LOGGER.severe("PDF viewer failed to get page image: " + e);
         }
 
         return image;
@@ -318,7 +322,7 @@ public class PDFViewerPanel extends JPanel {
             g2.scale(zoom, zoom);
             g2.drawImage(viewImage, 0, 0, viewImage.getWidth(), viewImage.getHeight(), null);
         } else {
-            logger.finest("no page image!");
+            LOGGER.finest("no page image!");
             g2.clearRect(0, 0, (int) appWidth, (int) appHeight);
         }
     }
