@@ -32,7 +32,7 @@ public interface TimelineResult {
      * Get the set of all objects exposed by this result.
      * @return all objects in this result
      */
-    public DatedSet getResultSet();
+    public DatedSet<? extends DatedObject> getResultSet();
 
     /**
      * Add a listener for objects being added or removed

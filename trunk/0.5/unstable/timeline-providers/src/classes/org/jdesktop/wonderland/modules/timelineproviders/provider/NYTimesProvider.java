@@ -67,7 +67,10 @@ public class NYTimesProvider implements TimelineProvider {
         // read properties from the context
         Properties props = context.getQuery().getProperties();
 
-        apiKey = props.getProperty(NYTimesConstants.API_KEY_PROP);
+        apiKey = System.getProperty("nytimes.api.key");
+        if (apiKey == null) {
+            apiKey = props.getProperty(NYTimesConstants.API_KEY_PROP);
+        }
         if (apiKey == null) {
             throw new IllegalStateException("New York Times API key is required");
         }

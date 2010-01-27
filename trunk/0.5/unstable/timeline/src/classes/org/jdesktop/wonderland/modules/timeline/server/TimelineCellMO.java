@@ -19,7 +19,9 @@ package org.jdesktop.wonderland.modules.timeline.server;
 
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import java.io.Serializable;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -29,10 +31,14 @@ import org.jdesktop.wonderland.modules.timeline.common.TimelineCellChangeMessage
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellClientState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineCellServerState;
 import org.jdesktop.wonderland.modules.timeline.common.TimelineConfiguration;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.DatedSet;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResult;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineResultListener;
 import org.jdesktop.wonderland.modules.timeline.server.audio.TimelineAudioComponentMO;
-import org.jdesktop.wonderland.modules.timeline.server.layout.BaseLayout;
+import org.jdesktop.wonderland.modules.timeline.server.layout.TimelineLayoutComponentMO;
 import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMO;
+import org.jdesktop.wonderland.modules.timeline.server.provider.TimelineProviderComponentMOListener;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -45,7 +51,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * 
  */
-@DependsOnCellComponentMO(TimelineProviderComponentMO.class)
+@DependsOnCellComponentMO(TimelineLayoutComponentMO.class)
 public class TimelineCellMO extends CellMO {
 
     private static final Logger logger =
@@ -55,13 +61,21 @@ public class TimelineCellMO extends CellMO {
 
     private DatedSet segments = new DatedSet();
 
-    private BaseLayout layout;
+    private final ProviderListener providerListener;
+    private final TimelineChildCellCreator cellCreator;
+
+    @UsesCellComponentMO(TimelineProviderComponentMO.class)
+    private ManagedReference<TimelineProviderComponentMO> providerRef;
 
     @UsesCellComponentMO(TimelineAudioComponentMO.class)
     private ManagedReference<TimelineAudioComponentMO> audioRef;
 
     public TimelineCellMO() {
         super();
+
+        cellCreator = new TimelineChildCellCreatorImpl();
+        cellCreator.setLive(this);
+        providerListener = new ProviderListener(this, cellCreator);
     }
 
     public String getClientCellClassName(WonderlandClientID clientID, ClientCapabilities capabilities) {
@@ -75,10 +89,6 @@ public class TimelineCellMO extends CellMO {
         this.setConfiguration(((TimelineCellServerState)state).getConfig());
         logger.info("generating segments");
         this.segments = config.generateSegments();
-        if(layout==null)
-            layout = new BaseLayout(this);
-        else
-            layout.doLayout(true);
     }
 
     @Override
@@ -87,8 +97,7 @@ public class TimelineCellMO extends CellMO {
             state = new TimelineCellServerState();
         }
 
-        ((TimelineCellServerState)state).setConfig(config);
-
+        ((TimelineCellServerState)state).setConfig(new TimelineConfiguration(config));
 
         return super.getServerState(state);
     }
@@ -111,12 +120,17 @@ public class TimelineCellMO extends CellMO {
 
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
         if(live) {
-
             channel.addMessageReceiver(TimelineCellChangeMessage.class, 
 		(ChannelComponentMO.ComponentMessageReceiver)new TimelineCellMessageReceiver(this));
+            providerRef.get().addComponentMOListener(providerListener);
 
+            // notify the listener of any existing results
+            for (TimelineResult result : providerRef.get().getResults()) {
+                providerListener.resultAdded(result);
+            }
         } else {
             channel.removeMessageReceiver(TimelineCellChangeMessage.class);
+            providerRef.get().removeComponentMOListener(providerListener);
         }
     }
 
@@ -137,6 +151,10 @@ public class TimelineCellMO extends CellMO {
         }
 
         return this.audioRef.get();
+    }
+
+    public DatedSet getSegments() {
+        return segments;
     }
 
     private static class TimelineCellMessageReceiver extends AbstractComponentMessageReceiver {
@@ -161,38 +179,67 @@ public class TimelineCellMO extends CellMO {
 
     }
 
-    public DatedSet getSegments() {
-        return segments;
-    }
+    private static class ProviderListener
+            implements TimelineProviderComponentMOListener,
+                       TimelineResultListener, Serializable
+    {
+        private ManagedReference<TimelineCellMO> cellRef;
+        private TimelineChildCellCreator cellCreator;
 
-//    private void generateSegments() {
-//        // based on the timeline configuration, generate a set of shell segments
-//
-//        float radius = 10.0f;
-//
-//        long dateIncrement = config.getDateRange().getRange() / config.getNumSegments();
-//        long curDate = config.getDateRange().getMinimum().getTime();
-//
-//        logger.info("numSegmentsToGenerate: " + config.getNumSegments());
-//        for(int i=0; i<config.getNumSegments(); i++) {
-//            TimelineDate d = new TimelineDate(new Date(curDate), new Date(curDate + dateIncrement));
-//
-//            // now figure out the segment transform.
-//            // all we care about is the translation for now, will worry about
-//            // rotations later (and I think Matt is doing that math, so I'll
-//            // just throw it in when he's worked it all out)
-//
-//            // starting at a theta of zero, move our way up.
-//            Vector3f pos = new Vector3f(((float)(radius * Math.sin(i*config.getRadsPerSegment()))), i*config.getHeight()/config.getNumSegments(),(float) ((float)radius * Math.cos(i*config.getRadsPerSegment())));
-//
-//            TimelineSegment seg = new TimelineSegment(d);
-//
-//            seg.setTransform(new CellTransform(new Quaternion(), pos));
-//
-//            logger.info("Added segment: " + seg);
-//            segments.add(seg);
-//
-//            curDate+=dateIncrement;
-//        }
-//    }
+        public ProviderListener(TimelineCellMO cell,
+                                TimelineChildCellCreator cellCreator)
+        {
+            this.cellRef = AppContext.getDataManager().createReference(cell);
+            this.cellCreator = cellCreator;
+        }
+
+        public void resultAdded(TimelineResult result) {
+            logger.warning("Result added: " + result);
+
+            result.addResultListener(this);
+            for (DatedObject datedObj : result.getResultSet()) {
+                added(datedObj);
+            }
+        }
+
+        public void added(DatedObject obj) {
+            logger.warning("Object added: " + obj);
+
+            cellCreator.createCell(obj);
+        }
+
+        public void resultRemoved(TimelineResult result) {
+            for (DatedObject datedObj : result.getResultSet()) {
+                removed(datedObj);
+            }
+        }
+
+        public void removed(DatedObject obj) {
+            cellCreator.cleanupCell(obj);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ProviderListener other = (ProviderListener) obj;
+            if (this.cellRef != other.cellRef &&
+                (this.cellRef == null || !this.cellRef.equals(other.cellRef)))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 47 * hash + (this.cellRef != null ? this.cellRef.hashCode() : 0);
+            return hash;
+        }
+    }
 }

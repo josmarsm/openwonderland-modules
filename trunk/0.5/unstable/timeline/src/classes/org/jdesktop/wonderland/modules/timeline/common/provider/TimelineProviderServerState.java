@@ -19,8 +19,8 @@
 package org.jdesktop.wonderland.modules.timeline.common.provider;
 
 import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class TimelineProviderServerState extends CellComponentServerState {
     /** the set of queries */
-    private Set<TimelineQuery> queries = new LinkedHashSet<TimelineQuery>();
+    private List<TimelineQuery> queries = new LinkedList<TimelineQuery>();
 
     /** Default constructor */
     public TimelineProviderServerState() {
@@ -49,26 +49,26 @@ public class TimelineProviderServerState extends CellComponentServerState {
     }
 
     @XmlElement
-    @XmlJavaTypeAdapter(QuerySetAdapter.class)
-    public Set<TimelineQuery> getQueries() {
+    @XmlJavaTypeAdapter(QueryListAdapter.class)
+    public List<TimelineQuery> getQueries() {
         return queries;
     }
 
-    public void setQueries(Set<TimelineQuery> queries) {
+    public void setQueries(List<TimelineQuery> queries) {
         this.queries = queries;
     }
 
-    private static final class QuerySetAdapter
-            extends XmlAdapter<TimelineQuery[], Set<TimelineQuery>>
+    private static final class QueryListAdapter
+            extends XmlAdapter<TimelineQuery[], List<TimelineQuery>>
     {
 
         @Override
-        public Set<TimelineQuery> unmarshal(TimelineQuery[] v) throws Exception {
-            return new LinkedHashSet<TimelineQuery>(Arrays.asList(v));
+        public List<TimelineQuery> unmarshal(TimelineQuery[] v) throws Exception {
+            return new LinkedList<TimelineQuery>(Arrays.asList(v));
         }
 
         @Override
-        public TimelineQuery[] marshal(Set<TimelineQuery> v) throws Exception {
+        public TimelineQuery[] marshal(List<TimelineQuery> v) throws Exception {
             return v.toArray(new TimelineQuery[v.size()]);
         }
     }
