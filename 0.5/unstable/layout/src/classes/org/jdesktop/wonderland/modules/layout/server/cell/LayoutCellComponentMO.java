@@ -173,6 +173,22 @@ public class LayoutCellComponentMO extends ContainerComponentMO {
     }
 
     /**
+     * Used by subclasses to force a particular layout.
+     * @param layout the layout to use
+     */
+    protected void setLayout(Layout layout) {
+        this.layout = layout;
+    }
+
+    /**
+     * Get the current layout
+     * @return the current layout
+     */
+    protected Layout getLayout() {
+        return layout;
+    }
+
+    /**
      * Inner class that listens for changes to the set of children on the Cell
      * associated with this Cell Component
      */
@@ -221,8 +237,8 @@ public class LayoutCellComponentMO extends ContainerComponentMO {
             // Check to see if the new child cell offers a layout participant.
             // If so, then use that, otherwise, create a proxy for one.
             LayoutParticipant participant = null;
-            if (cell instanceof LayoutParticipantProvider) {
-                LayoutParticipantProvider lpp = (LayoutParticipantProvider)cell;
+            if (child instanceof LayoutParticipantProvider) {
+                LayoutParticipantProvider lpp = (LayoutParticipantProvider) child;
                 participant = lpp.getLayoutParticipant();
             }
             else {

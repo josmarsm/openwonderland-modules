@@ -68,7 +68,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../core/build/lib/wonderland-client.jar:../../../core/build/lib/wonderland-common.jar:../../../core/ext/common/swing-layout-1.0.jar:../../../core/ext/common/swing-worker-1.2.jar:../../../core/ext/common/mtgame.jar:../../../core/ext/jme20/target/jme.jar:../../world/containercell/build/lib/client/container-cell-client.jar:../../world/containercell/build/lib/server/container-cell-server.jar:../../../core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../foundation/layout-api/build/lib/layout-api.jar</classpath>
+                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/core/ext/common/swing-worker-1.2.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/modules/world/containercell/build/lib/client/container-cell-client.jar:../../../wonderland/modules/world/containercell/build/lib/server/container-cell-server.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../layout-api/build/lib/layout-api.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
