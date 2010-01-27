@@ -21,6 +21,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
@@ -33,6 +34,9 @@ import org.jdesktop.wonderland.modules.pdfviewer.common.cell.PDFViewerCellServer
  */
 @CellFactory
 public class PDFViewerCellFactory implements CellFactorySPI {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/pdfviewer/client/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[]{"pdf"};
@@ -54,7 +58,7 @@ public class PDFViewerCellFactory implements CellFactorySPI {
     }
 
     public String getDisplayName() {
-        return "PDF Viewer";
+        return BUNDLE.getString("PDF_Viewer");
     }
 
     public Image getPreviewImage() {

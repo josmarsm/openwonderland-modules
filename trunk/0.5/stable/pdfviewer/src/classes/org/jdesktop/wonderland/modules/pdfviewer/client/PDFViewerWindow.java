@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.pdfviewer.client;
 
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
@@ -29,6 +28,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -57,7 +57,10 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 public class PDFViewerWindow extends WindowSwing {
 
     /** The logger used by this class. */
-    private static final Logger logger = Logger.getLogger(PDFViewerWindow.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(
+            PDFViewerWindow.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/pdfviewer/client/resources/Bundle");
     /** The cell in which this window is displayed. */
     private PDFViewerCell cell;
     private PDFViewerPanel pdfPanel;
@@ -85,7 +88,7 @@ public class PDFViewerWindow extends WindowSwing {
             throws InstantiationException {
         super(app, Type.PRIMARY, width, height, topLevel, pixelScale);
         this.cell = cell;
-        setTitle("PDF Viewer");
+        setTitle(BUNDLE.getString("PDF_Viewer"));
 
         pdfPanel = new PDFViewerPanel(this);
         // Parent to Wonderland main window for proper focus handling
@@ -106,7 +109,8 @@ public class PDFViewerWindow extends WindowSwing {
         if (openDialogComponent == null) {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-            openDialogComponent = mainHUD.createDialog("Open PDF:");
+            openDialogComponent = mainHUD.createDialog(
+                    BUNDLE.getString("Open_PDF"));
             openDialogComponent.setPreferredLocation(Layout.CENTER);
             openDialogComponent.setType(HUDDialog.MESSAGE_TYPE.QUERY);
             mainHUD.addComponent(openDialogComponent);
@@ -170,7 +174,7 @@ public class PDFViewerWindow extends WindowSwing {
                 // open the resolved URI
                 pdfPanel.openDocument(documentURI, pageNumber);
             } catch (MalformedURLException ex) {
-                logger.log(Level.WARNING, "Error opening " + documentURI, ex);
+                LOGGER.log(Level.WARNING, "Error opening " + documentURI, ex);
             }
         }
     }
@@ -239,14 +243,14 @@ public class PDFViewerWindow extends WindowSwing {
 
     public void play() {
         if (isSynced()) {
-            logger.info("play");
+            LOGGER.info("play");
             updateControls();
         }
     }
 
     public void pause() {
         if (isSynced()) {
-            logger.info("pause");
+            LOGGER.info("pause");
             updateControls();
         }
     }
@@ -298,7 +302,7 @@ public class PDFViewerWindow extends WindowSwing {
         if ((syncing == false) && (synced == true)) {
             // unsyncing
             synced = false;
-            logger.info("unsynced");
+            LOGGER.info("unsynced");
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
             // syncing with shared state
@@ -325,7 +329,7 @@ public class PDFViewerWindow extends WindowSwing {
                 pause();
             }
 
-            logger.info("synced");
+            LOGGER.info("synced");
         }
         updateControls();
     }
@@ -357,7 +361,7 @@ public class PDFViewerWindow extends WindowSwing {
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                logger.info("show controls: " + visible);
+                LOGGER.info("show controls: " + visible);
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
                 if (controlComponent == null) {

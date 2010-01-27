@@ -55,7 +55,7 @@
                         <include name="${module.src}/client/*.jnilib"/>
                     </fileset>
                     <fileset dir="${current.dir}/src/classes">
-                        <include name="${module.src}/client/resources/**/*.png"/>
+                        <include name="${module.src}/client/resources/**"/>
                     </fileset>
                     <include name="${module.src}/common/**"/>
                 </clientjar>
