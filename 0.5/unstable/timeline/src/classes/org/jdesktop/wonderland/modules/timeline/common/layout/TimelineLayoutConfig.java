@@ -15,18 +15,26 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.timeline.common.layout;
 
-import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingVolume;
+import com.jme.math.Vector3f;
+import org.jdesktop.wonderland.modules.layout.api.common.Layout;
+import org.jdesktop.wonderland.modules.layout.api.common.LayoutConfig;
 
 /**
- *
- * @author drew
+ * No-op layout configuration for timeline layout
+ * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public class DatedObjectComponentClientState extends CellComponentClientState {
-
-    public DatedObjectComponentClientState() {
+public class TimelineLayoutConfig extends LayoutConfig {
+    @Override
+    public <T extends Layout> Class<T> getLayoutClass() {
+        return (Class<T>) TimelineLayout.class;
     }
 
+    @Override
+    public BoundingVolume getBounds() {
+        return new BoundingBox(new Vector3f(0f, 0f, 0f), 50f, 50f, 50f);
+    }
 }

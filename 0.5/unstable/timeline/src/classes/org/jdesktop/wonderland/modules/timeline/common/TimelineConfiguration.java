@@ -258,8 +258,6 @@ public class TimelineConfiguration implements Serializable {
                                                         getUnits().getCalendarUnit());
         int i = 0;
         for (TimelineDate increment : range.getIncrements()) {
-            System.out.println("Generated segment " + increment);
-
             TimelineSegment newSeg = new TimelineSegment(increment);
 
             Vector3f pos = new Vector3f(((float) (radius * Math.sin(i * getRadsPerSegment()))), i * getHeight() / getNumSegments(), (float) ((float) radius * Math.cos(i * getRadsPerSegment())));
@@ -274,7 +272,6 @@ public class TimelineConfiguration implements Serializable {
             i++;
         }
 
-        System.out.println("Returning " + out.size() + " segments");
         return out;
     }
 }

@@ -194,12 +194,12 @@ public class TimelineProviderRegistry {
         /**
          * Add a set of objects.
          */
-        public void added(Set<DatedObject> objs);
+        public void added(Set<? extends DatedObject> objs);
 
         /**
          * Remove a set of objects.
          */
-        public void removed(Set<DatedObject> objs);
+        public void removed(Set<? extends DatedObject> objs);
 
         /**
          * Notification that the results are being reset, and all objects

@@ -29,7 +29,7 @@ import java.util.List;
  * A set of dated objects.
  * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public class DatedSet extends LinkedHashSet<DatedObject> {
+public class DatedSet<T extends DatedObject> extends LinkedHashSet<T> {
     /**
      * Create an empty dated set.
      */
@@ -41,10 +41,10 @@ public class DatedSet extends LinkedHashSet<DatedObject> {
      * Create a new dated set from the given collection of dated objects
      * @param objs the dates objects to add to this set
      */
-    public DatedSet(Collection<DatedObject> objs) {
+    public DatedSet(Collection<T> objs) {
         this();
 
-        for (DatedObject obj : objs) {
+        for (T obj : objs) {
             add(obj);
         }
     }
@@ -70,7 +70,7 @@ public class DatedSet extends LinkedHashSet<DatedObject> {
      * @return a set of dates that are included in the given range, or an
      * empty set if no dates are included.
      */
-    public DatedSet rangeSet(final TimelineDate range) {
+    public DatedSet<T> rangeSet(final TimelineDate range) {
         DatedSet out = new DatedSet();
 
         // go through each object looking for whether the given range
@@ -95,7 +95,7 @@ public class DatedSet extends LinkedHashSet<DatedObject> {
      * @return a set of dates that contain the given date, or an
      * empty set if no dates are contained.
      */
-    public DatedSet containsSet(final TimelineDate date) {
+    public DatedSet<T> containsSet(final TimelineDate date) {
         DatedSet out = new DatedSet();
 
         // go through each object looking for whether the given range
@@ -113,8 +113,8 @@ public class DatedSet extends LinkedHashSet<DatedObject> {
      * Get the set of all dates in ascending order.
      * @return the set of all dates, in descending order
      */
-    public List<DatedObject> ascendingList() {
-        ArrayList<DatedObject> out = new ArrayList(this);
+    public List<T> ascendingList() {
+        ArrayList<T> out = new ArrayList<T>(this);
         Collections.sort(out, new DatedObjectComparator(true));
         return out;
     }
@@ -123,8 +123,8 @@ public class DatedSet extends LinkedHashSet<DatedObject> {
      * Get the set of all dates in descending order.
      * @return the set of all dates, in descending order
      */
-    public List<DatedObject> descendingList() {
-        ArrayList<DatedObject> out = new ArrayList(this);
+    public List<T> descendingList() {
+        ArrayList<T> out = new ArrayList<T>(this);
         Collections.sort(out, new DatedObjectComparator(false));
         return out;
     }

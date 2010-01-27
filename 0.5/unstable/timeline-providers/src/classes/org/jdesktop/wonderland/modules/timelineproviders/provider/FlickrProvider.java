@@ -60,7 +60,10 @@ public class FlickrProvider implements TimelineProvider {
         // read properties from the context
         Properties props = context.getQuery().getProperties();
 
-        apiKey = props.getProperty(FlickrConstants.API_KEY_PROP);
+        apiKey = System.getProperty("flickr.api.key");
+        if (apiKey == null) {
+            apiKey = props.getProperty(FlickrConstants.API_KEY_PROP);
+        }
         if (apiKey == null) {
             throw new IllegalStateException("Flickr API key is required");
         }
@@ -71,7 +74,7 @@ public class FlickrProvider implements TimelineProvider {
         range = new TimelineDateRange(startDate, increments, units);
 
         System.out.println("Initialize flickr provider: " +
-                startDate + " " + increments + " " + units);
+                startDate + " " + increments + " " + units + " key= " + apiKey);
 
         text = props.getProperty(FlickrConstants.SEARCH_TEXT_PROP);
 
@@ -113,7 +116,9 @@ public class FlickrProvider implements TimelineProvider {
             increment++;
             sp = getSearchParameters(keywords);
             if (sp != null) {
-                System.out.println("Submitting query for keywords " + keywords);
+                System.out.println("Submitting query for keywords " + keywords + 
+                                   " for increment " + increment);
+
                 exec.submit(new FlickrQuery(sp, date, true));
             }
         }
@@ -151,18 +156,17 @@ public class FlickrProvider implements TimelineProvider {
             String photoURI = "wl" + p.getSmallUrl();
 
             DatedImage image = new DatedImage(taken, photoURI);            
+            image.setWidth(240);
+            image.setHeight(240);
             
-            if (p.getSmallSize() != null) {
-                image.setWidth(p.getSmallSize().getWidth());
-                image.setHeight(p.getSmallSize().getHeight());
-            }
-
             if (p.getDescription() != null) {
                 image.setDescription(p.getDescription());
             }
 
             System.out.println("Adding image " + photoURI + " date " +
-                               taken.getMinimum() + " - " + taken.getMaximum());
+                               taken.getMinimum() + " - " + taken.getMaximum() +
+                               " size: " + p.getSmallSize().getWidth() +
+                               " x " + p.getSmallSize().getHeight());
 
             add.add(image);
         }

@@ -22,13 +22,16 @@ import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
 import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineQueryID;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.DataManager;
+import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.Task;
 import com.sun.sgs.app.util.ScalableHashMap;
 import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -124,7 +127,7 @@ public class TimelineProviderComponentMO extends CellComponentMO {
         }
 
         TimelineProviderServerState tpss = (TimelineProviderServerState) state;
-        Set<TimelineQuery> queries = tpss.getQueries();
+        List<TimelineQuery> queries = tpss.getQueries();
         for (TimelineResultHolder result : resultsRef.get().values()) {
             queries.add(result.getQuery());
         }
@@ -323,7 +326,7 @@ public class TimelineProviderComponentMO extends CellComponentMO {
             added(Collections.singleton(obj));
         }
 
-        public void added(Set<DatedObject> objs) {
+        public void added(Set<? extends DatedObject> objs) {
             TimelineResultHolder holder = resultsRef.get().get(id);
             holder.addResults(objs);
         }
@@ -332,7 +335,7 @@ public class TimelineProviderComponentMO extends CellComponentMO {
             removed(Collections.singleton(obj));
         }
 
-        public void removed(Set<DatedObject> objs) {
+        public void removed(Set<? extends DatedObject> objs) {
             TimelineResultHolder holder = resultsRef.get().get(id);
             holder.removeResults(objs);
         }
@@ -349,7 +352,7 @@ public class TimelineProviderComponentMO extends CellComponentMO {
      */
     private static class TimelineResultHolder implements TimelineResult, Serializable {
         private TimelineQuery query;
-        private final DatedSet results = new DatedSet();
+        private final DatedSet<DatedObject> results = new DatedSet();
 
         private CellID cellID;
         private ManagedReference<CellMO> cellRef;
@@ -377,7 +380,7 @@ public class TimelineProviderComponentMO extends CellComponentMO {
             return results;
         }
 
-        private void addResults(Set<DatedObject> objs) {
+        private void addResults(Set<? extends DatedObject> objs) {
             results.addAll(objs);
 
             // notify listeners
@@ -393,7 +396,7 @@ public class TimelineProviderComponentMO extends CellComponentMO {
                                             objs));
         }
 
-        private void removeResults(Set<DatedObject> objs) {
+        private void removeResults(Set<? extends DatedObject> objs) {
             results.removeAll(objs);
 
             // notify listeners
@@ -489,6 +492,53 @@ public class TimelineProviderComponentMO extends CellComponentMO {
             } else if (message instanceof ProviderManualObjectMessage) {
                 compRef.get().handleManualObject((ProviderManualObjectMessage) message);
             }
+        }
+    }
+
+    /**
+     * Notify listeners
+     */
+    private static class ObjectNotifier implements Task, Serializable {
+        private DatedObject obj;
+        private TimelineResultListener listener;
+        private boolean added;
+
+        public ObjectNotifier(boolean added, DatedObject obj, TimelineResultListener listener) {
+            this.added = added;
+            this.obj = obj;
+
+            if (listener instanceof ManagedObject) {
+                this.listener = new ManagedResultListener(listener);
+            } else {
+                this.listener = listener;
+            }
+        }
+
+        public void run() throws Exception {
+            if (added) {
+                listener.added(obj);
+            } else {
+                listener.removed(obj);
+            }
+        }
+    }
+
+    /**
+     * Wrapper for managed result listeners
+     */
+    private static class ManagedResultListener implements TimelineResultListener, Serializable {
+        private ManagedReference<TimelineResultListener> listenerRef;
+
+        public ManagedResultListener(TimelineResultListener listener) {
+            listenerRef = AppContext.getDataManager().createReference(listener);
+        }
+
+        public void added(DatedObject obj) {
+            listenerRef.get().added(obj);
+        }
+
+        public void removed(DatedObject obj) {
+            listenerRef.get().removed(obj);
         }
     }
 }

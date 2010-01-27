@@ -12,19 +12,23 @@
         <path location="${wonderland.dir}/modules/tools/audio-manager/lib/voicelib.jar"/>
         <path location="${wonderland.dir}/modules/tools/audio-manager/lib/voip.jar"/>
         <path location="${wonderland.dir}/modules/tools/audio-manager/lib/bridge_connector.jar"/>
-        <path location="${wonderland.dir}/modules/samples/image-viewer/build/server/imageviewer-server.jar"/>
+        <path location="${current.dir}/../../stable/image-viewer/build/server/imageviewer-server.jar"/>
         <path location="${current.dir}/../../stable/stickynote/build/server/stickynote-server.jar"/>
+        <path location="${current.dir}/../../stable/clickablelink/build/server/clickable-link-server.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/server/appbase-server.jar"/>
         <path location="${wonderland.dir}/modules/world/jmecolladaloader/build/server/jmecolladaloader-server.jar"/>
+        <path location="${current.dir}/../layout/build/server/layout-server.jar"/>
+        <path location="${modules.dir}/world/containercell/build/lib/server/container-cell-server.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
         <path location="${current.dir}/../../stable/stickynote/build/client/stickynote-client.jar"/>
         <path location="${wonderland.dir}/modules/foundation/appbase/build/client/appbase-client-cell.jar"/>
+        <path location="${current.dir}/../layout-api/build/lib/layout-api.jar"/>
     </pathconvert>
 
     <pathconvert property="module-client.classpath">
-        <path location="${wonderland.dir}/modules/samples/image-viewer/build/client/imageviewer-client.jar"/>
+        <path location="${current.dir}/../../stable/image-viewer/build/client/imageviewer-client.jar"/>
         <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${wonderland.dir}/modules/world/jmecolladaloader/build/client/jmecolladaloader-client.jar"/>
         <path location="${current.dir}/../../stable/stickynote/build/client/stickynote-client.jar"/>
@@ -119,10 +123,12 @@
                 builddir="${build.lib.dir}">
 
             <requires name="imageviewer" version="1"/>
-            <requires name="content-repository" version="1"/>
-            <requires name="jmecolladaloader" version="1"/>
+            <requires name="content-repository" version="0" minorversion="5"/>
+            <requires name="jmecolladaloader" version="0" minorversion="5"/>
             <requires name="stickynote" version="1"/>
-            <requires name="appbase" version="1"/>
+            <requires name="appbase" version="0" minorversion="5"/>
+            <requires name="layout" version="1"/>
+            <requires name="clickable-link" version="0" minorversion="5"/>
 
             <client dir="${current.dir}/lib">
                 <include name="*.jar"/>

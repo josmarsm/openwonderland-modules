@@ -301,6 +301,8 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        providersScrollPane = new javax.swing.JScrollPane();
+        providersPanel = new javax.swing.JPanel();
         createLabel = new javax.swing.JLabel();
         titleLabel = new javax.swing.JLabel();
         titleTextField = new javax.swing.JTextField();
@@ -316,7 +318,6 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
         providersLabel = new javax.swing.JLabel();
         addProviderButton = new javax.swing.JButton();
         createButton = new javax.swing.JButton();
-        providersPanel = new javax.swing.JPanel();
         addKeywordButton = new javax.swing.JButton();
         granularitySpinner = new javax.swing.JSpinner();
         scaleSpinner = new javax.swing.JSpinner();
@@ -333,6 +334,10 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
         numSegmentsLabel2 = new javax.swing.JLabel();
         numSegmentsLabel3 = new javax.swing.JLabel();
         numSegmentsLabel4 = new javax.swing.JLabel();
+
+        providersPanel.setBackground(new java.awt.Color(255, 255, 204));
+        providersPanel.setLayout(new java.awt.GridLayout(0, 1));
+        providersScrollPane.setViewportView(providersPanel);
 
         createLabel.setFont(createLabel.getFont().deriveFont(createLabel.getFont().getStyle() | java.awt.Font.BOLD));
         createLabel.setText("Create Timeline");
@@ -378,9 +383,6 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                 createButtonActionPerformed(evt);
             }
         });
-
-        providersPanel.setBackground(new java.awt.Color(255, 255, 204));
-        providersPanel.setLayout(new java.awt.BorderLayout());
 
         addKeywordButton.setText("Add Keyword Collection...");
         addKeywordButton.addActionListener(new java.awt.event.ActionListener() {
@@ -436,7 +438,7 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(providersPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                    .add(providersScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 485, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(createLabel)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -543,7 +545,7 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(providersLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(providersPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 10, Short.MAX_VALUE)
+                .add(providersScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addKeywordButton)
@@ -622,6 +624,8 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     public void buildQuery() {
         queries.clear();
 
+        logger.info("--- Building query for " + builders.size() + " builders");
+
         ListIterator<TimelineQueryBuilder> iter = builders.listIterator();
         while (iter.hasNext()) {
             TimelineQueryBuilder builder = iter.next();
@@ -691,6 +695,7 @@ public class TimelineCreationHUDPanel extends javax.swing.JPanel {
     private javax.swing.JSpinner pitchSpinner;
     private javax.swing.JLabel providersLabel;
     private javax.swing.JPanel providersPanel;
+    private javax.swing.JScrollPane providersScrollPane;
     private javax.swing.JLabel revolutionLabel;
     private javax.swing.JLabel scaleLabel;
     private javax.swing.JSpinner scaleSpinner;

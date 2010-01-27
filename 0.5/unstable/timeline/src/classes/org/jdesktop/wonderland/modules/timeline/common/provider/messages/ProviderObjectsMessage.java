@@ -21,7 +21,7 @@ public class ProviderObjectsMessage extends CellMessage {
     
     private TimelineQueryID queryID;
     private Action action;
-    private Set<DatedObject> objs;
+    private Set<? extends DatedObject> objs;
 
     public ProviderObjectsMessage(CellID cellID, TimelineQueryID queryID,
                                  Action action, DatedObject obj)
@@ -30,7 +30,7 @@ public class ProviderObjectsMessage extends CellMessage {
     }
 
     public ProviderObjectsMessage(CellID cellID, TimelineQueryID queryID,
-                                 Action action, Set<DatedObject> objs)
+                                 Action action, Set<? extends DatedObject> objs)
     {
         super (cellID);
     
@@ -47,7 +47,7 @@ public class ProviderObjectsMessage extends CellMessage {
         return action;
     }
 
-    public Set<DatedObject> getObjects() {
+    public Set<? extends DatedObject> getObjects() {
         return objs;
     }
 }

@@ -15,17 +15,18 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
+package org.jdesktop.wonderland.modules.timeline.common.layout;
 
-package org.jdesktop.wonderland.modules.timeline.server.layout;
+import org.jdesktop.wonderland.modules.layout.api.common.LayoutParticipant;
+import org.jdesktop.wonderland.modules.timeline.common.provider.DatedObject;
+import org.jdesktop.wonderland.modules.timeline.common.provider.TimelineDate;
 
 /**
- * Defines a LayoutManager which is responsible for taking DatedObjects from
- * TimelineResults and attaching them to segments. As part of this process, the
- * LayoutManager maps DatedObjects onto Cells and figures out where (within the
- * Segment) the Cells should be positioned.
- * 
- * @author drew
+ * Extension of the standard LayoutParticipant interface to included dated
+ * objects.
+ * @author Jonathan Kaplan <kaplanj@dev.java.net>
  */
-public interface LayoutManager {
-
+public interface DatedLayoutParticipant extends DatedObject, LayoutParticipant {
+    public DatedObject getDatedObject();
+    public TimelineDate getDate();
 }
