@@ -59,15 +59,16 @@ public class DocumentDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Open Document");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/whiteboard/client/resources/Bundle"); // NOI18N
+        setTitle(bundle.getString("DocumentDialog.title")); // NOI18N
 
         descriptionLabel.setFont(descriptionLabel.getFont().deriveFont(descriptionLabel.getFont().getStyle() | java.awt.Font.BOLD, descriptionLabel.getFont().getSize()-1));
-        descriptionLabel.setText("Enter the URL of the SVG Document:");
+        descriptionLabel.setText(bundle.getString("DocumentDialog.descriptionLabel.text")); // NOI18N
 
         documentLabel.setFont(documentLabel.getFont().deriveFont(documentLabel.getFont().getStyle() | java.awt.Font.BOLD, documentLabel.getFont().getSize()-1));
-        documentLabel.setText("Document URL:");
+        documentLabel.setText(bundle.getString("DocumentDialog.documentLabel.text")); // NOI18N
 
-        documentTextField.setText("http://");
+        documentTextField.setText(bundle.getString("DocumentDialog.documentTextField.text")); // NOI18N
         documentTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 documentTextFieldActionPerformed(evt);
@@ -75,10 +76,10 @@ public class DocumentDialog extends javax.swing.JDialog {
         });
 
         okButton.setFont(new java.awt.Font("Dialog", 1, 12));
-        okButton.setText("OK");
+        okButton.setText(bundle.getString("DocumentDialog.okButton.text")); // NOI18N
 
-        cancelButton.setFont(new java.awt.Font("Dialog", 1, 12));
-        cancelButton.setText("Cancel");
+        cancelButton.setFont(new java.awt.Font("Dialog", 1, 12)); // NOI18N
+        cancelButton.setText(bundle.getString("DocumentDialog.cancelButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -93,7 +94,7 @@ public class DocumentDialog extends javax.swing.JDialog {
                                 .add(6, 6, 6)
                                 .add(documentLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(documentTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))
+                                .add(documentTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE))
                             .add(descriptionLabel)))
                     .add(layout.createSequentialGroup()
                         .add(122, 122, 122)

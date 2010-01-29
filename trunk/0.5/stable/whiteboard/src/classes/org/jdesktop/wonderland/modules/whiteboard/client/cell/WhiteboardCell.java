@@ -21,6 +21,7 @@ import com.jme.math.Vector2f;
 import org.jdesktop.wonderland.modules.whiteboard.client.*;
 import java.awt.Point;
 import java.math.BigInteger;
+import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -46,8 +47,10 @@ import org.w3c.dom.svg.SVGDocument;
  */
 public class WhiteboardCell extends App2DCell {
 
-    private static final Logger logger =
+    private static final Logger LOGGER =
             Logger.getLogger(WhiteboardCell.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/whiteboard/client/resources/Bundle");
     /** The (singleton) window created by the whiteboard app */
     private WhiteboardWindow whiteboardWin;
     /** The cell client state message received from the server cell */
@@ -168,15 +171,15 @@ public class WhiteboardCell extends App2DCell {
         String msgUID = msg.getCellID().toString();
 
         if (isSynced()) {
-            logger.fine("whiteboard: " + msgUID + " received message: " + msg);
+            LOGGER.fine("whiteboard: " + msgUID + " received message: " + msg);
             if (msg.getRequestStatus() == RequestStatus.REQUEST_DENIED) {
                 // this request was denied, create a retry thread
                 try {
-                    logger.info("whiteboard: scheduling retry of request: " + msg);
+                    LOGGER.info("whiteboard: scheduling retry of request: " + msg);
                     retryRequest(msg.getAction(), msg.getXMLString(),
                             msg.getURI(), msg.getPosition(), msg.getZoom());
                 } catch (Exception e) {
-                    logger.warning("whiteboard: failed to create retry request for: " + msg);
+                    LOGGER.warning("whiteboard: failed to create retry request for: " + msg);
                 }
             } else {
                 // All messages from the server act as a trigger for retrying waiting requests
@@ -218,24 +221,24 @@ public class WhiteboardCell extends App2DCell {
 
                             //setViewPosition(msg.getPosition());
                             //setZoom(msg.getZoom(), false);
-                            logger.info("whiteboard: synced");
-                            whiteboardWin.showHUDMessage("synced", 3000);
+                            LOGGER.info("whiteboard: synced");
+                            whiteboardWin.showHUDMessage(BUNDLE.getString("Synced"), 3000);
                         }
                         break;
                     case SET_ZOOM:
                         ((WhiteboardApp) this.getApp()).setZoom(msg.getZoom(), false);
                         break;
                     default:
-                        logger.warning("whiteboard: unhandled message type: " + msg.getAction());
+                        LOGGER.warning("whiteboard: unhandled message type: " + msg.getAction());
                         break;
                 }
                 // retry queued requests
                 synchronized (actionLock) {
                     try {
-                        logger.fine("whiteboard: waking retry threads");
+                        LOGGER.fine("whiteboard: waking retry threads");
                         actionLock.notify();
                     } catch (Exception e) {
-                        logger.warning("whiteboard: exception notifying retry threads: " + e);
+                        LOGGER.warning("whiteboard: exception notifying retry threads: " + e);
                     }
                 }
             }
@@ -274,13 +277,13 @@ public class WhiteboardCell extends App2DCell {
     public void sync(boolean syncing) {
         if ((syncing == false) && (synced == true)) {
             synced = false;
-            logger.info("whiteboard: unsynced");
-            whiteboardWin.showHUDMessage("unsynced", 3000);
+            LOGGER.info("whiteboard: unsynced");
+            whiteboardWin.showHUDMessage(BUNDLE.getString("Unsynced"), 3000);
             //whiteboardWindow.updateMenu();
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
-            logger.info("whiteboard: requesting sync with shared state");
-            whiteboardWin.showHUDMessage("syncing...", 3000);
+            LOGGER.info("whiteboard: requesting sync with shared state");
+            whiteboardWin.showHUDMessage(BUNDLE.getString("Syncing..."), 3000);
             //whiteboardWindow.updateMenu();
             sendRequest(Action.GET_STATE, null, null, null, null);
         }
@@ -292,7 +295,7 @@ public class WhiteboardCell extends App2DCell {
         WhiteboardCellMessage msg = new WhiteboardCellMessage(getClientID(), getCellID(),
                 getUID(), action, xmlString, docURI, position, zoom);
         // send request to server
-        logger.fine("whiteboard: sending request: " + msg);
+        LOGGER.fine("whiteboard: sending request: " + msg);
         if (commComponent == null) {
             commComponent = getComponent(WhiteboardComponent.class);
         }
@@ -306,7 +309,7 @@ public class WhiteboardCell extends App2DCell {
      * @param position the image scroll position
      */
     protected void retryRequest(Action action, String xmlString, String docURI, Point position, Float zoom) {
-        logger.fine("whiteboard: creating retry thread for: " + action + ", " + xmlString + ", " + position);
+        LOGGER.fine("whiteboard: creating retry thread for: " + action + ", " + xmlString + ", " + position);
         new ActionScheduler(action, xmlString, docURI, position, zoom).start();
     }
 
@@ -331,14 +334,14 @@ public class WhiteboardCell extends App2DCell {
             // wait for a retry window
             synchronized (actionLock) {
                 try {
-                    logger.fine("whiteboard: waiting for retry window");
+                    LOGGER.fine("whiteboard: waiting for retry window");
                     actionLock.wait();
                 } catch (Exception e) {
-                    logger.fine("whiteboard: exception waiting for retry: " + e);
+                    LOGGER.fine("whiteboard: exception waiting for retry: " + e);
                 }
             }
             // retry this request
-            logger.info("whiteboard: now retrying: " + action + ", " + xmlString + ", " + position + ", " + zoom);
+            LOGGER.info("whiteboard: now retrying: " + action + ", " + xmlString + ", " + position + ", " + zoom);
             sendRequest(action, xmlString, docURI, position, zoom);
         }
     }
