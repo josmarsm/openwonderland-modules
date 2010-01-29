@@ -23,10 +23,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import java.util.Date;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -48,8 +49,10 @@ import org.w3c.dom.svg.SVGDocument;
  */
 public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
-    private static final Logger logger =
+    private static final Logger LOGGER =
             Logger.getLogger(WhiteboardDocument.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/whiteboard/client/resources/Bundle");
     private static final int TEXT_FONT_SIZE = 30;
     private WhiteboardWindow whiteboardWindow;
     private Date now;
@@ -125,7 +128,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
         String idString = whiteboardWindow.getCellUID(whiteboardWindow.getApp()) + System.currentTimeMillis();
         line.setAttributeNS(null, "id", idString);
-        logger.fine("whiteboard: created line: " + line);
+        LOGGER.fine("whiteboard: created line: " + line);
         return line;
     }
 
@@ -191,7 +194,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
             if (dialog == null) {
                 // create a HUD text dialog
                 dialog = new HUDDialogComponent(whiteboardWindow.getCell());
-                dialog.setMessage("Enter text:");
+                dialog.setMessage(BUNDLE.getString("Enter_text"));
                 dialog.setType(MESSAGE_TYPE.QUERY);
                 dialog.setPreferredLocation(Layout.CENTER);
                 dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.5f));
@@ -206,7 +209,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
                         if (pe.getPropertyName().equals("ok")) {
                             String value = (String) pe.getNewValue();
                             if ((value != null) && (value.length() > 0)) {
-                                logger.info("creating text element: " + value + " at " + position);
+                                LOGGER.info("creating text element: " + value + " at " + position);
                                 Element e = createTextElement(position, value);
                                 whiteboardWindow.addNewElement(e, true);
                             }
@@ -352,8 +355,10 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
      * Called when the loading of a document was started.
      */
     public void documentLoadingStarted(SVGDocumentLoaderEvent e) {
-        logger.fine("whiteboard: document loading started: " + e);
-        whiteboardWindow.showHUDMessage("opening: " + docURI);
+        LOGGER.fine("whiteboard: document loading started: " + e);
+        String message = BUNDLE.getString("Opening");
+        message = MessageFormat.format(message, docURI);
+        whiteboardWindow.showHUDMessage(message);
         setSVGDialogDocumentURL(docURI);
         then = new Date();
     }
@@ -362,9 +367,9 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
      * Called when the loading of a document was completed.
      */
     public void documentLoadingCompleted(SVGDocumentLoaderEvent e) {
-        logger.fine("whiteboard: document loading completed: " + e);
+        LOGGER.fine("whiteboard: document loading completed: " + e);
         now = new Date();
-        logger.info("SVG loaded in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
+        LOGGER.info("SVG loaded in: " + (now.getTime() - then.getTime()) / 1000 + " seconds");
         whiteboardWindow.hideHUDMessage(false);
     }
 
@@ -372,14 +377,14 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
      * Called when the loading of a document was cancelled.
      */
     public void documentLoadingCancelled(SVGDocumentLoaderEvent e) {
-        logger.fine("whiteboard: document loading cancelled: " + e);
+        LOGGER.fine("whiteboard: document loading cancelled: " + e);
     }
 
     /**
      * Called when the loading of a document has failed.
      */
     public void documentLoadingFailed(SVGDocumentLoaderEvent e) {
-        logger.fine("whiteboard: document loading failed: " + e);
+        LOGGER.fine("whiteboard: document loading failed: " + e);
     }
 
     public Element importNode(Element importedNode, boolean deep) {

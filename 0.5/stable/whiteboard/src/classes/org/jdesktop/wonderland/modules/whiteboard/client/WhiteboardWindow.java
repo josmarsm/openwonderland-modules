@@ -37,6 +37,7 @@ import java.awt.geom.Rectangle2D;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.apache.batik.bridge.BridgeContext;
@@ -74,8 +75,10 @@ import org.w3c.dom.svg.SVGDocument;
 @ExperimentalAPI
 public class WhiteboardWindow extends Window2D {
 
-    private static final Logger logger =
+    private static final Logger LOGGER =
             Logger.getLogger(WhiteboardWindow.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/whiteboard/client/resources/Bundle");
     private WhiteboardDrawingSurface wbSurface;
     private WhiteboardCell cell;
     private WhiteboardToolManager toolManager;
@@ -121,10 +124,10 @@ public class WhiteboardWindow extends Window2D {
             final WhiteboardComponent commComponent)
             throws InstantiationException {
         super(app, Type.PRIMARY, width, height, topLevel, pixelScale, new WhiteboardDrawingSurface(width, height));
-        logger.info("creating whiteboard with size: " + width + "x" + height);
+        LOGGER.info("creating whiteboard with size: " + width + "x" + height);
         this.cell = cell;
         this.commComponent = commComponent;
-        setTitle("Whiteboard");
+        setTitle(BUNDLE.getString("Whiteboard"));
         initCanvas(width, height);
         initHUD();
         setDisplayMode(DisplayMode.WORLD);
@@ -209,7 +212,7 @@ public class WhiteboardWindow extends Window2D {
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
-                logger.info("show controls: " + visible);
+                LOGGER.info("show controls: " + visible);
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
                 if (controlComponent == null) {
@@ -321,14 +324,14 @@ public class WhiteboardWindow extends Window2D {
                 g2d.setStroke(markerStroke);
                 WhiteboardTool currentTool = toolManager.getTool();
                 if (currentTool == WhiteboardTool.LINE) {
-                    logger.fine("drawing line: " + pressedPoint.getX() + ", " + pressedPoint.getY() +
+                    LOGGER.fine("drawing line: " + pressedPoint.getX() + ", " + pressedPoint.getY() +
                             " to " + currentPoint.getX() + ", " + currentPoint.getY());
                     g2d.drawLine((int) pressedPoint.getX(), (int) pressedPoint.getY(),
                             (int) currentPoint.getX(), (int) currentPoint.getY());
                 } else {
                     Rectangle r = WhiteboardUtils.constructRectObject(pressedPoint, currentPoint);
                     if (currentTool == WhiteboardTool.RECT) {
-                        logger.fine("drawing rectangle: " + r);
+                        LOGGER.fine("drawing rectangle: " + r);
                         g2d.draw(r);
                     } else if (currentTool == WhiteboardTool.ELLIPSE) {
                         g2d.drawOval((int) r.getX(), (int) r.getY(), (int) r.getWidth(), (int) r.getHeight());
@@ -366,7 +369,7 @@ public class WhiteboardWindow extends Window2D {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                logger.info(this.getClass().getName() + ": " + message);
+                LOGGER.info(this.getClass().getName() + ": " + message);
                 ((HUDMessage) messageComponent).setMessage(message);
                 messageComponent.setVisible(true);
                 messageComponent.setVisible(false, timeout);
@@ -409,13 +412,13 @@ public class WhiteboardWindow extends Window2D {
     public void sync(boolean syncing) {
         if ((syncing == false) && (synced == true)) {
             synced = false;
-            logger.info("whiteboard: unsynced");
-            showHUDMessage("unsynced", 3000);
+            LOGGER.info("whiteboard: unsynced");
+            showHUDMessage(BUNDLE.getString("Unsynced"), 3000);
             updateMenu();
         } else if ((syncing == true) && (synced == false)) {
             synced = true;
-            logger.info("whiteboard: requesting sync with shared state");
-            showHUDMessage("syncing...", 3000);
+            LOGGER.info("whiteboard: requesting sync with shared state");
+            showHUDMessage(BUNDLE.getString("Syncing..."), 3000);
             updateMenu();
             sendRequest(Action.GET_STATE, null, null, null, null);
         }
@@ -521,7 +524,7 @@ public class WhiteboardWindow extends Window2D {
                 getCellUID(app), action, xmlString, docURI, position, zoom);
 
         // send request to server
-        logger.fine("whiteboard: sending request: " + msg);
+        LOGGER.fine("whiteboard: sending request: " + msg);
         commComponent.sendMessage(msg);
     }
 
@@ -534,7 +537,7 @@ public class WhiteboardWindow extends Window2D {
      * @param zoom the zoom amount
      */
     protected void retryRequest(Action action, String xmlString, String docURI, Point position, Float zoom) {
-        logger.fine("whiteboard: creating retry thread for: " + action + ", " + xmlString + ", " + position);
+        LOGGER.fine("whiteboard: creating retry thread for: " + action + ", " + xmlString + ", " + position);
         new ActionScheduler(action, xmlString, docURI, position, zoom).start();
     }
 
@@ -559,14 +562,14 @@ public class WhiteboardWindow extends Window2D {
             // wait for a retry window
             synchronized (actionLock) {
                 try {
-                    logger.fine("whiteboard: waiting for retry window");
+                    LOGGER.fine("whiteboard: waiting for retry window");
                     actionLock.wait();
                 } catch (Exception e) {
-                    logger.fine("whiteboard: exception waiting for retry: " + e);
+                    LOGGER.fine("whiteboard: exception waiting for retry: " + e);
                 }
             }
             // retry this request
-            logger.info("whiteboard: now retrying: " + action + ", " + xmlString + ", " + position + ", " + zoom);
+            LOGGER.info("whiteboard: now retrying: " + action + ", " + xmlString + ", " + position + ", " + zoom);
             sendRequest(action, xmlString, docURI, position, zoom);
         }
     }
