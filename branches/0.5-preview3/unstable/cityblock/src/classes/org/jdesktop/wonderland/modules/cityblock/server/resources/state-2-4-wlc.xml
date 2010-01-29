@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>state-2 Copy</name>
+    <metadata/>
+    <position-component>
+        <translation>
+            <x>128.40001</x>
+            <y>82.799995</y>
+            <z>-24.1</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>17.853511810302734</x>
+            <y>82.39999389648438</y>
+            <z>17.853601455688477</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+            <angle>0.0</angle>
+        </rotation>
+    </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://cityblock/state-2.kmz/state-2.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+    </model-cell-component>
+</model-cell>

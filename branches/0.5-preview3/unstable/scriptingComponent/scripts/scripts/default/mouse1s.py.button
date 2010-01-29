@@ -1,0 +1,35 @@
+from javax.swing import JFrame
+from javax.swing import JLabel
+from javax.swing import JButton
+from javax.swing import WindowConstants
+
+from java.awt import BorderLayout
+import sys
+
+print 'Hello from jython - mouse script' ;
+print name;
+MyClass.testMethod("rabbit");
+stateString[0] = "abracadabra";
+name = "fubar";
+print name;
+print stateString[0];
+stateString[0] = "snapz";
+print stateString[0];
+testInt = 1006;
+
+class Example:
+     def setText(self,event):
+         self.label.text = 'Button clicked.'
+   
+     def __init__(self):
+       frame = JFrame("Jython Example JButton")
+       frame.setSize(100, 100)
+       frame.setLayout(BorderLayout())
+       self.label = JLabel('Hello from Jython')
+       frame.add(self.label, BorderLayout.NORTH)
+       button = JButton('Click Me',actionPerformed=self.setText)
+       frame.add(button, BorderLayout.SOUTH)
+       frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
+       frame.setVisible(True)
+   
+Example()

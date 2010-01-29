@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jme-collada-cell>
+  <metadata/>
+  <model>wla://compassmodule/compassCollada.dae</model>
+  <position-component>
+    <origin>
+        <x>-8.0</x>
+        <y>5.0</y>
+        <z>5.0</z>
+    </origin>
+    <rotation>
+        <x>0.0</x>
+        <y>1.0</y>
+        <z>0.0</z>
+        <angle>3.141569</angle>
+    </rotation>
+  </position-component>
+</jme-collada-cell>

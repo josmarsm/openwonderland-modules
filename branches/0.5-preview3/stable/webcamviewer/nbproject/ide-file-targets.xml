@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="webcamviewer-module-IDE">
+    <property location="${netbeans.user}/build.properties" name="user.properties.file"/>
+    <property file="${user.properties.file}"/>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target depends="-jdk-init" name="run-selected-file-in-classes">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement path="../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../../../wonderland/core/ext/common/jbullet.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-0.9.8.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-shared-1.3.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/modules/tools/sharedstate/build/client/sharedstate-client.jar:../../../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar:lib/jmc.jar:../../../wonderland/modules/foundation/appbase/build/client/appbase-client-cell.jar:../../../wonderland/modules/foundation/appbase/build/client/appbase-client.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/modules/foundation/appbase/build/server/appbase-server.jar"/>
+                <pathelement location="dist/webcamviewer.jar"/>
+            </classpath>
+        </java>
+    </target>
+</project>

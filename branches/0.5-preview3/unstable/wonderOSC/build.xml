@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderOSC" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderOSC}"/>
+    
+
+     <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+   
+
+
+    
+<!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+
+    <pathconvert property="module-client.classpath">
+        <path location="${module.dir}/world/avatarbase/build/classes"/>
+        <path location="${module.dir}/world/avatarbase/lib/avatars.jar"/>
+    <path location="${current.dir}/lib/javaosc.jar"/>
+    </pathconvert>
+    
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+    
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="wonderOSC" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/wonderOSC.jar"
+                moduleDescription="Control wonderland using OSC protocol" builddir="${build.dir}">
+            
+            <client>
+                <clientjar name="wonderOSC-client" basedir="${build.classes.dir}">
+                    <clientplugin provider="org.jdesktop.wonderland.modules.wonderOSC.client.wonderOSCPlugin"/>
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                     <fileset dir="${current.dir}/licenses">
+                        <include name="**/*.rtf"/>
+                    </fileset>
+    <!--                <fileset dir="${current.dir}">
+                        <include name="**/samples/**"/>
+                    </fileset>-->
+                    
+                    <zipfileset src="${current.dir}/lib/javaosc.jar" />
+                </clientjar>
+            </client>
+        </module>
+    </target>                                           
+    <target name="clean" depends="-module-clean"/>
+    <target name="deploy" depends="dist, -module-deploy"/>
+</project>

@@ -1,0 +1,4 @@
+TextureDir textures
+
+ConfigFile worldHighConfig.mtg
+ConfigFile worldData.mtg
