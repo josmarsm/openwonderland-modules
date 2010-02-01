@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -17,7 +17,6 @@
  */
 package org.jdesktop.wonderland.modules.generic.client.sample;
 
-import java.math.BigInteger;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
@@ -29,8 +28,8 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.generic.client.GenericCell;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
+import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
-import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 
 /**
@@ -114,11 +113,8 @@ public class SampleGenericCell extends GenericCell {
      * Listens to changes in the shared map and updates the shape type
      */
     class MySharedMapListener implements SharedMapListenerCli {
-        public void propertyChanged(SharedMapCli map, BigInteger senderID,
-                                String propertyName, SharedData oldvalue,
-                                SharedData newValue) {
-
-            String newShapeType = ((SharedString)newValue).toString();
+        public void propertyChanged(SharedMapEventCli event) {
+            String newShapeType = event.getNewValue().toString();
             cellRenderer.updateShape(newShapeType);
         }
     }
