@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
+import java.util.ResourceBundle;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -40,7 +41,10 @@ public class StickyNoteWindow
         implements StickyNoteParentPanel.Container {
 
     /** The logger used by this class. */
-    private static final Logger logger = Logger.getLogger(StickyNoteWindow.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(StickyNoteWindow.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/rockwellcollins/stickynote/client/resources/Bundle");
+
     /** The cell in which this window is displayed. */
     private StickyNoteCell cell;
     /** Whether the window is currently displayed "on the glass". */
@@ -64,8 +68,6 @@ public class StickyNoteWindow
         this.cell = cell;
         setDecorated(false);
 
-        setTitle("Post-it note");
-
         stickynotePanel = new StickyNoteParentPanel(cell, state);
 
 
@@ -80,7 +82,7 @@ public class StickyNoteWindow
                         setComponent(stickynotePanel);
                     }
                 });
-        setTitle("Post-it note");
+        setTitle(BUNDLE.getString("Post-it_Note"));
         setUserResizable(false);
 
 

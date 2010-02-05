@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -35,6 +36,9 @@ import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.common.cell.St
  */
 @CellFactory
 public class TaskStickyNoteCellFactory implements CellFactorySPI {
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/rockwellcollins/stickynote/client/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[]{};
@@ -54,10 +58,11 @@ public class TaskStickyNoteCellFactory implements CellFactorySPI {
     }
 
     public String getDisplayName() {
-        return "Task Sticky Note";
+        return BUNDLE.getString("Task_Sticky_Note");
     }
 
     public Image getPreviewImage() {
+        // TODO: i18n/L10n
         URL url = TaskStickyNoteCellFactory.class.getResource("resources/task_stickynote_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
     }
