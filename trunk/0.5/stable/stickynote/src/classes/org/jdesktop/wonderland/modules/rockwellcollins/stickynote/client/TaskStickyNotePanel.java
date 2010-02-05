@@ -18,13 +18,10 @@
 package org.jdesktop.wonderland.modules.rockwellcollins.stickynote.client;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import javax.swing.JWindow;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -41,12 +38,16 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
  *  The Task sticky note panel viewed in Wonderland.
  * @author Ryan (mymegabyte)
  */
-public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionListener, StickyNotePanel {
+public class TaskStickyNotePanel
+        extends javax.swing.JPanel
+        implements ActionListener, StickyNotePanel {
 
     private JFrame frame;
-    private static Logger logger = Logger.getLogger(TaskStickyNotePanel.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(
+            TaskStickyNotePanel.class.getName());
     private StickyNoteCell cell;
-    private StickyNoteCellClientState lastSyncState = new StickyNoteCellClientState();
+    private StickyNoteCellClientState lastSyncState =
+            new StickyNoteCellClientState();
     private Timer keyTimer;
     private HUD mainHUD;
     private HUDComponent hudComponent;
@@ -59,20 +60,86 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
     }
 
-    /** Creates new form FreeStickynotePanel */
-    public TaskStickyNotePanel(StickyNoteCell cell, StickyNoteCellClientState state, JPanel parent) {
+    /** Creates new form FreeStickynotePanel
+     * @param cell the sticky note cell
+     * @param state the client state
+     * @param parent the parent JPanel
+     */
+    public TaskStickyNotePanel(StickyNoteCell cell,
+            StickyNoteCellClientState state, JPanel parent) {
         this();
         this.cell = cell;
         parentPanel = parent;
         lastSyncState = state;
         setFields();
-        detailsPanel.setVisible(false);
-        this.revalidate();
-        
+        setExpandedState(false);
+    }
+
+    public static void main(String args[]) {
+        JWindow j = new JWindow();
+        //JFrame j = new JFrame();
+//        j.addMouseMotionListener(new MouseMotionAdapter() {
+//           public void mouseMoved(java.awt.event.MouseEvent evt) {
+//                System.out.println(evt);
+//            }
+//        });
+        System.out.println(j.getLayout());
+        j.add(new TaskStickyNotePanel());
+        j.pack();
+        j.setVisible(true);
     }
 
     public void setFrame(JFrame frame) {
         this.frame = frame;
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == keyTimer) {
+            // Check to see if we need to send a message w/ new text to the clients
+            checkSendChanges();
+        }
+    }
+
+    public void processMessage(final StickyNoteSyncMessage pcm) {
+        lastSyncState = pcm.getState();
+        setFields();
+    }
+
+    public void setFields() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                if (lastSyncState == null) {
+                    return;
+                }
+                assigneeField.setText(lastSyncState.getNoteAssignee());
+                dueField.setText(lastSyncState.getNoteDue());
+                taskNameField.setText(lastSyncState.getNoteName());
+                statusField.setText(lastSyncState.getNoteStatus());
+                notesPane.setText(lastSyncState.getNoteText());
+                setColor(lastSyncState.getNoteColor());
+            }
+        });
+    }
+
+    /**
+     * sets the color of the task sticky note panel
+     * @param color the color to set
+     */
+    public void setColor(String color) {
+        Color newColor = StickyNoteCell.parseColorString(color);
+
+        this.setBackground(newColor);
+        taskNameField.setBackground(newColor);
+        expandButton.setBackground(newColor);
+        assigneeField.setBackground(newColor);
+        dueField.setBackground(newColor);
+        statusField.setBackground(newColor);
+        notesScrollPane.setBackground(newColor);
+        notesPane.setBackground(newColor);
+        parentPanel.setBackground(newColor);
+
+        lastSyncState.setNoteColor(color);
     }
 
     /** This method is called from within the constructor to
@@ -83,27 +150,26 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        taskLabel = new javax.swing.JLabel();
         taskNameField = new javax.swing.JTextField();
         expandButton = new javax.swing.JToggleButton();
-        detailsPanel = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        assigneeLabel = new javax.swing.JLabel();
         assigneeField = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
+        dueLabel = new javax.swing.JLabel();
         dueField = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
+        statusLabel = new javax.swing.JLabel();
         statusField = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        notesLabel = new javax.swing.JLabel();
+        notesScrollPane = new javax.swing.JScrollPane();
         notesPane = new javax.swing.JTextArea();
 
         setBackground(new java.awt.Color(255, 255, 153));
-        setPreferredSize(new java.awt.Dimension(300, 30));
         setRequestFocusEnabled(false);
 
-        jLabel1.setFont(new java.awt.Font("Verdana", 0, 14));
-        jLabel1.setLabelFor(taskNameField);
-        jLabel1.setText("Task:");
+        taskLabel.setFont(new java.awt.Font("Verdana", 0, 14));
+        taskLabel.setLabelFor(taskNameField);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/rockwellcollins/stickynote/client/resources/Bundle"); // NOI18N
+        taskLabel.setText(bundle.getString("TaskStickyNotePanel.taskLabel.text")); // NOI18N
 
         taskNameField.setBackground(new java.awt.Color(255, 255, 153));
         taskNameField.setFont(new java.awt.Font("Verdana", 0, 14));
@@ -125,11 +191,9 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
             }
         });
 
-        detailsPanel.setBackground(new java.awt.Color(255, 255, 153));
-
-        jLabel2.setFont(new java.awt.Font("Verdana", 0, 14));
-        jLabel2.setLabelFor(assigneeField);
-        jLabel2.setText("Assignee:");
+        assigneeLabel.setFont(new java.awt.Font("Verdana", 0, 14));
+        assigneeLabel.setLabelFor(assigneeField);
+        assigneeLabel.setText(bundle.getString("TaskStickyNotePanel.assigneeLabel.text")); // NOI18N
 
         assigneeField.setBackground(new java.awt.Color(255, 255, 153));
         assigneeField.setFont(new java.awt.Font("Verdana", 0, 14));
@@ -142,10 +206,10 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
             }
         });
 
-        jLabel3.setBackground(new java.awt.Color(255, 255, 153));
-        jLabel3.setFont(new java.awt.Font("Verdana", 0, 14));
-        jLabel3.setLabelFor(dueField);
-        jLabel3.setText("Due:");
+        dueLabel.setBackground(new java.awt.Color(255, 255, 153));
+        dueLabel.setFont(new java.awt.Font("Verdana", 0, 14));
+        dueLabel.setLabelFor(dueField);
+        dueLabel.setText(bundle.getString("TaskStickyNotePanel.dueLabel.text")); // NOI18N
 
         dueField.setBackground(new java.awt.Color(255, 255, 153));
         dueField.setFont(new java.awt.Font("Verdana", 0, 14));
@@ -158,10 +222,10 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
             }
         });
 
-        jLabel4.setBackground(new java.awt.Color(255, 255, 204));
-        jLabel4.setFont(new java.awt.Font("Verdana", 0, 14));
-        jLabel4.setLabelFor(statusField);
-        jLabel4.setText("Status:");
+        statusLabel.setBackground(new java.awt.Color(255, 255, 204));
+        statusLabel.setFont(new java.awt.Font("Verdana", 0, 14));
+        statusLabel.setLabelFor(statusField);
+        statusLabel.setText(bundle.getString("TaskStickyNotePanel.statusLabel.text")); // NOI18N
 
         statusField.setBackground(new java.awt.Color(255, 255, 153));
         statusField.setFont(new java.awt.Font("Verdana", 0, 14));
@@ -174,12 +238,12 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
             }
         });
 
-        jLabel5.setBackground(new java.awt.Color(255, 255, 153));
-        jLabel5.setFont(new java.awt.Font("Verdana", 0, 14));
-        jLabel5.setLabelFor(notesPane);
-        jLabel5.setText("Notes:");
+        notesLabel.setBackground(new java.awt.Color(255, 255, 153));
+        notesLabel.setFont(new java.awt.Font("Verdana", 0, 14));
+        notesLabel.setLabelFor(notesPane);
+        notesLabel.setText(bundle.getString("TaskStickyNotePanel.notesLabel.text")); // NOI18N
 
-        jScrollPane2.setBackground(new java.awt.Color(255, 255, 153));
+        notesScrollPane.setBackground(new java.awt.Color(255, 255, 153));
 
         notesPane.setBackground(new java.awt.Color(255, 255, 153));
         notesPane.setColumns(20);
@@ -187,7 +251,6 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
         notesPane.setLineWrap(true);
         notesPane.setRows(5);
         notesPane.setWrapStyleWord(true);
-        notesPane.setPreferredSize(null);
         notesPane.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 formFieldFocusGained(evt);
@@ -196,54 +259,7 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
                 formFieldFocusLost(evt);
             }
         });
-        jScrollPane2.setViewportView(notesPane);
-
-        org.jdesktop.layout.GroupLayout detailsPanelLayout = new org.jdesktop.layout.GroupLayout(detailsPanel);
-        detailsPanel.setLayout(detailsPanelLayout);
-        detailsPanelLayout.setHorizontalGroup(
-            detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 286, Short.MAX_VALUE)
-            .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(detailsPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2)
-                        .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
-                            .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(jLabel2)
-                                .add(jLabel3)
-                                .add(jLabel4)
-                                .add(jLabel5))
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                            .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(dueField)
-                                .add(org.jdesktop.layout.GroupLayout.TRAILING, statusField)
-                                .add(assigneeField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE))))
-                    .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-        );
-        detailsPanelLayout.setVerticalGroup(
-            detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 255, Short.MAX_VALUE)
-            .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(detailsPanelLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(jLabel2)
-                        .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(jLabel3)
-                        .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(jLabel4)
-                        .add(statusField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(jLabel5)
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-        );
+        notesScrollPane.setViewportView(notesPane);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -251,44 +267,72 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(taskNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 219, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(expandButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(detailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(dueLabel)
+                    .add(statusLabel)
+                    .add(notesLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(taskLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(taskNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 180, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(expandButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, notesScrollPane, 0, 0, Short.MAX_VALUE)
+                        .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                            .add(assigneeLabel)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                .add(assigneeField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+                                .add(dueField)
+                                .add(statusField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new java.awt.Component[] {assigneeLabel, dueLabel, statusLabel, taskLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.linkSize(new java.awt.Component[] {assigneeField, dueField, statusField, taskNameField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(taskLabel)
+                            .add(taskNameField))
+                        .add(6, 6, 6))
+                    .add(layout.createSequentialGroup()
+                        .add(expandButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(taskNameField))
-                .add(277, 277, 277))
-            .add(layout.createSequentialGroup()
-                .add(expandButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(282, Short.MAX_VALUE))
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                    .add(35, 35, 35)
-                    .add(detailsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(assigneeLabel)
+                    .add(assigneeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(dueLabel)
+                    .add(dueField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(statusLabel)
+                    .add(statusField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(notesLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(notesScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void formFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFieldFocusLost
-        logger.fine("formFieldFocusLost");
+        LOGGER.fine("formFieldFocusLost");
         keyTimer.stop();
         checkSendChanges();
     }//GEN-LAST:event_formFieldFocusLost
 
     private void formFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFieldFocusGained
-        logger.fine("formFieldFocusGained");
+        LOGGER.fine("formFieldFocusGained");
         keyTimer.start();
     }//GEN-LAST:event_formFieldFocusGained
 
@@ -296,13 +340,25 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
         setExpandedState(expandButton.isSelected());
     }//GEN-LAST:event_expandButtonActionPerformed
 
+    private void setDetailsVisible(boolean visible) {
+        assigneeLabel.setVisible(visible);
+        assigneeField.setVisible(visible);
+        dueLabel.setVisible(visible);
+        dueField.setVisible(visible);
+        statusLabel.setVisible(visible);
+        statusField.setVisible(visible);
+        notesLabel.setVisible(visible);
+        notesScrollPane.setVisible(visible);
+        revalidate();
+    }
+
     private void setExpandedState(boolean expanded) {
-        detailsPanel.setVisible(expanded);
-        if(expanded) {
-            setPreferredSize(new Dimension(300,300));
-            this.revalidate();
-            expandButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/rockwellcollins/stickynote/client/resources/upArrow23x10.png")));
-            if(hudComponent == null) {
+        setDetailsVisible(expanded);
+        if (expanded) {
+            expandButton.setIcon(new ImageIcon(getClass().getResource(
+                    "/org/jdesktop/wonderland/modules/rockwellcollins/"
+                    + "stickynote/client/resources/upArrow23x10.png")));
+            if (hudComponent == null) {
                 parentPanel.remove(this);
                 hudComponent = mainHUD.createComponent(this);
                 mainHUD.addComponent(hudComponent);
@@ -310,25 +366,28 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
                 hudComponent.addEventListener(new HUDEventListener() {
 
                     public void HUDObjectChanged(HUDEvent event) {
-                        if(event.getEventType().equals(HUDEvent.HUDEventType.CLOSED)) {
+                        if (event.getEventType().equals(
+                                HUDEvent.HUDEventType.CLOSED)) {
                             setExpandedState(false);
-
                         }
                     }
                 });
             }
 
         } else {
-            setPreferredSize(new Dimension(300,30));
-            this.revalidate();
-            expandButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/rockwellcollins/stickynote/client/resources/downArrow23x10.png")));
-            if(hudComponent != null) {
+            expandButton.setIcon(new ImageIcon(getClass().getResource(
+                    "/org/jdesktop/wonderland/modules/rockwellcollins/"
+                    + "stickynote/client/resources/downArrow23x10.png")));
+            if (hudComponent != null) {
                 //hudComponent.setVisible(false);
-                SwingUtilities.invokeLater(new Runnable() { public void run() {
-                    mainHUD.removeComponent(hudComponent);
-                    hudComponent = null;
-                    
-                }});
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        mainHUD.removeComponent(hudComponent);
+                        hudComponent = null;
+                    }
+                });
+                
                 parentPanel.add(this);
                 parentPanel.revalidate();
                 cell.getApp().getControlArb().releaseControl();
@@ -336,46 +395,8 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
         }
     }
 
-    private boolean ortho = false;
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField assigneeField;
-    private javax.swing.JPanel detailsPanel;
-    private javax.swing.JTextField dueField;
-    private javax.swing.JToggleButton expandButton;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea notesPane;
-    private javax.swing.JTextField statusField;
-    private javax.swing.JTextField taskNameField;
-    // End of variables declaration//GEN-END:variables
-
-    public static void main(String args[]) {
-        JWindow j = new JWindow();
-        //JFrame j = new JFrame();
-//        j.addMouseMotionListener(new MouseMotionAdapter() {
-//           public void mouseMoved(java.awt.event.MouseEvent evt) {
-//                System.out.println(evt);
-//            }
-//        });
-        System.out.println(j.getLayout());
-        j.add(new TaskStickyNotePanel());
-        j.pack();
-        j.setVisible(true);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == keyTimer) {
-            // Check to see if we need to send a message w/ new text to the clients
-            checkSendChanges();
-        }
-    }
-
     private synchronized void checkSendChanges() {
-        logger.fine("Checking to see if we need to send changes.");
+        LOGGER.fine("Checking to see if we need to send changes.");
         StickyNoteCellClientState testState = new StickyNoteCellClientState();
         testState.setNoteAssignee(assigneeField.getText());
         testState.setNoteDue(dueField.getText());
@@ -388,46 +409,21 @@ public class TaskStickyNotePanel extends javax.swing.JPanel implements ActionLis
         if (testState.hasChanges(lastSyncState)) {
             cell.sendSyncMessage(testState);
             lastSyncState.copyLocal(testState);
-            logger.fine("Sent sync message to server.");
+            LOGGER.fine("Sent sync message to server.");
         }
     }
-
-    public void processMessage(final StickyNoteSyncMessage pcm) {
-         lastSyncState = pcm.getState();
-         setFields();     
-    }
-
-    public void setFields() {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                if(lastSyncState == null) {
-                    return;
-                }
-                assigneeField.setText(lastSyncState.getNoteAssignee());
-                dueField.setText(lastSyncState.getNoteDue());
-                taskNameField.setText(lastSyncState.getNoteName());
-                statusField.setText(lastSyncState.getNoteStatus());
-                notesPane.setText(lastSyncState.getNoteText());
-                setColor(lastSyncState.getNoteColor());
-            }
-        });
-    }
-
-    public void setColor(String color) {
-        Color newColor = StickyNoteCell.parseColorString(color);
-
-        this.setBackground(newColor);
-        taskNameField.setBackground(newColor);
-        expandButton.setBackground(newColor);
-        detailsPanel.setBackground(newColor);
-        assigneeField.setBackground(newColor);
-        dueField.setBackground(newColor);
-        statusField.setBackground(newColor);
-        jScrollPane2.setBackground(newColor);
-        notesPane.setBackground(newColor);
-        parentPanel.setBackground(newColor);
-
-        lastSyncState.setNoteColor(color);
-    }
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField assigneeField;
+    private javax.swing.JLabel assigneeLabel;
+    private javax.swing.JTextField dueField;
+    private javax.swing.JLabel dueLabel;
+    private javax.swing.JToggleButton expandButton;
+    private javax.swing.JLabel notesLabel;
+    private javax.swing.JTextArea notesPane;
+    private javax.swing.JScrollPane notesScrollPane;
+    private javax.swing.JTextField statusField;
+    private javax.swing.JLabel statusLabel;
+    private javax.swing.JLabel taskLabel;
+    private javax.swing.JTextField taskNameField;
+    // End of variables declaration//GEN-END:variables
 }

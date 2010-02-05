@@ -44,7 +44,7 @@
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <fileset dir="${current.dir}/src/classes">
-                        <include name="${module.src}/client/resources/**/*.png"/>
+                        <include name="${module.src}/client/resources/**"/>
                     </fileset>
                     <include name="${module.src}/common/**"/>
                 </clientjar>

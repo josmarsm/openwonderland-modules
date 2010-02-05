@@ -18,6 +18,7 @@
 package org.jdesktop.wonderland.modules.rockwellcollins.stickynote.client.cell;
 
 import java.awt.Color;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JColorChooser;
 import javax.swing.SwingUtilities;
@@ -51,7 +52,10 @@ import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 public class StickyNoteCell extends App2DCell {
 
     /** The logger used by this class */
-    private static final Logger logger = Logger.getLogger(StickyNoteCell.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(StickyNoteCell.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/rockwellcollins/stickynote/client/resources/Bundle");
+
     /** The (singleton) window created by the Swing test app */
     private StickyNoteWindow window;
     /** The cell client state message received from the server cell */
@@ -96,7 +100,9 @@ public class StickyNoteCell extends App2DCell {
             case ACTIVE:
                 if (increasing) {
                     commComponent = getComponent(StickyNoteComponent.class);
-                    StickyNoteApp stApp = new StickyNoteApp("Post-it note", clientState.getPixelScale());
+                    StickyNoteApp stApp = new StickyNoteApp(
+                            BUNDLE.getString("Post-it_Note"),
+                            clientState.getPixelScale());
                     setApp(stApp);
 
                     // Tell the app to be displayed in this cell.
@@ -116,7 +122,7 @@ public class StickyNoteCell extends App2DCell {
 
                             public ContextMenuItem[] getContextMenuItems(
                                     ContextEvent event) {
-                                return new ContextMenuItem[]{new SimpleContextMenuItem("Change color",
+                                return new ContextMenuItem[]{new SimpleContextMenuItem(BUNDLE.getString("Change_Color"),
                                             new ContextMenuActionListener() {
 
                                                 public void actionPerformed(ContextMenuItemEvent event) {
@@ -176,7 +182,7 @@ public class StickyNoteCell extends App2DCell {
     public static Color parseColorString(String colorString) {
         String[] c = colorString.split(":");
         if(c.length < 3) {
-            logger.severe("Improperly formatted color string passed: " + colorString);
+            LOGGER.severe("Improperly formatted color string passed: " + colorString);
             return null;
         }
         Integer r = Integer.parseInt(c[0]);
@@ -188,7 +194,9 @@ public class StickyNoteCell extends App2DCell {
 
     public Color getUserSelectedColor() {
         Color oldColor = parseColorString(clientState.getNoteColor());
-        Color newColor = JColorChooser.showDialog(JmeClientMain.getFrame().getFrame(), "Post-it color", oldColor);
+        Color newColor = JColorChooser.showDialog(
+                JmeClientMain.getFrame().getFrame(),
+                BUNDLE.getString("Post-it_Color"), oldColor);
         return newColor;
     }
 }
