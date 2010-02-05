@@ -19,41 +19,41 @@ package org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.common;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+
 /**
  * ClickableLinkComponent's ServerState.  99% boilerplate
  * @author Ben (shavnir)
  *
  */
-@XmlRootElement(name="clickableLink-component")
+@XmlRootElement(name = "clickableLink-component")
 @ServerState
 public class ClickableLinkComponentServerState extends CellComponentServerState {
-	/**
-	 * Stores the URL for the link
-	 */
-	private String linkURL;
-	
-	@XmlElement
-	public String getLinkURL() {
-		return linkURL;
-	}
-	
-	public void setLinkURL(String linkURL) {
-		this.linkURL = linkURL;
-	}
-	
-	@Override
-	public String getServerComponentClassName() {
-		return "org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.server.ClickableLinkComponentMO";
-	}
 
-	public ClickableLinkComponentServerState() {
-	}
+    /**
+     * Stores the URL for the link
+     */
+    private String linkURL;
 
-	public ClickableLinkComponentServerState(String url) {
-		this.linkURL = url;
-	}
+    @XmlElement
+    public String getLinkURL() {
+        return linkURL;
+    }
 
+    public void setLinkURL(String linkURL) {
+        this.linkURL = linkURL;
+    }
+
+    @Override
+    public String getServerComponentClassName() {
+        return "org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.server.ClickableLinkComponentMO";
+    }
+
+    public ClickableLinkComponentServerState() {
+    }
+
+    public ClickableLinkComponentServerState(String url) {
+        this.linkURL = url;
+    }
 }

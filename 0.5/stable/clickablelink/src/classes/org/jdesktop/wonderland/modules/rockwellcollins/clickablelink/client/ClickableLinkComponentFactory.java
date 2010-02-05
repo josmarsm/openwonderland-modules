@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.client;
 
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellComponentFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellComponentFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
@@ -30,26 +31,27 @@ import org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.common.Clic
 @CellComponentFactory
 public class ClickableLinkComponentFactory implements CellComponentFactorySPI {
 
-	@Override
-	public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
-		ClickableLinkComponentServerState state = new ClickableLinkComponentServerState();
-		state.setLinkURL("about:robots");
-		return (T)state;
-	}
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/rockwellcollins/clickablelink/" +
+            "client/Bundle");
 
-	
-	
-	@Override
-	public String getDescription() {
-		return "This component allows you to set a URL to open a browser window to when you click the object";
-	}
+    @Override
+    public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
+        ClickableLinkComponentServerState state = new ClickableLinkComponentServerState();
+        state.setLinkURL("about:robots");
+        return (T) state;
+    }
 
-	/**
-	 * This method actually adds it to the list of possible to add cellcomponents
-	 */
-	@Override
-	public String getDisplayName() {
-		return "Clickable Link";
-	}
+    @Override
+    public String getDescription() {
+        return BUNDLE.getString("Description");
+    }
 
+    /**
+     * This method actually adds it to the list of possible to add cellcomponents
+     */
+    @Override
+    public String getDisplayName() {
+        return BUNDLE.getString("Clickable_Link");
+    }
 }
