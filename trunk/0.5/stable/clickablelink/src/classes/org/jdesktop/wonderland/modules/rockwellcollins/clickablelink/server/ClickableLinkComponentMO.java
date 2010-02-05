@@ -25,6 +25,7 @@ import org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.common.Clic
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+
 /**
  * This is the server side Component class for the ClickableLink.  This is all
  * pretty standard CellComponentMO code
@@ -32,58 +33,54 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  *
  */
 public class ClickableLinkComponentMO extends CellComponentMO {
-	/**
-	 * The URL to link to
-	 */
-	private String url;
 
-	
-	public String getUrl() {
-		return url;
-	}
-	
-	public void setUrl(String url) {
-		this.url = url;
-	}
-	
-	public ClickableLinkComponentMO(CellMO cell){
-		super(cell);
-		
-		
-	}
-	
-	@Override
-	protected String getClientClass() {
-		return "org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.client.ClickableLinkComponent";
-	}
+    /**
+     * The URL to link to
+     */
+    private String url;
 
-	@Override
-	public CellComponentClientState getClientState(
-			CellComponentClientState state, WonderlandClientID clientID,
-			ClientCapabilities capabilities) {
-		if(state ==null){
-			state = new ClickableLinkComponentClientState();
-		}
-		((ClickableLinkComponentClientState)state).setLinkURL(url);
-		return super.getClientState(state, clientID, capabilities);
-	}
-	
-	@Override
-	public CellComponentServerState getServerState(
-			CellComponentServerState state) {
-		if(state==null){
-			state = new ClickableLinkComponentServerState();
-		}
-		
-		((ClickableLinkComponentServerState)state).setLinkURL(url);
-		return super.getServerState(state);
-	}
-	
-	@Override
-	public void setServerState(CellComponentServerState state) {
-		super.setServerState(state);
-		url = ((ClickableLinkComponentServerState)state).getLinkURL();
-	}
-	
-	
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public ClickableLinkComponentMO(CellMO cell) {
+        super(cell);
+    }
+
+    @Override
+    protected String getClientClass() {
+        return "org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.client.ClickableLinkComponent";
+    }
+
+    @Override
+    public CellComponentClientState getClientState(
+            CellComponentClientState state, WonderlandClientID clientID,
+            ClientCapabilities capabilities) {
+        if (state == null) {
+            state = new ClickableLinkComponentClientState();
+        }
+        ((ClickableLinkComponentClientState) state).setLinkURL(url);
+        return super.getClientState(state, clientID, capabilities);
+    }
+
+    @Override
+    public CellComponentServerState getServerState(
+            CellComponentServerState state) {
+        if (state == null) {
+            state = new ClickableLinkComponentServerState();
+        }
+
+        ((ClickableLinkComponentServerState) state).setLinkURL(url);
+        return super.getServerState(state);
+    }
+
+    @Override
+    public void setServerState(CellComponentServerState state) {
+        super.setServerState(state);
+        url = ((ClickableLinkComponentServerState) state).getLinkURL();
+    }
 }

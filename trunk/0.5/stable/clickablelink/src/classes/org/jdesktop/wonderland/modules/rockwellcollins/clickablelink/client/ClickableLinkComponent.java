@@ -24,6 +24,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
@@ -44,86 +45,90 @@ import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
  * 
  */
 public class ClickableLinkComponent extends CellComponent {
-	/** The listener for the mouse clicks */
-	private MouseEventListener listener = null;
 
-	/** The URL to travel to */
-	private String url;
+    private static final Logger LOGGER = Logger.getLogger(
+            ClickableLinkComponent.class.getName());
+    /** The listener for the mouse clicks */
+    private MouseEventListener listener = null;
+    /** The URL to travel to */
+    private String url;
 
-	/** The constructor */
-	public ClickableLinkComponent(Cell cell) {
-		super(cell);
+    /** The constructor */
+    public ClickableLinkComponent(Cell cell) {
+        super(cell);
 
-	}
+    }
 
-	/**
-	 * Sets the local properties from a given ClientState.
-	 */
-	@Override
-	public void setClientState(CellComponentClientState clientState) {
-		super.setClientState(clientState);
-		if (clientState instanceof ClickableLinkComponentClientState) {
-			this.url = ((ClickableLinkComponentClientState) clientState)
-					.getLinkURL();
-		} else {
-			Logger logger = Logger.getLogger(ClickableLinkComponent.class
-					.getName());
-			logger
-					.severe("ClickableLinkComponent got the wrong type of ClientState."
-							+ clientState.getClass().getName());
-			url = "http://www.google.com";
-		}
-	}
+    /**
+     * Sets the local properties from a given ClientState.
+     */
+    @Override
+    public void setClientState(CellComponentClientState clientState) {
+        super.setClientState(clientState);
+        if (clientState instanceof ClickableLinkComponentClientState) {
+            this.url =
+                    ((ClickableLinkComponentClientState) clientState).getLinkURL();
+        } else {
+            LOGGER.severe(
+                    "ClickableLinkComponent got the wrong type of ClientState."
+                    + clientState.getClass().getName());
+            url = "http://www.google.com";
+        }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void setStatus(CellStatus status, boolean increasing) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void setStatus(CellStatus status, boolean increasing) {
 
-		super.setStatus(status, increasing);
+        super.setStatus(status, increasing);
 
-		switch (status) {
-		case DISK:
-			//Cleanup aisle 3
-			if (listener != null) {
-				CellRendererJME renderer = (CellRendererJME) cell
-						.getCellRenderer(RendererType.RENDERER_JME);
-				Entity entity = renderer.getEntity();
-				listener.removeFromEntity(entity);
-				listener = null;
-				url = null;
-			}
-			break;
+        switch (status) {
+            case DISK:
+                //Cleanup aisle 3
+                if (listener != null) {
+                    CellRenderer cellRenderer =
+                            cell.getCellRenderer(RendererType.RENDERER_JME);
+                    CellRendererJME renderer = (CellRendererJME) cellRenderer;
+                    Entity entity = renderer.getEntity();
+                    listener.removeFromEntity(entity);
+                    listener = null;
+                    url = null;
+                }
+                break;
 
-		case RENDERING:
-			if (listener == null) {
-				try {
-					//Attach a click listener
-					CellRendererJME renderer = (CellRendererJME) cell
-							.getCellRenderer(RendererType.RENDERER_JME);
-					Entity entity = renderer.getEntity();
-					listener = new MouseEventListener();
-					listener.addToEntity(entity);
-				} catch (NullPointerException npe) {
-					// do be doo~
-				}
-			}
-			break;
+            case RENDERING:
+                if (listener == null) {
+                    try {
+                        //Attach a click listener
+                        CellRenderer cellRenderer =
+                                cell.getCellRenderer(RendererType.RENDERER_JME);
+                        CellRendererJME renderer =
+                                (CellRendererJME) cellRenderer;
+                        Entity entity = renderer.getEntity();
+                        listener = new MouseEventListener();
+                        listener.addToEntity(entity);
+                    } catch (NullPointerException npe) {
+                        LOGGER.log(Level.WARNING,
+                                "could not attach click listener", npe);
+                    }
+                }
+                break;
 
-		default:
-			break;
+            default:
+                break;
 
-		}
-	}
+        }
+    }
 
-	/**
-	 * This is where a lot of cool stuff happens, the event listener dealing
-	 * with mouse clicks
-	 * @author bmjohnst
-	 *
-	 */
-	   class MouseEventListener extends EventClassListener {
+    /**
+     * This is where a lot of cool stuff happens, the event listener dealing
+     * with mouse clicks
+     * @author bmjohnst
+     *
+     */
+    class MouseEventListener extends EventClassListener {
 
         /**
          * {@inheritDoc}
@@ -141,19 +146,21 @@ public class ClickableLinkComponent extends CellComponent {
         public void commitEvent(Event event) {
             MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
             //Make sure its a click!
-            if (mbe.isClicked() == false || mbe.getButton() != ButtonId.BUTTON1) {
+            if ((mbe.isClicked() == false)
+                    || (mbe.getButton() != ButtonId.BUTTON1)) {
                 return;
             }
 
             try {
-                //Slight fix because a lot of people like to put "www.google.com" instead of "http://www.google.com"
+                // Slight fix because a lot of people like to put
+                // "www.google.com" instead of "http://www.google.com"
                 if (!url.startsWith("http://")) {
                     url = "http://" + url;
                 }
                 WebBrowserLauncher.openURL(url);
 
             } catch (Exception ex) {
-                Logger.getLogger(ClickableLinkComponent.class.getName()).log(Level.SEVERE, "Failed to open URL: " + url, ex);
+                LOGGER.log(Level.SEVERE, "Failed to open URL: " + url, ex);
 
             }
         }

@@ -26,26 +26,26 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
  *
  */
 public class ClickableLinkComponentClientState extends CellComponentClientState {
-	/**
-	 * Stores the URL link
-	 */
-	private String linkURL;
-	
-	@XmlElement
-	public String getLinkURL() {
-		return linkURL;
-	}
-	
-	public void setLinkURL(String linkURL) {
-		this.linkURL = linkURL;
-	}
-	
-	public ClickableLinkComponentClientState(){
-		this.linkURL = "about:mozilla";
-	}
-	
-	public ClickableLinkComponentClientState(String url){
-		this.linkURL = url;
-	}
-	
+
+    /**
+     * Stores the URL link
+     */
+    private String linkURL;
+
+    @XmlElement
+    public String getLinkURL() {
+        return linkURL;
+    }
+
+    public void setLinkURL(String linkURL) {
+        this.linkURL = linkURL;
+    }
+
+    public ClickableLinkComponentClientState() {
+        this.linkURL = "about:mozilla";
+    }
+
+    public ClickableLinkComponentClientState(String url) {
+        this.linkURL = url;
+    }
 }
