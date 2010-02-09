@@ -18,6 +18,8 @@
 
 package org.jdesktop.wonderland.modules.jothjava.client.gamejava;
 
+import java.util.ResourceBundle;
+
 /**********************************************************************
  * Board: A 2D game board consisting of squares. A square may be empty, 
  * black or white.
@@ -30,6 +32,9 @@ public class Board {
 
     /** The number of columns in the board singleton. */
     public static final int NUM_COLS = 5;
+
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/jothjava/client/uijava/Bundle");
 
     /** The number of rows in this board. */
     private int numRows;
@@ -183,10 +188,12 @@ public class Board {
      */
     public String getWinnerMessage  () {
         if (whiteCount == blackCount) {
-            return "It's a tie.";
+            return BUNDLE.getString("Tie");
         } else {
-            String winner = (whiteCount > blackCount) ? "White" : "Black";
-            return winner + " wins!";
+            if (whiteCount > blackCount) {
+                return BUNDLE.getString("White_Wins");
+            }
+            return BUNDLE.getString("Black_Wins");
         }
     }
 

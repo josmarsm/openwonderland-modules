@@ -1,15 +1,13 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * JothControlPanel.java
  *
  * Created on Jun 8, 2009, 5:56:14 PM
  */
-
 package org.jdesktop.wonderland.modules.jothjava.client.uijava;
+
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 /**
  *
@@ -17,20 +15,26 @@ package org.jdesktop.wonderland.modules.jothjava.client.uijava;
  */
 public class JothControlPanel extends javax.swing.JPanel {
 
+    private static final Logger LOGGER = Logger.getLogger(
+            JothControlPanel.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/jothjava/client/uijava/Bundle");
+
     public interface ControlPanelContainer {
         // TODO: not yet used
+
         public void newGame();
     }
-
     /** The game that contains this control panel. */
     private ControlPanelContainer container;
 
     /** Creates new form JothControlPanel */
     public JothControlPanel() {
         initComponents();
+        displayCounts(0, 0);
     }
 
-    public void setContainer (ControlPanelContainer container) {
+    public void setContainer(ControlPanelContainer container) {
         this.container = container;
     }
 
@@ -48,13 +52,14 @@ public class JothControlPanel extends javax.swing.JPanel {
         blackCountMessage = new javax.swing.JLabel();
         instructionMessage = new javax.swing.JLabel();
 
-        turnMessage.setText("It is white's turn");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/jothjava/client/uijava/Bundle"); // NOI18N
+        turnMessage.setText(bundle.getString("Whites_Turn")); // NOI18N
 
-        whiteCountMessage.setText("White Pieces: 0");
+        whiteCountMessage.setText(bundle.getString("White_Pieces")); // NOI18N
 
-        blackCountMessage.setText("Black Pieces: 0");
+        blackCountMessage.setText(bundle.getString("Black_Pieces")); // NOI18N
 
-        instructionMessage.setText("Click mouse left on a square to place a piece.");
+        instructionMessage.setText(bundle.getString("JothControlPanel.instructionMessage.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -63,17 +68,11 @@ public class JothControlPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(turnMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                        .add(188, 188, 188))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, blackCountMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, whiteCountMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(instructionMessage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 327, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                    .add(instructionMessage)
+                    .add(whiteCountMessage)
+                    .add(blackCountMessage)
+                    .add(turnMessage))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -89,8 +88,6 @@ public class JothControlPanel extends javax.swing.JPanel {
                 .addContainerGap(185, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel blackCountMessage;
     private javax.swing.JLabel instructionMessage;
@@ -98,24 +95,39 @@ public class JothControlPanel extends javax.swing.JPanel {
     private javax.swing.JLabel whiteCountMessage;
     // End of variables declaration//GEN-END:variables
 
-    public void clearError () {
-        instructionMessage.setText("Click left on a square to place a piece.");
+    public void clearError() {
+        instructionMessage.setText(BUNDLE.getString(
+                "JothControlPanel.instructionMessage.text"));
     }
 
-    public void error (String message) {
-        instructionMessage.setText("Error: " + message);
+    public void error(String message) {
+        String text = BUNDLE.getString("Error");
+        text = MessageFormat.format(text, message);
+        instructionMessage.setText(text);
     }
 
-    public void displayCounts (int whiteCount, int blackCount) {
-        whiteCountMessage.setText("White Pieces: " + whiteCount);
-        blackCountMessage.setText("Black Pieces: " + blackCount);
+    public void displayCounts(int whiteCount, int blackCount) {
+        String text = BUNDLE.getString("White_Pieces");
+        text = MessageFormat.format(text, whiteCount);
+        whiteCountMessage.setText(text);
+        text = BUNDLE.getString("Black_Pieces");
+        text = MessageFormat.format(text, blackCount);
+        blackCountMessage.setText(text);
     }
 
-    public void setTurn (String whoseTurn) {
-        turnMessage.setText("It is " + whoseTurn + "'s turn.");
+    public void setTurn(String whoseTurn) {
+        String text = null;
+        if ("white".equals(whoseTurn)) {
+            text = BUNDLE.getString("Whites_Turn");
+        } else if ("black".equals(whoseTurn)) {
+            text = BUNDLE.getString("Blacks_Turn");
+        } else {
+            LOGGER.warning("unknown player \"" + whoseTurn + '\"');
+        }
+        turnMessage.setText(text);
     }
 
-    public void notifyGameOver (String msg) {
+    public void notifyGameOver(String msg) {
         instructionMessage.setText(msg);
         turnMessage.setText("");
     }
