@@ -17,9 +17,12 @@
  */
 package org.jdesktop.wonderland.modules.evolvermulti.client.jme.importer;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.InputStream;
+import java.text.MessageFormat;
 import java.util.Enumeration;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -47,10 +50,16 @@ import org.jdesktop.wonderland.modules.evolvermulti.client.evolver.MultimeshEvol
  */
 public class MultimeshEvolverContentImporter implements ContentImporterSPI {
 
-    private static Logger logger = Logger.getLogger(MultimeshEvolverContentImporter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(
+            MultimeshEvolverContentImporter.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/evolvermulti/client/evolver/"
+            + "resources/Bundle");
     private ServerSessionManager loginInfo = null;
 
-    /** Constructor, takes the login information */
+    /** Constructor
+     * @param loginInfo the login information
+     */
     public MultimeshEvolverContentImporter(ServerSessionManager loginInfo) {
         this.loginInfo = loginInfo;
     }
@@ -69,7 +78,7 @@ public class MultimeshEvolverContentImporter implements ContentImporterSPI {
         JFrame frame = JmeClientMain.getFrame().getFrame();
         String fname = file.getName();
 
-        logger.warning("Importing Evolver avatar file " + fname);
+        LOGGER.warning("Importing Evolver avatar file " + fname);
 
         // We first need to check whether the file is a .zip file. If not, then
         // it is not properly formatted. Display a dialog indicating such.
@@ -77,10 +86,8 @@ public class MultimeshEvolverContentImporter implements ContentImporterSPI {
         try {
             zipFile = new ZipFile(file);
         } catch (java.lang.Exception excp) {
-            logger.log(Level.WARNING, "Dropped file is not a .zip", excp);
-            JOptionPane.showMessageDialog(frame,
-                    "The file " + fname + " is not a valid Evolver Avatar file",
-                    "Upload Failed", JOptionPane.ERROR_MESSAGE);
+            LOGGER.log(Level.WARNING, "Dropped file is not a .zip", excp);
+            showUploadFailedMessage(frame, fname);
             return null;
         }
 
@@ -88,45 +95,43 @@ public class MultimeshEvolverContentImporter implements ContentImporterSPI {
         // parsing the evolver.xml file to get an EvolverAvatarInfo class
         MultimeshEvolverAvatarInfo avatarInfo = getAvatarInfo(zipFile);
         if (avatarInfo == null) {
-            logger.warning("Dropped file does not contain evolver.xml");
-            JOptionPane.showMessageDialog(frame,
-                    "The file " + fname + " is not a valid Evolver Avatar file",
-                    "Upload Failed", JOptionPane.ERROR_MESSAGE);
+            LOGGER.warning("Dropped file does not contain evolver.xml");
+            showUploadFailedMessage(frame, fname);
             return null;
         }
 
         // Fetch the avatar name. If there is no name, then return an error
         String avatarName = avatarInfo.getAvatarName();
         if (avatarName == null || avatarName.equals("") == true) {
-            logger.warning("No avatar name found in evolver.xml");
-             JOptionPane.showMessageDialog(frame,
-                    "The file " + fname + " is not a valid Evolver Avatar file",
-                    "Upload Failed", JOptionPane.ERROR_MESSAGE);
+            LOGGER.warning("No avatar name found in evolver.xml");
+            showUploadFailedMessage(frame, fname);
             return null;
         }
-        logger.warning("Found avatar with named " + avatarName);
+        LOGGER.warning("Found avatar with named " + avatarName);
 
         // Otherwise, check to see if the name already exists in the user's
         // content repository. If so, then ask whether the user wishes to
         // overwrite the existing avatar.
         if (isAvatarExists(avatarName) == true) {
-            int result = JOptionPane.showConfirmDialog(frame,
-                    "The avatar " + avatarName + " already exists in the " +
-                    "content repository. Do you wish to replace it and " +
-                    "continue?", "Replace avatar?",
+            String message = BUNDLE.getString("Replace_Avatar_Message");
+            message = MessageFormat.format(message, avatarName);
+            int result = JOptionPane.showConfirmDialog(frame, message,
+                    BUNDLE.getString("Replace_Avatar_Title"),
                     JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.NO_OPTION) {
                 return null;
             }
         }
 
-        logger.warning("Adding avatar named " + avatarName + " into the system.");
+        LOGGER.warning("Adding avatar named " + avatarName + " into the system.");
 
         // Display a dialog showing a wait message while we import. We need
         // to do this in the SwingWorker thread so it gets drawn
-        JOptionPane waitMsg = new JOptionPane("Please wait while the avatar " +
-                "named " + avatarName + " is being uploaded");
-        final JDialog dialog = waitMsg.createDialog(frame, "Uploading Avatar");
+        String message = BUNDLE.getString("Wait_Upload");
+        message = MessageFormat.format(message, avatarName);
+        JOptionPane waitMsg = new JOptionPane(message);
+        final JDialog dialog = waitMsg.createDialog(
+                frame, BUNDLE.getString("Uploading_Avatar"));
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 dialog.setVisible(true);
@@ -141,7 +146,7 @@ public class MultimeshEvolverContentImporter implements ContentImporterSPI {
                     MultimeshEvolverAvatarConfigManager.getEvolverAvatarConfigManager();
             MultimeshEvolverAvatar avatar = m.createAvatar(zipFile, avatarInfo);
 
-            logger.warning("Setting avatar named " + avatarName + " in-use.");
+            LOGGER.warning("Setting avatar named " + avatarName + " in-use.");
 
             // Finally, tell the avatar system to use this avatar as the default.
             AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
@@ -191,7 +196,7 @@ public class MultimeshEvolverContentImporter implements ContentImporterSPI {
                     InputStream is = zipFile.getInputStream(entry);
                     return MultimeshEvolverAvatarInfo.decode(is);
                 } catch (java.lang.Exception excp) {
-                    logger.log(Level.WARNING, "Unable to find evolver.xml", excp);
+                    LOGGER.log(Level.WARNING, "Unable to find evolver.xml", excp);
                     return null;
                 }
             }
@@ -210,7 +215,7 @@ public class MultimeshEvolverContentImporter implements ContentImporterSPI {
             boolean exists = (userRoot.getChild(path) != null);
             return exists;
         } catch (ContentRepositoryException excp) {
-            logger.log(Level.WARNING, "Error while try to find " + path +
+            LOGGER.log(Level.WARNING, "Error while try to find " + path +
                     " in content repository", excp);
             return false;
         }
@@ -226,8 +231,16 @@ public class MultimeshEvolverContentImporter implements ContentImporterSPI {
         try {
             return repo.getUserRoot();
         } catch (ContentRepositoryException excp) {
-            logger.log(Level.WARNING, "Unable to find repository root", excp);
+            LOGGER.log(Level.WARNING, "Unable to find repository root", excp);
             return null;
         }
+    }
+
+    private void showUploadFailedMessage(Component parent, String fileName) {
+        String message = BUNDLE.getString("Invalid_Evolver_Avatar_File");
+        message = MessageFormat.format(message, fileName);
+        JOptionPane.showMessageDialog(parent, message,
+                BUNDLE.getString("Upload_Failed"),
+                JOptionPane.ERROR_MESSAGE);
     }
 }

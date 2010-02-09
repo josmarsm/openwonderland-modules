@@ -25,11 +25,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -67,7 +69,11 @@ import org.jdesktop.wonderland.modules.evolvermulti.client.evolver.config.Multim
  */
 public class MultimeshEvolverAvatarConfigManager {
 
-    private static final Logger logger = Logger.getLogger(MultimeshEvolverAvatarConfigManager.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(
+            MultimeshEvolverAvatarConfigManager.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/evolvermulti/client/evolver/"
+            + "resources/Bundle");
 
     // A map of current server sessions and that the threads that manage the
     // communcations with each.
@@ -94,10 +100,10 @@ public class MultimeshEvolverAvatarConfigManager {
             if (evolverCollection == null) {
                 evolverCollection = (ContentCollection) bc.createChild("multimesh-evolver", Type.COLLECTION);
             }
-            logger.info("Using local Evolver avatar collection " +
+            LOGGER.info("Using local Evolver avatar collection " +
                     evolverCollection.getPath());
         } catch (ContentRepositoryException excp) {
-            logger.log(Level.WARNING, "Unable to fetch evolver/ collection", excp);
+            LOGGER.log(Level.WARNING, "Unable to fetch evolver/ collection", excp);
             return;
         }
 
@@ -115,7 +121,7 @@ public class MultimeshEvolverAvatarConfigManager {
                 }
             }
         } catch (ContentRepositoryException excp) {
-            logger.log(Level.WARNING, "Unable to fetch local avatars from " +
+            LOGGER.log(Level.WARNING, "Unable to fetch local avatars from " +
                     "collection " + evolverCollection.getPath(), excp);
             return;
         }
@@ -186,13 +192,13 @@ public class MultimeshEvolverAvatarConfigManager {
         // on other servers. So we just synchronize on 'this' which means only
         // a single addServerAndSync() call can be active at once.
         synchronized (this) {
-            logger.info("Adding server " + session.getServerURL());
+            LOGGER.info("Adding server " + session.getServerURL());
             
             // First check to see if the session already exists in the map. If
             // so then just return
             synchronized (avatarConfigServers) {
                 if (avatarConfigServers.containsKey(session) == true) {
-                    logger.info("Server " + session.getServerURL() +
+                    LOGGER.info("Server " + session.getServerURL() +
                             " is already present in the manager.");
                     return;
                 }
@@ -203,16 +209,16 @@ public class MultimeshEvolverAvatarConfigManager {
             // a 'ready' state.
             ServerSyncThread t = null;
             try {
-                logger.info("Starting sychronization with server " +
+                LOGGER.info("Starting sychronization with server " +
                         session.getServerURL());
 
                 t = new ServerSyncThread(session);
                 t.scheduleSync(true);
 
-                logger.info("Sychronization with server " +
+                LOGGER.info("Sychronization with server " +
                         session.getServerURL() + " is done.");
             } catch (ContentRepositoryException excp) {
-                logger.log(Level.WARNING, "Unable to create sync thread for " +
+                LOGGER.log(Level.WARNING, "Unable to create sync thread for " +
                         "server " + session.getServerURL(), excp);
                 return;
             }
@@ -221,7 +227,7 @@ public class MultimeshEvolverAvatarConfigManager {
             // it is ready.
             synchronized (avatarConfigServers) {
                 avatarConfigServers.put(session, t);
-                logger.info("Added server " + session.getServerURL() +
+                LOGGER.info("Added server " + session.getServerURL() +
                         " to map of managed sessions.");
             }
         }
@@ -276,7 +282,7 @@ public class MultimeshEvolverAvatarConfigManager {
                         try {
                             c.scheduleDelete(avatar, false);
                         } catch (InterruptedException excp) {
-                            logger.log(Level.WARNING, "Attempt to delete the" +
+                            LOGGER.log(Level.WARNING, "Attempt to delete the" +
                                     " avatar " + avatar.getName() + " from " +
                                     "the server " + c.toString() + " was " +
                                     "interrupted.", excp);
@@ -284,7 +290,7 @@ public class MultimeshEvolverAvatarConfigManager {
                     }
                 }
             } catch (ContentRepositoryException excp) {
-                logger.log(Level.WARNING, "Unable to remove avatar", excp);
+                LOGGER.log(Level.WARNING, "Unable to remove avatar", excp);
             }
         }
     }
@@ -304,17 +310,17 @@ public class MultimeshEvolverAvatarConfigManager {
         JFrame frame = JmeClientMain.getFrame().getFrame();
         String avatarName = avatarInfo.getAvatarName();
 
-        logger.info("Creating avatar with name " + avatarName);
+        LOGGER.info("Creating avatar with name " + avatarName);
 
         // Otherwise, check to see if the name already exists in the user's
         // content repository. If so, then ask whether the user wishes to
         // overwrite the existing avatar.
         MultimeshEvolverAvatar existingAvatar = null;
         if ((existingAvatar = isAvatarExists(avatarName)) != null) {
-            int result = JOptionPane.showConfirmDialog(frame,
-                    "The avatar " + avatarName + " already exists in the " +
-                    "content repository. Do you wish to replace it and " +
-                    "continue?", "Replace avatar?",
+            String message = BUNDLE.getString("Replace_Avatar_Message");
+            message = MessageFormat.format(message, avatarName);
+            int result = JOptionPane.showConfirmDialog(frame, message,
+                    BUNDLE.getString("Replace_Avatar_Title"),
                     JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.NO_OPTION) {
                 return null;
@@ -329,11 +335,11 @@ public class MultimeshEvolverAvatarConfigManager {
             ContentCollection parent = resource.getParent();
             String resourceName = resource.getName();
             try {
-                logger.info("Deleting exsiting avatar locally with " +
+                LOGGER.info("Deleting exsiting avatar locally with " +
                         "resource path " + resource.getPath());
                 parent.removeChild(resourceName);
             } catch (ContentRepositoryException excp) {
-                logger.log(Level.WARNING, "Unable to remove local avatar " +
+                LOGGER.log(Level.WARNING, "Unable to remove local avatar " +
                         resource.getPath(), excp);
             }
 
@@ -343,17 +349,17 @@ public class MultimeshEvolverAvatarConfigManager {
                 int length = resourceName.length();
                 String dirName = resourceName.substring(0, length - 4);
 
-                logger.info("Deleting existing avatar directory locally" +
+                LOGGER.info("Deleting existing avatar directory locally" +
                         " with name " + dirName);
                 try {
                     parent.removeChild(dirName);
                 } catch (ContentRepositoryException excp) {
-                    logger.log(Level.WARNING, "Unable to remove local avatar " +
+                    LOGGER.log(Level.WARNING, "Unable to remove local avatar " +
                         "directory with path " + resource.getPath(), excp);
                 }
             }
             else {
-                logger.info("Did not find evolver avatar directory locally" +
+                LOGGER.info("Did not find evolver avatar directory locally" +
                         " with path " + resource.getPath());
             }
             
@@ -362,7 +368,7 @@ public class MultimeshEvolverAvatarConfigManager {
         // For each server we are connected to, delete the old file from the
         // server
         synchronized (avatarConfigServers) {
-            logger.info("Attempting to delete avatar to server, number=" +
+            LOGGER.info("Attempting to delete avatar to server, number=" +
                 avatarConfigServers.size());
 
             for (ServerSyncThread t : avatarConfigServers.values()) {
@@ -371,12 +377,12 @@ public class MultimeshEvolverAvatarConfigManager {
                 // to get rid of the old avatar before we upload the new one.
                 if (existingAvatar != null) {
                     try {
-                        logger.info("Schedule delete of existing avatar " +
+                        LOGGER.info("Schedule delete of existing avatar " +
                                 "named " + avatarName + " from server.");
                         t.scheduleDelete(existingAvatar, true);
                     }
                     catch (InterruptedException excp) {
-                        logger.log(Level.WARNING, "Attempt to delete the" +
+                        LOGGER.log(Level.WARNING, "Attempt to delete the" +
                                 " avatar " + avatarName + " from " +
                                 "the server " + t.toString() + " was " +
                                 "interrupted.", excp);
@@ -385,7 +391,7 @@ public class MultimeshEvolverAvatarConfigManager {
             }
         }
 
-        logger.info("Uploading avatar name " + avatarName + " to user's" +
+        LOGGER.info("Uploading avatar name " + avatarName + " to user's" +
                 " local repository.");
 
 
@@ -396,7 +402,7 @@ public class MultimeshEvolverAvatarConfigManager {
         // If we already have an avatar, check it's version number, increment
         // it and assign the new version number to this file.
         if (existingAvatar != null) {
-            logger.info("Already have an avatar named " + avatarName +
+            LOGGER.info("Already have an avatar named " + avatarName +
                     " with version " + existingAvatar.getVersion());
 
             int version = existingAvatar.getVersion();
@@ -411,9 +417,10 @@ public class MultimeshEvolverAvatarConfigManager {
             uploadAvatar(zipFile, dirName);
         } catch (java.io.IOException excp) {
             JOptionPane.showMessageDialog(frame,
-                    "Failed to upload the avatar. Please see the log files " +
-                    "for more details.", "Upload Failed", JOptionPane.ERROR_MESSAGE);
-            logger.log(Level.WARNING, "Failed to upload avatar to local user" +
+                    BUNDLE.getString("Avatar_Upload_Failed"),
+                    BUNDLE.getString("Upload_Failed"),
+                    JOptionPane.ERROR_MESSAGE);
+            LOGGER.log(Level.WARNING, "Failed to upload avatar to local user" +
                     " repository named " + avatarName, excp);
             return null;
         }
@@ -425,7 +432,7 @@ public class MultimeshEvolverAvatarConfigManager {
         String localRepoBasePath = getLocalRepoBasePath() + "/";
         String localRepoBaseURL = "file:///" + localRepoBasePath;
 
-        logger.warning("Using local repo base URL of " + localRepoBaseURL);
+        LOGGER.warning("Using local repo base URL of " + localRepoBaseURL);
 
         // Create new character parameters and apply the configuration elements
         // given.
@@ -437,7 +444,7 @@ public class MultimeshEvolverAvatarConfigManager {
                 ((MultimeshModelConfigElement)ce).setRelativePath(relativePath);
             }
             ce.apply(params);
-            logger.warning("ATTR: " + ce.toString());
+            LOGGER.warning("ATTR: " + ce.toString());
         }
         params.setBaseURL(localRepoBaseURL);
 
@@ -457,7 +464,7 @@ public class MultimeshEvolverAvatarConfigManager {
                 file = (ContentResource) evolverCollection.createChild(fileName, Type.RESOURCE);
             }
 
-            logger.info("Writing avatar to resource " + file.getPath());
+            LOGGER.info("Writing avatar to resource " + file.getPath());
 
             // Write out the avatar configuration to a byte avatar.
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -468,7 +475,7 @@ public class MultimeshEvolverAvatarConfigManager {
             // to point to this local avatar resource
             file.put(out.toString().getBytes());
         } catch (java.lang.Exception excp) {
-            logger.log(Level.WARNING, "Unable to write avatar configuration" +
+            LOGGER.log(Level.WARNING, "Unable to write avatar configuration" +
                     " to resource " + fileName, excp);
             return null;
         }
@@ -480,24 +487,24 @@ public class MultimeshEvolverAvatarConfigManager {
         // this no matter whether the avatar is new or whether we are updating
         // an existing avatar.
         synchronized (localAvatars) {
-            logger.info("Put avatar named " + avatarName + " in list of avatars");
+            LOGGER.info("Put avatar named " + avatarName + " in list of avatars");
             localAvatars.put(avatarName, newAvatar);
         }
         
         // For each server we are connected to, upload the new file.
         synchronized (avatarConfigServers) {
-            logger.info("Attempting to upload avatar to server, number=" +
+            LOGGER.info("Attempting to upload avatar to server, number=" +
                 avatarConfigServers.size());
 
             for (ServerSyncThread t : avatarConfigServers.values()) {
                 // We ask the server to upload the file. We need to wait for
                 // it to complete before we tell other clients to use it.
                 try {
-                    logger.info("Schedule upload of avatar named " + avatarName +
+                    LOGGER.info("Schedule upload of avatar named " + avatarName +
                             " to server " + t.toString());
                     t.scheduleUpload(newAvatar, true);
                 } catch (InterruptedException excp) {
-                    logger.log(Level.WARNING, "Attempt to upload the avatar " +
+                    LOGGER.log(Level.WARNING, "Attempt to upload the avatar " +
                             avatar.getName() + " to the server " + t.toString() +
                             " was interrupted.", excp);
                 }
@@ -506,7 +513,7 @@ public class MultimeshEvolverAvatarConfigManager {
 
         // If the avatar is new, tell the system.
         if (existingAvatar == null) {
-            logger.info("Registering avater named " + avatarName + " in the system");
+            LOGGER.info("Registering avater named " + avatarName + " in the system");
             AvatarRegistry registry = AvatarRegistry.getAvatarRegistry();
             registry.registerAvatar(newAvatar, false);
         }
@@ -557,7 +564,7 @@ public class MultimeshEvolverAvatarConfigManager {
             }
             avatarRoot = (ContentCollection)node;
         } catch (ContentRepositoryException excp) {
-            logger.log(Level.WARNING, "Unable to create content directory for" +
+            LOGGER.log(Level.WARNING, "Unable to create content directory for" +
                     " avatar " + avatarName, excp);
             throw new IOException("Unable to create content directory for " +
                     "avatar " + avatarName);
@@ -574,9 +581,9 @@ public class MultimeshEvolverAvatarConfigManager {
                 write(zipFile, zipEntry, avatarRoot, zipEntryName);
             }
         } catch (ZipException ex) {
-            logger.log(Level.WARNING, null, ex);
+            LOGGER.log(Level.WARNING, null, ex);
         } catch (IOException ex) {
-            logger.log(Level.WARNING, null, ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
 
@@ -593,7 +600,7 @@ public class MultimeshEvolverAvatarConfigManager {
         try {
             contentFile = mkfile(root, fileName);
         } catch (ContentRepositoryException excp) {
-            logger.log(Level.WARNING, "Unable to create file for " +
+            LOGGER.log(Level.WARNING, "Unable to create file for " +
                     fileName + " in the repository", excp);
             throw new IOException("Unable to create file for " + fileName +
                     " in the repository");
@@ -608,7 +615,7 @@ public class MultimeshEvolverAvatarConfigManager {
         try {
             contentFile.put(tmpFile);
         } catch (ContentRepositoryException excp) {
-            logger.log(Level.WARNING, "Unable to write content from " + fileName +
+            LOGGER.log(Level.WARNING, "Unable to write content from " + fileName +
                     " to resource", excp);
             throw new IOException("Unable to write content from " + fileName +
                     " to resource");
@@ -788,7 +795,7 @@ public class MultimeshEvolverAvatarConfigManager {
                 try {
                     job = jobQueue.take();
                 } catch (InterruptedException excp) {
-                    logger.log(Level.WARNING, "Attempt to fetch the next job" +
+                    LOGGER.log(Level.WARNING, "Attempt to fetch the next job" +
                             " in queue was interrupted for server " +
                             manager.getServerURL(), excp);
                     continue;
@@ -833,7 +840,7 @@ public class MultimeshEvolverAvatarConfigManager {
                 try {
                     parent.removeChild(resourceName);
                 } catch (ContentRepositoryException excp) {
-                    logger.log(Level.WARNING, "Unable to delete avatar from" +
+                    LOGGER.log(Level.WARNING, "Unable to delete avatar from" +
                             " server " + avatarName, excp);
                 }
 
@@ -843,17 +850,17 @@ public class MultimeshEvolverAvatarConfigManager {
                     int length = resourceName.length();
                     String dirName = resourceName.substring(0, length - 4);
 
-                    logger.info("Deleting existing avatar directory locally" +
+                    LOGGER.info("Deleting existing avatar directory locally" +
                             " with name " + dirName);
                     try {
                         parent.removeChild(dirName);
                     } catch (ContentRepositoryException excp) {
-                        logger.log(Level.WARNING, "Unable to delete avatar" +
+                        LOGGER.log(Level.WARNING, "Unable to delete avatar" +
                                 " directory from server " + avatarName, excp);
                     }
                 }
                 else {
-                    logger.info("Did not find evolver avatar directory locally" +
+                    LOGGER.info("Did not find evolver avatar directory locally" +
                             " with path " + resource.getPath());
                 }
 
@@ -873,7 +880,7 @@ public class MultimeshEvolverAvatarConfigManager {
             String avatarName = avatar.getName();
             EvolverServerAvatar serverAvatar = serverAvatars.get(avatarName);
             if (serverAvatar == null) {
-                logger.severe("No record of avatar " + avatarName +
+                LOGGER.severe("No record of avatar " + avatarName +
                         " on server " + manager.getServerURL());
                 return null;
             }
@@ -882,7 +889,7 @@ public class MultimeshEvolverAvatarConfigManager {
             try {
                 return serverAvatar.resource.getURL();
             } catch (ContentRepositoryException excp) {
-                logger.log(Level.WARNING, "Unable to fetch URL for server" +
+                LOGGER.log(Level.WARNING, "Unable to fetch URL for server" +
                         " avatar " + avatarName + " on server " +
                         manager.getServerURL(), excp);
                 return null;
@@ -894,7 +901,7 @@ public class MultimeshEvolverAvatarConfigManager {
          * IMI avatar configuration information.
          */
         private void syncImpl() {
-            logger.info("Beginning sychronization of server " +
+            LOGGER.info("Beginning sychronization of server " +
                     manager.getServerURL());
 
             // Keep arrays of configuration files that need to be uploaded to
@@ -912,13 +919,13 @@ public class MultimeshEvolverAvatarConfigManager {
                     if (node instanceof ContentResource) {
                         ContentResource resource = (ContentResource)node;
 
-                        logger.info("Found server avatar resource " +
+                        LOGGER.info("Found server avatar resource " +
                                 resource.getPath());
                         
                         EvolverServerAvatar serverAvatar = new EvolverServerAvatar(resource);
                         String avatarName = serverAvatar.avatarName;
 
-                        logger.info("Looking at server avatar named " +
+                        LOGGER.info("Looking at server avatar named " +
                                 avatarName + " with version " + serverAvatar.version);
 
                         // Check to see if the server avatar already exists in
@@ -926,7 +933,7 @@ public class MultimeshEvolverAvatarConfigManager {
                         EvolverServerAvatar previous = serverAvatars.put(avatarName, serverAvatar);
                         if (previous != null && previous.version > serverAvatar.version) {
 
-                            logger.info("Found a previous version named " +
+                            LOGGER.info("Found a previous version named " +
                                     avatarName + " with version " + previous.version);
 
                             // If we somehow find a more recent avatar in our
@@ -940,7 +947,7 @@ public class MultimeshEvolverAvatarConfigManager {
                             // Also need to delete the directory containing the
                             // file associated with the avatar on the server
                             if (fileName.endsWith(".xml") == false) {
-                                logger.info("Previous version of avatar" +
+                                LOGGER.info("Previous version of avatar" +
                                         " does not have .xml " + fileName +
                                         " for avatar " + previous.avatarName);
                             }
@@ -964,13 +971,13 @@ public class MultimeshEvolverAvatarConfigManager {
                 // local copy needs to be updated then do so.
                 synchronized (localAvatars) {
 
-                    logger.info("Taking a look at all of our local avatars");
+                    LOGGER.info("Taking a look at all of our local avatars");
 
                     for (MultimeshEvolverAvatar avatar : localAvatars.values()) {
                         String avatarName = avatar.getName();
                         EvolverServerAvatar serverVersion = tmpServerAvatars.get(avatarName);
 
-                        logger.info("Looking at local avatar named " +
+                        LOGGER.info("Looking at local avatar named " +
                                 avatarName + " server version " + serverVersion);
 
                         // If the local avatar is not on the server, or if the
@@ -979,7 +986,7 @@ public class MultimeshEvolverAvatarConfigManager {
                         if (serverVersion == null ||
                                 serverVersion.version < avatar.getVersion()) {
 
-                            logger.info("Server version for avatar named " +
+                            LOGGER.info("Server version for avatar named " +
                                     avatarName + " does not exist or is older" +
                                     " than version " + avatar.getVersion());
 
@@ -987,7 +994,7 @@ public class MultimeshEvolverAvatarConfigManager {
                             tmpServerAvatars.remove(avatarName);
                         }
                         else if (serverVersion.version > avatar.getVersion()) {
-                            logger.info("Server version for avatar named " +
+                            LOGGER.info("Server version for avatar named " +
                                     avatarName + " is more recent than local " +
                                     "with server version " + serverVersion.version +
                                     " and local version " + avatar.getVersion());
@@ -999,7 +1006,7 @@ public class MultimeshEvolverAvatarConfigManager {
                             tmpServerAvatars.remove(avatarName);
                         }
                         else if (serverVersion.version == avatar.getVersion()) {
-                            logger.info("Server version for avatar named " +
+                            LOGGER.info("Server version for avatar named " +
                                     avatarName + " is same as local version " +
                                     avatar.getVersion());
                             
@@ -1017,7 +1024,7 @@ public class MultimeshEvolverAvatarConfigManager {
                 // and not on the client (so the previous code block did not
                 // see them), so add them to the download list.
                 for (EvolverServerAvatar serverAvatar : tmpServerAvatars.values()) {
-                    logger.info("Adding Server avatar to download list " +
+                    LOGGER.info("Adding Server avatar to download list " +
                             serverAvatar.avatarName + " version " +
                             serverAvatar.version);
 
@@ -1027,11 +1034,11 @@ public class MultimeshEvolverAvatarConfigManager {
 
                 // For all of the avatar configuration files that we wish to
                 // upload, do so synchronously.
-                logger.info("Doing upload of local avatars, number to upload " +
+                LOGGER.info("Doing upload of local avatars, number to upload " +
                         uploadList.size());
 
                 for (MultimeshEvolverAvatar avatar : uploadList) {
-                    logger.info("Uploading Local avatar to server " +
+                    LOGGER.info("Uploading Local avatar to server " +
                             avatar.getName() + " version " + avatar.getVersion());
 
                     uploadFilesImpl(avatar);
@@ -1043,17 +1050,17 @@ public class MultimeshEvolverAvatarConfigManager {
 
                 // For all of the avatar configuration files that we wish to
                 // download, do so synchronously.
-                logger.info("Doing download of local avatars to the server," +
+                LOGGER.info("Doing download of local avatars to the server," +
                         " number to download " + downloadList.size());
 
                 for (EvolverServerAvatar serverAvatar : downloadList) {
-                    logger.info("Downloading server avatar named " +
+                    LOGGER.info("Downloading server avatar named " +
                             serverAvatar.avatarName + " to file name " +
                             serverAvatar.resource.getName());
 
                     ContentResource resource = downloadFilesImpl(serverAvatar);
                     if (resource == null) {
-                        logger.info("Error download files from server");
+                        LOGGER.info("Error download files from server");
                     }
                     else {
                         // Create a new entry to put on the local list. These
@@ -1066,12 +1073,12 @@ public class MultimeshEvolverAvatarConfigManager {
                 // For all of the new avatars we just downloaded, upload the
                 // list of local avatars. We also fire an event to indicate
                 // that a new avatar has been added.
-                logger.info("Adding new local avatars to system, " +
+                LOGGER.info("Adding new local avatars to system, " +
                         "number of avatars " + newAvatarList.size());
 
                 synchronized (localAvatars) {
                     for (MultimeshEvolverAvatar newAvatar : newAvatarList) {
-                        logger.info("Adding new local avatar to system " +
+                        LOGGER.info("Adding new local avatar to system " +
                                 "named " + newAvatar.getName());
 
                         localAvatars.put(newAvatar.getName(), newAvatar);
@@ -1080,7 +1087,7 @@ public class MultimeshEvolverAvatarConfigManager {
                     }
                 }
             } catch (ContentRepositoryException excp) {
-                logger.log(Level.WARNING, "Error synchronizing with server " +
+                LOGGER.log(Level.WARNING, "Error synchronizing with server " +
                         manager.getServerURL(), excp);
             }
         }
@@ -1109,7 +1116,7 @@ public class MultimeshEvolverAvatarConfigManager {
                 InputStream is = resource.getInputStream();
                 file.put(new BufferedInputStream(is));
             } catch (java.lang.Exception excp) {
-                logger.log(Level.WARNING, "Unable to upload xml config file " +
+                LOGGER.log(Level.WARNING, "Unable to upload xml config file " +
                         "named " + fileName + " for avatar " + avatarName, excp);
                 return;
             }
@@ -1117,7 +1124,7 @@ public class MultimeshEvolverAvatarConfigManager {
             // Upload all of the other files associated with the config xml
             // file. We strip off the XML and transfer the entire directory
             if (fileName.endsWith(".xml") == false) {
-                logger.info("Invalid file name for xml config file " +
+                LOGGER.info("Invalid file name for xml config file " +
                         fileName + " for avatar named " + avatarName);
                 return;
             }
@@ -1129,12 +1136,12 @@ public class MultimeshEvolverAvatarConfigManager {
             try {
                 local = (ContentCollection) parent.getChild(dirName);
                 if (local == null) {
-                    logger.info("Unable to find local avatar directory " +
+                    LOGGER.info("Unable to find local avatar directory " +
                             "named " + dirName + " for avatar " + avatarName);
                     return;
                 }
             } catch (ContentRepositoryException excp) {
-                logger.log(Level.WARNING, "Unable to find local avatar " +
+                LOGGER.log(Level.WARNING, "Unable to find local avatar " +
                         "directory named " + dirName + " for avatar " +
                         avatarName, excp);
                 return;
@@ -1143,7 +1150,7 @@ public class MultimeshEvolverAvatarConfigManager {
             try {
                 transfer(local, serverCollection);
             } catch (java.lang.Exception excp) {
-                logger.log(Level.WARNING, "Unable to transfer files from " +
+                LOGGER.log(Level.WARNING, "Unable to transfer files from " +
                         local.getPath() + " to " + serverCollection.getPath() +
                         " with name " + dirName + " for avatar " + avatarName, excp);
                 return;
@@ -1174,11 +1181,11 @@ public class MultimeshEvolverAvatarConfigManager {
                 InputStream is = serverAvatar.resource.getInputStream();
                 localFile.put(new BufferedInputStream(is));
 
-                logger.info("Local avatar created in resource " +
+                LOGGER.info("Local avatar created in resource " +
                         localFile.getPath());
 
             } catch (java.lang.Exception excp) {
-                logger.log(Level.WARNING, "Error downloading server " +
+                LOGGER.log(Level.WARNING, "Error downloading server " +
                         "avater named " + avatarName, excp);
                 return null;
             }
@@ -1186,7 +1193,7 @@ public class MultimeshEvolverAvatarConfigManager {
             // Download all of the other files associated with the config xml
             // file. We strip off the XML and transfer the entire directory
             if (fileName.endsWith(".xml") == false) {
-                logger.warning("Invalid file name for xml config file " +
+                LOGGER.warning("Invalid file name for xml config file " +
                         fileName + " for avatar named " + avatarName);
                 return null;
             }
@@ -1198,12 +1205,12 @@ public class MultimeshEvolverAvatarConfigManager {
             try {
                 remote = (ContentCollection) parent.getChild(dirName);
                 if (remote == null) {
-                    logger.warning("Unable to find remote avatar directory " +
+                    LOGGER.warning("Unable to find remote avatar directory " +
                             "named " + dirName + " for avatar " + avatarName);
                     return null;
                 }
             } catch (ContentRepositoryException excp) {
-                logger.log(Level.WARNING, "Unable to find remote avatar " +
+                LOGGER.log(Level.WARNING, "Unable to find remote avatar " +
                         "directory named " + dirName + " for avatar " +
                         avatarName, excp);
                 return null;
@@ -1212,7 +1219,7 @@ public class MultimeshEvolverAvatarConfigManager {
             try {
                 transfer(remote, evolverCollection);
             } catch (java.lang.Exception excp) {
-                logger.log(Level.WARNING, "Unable to transfer files from " +
+                LOGGER.log(Level.WARNING, "Unable to transfer files from " +
                         remote.getPath() + " to " + serverCollection.getPath() +
                         " with name " + dirName + " for avatar " + avatarName, excp);
                 return null;
