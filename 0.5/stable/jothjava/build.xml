@@ -47,6 +47,9 @@
                 <clientjar name="jothjava-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/uijava/**/*.properties"/>
+                    </fileset>
 		    <!-- NOTYET: include textures here when they are ready.
                     <fileset dir="${current.dir}/src/classes">
                         <include name="${module.src}/client/resources/**/*.png"/>

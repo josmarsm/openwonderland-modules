@@ -15,16 +15,18 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.jothjava.client.gamejava;
+
+import java.util.ResourceBundle;
 
 /********************************
  * Game: The Othello game object.
  * @author deronj@dev.java.net
  */
-
 public class Game {
 
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/jothjava/client/uijava/Bundle");
     /** The Othello game board. */
     private Board board;
     /** The color of the player whose turn it is. */
@@ -37,35 +39,35 @@ public class Game {
     /**
      * Construct a new instance of an Othello game.
      */
-    public Game () {
+    public Game() {
         board = new Board(Board.NUM_ROWS, Board.NUM_COLS);
         currentColor = Board.Color.WHITE;
         currentTurn = "white";
     }
 
     /** Specify the UI to use to display this game. */
-    public void setUI (UI ui) {
+    public void setUI(UI ui) {
         this.ui = ui;
         board.setUI(ui);
     }
 
     /** Returns the UI that displays this game. */
-    public UI getUI () {
+    public UI getUI() {
         return ui;
     }
 
     /** Returns the board for this game. */
-    public Board getBoard () {
+    public Board getBoard() {
         return board;
     }
 
     /** Returns the color of the player whose turn it is. */
-    public Board.Color getCurrentColor () {
+    public Board.Color getCurrentColor() {
         return currentColor;
     }
 
     /** Returns the name of player whose turn it is. */
-    public String getCurrentTurn () {
+    public String getCurrentTurn() {
         return currentTurn;
     }
 
@@ -74,7 +76,7 @@ public class Game {
      * Called when a square is clicked. Places the piece of the current
      * color and performs the necessary flipping of the opponents pieces.
      */
-    public void performTurn (Square square) {
+    public void performTurn(Square square) {
         ui.clearError();
         if (square.isEmpty()) {
             square.placePiece(currentColor);
@@ -85,12 +87,12 @@ public class Game {
             ui.displayCounts();
             checkWin();
         } else {
-            ui.error("Illegal move. Square is not empty.");
+            ui.error(BUNDLE.getString("Illegal_Move"));
         }
     }
 
     // The current color's turn is over. Make the current color the opposite color.
-    private void flipTurn () {
+    private void flipTurn() {
         if (currentColor == Board.Color.WHITE) {
             currentColor = Board.Color.BLACK;
             currentTurn = "black";
@@ -102,10 +104,11 @@ public class Game {
     }
 
     // Check to see if anybody has won.
-    private void checkWin () {
+    private void checkWin() {
         if (board.isGameOver()) {
             // Game over
-            String msg = "Game Over. " + board.getWinnerMessage();
+            String msg = BUNDLE.getString("Game_Over") + ' '
+                    + board.getWinnerMessage();
             ui.notifyGameOver(msg);
         }
     }
