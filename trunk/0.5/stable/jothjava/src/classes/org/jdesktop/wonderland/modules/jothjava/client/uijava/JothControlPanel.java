@@ -52,6 +52,8 @@ public class JothControlPanel extends javax.swing.JPanel {
         blackCountMessage = new javax.swing.JLabel();
         instructionMessage = new javax.swing.JLabel();
 
+        setPreferredSize(new java.awt.Dimension(450, 300));
+
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/jothjava/client/uijava/Bundle"); // NOI18N
         turnMessage.setText(bundle.getString("Whites_Turn")); // NOI18N
 
@@ -72,7 +74,7 @@ public class JothControlPanel extends javax.swing.JPanel {
                     .add(whiteCountMessage)
                     .add(blackCountMessage)
                     .add(turnMessage))
-                .addContainerGap(62, Short.MAX_VALUE))
+                .addContainerGap(106, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
