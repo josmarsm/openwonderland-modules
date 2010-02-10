@@ -1,3 +1,4 @@
+
 /**
  * Project Wonderland
  *
@@ -15,41 +16,39 @@
  * exception as provided by Sun in the License file that accompanied
  * this code.
  */
-
 package org.jdesktop.wonderland.modules.movierecorder.client.utils;
 
-import java.net.URL;
-import java.util.logging.Logger;
 import java.io.File;
-import javax.media.format.AudioFormat;
-import javax.media.format.VideoFormat;
-import javax.media.protocol.ContentDescriptor;
-import javax.media.protocol.DataSource;
-import javax.media.protocol.FileTypeDescriptor;
 import java.io.IOException;
+import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.media.ControllerEvent;
 import javax.media.ControllerListener;
 import javax.media.DataSink;
+import javax.media.datasink.DataSinkEvent;
+import javax.media.datasink.DataSinkListener;
+import javax.media.datasink.EndOfStreamEvent;
 import javax.media.EndOfMediaEvent;
 import javax.media.Format;
+import javax.media.format.AudioFormat;
+import javax.media.format.VideoFormat;
 import javax.media.Manager;
 import javax.media.MediaLocator;
 import javax.media.Processor;
 import javax.media.ProcessorModel;
-import javax.media.datasink.DataSinkEvent;
-import javax.media.datasink.DataSinkListener;
-import javax.media.datasink.EndOfStreamEvent;
+import javax.media.protocol.ContentDescriptor;
+import javax.media.protocol.DataSource;
+import javax.media.protocol.FileTypeDescriptor;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.modules.movierecorder.client.MovieControlPanel;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
-import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
+import org.jdesktop.wonderland.modules.movierecorder.client.MovieControlPanel;
 
 /**
  * Create a Movie from a directory of JPEGs and an audio file.
@@ -60,20 +59,19 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
  * @author Marc Davies
  */
 public class MovieCreator {
+
     /**
      * Static field for logging messages.
      */
-    public static final Logger logger = Logger.getLogger(MovieCreator.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(
+            MovieCreator.class.getName());
     private static final String AUDIO_RECORDINGS_DIRECTORY = "AudioRecordings";
-
-    
     /**
      * An instance of a RecordingWindow, from which the user has selected the location of the output
      * directory and other preferences.
      */
-    private MovieControlPanel controlPanel;  
-    
-    
+    private MovieControlPanel controlPanel;
+
     /**
      * Create a new MovieCreator using the controlPanel to provide details of the location of the
      * JPEGs, audio file and output directory.
@@ -81,7 +79,7 @@ public class MovieCreator {
      */
     public MovieCreator(MovieControlPanel aPanel) {
         controlPanel = aPanel;
-    }   
+    }
 
     /**
      * Create the movie, using the <CODE>controlPanel</CODE> as the provider of paths etc.
@@ -92,14 +90,14 @@ public class MovieCreator {
         ImagesDataSource source = null;
         File movieDirectory = new File(controlPanel.getMovieDirectory());
         if (!movieDirectory.exists()) {
-            logger.info("Creating movie directory");
+            LOGGER.info("Creating movie directory");
             movieDirectory.mkdirs();
         }
         String movieFilePath = movieDirectory + File.separator + movieName + ".mov";
         try {
             JPEGDirectoryFetcher fetcher = new JPEGDirectoryFetcher(controlPanel.getImageDirectory());
             source = new ImagesDataSource(fetcher, fetcher.getSuggestedSize(), controlPanel.getCapturedFrameRate());
-            
+
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -110,11 +108,11 @@ public class MovieCreator {
                 record(source, soundURL, new File(movieFilePath));
                 removeAudioResource(movieName);
             } catch (ContentRepositoryException ex) {
-                logger.log(Level.SEVERE, "Problem with audio resource", ex);
+                LOGGER.log(Level.SEVERE, "Problem with audio resource", ex);
             }
         } else {
             record(source, new File(movieFilePath));
-        }      
+        }
     }
 
     private ContentResource getAudioResource(String movieName) {
@@ -123,11 +121,11 @@ public class MovieCreator {
             ContentNode audioNode = dirNode.getChild(movieName + ".au");
             return (ContentResource) audioNode;
         } catch (ContentRepositoryException ex) {
-            logger.log(Level.SEVERE, "Failed to retrieve audio resource", ex);
+            LOGGER.log(Level.SEVERE, "Failed to retrieve audio resource", ex);
         }
         return null;
     }
-    
+
     private void removeAudioResource(String movieName) throws ContentRepositoryException {
         ContentCollection dirNode = getAudioDirectoryNode();
         dirNode.removeChild(movieName + ".au");
@@ -140,9 +138,8 @@ public class MovieCreator {
         if (node == null) {
             throw new ContentRepositoryException("No such directory: " + AUDIO_RECORDINGS_DIRECTORY);
         }
-        return(ContentCollection) node;
+        return (ContentCollection) node;
     }
-
 
     /**
      * Returns the content repository root for the system root, or null upon
@@ -152,19 +149,18 @@ public class MovieCreator {
         ContentRepositoryRegistry registry = ContentRepositoryRegistry.getInstance();
         ContentRepository repo = registry.getRepository(loginInfo);
         if (repo == null) {
-            logger.severe("Repo is null");
+            LOGGER.severe("Repo is null");
             return null;
         }
         try {
             return repo.getSystemRoot();
         } catch (ContentRepositoryException excp) {
-            logger.log(Level.WARNING, "Unable to find repository root", excp);
+            LOGGER.log(Level.WARNING, "Unable to find repository root", excp);
             return null;
         }
     }
 
-    
-        /**
+    /**
      * Creates a quicktime JPEG-movie from the specified ImagesDataSource and sound file.
      * @param imagesSource the images source to store in the movie
      * @param soundURL the sound to add to the movie
@@ -172,65 +168,65 @@ public class MovieCreator {
      * @throws EncodeException If there's a problem encoding the movie (or finding the data sources)
      */
     private void record(ImagesDataSource imagesSource, URL soundURL, File outputFile) throws EncodeException {
-        logger.info("Output file is expected to be written to: " + outputFile);
+        LOGGER.info("Output file is expected to be written to: " + outputFile);
         try {
-            logger.fine("Creating images datasource...");
+            LOGGER.fine("Creating images datasource...");
             ProcessorModel pmodel = new ProcessorModel(imagesSource, new Format[]{new VideoFormat(VideoFormat.JPEG)}, new ContentDescriptor(ContentDescriptor.RAW));
             Processor imagesProc = Manager.createRealizedProcessor(pmodel);
             DataSource videoSource = imagesProc.getDataOutput();
-            logger.fine("Successfully created images datasource.");
+            LOGGER.fine("Successfully created images datasource.");
 
-            logger.fine("Creating sound datasource...");
-            logger.info("URL for sound file: " + soundURL);
+            LOGGER.fine("Creating sound datasource...");
+            LOGGER.info("URL for sound file: " + soundURL);
             DataSource ds = Manager.createDataSource(soundURL);
             pmodel = new ProcessorModel(ds, new Format[]{new AudioFormat(AudioFormat.LINEAR)}, new ContentDescriptor(ContentDescriptor.RAW));
             Processor audioProc = Manager.createRealizedProcessor(pmodel);
             DataSource audioSource = audioProc.getDataOutput();
-            logger.fine("Successfully created sound datasource.");
-            
-            logger.fine("Creating merged datasource...");
+            LOGGER.fine("Successfully created sound datasource.");
+
+            LOGGER.fine("Creating merged datasource...");
             DataSource mergedSource = Manager.createMergingDataSource(new DataSource[]{videoSource, audioSource});
-            logger.fine("Successfully created merged datasource.");
+            LOGGER.fine("Successfully created merged datasource.");
 
             Format[] trackFormats = new Format[2];
             trackFormats[0] = imagesProc.getTrackControls()[0].getFormat();
             trackFormats[1] = audioProc.getTrackControls()[0].getFormat();
 
-            logger.fine("Creating a realized merging processor with quicktime jpeg format as target...");
+            LOGGER.fine("Creating a realized merging processor with quicktime jpeg format as target...");
             pmodel = new ProcessorModel(mergedSource, trackFormats, new ContentDescriptor(FileTypeDescriptor.QUICKTIME));
             Processor mergingProc = Manager.createRealizedProcessor(pmodel);
-            logger.fine("Successfully created realized merging processor.");
-            
-            logger.fine("Creating data-sink...");
+            LOGGER.fine("Successfully created realized merging processor.");
+
+            LOGGER.fine("Creating data-sink...");
             URL outputURL = outputFile.toURL();
-            logger.info("URL for output file: " + outputURL);
+            LOGGER.info("URL for output file: " + outputURL);
             DataSink outSink = Manager.createDataSink(mergingProc.getDataOutput(), new MediaLocator(outputURL));
-            logger.fine("Successfully created data-sink.");
-            
+            LOGGER.fine("Successfully created data-sink.");
+
             mergingProc.addControllerListener(new ControllerStopListener());
             SinkStopListener sinkListener = new SinkStopListener();
             outSink.addDataSinkListener(sinkListener);
-            
-            logger.info("Encoding movie with sound...");
+
+            LOGGER.info("Encoding movie with sound...");
             outSink.open();
             outSink.start();
             audioProc.start();
             imagesProc.start();
             mergingProc.start();
             sinkListener.waitUntilFinished();
-            logger.info("Successfully encoded movie.");
+            LOGGER.info("Successfully encoded movie.");
             controlPanel.notifyHUD();
 
-            logger.fine("Closing JMF processors.");
+            LOGGER.fine("Closing JMF processors.");
             outSink.stop();
             imagesProc.close();
             audioProc.close();
             outSink.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new EncodeException("Could not encode movie.", e);
         }
     }
-    
+
     /**
      * Creates a quicktime JPEG-movie from the specified ImagesDataSource.
      * @param imagesSource the images source to store in the movie
@@ -241,90 +237,88 @@ public class MovieCreator {
         /**
          *Do not be tempted to replace the deprecated toURL() method calls on File with a toURI().toURL() sequence
          *of method calls. The FOBS code that is used in Wonderland will not handle the URI escaped URLs correctly
-        */
-        logger.info("Output file is expected to be written to: " + outputFile);
+         */
+        LOGGER.info("Output file is expected to be written to: " + outputFile);
         try {
-            logger.fine("Creating images datasource...");
+            LOGGER.fine("Creating images datasource...");
             ProcessorModel pmodel = new ProcessorModel(imagesSource, new Format[]{new VideoFormat(VideoFormat.JPEG)}, new ContentDescriptor(FileTypeDescriptor.QUICKTIME));
             Processor imagesProc = Manager.createRealizedProcessor(pmodel);
-            logger.fine("Successfully created images datasource.");
+            LOGGER.fine("Successfully created images datasource.");
 
-            logger.fine("Creating data-sink...");
+            LOGGER.fine("Creating data-sink...");
             DataSink outSink = Manager.createDataSink(imagesProc.getDataOutput(), new MediaLocator(outputFile.toURL()));
-            logger.fine("Successfully created data-sink.");
-            
+            LOGGER.fine("Successfully created data-sink.");
+
             imagesProc.addControllerListener(new ControllerStopListener());
             SinkStopListener sinkListener = new SinkStopListener();
             outSink.addDataSinkListener(sinkListener);
-            
-            logger.info("Encoding movie without sound...");
+
+            LOGGER.info("Encoding movie without sound...");
             outSink.open();
             outSink.start();
             imagesProc.start();
 
             sinkListener.waitUntilFinished();
-            logger.info("Successfully encoded movie.");
+            LOGGER.info("Successfully encoded movie.");
 
-            logger.fine("Closing data sink.");
+            LOGGER.fine("Closing data sink.");
             outSink.stop();
             outSink.close();
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new EncodeException("Could not encode movie.", e);
         }
     }
-    
+
     /**
      * Simple implementation of ControllerListener interface.
      * @see javax.media.ControllerListener
      */
     private static class ControllerStopListener implements ControllerListener {
+
         /**
          * @see javax.media.ControllerListener#controllerUpdate(javax.media.ControllerEvent)
          */
         public void controllerUpdate(ControllerEvent event) {
-            if(event instanceof EndOfMediaEvent) {
+            if (event instanceof EndOfMediaEvent) {
                 event.getSourceController().stop();
                 event.getSourceController().close();
             }
         }
     }
-    
+
     /**
      * Simple implementation of DataSinkListener interface.
      * @see javax.media.datasink.DataSinkListener
      */
     private static class SinkStopListener implements DataSinkListener {
+
         /**
          * Have we finished encoding the data source?
          */
         private boolean finished = false;
-        
+
         /**
          * @see javax.media.datasink.DataSinkListener#dataSinkUpdate(javax.media.datasink.DataSinkEvent)  
          */
         public void dataSinkUpdate(DataSinkEvent event) {
-            if(event instanceof EndOfStreamEvent) {
+            if (event instanceof EndOfStreamEvent) {
                 finished = true;
-                synchronized(this) {
+                synchronized (this) {
                     notifyAll();
                 }
             }
         }
-        
+
         /**
          * Thread block until the data source has finished encoding.
          */
         public synchronized void waitUntilFinished() {
-            while(!finished) {
+            while (!finished) {
                 try {
                     wait(1000);
-                } catch(InterruptedException e) {}
+                } catch (InterruptedException e) {
+                }
             }
         }
     }
-
-
-    
-    
-    
 }

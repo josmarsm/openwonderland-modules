@@ -39,7 +39,8 @@ import org.jdesktop.wonderland.modules.movierecorder.common.MovieRecorderCellSer
  */
 @CellFactory
 public class MovieRecorderCellFactory implements CellFactorySPI {
-    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle");
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[] {};
@@ -53,16 +54,17 @@ public class MovieRecorderCellFactory implements CellFactorySPI {
         BoundingSphere box = new BoundingSphere(1.0f, new Vector3f(1f, 0.7f, 0.2f));
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
-        state.setName(bundle.getString("MOVIE_RECORDER"));
+        state.setName(BUNDLE.getString("MOVIE_RECORDER"));
         return (T)state;
     }
 
     public String getDisplayName() {
-        return bundle.getString("MOVIE_RECORDER");
+        return BUNDLE.getString("MOVIE_RECORDER");
     }
 
     public Image getPreviewImage() {
-        URL url = MovieRecorderCellFactory.class.getResource("resources/movierecorder_preview.png");
+        URL url = MovieRecorderCellFactory.class.getResource(
+                "resources/movierecorder_preview.png");
         return Toolkit.getDefaultToolkit().createImage(url);
         //return null;
     }
