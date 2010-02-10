@@ -80,9 +80,9 @@ public class PosterForm extends javax.swing.JFrame {
         //posterLogger.info("old text: " + oldLabelText);
 
         previewLabel.setText(textArea.getText());
-        posterLogger.info("new text: " + previewLabel.getText());
+        posterLogger.severe("new text: " + previewLabel.getText());
         Dimension size = previewLabel.getPreferredSize();
-        posterLogger.info("label preferred size: " + size);
+        posterLogger.severe("label preferred size: " + size);
         previewLabel.setSize(size);
         Image image = createImage(size.width, size.height);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
