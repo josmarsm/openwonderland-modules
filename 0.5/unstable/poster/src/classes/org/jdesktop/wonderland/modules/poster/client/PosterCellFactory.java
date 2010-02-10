@@ -28,27 +28,27 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.poster.common.PosterCellServerState;
 
 /**
- * The cell factory for the sample cell that users the "generic" Cell facility.
+ * The cell factory for the Postercell.<br>
+ * Adapted from the factory cell creaated for the "generic" Cell facility.<br>
+ * originally written by Jordan Slott <jslott@dev.java.net>
  * 
- * @author Jordan Slott <jslott@dev.java.net>
+ * @author Bernard Horan
  */
 @CellFactory
 public class PosterCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
-        return new String[] {};
+        return new String[]{};
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        CellServerState state =  new PosterCellServerState();
-         BoundingSphere box = new BoundingSphere(1.0f, new Vector3f(1f, 0.7f, 0.2f));
+        CellServerState state = new PosterCellServerState();
+        BoundingSphere box = new BoundingSphere(1.0f, new Vector3f(1f, 0.7f, 0.2f));
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
         state.setName("Poster");
         return (T) state;
     }
-
-
 
     public String getDisplayName() {
         return "Poster";

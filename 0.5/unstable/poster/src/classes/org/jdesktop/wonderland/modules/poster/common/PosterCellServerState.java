@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -21,10 +21,11 @@ import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
- * The Cell server state for the "generic" Cell. This communicates the name
- * of the client-side Cell class.
+ * The cell server state for the PosterCell.<br>
+ * Adapted from the Cell server state for the "generic" Cell originally written<br>
+ * by Jordan Slott <jslott@dev.java.net>
  *
- * @author Jordan Slott <jslott@dev.java.net>
+ * @author Bernard Horan
  */
 @ServerState
 public class PosterCellServerState extends CellServerState {

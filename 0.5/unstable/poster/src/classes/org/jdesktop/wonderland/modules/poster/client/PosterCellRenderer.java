@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -27,9 +27,10 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 
 /**
- * An example of a cell renderer.
+ * The renderer for the PosterCell. <br>
+ * Adapted from the ShapeCell originally written by Jordan Slott <jslott@dev.java.net>
  * 
- * @author Jordan Slott <jslott@dev.java.net>
+ * @author Bernard Horan
  */
 public class PosterCellRenderer extends BasicRenderer {
     private static final Logger posterLogger = Logger.getLogger(PosterCellRenderer.class.getName());
@@ -59,16 +60,16 @@ public class PosterCellRenderer extends BasicRenderer {
     }
 
     protected Node createSceneGraph(Entity entity) {
-        /* Create the new labelNode for the shape */
-        Node labelNode = this.getPosterNode();
-        posterLogger.info("labelNode: " + labelNode);
-        if (labelNode == null) {
+        /* Create the new poster node for the image */
+        Node posterNode = this.getPosterNode();
+        posterLogger.info("posterNode: " + posterNode);
+        if (posterNode == null) {
           node = new Node();
           return node;
         }
 
         node = new Node();
-        node.attachChild(labelNode);
+        node.attachChild(posterNode);
         node.setModelBound(new BoundingBox());
         node.updateModelBound();
         node.setName("Cell_" + cell.getCellID() + ":" + cell.getName());

@@ -46,7 +46,8 @@ import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 
 /**
- * An example Cell that uses the "generic" cell facility.
+ * The cell that renders the poster.<br>
+ * Adapted from the "generic" cell facility originally written by Jordan Slott
  * 
  * @author Bernard Horan
  */
@@ -95,7 +96,7 @@ public class PosterCell extends Cell {
         if (increasing && status == CellStatus.ACTIVE) {
             posterCellLogger.info("active and increasing");
 
-            // Create the shared hash map and initialize the shape type
+            // Create the shared hash map and initialize the poster text
             // if it does not already exist.
             SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
             SharedString posterString = sharedMap.get(LABEL_KEY, SharedString.class);
@@ -107,7 +108,7 @@ public class PosterCell extends Cell {
             posterText = posterString.toString();
             posterCellLogger.info("posterText: " + posterText);
             
-            //Add menu item to open a tape to the right-hand button context menu
+            //Add menu item to edit the text from the context menu
             if (menuFactory == null) {
                 final ContextMenuActionListener l = new ContextMenuActionListener() {
 
@@ -127,13 +128,13 @@ public class PosterCell extends Cell {
             }
         }
         if (status == CellStatus.RENDERING && increasing == true) {
-            // Initialize the render with the current shape type
+            // Initialize the render with the current poster text
             posterCellLogger.info("rendering and increasing");
             posterForm.updateTextArea();
             cellRenderer.updateText();
 
 
-            // Listen for changes in the shape type from other clients
+            // Listen for changes in the poster text from other clients
             SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
             sharedMap.addSharedMapListener(LABEL_KEY, mapListener);
 
@@ -150,9 +151,6 @@ public class PosterCell extends Cell {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected CellRenderer createCellRenderer(RendererType rendererType) {
         if (rendererType == RendererType.RENDERER_JME) {
@@ -199,7 +197,7 @@ public class PosterCell extends Cell {
     }
 
     /**
-     * Listens to changes in the shared map and updates the shape type
+     * Listens to changes in the shared map and updates the poster text
      */
     class MySharedMapListener implements SharedMapListenerCli {
 
