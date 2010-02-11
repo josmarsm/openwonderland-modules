@@ -40,8 +40,8 @@ public class PosterCellRenderer extends BasicRenderer {
         super(cell);
     }
 
-    public void updateText() {
-        posterLogger.info("update text");
+    public void updateNode() {
+        posterLogger.info("update node");
         node.detachAllChildren();
         node.attachChild(getPosterNode());
         node.setModelBound(new BoundingBox());
@@ -56,7 +56,8 @@ public class PosterCellRenderer extends BasicRenderer {
          if (posterImage == null) {
               return null;
          }
-        return new PosterNode(posterImage);
+
+        return new PosterNode(posterImage, ((PosterCell)cell).getBillboardMode());
     }
 
     protected Node createSceneGraph(Entity entity) {

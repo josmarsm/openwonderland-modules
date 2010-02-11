@@ -46,22 +46,23 @@ public class PosterForm extends javax.swing.JFrame {
     public PosterForm(PosterCell posterCell) {
         this();
         this.posterCell = posterCell;
-        //updateTextArea();
+        //updateForm();
     }
 
-    void updateTextArea() {
+    void updateForm() {
         if (posterCell == null) {
             return;
         }
         String posterText = posterCell.getPosterText();
-        posterLogger.info("posterText: " + posterText);
+        posterLogger.severe("posterText: " + posterText);
         textArea.setText(posterCell.getPosterText());
+        billboardModeCB.setSelected(posterCell.getBillboardMode());
         updatePreviewLabel();
     }
 
     @Override
     public void setVisible(boolean isVisible) {
-        updateTextArea();
+        //updateForm();
         super.setVisible(isVisible);
     }
 
@@ -108,6 +109,7 @@ public class PosterForm extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         textArea = new javax.swing.JTextArea();
         previewButton = new javax.swing.JButton();
+        billboardModeCB = new javax.swing.JCheckBox();
 
         setTitle("Enter Poster Text");
         setAlwaysOnTop(true);
@@ -128,6 +130,7 @@ public class PosterForm extends javax.swing.JFrame {
 
         previewLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         previewLabel.setText("jLabel1");
+        previewLabel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         previewLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         previewLabel.setOpaque(true);
 
@@ -142,6 +145,8 @@ public class PosterForm extends javax.swing.JFrame {
                 previewButtonActionPerformed(evt);
             }
         });
+
+        billboardModeCB.setText("Billboard mode");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -158,7 +163,8 @@ public class PosterForm extends javax.swing.JFrame {
                     .add(layout.createSequentialGroup()
                         .add(doneButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 105, Short.MAX_VALUE)
-                        .add(cancelButton)))
+                        .add(cancelButton))
+                    .add(billboardModeCB))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -169,7 +175,9 @@ public class PosterForm extends javax.swing.JFrame {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(previewButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(previewLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE)
+                .add(previewLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(billboardModeCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(doneButton)
@@ -182,6 +190,8 @@ public class PosterForm extends javax.swing.JFrame {
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
         posterCell.setPosterText(textArea.getText());
+        posterLogger.severe("mode: " + billboardModeCB.isSelected());
+        posterCell.setBillboardMode(billboardModeCB.isSelected());
         setVisible(false);
 }//GEN-LAST:event_doneButtonActionPerformed
 
@@ -205,6 +215,7 @@ public class PosterForm extends javax.swing.JFrame {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox billboardModeCB;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton doneButton;
     private javax.swing.JScrollPane jScrollPane1;
