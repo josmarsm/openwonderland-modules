@@ -103,7 +103,7 @@ public class PosterCell extends Cell {
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
         if (increasing && status == CellStatus.ACTIVE) {
-            posterCellLogger.severe("active and increasing");
+            //posterCellLogger.severe("active and increasing");
 
             // Create the shared hash map and initialize the poster text
             // if it does not already exist.
@@ -115,7 +115,7 @@ public class PosterCell extends Cell {
             }
 
             posterText = posterString.toString();
-            posterCellLogger.severe("posterText: " + posterText);
+            //posterCellLogger.severe("posterText: " + posterText);
 
             SharedBoolean billboardModeBoolean = sharedMap.get(MODE_LABEL_KEY, SharedBoolean.class);
             if (billboardModeBoolean == null) {
@@ -123,7 +123,7 @@ public class PosterCell extends Cell {
                 sharedMap.put(MODE_LABEL_KEY, billboardModeBoolean);
             }
             billboardMode = billboardModeBoolean.getValue();
-            posterCellLogger.severe("billboardMode: " + billboardMode);
+            //posterCellLogger.severe("billboardMode: " + billboardMode);
 
             //Add menu item to edit the text from the context menu
             if (menuFactory == null) {
@@ -146,7 +146,7 @@ public class PosterCell extends Cell {
         }
         if (status == CellStatus.RENDERING && increasing == true) {
             // Initialize the render with the current poster text
-            posterCellLogger.severe("rendering and increasing");
+            //posterCellLogger.severe("rendering and increasing");
             posterForm.updateForm();
             cellRenderer.updateNode();
 
@@ -209,9 +209,9 @@ public class PosterCell extends Cell {
     }
 
     void setPosterText(String text) {
-        posterCellLogger.severe("text: " + text);
+        //posterCellLogger.severe("text: " + text);
         if (!text.equals(posterText)) {
-            posterCellLogger.severe("not equal");
+            //posterCellLogger.severe("not equal");
             posterText = text;
             SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
             SharedString labelTextString = SharedString.valueOf(posterText);
@@ -220,9 +220,9 @@ public class PosterCell extends Cell {
     }
 
     void setBillboardMode(boolean mode) {
-        posterCellLogger.severe("mode: " + mode);
+        //posterCellLogger.severe("mode: " + mode);
         if (billboardMode != mode) {
-            posterCellLogger.severe("not equal");
+            //posterCellLogger.severe("not equal");
             billboardMode = mode;
             SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
             SharedBoolean billboardModeBoolean = SharedBoolean.valueOf(billboardMode);
@@ -236,7 +236,7 @@ public class PosterCell extends Cell {
     class MySharedMapListener implements SharedMapListenerCli {
 
         public void propertyChanged(SharedMapEventCli event) {
-            posterCellLogger.severe("property changed: " + event.getPropertyName() + " -- " + event.getNewValue());
+            //posterCellLogger.severe("property changed: " + event.getPropertyName() + " -- " + event.getNewValue());
             if (event.getPropertyName().equals(TEXT_LABEL_KEY)) {
                 SharedString posterTextString = (SharedString) event.getNewValue();
                 posterText = posterTextString.getValue();
