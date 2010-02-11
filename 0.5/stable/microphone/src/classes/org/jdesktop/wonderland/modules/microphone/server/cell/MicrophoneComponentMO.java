@@ -21,22 +21,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
-import java.util.logging.Logger;
-import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.TalkArea;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.ListenArea;
-import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.MicrophoneBoundsType;
-import org.jdesktop.wonderland.server.cell.CellComponentMO;
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
-import org.jdesktop.wonderland.server.comms.WonderlandClientID;
-
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedReference;
-
 import com.sun.mpk20.voicelib.app.AudioGroup;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
 import com.sun.mpk20.voicelib.app.AudioGroupSetup;
@@ -44,6 +28,20 @@ import com.sun.mpk20.voicelib.app.DefaultSpatializer;
 import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
 import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.sgs.app.AppContext;
+import com.sun.sgs.app.ManagedReference;
+import java.util.logging.Logger;
+import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.ListenArea;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.MicrophoneBoundsType;
+import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.TalkArea;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * A server component that provides microphone functionality

@@ -19,6 +19,7 @@ package org.jdesktop.wonderland.modules.microphone.common;
 
 import com.jme.math.Vector3f;
 import java.io.Serializable;
+import java.util.ResourceBundle;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -28,8 +29,8 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 
 /**
- * The MicrophoneComponentServerState class is the cell that renders a microphone cell in
- * world.
+ * The MicrophoneComponentServerState class is the cell that renders a
+ * microphone cell in world.
  * 
  * @author jprovino
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
@@ -38,8 +39,11 @@ import org.jdesktop.wonderland.common.utils.jaxb.Vector3fAdapter;
 @ServerState
 public class MicrophoneComponentServerState extends CellComponentServerState {
 
+    private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/microphone/client/cell/resources/Bundle");
+
     @XmlElement(name = "name")
-    private String name = "Microphone";
+    private String name = BUNDLE.getString("Microphone");
     @XmlElement(name = "volume")
     private double volume = 1;
     @XmlElement(name = "listenArea")
