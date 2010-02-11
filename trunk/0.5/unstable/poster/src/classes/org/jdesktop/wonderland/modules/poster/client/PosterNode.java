@@ -55,6 +55,7 @@ public class PosterNode extends Node {
     public PosterNode(Image image, boolean billboard) {
         super();
         this.image = image;
+        posterNodeLogger.severe("billboard: " + billboard);
         if (billboard) {
             attachChild(getBillboard());
         } else {
