@@ -29,8 +29,6 @@ import javax.swing.ImageIcon;
  * @author  Bernard Horan
  */
 public class PosterForm extends javax.swing.JFrame {
-    private static final Logger posterLogger = Logger.getLogger(PosterForm.class.getName());
-
     
     private PosterCell posterCell;
 
@@ -54,7 +52,7 @@ public class PosterForm extends javax.swing.JFrame {
             return;
         }
         String posterText = posterCell.getPosterText();
-        posterLogger.severe("posterText: " + posterText);
+        //posterLogger.severe("posterText: " + posterText);
         textArea.setText(posterCell.getPosterText());
         billboardModeCB.setSelected(posterCell.getBillboardMode());
         updatePreviewLabel();
@@ -81,9 +79,9 @@ public class PosterForm extends javax.swing.JFrame {
         //posterLogger.info("old text: " + oldLabelText);
 
         previewLabel.setText(textArea.getText());
-        posterLogger.severe("new text: " + previewLabel.getText());
+        //posterLogger.severe("new text: " + previewLabel.getText());
         Dimension size = previewLabel.getPreferredSize();
-        posterLogger.severe("label preferred size: " + size);
+        //posterLogger.severe("label preferred size: " + size);
         previewLabel.setSize(size);
         Image image = createImage(size.width, size.height);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
@@ -190,7 +188,7 @@ public class PosterForm extends javax.swing.JFrame {
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
         posterCell.setPosterText(textArea.getText());
-        posterLogger.severe("mode: " + billboardModeCB.isSelected());
+        //posterLogger.severe("mode: " + billboardModeCB.isSelected());
         posterCell.setBillboardMode(billboardModeCB.isSelected());
         setVisible(false);
 }//GEN-LAST:event_doneButtonActionPerformed

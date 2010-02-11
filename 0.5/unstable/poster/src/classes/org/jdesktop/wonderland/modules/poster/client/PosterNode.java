@@ -40,7 +40,6 @@ import java.util.logging.Logger;
  */
 public class PosterNode extends Node {
 
-    private static final Logger posterNodeLogger = Logger.getLogger(PosterNode.class.getName());
     private Image image;
     private Quad quad;
     private int height;
@@ -55,7 +54,6 @@ public class PosterNode extends Node {
     public PosterNode(Image image, boolean billboard) {
         super();
         this.image = image;
-        posterNodeLogger.severe("billboard: " + billboard);
         if (billboard) {
             attachChild(getBillboard());
         } else {

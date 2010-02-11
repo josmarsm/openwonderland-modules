@@ -41,7 +41,7 @@ public class PosterCellRenderer extends BasicRenderer {
     }
 
     public void updateNode() {
-        posterLogger.info("update node");
+        //posterLogger.info("update node");
         node.detachAllChildren();
         node.attachChild(getPosterNode());
         node.setModelBound(new BoundingBox());
@@ -52,7 +52,7 @@ public class PosterCellRenderer extends BasicRenderer {
 
      private PosterNode getPosterNode() {
          Image posterImage = ((PosterCell)cell).getPosterImage();
-         posterLogger.info("poster image: " + posterImage);
+         //posterLogger.info("poster image: " + posterImage);
          if (posterImage == null) {
               return null;
          }
@@ -63,7 +63,7 @@ public class PosterCellRenderer extends BasicRenderer {
     protected Node createSceneGraph(Entity entity) {
         /* Create the new poster node for the image */
         Node posterNode = this.getPosterNode();
-        posterLogger.info("posterNode: " + posterNode);
+        //posterLogger.info("posterNode: " + posterNode);
         if (posterNode == null) {
           node = new Node();
           return node;
