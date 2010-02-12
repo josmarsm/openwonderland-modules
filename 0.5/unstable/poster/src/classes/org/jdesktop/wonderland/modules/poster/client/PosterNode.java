@@ -11,8 +11,8 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath"
- * exception as provided by Sun in the License file that accompanied
+ * Sun designates this particular file bs subject to the "Classpath"
+ * exception bs provided by Sun in the License file that accompanied
  * this code.
  */
 package org.jdesktop.wonderland.modules.poster.client;
@@ -27,25 +27,24 @@ import com.jme.scene.shape.Quad;
 import com.jme.scene.state.BlendState;
 import com.jme.scene.state.TextureState;
 import com.jme.scene.state.RenderState.StateType;
-import com.jme.system.DisplaySystem;
 import com.jme.util.TextureManager;
 import java.awt.Image;
-import java.util.logging.Logger;
+import org.jdesktop.mtgame.RenderManager;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 
 /**
  * Renders an image using JME.<br>
- * Adapyed from TextLabel2D
+ * Adapted from TextLabel2D
  *
  * @author Bernard Horan
  */
 public class PosterNode extends Node {
+    private static final float SCALE_FACTOR = 0.015625f; // 1/64
 
     private Image image;
     private Quad quad;
-    private int height;
     private float imgWidth = 0f;
     private float imgHeight = 0f;
-    private float imgFactor = 0f;
 
     public PosterNode(Image image) {
         this(image, false);
@@ -64,12 +63,9 @@ public class PosterNode extends Node {
     private Quad getQuad() {
         float w = image.getWidth(null);
         float h = image.getHeight(null);
-        float factor = height / h;
-        factor = 0.0078125f; // 1/128
-        factor = factor * 2;
         Quad ret;
 
-        if (imgWidth == w && imgHeight == h && imgFactor == factor) {
+        if (imgWidth == w && imgHeight == h) {
             // Reuse quad and texture
             ret = quad;
             TextureState texState = (TextureState) quad.getRenderState(StateType.Texture);
@@ -82,34 +78,38 @@ public class PosterNode extends Node {
             texState.setTexture(tex);
             //end workaround
         } else {
-            ret = new Quad("posternode", w * factor, h * factor);
-            TextureState ts = DisplaySystem.getDisplaySystem().getRenderer().createTextureState();
+            ret = new Quad("posternode", w * SCALE_FACTOR, h * SCALE_FACTOR);
             Texture tex = TextureManager.loadTexture(image, MinificationFilter.BilinearNoMipMaps, MagnificationFilter.Bilinear, true);
 
+            // Set the texture on the node
+            RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+            TextureState ts = (TextureState)rm.createRendererState(StateType.Texture);
             ts.setTexture(tex);
             ts.setEnabled(true);
             ret.setRenderState(ts);
 
-            BlendState as = DisplaySystem.getDisplaySystem().getRenderer().createBlendState();
-            as.setBlendEnabled(false);
-            as.setReference(0.5f);
-            as.setTestFunction(BlendState.TestFunction.GreaterThan);
-            as.setTestEnabled(true);
-            ret.setRenderState(as);
+            // Set the blend state so that transparent images work properly
+            BlendState bs = (BlendState)rm.createRendererState(StateType.Blend);
+            bs.setBlendEnabled(false);
+            bs.setReference(0.5f);
+            bs.setTestFunction(BlendState.TestFunction.GreaterThan);
+            bs.setTestEnabled(true);
+            ret.setRenderState(bs);
 
             ret.setLightCombineMode(LightCombineMode.Off);
             ret.updateRenderState();
             this.quad = ret;
             imgWidth = w;
             imgHeight = h;
-            imgFactor = factor;
+            // Make sure we do not cache the texture in memory
+            TextureManager.releaseTexture(tex);
         }
 
         return ret;
     }
 
     private BillboardNode getBillboard() {
-        BillboardNode bb = new BillboardNode("bb");
+        BillboardNode bb = new BillboardNode("billboard");
         bb.attachChild(getQuad());
         return bb;
     }
