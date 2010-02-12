@@ -39,6 +39,9 @@
                 <clientjar name="poster-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**/*.properties"/>
+                    </fileset>
                 </clientjar>
             </client>
 
