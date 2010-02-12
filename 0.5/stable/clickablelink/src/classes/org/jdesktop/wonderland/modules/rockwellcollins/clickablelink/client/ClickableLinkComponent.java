@@ -17,24 +17,27 @@
  */
 package org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.client;
 
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import java.util.ResourceBundle;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.rockwellcollins.clickablelink.common.ClickableLinkComponentClientState;
-
-import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
 
 /**
  * ClickableLinkComponents allow you to set a URL and open them with a single
@@ -48,6 +51,9 @@ public class ClickableLinkComponent extends CellComponent {
 
     private static final Logger LOGGER = Logger.getLogger(
             ClickableLinkComponent.class.getName());
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
+            "org/jdesktop/wonderland/modules/rockwellcollins/clickablelink/"
+            + "client/Bundle");
     /** The listener for the mouse clicks */
     private MouseEventListener listener = null;
     /** The URL to travel to */
@@ -151,18 +157,34 @@ public class ClickableLinkComponent extends CellComponent {
                 return;
             }
 
-            try {
-                // Slight fix because a lot of people like to put
-                // "www.google.com" instead of "http://www.google.com"
-                if (!url.startsWith("http://")) {
-                    url = "http://" + url;
-                }
-                WebBrowserLauncher.openURL(url);
-
-            } catch (Exception ex) {
-                LOGGER.log(Level.SEVERE, "Failed to open URL: " + url, ex);
-
+            // Slight fix because a lot of people like to put
+            // "www.google.com" instead of "http://www.google.com"
+            if (!url.contains("://")) {
+                url = "http://" + url;
             }
+
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    String confirmMessage =
+                            BUNDLE.getString("Confirm_Open_Message");
+                    confirmMessage = MessageFormat.format(
+                            confirmMessage, cell.getName(), url);
+                    int selection = JOptionPane.showConfirmDialog(
+                            JmeClientMain.getFrame().getFrame(), confirmMessage,
+                            BUNDLE.getString("Confirm_Open_Title"),
+                            JOptionPane.OK_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE);
+                    if (selection == JOptionPane.YES_OPTION) {
+                        try {
+                            WebBrowserLauncher.openURL(url);
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE,
+                                    "Failed to open URL: " + url, ex);
+                        }
+                    }
+                }
+            });
         }
     }
 }
