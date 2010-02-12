@@ -21,6 +21,7 @@ import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.modules.poster.common.PosterCellServerState;
  */
 @CellFactory
 public class PosterCellFactory implements CellFactorySPI {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/poster/client/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[]{};
@@ -46,12 +48,12 @@ public class PosterCellFactory implements CellFactorySPI {
         BoundingSphere box = new BoundingSphere(1.0f, new Vector3f(1f, 0.7f, 0.2f));
         BoundingVolumeHint hint = new BoundingVolumeHint(true, box);
         state.setBoundingVolumeHint(hint);
-        state.setName("Poster");
+        state.setName(bundle.getString("POSTER"));
         return (T) state;
     }
 
     public String getDisplayName() {
-        return "Poster";
+        return bundle.getString("POSTER");
     }
 
     public Image getPreviewImage() {

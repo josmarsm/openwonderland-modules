@@ -21,7 +21,7 @@ package org.jdesktop.wonderland.modules.poster.client;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.util.logging.Logger;
+import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 
 /**
@@ -29,6 +29,7 @@ import javax.swing.ImageIcon;
  * @author  Bernard Horan
  */
 public class PosterForm extends javax.swing.JFrame {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/poster/client/resources/Bundle");
     
     private PosterCell posterCell;
 
@@ -44,24 +45,15 @@ public class PosterForm extends javax.swing.JFrame {
     public PosterForm(PosterCell posterCell) {
         this();
         this.posterCell = posterCell;
-        //updateForm();
     }
 
     void updateForm() {
         if (posterCell == null) {
             return;
         }
-        String posterText = posterCell.getPosterText();
-        //posterLogger.severe("posterText: " + posterText);
         textArea.setText(posterCell.getPosterText());
         billboardModeCB.setSelected(posterCell.getBillboardMode());
         updatePreviewLabel();
-    }
-
-    @Override
-    public void setVisible(boolean isVisible) {
-        //updateForm();
-        super.setVisible(isVisible);
     }
 
     private void updatePreviewLabel() {
@@ -73,19 +65,12 @@ public class PosterForm extends javax.swing.JFrame {
     Image getPreviewImage() {
         if (textArea.getText().isEmpty()) {
             return null;
-        }
-        //String oldLabelText = previewLabel.getText();
-        
-        //posterLogger.info("old text: " + oldLabelText);
-
+        }       
         previewLabel.setText(textArea.getText());
-        //posterLogger.severe("new text: " + previewLabel.getText());
         Dimension size = previewLabel.getPreferredSize();
-        //posterLogger.severe("label preferred size: " + size);
         previewLabel.setSize(size);
         Image image = createImage(size.width, size.height);
         Graphics2D g2d = (Graphics2D) image.getGraphics();
-        //g2d.setClip(new Rectangle(size));
         g2d.setFont(getFont());
         previewLabel.paint(g2d);
         previewLabel.setText("");
@@ -109,17 +94,17 @@ public class PosterForm extends javax.swing.JFrame {
         previewButton = new javax.swing.JButton();
         billboardModeCB = new javax.swing.JCheckBox();
 
-        setTitle("Enter Poster Text");
+        setTitle(bundle.getString("ENTER_POSTER_TEXT")); // NOI18N
         setAlwaysOnTop(true);
 
-        doneButton.setText("OK");
+        doneButton.setText(bundle.getString("OK")); // NOI18N
         doneButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 doneButtonActionPerformed(evt);
             }
         });
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText(bundle.getString("CANCEL")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -137,32 +122,36 @@ public class PosterForm extends javax.swing.JFrame {
         textArea.setWrapStyleWord(true);
         jScrollPane1.setViewportView(textArea);
 
-        previewButton.setText("Preview");
+        previewButton.setText(bundle.getString("PREVIEW")); // NOI18N
+        previewButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         previewButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 previewButtonActionPerformed(evt);
             }
         });
 
-        billboardModeCB.setText("Billboard mode");
+        billboardModeCB.setText(bundle.getString("BILLBOARD_MODE")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(previewLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(80, 80, 80)
-                        .add(previewButton))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(previewLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(doneButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 105, Short.MAX_VALUE)
+                                .add(cancelButton))
+                            .add(billboardModeCB)))
                     .add(layout.createSequentialGroup()
-                        .add(doneButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 105, Short.MAX_VALUE)
-                        .add(cancelButton))
-                    .add(billboardModeCB))
+                        .add(92, 92, 92)
+                        .add(previewButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(89, 89, 89)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -188,7 +177,6 @@ public class PosterForm extends javax.swing.JFrame {
 
     private void doneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doneButtonActionPerformed
         posterCell.setPosterText(textArea.getText());
-        //posterLogger.severe("mode: " + billboardModeCB.isSelected());
         posterCell.setBillboardMode(billboardModeCB.isSelected());
         setVisible(false);
 }//GEN-LAST:event_doneButtonActionPerformed

@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.poster.client;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -61,6 +62,7 @@ public class PosterCell extends Cell {
 
     @UsesCellComponent
     private ContextMenuComponent contextComp = null;
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/poster/client/resources/Bundle");
 
     private ContextMenuFactorySPI menuFactory = null;
 
@@ -110,7 +112,7 @@ public class PosterCell extends Cell {
             SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
             SharedString posterString = sharedMap.get(TEXT_LABEL_KEY, SharedString.class);
             if (posterString == null) {
-                posterString = SharedString.valueOf("Hello World!");
+                posterString = SharedString.valueOf(bundle.getString("HELLO_WORLD!"));
                 sharedMap.put(TEXT_LABEL_KEY, posterString);
             }
 
@@ -137,7 +139,7 @@ public class PosterCell extends Cell {
 
                     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                         return new ContextMenuItem[]{
-                                    new SimpleContextMenuItem("Set Text...", l)
+                                    new SimpleContextMenuItem(bundle.getString("SET_TEXT"), l)
                                 };
                     }
                 };
