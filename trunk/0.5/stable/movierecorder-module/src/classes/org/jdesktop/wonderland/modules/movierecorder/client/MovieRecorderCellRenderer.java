@@ -25,6 +25,7 @@ import com.jme.math.Vector3f;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
+import com.jme.scene.Spatial.LightCombineMode;
 import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Quad;
 import com.jme.scene.state.RenderState;
@@ -191,6 +192,8 @@ public class MovieRecorderCellRenderer extends BasicRenderer implements RenderUp
         Node quadNode = new Node("quad node");
         //Geometric
         Quad quadGeo = new Quad("Ortho", 2 * WIDTH, 2 * HEIGHT);
+        quadGeo.setLightCombineMode(LightCombineMode.Off);
+        quadGeo.updateRenderState();
         //Entity for the quad
         Entity quadEntity = new Entity("Ortho ");
         //Attach the geometric to the node
