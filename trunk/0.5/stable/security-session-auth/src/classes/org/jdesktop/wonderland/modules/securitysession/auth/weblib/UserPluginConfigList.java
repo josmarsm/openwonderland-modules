@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.securitysession.auth.weblib;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,7 +48,7 @@ class UserPluginConfigList {
             Logger.getLogger(UserPluginConfigList.class.getName());
 
     /* An array of plugin configs */
-    private UserPluginConfig[] configs = new UserPluginConfig[0];
+    private List<UserPluginConfig> configs = new LinkedList<UserPluginConfig>();
     
     /* The JAXBContext for later use */
     private static JAXBContext context = null;
@@ -65,14 +67,10 @@ class UserPluginConfigList {
     }
 
     @XmlElement(name="user-plugin")
-    UserPluginConfig[] getUserPluginConfigs() {
+    public List<UserPluginConfig> getUserPluginConfigs() {
         return configs;
     }
 
-    void setUserPluginConfigs(UserPluginConfig[] configs) {
-        this.configs = configs;
-    }
-    
     public static UserPluginConfigList decode(Reader r) throws JAXBException {
         Unmarshaller unmarshaller = context.createUnmarshaller();
         return (UserPluginConfigList) unmarshaller.unmarshal(r);
