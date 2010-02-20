@@ -1,7 +1,7 @@
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -17,7 +17,10 @@
  */
 package org.jdesktop.wonderland.modules.generic.common;
 
-import org.jdesktop.wonderland.common.cell.state.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
 /**
@@ -25,7 +28,12 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  * of the client-side Cell class.
  *
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author Bernard Horan
  */
+@XmlRootElement(name="genericcell")
+// bind all non-static, non-transient fields
+// to XML unless annotated with @XmlTransient
+@XmlAccessorType(XmlAccessType.FIELD)
 @ServerState
 public class GenericCellServerState extends CellServerState {
 
