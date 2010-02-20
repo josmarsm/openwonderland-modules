@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.poster.common;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
@@ -27,6 +30,10 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  *
  * @author Bernard Horan
  */
+@XmlRootElement(name="postercell")
+// bind all non-static, non-transient fields
+// to XML unless annotated with @XmlTransient
+@XmlAccessorType(XmlAccessType.FIELD)
 @ServerState
 public class PosterCellServerState extends CellServerState {
 
