@@ -19,7 +19,8 @@
 	<path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
         <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
-        <path location="${wonderland.dir}/../scriptingImager/build/client/scriptingImager-client.jar"/>
+	<path location="${current.dir}/lib/jinput.jar"/>
+	<path location="${current.dir}/lib/trident.jar"/>
     </pathconvert>
       
     <pathconvert property="module-server.classpath">
