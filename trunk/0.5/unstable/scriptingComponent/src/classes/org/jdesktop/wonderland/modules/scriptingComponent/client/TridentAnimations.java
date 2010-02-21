@@ -61,7 +61,7 @@ public class TridentAnimations
         }
     }
 
-class FloatPropertyInterpolator implements PropertyInterpolator<Float>
+class MyFloatPropertyInterpolator implements PropertyInterpolator<Float>
     {
 
     public Class getBasePropertyClass()
