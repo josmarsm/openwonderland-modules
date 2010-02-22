@@ -13,11 +13,11 @@
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
     <pathconvert property="module-client.classpath">
-        <path location="${wonderland.dir}/../scriptingComponent/build/client/scriptingComponent-client.jar"/>
+        <path location="${wonderland.dir}/../wonderland-modules/unstable/scriptingComponent/build/client/scriptingComponent-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
-        <path location="${wonderland.dir}/../scriptingComponent/build/server/scripting-component-module-server.jar"/>
+        <path location="${wonderland.dir}/../wonderland-modules/unstable/scriptingComponent/build/server/scripting-component-module-server.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common, 
