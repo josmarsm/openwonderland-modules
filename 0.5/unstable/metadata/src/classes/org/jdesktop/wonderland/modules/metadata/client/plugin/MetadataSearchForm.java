@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.metadata.client.plugin;
 
 import java.awt.event.ActionListener;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ListSelectionEvent;
@@ -28,6 +29,7 @@ import javax.swing.event.TableModelListener;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataTypesTable;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
 
 /**
  * Uses MetadataTypesTable for users to enter Metadata. Entered Metadata then
@@ -171,7 +173,7 @@ public class MetadataSearchForm extends javax.swing.JFrame implements TableModel
   }// </editor-fold>//GEN-END:initComponents
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
-      logger.info("[META SEARCH FORM] search button clicked");
+//      logger.info("[META SEARCH FORM] search button clicked");
       
     }//GEN-LAST:event_searchButtonActionPerformed
 
@@ -198,6 +200,18 @@ public class MetadataSearchForm extends javax.swing.JFrame implements TableModel
     for(int i = 0; i < tabs.getComponentCount(); i++){
       try {
         for (Metadata m : tabs.getMetadataFromTab(i)) {
+          // surround each attribute with wildcards
+          // this will make the search 'contains' instead of 'is exactly'
+          for(Map.Entry<String, MetadataValue> e: m.getAttributes()){
+            MetadataValue metaVal = e.getValue();
+            String val = e.getValue().getVal();
+            if(val == null){
+              val = "";
+            }
+            val = "*" + val + "*";
+            metaVal.setVal(val);
+            m.put(e.getKey(), metaVal);
+          }
           filters.addFilter(m);
         }
       } catch (Exception ex) {

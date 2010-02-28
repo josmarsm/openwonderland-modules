@@ -923,7 +923,11 @@ public class EmbeddedADS implements MetadataBackendInterface
     // like :.wonderland-server/0.5-dev/run/darkstar_server/run/core/data/sgs/server-work
     File jdbmFolder = new File("../../../../../metadata-module-db");
     //    logger.info("erase any old jbdm files");
-//    EADSUtils.deleteDir(jdbmFolder);
+    if(!EADSUtils.deleteDir(jdbmFolder)){
+      logger.info("failed to delete jbdm folder!");
+    } else {
+      logger.info("deleted jbdm");
+    }
     logger.info("create dir service");
     service = new DefaultDirectoryService();
 //      logger.info("Val of working diretory:" + service.getWorkingDirectory());

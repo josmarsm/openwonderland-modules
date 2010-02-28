@@ -57,7 +57,7 @@ public class MetadataComponentMO extends CellComponentMO {
     
     /** the channel component */
     @UsesCellComponentMO(ChannelComponentMO.class)
-    protected ManagedReference<ChannelComponentMO> channelRef;
+    private ManagedReference<ChannelComponentMO> channelRef;
     
 
     // @UsesCellComponentMO(SampleCellSubComponentMO.class)
@@ -232,8 +232,13 @@ public class MetadataComponentMO extends CellComponentMO {
 
       // notify components to invalidate caches
       // first argument null = sent from server
-      channelRef.getForUpdate().sendAll(null,
+
+      // notify client-side component of cache change, will pass along message
+      // to any cache listeners
+      if(channelRef != null){
+        channelRef.getForUpdate().sendAll(null,
               new MetadataModResponseMessage(ModifyCacheAction.INVALIDATE, null));
+      }
     }
 
 
@@ -255,6 +260,11 @@ public class MetadataComponentMO extends CellComponentMO {
       MetadataManager metaService = AppContext.getManager(MetadataManager.class);
       metaService.addMetadata(this.cellID, meta);
 
+      // notify client-side component of cache change, will pass along message
+      // to any cache listeners
+      channelRef.getForUpdate().sendAll(null,
+            new MetadataModResponseMessage(ModifyCacheAction.ADD, meta));
+      
     }
 
     /**
@@ -274,6 +284,11 @@ public class MetadataComponentMO extends CellComponentMO {
       // notify service
       MetadataManager metaService = AppContext.getManager(MetadataManager.class);
       metaService.removeMetadata(meta.getID());
+
+      // notify client-side component of cache change, will pass along message
+      // to any cache listeners
+      channelRef.getForUpdate().sendAll(null,
+            new MetadataModResponseMessage(ModifyCacheAction.REMOVE, meta));
     }
 
     /**
@@ -303,5 +318,10 @@ public class MetadataComponentMO extends CellComponentMO {
 //      mcss = state;
       logger.info("new # --- " + mcss.metaCount());
       metaService.addMetadata(cellID, meta);
+
+      // notify client-side component of cache change, will pass along message
+      // to any cache listeners
+      channelRef.getForUpdate().sendAll(null,
+            new MetadataModResponseMessage(ModifyCacheAction.MODIFY, meta));
     }
 }

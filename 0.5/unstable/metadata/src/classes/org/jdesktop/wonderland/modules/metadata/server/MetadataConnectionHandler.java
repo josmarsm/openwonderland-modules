@@ -105,7 +105,7 @@ class MetadataConnectionHandler implements ClientConnectionHandler, Serializable
                   (MetadataComponentServerState) compoMO.getServerState(null);
           // build cell info object
           cellInfo.add(new MetadataCellInfo(cid, state.getAllMetadata(),
-                  e.getValue(), cell.getName()));
+                  e.getValue(), cell.getName(), cell.getWorldBounds().getCenter()));
 
         }
 

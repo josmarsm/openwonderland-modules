@@ -38,6 +38,11 @@ public class MetadataConnectionResponseMessage extends ResponseMessage {
   private static Logger logger = Logger.getLogger(MetadataConnectionResponseMessage.class.getName());
   private HashMap<CellID, MetadataCellInfo> results = new HashMap<CellID, MetadataCellInfo>();
 
+  /**
+   * Constructor
+   * @param id message id for super
+   * @param res list of metadata cell info results
+   */
   public MetadataConnectionResponseMessage(MessageID id, ArrayList<MetadataCellInfo> res) {
     super(id);
     for(MetadataCellInfo i:res){

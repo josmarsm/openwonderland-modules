@@ -18,19 +18,27 @@
 
 package org.jdesktop.wonderland.modules.metadata.client.plugin;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import java.awt.BorderLayout;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
+import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataTypesTable;
+import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 
 /**
@@ -102,6 +110,7 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
     resultsTable = new javax.swing.JTable();
     resultsLabel = new javax.swing.JLabel();
     tabDisplay = new javax.swing.JPanel();
+    gotoButton = new javax.swing.JButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Metadata Search Results");
@@ -139,6 +148,14 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
     tabDisplay.setBackground(new java.awt.Color(153, 153, 153));
     tabDisplay.setLayout(new java.awt.BorderLayout());
 
+    gotoButton.setText("Goto Metadata");
+    gotoButton.setEnabled(false);
+    gotoButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        gotoButtonActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -148,8 +165,10 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addComponent(resultsLabel)
           .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(tabDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+        .addGap(8, 8, 8)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+          .addComponent(gotoButton)
+          .addComponent(tabDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -157,16 +176,43 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(tabDisplay, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addComponent(tabDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(gotoButton))
           .addGroup(layout.createSequentialGroup()
             .addComponent(resultsLabel)
             .addGap(22, 22, 22)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)))
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)))
         .addContainerGap())
     );
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
+
+  private void gotoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gotoButtonActionPerformed
+    Metadata meta = tabs.getCurrentlySelectedMetadata();
+    Vector3f loc = meta.getLocation();
+    if(loc == null){
+      // use cell location by default
+      int curRow = resultsTable.getSelectedRow();
+      ResultsTableModel mod = (ResultsTableModel) resultsTable.getModel();
+      CellID id = mod.getCellIDFromRow(curRow);
+      loc = searchResults.get(id).getCellLocation();
+    }
+    try {
+      // TODO temp
+      Quaternion q = new Quaternion().fromAngleAxis(0, Vector3f.UNIT_Y);
+      ClientContextJME.getClientMain().gotoLocation(null, loc, q);
+    } catch (IOException ex) {
+      logger.info("get location failed");
+      Logger.getLogger(MetadataSearchResultsForm.class.getName()).log(Level.SEVERE, null, ex);
+    }
+  }//GEN-LAST:event_gotoButtonActionPerformed
+
+  private JTable getCurrentTabTable() {
+    return tabs.getCurrentTable();
+  }
 
   /**
    * a search was completed, set the results to display, fetch metadata
@@ -222,6 +268,7 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton gotoButton;
   private javax.swing.JScrollPane jScrollPane1;
   private javax.swing.JLabel resultsLabel;
   private javax.swing.JTable resultsTable;
@@ -291,6 +338,14 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
       
     }
 
+    private CellID getCellIDFromRow(int curRow) {
+      if(cids.get(curRow) == null){
+        logger.info("get cid from results row: cid was null!");
+        return null;
+      }
+      return cids.get(curRow);
+    }
+
   }
 
   public void tableChanged(TableModelEvent e) {
@@ -316,7 +371,38 @@ public class MetadataSearchResultsForm extends javax.swing.JFrame implements Tab
 
     // load metadata, set which mids to highlight
     mtt.addMetadata(cellInfo.getMetadata(), cellInfo.getHits());
+    // add selection listener to enable goto button on selections
+    mtt.registerListSelectionListener(new gotoSelectionListener());
+    
     metaTablesCache.put(cid, mtt);
+  }
+
+  /**
+   * listens for selections of a row in the results panel
+   * when a cell is selected, display its MetadataTypesTable
+   */
+  class gotoSelectionListener implements ListSelectionListener {
+    public void valueChanged(ListSelectionEvent e) {
+      boolean valid = false;
+      JTable tab = getCurrentTabTable();
+      int selectedIdx = tab.getSelectedRow();
+      if (!e.getValueIsAdjusting() && selectedIdx >= 0) {
+          valid = true;
+      }
+      if(!valid){
+        logger.info("[SEARCH RESULTS] selection in progress!");
+        return;
+      }
+      // cell ID from resultsTable
+      // CellID cid = (CellID) resultsTable.getValueAt(selectedIdx, 0);
+      // logger.info("[SEARCH RESULTS] selected new result: " + selectedIdx +
+      //        " which is cid: " + cid);
+
+      // enable goto button
+      gotoButton.setEnabled(true);
+    }
+
+
   }
 
   /**

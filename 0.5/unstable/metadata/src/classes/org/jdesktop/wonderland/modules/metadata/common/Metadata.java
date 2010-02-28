@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.metadata.common;
 
+import com.jme.math.Vector3f;
 import java.util.Map;
 import java.util.Set;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
@@ -143,4 +144,12 @@ public interface Metadata {
       */
      @Override
      public boolean equals(Object o);
+
+     /**
+      * The in-world location associated with this metadata. The default implementation
+      * returns null, which will cause the search's goto button to use the parent
+      * cell's location.
+      * @return location
+      */
+     public Vector3f getLocation();
 }
