@@ -37,6 +37,11 @@ public class MetadataModResponseMessage extends CellMessage{
     public ModifyCacheAction action;
     public Metadata metadata;
 
+    /**
+     * Constructor
+     * @param act type of action that changed cache
+     * @param meta relevant metadata, in its latest version
+     */
     public MetadataModResponseMessage(ModifyCacheAction act, Metadata meta){
       logger.info("[MOD RESPONSE] creating message!!!");
         action = act;

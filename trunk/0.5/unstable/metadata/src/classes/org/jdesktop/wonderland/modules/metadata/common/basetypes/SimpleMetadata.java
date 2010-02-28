@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.metadata.common.basetypes;
 
+import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataValue;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataContextMenuItem;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
@@ -62,6 +63,11 @@ public class SimpleMetadata extends BaseMetadata{
   // simple getter/setter for text
   public void setText(String s){
     put(TEXT_ATTR, new MetadataValue(s));
+  }
+
+  @Override
+  public Vector3f getLocation() {
+    return null;
   }
 
 //  @Override

@@ -301,6 +301,17 @@ public class MetadataTypesTable extends JTabbedPane {
   }
 
   /**
+   * Get the piece of metadata currently selected in the current table
+   * @return the selected metadata
+   */
+  public Metadata getCurrentlySelectedMetadata() {
+    JTable tab = getCurrentTable();
+    int curRow = tab.getSelectedRow();
+    MetadataTableModel mod = (MetadataTableModel) tab.getModel();
+    return mod.getMetadataFromRow(curRow);
+  }
+
+  /**
    * Returns the list of Metadata from the tab at index idx.
    * @param idx
    */

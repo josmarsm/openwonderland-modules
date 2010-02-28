@@ -29,6 +29,7 @@ package org.jdesktop.wonderland.modules.metadata.common.messages;
  * @author mabonner
  */
 
+import com.jme.math.Vector3f;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Set;
@@ -46,14 +47,16 @@ public class MetadataCellInfo implements Serializable{
   private final ArrayList<Metadata> metadata;
   private final Set<MetadataID> hits;
   private final String name;
+  private Vector3f cellLocation;
 
 
-  public MetadataCellInfo(CellID c, ArrayList<Metadata> m, Set<MetadataID> h, String n){
+  public MetadataCellInfo(CellID c, ArrayList<Metadata> m, Set<MetadataID> h, String n, Vector3f loc){
     // TODO store position as well
     cid = c;
     metadata = m;
     hits = h;
     name = n;
+    cellLocation = loc;
   }
 
   public CellID getCellID(){
@@ -72,4 +75,7 @@ public class MetadataCellInfo implements Serializable{
     return name;
   }
 
+  public Vector3f getCellLocation() {
+    return cellLocation;
+  }
 }

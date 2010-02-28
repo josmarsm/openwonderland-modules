@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.metadata.common.basetypes;
 
+import com.jme.math.Vector3f;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -222,6 +223,10 @@ public class BaseMetadata implements Serializable, Metadata {
 
   public String getModified(){
     return attributes.get(MODIFIED_ATTR).getVal();
+  }
+
+  public Vector3f getLocation() {
+    return null;
   }
 
 }
