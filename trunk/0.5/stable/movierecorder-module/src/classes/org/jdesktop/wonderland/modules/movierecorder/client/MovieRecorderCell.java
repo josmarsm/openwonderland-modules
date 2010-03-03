@@ -91,7 +91,7 @@ public class MovieRecorderCell extends Cell {
 
     /** the message handler, or null if no message handler is registered */
     private MovieRecorderCellMessageReceiver receiver = null;
-    private DefaultButtonModel videoButtonModel, stillButtonModel;
+    private DefaultButtonModel videoButtonModel, stillButtonModel, powerButtonModel;
     private String videoRecordingName;
     
     
@@ -108,6 +108,8 @@ public class MovieRecorderCell extends Cell {
         stillButtonModel.setSelected(false);
         stillButtonModel.setEnabled(true);
         stillButtonModel.addItemListener(new StillButtonChangeListener());
+        powerButtonModel = new DefaultButtonModel();
+        powerButtonModel.setSelected(true);
     }
 
     @Override
@@ -117,10 +119,10 @@ public class MovieRecorderCell extends Cell {
             if (ui == null) {
                 initUI();
                 renderer.setRemoteRecording(remoteRecording);
-                renderer.setCameraEnabled(true);
+                //renderer.setViewfinderEnabled(true);
             }
             if (menuFactory == null) {
-                final ContextMenuActionListener l = new ContextMenuActionListener() {
+                final ContextMenuActionListener listener = new ContextMenuActionListener() {
 
                     public void actionPerformed(ContextMenuItemEvent event) {
                         cellLogger.info("setting ui to be visible");
@@ -131,7 +133,7 @@ public class MovieRecorderCell extends Cell {
 
                     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                         return new ContextMenuItem[]{
-                                    new SimpleContextMenuItem(bundle.getString("OPEN_HUD_CONTROL_PANEL"), l)
+                                    new SimpleContextMenuItem(bundle.getString("OPEN_HUD_CONTROL_PANEL"), listener)
                                 };
                     }
                 };
@@ -159,7 +161,7 @@ public class MovieRecorderCell extends Cell {
             ui = null;
             //disable the camera
             if (renderer != null) {
-                renderer.setCameraEnabled(false);
+                renderer.setViewfinderEnabled(false);
             }
         }
     
@@ -308,6 +310,10 @@ public class MovieRecorderCell extends Cell {
 
     DefaultButtonModel getStillButtonModel() {
         return stillButtonModel;
+    }
+
+    DefaultButtonModel getPowerButtonModel() {
+        return powerButtonModel;
     }
 
     @Override
