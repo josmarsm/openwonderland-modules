@@ -1,8 +1,7 @@
-
 /**
  * Project Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -20,19 +19,24 @@ package org.jdesktop.wonderland.modules.movierecorder.client;
 
 import java.awt.Color;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 
 /**
  * Control panel for movie recorder. Provides buttons to start & stop recording,
@@ -58,11 +62,10 @@ public class MovieControlPanel extends javax.swing.JPanel {
         picturesDirectoryField.setText(getDefaultStillCaptureDirectory());
         previewPanel.setLayout(new GridBagLayout());
         previewPanel.add(recorderCell.getCaptureComponent());
-//        if (recorderCell.isRemoteRecording()) {
-//            disableAllButtons();
-//        }
         recorderCell.getVideoButtonModel().addItemListener(
                 new VideoButtonListener());
+        powerButton.setSelected(recorderCell.getPowerButtonModel().isSelected());
+        recorderCell.getPowerButtonModel().addItemListener(new PowerButtonListener());
     }
 
     /**
@@ -90,47 +93,45 @@ public class MovieControlPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        controlPanel = new javax.swing.JPanel();
-        recorderStatusLabel = new javax.swing.JLabel();
-        recordButton = new javax.swing.JButton();
-        stopButton = new javax.swing.JButton();
-        movieDirectoryField = new javax.swing.JTextField();
-        movieDirectoryLabel = new javax.swing.JLabel();
-        moviePathBrowseButton = new javax.swing.JButton();
+        previewPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
         picturesLabelDirectory = new javax.swing.JLabel();
         picturesDirectoryField = new javax.swing.JTextField();
+        movieDirectoryLabel = new javax.swing.JLabel();
+        movieDirectoryField = new javax.swing.JTextField();
         picturesPathBrowseButton = new javax.swing.JButton();
+        moviePathBrowseButton = new javax.swing.JButton();
+        stopButton = new javax.swing.JButton();
         snapshotButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
-        previewPanel = new javax.swing.JPanel();
+        recordButton = new javax.swing.JButton();
+        recorderStatusLabel = new javax.swing.JLabel();
+        powerButton = new javax.swing.JToggleButton();
 
-        setLayout(new java.awt.BorderLayout());
+        previewPanel.setMaximumSize(new java.awt.Dimension(640, 360));
+        previewPanel.setMinimumSize(new java.awt.Dimension(640, 360));
+        previewPanel.setPreferredSize(new java.awt.Dimension(640, 360));
+        previewPanel.setLayout(new java.awt.GridBagLayout());
 
-        recorderStatusLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        recorderStatusLabel.setText(bundle.getString("OFFLINE")); // NOI18N
-        recorderStatusLabel.setToolTipText(bundle.getString("RECORDER_STATUS")); // NOI18N
+        jPanel1.setFocusable(false);
 
-        recordButton.setText(bundle.getString("RECORD")); // NOI18N
-        recordButton.setToolTipText(bundle.getString("CLICK_TO_START_RECORDING_THE_WORLD")); // NOI18N
-        recordButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                recordButtonActionPerformed(evt);
-            }
-        });
+        picturesLabelDirectory.setText(bundle.getString("PICTURES_DIRECTORY:")); // NOI18N
 
-        stopButton.setText(bundle.getString("STOP")); // NOI18N
-        stopButton.setToolTipText(bundle.getString("CLICK_TO_STOP_RECORDING_AND_CREATE_A_MOVIE")); // NOI18N
-        stopButton.setEnabled(false);
-        stopButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stopButtonActionPerformed(evt);
-            }
-        });
+        picturesDirectoryField.setEditable(false);
+        picturesDirectoryField.setToolTipText(bundle.getString("DIRECTORY_FOR_SAVING_THE_PICTURES")); // NOI18N
+
+        movieDirectoryLabel.setText(bundle.getString("MOVIE_DIRECTORY:")); // NOI18N
 
         movieDirectoryField.setEditable(false);
         movieDirectoryField.setToolTipText(bundle.getString("DIRECTORY_FOR_SAVING_THE_MOVIE")); // NOI18N
 
-        movieDirectoryLabel.setText(bundle.getString("MOVIE_DIRECTORY:")); // NOI18N
+        picturesPathBrowseButton.setText(bundle.getString("SELECT...")); // NOI18N
+        picturesPathBrowseButton.setToolTipText(bundle.getString("SELECT_DIRECTORY_FOR_PICTURES")); // NOI18N
+        picturesPathBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                picturesPathBrowseButtonActionPerformed(evt);
+            }
+        });
 
         moviePathBrowseButton.setText(bundle.getString("SELECT...")); // NOI18N
         moviePathBrowseButton.setToolTipText(bundle.getString("SELECT_DIRECTORY_FOR_MOVIES")); // NOI18N
@@ -140,16 +141,46 @@ public class MovieControlPanel extends javax.swing.JPanel {
             }
         });
 
-        picturesLabelDirectory.setText(bundle.getString("PICTURES_DIRECTORY:")); // NOI18N
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(movieDirectoryLabel)
+                    .add(picturesLabelDirectory))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(movieDirectoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                    .add(picturesDirectoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(moviePathBrowseButton, 0, 0, Short.MAX_VALUE)
+                    .add(picturesPathBrowseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(picturesLabelDirectory)
+                    .add(picturesDirectoryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(picturesPathBrowseButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(movieDirectoryLabel)
+                    .add(movieDirectoryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(moviePathBrowseButton)))
+        );
 
-        picturesDirectoryField.setEditable(false);
-        picturesDirectoryField.setToolTipText(bundle.getString("DIRECTORY_FOR_SAVING_THE_PICTURES")); // NOI18N
-
-        picturesPathBrowseButton.setText(bundle.getString("SELECT...")); // NOI18N
-        picturesPathBrowseButton.setToolTipText(bundle.getString("SELECT_DIRECTORY_FOR_PICTURES")); // NOI18N
-        picturesPathBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+        stopButton.setText(bundle.getString("STOP")); // NOI18N
+        stopButton.setToolTipText(bundle.getString("CLICK_TO_STOP_RECORDING_AND_CREATE_A_MOVIE")); // NOI18N
+        stopButton.setEnabled(false);
+        stopButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                picturesPathBrowseButtonActionPerformed(evt);
+                stopButtonActionPerformed(evt);
             }
         });
 
@@ -163,98 +194,107 @@ public class MovieControlPanel extends javax.swing.JPanel {
 
         jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
 
-        org.jdesktop.layout.GroupLayout controlPanelLayout = new org.jdesktop.layout.GroupLayout(controlPanel);
-        controlPanel.setLayout(controlPanelLayout);
-        controlPanelLayout.setHorizontalGroup(
-            controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(controlPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(controlPanelLayout.createSequentialGroup()
-                        .add(picturesLabelDirectory)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(picturesDirectoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(picturesPathBrowseButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, controlPanelLayout.createSequentialGroup()
-                        .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, controlPanelLayout.createSequentialGroup()
-                                .add(recordButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(stopButton)
-                                .add(13, 13, 13)
-                                .add(recorderStatusLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 65, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 88, Short.MAX_VALUE)
-                                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(controlPanelLayout.createSequentialGroup()
-                                .add(movieDirectoryLabel)
-                                .add(18, 18, 18)
-                                .add(movieDirectoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, moviePathBrowseButton)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, snapshotButton))))
-                .addContainerGap())
+        recordButton.setText(bundle.getString("RECORD")); // NOI18N
+        recordButton.setToolTipText(bundle.getString("CLICK_TO_START_RECORDING_THE_WORLD")); // NOI18N
+        recordButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                recordButtonActionPerformed(evt);
+            }
+        });
+
+        recorderStatusLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        recorderStatusLabel.setText(bundle.getString("OFFLINE")); // NOI18N
+        recorderStatusLabel.setToolTipText(bundle.getString("RECORDER_STATUS")); // NOI18N
+
+        powerButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/movierecorder/client/resources/IEC5009_Standby_Symbol.png"))); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/movierecorder/client/resources/Bundle"); // NOI18N
+        powerButton.setToolTipText(bundle.getString("MovieControlPanel.powerButton.toolTipText")); // NOI18N
+        powerButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                powerButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(layout.createSequentialGroup()
+                                .add(6, 6, 6)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(layout.createSequentialGroup()
+                                        .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(18, 18, 18)
+                                        .add(powerButton))
+                                    .add(layout.createSequentialGroup()
+                                        .add(recordButton)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                        .add(stopButton)
+                                        .add(18, 18, 18)
+                                        .add(recorderStatusLabel)
+                                        .add(112, 112, 112)
+                                        .add(snapshotButton)))))))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        controlPanelLayout.setVerticalGroup(
-            controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(controlPanelLayout.createSequentialGroup()
-                .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(picturesLabelDirectory)
-                    .add(picturesDirectoryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(picturesPathBrowseButton))
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(movieDirectoryLabel)
-                    .add(movieDirectoryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(moviePathBrowseButton))
+                .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(controlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(recordButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(stopButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(recorderStatusLabel)
-                        .add(snapshotButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(powerButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(recordButton)
+                        .add(stopButton)
+                        .add(recorderStatusLabel))
+                    .add(snapshotButton))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        add(controlPanel, java.awt.BorderLayout.PAGE_END);
-
-        org.jdesktop.layout.GroupLayout previewPanelLayout = new org.jdesktop.layout.GroupLayout(previewPanel);
-        previewPanel.setLayout(previewPanelLayout);
-        previewPanelLayout.setHorizontalGroup(
-            previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 434, Short.MAX_VALUE)
-        );
-        previewPanelLayout.setVerticalGroup(
-            previewPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 364, Short.MAX_VALUE)
-        );
-
-        add(previewPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void recordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recordButtonActionPerformed
+        if (!recorderCell.getPowerButtonModel().isSelected()) {
+            //If the power isn't on, you can't record
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    Toolkit.getDefaultToolkit().beep();
+                    JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("TURN_ON_THE_POWER_BEFORE_RECORDING"));
+                }
+            });
+            
+            return;
+        }
+        //Else
         recorderCell.getVideoButtonModel().setSelected(true);
         //Rest of the action takes place in the videoButtonModel listeners
-        //See this class's inner class VideoButonListener for display updates
-        //See MovieRecorderCell's inner class VideoButtonListener for "model" updates    
+        //See MovieRecorderCellRenderer's inner class VideoButtonListener for "renderer" updates
+        //See this class's inner class VideoButtonListener for display updates
+        //See MovieRecorderCell's inner class VideoButtonChangeListener for "model" updates
     }//GEN-LAST:event_recordButtonActionPerformed
 
     private void disableLocalButtons() {
         enableLocalButtons(false);
     }
 
-    private void disableAllButtons() {
-        enableAllButtons(false);
-    }
-
     private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stopButtonActionPerformed
+        //No need to guard this against the power not being on
         recorderCell.getVideoButtonModel().setSelected(false);
         //Rest of the action takes place in the videoButtonModel listeners
         //See this class's inner class VideoButonListener for display updates
-        //See MovieRecorderCell's inner class VideoButtonListener for "model" updates       
+        //See MovieRecorderCell's inner class VideoButtonChangeListener for "model" updates
 }//GEN-LAST:event_stopButtonActionPerformed
 
     void enableLocalButtons() {
@@ -391,6 +431,10 @@ public class MovieControlPanel extends javax.swing.JPanel {
         });
     }
 
+    private JFrame getParentFrame() {
+        return JmeClientMain.getFrame().getFrame();
+    }
+
     private void moviePathBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moviePathBrowseButtonActionPerformed
         JFileChooser outputPathFileChooser = new JFileChooser();
 
@@ -400,7 +444,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
                 JFileChooser.DIRECTORIES_ONLY);
         outputPathFileChooser.setAcceptAllFileFilterUsed(false);
 
-        int outputPath = outputPathFileChooser.showOpenDialog(this);
+        int outputPath = outputPathFileChooser.showOpenDialog(getParentFrame());
 
         if (outputPath == JFileChooser.APPROVE_OPTION) {
             movieDirectoryField.setText(
@@ -417,7 +461,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
                 JFileChooser.DIRECTORIES_ONLY);
         outputPathFileChooser.setAcceptAllFileFilterUsed(false);
 
-        int outputPath = outputPathFileChooser.showOpenDialog(this);
+        int outputPath = outputPathFileChooser.showOpenDialog(getParentFrame());
 
         if (outputPath == JFileChooser.APPROVE_OPTION) {
             picturesDirectoryField.setText(
@@ -426,17 +470,51 @@ public class MovieControlPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_picturesPathBrowseButtonActionPerformed
 
     private void snapshotButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_snapshotButtonActionPerformed
-        DefaultButtonModel stillButtonModel =
-                recorderCell.getStillButtonModel();
+        if (!recorderCell.getPowerButtonModel().isSelected()) {
+            //If the power isn't on, you can't take a snapshot
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    Toolkit.getDefaultToolkit().beep();
+                    JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("TURN_ON_THE_POWER_BEFORE_TAKING_A_SNAPSHOT"));
+                }
+            });
+            
+            return;
+        }
+        DefaultButtonModel stillButtonModel = recorderCell.getStillButtonModel();
         //simulate a press
         stillButtonModel.setPressed(true);
         stillButtonModel.setSelected(true);
         //simulate a release
         stillButtonModel.setPressed(false);
         stillButtonModel.setSelected(false);
+        //Rest of the action takes place in the stillButtonModel listeners
+        //See MovieRecorderCellRederer's inner class StillButtonListener for "renderer" updates
+        //See MovieRecorderCell's inner class StillButtonChangeListener for "model" updates
 }//GEN-LAST:event_snapshotButtonActionPerformed
+
+    private void powerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
+        if (recorderCell.isLocalRecording()) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    Toolkit.getDefaultToolkit().beep();
+                    JOptionPane.showMessageDialog(getParentFrame(), bundle.getString("CANNOT_TURN_OFF_CAMERA_WHILST_RECORDING"));
+                }
+            });
+
+        } else {
+            boolean power = recorderCell.getPowerButtonModel().isSelected();
+            recorderCell.getPowerButtonModel().setSelected(!power);
+            //Rest of the action takes place in the powerButtonModel listeners
+            //See this class's inner class PowerButonListener for display updates
+            //See MovieRecorderCellRederer's inner class PowerButtonListener for "renderer" updates
+        }
+    }//GEN-LAST:event_powerButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel controlPanel;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField movieDirectoryField;
     private javax.swing.JLabel movieDirectoryLabel;
@@ -444,6 +522,7 @@ public class MovieControlPanel extends javax.swing.JPanel {
     private javax.swing.JTextField picturesDirectoryField;
     private javax.swing.JLabel picturesLabelDirectory;
     private javax.swing.JButton picturesPathBrowseButton;
+    private javax.swing.JToggleButton powerButton;
     private javax.swing.JPanel previewPanel;
     private javax.swing.JButton recordButton;
     private javax.swing.JLabel recorderStatusLabel;
@@ -476,10 +555,32 @@ public class MovieControlPanel extends javax.swing.JPanel {
                     }
                 });
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Cannot update state of UI", ex);
                 throw new RuntimeException("Cannot update state of UI");
             }
+        }
+    }
 
+    class PowerButtonListener implements ItemListener {
+
+        public void itemStateChanged(final ItemEvent event) {
+            //update the control panel
+            //logger.info("event: " + event);
+            try {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        if (event.getStateChange() == ItemEvent.SELECTED) {
+                            powerButton.setSelected(true);
+                        } else {
+                            powerButton.setSelected(false);
+                        }
+                    }
+                });
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, "Cannot update state of UI", ex);
+                throw new RuntimeException("Cannot update state of UI");
+            }
         }
     }
 }
