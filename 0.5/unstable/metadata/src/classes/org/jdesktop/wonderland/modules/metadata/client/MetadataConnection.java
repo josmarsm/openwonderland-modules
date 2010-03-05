@@ -25,9 +25,11 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataConnectionType;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataModificationListener;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionMessage;
+import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionModMessage;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionResponseMessage;
 
 /**
@@ -42,12 +44,24 @@ public class MetadataConnection extends BaseConnection{
   private static MetadataConnection ref;
   private static final Object lock = new Object();
 
+  /**
+   * Handle a message from the server. Currnetly, this will only be a
+   * MetadataConnModMessage, as the result of previously registered mod listeners
+   * from this client firing.
+   * @param message
+   */
   @Override
   public void handleMessage(Message message) {
     logger.info("[META CONN] handle message");
-    // need to give results to some listener here..
-    // per cellcacheconnection, message needs to store pointer to what should be notified?
-    // or things attach as listeners to connection..
+    MetadataConnectionModMessage msg = (MetadataConnectionModMessage) message;
+    for(MetadataModificationListener l : msg.getListenerHits()){
+      logger.info("listener hit!");
+      // note: this fires using the metadata type, not the actual changed metadata
+      // (as currently happens on the server).
+      // this could be changed by adding the actual metadata pieces to the MetadataConnectionModMessage
+      logger.info("cid " + l.getCellID() + " meta type: " + l.getMetadataFilter());
+      l.fireAlert(l.getCellID(), l.getMetadataFilter());
+    }
   }
 
   public ConnectionType getConnectionType() {
@@ -82,6 +96,18 @@ public class MetadataConnection extends BaseConnection{
       logger.severe("[META CONN] search interrupted - disconnected");
     }
     return res.getResults();
+  }
+
+  public void addMetadataModificationListener(MetadataModificationListener l) {
+    MetadataConnectionMessage msg = new MetadataConnectionMessage(l,
+            MetadataConnectionMessage.Action.ADD_MOD_LISTENER);
+    send(msg);
+  }
+
+  public void removeMetadataModificationListener(MetadataModificationListener l) {
+    MetadataConnectionMessage msg = new MetadataConnectionMessage(l,
+            MetadataConnectionMessage.Action.REMOVE_MOD_LISTENER);
+    send(msg);
   }
 
 }

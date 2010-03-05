@@ -283,7 +283,7 @@ public class MetadataComponentMO extends CellComponentMO {
 
       // notify service
       MetadataManager metaService = AppContext.getManager(MetadataManager.class);
-      metaService.removeMetadata(meta.getID());
+      metaService.removeMetadata(this.cellID, meta.getID(), meta);
 
       // notify client-side component of cache change, will pass along message
       // to any cache listeners
@@ -310,14 +310,10 @@ public class MetadataComponentMO extends CellComponentMO {
 //      MetadataComponentServerState state = (MetadataComponentServerState) getServerState(null);
       MetadataManager metaService = AppContext.getManager(MetadataManager.class);
       logger.info("current # of metadata in server state --- " + mcss.metaCount());
-      mcss.removeMetadata(meta.getID());
-      metaService.removeMetadata(meta.getID());
-
+      mcss.removeMetadata(meta);
       // and add the new
       mcss.addMetadata(meta);
-//      mcss = state;
-      logger.info("new # --- " + mcss.metaCount());
-      metaService.addMetadata(cellID, meta);
+      metaService.modifyMetadata(cellID, meta.getID(), meta);
 
       // notify client-side component of cache change, will pass along message
       // to any cache listeners

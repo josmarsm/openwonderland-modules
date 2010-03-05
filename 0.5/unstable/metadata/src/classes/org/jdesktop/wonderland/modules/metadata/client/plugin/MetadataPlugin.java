@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataClientUtils;
 import org.jdesktop.wonderland.modules.metadata.client.MetadataConnection;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataModificationListener;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 
@@ -115,6 +116,8 @@ public class MetadataPlugin extends BaseClientPlugin
       };
       loginInfo.addLifecycleListener(sessionListener);
 
+      MetadataClientUtils.setPluginRef(this);
+
       super.initialize(loginInfo);
     }
 
@@ -159,6 +162,14 @@ public class MetadataPlugin extends BaseClientPlugin
         // enable menu item
         searchMI.setEnabled(true);
     }
+
+  public void addMetadataModificationListener(MetadataModificationListener l) {
+    MetadataConnection.getInstance().addMetadataModificationListener(l);
+  }
+
+  public void removeMetadataModificationListener(MetadataModificationListener l) {
+    MetadataConnection.getInstance().removeMetadataModificationListener(l);
+  }
 
     // context-menu level functionality begins here in palette plugin..
     // what to add besides tagging?

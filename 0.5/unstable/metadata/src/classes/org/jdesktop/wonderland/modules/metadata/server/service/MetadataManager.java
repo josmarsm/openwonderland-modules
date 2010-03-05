@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
+import org.jdesktop.wonderland.modules.metadata.common.MetadataModificationListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * Interface for handling metadata backend storage
@@ -46,14 +48,27 @@ public interface MetadataManager {
    */
   public void addCell(CellID cid, CellID parent);
   
-  /**
-   * adds the passed metadata object to the cell with cellID cid.
-   * logs errors if the cell does not exist or the
-   * metadata type has not been registered.
-   * @param cid id of cell to add metadata to
-   * @param metadata metadata object to add
-   */
+/**
+ * adds the passed metadata object to the cell with cellID cid.
+ * logs errors if the cell does not exist or the
+ * metadata type has not been registered. Calls
+ * metadataModification to alert listeners of change.
+ * @param cid id of cell to add metadata to
+ * @param metadata metadata object to add
+ */
   void addMetadata(CellID cid, Metadata metadata);
+  
+  
+  /**
+   * changes metadata with metadataID mid to match passed metadata object.
+   * logs errors if the cell does not exist or the
+   * metadata type has not been registered. Calls
+   * metadataModification to alert listeners of change.
+   * @param mid id of metadata to be altered
+   * @param cid id of cell to add metadata to
+   * @param metadata new metadata object
+   */
+  void modifyMetadata(CellID cid, MetadataID mid, Metadata metadata);
 
 
   /**
@@ -64,10 +79,13 @@ public interface MetadataManager {
   public void eraseCell(CellID cid);
 
   /**
-   * Delete the specified metadata object
+   * Delete the specified metadata object. Calls
+   * metadataModification to alert listeners of change.
    * @param mid MetadataID designating the metadata to remove
+   * @param cid id of cell to remove metadata from
+   * @param metadata new metadata object
    */
-  public void removeMetadata(MetadataID mid);
+  public void removeMetadata(CellID cid, MetadataID mid, Metadata meta);
 
   /**
    * Remove all metadata from a cell
@@ -75,6 +93,19 @@ public interface MetadataManager {
    * @param cid id of cell to remove metadata from
    */
   public void clearCellMetadata(CellID cid);
+
+  /**
+   * Add a listener. Listener will be notified when metadata is added, removed
+   * or modified.
+   * @param l listener to add
+   */
+    public void addMetadataModificationListener(MetadataModificationListener l);
+
+    /**
+     * Remove a listener.
+     * @param l listener to remove
+     */
+    public void removeMetadataModificationListener(MetadataModificationListener l);
 
   /**
    * Take any action necessary to register this metadatatype as an option.
@@ -118,4 +149,16 @@ public interface MetadataManager {
    * @param metadata list of metadata to add to cell
    */
   public void setCellMetadata(CellID cid, Collection<Metadata> metadata);
+
+  /**
+   * used to add a client-side metamod listener
+   * @param modListener
+   */
+  public void addClientMetadataModificationListener(MetadataModificationListener modListener, WonderlandClientID wlCid);
+
+  /**
+   * used to remove a client-side metamod listener
+   * @param modListener
+   */
+  public void removeClientMetadataModificationListener(MetadataModificationListener modListener, WonderlandClientID wlCid);
 }
