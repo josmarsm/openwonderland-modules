@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
+import org.jdesktop.wonderland.modules.metadata.common.MetadataModificationListener;
 import com.sun.sgs.app.ManagedObject;
 import org.jdesktop.wonderland.modules.metadata.server.service.eads.EmbeddedADS;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
@@ -36,11 +37,14 @@ import com.sun.sgs.service.TransactionProxy;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -53,9 +57,16 @@ import org.apache.directory.server.core.DirectoryService;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataConnectionType;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
+import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionModMessage;
+import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.auth.WonderlandServerIdentity;
+import org.jdesktop.wonderland.server.comms.CommsManager;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+
+import org.jdesktop.wonderland.modules.metadata.server.MetadataConnectionHandler;
 
 
 
@@ -109,6 +120,116 @@ public class MetadataService extends AbstractService{
 
     /** flag for whether or not backend needs to be reconstructed */
     private boolean rebuildDB = true;
+
+    private ArrayList<MetadataModificationListener> modificationListeners
+            = new ArrayList<MetadataModificationListener>();
+
+    /** maps listeners to owning clients (in case of duplicate listeners) */
+    private HashMap<MetadataModificationListener, ArrayList<WonderlandClientID>> clientModificationListeners
+        = new HashMap<MetadataModificationListener, ArrayList<WonderlandClientID>>();
+
+
+    /**
+     * Alerts all matching listeners of change to metadata
+     * @param cid cell id of modified cell
+     * @param metadata the final state of the added/removed/modified metadata
+     */
+    private void metadataModification(CellID cid, Metadata metadata) {
+      logger.log(Level.INFO, "metadata modification!");
+      for(MetadataModificationListener l : modificationListeners){
+        if(l.match(cid, metadata)){
+          logger.log(Level.INFO, "server-side alert");
+          l.fireAlert(cid, metadata);
+        }
+      }
+
+      // collect all hit listeners for each client, we'll send just one message
+      // to each client containing all of that client's hits
+      HashMap<WonderlandClientID, ArrayList<MetadataModificationListener>> clientListenerHits
+              = new HashMap<WonderlandClientID, ArrayList<MetadataModificationListener>>();
+
+      for(Entry<MetadataModificationListener, ArrayList<WonderlandClientID>> e : clientModificationListeners.entrySet()){
+        if(e.getKey().match(cid, metadata)){
+          // for every client ID that is connected to this listener..
+          for(WonderlandClientID wcid : e.getValue()){
+            // create list of hits if necessary
+            if(!clientListenerHits.containsKey(wcid)){
+              clientListenerHits.put(wcid, new ArrayList<MetadataModificationListener>());
+            }
+            // add this listener hit
+            ArrayList<MetadataModificationListener> clientHits = clientListenerHits.get(wcid);
+            clientHits.add(e.getKey());
+            clientListenerHits.put(wcid, clientHits);
+          }
+        }
+      }
+
+      CommsManager cm = WonderlandContext.getCommsManager();
+      MetadataConnectionHandler handler = (MetadataConnectionHandler) cm.getClientHandler(MetadataConnectionType.CONN_TYPE);
+
+      // send a message for each client with a hit
+      for(Entry<WonderlandClientID, ArrayList<MetadataModificationListener>> e : clientListenerHits.entrySet()){
+        handler.sendClientMessage(e.getKey(), new MetadataConnectionModMessage(e.getValue()));
+      }
+      
+    }
+
+    /**
+     * Add a listener. Listener will be notified when metadata is added, removed
+     * or modified.
+     * @param l listener to add
+     */
+    public void addMetadataModificationListener(MetadataModificationListener l){
+      modificationListeners.add(l);
+    }
+
+    /**
+     * Remove a listener.
+     * @param l listener to remove
+     */
+    public void removeMetadataModificationListener(MetadataModificationListener l){
+      modificationListeners.remove(modificationListeners.lastIndexOf(l));
+    }
+
+    /**
+     * client side listener (will result in message being sent via metadata
+     * connection, rather than direct call to fire)
+     * @param modListener
+     */
+    void addClientMetadataModificationListener(MetadataModificationListener modListener, WonderlandClientID wlCid) {
+      // if this type of listner hasn't been seen, create its list of connected clients
+      if(!clientModificationListeners.containsKey(modListener)){
+        clientModificationListeners.put(modListener, new ArrayList<WonderlandClientID>());
+      }
+
+      logger.log(Level.INFO, "adding new mod listener for client id " + wlCid);
+      // add the clientID
+      clientModificationListeners.get(modListener).add(wlCid);
+    }
+
+    /**
+     * client side listener (will result in message being sent via metadata
+     * connection, rather than direct call to fire)
+     * @param modListener
+     */
+    void removeClientMetadataModificationListener(MetadataModificationListener modListener, WonderlandClientID wlCid) {
+      if(!clientModificationListeners.containsKey(modListener)){
+        logger.log(Level.SEVERE, "trying to remove non-registered listener type for client id " + wlCid);
+        return;
+      }
+
+      ArrayList<WonderlandClientID> attachedClients = clientModificationListeners.get(modListener);
+      int idx = attachedClients.lastIndexOf(wlCid);
+      if(idx < 0){
+        // this listner type exists/is registered for some client, but not this one
+        logger.log(Level.SEVERE, "trying to remove extant but unconnected listener type for client id " + wlCid);
+        return;
+      }
+
+      // remove this client id
+      attachedClients.remove(idx);
+      clientModificationListeners.put(modListener, attachedClients);
+    }
     
 
     public MetadataService(Properties props,
@@ -333,12 +454,29 @@ public class MetadataService extends AbstractService{
     /**
      * adds the passed metadata object to the cell with cellID cid.
      * logs errors if the cell does not exist or the
-     * metadata type has not been registered.
+     * metadata type has not been registered. Calls
+     * metadataModification to alert listeners of change.
      * @param cid id of cell to add metadata to
      * @param metadata metadata object to add
      */
     void addMetadata(CellID cid, Metadata metadata){
       db.addMetadata(cid, metadata);
+      metadataModification(cid, metadata);
+    }
+    
+    /**
+     * changes metadata with metadataID mid to match passed metadata object.
+     * logs errors if the cell does not exist or the
+     * metadata type has not been registered. Calls
+     * metadataModification to alert listeners of change.
+     * @param mid id of metadata to be altered
+     * @param cid id of cell to add metadata to
+     * @param metadata new metadata object
+     */
+    void modifyMetadata(MetadataID mid, CellID cid, Metadata metadata){
+      db.removeMetadata(mid);
+      db.addMetadata(cid, metadata);
+      metadataModification(cid, metadata);
     }
 
 
@@ -352,11 +490,15 @@ public class MetadataService extends AbstractService{
     }
 
     /**
-     * Delete the specified metadata object
+     * Delete the specified metadata object. Calls
+     * metadataModification to alert listeners of change.
+     * @param cid CellID of the cell from which metadata is being removed
      * @param mid MetadataID designating the metadata to remove
+     * @param metadata the removed metadata
      */
-    public void removeMetadata(MetadataID mid){
+    public void removeMetadata(CellID cid, MetadataID mid, Metadata metadata){
       db.removeMetadata(mid);
+      metadataModification(cid, metadata);
     }
 
     /**
@@ -367,7 +509,7 @@ public class MetadataService extends AbstractService{
     public void clearCellMetadata(CellID cid){
       db.clearCellMetadata(cid);
     }
-
+    
     /**
      * Take any action necessary to register this metadatatype as an option.
      * Name collision on class name or attribute name is up to the implementation.

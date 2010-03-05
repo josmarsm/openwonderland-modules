@@ -21,7 +21,8 @@ package org.jdesktop.wonderland.modules.metadata.common;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 
 /**
- * Connection for clients to message MetadataService. Currently used for search.
+ * Connection for clients to message MetadataService. Currently used for search and adding/removing 
+ * metadataModificationListeners
  * @author mabonner
  */
 public class MetadataConnectionType extends ConnectionType {

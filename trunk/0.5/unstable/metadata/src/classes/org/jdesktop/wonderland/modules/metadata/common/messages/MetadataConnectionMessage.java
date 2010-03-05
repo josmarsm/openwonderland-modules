@@ -21,21 +21,23 @@ package org.jdesktop.wonderland.modules.metadata.common.messages;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.messages.Message;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataModificationListener;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
 
 /**
  * Message for clients to communicate with MetadataService. Currently used for
- * searching.
+ * searching and adding/removing mod listeners
  * @author mabonner
  */
 public class MetadataConnectionMessage extends Message{
   private static Logger logger = Logger.getLogger(MetadataConnectionMessage.class.getName());
 
-  public enum Action { SEARCH }
+  public enum Action { SEARCH, ADD_MOD_LISTENER, REMOVE_MOD_LISTENER }
 
   private Action action;
   private MetadataSearchFilters filters;
   private CellID cellScope = null;
+  private MetadataModificationListener listener = null;
 
   public MetadataConnectionMessage(MetadataSearchFilters f, Action a){
     filters = f;
@@ -47,6 +49,11 @@ public class MetadataConnectionMessage extends Message{
     filters = f;
     action = a;
     cellScope = cid;
+  }
+
+  public MetadataConnectionMessage(MetadataModificationListener l, Action a){
+    listener = l;
+    action = a;
   }
 
   public Action getAction(){
@@ -61,6 +68,9 @@ public class MetadataConnectionMessage extends Message{
     return cellScope;
   }
 
+  public MetadataModificationListener getModListener(){
+    return listener;
+  }
 
 
   @Override

@@ -20,13 +20,16 @@ package org.jdesktop.wonderland.modules.metadata.client;
 
 import java.util.Iterator;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
+import org.jdesktop.wonderland.modules.metadata.client.plugin.MetadataPlugin;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
+import org.jdesktop.wonderland.modules.metadata.common.MetadataModificationListener;
 import org.jdesktop.wonderland.modules.metadata.common.annotations.MetadataType;
 
 /**
  * Utility functions for the client - at the moment, this consists only of an
- * iterator through registered Metadata types.
+ * iterator through registered Metadata types and a hook to add/remove listeners..
  *
  * @author mabonner
  */
@@ -41,6 +44,8 @@ public class MetadataClientUtils {
   // in the session) set the class loader here
   private static ScannedClassLoader scl;
   private static final Object lock = new Object();
+
+  private static MetadataPlugin metaPlugin;
 
 
   public static Iterator<Metadata> getTypesIterator() {
@@ -64,6 +69,10 @@ public class MetadataClientUtils {
     return it;
   }
 
+  public static void setPluginRef(MetadataPlugin mp) {
+    metaPlugin = mp;
+  }
+
   private MetadataClientUtils(){
     // singleton
   }
@@ -80,5 +89,15 @@ public class MetadataClientUtils {
       }
       return ref;
     }
+  }
+
+  public static void addMetadataModificationListener(MetadataModificationListener l){
+    logger.info("[META CLIENT UTILS] register listener " + l);
+    metaPlugin.addMetadataModificationListener(l);
+  }
+
+  public static void removeMetadataModificationListener(MetadataModificationListener l){
+    logger.info("[META CLIENT UTILS] remove listener");
+    metaPlugin.removeMetadataModificationListener(l);
   }
 }

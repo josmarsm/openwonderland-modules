@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.metadata.server.service;
 
+import org.jdesktop.wonderland.modules.metadata.common.MetadataModificationListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.metadata.common.Metadata;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataSearchFilters;
+import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 
 
@@ -69,6 +71,9 @@ public class MetadataManagerImpl implements MetadataManager {
     this.service.addMetadata(cid, metadata);
   }
 
+  public void modifyMetadata(CellID cid, MetadataID mid, Metadata metadata) {
+    this.service.modifyMetadata(mid,cid,metadata);
+  }
 
   /**
    * Remove cell and all metadata. This should be called when a cell is deleted.
@@ -83,8 +88,8 @@ public class MetadataManagerImpl implements MetadataManager {
    * Delete the specified metadata object
    * @param mid MetadataID designating the metadata to remove
    */
-  public void removeMetadata(MetadataID mid){
-    this.service.removeMetadata(mid);
+  public void removeMetadata(CellID cid, MetadataID mid, Metadata meta){
+    this.service.removeMetadata(cid, mid, meta);
   }
 
   /**
@@ -95,6 +100,23 @@ public class MetadataManagerImpl implements MetadataManager {
   public void clearCellMetadata(CellID cid){
     this.service.clearCellMetadata(cid);
   }
+
+  /**
+   * Add a listener. Listener will be notified when metadata is added, removed
+   * or modified.
+   * @param l listener to add
+   */
+    public void addMetadataModificationListener(MetadataModificationListener l){
+      this.service.addMetadataModificationListener(l);
+    }
+
+    /**
+     * Remove a listener.
+     * @param l listener to remove
+     */
+    public void removeMetadataModificationListener(MetadataModificationListener l){
+      this.service.removeMetadataModificationListener(l);
+    }
 
   /**
    * Take any action necessary to register this metadatatype as an option.
@@ -145,5 +167,13 @@ public class MetadataManagerImpl implements MetadataManager {
    */
   public void setCellMetadata(CellID cid, Collection<Metadata> metadata){
     this.service.setCellMetadata(cid, metadata);
+  }
+
+  public void addClientMetadataModificationListener(MetadataModificationListener modListener, WonderlandClientID wlCid) {
+    this.service.addClientMetadataModificationListener(modListener, wlCid);
+  }
+
+  public void removeClientMetadataModificationListener(MetadataModificationListener modListener, WonderlandClientID wlCid) {
+    this.service.removeClientMetadataModificationListener(modListener, wlCid);
   }
 }

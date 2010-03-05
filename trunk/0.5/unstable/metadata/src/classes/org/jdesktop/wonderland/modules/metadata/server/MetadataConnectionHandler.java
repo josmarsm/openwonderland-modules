@@ -34,6 +34,7 @@ import org.jdesktop.wonderland.modules.metadata.common.MetadataConnectionType;
 import org.jdesktop.wonderland.modules.metadata.common.MetadataID;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataCellInfo;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionMessage;
+import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionModMessage;
 import org.jdesktop.wonderland.modules.metadata.common.messages.MetadataConnectionResponseMessage;
 import org.jdesktop.wonderland.modules.metadata.server.service.MetadataManager;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
@@ -47,10 +48,15 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  *
  * @author mabonner
  */
-class MetadataConnectionHandler implements ClientConnectionHandler, Serializable {
+public class MetadataConnectionHandler implements ClientConnectionHandler, Serializable {
 
   private static final Logger logger =
             Logger.getLogger(MetadataConnectionHandler.class.getName());
+            
+  /**
+  * used to send a message to a particular client
+  */
+  HashMap <WonderlandClientID, WonderlandClientSender> senders = new HashMap <WonderlandClientID, WonderlandClientSender>();
 
   public MetadataConnectionHandler() {
   }
@@ -64,7 +70,8 @@ class MetadataConnectionHandler implements ClientConnectionHandler, Serializable
   }
 
   public void clientConnected(WonderlandClientSender sender, WonderlandClientID clientID, Properties properties) {
-//    logger.info("[metaconnhandler] client connected");
+   logger.info("[metaconnhandler] client connected");
+   senders.put(clientID, sender);
   }
 
   public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, Message message) {
@@ -114,6 +121,12 @@ class MetadataConnectionHandler implements ClientConnectionHandler, Serializable
         logger.info("[MCH] results size " + results.size());
         sender.send(clientID, response);
         break;
+      case ADD_MOD_LISTENER:
+        metaService.addClientMetadataModificationListener(m.getModListener(), clientID);
+        break;
+      case REMOVE_MOD_LISTENER:
+        metaService.removeClientMetadataModificationListener(m.getModListener(), clientID);
+        break;
     }
     // appcontext.getmanager
 
@@ -121,7 +134,17 @@ class MetadataConnectionHandler implements ClientConnectionHandler, Serializable
   }
 
   public void clientDisconnected(WonderlandClientSender sender, WonderlandClientID clientID) {
-//    logger.info("[metaconnhandler] client disc");
+   logger.info("[metaconnhandler] client disc");
+   senders.remove(clientID);
+  }
+
+  public void sendClientMessage(WonderlandClientID wlcid, MetadataConnectionModMessage msg) {
+    if(!senders.containsKey(wlcid)){
+      logger.severe("trying to send a message to clientID that has not connected: cid " + wlcid);
+      return;
+    }
+
+    senders.get(wlcid).send(wlcid, msg);
   }
 
 }
