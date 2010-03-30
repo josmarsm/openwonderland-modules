@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -57,8 +75,12 @@ public class WebcamViewerCellMO extends App2DCellMO implements SharedMapListener
     private int preferredHeight;
     // whether to decorate the window with a frame
     private boolean decorated;
-    // the currently loaded media
+    // the URI of the currently connected webcam
     private String cameraURI;
+    // the username used to access the webcam
+    private String username;
+    // the password used to access the webcam
+    private String password;
     // the current state of the player (playing, paused, stopped)
     private WebcamViewerState playerState = WebcamViewerState.STOPPED;
 
@@ -87,8 +109,10 @@ public class WebcamViewerCellMO extends App2DCellMO implements SharedMapListener
             statusMap.addSharedMapListener(this);
 
             // put the current status
+            statusMap.put(WebcamViewerConstants.CAMERA_USERNAME, SharedString.valueOf(username));
+            statusMap.put(WebcamViewerConstants.CAMERA_PASSWORD, SharedString.valueOf(password));
             statusMap.put(WebcamViewerConstants.CAMERA_URI, SharedString.valueOf(cameraURI));
-            statusMap.put(WebcamViewerConstants.PLAYER_STATE, SharedString.valueOf(playerState.name()));
+            statusMap.put(WebcamViewerConstants.CAMERA_STATE, SharedString.valueOf(playerState.name()));
 
             statusMapRef = AppContext.getDataManager().createReference(statusMap);
         }
@@ -118,7 +142,10 @@ public class WebcamViewerCellMO extends App2DCellMO implements SharedMapListener
         if (state == null) {
             state = new WebcamViewerCellServerState();
         }
+        ((WebcamViewerCellServerState) state).setUsername(username);
+        ((WebcamViewerCellServerState) state).setPassword(password);
         ((WebcamViewerCellServerState) state).setCameraURI(cameraURI);
+        // TODO: set state
         ((WebcamViewerCellServerState) state).setDecorated(decorated);
         ((WebcamViewerCellServerState) state).setPreferredWidth(preferredWidth);
         ((WebcamViewerCellServerState) state).setPreferredHeight(preferredHeight);
@@ -135,6 +162,8 @@ public class WebcamViewerCellMO extends App2DCellMO implements SharedMapListener
         WebcamViewerCellServerState state = (WebcamViewerCellServerState) serverState;
 
         cameraURI = state.getCameraURI();
+        username = state.getUsername();
+        password = state.getPassword();
         preferredWidth = state.getPreferredWidth();
         preferredHeight = state.getPreferredHeight();
         decorated = state.getDecorated();
@@ -163,9 +192,14 @@ public class WebcamViewerCellMO extends App2DCellMO implements SharedMapListener
 
         if (key.equals(WebcamViewerConstants.CAMERA_URI)) {
             cameraURI = ((SharedString) newData).getValue();
-        } else if (key.equals(WebcamViewerConstants.PLAYER_STATE)) {
+        } else if (key.equals(WebcamViewerConstants.CAMERA_USERNAME)) {
+            username = ((SharedString) newData).getValue();
+        } else if (key.equals(WebcamViewerConstants.CAMERA_PASSWORD)) {
+            password = ((SharedString) newData).getValue();
+        } else if (key.equals(WebcamViewerConstants.CAMERA_STATE)) {
             String statusStr = ((SharedString) newData).getValue();
             playerState = WebcamViewerState.valueOf(statusStr);
+            logger.finest("handle player state change: " + playerState);
         }
 
         return true;

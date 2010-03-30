@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -25,7 +43,7 @@ import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.awt.EventQueue;
 import java.awt.Image;
-import java.net.URL;
+import java.net.URI;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -58,6 +76,8 @@ public class WebcamViewerWindow extends WindowSwing implements WebcamViewerToolL
     private SharedStateComponent ssc;
     private SharedMapCli statusMap;
     private String cameraURI;
+    private String username;
+    private String password;
     private CamStream camStream;
     private WebcamViewerPanel webcamViewerPanel;
     private WebcamViewerToolManager toolManager;
@@ -82,7 +102,7 @@ public class WebcamViewerWindow extends WindowSwing implements WebcamViewerToolL
     public WebcamViewerWindow(WebcamViewerCell cell, App2D app, int width, int height,
             boolean topLevel, Vector2f pixelScale)
             throws InstantiationException {
-        super(app, Type.PRIMARY, width, height, topLevel, pixelScale);
+        super(app, Type.PRIMARY, width, height, topLevel, new Vector2f(0.02f, 0.02f));
         this.cell = cell;
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcamviewer/client/resources/Bundle").getString("WEBCAM_VIEWER"));
         webcamViewerPanel = new WebcamViewerPanel(this);
@@ -150,24 +170,32 @@ public class WebcamViewerWindow extends WindowSwing implements WebcamViewerToolL
     }
 
     public void connectCamera() {
-        connectCamera(cameraURI);
+        connectCamera(cameraURI, username, password);
     }
 
     /**
      * Open connection to camera
      * @param camera the URI of the camera to open
      */
-    public void connectCamera(final String cameraURI) {
+    public void connectCamera(final String cameraURI, final String username, final String password) {
         this.cameraURI = cameraURI;
+        this.username = username;
+        this.password = password;
 
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
                 try {
-                    logger.fine("connecting webcam: " + cameraURI);
+                    ///logger.fine("connecting webcam: " + cameraURI + ", username: " + username + ", password: " + password);
                     try {
-                        camStream = new CamStream(new URL(cameraURI), "WebcamViewer", null, 0, 0, webcamViewerPanel, false);
+                        URI camURI = new URI(cameraURI);
+                        camURI = new URI(camURI.getScheme(),
+                                (username != null) ? username + ":" + password : null,
+                                camURI.getHost(), Integer.valueOf(camURI.getPort()),
+                                camURI.getPath(), camURI.getQuery(), null);
+
+                        camStream = new CamStream(camURI.toURL(), "WebcamViewer", null, 0, 0, webcamViewerPanel, false);
                         camStream.addImageChangeListener(webcamViewerPanel);
                         camStream.start();
                         if (fpsMonitor == null) {
@@ -208,14 +236,14 @@ public class WebcamViewerWindow extends WindowSwing implements WebcamViewerToolL
 
             public void run() {
                 logger.info("play");
-                connectCamera(cameraURI);
+                connectCamera(cameraURI, username, password);
             }
         });
     }
 
     /**
-     * Gets whether the media is currently playing
-     * @return true if the media is playing, false otherwise
+     * Gets whether the webcam video is currently playing
+     * @return true if the webcam is playing, false otherwise
      */
     public boolean isPlaying() {
         return ((camStream != null) && camStream.isAlive());
