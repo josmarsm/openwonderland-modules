@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -103,7 +121,9 @@ public class WebcamViewerPanel extends JPanel implements ExceptionReporter,
     public void showFPS(double fps) {
         formatter.setMaximumFractionDigits(1);
         formatter.setMinimumFractionDigits(1);
-        fpsValueLabel.setText(formatter.format(fps));
+        String fpsStr = formatter.format(fps);
+        fpsValueLabel.setText(fpsStr);
+        fpsStr = null;
     }
 
     // Cambozola ImageChangeListener method
@@ -136,12 +156,7 @@ public class WebcamViewerPanel extends JPanel implements ExceptionReporter,
         if (frame != null) {
             g2.drawImage(frame, 0, 0, this);
             g2.setColor(Color.green);
-        } else {
-            int w = getWidth();
-            int h = getHeight();
-
-            g2.setBackground(Color.black);
-            g2.fillRect(0, 0, w, h);
+            frame = null;
         }
     }
 
