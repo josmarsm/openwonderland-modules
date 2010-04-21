@@ -35,7 +35,7 @@ public class PDFViewerCellServerState extends App2DCellServerState implements Se
 
     // the URI of the PDF document
     @XmlElement(name = "documentURI")
-    public String documentURI = "https://lg3d-wonderland.dev.java.net/presentations/TrainForSucess-July2008.pdf";
+    public String documentURI = "http://wonderlandvw.files.wordpress.com/2010/04/owl-extensiblevwtoolkit.pdf";
     // the current page (default to the first page)
     @XmlElement(name = "currentPage")
     public int currentPage = 1;
