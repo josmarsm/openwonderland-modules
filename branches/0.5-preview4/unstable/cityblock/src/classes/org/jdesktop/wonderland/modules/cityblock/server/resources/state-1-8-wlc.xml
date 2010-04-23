@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>state-1 2</name>
+    <metadata/>
+    <position-component>
+        <translation>
+            <x>-5.36</x>
+            <y>75.5</y>
+            <z>-26.2</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>30.544998168945312</x>
+            <y>75.44999694824219</y>
+            <z>16.0</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+            <angle>0.0</angle>
+        </rotation>
+    </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://cityblock/state-1.kmz/state-1.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+    </model-cell-component>
+</model-cell>

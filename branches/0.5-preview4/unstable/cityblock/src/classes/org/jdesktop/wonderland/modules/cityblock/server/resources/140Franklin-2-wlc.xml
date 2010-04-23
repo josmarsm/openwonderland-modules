@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>140Franklin 2</name>
+    <metadata/>
+    <position-component>
+        <translation>
+            <x>74.700005</x>
+            <y>17.53</y>
+            <z>-20.9</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>16.024517059326172</x>
+            <y>17.5291748046875</y>
+            <z>19.594951629638672</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>7.450582E-9</x>
+            <y>-0.99999994</y>
+            <z>-7.45058E-9</z>
+            <angle>1.5707964</angle>
+        </rotation>
+    </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://cityblock/140Franklin.kmz/140Franklin.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+    </model-cell-component>
+</model-cell>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>wonderland-presentation-base-module</name>
+        </general-data>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
+            <!-- Do not use Project Properties customizer when editing this file manually. -->
+            <name>wonderland-presentation-base-module</name>
+            <properties/>
+            <folders>
+                <source-folder>
+                    <label>wonderland-grouptextchat-module</label>
+                    <location>.</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>src/classes</label>
+                    <type>java</type>
+                    <location>src/classes</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <script>nbproject/nbjdk.xml</script>
+                    <target>dist</target>
+                </action>
+                <action name="clean">
+                    <script>nbproject/nbjdk.xml</script>
+                    <target>clean</target>
+                </action>
+                <action name="rebuild">
+                    <script>nbproject/nbjdk.xml</script>
+                    <target>clean</target>
+                    <target>dist</target>
+                </action>
+            </ide-actions>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>src/classes</label>
+                        <location>src/classes</location>
+                    </source-folder>
+                    <source-file>
+                        <location>build.xml</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
+                    <action>
+                        <label>Deploy to Server</label>
+                        <target>deploy</target>
+                    </action>
+                </context-menu>
+            </view>
+            <subprojects/>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>src/classes</package-root>
+                <classpath mode="compile">../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../../../wonderland/web/utils/dist/wonderland-web-utils.jar:../../../wonderland/web/runner/dist/wonderland-runner-core.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/jme20/target/jme-audio.jar:../../../wonderland/core/ext/jme20/target/jme-awt.jar:../../../wonderland/core/ext/jme20/target/jme-collada.jar:../../../wonderland/core/ext/jme20/target/jme-editors.jar:../../../wonderland/core/ext/jme20/target/jme-effects.jar:../../../wonderland/core/ext/jme20/target/jme-font.jar:../../../wonderland/core/ext/jme20/target/jme-gamestates.jar:../../../wonderland/core/ext/jme20/target/jme-model.jar:../../../wonderland/core/ext/jme20/target/jme-scene.jar:../../../wonderland/core/ext/jme20/target/jme-swt.jar:../../../wonderland/core/ext/jme20/target/jme-terrain.jar:../../../wonderland/core/ext/jme20/target/jme-xml.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.6-r4193/lib/mina-core-1.1.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.6-r4193/lib/sgs-client.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.6-r4193/lib/slf4j-api-1.4.0.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.6-r4193/lib/slf4j-jdk14-1.4.0.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../../../wonderland/modules/tools/presence-manager/build/lib/client/presencemanager-client.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-shared-1.3.jar:../group-text-chat/build/server/group-text-chat-server.jar:../group-text-chat/build/client/group-text-chat-client.jar</classpath>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+        </java-data>
+        <preferences xmlns="http://www.netbeans.org/ns/auxiliary-configuration-preferences/1">
+            <module name="org-netbeans-modules-editor-indent">
+                <node name="text">
+                    <node name="x-java">
+                        <node name="CodeStyle">
+                            <node name="project"/>
+                        </node>
+                    </node>
+                </node>
+                <node name="CodeStyle">
+                    <node name="project"/>
+                    <property name="usedProfile" value="default"/>
+                </node>
+            </module>
+        </preferences>
+    </configuration>
+</project>

@@ -1,0 +1,281 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
+ */
+
+/*
+ * SingleEventframe.java
+ *
+ * Created on Jan 12, 2010, 6:55:56 PM
+ */
+package org.jdesktop.wonderland.modules.cmu.client.ui.events;
+
+import java.awt.GridLayout;
+import org.jdesktop.wonderland.modules.cmu.client.CMUCell;
+import org.jdesktop.wonderland.modules.cmu.common.events.EventResponsePair;
+import org.jdesktop.wonderland.modules.cmu.common.events.responses.CMUResponseFunction;
+
+/**
+ * Frame representing a single Wonderland event, along with the appropriate
+ * response.
+ * @author kevin
+ */
+public class SingleEventFrame extends javax.swing.JInternalFrame {
+
+    private final EventEditor parentFrame;
+    private EventSettingsPanel settingsPanel = null;
+
+    /** Creates new form SingleEventframe */
+    public SingleEventFrame(EventEditor parentFrame) {
+        initComponents();
+
+        this.parentFrame = parentFrame;
+        this.populateEventList();
+        this.populateResponseList();
+
+
+        this.settingsContainer.setLayout(new GridLayout());
+        this.eventTypeSelection.setSelectedIndex(0);
+    }
+
+    public CMUCell getParentCell() {
+        if (this.getParentPanel() == null) {
+            return null;
+        }
+        return this.getParentPanel().getParentCell();
+    }
+
+    public EventEditor getParentPanel() {
+        return this.parentFrame;
+    }
+
+    public EventResponsePair getEventAndResponse() {
+        if (this.settingsPanel == null) {
+            return null;
+        } else {
+            return new EventResponsePair(settingsPanel.getEvent(),
+                    ((ResponseMenuItem) responseList.getSelectedItem()).getResponse());
+        }
+    }
+
+    private void loadSettingsPanel() {
+
+        if (this.settingsPanel != null) {
+            this.settingsContainer.remove(this.settingsPanel);
+        }
+
+        if (this.eventTypeSelection.getSelectedItem() != null) {
+            this.settingsPanel = ((EventMenuItem) this.eventTypeSelection.getSelectedItem()).getEventPanel();
+            this.settingsContainer.add(this.settingsPanel);
+            //this.settingsContainer.setSize(this.settingsContainer.getPreferredSize());
+            //this.setSize(this.getPreferredSize());
+            //this.getParentPanel().pack();
+
+            // Remove title bar
+            javax.swing.plaf.InternalFrameUI inter = this.getUI();
+            ((javax.swing.plaf.basic.BasicInternalFrameUI) inter).setNorthPane(null);
+
+            this.pack();
+            this.repaint();
+        }
+    }
+
+    private void populateEventList() {
+        this.eventTypeSelection.removeAllItems();
+
+        this.eventTypeSelection.addItem(new EventMenuItem("Proximity", new ProximitySettingsPanel()));
+        this.eventTypeSelection.addItem(new EventMenuItem("Menu", new ContextSettingsPanel()));
+    }
+
+    private void populateResponseList() {
+        this.responseList.removeAllItems();
+        if (this.getParentCell() != null && this.getParentCell().getAllowedResponses() != null) {
+            for (CMUResponseFunction response : this.getParentCell().getAllowedResponses()) {
+                this.responseList.addItem(new ResponseMenuItem(response));
+            }
+        }
+    }
+
+    private class EventMenuItem {
+
+        private final String eventName;
+        private final EventSettingsPanel eventPanel;
+
+        public EventMenuItem(String eventName, EventSettingsPanel eventPanel) {
+            this.eventName = eventName;
+            this.eventPanel = eventPanel;
+        }
+
+        public String getEventName() {
+            return eventName;
+        }
+
+        public EventSettingsPanel getEventPanel() {
+            return eventPanel;
+        }
+
+        @Override
+        public String toString() {
+            return this.getEventName();
+        }
+    }
+
+    private class ResponseMenuItem {
+
+        private final CMUResponseFunction response;
+
+        public ResponseMenuItem(CMUResponseFunction response) {
+            this.response = response;
+        }
+
+        public CMUResponseFunction getResponse() {
+            return this.response;
+        }
+
+        @Override
+        public String toString() {
+            return this.response.getFunctionName();
+        }
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
+        eventTypeSelection = new javax.swing.JComboBox();
+        removeButton = new javax.swing.JButton();
+        settingsContainer = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        responseList = new javax.swing.JComboBox();
+
+        setBorder(null);
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jLabel1.setText("Event type:");
+
+        eventTypeSelection.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Placeholder" }));
+        eventTypeSelection.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                eventTypeChanged(evt);
+            }
+        });
+
+        removeButton.setText("Remove");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(eventTypeSelection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 187, Short.MAX_VALUE)
+                .addComponent(removeButton)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(eventTypeSelection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(removeButton))
+                .addContainerGap(14, Short.MAX_VALUE))
+        );
+
+        settingsContainer.setPreferredSize(new java.awt.Dimension(476, 13));
+
+        javax.swing.GroupLayout settingsContainerLayout = new javax.swing.GroupLayout(settingsContainer);
+        settingsContainer.setLayout(settingsContainerLayout);
+        settingsContainerLayout.setHorizontalGroup(
+            settingsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 470, Short.MAX_VALUE)
+        );
+        settingsContainerLayout.setVerticalGroup(
+            settingsContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 15, Short.MAX_VALUE)
+        );
+
+        jLabel2.setText("call this method:");
+
+        responseList.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Placeholder" }));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(responseList, 0, 328, Short.MAX_VALUE)
+                .addContainerGap())
+            .addComponent(settingsContainer, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 470, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(settingsContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 15, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(responseList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void eventTypeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eventTypeChanged
+        this.loadSettingsPanel();
+    }//GEN-LAST:event_eventTypeChanged
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox eventTypeSelection;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JButton removeButton;
+    private javax.swing.JComboBox responseList;
+    private javax.swing.JPanel settingsContainer;
+    // End of variables declaration//GEN-END:variables
+}
