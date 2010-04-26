@@ -13,7 +13,9 @@
         </translation>
         <bounds>
             <type>BOX</type>
-            <radius>500.0</radius>
+            <x>500.0</x>
+            <y>100.0</y>
+            <z>500.0</z>
         </bounds>
         <scale>
             <x>1.0</x>
