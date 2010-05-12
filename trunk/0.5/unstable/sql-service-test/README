@@ -1,0 +1,12 @@
+SQL Service Test Module
+-----------------------
+
+This module is a sample of how to use the SqlService to record user logins
+and logouts to an SQL database. For information on setting up the SqlService,
+see the documentation in the sql-service/ directory.
+
+This module assumes a table called "logins" in the database configured via
+the database properties file. The logins database can be created with the
+following SQL command:
+
+create table logins (userid varchar(64), type varchar(16), ts timestamp);
