@@ -1,2 +1,0 @@
-print('Hello javascript world - from script   ****  \r\n') +
-'MyClass.methodA(mystring)'
