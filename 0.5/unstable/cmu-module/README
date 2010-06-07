@@ -1,4 +1,4 @@
-s module can load scenes from CMU's educational IDE Alice into the
+This module can load scenes from CMU's educational IDE Alice into the
 virtual world.
 
 REQUIREMENTS:
