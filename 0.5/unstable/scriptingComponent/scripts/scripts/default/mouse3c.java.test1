@@ -1,0 +1,43 @@
+import	javax.script.ScriptContext;
+import  org.jdesktop.wonderland.client.cell.ScriptingComponent;
+import	java.lang.reflect.*;
+
+class mouse3 
+    {
+    private static ScriptContext myContext;
+
+    public static void main(String[] args) 
+        {
+	Method meth = null;
+
+	try
+	    {
+            System.out.println("Hello World! - args = " + args); 
+	    Object myName = myContext.getAttribute("name");
+	    System.out.println("myName = " + myName);
+	    Object myClassObject = myContext.getAttribute("MyClass");
+	    Class sc = myClassObject.getClass();
+
+	    Class partypes[] = new Class[1];
+	    String myString = new String("thsi is a test");
+
+	    partypes[0] = myString.getClass();
+	    meth = sc.getMethod("testMethod", partypes);
+	    System.out.println("meth = " + meth.toString());
+	    Object arglist[] = new Object[1];
+	    arglist[0] = myString;
+	    Object retobj = meth.invoke(myClassObject, arglist);
+	    }
+	catch(Exception e)
+	    {
+	    System.out.println("Exception");
+	    }
+
+        }
+
+    public static void setScriptContext(ScriptContext ctx)
+	{
+	myContext = ctx;
+	System.out.println("Inside setScriptContext");
+	}
+    }
