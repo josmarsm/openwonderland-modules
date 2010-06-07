@@ -21,6 +21,7 @@ import edu.cmu.cs.dennisc.scenegraph.event.ChildAddedEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.ChildRemovedEvent;
 import edu.cmu.cs.dennisc.scenegraph.event.ChildrenListener;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -30,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +58,10 @@ import org.jdesktop.wonderland.modules.cmu.player.NodeUpdateListener;
  */
 public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListener {
 
+    private static final String PUBLIC_HOSTNAME_PROP = "cmu.player.hostname";
+    private static final String MIN_PORT_PROP = "cmu.player.minPort";
+    private static final String MAX_PORT_PROP = "cmu.player.maxPort";
+
     private Scene sc = null;       // The scene to wrap.
     private final Set<ClientConnection> connections = new HashSet<ClientConnection>();
     private final Map<NodeID, ModelConverter> visuals = new HashMap<NodeID, ModelConverter>();
@@ -69,6 +75,7 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
 
         private ServerSocket socketListener = null;
         private final Object socketListenerLock = new Object();
+        private final String publicHostname;
 
         /**
          * Standard constructor.
@@ -76,11 +83,13 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
         public ConnectionHandlerThread() {
             super();
 
+            publicHostname = System.getProperty(PUBLIC_HOSTNAME_PROP);
+
             // Initialize connection listener.
             synchronized (socketListenerLock) {
                 try {
-                    socketListener = new ServerSocket();
-                    socketListener.bind(null);
+                    InetAddress addr = NetworkAddress.getPrivateLocalAddress();
+                    socketListener = createServerSocket(addr);
                 } catch (IOException ex) {
                     Logger.getLogger(SceneConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -123,6 +132,11 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
          * @return The hostname used to connect to this thread
          */
         public String getHostname() {
+            // if there is a public hostname, return that
+            if (publicHostname != null) {
+                return publicHostname;
+            }
+
             synchronized (socketListenerLock) {
                 assert socketListener != null;
                 try {
@@ -132,6 +146,57 @@ public class SceneConnectionHandler implements ChildrenListener, NodeUpdateListe
                     return null;
                 }
             }
+        }
+
+        /**
+         * Find a valid server socket with the range specified by the
+         * cmu.player.minPort and cmu.player.maxPort values. If the range
+         * is not specified, a random port will be opened.
+         * @param inetAddr the address to open a socket on
+         * @return a server socket bound to an open port with the given
+         * port range
+         * @throws IOException if no ports are available in the given range
+         */
+        private ServerSocket createServerSocket(InetAddress addr)
+                throws IOException
+        {
+            // read properties
+            String minPortStr = System.getProperty(MIN_PORT_PROP);
+            String maxPortStr = System.getProperty(MAX_PORT_PROP);
+
+            if (minPortStr == null || maxPortStr == null) {
+                // no values specified
+                return new ServerSocket(0, 0, addr);
+            }
+
+            // parse ports into a range
+            int minPort = Integer.parseInt(minPortStr);
+            int maxPort = Integer.parseInt(maxPortStr);
+
+            // Find a valid socket in the range.  We choose a random port in
+            // the range, and record the ones we hit that are bad.  This is
+            // better than just going in order for smaller numbers of connections,
+            // but might take a long time for longer collections.
+            int rangeSize = maxPort - minPort;
+            Set<Integer> tried = new TreeSet<Integer>();
+            while (tried.size() < rangeSize) {
+                // generate a random number in the given range
+                int port = minPort + (int) (Math.random() * rangeSize);
+
+                // check if we have already tried it
+                if (!tried.contains(new Integer(port))) {
+                    try {
+                        return new ServerSocket(port, 0, addr);
+                    } catch (SocketException se) {
+                        // port in use, just record it and go on
+                        tried.add(new Integer(port));
+                    }
+                }
+            }
+
+            // no ports available -- throw an exception
+            throw new IOException("No ports available in range " + minPort
+                    + " - " + maxPort + ".");
         }
     }
 
