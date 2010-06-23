@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<deployed-model>
+    <version>1</version>
+    <modelURL>wla://modulator/door1.kmz/models/door1.dae.gz</modelURL>
+    <loaderDataURL>wla://modulator/door1.kmz/door1.kmz.ldr</loaderDataURL>
+    <modelBGScale>
+        <x>1.0</x>
+        <y>1.0</y>
+        <z>1.0</z>
+    </modelBGScale>
+    <modelBGTranslation>
+        <x>0.49999997</x>
+        <y>-0.7799999</y>
+        <z>1.18</z>
+    </modelBGTranslation>
+    <modelBGRotation>
+        <x>-0.99999994</x>
+        <y>0.0</y>
+        <z>0.0</z>
+        <angle>1.5707964</angle>
+    </modelBGRotation>
+    <modelBounds>
+        <boundsType>BOX</boundsType>
+        <center_x>0.0</center_x>
+        <center_y>0.0</center_y>
+        <center_z>0.0</center_z>
+        <dimension_x>0.5</dimension_x>
+        <dimension_y>1.25</dimension_y>
+        <dimension_z>0.06999993</dimension_z>
+    </modelBounds>
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.kmzloader.client.KmzLoader</modelLoaderClassname>
+</deployed-model>
