@@ -22,13 +22,14 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.cellperformance.common.CellPerformanceComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.annotation.NoSnapshot;
 
 /**
  * Server side of cell performance component. This is just a placeholder to
  * ensure the CellPerformanceComponent is available on the client.
  * @author Jonathan Kaplan <jonathankap@gmail.com>
  */
-
+@NoSnapshot
 public class CellPerformanceComponentMO extends CellComponentMO {
 
     private static final Logger logger =
