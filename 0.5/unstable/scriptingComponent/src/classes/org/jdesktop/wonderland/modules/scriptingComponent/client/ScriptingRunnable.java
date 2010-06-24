@@ -18,6 +18,9 @@ public class ScriptingRunnable implements Runnable
     public String avatar;
     public String[] nameArray;
     public String animation;
+    public String string1;
+    public String string2;
+    public String string3;
 
     public void setNameArray(String[] NameArray)
         {
@@ -46,6 +49,13 @@ public class ScriptingRunnable implements Runnable
         z = Z;
         }
 
+    public void set3Strings(String one, String two, String three)
+        {
+        string1 = one;
+        string2 = two;
+        string3 = three;
+        }
+    
     public void setSingleInt(int A)
         {
         a = A;
