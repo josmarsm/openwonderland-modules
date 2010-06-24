@@ -626,6 +626,14 @@ public class ScriptingComponent extends CellComponent
         runny.run();
         }
 
+    public void executeAction(String Name, String one, String two, String three)
+        {
+        System.out.println("ScriptingComponent - enter executeAction - 3 String params");
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.set3Strings(one, two, three);
+        runny.run();
+        }
+
     public void executeAction(String Name, String animation, int animationNumber)
         {
         System.out.println("ScriptingComponent - enter executeAction - no parms");
@@ -1137,52 +1145,86 @@ public class ScriptingComponent extends CellComponent
     @Override
     public void setStatus(CellStatus status, boolean increasing)
         {
-//        mySleep(1000);
+        super.setStatus(status, increasing);
         switch(status)
             {
+            case DISK:
+                {
+                System.out.println("ScriptingComponent - DISK - increasing = " + increasing);
+                break;
+                }
+            case INACTIVE:
+                {
+                System.out.println("ScriptingComponent - INACTIVE - increasing = " + increasing);
+                break;
+                }
+            case VISIBLE:
+                {
+                System.out.println("ScriptingComponent - VISIBLE - increasing = " + increasing);
+                break;
+                }
             case RENDERING:
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - increasing = " + increasing);
 /* Get local node */
-                if(!firstEntry)
+                if(increasing)
                     {
-                    WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-                    userName = session.getUserID().getUsername();
-
-                    if(cellOwner.length() == 0)
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - increasing ");
+                    if(!firstEntry)
                         {
-                        cellOwner = userName;
-                        ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), cellOwner, useGlobalScripts, CHANGE_USER_MESSAGE);
-                        channelComp.send(msg);
-                        }
+                        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+                        userName = session.getUserID().getUsername();
 
-                    if(cellType.equals("NPC"))
-                        {
-                        System.out.println("In ScriptingComponent - setStatus RENDERING - NPC found");
-                        }
-                    else
-                        {
-                        ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-
-                        Entity mye = ret.getEntity();
-                        RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
-                        localNode = rc.getSceneRoot();
-                        if(myListener == null)
+                        if(cellOwner.length() == 0)
                             {
-                            myListener = new MouseEventListener();
-                            myListener.addToEntity(mye);
+                            cellOwner = userName;
+                            ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), cellOwner, useGlobalScripts, CHANGE_USER_MESSAGE);
+                            channelComp.send(msg);
                             }
-                        if(myKeyListener == null)
+
+                        if(cellType.equals("NPC"))
                             {
-                            myKeyListener = new KeyEventListener();
-                            myKeyListener.addToEntity(mye);
+                            System.out.println("In ScriptingComponent - setStatus RENDERING - NPC found");
                             }
-                        }
-                    ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
-                    System.out.println("In component setStatus - renderer = " + ret);
+                        else
+                            {
+                            ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+
+                            Entity mye = ret.getEntity();
+                            RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
+                            localNode = rc.getSceneRoot();
+                            if(myListener == null)
+                                {
+                                myListener = new MouseEventListener();
+                                myListener.addToEntity(mye);
+                                }
+                            if(myKeyListener == null)
+                                {
+                                myKeyListener = new KeyEventListener();
+                                myKeyListener.addToEntity(mye);
+                                }
+                            }
+                        ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
+                        System.out.println("In component setStatus - renderer = " + ret);
 /* Execute the startup script */
-                    executeScript(STARTUP_EVENT, null);
-                    firstEntry = true;
+                        executeScript(STARTUP_EVENT, null);
+                        firstEntry = true;
+                        }
+                    }
+                else
+                    {
+                    ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+
+                    Entity mye = ret.getEntity();
+                    RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - decreasing ");
+                    myKeyListener.removeFromEntity(mye);
+                    myKeyListener = null;
+                    myListener.removeFromEntity(mye);
+                    myListener = null;
+// Stop the servlet server if it is running
+                    simpleServerStop();
+// Stop a repeater if running
+                    stopRepeater();
 
                     }
                 break;
@@ -1190,158 +1232,148 @@ public class ScriptingComponent extends CellComponent
             case ACTIVE:
                 {
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE - increasing = " + increasing);
- /* Register the intercell listener */
-////                ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
-/* Get local node */
-//                CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
-
-//                System.out.println("In component setStatus - renderer = " + ret);
-//                Entity mye = ret.getEntity();
-//                RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
-//                localNode = rc.getSceneRoot();
-/* Register mouse event listener */
-//                MouseEventListener myListener = new MouseEventListener();
-//                myListener.addToEntity(mye);
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setStatus");
-/* Register the change message listener */
-                if (msgReceiver == null) 
+                if(increasing)
                     {
-                    msgReceiver = new ChannelComponent.ComponentMessageReceiver() 
+/* Register the change message listener */
+                    if (msgReceiver == null)
                         {
-                        public void messageReceived(CellMessage message) 
+                        msgReceiver = new ChannelComponent.ComponentMessageReceiver()
                             {
-                            if(message instanceof ScriptingComponentChangeMessage)
+                            public void messageReceived(CellMessage message)
                                 {
-//                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received change message - Message id = " + message.getCellID());
-                                if(cell.getCellID().equals(message.getCellID()))
+                                if(message instanceof ScriptingComponentChangeMessage)
                                     {
-                                    ScriptingComponentChangeMessage scm = (ScriptingComponentChangeMessage)message;
-                                    changeMessageType = scm.getChangeType();
-                                    switch(changeMessageType)
+//                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received change message - Message id = " + message.getCellID());
+                                    if(cell.getCellID().equals(message.getCellID()))
                                         {
-                                        case CHANGE_SCRIPTS_MESSAGE:
+                                        ScriptingComponentChangeMessage scm = (ScriptingComponentChangeMessage)message;
+                                        changeMessageType = scm.getChangeType();
+                                        switch(changeMessageType)
                                             {
+                                            case CHANGE_SCRIPTS_MESSAGE:
+                                                {
 //                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
 //                                            ScriptingComponentChangeMessage scm = (ScriptingComponentChangeMessage)message;
-                                            eventNames = scm.getEventNames();
-                                            eventScriptType = scm.getScriptType();
-                                            eventResource = scm.getEventResource();
-                                            break;
+                                                eventNames = scm.getEventNames();
+                                                eventScriptType = scm.getScriptType();
+                                                eventResource = scm.getEventResource();
+                                                break;
+                                                }
+                                            case CHANGE_USER_MESSAGE:
+                                                {
+                                                cellOwner = scm.getCellOwner();
+                                                useGlobalScripts = scm.getUseGlobalScripts();
+                                                break;
+                                                }
                                             }
-                                        case CHANGE_USER_MESSAGE:
-                                            {
-                                            cellOwner = scm.getCellOwner();
-                                            useGlobalScripts = scm.getUseGlobalScripts();
-                                            break;
-                                            }
-                                        }
-                                    }
-                                else
-                                    {
-                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
-                                    }
-                                }
-                            else if(message instanceof ScriptingComponentICEMessage)
-                                {
-//                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received ICE message - Message id = " + message.getCellID());
-                                if(cell.getCellID().equals(message.getCellID()))
-                                    {
-//                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
-                                    ScriptingComponentICEMessage ice = (ScriptingComponentICEMessage)message;
-                                    if(iAmICEReflector == 1)
-                                        {
-                                        postMessageEvent(ice.getPayload(), ice.getIceCode());
-                                        }
-                                    if(watchMessages.contains(new Float(ice.getIceCode())))
-                                        {
-                                        ICECode = ice.getIceCode();
-                                        ICEMessage = ice.getPayload();
-                                        executeScript(INTERCELL_EVENT, null);
                                         }
                                     else
                                         {
-                                        System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getIceCode());
+                                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
                                         }
                                     }
-                                else
+                                else if(message instanceof ScriptingComponentICEMessage)
                                     {
-                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
-                                    }
-                                }
-                            else if(message instanceof ScriptingComponentTransformMessage)
-                                {
-//                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received Transform message - Message id = " + message.getCellID());
-                                if(cell.getCellID().equals(message.getCellID()))
-                                    {
-//                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
-                                    final ScriptingComponentTransformMessage trm = (ScriptingComponentTransformMessage)message;
-                                    int transformCode = trm.getTransformCode();
-                                    switch(transformCode)
+//                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received ICE message - Message id = " + message.getCellID());
+                                    if(cell.getCellID().equals(message.getCellID()))
                                         {
-                                        case ScriptingComponentTransformMessage.TRANSLATE_TRANSFORM:
+//                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
+                                        ScriptingComponentICEMessage ice = (ScriptingComponentICEMessage)message;
+                                        if(iAmICEReflector == 1)
                                             {
-                                            SceneWorker.addWorker(new WorkCommit() 
-                                                {
-                                                public void commit() 
-                                                    {
-                                                    localNode.setLocalTranslation(trm.getVector());
-                                                    ClientContextJME.getWorldManager().addToUpdateList(localNode);
-                                                    }
-                                                });
-                                            break;
+                                            postMessageEvent(ice.getPayload(), ice.getIceCode());
                                             }
-                                        case ScriptingComponentTransformMessage.ROTATE_TRANSFORM:
+                                        if(watchMessages.contains(new Float(ice.getIceCode())))
                                             {
-                                            SceneWorker.addWorker(new WorkCommit() 
-                                                {
-                                                public void commit() 
-                                                    {
-                                                    localNode.setLocalRotation(trm.getTransform());
-                                                    ClientContextJME.getWorldManager().addToUpdateList(localNode);
-                                                    }
-                                                });
-                                            break;
+                                            ICECode = ice.getIceCode();
+                                            ICEMessage = ice.getPayload();
+                                            executeScript(INTERCELL_EVENT, null);
                                             }
-                                        case ScriptingComponentTransformMessage.SCALE_TRANSFORM:
+                                        else
                                             {
-                                            SceneWorker.addWorker(new WorkCommit() 
-                                                {
-                                                public void commit() 
-                                                    {
-                                                    localNode.setLocalScale(trm.getVector());
-                                                    ClientContextJME.getWorldManager().addToUpdateList(localNode);
-                                                    }
-                                                });
-                                            break;
-                                            }
-                                        default:
-                                            {
-                                            
+                                            System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getIceCode());
                                             }
                                         }
+                                    else
+                                        {
+                                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                        }
                                     }
-                                else
+                                else if(message instanceof ScriptingComponentTransformMessage)
                                     {
-                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+//                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - Received Transform message - Message id = " + message.getCellID());
+                                    if(cell.getCellID().equals(message.getCellID()))
+                                        {
+//                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is my message - Use it");
+                                        final ScriptingComponentTransformMessage trm = (ScriptingComponentTransformMessage)message;
+                                        int transformCode = trm.getTransformCode();
+                                        switch(transformCode)
+                                            {
+                                            case ScriptingComponentTransformMessage.TRANSLATE_TRANSFORM:
+                                                {
+                                                SceneWorker.addWorker(new WorkCommit()
+                                                    {
+                                                    public void commit()
+                                                        {
+                                                        localNode.setLocalTranslation(trm.getVector());
+                                                        ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                                                        }
+                                                    });
+                                                break;
+                                                }
+                                            case ScriptingComponentTransformMessage.ROTATE_TRANSFORM:
+                                                {
+                                                SceneWorker.addWorker(new WorkCommit()
+                                                    {
+                                                    public void commit()
+                                                        {
+                                                        localNode.setLocalRotation(trm.getTransform());
+                                                        ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                                                        }
+                                                    });
+                                                break;
+                                                }
+                                            case ScriptingComponentTransformMessage.SCALE_TRANSFORM:
+                                                {
+                                                SceneWorker.addWorker(new WorkCommit()
+                                                    {
+                                                    public void commit()
+                                                        {
+                                                        localNode.setLocalScale(trm.getVector());
+                                                        ClientContextJME.getWorldManager().addToUpdateList(localNode);
+                                                        }
+                                                    });
+                                                break;
+                                                }
+                                            default:
+                                                {
+                                            
+                                                }
+                                            }
+                                        }
+                                    else
+                                        {
+                                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                        }
+                                    }
+                                else if(message instanceof ScriptingComponentNpcMoveMessage)
+                                    {
+                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is npc move message");
+
                                     }
                                 }
-                            else if(message instanceof ScriptingComponentNpcMoveMessage)
-                                {
-                                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is npc move message");
 
-                                }
-                            }
-
-                        };
-                    channelComp.addMessageReceiver(ScriptingComponentChangeMessage.class, msgReceiver);
-                    channelComp.addMessageReceiver(ScriptingComponentICEMessage.class, msgReceiver);
-                    channelComp.addMessageReceiver(ScriptingComponentTransformMessage.class, msgReceiver);
-                    channelComp.addMessageReceiver(ScriptingComponentNpcMoveMessage.class, msgReceiver);
-                    }
+                            };
+                        channelComp.addMessageReceiver(ScriptingComponentChangeMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(ScriptingComponentICEMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(ScriptingComponentTransformMessage.class, msgReceiver);
+                        channelComp.addMessageReceiver(ScriptingComponentNpcMoveMessage.class, msgReceiver);
+                        }
 /* Execute the startup script */
 //                executeScript(STARTUP_EVENT, null);
-                break;
-                }
+                    break;
+                    }
+                }    // if increasing
             default:
                 {
                 System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In default for setStatus - status other than ACTIVE");
