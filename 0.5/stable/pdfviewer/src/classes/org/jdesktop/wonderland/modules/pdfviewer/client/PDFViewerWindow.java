@@ -96,7 +96,7 @@ public class PDFViewerWindow extends WindowSwing {
 
         setComponent(pdfPanel);
 
-        setDisplayMode(DisplayMode.WORLD);
+        setDisplayMode(DisplayMode.HUD);
         showControls(false);
     }
 
