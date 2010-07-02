@@ -109,7 +109,7 @@ public class WebcamViewerWindow extends WindowSwing implements WebcamViewerToolL
         setComponent(webcamViewerPanel);
         initHUD();
 
-        setDisplayMode(DisplayMode.WORLD);
+        setDisplayMode(DisplayMode.HUD);
         showControls(false);
     }
 
