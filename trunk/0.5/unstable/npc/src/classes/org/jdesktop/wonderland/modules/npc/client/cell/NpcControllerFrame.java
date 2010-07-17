@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -18,15 +36,8 @@
 package org.jdesktop.wonderland.modules.npc.client.cell;
 
 import imi.character.avatar.AvatarContext.TriggerNames;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
-import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
-import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
-import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
+import javax.swing.DefaultComboBoxModel;
 
 /**
  *
@@ -35,16 +46,27 @@ import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarCon
  */
 public class NpcControllerFrame extends javax.swing.JFrame {
 
-    private static Logger logger = Logger.getLogger(NpcControllerFrame.class.getName());
-    private Cell cell;
-    private WlAvatarCharacter avatar;
+    private static final Logger logger = Logger.getLogger(NpcControllerFrame.class.getName());
+    private final NpcControls controls;
+    private TriggerNames lastTrigger = null;
 
     /** Creates new form NpcControllerFrame */
-    public NpcControllerFrame(Cell cell, WlAvatarCharacter avatar) {
-        this.cell = cell;
-        this.avatar = avatar;
+    public NpcControllerFrame(NpcControls controls) {
+        this.controls = controls;
 
         initComponents();
+
+        DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
+        for (String animationName : controls.getAnimations()) {
+            dcbm.addElement(animationName);
+        }
+        animationCB.setModel(dcbm);
+
+        dcbm = new DefaultComboBoxModel();
+        for (TriggerNames triggerName : TriggerNames.values()) {
+            dcbm.addElement(triggerName);
+        }
+        triggerCB.setModel(dcbm);
     }
 
     /** This method is called from within the constructor to
@@ -56,9 +78,6 @@ public class NpcControllerFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        avatarComboBox = new javax.swing.JComboBox();
-        applyButton = new javax.swing.JButton();
         forwardButton = new javax.swing.JButton();
         leftButton = new javax.swing.JButton();
         rightButton = new javax.swing.JButton();
@@ -70,19 +89,14 @@ public class NpcControllerFrame extends javax.swing.JFrame {
         jTextField2 = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jTextField3 = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        animationCB = new javax.swing.JComboBox();
+        playB = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        triggerCB = new javax.swing.JComboBox();
+        goB = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
-        jLabel1.setText("Avatar:");
-
-        avatarComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/FemaleD_AZ_00_bin.xml", "assets/configurations/FemaleD_CA_00_bin.xml", "assets/configurations/FemaleFG_AA_01_bin.xml", "assets/configurations/FemaleFG_AA_02_bin.xml", "assets/configurations/FemaleFG_AA_03_bin.xml", "assets/configurations/FemaleFG_AA_04_bin.xml", "assets/configurations/FemaleFG_AA_05_bin.xml", "assets/configurations/FemaleFG_AA_06_bin.xml", "assets/configurations/FemaleFG_CA_00_bin.xml", "assets/configurations/FemaleFG_CA_01_bin.xml", "assets/configurations/FemaleFG_CA_02_bin.xml", "assets/configurations/FemaleFG_CA_03_bin.xml", "assets/configurations/FemaleFG_CA_04_bin.xml", "assets/configurations/FemaleFG_CA_05_bin.xml", "assets/configurations/FemaleFG_CA_06_bin.xml", "assets/configurations/FemaleFG_CA_07_bin.xml", "assets/configurations/MaleFG_AA_02_bin.xml", "assets/configurations/MaleFG_AA_03_bin.xml", "assets/configurations/MaleFG_AA_04_bin.xml", "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/MaleFG_AA_00_bin.xml", "assets/configurations/MaleFG_AA_01_bin.xml", "assets/configurations/MaleFG_CA_01_bin.xml", "assets/configurations/MaleFG_CA_03_bin.xml", "assets/configurations/MaleFG_CA_04_bin.xml", "assets/configurations/MaleFG_CA_05_bin.xml", "assets/configurations/MaleFG_CA_06_bin.xml", "assets/configurations/MaleMeso_00.xml", "assets/configurations/MaleMeso_01.xml", "assets/configurations/ObamaTest.xml" }));
-
-        applyButton.setText("Apply");
-        applyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyButtonActionPerformed(evt);
-            }
-        });
 
         forwardButton.setText("Forward");
         forwardButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -137,6 +151,28 @@ public class NpcControllerFrame extends javax.swing.JFrame {
 
         jLabel4.setText("Z:");
 
+        jLabel1.setText("Animation:");
+
+        animationCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        playB.setText("Play");
+        playB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                playBActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Trigger:");
+
+        triggerCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        goB.setText("Go");
+        goB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goBActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -144,28 +180,20 @@ public class NpcControllerFrame extends javax.swing.JFrame {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, applyButton)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(jLabel2)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(18, 18, 18)
-                                        .add(jLabel3)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(18, 18, 18)
-                                        .add(jLabel4)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .add(18, 18, 18)
-                                        .add(jButton1))
-                                    .add(avatarComboBox, 0, 425, Short.MAX_VALUE)))))
+                        .add(72, 72, 72)
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(18, 18, 18)
+                        .add(jLabel3)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(18, 18, 18)
+                        .add(jLabel4)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jTextField3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(18, 18, 18)
+                        .add(jButton1))
                     .add(layout.createSequentialGroup()
                         .add(176, 176, 176)
                         .add(forwardButton))
@@ -176,8 +204,21 @@ public class NpcControllerFrame extends javax.swing.JFrame {
                         .add(rightButton))
                     .add(layout.createSequentialGroup()
                         .add(188, 188, 188)
-                        .add(backButton)))
-                .addContainerGap())
+                        .add(backButton))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(jLabel5)
+                            .add(jLabel1))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(triggerCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(animationCB, 0, 179, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(goB)
+                            .add(playB))))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -185,10 +226,14 @@ public class NpcControllerFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(avatarComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(applyButton)
-                .add(36, 36, 36)
+                    .add(animationCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(playB))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(triggerCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(goB))
+                .add(45, 45, 45)
                 .add(forwardButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -196,7 +241,7 @@ public class NpcControllerFrame extends javax.swing.JFrame {
                     .add(rightButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(backButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 56, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 38, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -211,82 +256,80 @@ public class NpcControllerFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
-        ChannelComponent cc = cell.getComponent(ChannelComponent.class);
-
-        // From the partial URI, add the module prefix
-        String uri = "wla://avatarbaseart/" + avatarComboBox.getSelectedItem();
-        String urlString = null;
-        try {
-            urlString = AssetUtils.getAssetURL(uri, cell).toExternalForm();
-        } catch (java.net.MalformedURLException excp) {
-            logger.log(Level.WARNING, "Unable to form URL from " + uri, excp);
-            return;
-        }
-
-        // Form up a message and send
-        String className = ImiAvatarLoaderFactory.class.getName();
-        AvatarConfigInfo info = new AvatarConfigInfo(urlString, className);
-        cc.send(AvatarConfigMessage.newRequestMessage(info));
-        dispose();
-    }//GEN-LAST:event_applyButtonActionPerformed
-
     private void forwardButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_forwardButtonMousePressed
-        avatar.triggerActionStart(TriggerNames.Move_Forward);
+        controls.triggerActionStart(TriggerNames.Move_Forward);
     }//GEN-LAST:event_forwardButtonMousePressed
 
     private void forwardButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_forwardButtonMouseReleased
-        avatar.triggerActionStop(TriggerNames.Move_Forward);
+        controls.triggerActionStop(TriggerNames.Move_Forward);
     }//GEN-LAST:event_forwardButtonMouseReleased
 
     private void leftButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_leftButtonMousePressed
-        avatar.triggerActionStart(TriggerNames.Move_Left);
+        controls.triggerActionStart(TriggerNames.Move_Left);
     }//GEN-LAST:event_leftButtonMousePressed
 
     private void leftButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_leftButtonMouseReleased
-        avatar.triggerActionStop(TriggerNames.Move_Left);
+        controls.triggerActionStop(TriggerNames.Move_Left);
     }//GEN-LAST:event_leftButtonMouseReleased
 
     private void rightButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rightButtonMousePressed
-        avatar.triggerActionStart(TriggerNames.Move_Right);
+        controls.triggerActionStart(TriggerNames.Move_Right);
     }//GEN-LAST:event_rightButtonMousePressed
 
     private void rightButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_rightButtonMouseReleased
-        avatar.triggerActionStop(TriggerNames.Move_Right);
+        controls.triggerActionStop(TriggerNames.Move_Right);
     }//GEN-LAST:event_rightButtonMouseReleased
 
     private void backButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_backButtonMousePressed
-        avatar.triggerActionStart(TriggerNames.Move_Back);
+        controls.triggerActionStart(TriggerNames.Move_Back);
     }//GEN-LAST:event_backButtonMousePressed
 
     private void backButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_backButtonMouseReleased
-        avatar.triggerActionStop(TriggerNames.Move_Back);
+        controls.triggerActionStop(TriggerNames.Move_Back);
     }//GEN-LAST:event_backButtonMouseReleased
 
 private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-// TODO add your handling code here:
-    NpcCell myNpc = (NpcCell)cell;
-    int x = (Integer.parseInt(jTextField1.getText()));
-    int y = (Integer.parseInt(jTextField2.getText()));
-    int z = (Integer.parseInt(jTextField3.getText()));
-    myNpc.move(x,y,z);
+    float x = (Float.parseFloat(jTextField1.getText()));
+    float y = (Float.parseFloat(jTextField2.getText()));
+    float z = (Float.parseFloat(jTextField3.getText()));
+    controls.goTo(x, y, z);
 }//GEN-LAST:event_jButton1ActionPerformed
 
+private void playBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playBActionPerformed
+    String animation = (String) animationCB.getSelectedItem();
+    controls.playAnimation(animation);
+}//GEN-LAST:event_playBActionPerformed
+
+private void goBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goBActionPerformed
+    if (lastTrigger == null) {
+        lastTrigger = (TriggerNames) triggerCB.getSelectedItem();
+        controls.triggerActionStart(lastTrigger);
+        goB.setText("Stop");
+    } else {
+        controls.triggerActionStop(lastTrigger);
+        lastTrigger = null;
+        goB.setText("Go");
+    }
+}//GEN-LAST:event_goBActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton applyButton;
-    private javax.swing.JComboBox avatarComboBox;
+    private javax.swing.JComboBox animationCB;
     private javax.swing.JButton backButton;
     private javax.swing.JButton forwardButton;
+    private javax.swing.JButton goB;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField3;
     private javax.swing.JButton leftButton;
+    private javax.swing.JButton playB;
     private javax.swing.JButton rightButton;
+    private javax.swing.JComboBox triggerCB;
     // End of variables declaration//GEN-END:variables
 
 }
