@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,11 +35,16 @@
  */
 package org.jdesktop.wonderland.modules.npc.client.cell;
 
+import java.util.logging.Logger;
 import javax.swing.JPanel;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.npc.common.NpcCellServerState;
 
 // XXX NOT TESTED XXX
@@ -33,6 +56,9 @@ import org.jdesktop.wonderland.modules.npc.common.NpcCellServerState;
  */
 @PropertiesFactory(NpcCellServerState.class)
 public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
+    private static final Logger LOGGER =
+            Logger.getLogger(NpcCellProperties.class.getName());
+
     // The cell property editor panel, used to indicate clean/dirty state
     CellPropertiesEditor editor = null;
 
@@ -48,7 +74,7 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
      * @inheritDoc()
      */
     public String getDisplayName() {
-        return "NPC Cell";
+        return "NPC";
     }
 
     /**
@@ -71,12 +97,11 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     public void open() {
         // Fetch the current state from the cell's server state and update
         // the GUI.
-        // XXX DOESN'T WORK XXX
-//        CellServerState state = editor.getCellServerState();
-//        if (state != null) {
-//            originalConfigURL = ((NpcCellServerState)state).getRelativeConfigURL();
-//            avatarComboBox.setSelectedItem(originalConfigURL);
-//        }
+        Cell cell = editor.getCell();
+        AvatarConfigComponent acc = cell.getComponent(AvatarConfigComponent.class);
+        originalConfigURL = acc.getAvatarConfigInfo().getAvatarConfigURL();
+
+        avatarCB.setSelectedItem(originalConfigURL);
     }
 
     /**
@@ -92,18 +117,22 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     public void apply() {
         // Take the value from the configuration URL and populate the server
         // state with it.
-        // XXX DOESN"T WORK XXX
-//        String url = (String) avatarComboBox.getSelectedItem();
-//        CellServerState state = editor.getCellServerState();
-//        ((NpcCellServerState)state).setRelativeConfigURL(url);
-//        editor.addToUpdateList(state);
+        String uri = "wla://avatarbaseart/assets/configurations/" + (String) avatarCB.getSelectedItem();
+
+        AvatarConfigComponentServerState accss = (AvatarConfigComponentServerState)
+                 editor.getCellServerState().getComponentServerState(AvatarConfigComponentServerState.class);
+        AvatarConfigInfo info = accss.getAvatarConfigInfo();
+        accss.setAvatarConfigInfo(new AvatarConfigInfo(uri, info.getLoaderFactoryClassName()));
+
+        LOGGER.warning("Setting config info to " + accss.getAvatarConfigInfo().getAvatarConfigURL());
+        editor.addToUpdateList(accss);
     }
 
     /**
      * @inheritDoc()
      */
     public void restore() {
-        avatarComboBox.setSelectedItem(originalConfigURL);
+        avatarCB.setSelectedItem(originalConfigURL);
     }
 
     /** This method is called from within the constructor to
@@ -116,14 +145,15 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        avatarComboBox = new javax.swing.JComboBox();
+        avatarCB = new javax.swing.JComboBox();
 
         jLabel1.setText("Choose Avatar:");
 
-        avatarComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/FemaleD_AZ_00_bin.xml", "assets/configurations/FemaleD_CA_00_bin.xml", "assets/configurations/FemaleFG_AA_01_bin.xml", "assets/configurations/FemaleFG_AA_02_bin.xml", "assets/configurations/FemaleFG_AA_03_bin.xml", "assets/configurations/FemaleFG_CA_00_bin.xml", "assets/configurations/FemaleFG_CA_01_bin.xml", "assets/configurations/FemaleFG_CA_02_bin.xml", "assets/configurations/FemaleFG_CA_03_bin.xml", "assets/configurations/FemaleFG_CA_04_bin.xml", "assets/configurations/MaleD_CA_00_bin.xml", "assets/configurations/MaleD_CA_01_bin.xml", "assets/configurations/MaleFG_AA_00_bin.xml", "assets/configurations/MaleFG_AA_01_bin.xml", "assets/configurations/MaleFG_CA_01_bin.xml", "assets/configurations/MaleFG_CA_03_bin.xml", "assets/configurations/MaleFG_CA_04_bin.xml", "assets/configurations/MaleMeso_00.xml", "assets/configurations/MaleMeso_01.xml" }));
-        avatarComboBox.addActionListener(new java.awt.event.ActionListener() {
+        avatarCB.setEditable(true);
+        avatarCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MaleD_CA_00_bin.xml", "MaleD_CA_01_bin.xml", "FemaleD_AZ_00_bin.xml", "FemaleD_CA_00_bin.xml", "FemaleFG_AA_01_bin.xml", "FemaleFG_AA_02_bin.xml", "FemaleFG_AA_03_bin.xml", "FemaleFG_CA_00_bin.xml", "FemaleFG_CA_01_bin.xml", "FemaleFG_CA_02_bin.xml", "FemaleFG_CA_03_bin.xml", "FemaleFG_CA_04_bin.xml", "MaleD_CA_00_bin.xml", "MaleD_CA_01_bin.xml", "MaleFG_AA_00_bin.xml", "MaleFG_AA_01_bin.xml", "MaleFG_CA_01_bin.xml", "MaleFG_CA_03_bin.xml", "MaleFG_CA_04_bin.xml", "MaleMeso_00.xml", "MaleMeso_01.xml" }));
+        avatarCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                avatarComboBoxActionPerformed(evt);
+                avatarCBActionPerformed(evt);
             }
         });
 
@@ -135,7 +165,7 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(avatarComboBox, 0, 344, Short.MAX_VALUE)
+                .add(avatarCB, 0, 344, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -144,25 +174,24 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(avatarComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(avatarCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(141, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void avatarComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_avatarComboBoxActionPerformed
+    private void avatarCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_avatarCBActionPerformed
                 // If the shape type has changed since the initial value, then
         // set the dirty bit to try
-        String newShapeType = (String)avatarComboBox.getSelectedItem();
-        if (originalConfigURL != null && originalConfigURL.equals(newShapeType) == false) {
+        String configURL = (String)avatarCB.getSelectedItem();
+        if (configURL != null && !configURL.equals(originalConfigURL)) {
             editor.setPanelDirty(NpcCellProperties.class, true);
-        }
-        else {
+        } else {
             editor.setPanelDirty(NpcCellProperties.class, false);
         }
-    }//GEN-LAST:event_avatarComboBoxActionPerformed
+    }//GEN-LAST:event_avatarCBActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox avatarComboBox;
+    private javax.swing.JComboBox avatarCB;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 }

@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -18,7 +36,6 @@
 package org.jdesktop.wonderland.modules.npc.server.cell;
 
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -28,8 +45,7 @@ import org.jdesktop.wonderland.modules.npc.common.NpcCellServerState;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
-import org.jdesktop.wonderland.server.cell.MovableAvatarComponentMO;
-import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
@@ -41,13 +57,6 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  * @author Jordan Slott (jslott@dev.java.net)
  */
 public class NpcCellMO extends CellMO {
-
-    @UsesCellComponentMO(MovableAvatarComponentMO.class)
-    private ManagedReference<MovableAvatarComponentMO> avatarMovableComp;
-
-//    @UsesCellComponentMO(NpcAvatarConfigComponentMO.class)
-//    private ManagedReference<NpcAvatarConfigComponentMO> avatarConfigComp;
-    
     // The relative avatar configuration URL
     private String relativeConfigURL = null;
 
@@ -89,15 +98,6 @@ public class NpcCellMO extends CellMO {
      * {@inheritDoc}
      */
     @Override
-    public void setServerState(CellServerState state) {
-        super.setServerState(state);
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public CellClientState getClientState(CellClientState state,
             WonderlandClientID clientID, ClientCapabilities capabilities) {
 
@@ -115,13 +115,16 @@ public class NpcCellMO extends CellMO {
     protected void setLive(boolean live) {
         super.setLive(live);
 
-        // Either add or remove the message receiver depending upon the live
-        // state.
         ChannelComponentMO channel = getComponent(ChannelComponentMO.class);
-        if (live == true) {
+        if (live) {
+            MovableComponentMO mc = getComponent(MovableComponentMO.class);
+            if (mc != null) {
+                removeComponent(mc);
+            }
+            addComponent(new MovableNpcComponentMO(this));
+        
             channel.addMessageReceiver(NpcCellChangeMessage.class, new NpcCellMessageReceiver(this));
-        }
-        else {
+        } else {
             channel.removeMessageReceiver(NpcCellChangeMessage.class);
         }
     }
