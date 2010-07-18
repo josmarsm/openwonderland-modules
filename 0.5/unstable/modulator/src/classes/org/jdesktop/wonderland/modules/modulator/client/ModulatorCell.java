@@ -40,7 +40,6 @@ public class ModulatorCell extends Cell
     @UsesCellComponent
     private ScriptingComponent scriptingComponent;
     private Spatial theSpatial = null;
-    private int aniSpeedMultiplier = 2;
     private Quaternion minuteStart = null;
     private Quaternion minuteEnd = null;
     private Quaternion hourStart = null;
@@ -427,10 +426,18 @@ public class ModulatorCell extends Cell
             {
             if(msn == null)
                 {
-                msn = new ModulatorSingleNode(renderer, avatar, 2);
+                msn = new ModulatorSingleNode(renderer, avatar);
                 }
+            msn.setAnimationStartTranslate(animationStartTranslate);
+            msn.setAnimationStartRotation(animationStartRotation);
+            msn.setAnimationTimeMultiplier(animationTimeMultiplier);
+            msn.setAnimationStartKeyframe(animationStartKeyframe);
+            msn.setAnimationEndKeyframe(animationEndKeyframe);
+            msn.setAnimationIceCode(animationIceCode);
+
+            System.out.println("ScriptingActionClass - enter animateNode - startRot = " + animationStartRotation);
+
             msn.animateNode();
-            System.out.println("ScriptingActionClass - enter animateNode");
             }
         };
 
@@ -441,10 +448,19 @@ public class ModulatorCell extends Cell
             {
             if(m3n == null)
                 {
-                m3n = new ModulatorThreeNodes(renderer, string1, string2, string3, 2);
+                m3n = new ModulatorThreeNodes(renderer, string1, string2, string3);
                 }
+            m3n.setAnimationStartTranslate(animationStartTranslate);
+            m3n.setAnimationStartRotation(animationStartRotation);
+            m3n.setAnimationTimeMultiplier(animationTimeMultiplier);
+            m3n.setAnimationStartKeyframe(animationStartKeyframe);
+            m3n.setAnimationEndKeyframe(animationEndKeyframe);
+            m3n.setAnimationIceCode(animationIceCode);
+            m3n.setAnimationSaveTransform(animationSaveTransform);
+            m3n.setAnimationPlayReverse(animationPlayReverse);
+            System.out.println("ScriptingActionClass - enter animate3Nodes - startRot = " + animationStartRotation[0] + ":" + animationStartRotation[1] + ":" + animationStartRotation[2]);
+
             m3n.animateNode();
-            System.out.println("ScriptingActionClass - enter animate3Nodes");
             }
         };
     }

@@ -271,6 +271,14 @@ public class ScriptingComponent extends CellComponent
 
     private ScheduledFuture futureTask = null;
 
+    private Vector3f animationStartTranslate = new Vector3f(0.0f, 0.0f, 0.0f);
+    private float[] animationStartRotation = {0.0f, 0.0f, 0.0f};
+    private int animationTimeMultiplier = 1;
+    private int animationStartKeyframe = 0;
+    private int animationEndKeyframe = 0;
+    private int animationIceCode = 0;
+    private boolean animationSaveTransform = false;
+    private boolean animationPlayReverse = false;
     /**
      * The ScriptingComponent constructor
      *
@@ -631,6 +639,12 @@ public class ScriptingComponent extends CellComponent
         System.out.println("ScriptingComponent - enter executeAction - 3 String params");
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.set3Strings(one, two, three);
+        runny.setAnimationStartTranslate(animationStartTranslate);
+        runny.setAnimationStartRotation(animationStartRotation);
+        runny.setAnimationTimeMultiplier(animationTimeMultiplier);
+        runny.setAnimationStartKeyframe(animationStartKeyframe);
+        runny.setAnimationEndKeyframe(animationEndKeyframe);
+        runny.setAnimationIceCode(animationIceCode);
         runny.run();
         }
 
@@ -641,6 +655,55 @@ public class ScriptingComponent extends CellComponent
         runny.setAnimation(animation);
         runny.setSingleInt(animationNumber);
         runny.run();
+        }
+
+    public void setAnimationStartTranslate(float X, float Y, float Z)
+        {
+        Vector3f temp = new Vector3f(X, Y, Z);
+        animationStartTranslate = temp;
+        }
+
+    public void setAnimationStartRotation(float X, float Y, float Z)
+        {
+        animationStartRotation[0] = X;
+        animationStartRotation[1] = Y;
+        animationStartRotation[2] = Z;
+        }
+
+    public void setAnimationTimeMultiplier(int thyme)
+        {
+        animationTimeMultiplier = thyme;
+        }
+
+    public void setAnimationStartKeyframe(int start)
+        {
+        animationStartKeyframe = start;
+        }
+    
+    public void setAnimationEndKeyframe(int end)
+        {
+        animationEndKeyframe = end;
+        }
+
+    public void setAnimationIceCode(int code)
+        {
+        animationIceCode = code;
+        }
+
+    public void setAnimationSaveTransform(int save)
+        {
+        if(save == 1)
+            animationSaveTransform = true;
+        else
+            animationSaveTransform = false;
+        }
+
+    public void setAnimationPlayReverse(int reverse)
+        {
+        if(reverse == 1)
+            animationPlayReverse = true;
+        else
+            animationPlayReverse = false;
         }
 
     public void contentReadResource(String theScript)
