@@ -2,8 +2,6 @@ package org.jdesktop.wonderland.modules.scriptingComponent.client;
 
 import java.io.*;
 import java.net.*;
-import java.sql.*;
-import java.util.*;
 import org.jdesktop.wonderland.client.ClientContext;
 
 class SocketInterface
@@ -12,9 +10,10 @@ class SocketInterface
     private             int port = 0;
     private             int code = 0;
     private             int errorCode = 0;
-    OutputStream	os;
-    DataInputStream	is;
+    OutputStream        os;
+    DataInputStream     is;
     DataOutputStream	dataout;
+    Socket              theSocket;
 
     public SocketInterface(String ip, int port, int code, int errorCode)
         {
@@ -23,25 +22,43 @@ class SocketInterface
         this.code = code;
         this.errorCode = errorCode;
         }
-    
+
+    public void quit()
+        {
+        try
+            {
+            os.close();
+            is.close();
+            theSocket.close();
+            theSocket = null;
+            os = null;
+            is = null;
+            }
+      	catch ( Exception e )
+      	    {
+            System.out.println("SocketInterface : in doIt : Error creating socket" + e );
+            e.printStackTrace();
+      	    }
+        }
+
     public void doIt() 
     	{
-	Socket socket = null;
+        theSocket = null;
       	try 
       	    {  
-	    socket = new Socket(ip, port);
-            socket.setSoTimeout(1000*30);
-            os = socket.getOutputStream();
-            is = new DataInputStream(socket.getInputStream());
+            theSocket = new Socket(ip, port);
+            theSocket.setSoTimeout(1000*30);
+            os = theSocket.getOutputStream();
+            is = new DataInputStream(theSocket.getInputStream());
             dataout = new DataOutputStream(os);
-            new SocketInterfaceHandler(socket, code, errorCode).start();
+            new SocketInterfaceHandler(theSocket, code, errorCode).start();
       	    }
       	catch ( Exception e )
       	    {  
-	    System.out.println("SocketInterface : in doIt : Error creating socket" + e );
-	    e.printStackTrace();
+            System.out.println("SocketInterface : in doIt : Error creating socket" + e );
+            e.printStackTrace();
       	    }
-   	}
+        }
     
     public void sendBuffer(String buffer)
         {
@@ -62,9 +79,9 @@ class SocketInterface
 
 class SocketInterfaceHandler extends Thread
     {  
-    Socket 		socket;
-    OutputStream	os;
-    DataInputStream	is;
+    Socket              socket;
+    OutputStream        os;
+    DataInputStream     is;
     DataOutputStream	dataout;
     int                 code = 0;
     int                 errorCode = 0;
@@ -73,15 +90,15 @@ class SocketInterfaceHandler extends Thread
     // constructor 
     SocketInterfaceHandler(Socket i, int code, int errorCode) throws ClassNotFoundException
         { 
-	this.socket = i;
+        this.socket = i;
         this.code = code;
         this.errorCode = errorCode;
         System.out.println("Enter SocketInterfaceHandler constructor");
-	}
+        }
 
     @Override
     public void run()
-   	{
+        {
         String	the_size = null;
         boolean more = true;
         byte[]		size = new byte[5];
@@ -98,7 +115,7 @@ class SocketInterfaceHandler extends Thread
             }
         while(more)
             {
-	    try
+            try
                 {
                 is.readFully(size);
                 the_size = new String(size);
@@ -163,6 +180,6 @@ class SocketInterfaceHandler extends Thread
                 }
             }
         return;
-   	}
+        }
     }
 

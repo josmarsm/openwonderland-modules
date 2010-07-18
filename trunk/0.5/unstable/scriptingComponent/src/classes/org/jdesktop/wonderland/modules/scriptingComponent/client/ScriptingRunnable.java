@@ -5,6 +5,8 @@
 
 package org.jdesktop.wonderland.modules.scriptingComponent.client;
 
+import com.jme.math.Vector3f;
+
 /**
  *
  * @author morrisford
@@ -21,6 +23,14 @@ public class ScriptingRunnable implements Runnable
     public String string1;
     public String string2;
     public String string3;
+    public Vector3f animationStartTranslate;
+    public float[] animationStartRotation;
+    public int animationTimeMultiplier;
+    public int animationStartKeyframe = 0;
+    public int animationEndKeyframe = 0;
+    public int animationIceCode = 0;
+    public boolean animationSaveTransform = false;
+    public boolean animationPlayReverse = false;
 
     public void setNameArray(String[] NameArray)
         {
@@ -60,6 +70,46 @@ public class ScriptingRunnable implements Runnable
         {
         a = A;
         }
+
+    public void setAnimationStartTranslate(Vector3f startTranslate)
+        {
+        animationStartTranslate = startTranslate;
+        }
+
+    public void setAnimationStartRotation(float[] startRotation)
+        {
+        animationStartRotation = startRotation;
+        }
+
+    public void setAnimationTimeMultiplier(int timeMultiplier)
+        {
+        animationTimeMultiplier = timeMultiplier;
+        }
+    public void setAnimationStartKeyframe(int start)
+        {
+        animationStartKeyframe = start;
+        }
+
+    public void setAnimationEndKeyframe(int end)
+        {
+        animationEndKeyframe = end;
+        }
+
+    public void setAnimationIceCode(int code)
+        {
+        animationIceCode = code;
+        }
+
+    public void setAnimationSaveTransform(boolean save)
+        {
+        animationSaveTransform = save;
+        }
+
+    public void setAnimationPlayReverse(boolean reverse)
+        {
+        animationPlayReverse = reverse;
+        }
+
     public void run()
         {
 

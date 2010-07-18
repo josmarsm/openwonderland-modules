@@ -13,9 +13,13 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Controller;
 import com.jme.scene.Spatial;
 import java.util.ArrayList;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.modules.scriptingComponent.client.IntercellEvent;
 import org.pushingpixels.trident.Timeline;
+import org.pushingpixels.trident.Timeline.TimelineState;
 import org.pushingpixels.trident.TimelineScenario;
+import org.pushingpixels.trident.callback.TimelineCallback;
 import org.pushingpixels.trident.callback.TimelineScenarioCallback;
 
 /**
@@ -41,7 +45,6 @@ public class ModulatorThreeNodes
     private Vector3f[] node2keyTrans;
     private Quaternion[] node3keyFrames;
     private Vector3f[] node3keyTrans;
-    private int aniSpeedMultiplier;
     private ArrayList al;
     private AnimationController Tac;
     private BoneAnimation Tani;
@@ -50,11 +53,22 @@ public class ModulatorThreeNodes
     private TimelineScenario node1result;
     private TimelineScenario node2result;
     private TimelineScenario node3result;
-
-    public ModulatorThreeNodes(ModulatorRenderer Renderer, String node1Name, String node2Name, String node3Name, int speedMultiplier)
+    private Vector3f animationStartTranslate;
+    private float[] animationStartRotation;
+    private int animationTimeMultiplier;
+    private int animationStartKeyframe = 0;
+    private int animationEndKeyframe = 0;
+    private Vector3f v3fFinal = new Vector3f(0.0f, 0.0f, 0.0f);
+    private Quaternion rotFinal = new Quaternion();
+    final boolean traceLoad = false;
+    private int animationIceCode = 0;
+    private boolean animationSaveTransform = false;
+    private boolean animationPlayReverse = false;
+    
+    public ModulatorThreeNodes(ModulatorRenderer Renderer, String node1Name, String node2Name, String node3Name)
         {
         renderer = Renderer;
-        aniSpeedMultiplier = speedMultiplier;
+        rotFinal.fromAngles(0.0f, 0.0f, 0.0f);
 
         node1theSpatial = renderer.getNode(node1Name);
 
@@ -68,7 +82,8 @@ public class ModulatorThreeNodes
         Tac = (AnimationController)Tco;
         Tani = Tac.getAnimation(0);
         Tkft = Tani.getKeyFrameTimes();
-        System.out.println("node1Tkft size = " + Tkft.length);
+        if(traceLoad)
+            System.out.println("node1Tkft size = " + Tkft.length);
 
 // Make storage for the transforms at each keyframe
 
@@ -95,7 +110,8 @@ public class ModulatorThreeNodes
 // Step through the animation controllers to pick up the changes at each key frame
         for(int k = 0; k < al.size(); k++)
             {
-            System.out.println("Controller = " + al.get(k).toString());
+            if(traceLoad)
+                System.out.println("Controller = " + al.get(k).toString());
 
 // Get the controller and then cast it to an animation controller
             Controller co = node1theSpatial.getController(k);
@@ -109,38 +125,50 @@ public class ModulatorThreeNodes
                 BoneAnimation ani = ac.getAnimation(i);
 // Get the frame times for this animation
                 float kft[] = ani.getKeyFrameTimes();
-                System.out.println("kft size = " + kft.length);
-
-                for(int j = 0; j < kft.length; j++)
+                if(traceLoad)
                     {
-                    System.out.println("kft - " + kft[j]);
+                    System.out.println("kft size = " + kft.length);
+
+                    for(int j = 0; j < kft.length; j++)
+                        {
+                        System.out.println("kft - " + kft[j]);
+                        }
                     }
                 ArrayList<BoneTransform> bt = ani.getBoneTransforms();
-                System.out.println("bt size = " + bt.size());
-                for(int j = 0; j < bt.size(); j++)
+                if(traceLoad)
                     {
-                    System.out.println("bt = " + bt.get(j).toString());
+                    System.out.println("bt size = " + bt.size());
+                    for(int j = 0; j < bt.size(); j++)
+                        {
+                        System.out.println("bt = " + bt.get(j).toString());
+                        }
                     }
                 Quaternion qt[] = bt.get(0).getRotations();
-                System.out.println("bt - rotations = " + qt.length);
+                if(traceLoad)
+                    System.out.println("bt - rotations = " + qt.length);
 
                 for(int j = 0; j < qt.length; j++)
                     {
-                    System.out.println("rots = " + qt[j]);
+                    if(traceLoad)
+                        System.out.println("rots = " + qt[j]);
                     float[] fromAngles = qt[j].toAngles(null);
-                    System.out.println("Angles - " + fromAngles[0] + " - " + fromAngles[1] + " - " + fromAngles[2]);
+                    if(traceLoad)
+                        System.out.println("Angles - " + fromAngles[0] + " - " + fromAngles[1] + " - " + fromAngles[2]);
 
                     angleX[j] = angleX[j] + fromAngles[0];
                     angleY[j] = angleY[j] + fromAngles[1];
                     angleZ[j] = angleZ[j] + fromAngles[2];
                     }
-                System.out.println(" start frame = " + ani.getStartFrame() + " - end frame = " + ani.getEndFrame());
+                if(traceLoad)
+                    System.out.println(" start frame = " + ani.getStartFrame() + " - end frame = " + ani.getEndFrame());
                 Vector3f v3f[] = bt.get(0).getTranslations();
-                System.out.println("bt - translations = " + v3f.length);
+                if(traceLoad)
+                    System.out.println("bt - translations = " + v3f.length);
 
                 for(int j = 0; j < v3f.length; j++)
                     {
-                    System.out.println("trans = " + v3f[j]);
+                    if(traceLoad)
+                        System.out.println("trans = " + v3f[j]);
                     transX[j] = transX[j] + v3f[j].x;
                     transY[j] = transY[j] + v3f[j].y;
                     transZ[j] = transZ[j] + v3f[j].z;
@@ -153,10 +181,12 @@ public class ModulatorThreeNodes
             Quaternion temp = null;
             temp = new Quaternion();
             temp.fromAngles(angleX[j], angleY[j], angleZ[j]);
-            System.out.println(" ********************** final angles " + angleX[j] + "--" + angleY[j] + "--" + angleZ[j]);
+            if(traceLoad)
+                System.out.println(" ********************** final angles " + angleX[j] + "--" + angleY[j] + "--" + angleZ[j]);
             node1keyFrames[j] = temp;
             node1keyTrans[j] = new Vector3f(transX[j], transY[j], transZ[j]);
-            System.out.println(" *************** final translations " + transX[j] + " - " + transY[j] + " - " + transZ[j]);
+            if(traceLoad)
+                System.out.println(" *************** final translations " + transX[j] + " - " + transY[j] + " - " + transZ[j]);
             }
 
 // *************************************************************************************************
@@ -174,7 +204,8 @@ public class ModulatorThreeNodes
         Tac = (AnimationController)Tco;
         Tani = Tac.getAnimation(0);
         Tkft = Tani.getKeyFrameTimes();
-        System.out.println("node1Tkft size = " + Tkft.length);
+        if(traceLoad)
+            System.out.println("node1Tkft size = " + Tkft.length);
 
 // Make storage for the transforms at each keyframe
 
@@ -201,7 +232,8 @@ public class ModulatorThreeNodes
 // Step through the animation controllers to pick up the changes at each key frame
         for(int k = 0; k < al.size(); k++)
             {
-            System.out.println("Controller = " + al.get(k).toString());
+            if(traceLoad)
+                System.out.println("Controller = " + al.get(k).toString());
 
 // Get the controller and then cast it to an animation controller
             Controller co = node2theSpatial.getController(k);
@@ -215,38 +247,50 @@ public class ModulatorThreeNodes
                 BoneAnimation ani = ac.getAnimation(i);
 // Get the frame times for this animation
                 float kft[] = ani.getKeyFrameTimes();
-                System.out.println("kft size = " + kft.length);
-
-                for(int j = 0; j < kft.length; j++)
+                if(traceLoad)
                     {
-                    System.out.println("kft - " + kft[j]);
+                    System.out.println("kft size = " + kft.length);
+
+                    for(int j = 0; j < kft.length; j++)
+                        {
+                        System.out.println("kft - " + kft[j]);
+                        }
                     }
                 ArrayList<BoneTransform> bt = ani.getBoneTransforms();
-                System.out.println("bt size = " + bt.size());
-                for(int j = 0; j < bt.size(); j++)
+                if(traceLoad)
                     {
-                    System.out.println("bt = " + bt.get(j).toString());
+                    System.out.println("bt size = " + bt.size());
+                    for(int j = 0; j < bt.size(); j++)
+                        {
+                        System.out.println("bt = " + bt.get(j).toString());
+                        }
                     }
                 Quaternion qt[] = bt.get(0).getRotations();
-                System.out.println("bt - rotations = " + qt.length);
+                if(traceLoad)
+                    System.out.println("bt - rotations = " + qt.length);
 
                 for(int j = 0; j < qt.length; j++)
                     {
-                    System.out.println("rots = " + qt[j]);
+                    if(traceLoad)
+                        System.out.println("rots = " + qt[j]);
                     float[] fromAngles = qt[j].toAngles(null);
-                    System.out.println("Angles - " + fromAngles[0] + " - " + fromAngles[1] + " - " + fromAngles[2]);
+                    if(traceLoad)
+                        System.out.println("Angles - " + fromAngles[0] + " - " + fromAngles[1] + " - " + fromAngles[2]);
 
                     angleX[j] = angleX[j] + fromAngles[0];
                     angleY[j] = angleY[j] + fromAngles[1];
                     angleZ[j] = angleZ[j] + fromAngles[2];
                     }
-                System.out.println(" start frame = " + ani.getStartFrame() + " - end frame = " + ani.getEndFrame());
+                if(traceLoad)
+                    System.out.println(" start frame = " + ani.getStartFrame() + " - end frame = " + ani.getEndFrame());
                 Vector3f v3f[] = bt.get(0).getTranslations();
-                System.out.println("bt - translations = " + v3f.length);
+                if(traceLoad)
+                    System.out.println("bt - translations = " + v3f.length);
 
                 for(int j = 0; j < v3f.length; j++)
                     {
-                    System.out.println("trans = " + v3f[j]);
+                    if(traceLoad)
+                        System.out.println("trans = " + v3f[j]);
                     transX[j] = transX[j] + v3f[j].x;
                     transY[j] = transY[j] + v3f[j].y;
                     transZ[j] = transZ[j] + v3f[j].z;
@@ -259,10 +303,12 @@ public class ModulatorThreeNodes
             Quaternion temp = null;
             temp = new Quaternion();
             temp.fromAngles(angleX[j], angleY[j], angleZ[j]);
-            System.out.println(" ********************** final angles " + angleX[j] + "--" + angleY[j] + "--" + angleZ[j]);
+            if(traceLoad)
+                System.out.println(" ********************** final angles " + angleX[j] + "--" + angleY[j] + "--" + angleZ[j]);
             node2keyFrames[j] = temp;
             node2keyTrans[j] = new Vector3f(transX[j], transY[j], transZ[j]);
-            System.out.println(" *************** final translations " + transX[j] + " - " + transY[j] + " - " + transZ[j]);
+            if(traceLoad)
+                System.out.println(" *************** final translations " + transX[j] + " - " + transY[j] + " - " + transZ[j]);
             }
 
 // *************************************************************************************************
@@ -280,7 +326,8 @@ public class ModulatorThreeNodes
         Tac = (AnimationController)Tco;
         Tani = Tac.getAnimation(0);
         Tkft = Tani.getKeyFrameTimes();
-        System.out.println("node1Tkft size = " + Tkft.length);
+        if(traceLoad)
+            System.out.println("node1Tkft size = " + Tkft.length);
 
 // Make storage for the transforms at each keyframe
 
@@ -307,7 +354,8 @@ public class ModulatorThreeNodes
 // Step through the animation controllers to pick up the changes at each key frame
         for(int k = 0; k < al.size(); k++)
             {
-            System.out.println("Controller = " + al.get(k).toString());
+            if(traceLoad)
+                System.out.println("Controller = " + al.get(k).toString());
 
 // Get the controller and then cast it to an animation controller
             Controller co = node3theSpatial.getController(k);
@@ -321,38 +369,50 @@ public class ModulatorThreeNodes
                 BoneAnimation ani = ac.getAnimation(i);
 // Get the frame times for this animation
                 float kft[] = ani.getKeyFrameTimes();
-                System.out.println("kft size = " + kft.length);
-
-                for(int j = 0; j < kft.length; j++)
+                if(traceLoad)
                     {
-                    System.out.println("kft - " + kft[j]);
+                    System.out.println("kft size = " + kft.length);
+
+                    for(int j = 0; j < kft.length; j++)
+                        {
+                        System.out.println("kft - " + kft[j]);
+                        }
                     }
                 ArrayList<BoneTransform> bt = ani.getBoneTransforms();
-                System.out.println("bt size = " + bt.size());
-                for(int j = 0; j < bt.size(); j++)
+                if(traceLoad)
                     {
-                    System.out.println("bt = " + bt.get(j).toString());
+                    System.out.println("bt size = " + bt.size());
+                    for(int j = 0; j < bt.size(); j++)
+                        {
+                        System.out.println("bt = " + bt.get(j).toString());
+                        }
                     }
                 Quaternion qt[] = bt.get(0).getRotations();
-                System.out.println("bt - rotations = " + qt.length);
+                if(traceLoad)
+                    System.out.println("bt - rotations = " + qt.length);
 
                 for(int j = 0; j < qt.length; j++)
                     {
-                    System.out.println("rots = " + qt[j]);
+                    if(traceLoad)
+                        System.out.println("rots = " + qt[j]);
                     float[] fromAngles = qt[j].toAngles(null);
-                    System.out.println("Angles - " + fromAngles[0] + " - " + fromAngles[1] + " - " + fromAngles[2]);
+                    if(traceLoad)
+                        System.out.println("Angles - " + fromAngles[0] + " - " + fromAngles[1] + " - " + fromAngles[2]);
 
                     angleX[j] = angleX[j] + fromAngles[0];
                     angleY[j] = angleY[j] + fromAngles[1];
                     angleZ[j] = angleZ[j] + fromAngles[2];
                     }
-                System.out.println(" start frame = " + ani.getStartFrame() + " - end frame = " + ani.getEndFrame());
+                if(traceLoad)
+                    System.out.println(" start frame = " + ani.getStartFrame() + " - end frame = " + ani.getEndFrame());
                 Vector3f v3f[] = bt.get(0).getTranslations();
-                System.out.println("bt - translations = " + v3f.length);
+                if(traceLoad)
+                    System.out.println("bt - translations = " + v3f.length);
 
                 for(int j = 0; j < v3f.length; j++)
                     {
-                    System.out.println("trans = " + v3f[j]);
+                    if(traceLoad)
+                        System.out.println("trans = " + v3f[j]);
                     transX[j] = transX[j] + v3f[j].x;
                     transY[j] = transY[j] + v3f[j].y;
                     transZ[j] = transZ[j] + v3f[j].z;
@@ -365,67 +425,185 @@ public class ModulatorThreeNodes
             Quaternion temp = null;
             temp = new Quaternion();
             temp.fromAngles(angleX[j], angleY[j], angleZ[j]);
-            System.out.println(" ********************** final angles " + angleX[j] + "--" + angleY[j] + "--" + angleZ[j]);
+            if(traceLoad)
+                System.out.println(" ********************** final angles " + angleX[j] + "--" + angleY[j] + "--" + angleZ[j]);
             node3keyFrames[j] = temp;
             node3keyTrans[j] = new Vector3f(transX[j], transY[j], transZ[j]);
-            System.out.println(" *************** final translations " + transX[j] + " - " + transY[j] + " - " + transZ[j]);
+            if(traceLoad)
+                System.out.println(" *************** final translations " + transX[j] + " - " + transY[j] + " - " + transZ[j]);
             }
         }
 
     public void animateNode()
         {
         Vector3f v3f;
+
+        int startFrame = 0;
+        int endFrame = 0;
+        float zRotationInc = 0.0f;
+        float xRotationInc = 0.0f;
+
         System.out.println("animateNode");
+
+        v3f = node1theSpatial.getLocalTranslation();
+        System.out.println("Before animation - " + v3f + " - After last run = " + v3fFinal);
 
         node1result = new TimelineScenario.Sequence();
 // Add each key frame info as an animation and then play the whole
-        for(int j = 0; j < Tkft.length - 1; j++)
+        if(animationStartKeyframe == 0 && animationEndKeyframe == 0)
+            {
+            startFrame = 0;
+            endFrame = Tkft.length - 1;
+            }
+        else
+            {
+            startFrame = animationStartKeyframe;
+            endFrame = animationEndKeyframe - 1;
+            }
+
+        for(int j = startFrame; j < endFrame; j++)
             {
             t = new Timeline(this);
-            t.addPropertyToInterpolate("Node1Quat", node1keyFrames[j], node1keyFrames[j + 1], new ModulatorQuaternionInterpolator());
-            t.addPropertyToInterpolate("Node1Trans", node1keyTrans[j], node1keyTrans[j + 1], new ModulatorVectorInterpolator());
+// *******************************************  Node 1
+            float[] fromAngles = node1keyFrames[j].toAngles(null);
+            float[] fromAnglesNext = node1keyFrames[j + 1].toAngles(null);
+
+            float[] rotFinalAngles = rotFinal.toAngles(null);
+
+            Quaternion quat = new Quaternion();
+            quat.fromAngles(
+//                    fromAngles[0] + rotFinalAngles[0] + animationStartRotation[0],
+//                    fromAngles[1] + rotFinalAngles[1] + animationStartRotation[1],
+//                    fromAngles[2] + rotFinalAngles[2] + animationStartRotation[2]);
+                    fromAngles[0] + animationStartRotation[0],
+                    fromAngles[1] + rotFinalAngles[1] + animationStartRotation[1],
+                    fromAngles[2] + animationStartRotation[2]);
+            Quaternion quatNext = new Quaternion();
+            quatNext.fromAngles(
+//                    fromAnglesNext[0] + rotFinalAngles[0] + animationStartRotation[0],
+//                    fromAnglesNext[1] + rotFinalAngles[1] + animationStartRotation[1],
+//                    fromAnglesNext[2] + rotFinalAngles[2] + animationStartRotation[2]);
+                    fromAnglesNext[0] + animationStartRotation[0],
+                    fromAnglesNext[1] + rotFinalAngles[1] + animationStartRotation[1],
+                    fromAnglesNext[2] + animationStartRotation[2]);
+//            System.out.println("rots - x = " +
+//                    (fromAngles[0] + rotFinalAngles[0] + animationStartRotation[0]) + " - y = " +
+//                    (fromAngles[1] + rotFinalAngles[1] + animationStartRotation[1]) + " - z = " +
+//                    (fromAngles[2] + rotFinalAngles[2] + animationStartRotation[2]));
+            
+            t.addPropertyToInterpolate("Node1Quat", quat, quatNext, new ModulatorQuaternionInterpolator());
+
+            ////            t.addPropertyToInterpolate("Node1Quat", node1keyFrames[j], node1keyFrames[j + 1], new ModulatorQuaternionInterpolator());
+
+            zRotationInc = (float)Math.sin(animationStartRotation[1]);
+            xRotationInc = (float)Math.cos(animationStartRotation[1]);
+
+            if(v3fFinal.x == 0.0f && v3fFinal.y == 0.0 && v3fFinal.z == 0.0)
+                {
+                Vector3f tempVec = new Vector3f(
+                    (node1keyTrans[j].x + animationStartTranslate.x),
+                    (node1keyTrans[j].y + animationStartTranslate.y),
+                    (node1keyTrans[j].z + animationStartTranslate.z));
+                Vector3f tempVecPlus = new Vector3f(
+                    (node1keyTrans[j + 1].x + animationStartTranslate.x),
+                    (node1keyTrans[j + 1].y + animationStartTranslate.y),
+                    (node1keyTrans[j + 1].z + animationStartTranslate.z));
+//                System.out.println("x = " +
+//                        (node1keyTrans[j].x + animationStartTranslate.x) + " - y = " +
+//                        (node1keyTrans[j].y + animationStartTranslate.y) + " - z = " +
+//                        (node1keyTrans[j].z + animationStartTranslate.z));
+                t.addPropertyToInterpolate("Node1Trans", tempVec, tempVecPlus, new ModulatorVectorInterpolator());
+                }
+            else
+                {
+                Vector3f tempVec = new Vector3f(
+                    node1keyTrans[j].x + v3fFinal.x + (node1keyTrans[j].x * (float)Math.sin(rotFinalAngles[1])),
+                    node1keyTrans[j].y + v3fFinal.y,
+                    node1keyTrans[j].z + v3fFinal.z + (node1keyTrans[j].z * (float)Math.cos(rotFinalAngles[1])));
+                Vector3f tempVecPlus = new Vector3f(
+                    node1keyTrans[j + 1].x + v3fFinal.x + (node1keyTrans[j + 1].x * (float)Math.sin(rotFinalAngles[1])),
+                    node1keyTrans[j + 1].y + v3fFinal.y,
+                    node1keyTrans[j + 1].z + v3fFinal.z + (node1keyTrans[j + 1].z * (float)Math.cos(rotFinalAngles[1])));
+//                System.out.println("final - x = " +
+//                        (node1keyTrans[j].x + v3fFinal.x + (node1keyTrans[j].x * (float)Math.sin(rotFinalAngles[1]))) + " - y = " +
+//                        (node1keyTrans[j].y + v3fFinal.y) + " - z = " +
+//                        (node1keyTrans[j].z + v3fFinal.z + (node1keyTrans[j].z * (float)Math.cos(rotFinalAngles[1]))));
+                t.addPropertyToInterpolate("Node1Trans", tempVec, tempVecPlus, new ModulatorVectorInterpolator());
+                }
+            if(j == endFrame - 1)
+                {
+                t.addCallback(new TimelineCallback()
+                    {
+
+                    public void onTimelineDone()
+                        {
+                Vector3f v3f = node1theSpatial.getLocalTranslation();
+                System.out.println("After animation from timeline done - " + v3f);
+                        }
+
+                    public void onTimelineStateChanged(TimelineState oldState, TimelineState newState, float arg2, float arg3)
+                        {
+                        if(newState == TimelineState.DONE)
+                            {
+                            if(animationSaveTransform)
+                                {
+                                v3fFinal = node1theSpatial.getLocalTranslation();
+                                rotFinal = node1theSpatial.getLocalRotation();
+                                }
+                            System.out.println("After animation - " + v3fFinal);
+                            ClientContext.getInputManager().postEvent(new IntercellEvent("F", animationIceCode));
+                            }
+                        }
+
+                    public void onTimelinePulse(float arg0, float arg1)
+                        {
+
+                        }
+                    });
+                }
+
+////            t.addPropertyToInterpolate("Node1Trans", node1keyTrans[j], node1keyTrans[j + 1], new ModulatorVectorInterpolator());
 //        t.setEase(new Spline(0.4f));
-            t.setDuration((long)(Tkft[j + 1] - Tkft[j]) * 1000 * aniSpeedMultiplier);
+            t.setDuration((long)((Tkft[j + 1] - Tkft[j]) * 1000) * animationTimeMultiplier);
             node1result.addScenarioActor(t);
             }
 
         node2result = new TimelineScenario.Sequence();
+// ***************************************** Node 2
 // Add each key frame info as an animation and then play the whole
-        for(int j = 0; j < Tkft.length - 1; j++)
+        for(int j = startFrame; j < endFrame; j++)
             {
             t = new Timeline(this);
             t.addPropertyToInterpolate("Node2Quat", node2keyFrames[j], node2keyFrames[j + 1], new ModulatorQuaternionInterpolator());
+
+///            Vector3f tempVec = new Vector3f(node2keyTrans[j].x + animationStartTranslate.x, node2keyTrans[j].y + animationStartTranslate.y, node2keyTrans[j].z + animationStartTranslate.z);
+///            Vector3f tempVecPlus = new Vector3f(node2keyTrans[j + 1].x + animationStartTranslate.x, node2keyTrans[j + 1].y + animationStartTranslate.y, node2keyTrans[j + 1].z + animationStartTranslate.z);
+///            t.addPropertyToInterpolate("Node2Trans", tempVec, tempVecPlus, new ModulatorVectorInterpolator());
+///System.out.println("node2 - orig y = " + node2keyTrans[j].y + " - shift - " + tempVec.y);
             t.addPropertyToInterpolate("Node2Trans", node2keyTrans[j], node2keyTrans[j + 1], new ModulatorVectorInterpolator());
 //        t.setEase(new Spline(0.4f));
-            t.setDuration((long)(Tkft[j + 1] - Tkft[j]) * 1000 * aniSpeedMultiplier);
+            t.setDuration((long)((Tkft[j + 1] - Tkft[j]) * 1000) * animationTimeMultiplier);
             node2result.addScenarioActor(t);
             }
 
         node3result = new TimelineScenario.Sequence();
+// *******************************************************  Node 3
 // Add each key frame info as an animation and then play the whole
-        for(int j = 0; j < Tkft.length - 1; j++)
+        for(int j = startFrame; j < endFrame; j++)
             {
             t = new Timeline(this);
             t.addPropertyToInterpolate("Node3Quat", node3keyFrames[j], node3keyFrames[j + 1], new ModulatorQuaternionInterpolator());
+
+///            Vector3f tempVec = new Vector3f(node3keyTrans[j].x + animationStartTranslate.x, node3keyTrans[j].y + animationStartTranslate.y, node3keyTrans[j].z + animationStartTranslate.z);
+///            Vector3f tempVecPlus = new Vector3f(node3keyTrans[j + 1].x + animationStartTranslate.x, node3keyTrans[j + 1].y + animationStartTranslate.y, node3keyTrans[j + 1].z + animationStartTranslate.z);
+///            t.addPropertyToInterpolate("Node3Trans", tempVec, tempVecPlus, new ModulatorVectorInterpolator());
+///System.out.println("node3 - orig y = " + node3keyTrans[j].y + " - shift - " + tempVec.y);
             t.addPropertyToInterpolate("Node3Trans", node3keyTrans[j], node3keyTrans[j + 1], new ModulatorVectorInterpolator());
 //        t.setEase(new Spline(0.4f));
-            t.setDuration((long)(Tkft[j + 1] - Tkft[j]) * 1000 * aniSpeedMultiplier);
+            t.setDuration((long)((Tkft[j + 1] - Tkft[j]) * 1000) * animationTimeMultiplier);
             node3result.addScenarioActor(t);
             }
 
-        v3f = node1theSpatial.getLocalTranslation();
-        System.out.print("Before animation - " + v3f);
-        setTrans(node1theSpatial, v3f);
-
-        node1result.addCallback(new TimelineScenarioCallback()
-            {
-            @Override
-            public void onTimelineScenarioDone()
-                {
-                Vector3f v3f = node1theSpatial.getLocalTranslation();
-                System.out.print("After animation - " + v3f);
-                }
-            });
         node1result.play();
         node2result.play();
         node3result.play();
@@ -471,4 +649,42 @@ public class ModulatorThreeNodes
         ClientContextJME.getWorldManager().addToUpdateList(node3theSpatial);
         }
 
+    public void setAnimationStartTranslate(Vector3f startTranslate)
+        {
+        animationStartTranslate = startTranslate;
+        }
+
+    public void setAnimationStartRotation(float[] startRotation)
+        {
+        animationStartRotation = startRotation;
+        }
+
+    public void setAnimationTimeMultiplier(int timeMultiplier)
+        {
+        animationTimeMultiplier = timeMultiplier;
+        }
+    public void setAnimationStartKeyframe(int start)
+        {
+        animationStartKeyframe = start;
+        }
+
+    public void setAnimationEndKeyframe(int end)
+        {
+        animationEndKeyframe = end;
+        }
+
+    public void setAnimationIceCode(int code)
+        {
+        animationIceCode = code;
+        }
+
+    public void setAnimationSaveTransform(boolean save)
+        {
+        animationSaveTransform = save;
+        }
+
+    public void setAnimationPlayReverse(boolean reverse)
+        {
+        animationPlayReverse = reverse;
+        }
     }
