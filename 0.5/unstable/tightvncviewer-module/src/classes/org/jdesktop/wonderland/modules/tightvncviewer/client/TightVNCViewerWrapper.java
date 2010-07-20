@@ -43,6 +43,8 @@
 package org.jdesktop.wonderland.modules.tightvncviewer.client;
 
 import java.awt.Dimension;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -231,6 +233,23 @@ public class TightVNCViewerWrapper extends VncViewer {
     @Override
     public void windowClosing(WindowEvent evt) {
         logger.warning("windowClosing not implemented");
+    }
+
+    public void sendCtrlAltDel() {
+        try {
+            final int modifiers = InputEvent.CTRL_MASK | InputEvent.ALT_MASK;
+
+            KeyEvent ctrlAltDelEvent =
+                    new KeyEvent(this, KeyEvent.KEY_PRESSED, 0, modifiers, 127);
+            this.rfb.writeKeyEvent(ctrlAltDelEvent);
+
+            ctrlAltDelEvent =
+                    new KeyEvent(this, KeyEvent.KEY_RELEASED, 0, modifiers, 127);
+            this.rfb.writeKeyEvent(ctrlAltDelEvent);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

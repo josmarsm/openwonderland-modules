@@ -92,6 +92,13 @@ public class TightVNCViewerToolManager implements TightVNCViewerToolListener {
     /**
      * {@inheritDoc}
      */
+    public void sendCtrlAltDel() {
+        vncViewerWindow.sendCtrlAltDel();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public void sync() {
         actionExecutor.execute(new Runnable() {
 

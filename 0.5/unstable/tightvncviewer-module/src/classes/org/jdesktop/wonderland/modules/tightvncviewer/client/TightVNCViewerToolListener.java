@@ -40,6 +40,11 @@ public interface TightVNCViewerToolListener {
     public void closeConnection();
 
     /**
+     * Send Ctrl-Alt-Del to Windows hosts
+     */
+    public void sendCtrlAltDel();
+    
+    /**
      * Toggle synchronized state on/off
      */
     public void sync();

@@ -140,6 +140,7 @@ public class TightVNCViewerControlPanel extends javax.swing.JPanel {
 
         toggleHUDButton = new javax.swing.JButton();
         openHUDButton = new javax.swing.JButton();
+        ctrlAtlDelHUDButton = new javax.swing.JButton();
         stopHUDButton = new javax.swing.JButton();
         syncHUDButton = new javax.swing.JButton();
         dragHUDButton = new javax.swing.JButton();
@@ -167,6 +168,18 @@ public class TightVNCViewerControlPanel extends javax.swing.JPanel {
         openHUDButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openHUDButtonActionPerformed(evt);
+            }
+        });
+
+        ctrlAtlDelHUDButton.setBackground(new java.awt.Color(231, 230, 230));
+        ctrlAtlDelHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/tightvncviewer/client/resources/TightVNCViewerCtrlAltDel32x32.png"))); // NOI18N
+        ctrlAtlDelHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        ctrlAtlDelHUDButton.setBorderPainted(false);
+        ctrlAtlDelHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        ctrlAtlDelHUDButton.setOpaque(true);
+        ctrlAtlDelHUDButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ctrlAtlDelHUDButtonActionPerformed(evt);
             }
         });
 
@@ -215,6 +228,8 @@ public class TightVNCViewerControlPanel extends javax.swing.JPanel {
                 .add(0, 0, 0)
                 .add(openHUDButton)
                 .add(0, 0, 0)
+                .add(ctrlAtlDelHUDButton)
+                .add(0, 0, 0)
                 .add(stopHUDButton)
                 .add(0, 0, 0)
                 .add(syncHUDButton)
@@ -223,11 +238,15 @@ public class TightVNCViewerControlPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(toggleHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(openHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(stopHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(syncHUDButton)
-            .add(dragHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(toggleHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(openHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(syncHUDButton)
+                    .add(dragHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(ctrlAtlDelHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(stopHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -270,7 +289,17 @@ public class TightVNCViewerControlPanel extends javax.swing.JPanel {
             listener.closeConnection();
         }
     }//GEN-LAST:event_stopHUDButtonActionPerformed
+
+    private void ctrlAtlDelHUDButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ctrlAtlDelHUDButtonActionPerformed
+        Iterator<TightVNCViewerToolListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            TightVNCViewerToolListener listener = iter.next();
+            listener.sendCtrlAltDel();
+        }
+    }//GEN-LAST:event_ctrlAtlDelHUDButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton ctrlAtlDelHUDButton;
     private javax.swing.JButton dragHUDButton;
     private javax.swing.JButton openHUDButton;
     private javax.swing.JButton stopHUDButton;

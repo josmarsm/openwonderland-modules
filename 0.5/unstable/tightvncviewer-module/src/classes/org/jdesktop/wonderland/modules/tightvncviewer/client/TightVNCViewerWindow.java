@@ -25,6 +25,9 @@ import com.jme.math.Vector3f;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -258,6 +261,15 @@ public class TightVNCViewerWindow extends WindowSwing implements TightVNCViewerT
             vncViewerPanel.setCanvas(null);
             vncViewerPanel.repaint();
             showHUDMessage("Connection closed", 3000);
+        }
+    }
+
+    /**
+     * Send Ctrl-Alt-Del to Windows hosts
+     */
+    public void sendCtrlAltDel() {
+        if (viewer != null) {
+            viewer.sendCtrlAltDel();
         }
     }
 
