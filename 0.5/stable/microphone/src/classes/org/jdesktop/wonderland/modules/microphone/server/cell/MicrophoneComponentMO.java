@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -263,9 +281,7 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
         // If we are making this component live, then add a listener to the proximity component.
         if (live == true) {
-            Vector3f talkOrigin = new Vector3f((float) talkArea.talkAreaOrigin.getX(),
-                    (float) talkArea.talkAreaOrigin.getY(),
-                    (float) talkArea.talkAreaOrigin.getZ());
+            Vector3f talkOrigin = talkArea.talkAreaOrigin;
 
             BoundingVolume[] bounds = new BoundingVolume[1];
 
@@ -294,15 +310,17 @@ public class MicrophoneComponentMO extends CellComponentMO {
 
             component.addProximityListener(talkAreaProximityListener, bounds);
 
+            Vector3f listenOrigin = listenArea.listenAreaOrigin;
+
             bounds = new BoundingVolume[1];
 
             if (listenArea.boundsType.equals(MicrophoneBoundsType.CELL_BOUNDS)) {
                 bounds[0] = cellRef.get().getLocalBounds();
             } else if (listenArea.boundsType.equals(MicrophoneBoundsType.SPHERE)) {
                 bounds[0] = new BoundingSphere((float) listenArea.bounds.getX(),
-                        new Vector3f());
+                        listenOrigin);
             } else {
-                bounds[0] = new BoundingBox(new Vector3f(), listenArea.bounds.getX(),
+                bounds[0] = new BoundingBox(listenOrigin, listenArea.bounds.getX(),
                         listenArea.bounds.getY(), listenArea.bounds.getZ());
             }
 
