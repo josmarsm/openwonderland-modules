@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -40,6 +58,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 
 import com.jme.bounding.BoundingVolume;
+import com.sun.sgs.app.ManagedReference;
 
 import java.io.Serializable;
 
@@ -110,18 +129,24 @@ public class MicrophoneTalkAreaProximityListener implements ProximityListenerSrv
             request.put(resource.getId(), am);
 
             // perform the security check
-            security.doSecure(request, new CellEnteredTask(resource.getId(), callId));
+            security.doSecure(request, new CellEnteredTask(this, resource.getId(), callId));
         } else {
             // no security, just make the call directly
             cellEntered(callId);
         }
     }
 
-    private class CellEnteredTask implements SecureTask, Serializable {
-        private String resourceID;
-        private String callId;
+    // OWL issue #79 - make sure this is a static inner class that refers
+    // to the listener via a ManagedReference
+    private static class CellEnteredTask implements SecureTask, Serializable {
+        private final ManagedReference<MicrophoneTalkAreaProximityListener> listenerRef;
+        private final String resourceID;
+        private final String callId;
 
-        public CellEnteredTask(String resourceID, String callId) {
+        public CellEnteredTask(MicrophoneTalkAreaProximityListener listener,
+                               String resourceID, String callId)
+        {
+            this.listenerRef = AppContext.getDataManager().createReference(listener);
             this.resourceID = resourceID;
             this.callId = callId;
         }
@@ -130,7 +155,7 @@ public class MicrophoneTalkAreaProximityListener implements ProximityListenerSrv
             ActionMap am = granted.get(resourceID);
             if (am != null && !am.isEmpty()) {
                 // request was granted -- the user has permission to enter
-                cellEntered(callId);
+                listenerRef.get().cellEntered(callId);
             } else {
                 logger.warning("Access denied to enter microphone talk area.");
             }
