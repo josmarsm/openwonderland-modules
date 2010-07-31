@@ -73,6 +73,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarAnimationEvent;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
@@ -122,8 +123,13 @@ public class ScriptingComponent extends CellComponent
 
 //    myThread mth = new myThread();
     private ArrayList aniList;
+    private ArrayList robotList;
+
     private int aniFrame = 0;
     private int aniLast = 0;
+    private int robotFrame = 0;
+    private int robotLast = 0;
+
     private CellTransform atRest;
     private int animation = 0;
     public String testName = "morrisford";
@@ -158,6 +164,7 @@ public class ScriptingComponent extends CellComponent
     public static final int PRESENCE_EVENT = 21;
     public static final int CONTROLLER_EVENT = 22;
     public static final int PROPERTIES_EVENT = 23;
+    public static final int AVATAR_EVENT = 24;
 
     public static final int YES_NOTIFY = 0;
     public static final int NO_NOTIFY = 1;
@@ -261,6 +268,7 @@ public class ScriptingComponent extends CellComponent
     private MouseEventListener myListener = null;
     private KeyEventListener myKeyListener = null;
     private myTextChatListener myChatListener = null;
+    private IntercellListener intercellListener = null;
 
     private WlAvatarCharacter myAvatar = null;
     private Server server = null;
@@ -279,6 +287,15 @@ public class ScriptingComponent extends CellComponent
     private int animationIceCode = 0;
     private boolean animationSaveTransform = false;
     private boolean animationPlayReverse = false;
+
+    private int avatarEventEnable = 0;
+    private String avatarEventType = null;
+    private String avatarEventSource = null;
+    private String avatarEventAnimation = null;
+
+    private int audioEventsEnable = 0;
+    private String npcAvatarName = null;
+
     /**
      * The ScriptingComponent constructor
      *
@@ -292,6 +309,7 @@ public class ScriptingComponent extends CellComponent
 
         System.out.println("******************** Cell name = " + cell.getName());
         System.out.println("ScriptingComponent : Cell " + cell + " - id = " + cell.getCellID() + " : Enter ScriptingComponent constructor");
+        System.out.println("******************** class name = " + cell.getClass());
         this.cellName = cell.getName();
         this.thisCellID = cell.getCellID().toString();
         this.thees = this;
@@ -306,6 +324,31 @@ public class ScriptingComponent extends CellComponent
             
             }, 100);
         repo = ContentRepositoryRegistry.getInstance().getRepository(cell.getCellCache().getSession().getSessionManager());
+        }
+
+    public void setNpcAvatarName(String name)
+        {
+        npcAvatarName = name;
+        }
+
+    public void enableAudioEvents()
+        {
+        audioEventsEnable = 1;
+        }
+
+    public void disableAudioEvents()
+        {
+        audioEventsEnable = 0;
+        }
+
+    public void enableAvatarEvents()
+        {
+        avatarEventEnable = 1;
+        }
+
+    public void disableAvatarEvents()
+        {
+        avatarEventEnable = 0;
         }
 
     public class DummyTask implements Runnable
@@ -422,12 +465,22 @@ public class ScriptingComponent extends CellComponent
 @Override
         public void run()
             {
+            URL soundURL = null;
+
             try
                 {
-                String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/sounds/" + theCell.getName() + "/" + clipFile;
-                URL soundURL = new URL(thePath);
-
-//            System.out.println("Gonna try to play - " + thePath + " - URL - " + soundURL);
+                if(localOrGlobal == 0)
+                    {
+                    String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/sounds/" + theCell.getName() + "/" + clipFile;
+                    soundURL = new URL(thePath);
+                    System.out.println("Gonna try to play - " + thePath + " - URL - " + soundURL);
+                    }
+                else
+                    {
+                    String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/sounds/" + clipFile;
+                    soundURL = new URL(thePath);
+                    System.out.println("Gonna try to play - " + thePath + " - URL - " + soundURL);
+                    }
 
                 soundInputStream = AudioSystem.getAudioInputStream(soundURL);
                 AudioFormat audioFormat = soundInputStream.getFormat();
@@ -449,7 +502,8 @@ public class ScriptingComponent extends CellComponent
                     }
                 line.drain();
                 line.close();
-                ClientContext.getInputManager().postEvent(new IntercellEvent("Finished", responseCode));
+                if(audioEventsEnable == 1)
+                    ClientContext.getInputManager().postEvent(new IntercellEvent("Finished", responseCode));
                 }
             catch(UnsupportedAudioFileException ex)
                 {
@@ -474,8 +528,21 @@ public class ScriptingComponent extends CellComponent
         Cell avatarCell = ClientContextJME.getViewManager().getPrimaryViewCell();
         CellRenderer rend = avatarCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         myAvatar = ((AvatarImiJME)rend).getAvatarCharacter();
+//        System.out.println(" avatar X = " + myAvatar.getPositionRef().getX() + " - Y = " + myAvatar.getPositionRef().getY() + " - Z = " + myAvatar.getPositionRef().getZ());
         }
 
+    public float[] getAvatarLocation()
+        {
+        float[] location = {0.0f, 0.0f, 0.0f};
+
+        getMyAvatar();
+        location[0] = myAvatar.getPositionRef().getX();
+        location[1] = myAvatar.getPositionRef().getY();
+        location[2] = myAvatar.getPositionRef().getZ();
+
+        return location;
+        }
+    
     public void moveAvatarForward()
         {
         if(myAvatar != null)
@@ -577,7 +644,7 @@ public class ScriptingComponent extends CellComponent
     public int getScriptIndex(String script)
         {
         System.out.println("Enter getScriptIndex with script = " + script);
-        for(int i = 0; i < 22; i++)
+        for(int i = 0; i < 23; i++)
             {
             System.out.println("Inside - i = " + i + " - evName = " + eventNames[i]);
             if(eventNames[i].equals(script))
@@ -634,6 +701,20 @@ public class ScriptingComponent extends CellComponent
         runny.run();
         }
 
+    public void executeAction(String Name, String one, String two)
+        {
+        System.out.println("ScriptingComponent - enter executeAction - 2 String params");
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.set2Strings(one, two);
+        runny.setAnimationStartTranslate(animationStartTranslate);
+        runny.setAnimationStartRotation(animationStartRotation);
+        runny.setAnimationTimeMultiplier(animationTimeMultiplier);
+        runny.setAnimationStartKeyframe(animationStartKeyframe);
+        runny.setAnimationEndKeyframe(animationEndKeyframe);
+        runny.setAnimationIceCode(animationIceCode);
+        runny.run();
+        }
+
     public void executeAction(String Name, String one, String two, String three)
         {
         System.out.println("ScriptingComponent - enter executeAction - 3 String params");
@@ -648,9 +729,37 @@ public class ScriptingComponent extends CellComponent
         runny.run();
         }
 
+    public void executeAction(String Name, String one, String two, String three, String four)
+        {
+        System.out.println("ScriptingComponent - enter executeAction - 4 String params");
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.set4Strings(one, two, three, four);
+        runny.setAnimationStartTranslate(animationStartTranslate);
+        runny.setAnimationStartRotation(animationStartRotation);
+        runny.setAnimationTimeMultiplier(animationTimeMultiplier);
+        runny.setAnimationStartKeyframe(animationStartKeyframe);
+        runny.setAnimationEndKeyframe(animationEndKeyframe);
+        runny.setAnimationIceCode(animationIceCode);
+        runny.run();
+        }
+
+    public void executeAction(String Name, String one, String two, String three, String four, String five)
+        {
+        System.out.println("ScriptingComponent - enter executeAction - 5 String params");
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.set5Strings(one, two, three, four, five);
+        runny.setAnimationStartTranslate(animationStartTranslate);
+        runny.setAnimationStartRotation(animationStartRotation);
+        runny.setAnimationTimeMultiplier(animationTimeMultiplier);
+        runny.setAnimationStartKeyframe(animationStartKeyframe);
+        runny.setAnimationEndKeyframe(animationEndKeyframe);
+        runny.setAnimationIceCode(animationIceCode);
+        runny.run();
+        }
+
     public void executeAction(String Name, String animation, int animationNumber)
         {
-        System.out.println("ScriptingComponent - enter executeAction - no parms");
+        System.out.println("ScriptingComponent - enter executeAction - one string - one int parms");
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.setAnimation(animation);
         runny.setSingleInt(animationNumber);
@@ -999,7 +1108,6 @@ public class ScriptingComponent extends CellComponent
             for(int i = 0; i < size; i++)
                 {
                 System.out.println("The node = " + children.get(i).getName());
-                
                 }
             ContentCollection ccsr = repo.getSystemRoot();
             System.out.println("The system root node = " + ccsr.getName());
@@ -1009,6 +1117,78 @@ public class ScriptingComponent extends CellComponent
             Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+    public Vector getFileList(String thePath, int repository)
+        {
+        List<ContentNode> children = null;
+        ContentCollection current = null;
+
+        System.out.println("Enter getFileList");
+        ContentCollection ccr = null;
+        Vector tempBuf = new Vector();
+
+        try {
+            switch(repository)
+                {
+                case CONTENT_USER:
+                    {
+                    ccr = repo.getUserRoot();
+                    System.out.println("The user root node = " + ccr.getName());
+                    break;
+                    }
+                case CONTENT_ROOT:
+                    {
+                    ccr = repo.getRoot();
+                    System.out.println("The content root node = " + ccr.getName());
+                    break;
+                    }
+                case CONTENT_SYSTEM:
+                    {
+                    ccr = repo.getSystemRoot();
+                    System.out.println("The system root node = " + ccr.getName());
+                    break;
+                    }
+                default:
+                    {
+                    break;
+                    }
+                }
+            children = ccr.getChildren();
+            
+//            current = (ContentResource)ccr.getChild(thePath);
+
+            int size = children.size();
+            
+            for(int i = 0; i < size; i++)
+                {
+                String name = children.get(i).getName();
+                System.out.println("Checking node = " + name);
+                if(name.equals(thePath))
+                    {
+                    System.out.println("Found");
+                    current = (ContentCollection) children.get(i);
+                    break;
+                    }
+                }
+            
+            children = current.getChildren();
+            size = children.size();
+            for(int i = 0; i < size; i++)
+                {
+                String name = children.get(i).getName();
+                tempBuf.addElement(new String(name));
+                System.out.println("Possible node = " + name);
+                }
+            }
+        catch (ContentRepositoryException ex)
+            {
+            System.err.println("Exception in contentReadFile - " + ex);
+            return null;
+            }
+        return tempBuf;
+        }
+
+
    /**
     * sendChat - send a chat message through the WL text chat interface
     *
@@ -1036,23 +1216,6 @@ public class ScriptingComponent extends CellComponent
             myChatListener = new myTextChatListener();
             chatConnection.addTextChatListener(myChatListener);
             }
-/*
-        chatConnection.addTextChatListener(new TextChatListener()
-            {
-
-            public void textMessage(String arg0, String arg1, String arg2)
-                {
-                System.out.println("Text message = " + arg0 + " - from " + arg1 + " - to " + arg2);
-                chatMessage = arg0;
-                chatFrom = arg1;
-                chatTo = arg2;
-                executeScript(CHAT_EVENT, null);
-                }
-
-            });
-//        chatConnection.sendTextMessage("This is a test", "morris", "morrisford");
- 
- */
         }
     
     
@@ -1266,7 +1429,11 @@ public class ScriptingComponent extends CellComponent
                                 myKeyListener.addToEntity(mye);
                                 }
                             }
-                        ClientContext.getInputManager().addGlobalEventListener(new IntercellListener());
+                        if(intercellListener == null)
+                            {
+                            intercellListener = new IntercellListener();
+                            ClientContext.getInputManager().addGlobalEventListener(intercellListener);
+                            }
                         System.out.println("In component setStatus - renderer = " + ret);
 /* Execute the startup script */
                         executeScript(STARTUP_EVENT, null);
@@ -1280,15 +1447,22 @@ public class ScriptingComponent extends CellComponent
                     Entity mye = ret.getEntity();
                     RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
                     System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - decreasing ");
-                    myKeyListener.removeFromEntity(mye);
-                    myKeyListener = null;
-                    myListener.removeFromEntity(mye);
-                    myListener = null;
+                    if(myKeyListener != null)
+                        {
+                        myKeyListener.removeFromEntity(mye);
+                        myKeyListener = null;
+                        }
+                    if(myListener != null)
+                        {
+                        myListener.removeFromEntity(mye);
+                        myListener = null;
+                        }
 // Stop the servlet server if it is running
                     simpleServerStop();
 // Stop a repeater if running
                     stopRepeater();
-
+                    ClientContext.getInputManager().removeGlobalEventListener(intercellListener);
+                    intercellListener = null;
                     }
                 break;
                 }
@@ -1894,40 +2068,43 @@ public class ScriptingComponent extends CellComponent
                 }
 // This line passes 'this' instance over to the script
 //           bindings.put("CommThread", mth);
-                bindings.put("MyClass", this);
-                bindings.put("stateString", stateString);
-                bindings.put("stateInt", stateInt);
-                bindings.put("stateBoolean", stateBoolean);
-                bindings.put("stateFloat", stateFloat);
-                bindings.put("Event", eventType);
-                bindings.put("FrameRate", frameRate);
-                bindings.put("eventNames", eventNames);
-                bindings.put("eventScriptType", eventScriptType);
-                bindings.put("initialX", initialX);
-                bindings.put("initialY", initialY);
-                bindings.put("initialZ", initialZ);
-                bindings.put("initialRotationX", initialRotationX);
-                bindings.put("initialRotationY", initialRotationY);
-                bindings.put("initialRotationZ", initialRotationZ);
-                bindings.put("initialAngle", initialAngle);
-                bindings.put("coorX", coorX);
-                bindings.put("coorY", coorY);
-                bindings.put("coorZ", coorZ);
-                bindings.put("chatMessage", chatMessage);
-                bindings.put("chatFrom", chatFrom);
-                bindings.put("chatTo", chatTo);
-                bindings.put("ICECode", ICECode);
-                bindings.put("ICEMessage", ICEMessage);
-                bindings.put("ICEEventCode", ICEEventCode);
-                bindings.put("ICEEventMessage", ICEEventMessage);
-                bindings.put("proximityBounds", proximityBounds);
-                bindings.put("proximityDir", proximityDir);
-                bindings.put("aniFrame", aniFrame);
-                bindings.put("contentRead", contentRead);
-                bindings.put("cellName", cellName);
-                bindings.put("userName", userName);
-                bindings.put("cellID", thisCellID);
-           
+            bindings.put("MyClass", this);
+            bindings.put("stateString", stateString);
+            bindings.put("stateInt", stateInt);
+            bindings.put("stateBoolean", stateBoolean);
+            bindings.put("stateFloat", stateFloat);
+            bindings.put("Event", eventType);
+            bindings.put("FrameRate", frameRate);
+            bindings.put("eventNames", eventNames);
+            bindings.put("eventScriptType", eventScriptType);
+            bindings.put("initialX", initialX);
+            bindings.put("initialY", initialY);
+            bindings.put("initialZ", initialZ);
+            bindings.put("initialRotationX", initialRotationX);
+            bindings.put("initialRotationY", initialRotationY);
+            bindings.put("initialRotationZ", initialRotationZ);
+            bindings.put("initialAngle", initialAngle);
+            bindings.put("coorX", coorX);
+            bindings.put("coorY", coorY);
+            bindings.put("coorZ", coorZ);
+            bindings.put("chatMessage", chatMessage);
+            bindings.put("chatFrom", chatFrom);
+            bindings.put("chatTo", chatTo);
+            bindings.put("ICECode", ICECode);
+            bindings.put("ICEMessage", ICEMessage);
+            bindings.put("ICEEventCode", ICEEventCode);
+            bindings.put("ICEEventMessage", ICEEventMessage);
+            bindings.put("proximityBounds", proximityBounds);
+            bindings.put("proximityDir", proximityDir);
+            bindings.put("aniFrame", aniFrame);
+            bindings.put("contentRead", contentRead);
+            bindings.put("cellName", cellName);
+            bindings.put("userName", userName);
+            bindings.put("cellID", thisCellID);
+            bindings.put("avatarEventType", avatarEventType);
+            bindings.put("avatarEventSource", avatarEventSource);
+            bindings.put("avatarEventAnimation", avatarEventAnimation);
+
             try
                 {
                 if(jsEngine instanceof Compilable)
@@ -1987,7 +2164,7 @@ public class ScriptingComponent extends CellComponent
                 }
             catch(FileNotFoundException fnf)
                 {
-                System.out.print("ScriptingComponent : Cell " + cell.getCellID() + " : Script file not found");
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script file not found");
                 }
             catch(Exception e)
                 {
@@ -2444,6 +2621,44 @@ public class ScriptingComponent extends CellComponent
         aniFrame = 0;
         return aniList;
         }
+
+    public ArrayList buildRobot(String robotName)
+        {
+        String line;
+        robotList = new ArrayList();
+        String thePath = buildScriptPath(robotName);
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildAnimation - The path = " + thePath);
+        try
+            {
+            URL myURL = new URL(thePath);
+            BufferedReader in = new BufferedReader(new InputStreamReader(myURL.openStream()));
+            while((line = in.readLine()) != null)
+                {
+                robotLast++;
+                String[] result = line.split(",");
+                Robot robot = new Robot();
+                robot.move = new Boolean(result[0]).booleanValue();
+                robot.xLoc = new Float(result[1]).floatValue();
+                robot.yLoc = new Float(result[2]).floatValue();
+                robot.zLoc = new Float(result[3]).floatValue();
+                robot.playClip = new Boolean(result[4]).booleanValue();
+                robot.clip = new String(result[5]);
+                robot.playAnimation = new Boolean(result[6]).booleanValue();
+                robot.animationName = new String(result[7]);
+
+                robotList.add(robot);
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildRobot - Loading animation - Ani step -> " + robot.xLoc + "," + robot.yLoc + "," + robot.zLoc + "," +
+                        robot.playClip + "," + robot.clip);
+                }
+            }
+        catch(Exception e)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception reading while in the process of reading robot - The path = " + thePath);
+            e.printStackTrace();
+            }
+        robotFrame = 0;
+        return robotList;
+        }
     
     class expired extends TimerTask
         {
@@ -2628,6 +2843,18 @@ public class ScriptingComponent extends CellComponent
         mobileType = (int)type;
         }
 
+    class Robot
+        {
+        public  boolean     move;
+        public  float       xLoc;
+        public  float       yLoc;
+        public  float       zLoc;
+        public  boolean     playClip;
+        public  String      clip;
+        public  boolean     playAnimation;
+        public  String      animationName;
+        }
+
     class Animation
         {
         public  float   xLoc;
@@ -2650,6 +2877,40 @@ public class ScriptingComponent extends CellComponent
         public  float   z;
         public  String  name;
         public  BigInteger  clientID;
+        }
+
+    public int playRobotFrame()
+        {
+        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playRobotFrame - Frame = " + robotFrame + " of " + robotLast);
+        if(((Robot) robotList.get(robotFrame)).move)
+            {
+            System.out.println("Move");
+            executeAction("move", ((Robot) robotList.get(robotFrame)).xLoc,
+                              ((Robot) robotList.get(robotFrame)).yLoc,
+                              ((Robot) robotList.get(robotFrame)).zLoc);
+            }
+        else if (((Robot) robotList.get(robotFrame)).playAnimation)
+            {
+            System.out.println("play animation - animation = " + ((Robot) robotList.get(robotFrame)).animationName);
+            executeAction("runAnimation", ((Robot) robotList.get(robotFrame)).animationName, 0);
+            }
+        if(((Robot) robotList.get(robotFrame)).playClip)
+            {
+            System.out.println("play clip");
+            playSound(((Robot) robotList.get(robotFrame)).clip, 1900, 1);
+            }
+
+        robotFrame++;
+        if(robotFrame >= robotLast)
+            {
+            robotList.clear();
+            robotLast = 0;
+            return 0;
+            }
+        else
+            {
+            return 1;
+            }
         }
 
     public int playAnimationFrame()
@@ -2864,7 +3125,7 @@ public class ScriptingComponent extends CellComponent
             KeyEvent key = (KeyEvent) ((KeyEvent3D)event).getAwtEvent();
             if(key.getID() == KeyEvent.KEY_PRESSED)
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In commitEvent for key event - key = " + key.getKeyChar());
+//                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In commitEvent for key event - key = " + key.getKeyChar());
 
                 switch(key.getKeyChar())
                     {
@@ -2888,14 +3149,13 @@ public class ScriptingComponent extends CellComponent
         @Override
         public void commitEvent(Event event)
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In commitEvent for mouse event");
+//            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In commitEvent for mouse event");
             }
-        // Note: we don't override computeEvent because we don't do any computation in this listener.
 
         @Override
         public void computeEvent(Event event)
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In commitEvent for mouse event");
+//            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In commitEvent for mouse event");
             MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
 //            if (mbe.isClicked() == false)
 //                {
@@ -3005,39 +3265,58 @@ public class ScriptingComponent extends CellComponent
                 }
            }
         }
-    
+
     class IntercellListener extends EventClassListener 
         {
 @Override
         public Class[] eventClassesToConsume() 
             {
-            return new Class[] { IntercellEvent.class };
+            return new Class[] { IntercellEvent.class, AvatarAnimationEvent.class };
             }
 
 @Override
-//        public void commitEvent(Event event)
         public void computeEvent(Event event)
             {
-            if(!iceEventInFlight)
+            if(event instanceof IntercellEvent)
                 {
-                iceEventInFlight = true;
-                IntercellEvent ice = (IntercellEvent)event;
-                if(watchMessages.contains(new Float(ice.getCode())))
+                if(!iceEventInFlight)
                     {
-                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In Intercell listener in commitEvent - payload = " + ice.getPayload() + " Code = " + ice.getCode());
-                    ICEEventCode = ice.getCode();
-                    ICEEventMessage = ice.getPayload();
-                    executeScript(INTERCELL_EVENT, null);
+                    iceEventInFlight = true;
+                    IntercellEvent ice = (IntercellEvent)event;
+                    if(watchMessages.contains(new Float(ice.getCode())))
+                        {
+                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In Intercell listener in commitEvent - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                        ICEEventCode = ice.getCode();
+                        ICEEventMessage = ice.getPayload();
+                        executeScript(INTERCELL_EVENT, null);
+                        }
+                    else
+                        {
+                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                        }
+                    iceEventInFlight = false;
                     }
                 else
                     {
-                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                    System.out.println("ICE event in flight");
                     }
-                iceEventInFlight = false;
                 }
-            else
+            else if (event instanceof AvatarAnimationEvent)
                 {
-                System.out.println("ICE event in flight");
+//                System.out.println("************* In computeEvent for AvatarAnimationListener " + event);
+                if(avatarEventEnable == 1)
+                    {
+                    AvatarAnimationEvent aee = (AvatarAnimationEvent)event;
+                    if(aee.getSource().getName().equals(npcAvatarName))
+                        {
+                        System.out.println("Avatar name = " + aee.getSource().getName());
+                        System.out.println("Event - type = " + aee.getType() + " - avatar = " + aee.getSource().getName() + " - animation = " + aee.getAnimationName());
+                        avatarEventType = aee.getType().name();
+                        avatarEventSource = aee.getSource().getName();
+                        avatarEventAnimation = aee.getAnimationName();
+                        executeScript(AVATAR_EVENT, null);
+                        }
+                    }
                 }
             }
         }

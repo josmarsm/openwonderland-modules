@@ -42,6 +42,7 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
     public static final int PRESENCE_EVENT = 21;
     public static final int CONTROLLER_EVENT = 22;
     public static final int PROPERTIES_EVENT = 23;
+    public static final int AVATAR_EVENT = 24;
 
     public String getDisplayName() 
         {
@@ -78,6 +79,7 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         eventNames[PRESENCE_EVENT] = "presence.js";
         eventNames[CONTROLLER_EVENT] = "controller.js";
         eventNames[PROPERTIES_EVENT] = "properties.java";
+        eventNames[AVATAR_EVENT] = "avatar.js";
 
         eventScriptType[MOUSE1_EVENT] = "javascript";
         eventScriptType[MOUSE2_EVENT] = "javascript";
@@ -103,6 +105,7 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         eventScriptType[PRESENCE_EVENT] = "javascript";
         eventScriptType[CONTROLLER_EVENT] = "javascript";
         eventScriptType[PROPERTIES_EVENT] = "java";
+        eventScriptType[AVATAR_EVENT] = "javascript";
 
         eventResource[MOUSE1_EVENT] = false;
         eventResource[MOUSE2_EVENT] = false;
@@ -128,6 +131,8 @@ public class ScriptingComponentFactory implements CellComponentFactorySPI
         eventResource[PRESENCE_EVENT] = false;
         eventResource[CONTROLLER_EVENT] = false;
         eventResource[PROPERTIES_EVENT] = true;
+        eventResource[AVATAR_EVENT] = false;
+
         cellOwner = "";
         useGlobalScripts = true;
 
