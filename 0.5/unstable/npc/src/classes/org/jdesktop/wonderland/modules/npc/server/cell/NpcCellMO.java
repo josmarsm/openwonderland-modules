@@ -42,6 +42,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.npc.common.NpcCellChangeMessage;
 import org.jdesktop.wonderland.modules.npc.common.NpcCellClientState;
 import org.jdesktop.wonderland.modules.npc.common.NpcCellServerState;
+import org.jdesktop.wonderland.modules.scriptingComponent.server.ScriptingComponentMO;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
@@ -61,8 +62,11 @@ public class NpcCellMO extends CellMO {
     private String relativeConfigURL = null;
 
     /** Default constructor */
-    public NpcCellMO() {
-    }
+    public NpcCellMO()
+        {
+        addComponent(new ScriptingComponentMO(this), ScriptingComponentMO.class);
+        System.out.println("In NPC MO constructor");
+        }
 
     /**
      * Returns the URL of the avatar configuration, relative to the module.

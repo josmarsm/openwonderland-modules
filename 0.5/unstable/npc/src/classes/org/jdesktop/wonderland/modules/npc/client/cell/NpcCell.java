@@ -60,7 +60,9 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -76,11 +78,18 @@ import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME.AvatarChangedListener;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry.PickBox;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
+import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingActionClass;
+import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingComponent;
+import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingRunnable;
 
 /**
  *
@@ -99,7 +108,12 @@ public class NpcCell extends Cell
     @UsesCellComponent
     private ContextMenuComponent contextMenu;
 
+    @UsesCellComponent
+    private ScriptingComponent scriptingComponent;
+
     private final ContextMenuFactorySPI menuFactory;
+
+    private String[] nameList = null;
 
     public NpcCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -138,6 +152,27 @@ public class NpcCell extends Cell
         if (status == CellStatus.ACTIVE && increasing == true) {
             contextMenu.addContextMenuFactory(menuFactory);
             addStatusChangeListener(this);
+
+            ScriptingActionClass sac = new ScriptingActionClass();
+            sac.setName("NPC");
+            sac.insertCmdMap("testit", testitRun);
+            sac.insertCmdMap("move", moveRun);
+            sac.insertCmdMap("selectAvatar", avatarSelectAvatarRun);
+            sac.insertCmdMap("startForward", avatarStartForwardRun);
+            sac.insertCmdMap("stopForward", avatarStopForwardRun);
+            sac.insertCmdMap("startBack", avatarStartBackRun);
+            sac.insertCmdMap("stopBack", avatarStopBackRun);
+            sac.insertCmdMap("startLeft", avatarStartLeftRun);
+            sac.insertCmdMap("stopLeft", avatarStopLeftRun);
+            sac.insertCmdMap("startRight", avatarStartRightRun);
+            sac.insertCmdMap("stopRight", avatarStopRightRun);
+            sac.insertCmdMap("dumpAnimations", avatarDumpAnimationsRun);
+            sac.insertCmdMap("runAnimation", avatarRunAnimationRun);
+            sac.insertCmdMap("stopAnimation", avatarStopAnimationRun);
+            sac.insertCmdMap("attachNpcName", avatarAttachNpcNameRun);
+ //           System.out.println("in sac stuff - nameList = " + nameList);
+            scriptingComponent.putActionObject(sac);
+
             return;
         }
 
@@ -149,6 +184,250 @@ public class NpcCell extends Cell
             return;
         }
     }
+
+        public void testit(float x, float y, float z)
+        {
+        System.out.println("testit x = " + x + " y = " + y + " z = " + z);
+        }
+
+    ScriptingRunnable testitRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            testit(x, y, z);
+            System.out.println("ScriptingActionClass - enter testit");
+            }
+        };
+
+
+    ScriptingRunnable moveRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            System.out.println("ScriptingActionClass - enter moveRun");
+            move(x, y, z);
+            }
+        };
+
+
+    public void avatarSelectAvatar(String avatar)
+        {
+        ChannelComponent cc = NpcCell.this.getComponent(ChannelComponent.class);
+
+        // From the partial URI, add the module prefix
+        String uri = "wla://avatarbaseart/" + avatar;
+        String urlString = null;
+        try {
+            urlString = AssetUtils.getAssetURL(uri, NpcCell.this).toExternalForm();
+        } catch (java.net.MalformedURLException excp) {
+            logger.log(Level.WARNING, "Unable to form URL from " + uri, excp);
+            return;
+        }
+
+        // Form up a message and send
+        String className = ImiAvatarLoaderFactory.class.getName();
+        AvatarConfigInfo info = new AvatarConfigInfo(urlString, className);
+        cc.send(AvatarConfigMessage.newRequestMessage(info));
+        }
+
+    ScriptingRunnable avatarSelectAvatarRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarSelectAvatar(avatar);
+            System.out.println("ScriptingActionClass - enter avatarStartForward");
+            }
+        };
+
+    public void avatarStartForward()
+        {
+        renderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Forward);
+        }
+
+    ScriptingRunnable avatarStartForwardRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarStartForward();
+            System.out.println("ScriptingActionClass - enter avatarStartForward");
+            }
+        };
+
+    public void avatarRunAnimation(String animation)
+        {
+        renderer.getAvatarCharacter().playAnimation(animation);
+        }
+
+    ScriptingRunnable avatarRunAnimationRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarRunAnimation(animation);
+            System.out.println("ScriptingActionClass - enter avatarRunAnimation");
+            }
+        };
+
+    public void avatarStopAnimation()
+        {
+        renderer.getAvatarCharacter().stop();
+        }
+
+    ScriptingRunnable avatarStopAnimationRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarStopAnimation();
+            System.out.println("ScriptingActionClass - enter avatarStopAnimation");
+            }
+        };
+
+    public String[] avatarDumpAnimations()
+        {
+        int     i = 0;
+        nameList = new String[50];
+
+        for(String anim : renderer.getAvatarCharacter().getAnimationNames())
+            {
+                System.out.println("Avatar animation = " + anim);
+                nameList[i] = anim;
+                i++;
+            }
+        System.out.println("in avatarDumpAnimations - list = " + nameList);
+        return nameList;
+        }
+
+    ScriptingRunnable avatarDumpAnimationsRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            String[] list = avatarDumpAnimations();
+
+            setNameArray(list);
+            System.out.println("In npc avatarDumpAnimationsRun - exit avatarDumpAnimations - list = " + list + " first = " + list[0]);
+            }
+        };
+
+    public void avatarStopForward()
+        {
+        renderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Forward);
+        }
+
+    ScriptingRunnable avatarStopForwardRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarStopForward();
+            System.out.println("ScriptingActionClass - enter avatarStopForward");
+            }
+        };
+
+    public void avatarStartBack()
+        {
+        renderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Back);
+        }
+
+    ScriptingRunnable avatarStartBackRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarStartBack();
+            System.out.println("ScriptingActionClass - enter avatarStartBack");
+            }
+        };
+
+    public void avatarStopBack()
+        {
+        renderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Back);
+        }
+
+    ScriptingRunnable avatarStopBackRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarStopBack();
+            System.out.println("ScriptingActionClass - enter avatarStopBack");
+            }
+        };
+
+    public void avatarStartLeft()
+        {
+        renderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Left);
+        }
+
+    ScriptingRunnable avatarStartLeftRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarStartLeft();
+            System.out.println("ScriptingActionClass - enter avatarStartLeft");
+            }
+        };
+
+    public void avatarStopLeft()
+        {
+        renderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Left);
+        }
+
+    ScriptingRunnable avatarStopLeftRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarStopLeft();
+            System.out.println("ScriptingActionClass - enter avatarStopLeft");
+            }
+        };
+
+    public void avatarStartRight()
+        {
+        renderer.getAvatarCharacter().triggerActionStart(TriggerNames.Move_Right);
+        }
+
+    ScriptingRunnable avatarStartRightRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarStartRight();
+            System.out.println("ScriptingActionClass - enter avatarStartRight");
+            }
+        };
+
+    public void avatarStopRight()
+        {
+        renderer.getAvatarCharacter().triggerActionStop(TriggerNames.Move_Right);
+        }
+
+    ScriptingRunnable avatarStopRightRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            avatarStopRight();
+            System.out.println("ScriptingActionClass - enter avatarStopRight");
+            }
+        };
+
+    ScriptingRunnable avatarAttachNpcNameRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            attachNpcName(avatar);
+            System.out.println("ScriptingActionClass - enter avatarStopRight");
+            }
+        };
 
     public void cellStatusChanged(Cell cell, CellStatus status) {
         if (status == CellStatus.ACTIVE) {
@@ -167,6 +446,7 @@ public class NpcCell extends Cell
                 attachEditorGeometry();
                 attachCellLocationUpdater();
                 attachAnimationListener();
+                attachNpcName("ralph");
             }
         });
     }
@@ -250,6 +530,14 @@ public class NpcCell extends Cell
         }
     }
 
+    private void attachNpcName(String name)
+        {
+        renderer.getAvatarCharacter();
+        Node extKids = renderer.getAvatarCharacter().getJScene().getExternalKidsRoot();
+        extKids.attachChild(new NameTagNode(name, 2, false, false, false));
+
+        }
+
     private void attachCellLocationUpdater() {
         Node extKids = renderer.getAvatarCharacter().getJScene().getExternalKidsRoot();
         extKids.addGeometricUpdateListener(new GeometricUpdateListener() {
@@ -263,19 +551,22 @@ public class NpcCell extends Cell
         });
     }
 
-    private void attachAnimationListener() {
+    private void attachAnimationListener()
+        {
         final WlAvatarCharacter character = renderer.getAvatarCharacter();
-        character.getContext().addGameContextListener(new GameContextListener() {
-
-            public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation) {
+        character.getContext().addGameContextListener(new GameContextListener()
+            {
+            public void trigger(boolean pressed, int trigger, Vector3f translation, Quaternion rotation)
+                {
                 GameState state = character.getContext().getCurrentState();
                 String animationName=null;
-                if (state instanceof CycleActionState) {
+                if (state instanceof CycleActionState)
+                    {
                     animationName = character.getContext().getState(CycleActionState.class).getAnimationName();
-                }
+                    }
 
                 movableNpc.localMoveRequest(new CellTransform(rotation, translation), trigger, pressed, animationName, null);
-            }
-        });
-    }
+                }
+            });
+        }
 }

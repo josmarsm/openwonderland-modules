@@ -67,10 +67,13 @@ public class MovableNpcComponent extends MovableAvatarComponent {
 
     @Override
     protected void serverMoveRequest(MovableMessage msg) {
-        CellTransform transform = msg.getCellTransform();
-        applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.REMOTE);
-        notifyServerCellMoveListeners(msg, transform, CellMoveSource.REMOTE);
+//        System.out.println("*****************************      serverMoveRequest");
+        
 
+ //       CellTransform transform = msg.getCellTransform();
+ //       applyLocalTransformChange(transform, TransformChangeListener.ChangeSource.REMOTE);
+ //       notifyServerCellMoveListeners(msg, transform, CellMoveSource.REMOTE);
+/*
         MovableAvatarMessage mam = (MovableAvatarMessage) msg;
         if (mam.getTrigger() != NO_TRIGGER) {
             CellRenderer renderer = cell.getCellRenderer(RendererType.RENDERER_JME);
@@ -78,5 +81,6 @@ public class MovableNpcComponent extends MovableAvatarComponent {
                 ((AvatarImiJME) renderer).trigger(mam.getTrigger(), mam.isPressed(), mam.getAnimationName());
             }
         }
+*/
     }
 }
