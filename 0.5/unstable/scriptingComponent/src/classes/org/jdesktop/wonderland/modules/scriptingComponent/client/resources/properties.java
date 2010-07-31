@@ -22,12 +22,13 @@ class properties extends javax.swing.JFrame {
     private static Class sc = null;
     private static Object myClassObject = null;
     private final static String newline = "\n";
-    private final static int MAX_EVENTS = 24;
+    private final static int MAX_EVENTS = 25;
 
     /** Creates new form SetScripts3 */
     public properties()
         {
         initComponents();
+        retrieveScriptTable();
         setScriptNameCombo();
         jComboBox1.setMaximumRowCount(6);
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
@@ -62,6 +63,11 @@ class properties extends javax.swing.JFrame {
         jScriptsExit = new javax.swing.JButton();
         jScriptsRetrieve = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
+        jButtonGetAvatarLocation = new javax.swing.JButton();
+        AvatarX = new javax.swing.JLabel();
+        AvatarY = new javax.swing.JLabel();
+        AvatarZ = new javax.swing.JLabel();
+        jComboSoundFiles = new javax.swing.JComboBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -100,6 +106,12 @@ class properties extends javax.swing.JFrame {
         jLabel2.setText("Object");
 
         jLabel3.setText("Script Name");
+
+        jTextObject.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextObjectActionPerformed(evt);
+            }
+        });
 
         EditRetrieveScript.setText("Retrieve Script");
         EditRetrieveScript.addActionListener(new java.awt.event.ActionListener() {
@@ -208,7 +220,8 @@ class properties extends javax.swing.JFrame {
                 {"Chat", null, null, null},
                 {"Presence", null, null, null},
                 {"Controller", null, null, null},
-                {"Properties", null, null, null}
+                {"Properties", null, null, null},
+                {"Avatar", null, null, null}
             },
             new String [] {
                 "Event", "Name", "Type", "ResourceScript"
@@ -267,30 +280,69 @@ class properties extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 587, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 626, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jScriptsSave)
                         .addGap(18, 18, 18)
                         .addComponent(jScriptsRetrieve)
                         .addGap(18, 18, 18)
                         .addComponent(jScriptsExit)))
-                .addContainerGap(57, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Script Properties", jPanel2);
+
+        jButtonGetAvatarLocation.setText("Get Avatar Location");
+        jButtonGetAvatarLocation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonGetAvatarLocationActionPerformed(evt);
+            }
+        });
+
+        AvatarX.setText("Avatar X");
+
+        AvatarY.setText("Avatar Y");
+
+        AvatarZ.setText("Avatar Z");
+
+        jComboSoundFiles.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 643, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jButtonGetAvatarLocation)
+                .addGap(66, 66, 66)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(AvatarZ)
+                    .addComponent(AvatarY)
+                    .addComponent(AvatarX))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+                .addComponent(jComboSoundFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(93, 93, 93))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 650, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(168, 168, 168)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonGetAvatarLocation)
+                            .addComponent(AvatarX))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(AvatarY)
+                        .addGap(18, 18, 18)
+                        .addComponent(AvatarZ))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jComboSoundFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(383, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Extra", jPanel3);
+        jTabbedPane1.addTab("Robot", jPanel3);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -369,6 +421,7 @@ class properties extends javax.swing.JFrame {
     private void jScriptsRetrieveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jScriptsRetrieveActionPerformed
         retrieveScriptTable();
         setScriptNameCombo();
+
     }//GEN-LAST:event_jScriptsRetrieveActionPerformed
 
     private void jScriptsSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jScriptsSaveActionPerformed
@@ -428,6 +481,29 @@ class properties extends javax.swing.JFrame {
         // TODO add your handling code here:
 
     }//GEN-LAST:event_jComboBox1ActionPerformed
+
+    private void jButtonGetAvatarLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGetAvatarLocationActionPerformed
+        float[] location = getAvatarLocation();
+        AvatarX.setText(String.valueOf(location[0]));
+        AvatarY.setText(String.valueOf(location[1]));
+        AvatarZ.setText(String.valueOf(location[2]));
+
+        Vector v = getFileList("sounds", 1);
+
+        jComboSoundFiles.removeAllItems();
+        for(Enumeration e = v.elements(); e.hasMoreElements();)
+            {
+            String myString = (String) e.nextElement();
+            System.out.println("Item = " + myString);
+
+            jComboSoundFiles.addItem(myString);
+            }
+
+    }//GEN-LAST:event_jButtonGetAvatarLocationActionPerformed
+
+    private void jTextObjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextObjectActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextObjectActionPerformed
 
     public static void setScriptContext(ScriptContext ctx)
         {
@@ -766,6 +842,29 @@ class properties extends javax.swing.JFrame {
         return (Integer)retobj;
         }
 
+    private Vector getFileList(String scriptPath, int area)
+        {
+// Do setup for testMethod(String)
+        Object retobj = null;
+        try
+            {
+            Class partypes[] = new Class[2];
+            partypes[0] = scriptPath.getClass();
+            partypes[1] = Integer.TYPE;
+            Method meth = sc.getMethod("getFileList", partypes);
+            Object arglist[] = new Object[2];
+            arglist[0] = scriptPath;
+            arglist[1] = new Integer(area);
+            retobj = meth.invoke(myClassObject, arglist);
+            }
+        catch(Exception e)
+            {
+            System.out.println("Exception for getFileList");
+            e.printStackTrace();
+            }
+        return (Vector)retobj;
+        }
+
     private Integer getScriptIndex(String scriptFile)
         {
 // Do setup for testMethod(String)
@@ -826,6 +925,24 @@ class properties extends javax.swing.JFrame {
         return (Vector)retobj;
         }
 
+    private float[] getAvatarLocation()
+        {
+// Do setup for testMethod(String)
+        Object retobj = null;
+        try
+            {
+            Class partypes[] = new Class[0];
+            Method meth = sc.getMethod("getAvatarLocation", partypes);
+            Object arglist[] = new Object[0];
+            retobj = meth.invoke(myClassObject, arglist);
+            }
+        catch(Exception e)
+            {
+            System.out.println("Exception for getContentRead");
+            e.printStackTrace();
+            }
+        return (float[])retobj;
+        }
 
     private String getContentReadString()
         {
@@ -885,10 +1002,15 @@ class properties extends javax.swing.JFrame {
         }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel AvatarX;
+    private javax.swing.JLabel AvatarY;
+    private javax.swing.JLabel AvatarZ;
     private javax.swing.JButton EditRetrieveScript;
     private javax.swing.JTable ScriptsTable;
+    private javax.swing.JButton jButtonGetAvatarLocation;
     private javax.swing.JCheckBox jCheckUserScripts;
     private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JComboBox jComboSoundFiles;
     private javax.swing.JButton jEditExit;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

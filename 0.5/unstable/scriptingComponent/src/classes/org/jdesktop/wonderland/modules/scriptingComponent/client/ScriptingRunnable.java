@@ -23,6 +23,8 @@ public class ScriptingRunnable implements Runnable
     public String string1;
     public String string2;
     public String string3;
+    public String string4;
+    public String string5;
     public Vector3f animationStartTranslate;
     public float[] animationStartRotation;
     public int animationTimeMultiplier;
@@ -59,6 +61,12 @@ public class ScriptingRunnable implements Runnable
         z = Z;
         }
 
+    public void set2Strings(String one, String two)
+        {
+        string1 = one;
+        string2 = two;
+        }
+
     public void set3Strings(String one, String two, String three)
         {
         string1 = one;
@@ -66,6 +74,23 @@ public class ScriptingRunnable implements Runnable
         string3 = three;
         }
     
+    public void set4Strings(String one, String two, String three, String four)
+        {
+        string1 = one;
+        string2 = two;
+        string3 = three;
+        string4 = four;
+        }
+
+    public void set5Strings(String one, String two, String three, String four, String five)
+        {
+        string1 = one;
+        string2 = two;
+        string3 = three;
+        string4 = four;
+        string5 = five;
+        }
+
     public void setSingleInt(int A)
         {
         a = A;
