@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,9 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
@@ -111,6 +114,7 @@ import org.mortbay.jetty.servlet.ServletHolder;
 @ExperimentalAPI
 public class ScriptingComponent extends CellComponent
     {
+    private int traceLevel = 1;
     private Node localNode = null;
     public String stateString[] = {null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null};
     public int stateInt[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -208,6 +212,7 @@ public class ScriptingComponent extends CellComponent
 
     private   int       proximityBounds     = 0;
     private   Boolean   proximityDir        = false;
+    private   String    proximityUserName   = "user";
 
     private   String    chatMessage         = null;
     private   String    chatFrom            = null;
@@ -307,9 +312,12 @@ public class ScriptingComponent extends CellComponent
         firstEntry = false;
         theCell = cell;
 
-        System.out.println("******************** Cell name = " + cell.getName());
-        System.out.println("ScriptingComponent : Cell " + cell + " - id = " + cell.getCellID() + " : Enter ScriptingComponent constructor");
-        System.out.println("******************** class name = " + cell.getClass());
+        if(traceLevel > 1)
+            {
+            System.out.println("******************** Cell name = " + cell.getName());
+            System.out.println("ScriptingComponent : Cell " + cell + " - id = " + cell.getCellID() + " : Enter ScriptingComponent constructor");
+            System.out.println("******************** class name = " + cell.getClass());
+            }
         this.cellName = cell.getName();
         this.thisCellID = cell.getCellID().toString();
         this.thees = this;
@@ -324,6 +332,31 @@ public class ScriptingComponent extends CellComponent
             
             }, 100);
         repo = ContentRepositoryRegistry.getInstance().getRepository(cell.getCellCache().getSession().getSessionManager());
+        }
+
+    public void setTraceLevel(int trace)
+        {
+        traceLevel = trace;
+        }
+
+    public void launchBrowser(String theUrl)
+        {
+        if (!theUrl.contains("://"))
+            {
+            theUrl = "http://" + theUrl;
+            }
+
+        try
+            {
+            WebBrowserLauncher.openURL(theUrl);
+            }
+        catch (Exception ex)
+            {
+            if(traceLevel > 0)
+                {
+                System.out.println("Failed to open URL: " + theUrl + " - Exception " + ex);
+                }
+            }
         }
 
     public void setNpcAvatarName(String name)
@@ -362,9 +395,15 @@ public class ScriptingComponent extends CellComponent
 
         public void run()
             {
-            System.out.println("Starting");
+            if(traceLevel > 1)
+                {
+                System.out.println("Starting");
+                }
             executeScript(eventNumber, null);
-            System.out.println("Ending");
+            if(traceLevel > 1)
+                {
+                System.out.println("Ending");
+                }
             }
         }
 
@@ -378,7 +417,10 @@ public class ScriptingComponent extends CellComponent
             }
         else
             {
-            System.out.println("Repeater already running");
+            if(traceLevel > 1)
+                {
+                System.out.println("Repeater already running");
+                }
             }
         }
 
@@ -413,7 +455,10 @@ public class ScriptingComponent extends CellComponent
             }
         catch (Exception ex)
             {
-            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            if(traceLevel > 0)
+                {
+                Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
 
@@ -440,14 +485,16 @@ public class ScriptingComponent extends CellComponent
                 server = new Server(port);
                 Context context = new Context(server, "/");
                 context.addServlet(new ServletHolder(new AndroidServlet(code, errorCode, mode)), "/*");
-//                context.addServlet(AndroidServlet.class, "/*");
                 
                 server.start();
                 server.join();
                 }
             catch (Exception ex)
                 {
-                Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+                if(traceLevel > 0)
+                    {
+                    Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
@@ -473,13 +520,19 @@ public class ScriptingComponent extends CellComponent
                     {
                     String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/sounds/" + theCell.getName() + "/" + clipFile;
                     soundURL = new URL(thePath);
-                    System.out.println("Gonna try to play - " + thePath + " - URL - " + soundURL);
+                    if(traceLevel > 1)
+                        {
+                        System.out.println("Gonna try to play - " + thePath + " - URL - " + soundURL);
+                        }
                     }
                 else
                     {
                     String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/sounds/" + clipFile;
                     soundURL = new URL(thePath);
-                    System.out.println("Gonna try to play - " + thePath + " - URL - " + soundURL);
+                    if(traceLevel > 1)
+                        {
+                        System.out.println("Gonna try to play - " + thePath + " - URL - " + soundURL);
+                        }
                     }
 
                 soundInputStream = AudioSystem.getAudioInputStream(soundURL);
@@ -507,18 +560,27 @@ public class ScriptingComponent extends CellComponent
                 }
             catch(UnsupportedAudioFileException ex)
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception in playSound " + ex);
-                ex.printStackTrace();
+                if(traceLevel > 0)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception in playSound " + ex);
+                    ex.printStackTrace();
+                    }
                 }
             catch(LineUnavailableException luex)
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception in playSound " + luex);
-                luex.printStackTrace();
+                if(traceLevel > 0)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception in playSound " + luex);
+                    luex.printStackTrace();
+                    }
                 }
             catch(IOException ioex)
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception in playSound " + ioex);
-                ioex.printStackTrace();
+                if(traceLevel > 0)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception in playSound " + ioex);
+                    ioex.printStackTrace();
+                    }
                 }
             }
         }
@@ -528,7 +590,10 @@ public class ScriptingComponent extends CellComponent
         Cell avatarCell = ClientContextJME.getViewManager().getPrimaryViewCell();
         CellRenderer rend = avatarCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         myAvatar = ((AvatarImiJME)rend).getAvatarCharacter();
-//        System.out.println(" avatar X = " + myAvatar.getPositionRef().getX() + " - Y = " + myAvatar.getPositionRef().getY() + " - Z = " + myAvatar.getPositionRef().getZ());
+        if(traceLevel > 3)
+            {
+            System.out.println(" avatar X = " + myAvatar.getPositionRef().getX() + " - Y = " + myAvatar.getPositionRef().getY() + " - Z = " + myAvatar.getPositionRef().getZ());
+            }
         }
 
     public float[] getAvatarLocation()
@@ -628,7 +693,10 @@ public class ScriptingComponent extends CellComponent
         useGlobalScripts = value;
         ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), cellOwner, useGlobalScripts, CHANGE_USER_MESSAGE);
         channelComp.send(msg);
-        System.out.println("Set useGlobalScripts to " + value);
+        if(traceLevel > 3)
+            {
+            System.out.println("Set useGlobalScripts to " + value);
+            }
         }
 
     public boolean getGlobalScripts()
@@ -643,10 +711,16 @@ public class ScriptingComponent extends CellComponent
 
     public int getScriptIndex(String script)
         {
-        System.out.println("Enter getScriptIndex with script = " + script);
+        if(traceLevel > 3)
+            {
+            System.out.println("Enter getScriptIndex with script = " + script);
+            }
         for(int i = 0; i < 23; i++)
             {
-            System.out.println("Inside - i = " + i + " - evName = " + eventNames[i]);
+            if(traceLevel > 3)
+                {
+                System.out.println("Inside - i = " + i + " - evName = " + eventNames[i]);
+                }
             if(eventNames[i].equals(script))
                 {
                 return i;
@@ -659,20 +733,23 @@ public class ScriptingComponent extends CellComponent
         {
         return testInt;
         }
+
     public void putActionObject(ScriptingActionClass actionObject)
         {
-        System.out.println("In scriptingComponent - enter putActionObject");
+        if(traceLevel > 3)
+            {
+            System.out.println("In scriptingComponent - enter putActionObject");
+            }
         this.actionObject = actionObject;
         this.cellType = actionObject.getName();
-//        System.out.println("In putActionObject - name = " + actionObject.getName());
-//        ScriptingRunnable runny = actionObject.getCmdMap("testit");
-//        runny.setPoint(1.0f, 2.0f, 3.0f);
-//        runny.run();
         }
 
     public void executeAction(String Name, float x, float y, float z)
         {
-        System.out.println("ScriptingComponent - enter executeAction - three floats");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - three floats");
+            }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.setPoint(x, y, z);
         runny.run();
@@ -680,14 +757,20 @@ public class ScriptingComponent extends CellComponent
 
     public void executeAction(String Name)
         {
-        System.out.println("ScriptingComponent - enter executeAction - no parms");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - no parms");
+            }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.run();
         }
 
     public void executeAction(String Name, int a)
         {
-        System.out.println("ScriptingComponent - enter executeAction - int param");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - int param");
+            }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.setSingleInt(a);
         runny.run();
@@ -695,7 +778,10 @@ public class ScriptingComponent extends CellComponent
 
     public void executeAction(String Name, String avatar)
         {
-        System.out.println("ScriptingComponent - enter executeAction - String param");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - String param");
+            }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.setAvatar(avatar);
         runny.run();
@@ -703,7 +789,10 @@ public class ScriptingComponent extends CellComponent
 
     public void executeAction(String Name, String one, String two)
         {
-        System.out.println("ScriptingComponent - enter executeAction - 2 String params");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - 2 String params");
+            }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.set2Strings(one, two);
         runny.setAnimationStartTranslate(animationStartTranslate);
@@ -717,7 +806,10 @@ public class ScriptingComponent extends CellComponent
 
     public void executeAction(String Name, String one, String two, String three)
         {
-        System.out.println("ScriptingComponent - enter executeAction - 3 String params");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - 3 String params");
+            }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.set3Strings(one, two, three);
         runny.setAnimationStartTranslate(animationStartTranslate);
@@ -731,7 +823,10 @@ public class ScriptingComponent extends CellComponent
 
     public void executeAction(String Name, String one, String two, String three, String four)
         {
-        System.out.println("ScriptingComponent - enter executeAction - 4 String params");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - 4 String params");
+            }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.set4Strings(one, two, three, four);
         runny.setAnimationStartTranslate(animationStartTranslate);
@@ -745,7 +840,10 @@ public class ScriptingComponent extends CellComponent
 
     public void executeAction(String Name, String one, String two, String three, String four, String five)
         {
-        System.out.println("ScriptingComponent - enter executeAction - 5 String params");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - 5 String params");
+            }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.set5Strings(one, two, three, four, five);
         runny.setAnimationStartTranslate(animationStartTranslate);
@@ -759,7 +857,10 @@ public class ScriptingComponent extends CellComponent
 
     public void executeAction(String Name, String animation, int animationNumber)
         {
-        System.out.println("ScriptingComponent - enter executeAction - one string - one int parms");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - one string - one int parms");
+            }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.setAnimation(animation);
         runny.setSingleInt(animationNumber);
@@ -817,7 +918,10 @@ public class ScriptingComponent extends CellComponent
 
     public void contentReadResource(String theScript)
         {
-        System.out.println("Enter contentReadResource");
+        if(traceLevel > 3)
+            {
+            System.out.println("Enter contentReadResource");
+            }
         String strLine;
         Vector tempBuf = new Vector();
 
@@ -830,21 +934,33 @@ public class ScriptingComponent extends CellComponent
                 i = 0;
                 while ((strLine = br.readLine()) != null)
                     {
-                    System.out.println("Line read = " + strLine);
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Line read = " + strLine);
+                        }
                     tempBuf.addElement(new String(strLine));
                     i++;
-                    System.out.println("Line from content file" + strLine);
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Line from content file" + strLine);
+                        }
                     }
                 contentRead = tempBuf;
                 }
             catch (IOException ex)
                 {
-                System.out.println("Exception in content readline - " + ex);
+                if(traceLevel > 0)
+                    {
+                    System.out.println("Exception in content readline - " + ex);
+                    }
                 }
             }
         catch (Exception ex)
             {
-            System.err.println("Exception in contentReadResource - " + ex);
+            if(traceLevel > 0)
+                {
+                System.err.println("Exception in contentReadResource - " + ex);
+                }
             }
         }
 
@@ -858,7 +974,10 @@ public class ScriptingComponent extends CellComponent
  */
     public int contentReadFile(String thePath, int repository)
         {
-        System.out.println("Enter contentReadFile");
+        if(traceLevel > 3)
+            {
+            System.out.println("Enter contentReadFile");
+            }
         ContentResource current = null;
         ContentCollection ccr = null;
         String strLine;
@@ -874,19 +993,28 @@ public class ScriptingComponent extends CellComponent
                 case CONTENT_USER:
                     {
                     ccr = repo.getUserRoot();
-                    System.out.println("The user root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The user root node = " + ccr.getName());
+                        }
                     break;
                     }
                 case CONTENT_ROOT:
                     {
                     ccr = repo.getRoot();
-                    System.out.println("The content root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The content root node = " + ccr.getName());
+                        }
                     break;
                     }
                 case CONTENT_SYSTEM:
                     {
                     ccr = repo.getSystemRoot();
-                    System.out.println("The system root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The system root node = " + ccr.getName());
+                        }
                     break;
                     }
                 default:
@@ -901,23 +1029,35 @@ public class ScriptingComponent extends CellComponent
                 i = 0;
                 while ((strLine = br.readLine()) != null)
                     {
-                    System.out.println("Line read = " + strLine);
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Line read = " + strLine);
+                        }
                     tempBuf.addElement(new String(strLine));
                     i++;
-                    System.out.println("Line from content file" + strLine);
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Line from content file" + strLine);
+                        }
                     }
                 contentRead = tempBuf;
                 }
             catch (IOException ex)
                 {
-                System.out.println("Exception in content readline - " + ex);
+                if(traceLevel > 0)
+                    {
+                    System.out.println("Exception in content readline - " + ex);
+                    }
                 return -1;
                 }
             return 0;
             }
         catch (ContentRepositoryException ex)
             {
-            System.err.println("Exception in contentReadFile - " + ex);
+            if(traceLevel > 0)
+                {
+                System.err.println("Exception in contentReadFile - " + ex);
+                }
             return -1;
             }
         }
@@ -945,19 +1085,28 @@ public class ScriptingComponent extends CellComponent
                 case CONTENT_USER:
                     {
                     ccr = repo.getUserRoot();
-                    System.out.println("The user root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The user root node = " + ccr.getName());
+                        }
                     break;
                     }
                 case CONTENT_ROOT:
                     {
                     ccr = repo.getRoot();
-                    System.out.println("The content root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The content root node = " + ccr.getName());
+                        }
                     break;
                     }
                 case CONTENT_SYSTEM:
                     {
                     ccr = repo.getSystemRoot();
-                    System.out.println("The system root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The system root node = " + ccr.getName());
+                        }
                     break;
                     }
                 default:
@@ -977,36 +1126,60 @@ public class ScriptingComponent extends CellComponent
                 for(j = 0; j < size; j++)
                     {
                     String name = children.get(j).getName();
-                    System.out.println("Checking node = " + name);
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Checking node = " + name);
+                        }
                     if(name.equals(result[i]))
                         {
-                        System.out.println("Don't need to create node - " + result[i] + " - get it instead");
+                        if(traceLevel > 4)
+                            {
+                            System.out.println("Don't need to create node - " + result[i] + " - get it instead");
+                            }
                         current = (ContentCollection) current.getChild(result[i]);
-                        System.out.println("Current = " + current.getName());
+                        if(traceLevel > 4)
+                            {
+                            System.out.println("Current = " + current.getName());
+                            }
                         whereFileGoes = current;
                         break;
                         }
                     }
-                 System.out.println("Exit for loop with " + j);
+                 if(traceLevel > 4)
+                    {
+                    System.out.println("Exit for loop with " + j);
+                    }
                  if(j == size)
                     {
-                    System.out.println("Creating the node - " + result[i]);
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Creating the node - " + result[i]);
+                        }
                     current.createChild(result[i], Type.COLLECTION);
                     current = (ContentCollection) current.getChild(result[i]);
-                    System.out.println("Current = " + current.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Current = " + current.getName());
+                        }
                     whereFileGoes = current;
                     }
                 }
-            System.out.println("whereFileGoes = " + whereFileGoes.getName());
+            if(traceLevel > 4)
+                {
+                System.out.println("whereFileGoes = " + whereFileGoes.getName());
+                }
             whereFileGoes.removeChild(theFile);
             ContentResource tf = (ContentResource) whereFileGoes.createChild(theFile, Type.RESOURCE);
 
-                tf.put(theData.getBytes());
+            tf.put(theData.getBytes());
             return 0;
             }
         catch (ContentRepositoryException ex)
             {
-            System.err.println("Exception in contentCreateFile - " + ex);
+            if(traceLevel > 0)
+                {
+                System.err.println("Exception in contentCreateFile - " + ex);
+                }
             return i;
             }
         }
@@ -1032,19 +1205,28 @@ public class ScriptingComponent extends CellComponent
                 case CONTENT_USER:
                     {
                     ccr = repo.getUserRoot();
-                    System.out.println("The user root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The user root node = " + ccr.getName());
+                        }
                     break;
                     }
                 case CONTENT_ROOT:
                     {
                     ccr = repo.getRoot();
-                    System.out.println("The content root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The content root node = " + ccr.getName());
+                        }
                     break;
                     }
                 case CONTENT_SYSTEM:
                     {
                     ccr = repo.getSystemRoot();
-                    System.out.println("The system root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The system root node = " + ccr.getName());
+                        }
                     break;
                     }
                 default:
@@ -1064,18 +1246,30 @@ public class ScriptingComponent extends CellComponent
                 for(j = 0; j < size; j++)
                     {
                     String name = children.get(j).getName();
-                    System.out.println("Checking node = " + name);
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Checking node = " + name);
+                        }
                     if(name.equals(result[i]))
                         {
-                        System.out.println("Don't need to create node - " + result[i] + " - get it instead");
+                        if(traceLevel > 4)
+                            {
+                            System.out.println("Don't need to create node - " + result[i] + " - get it instead");
+                            }
                         current = (ContentCollection) current.getChild(result[i]);
                         break;
                         }
                     }
-                 System.out.println("Exit for loop with " + j);
+                 if(traceLevel > 4)
+                    {
+                    System.out.println("Exit for loop with " + j);
+                    }
                  if(j == size)
                     {
-                    System.out.println("Creating the node - " + result[i]);
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Creating the node - " + result[i]);
+                        }
                     current.createChild(result[i], Type.COLLECTION);
                     current = (ContentCollection) current.getChild(result[i]);
                     }
@@ -1084,7 +1278,10 @@ public class ScriptingComponent extends CellComponent
             } 
         catch (ContentRepositoryException ex) 
             {
-            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            if(traceLevel > 0)
+                {
+                Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+                }
             return i;
             }
         }
@@ -1097,24 +1294,39 @@ public class ScriptingComponent extends CellComponent
             {
             ContentCollection cc = repo.getUserRoot();
 //            cc.createChild("child1", Type.COLLECTION);
-            System.out.println("The user root node = " + cc.getName());
-            
+            if(traceLevel > 4)
+                {
+                System.out.println("The user root node = " + cc.getName());
+                }
+
             ContentCollection ccr = repo.getRoot();
-            System.out.println("The root node = " + ccr.getName());
+            if(traceLevel > 4)
+                {
+                System.out.println("The root node = " + ccr.getName());
+                }
 
             int size = ccr.getChildren().size();
             children = ccr.getChildren();
-            
-            for(int i = 0; i < size; i++)
+
+            if(traceLevel > 4)
                 {
-                System.out.println("The node = " + children.get(i).getName());
+                for(int i = 0; i < size; i++)
+                    {
+                    System.out.println("The node = " + children.get(i).getName());
+                    }
                 }
             ContentCollection ccsr = repo.getSystemRoot();
-            System.out.println("The system root node = " + ccsr.getName());
+            if(traceLevel > 4)
+                {
+                System.out.println("The system root node = " + ccsr.getName());
+                }
             }
         catch (ContentRepositoryException ex)
             {
-            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            if(traceLevel > 0)
+                {
+                Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
 
@@ -1123,7 +1335,10 @@ public class ScriptingComponent extends CellComponent
         List<ContentNode> children = null;
         ContentCollection current = null;
 
-        System.out.println("Enter getFileList");
+        if(traceLevel > 3)
+            {
+            System.out.println("Enter getFileList");
+            }
         ContentCollection ccr = null;
         Vector tempBuf = new Vector();
 
@@ -1133,19 +1348,28 @@ public class ScriptingComponent extends CellComponent
                 case CONTENT_USER:
                     {
                     ccr = repo.getUserRoot();
-                    System.out.println("The user root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The user root node = " + ccr.getName());
+                        }
                     break;
                     }
                 case CONTENT_ROOT:
                     {
                     ccr = repo.getRoot();
-                    System.out.println("The content root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The content root node = " + ccr.getName());
+                        }
                     break;
                     }
                 case CONTENT_SYSTEM:
                     {
                     ccr = repo.getSystemRoot();
-                    System.out.println("The system root node = " + ccr.getName());
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("The system root node = " + ccr.getName());
+                        }
                     break;
                     }
                 default:
@@ -1162,10 +1386,16 @@ public class ScriptingComponent extends CellComponent
             for(int i = 0; i < size; i++)
                 {
                 String name = children.get(i).getName();
-                System.out.println("Checking node = " + name);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("Checking node = " + name);
+                    }
                 if(name.equals(thePath))
                     {
-                    System.out.println("Found");
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Found");
+                        }
                     current = (ContentCollection) children.get(i);
                     break;
                     }
@@ -1177,12 +1407,18 @@ public class ScriptingComponent extends CellComponent
                 {
                 String name = children.get(i).getName();
                 tempBuf.addElement(new String(name));
-                System.out.println("Possible node = " + name);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("Possible node = " + name);
+                    }
                 }
             }
         catch (ContentRepositoryException ex)
             {
-            System.err.println("Exception in contentReadFile - " + ex);
+            if(traceLevel > 0)
+                {
+                System.err.println("Exception in contentReadFile - " + ex);
+            }
             return null;
             }
         return tempBuf;
@@ -1198,7 +1434,12 @@ public class ScriptingComponent extends CellComponent
     */
     public void sendChat(String msg, String from, String to)
         {
-        System.out.println("Enter sendChat with message = " + msg + " from = " + from + " to = " + to);
+        if(traceLevel > 3)
+            {
+            System.out.println("Enter sendChat with message = " + msg + " from = " + from + " to = " + to);
+            }
+        if(myChatListener == null)
+            getChat();
         chatConnection.sendTextMessage(msg, from, to);
         }
     /**
@@ -1207,7 +1448,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void getChat()
         {
-        System.out.println("Enter getChat");
+        if(traceLevel > 3)
+            {
+            System.out.println("Enter getChat");
+            }
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
         chatConnection = (TextChatConnection) session.getConnection(TextChatConnectionType.CLIENT_TYPE);
 
@@ -1223,13 +1467,15 @@ public class ScriptingComponent extends CellComponent
             {
             public void textMessage(String arg0, String arg1, String arg2)
                 {
-                System.out.println("Text message = " + arg0 + " - from " + arg1 + " - to " + arg2);
+                if(traceLevel > 3)
+                    {
+                    System.out.println("Text message = " + arg0 + " - from " + arg1 + " - to " + arg2);
+                    }
                 chatMessage = arg0;
                 chatFrom = arg1;
                 chatTo = arg2;
                 executeScript(CHAT_EVENT, null);
                 }
-
             }
 
     /**
@@ -1238,7 +1484,10 @@ public class ScriptingComponent extends CellComponent
      */
     public  void    yat()
         {
-        System.out.println("Enter yat");
+        if(traceLevel > 3)
+            {
+            System.out.println("Enter yat");
+            }
         if(presenceList != null)
             {
             presenceList.clear();
@@ -1250,7 +1499,10 @@ public class ScriptingComponent extends CellComponent
         System.out.println("After presenceList");
         for (PresenceInfo pi : pm.getAllUsers())
             {
-            System.out.println("Inside yat loop - pi = " + pi.toString());
+            if(traceLevel > 4)
+                {
+                System.out.println("Inside yat loop - pi = " + pi.toString());
+                }
             Cell myCell = ClientContext.getCellCache(clientSession).getCell(pi.getCellID());
             CellTransform pos = myCell.getWorldTransform();
 
@@ -1267,7 +1519,10 @@ public class ScriptingComponent extends CellComponent
             presenceItem.name = piTokens[0];
             presenceItem.clientID = pi.getClientID();
             presenceList.add(presenceItem);
-            System.out.println("In yat - set item - x = " + presenceItem.x + " z = " + presenceItem.z);
+            if(traceLevel > 4)
+                {
+                System.out.println("In yat - set item - x = " + presenceItem.x + " z = " + presenceItem.z);
+                }
             }
         }
     /**
@@ -1321,15 +1576,24 @@ public class ScriptingComponent extends CellComponent
                 presenceItem.name = piTokens[0];
                 presenceItem.clientID = pi.getClientID();
                 presenceList.add(presenceItem);
-                System.out.println("In yat - set item - x = " + presenceItem.x + " z = " + presenceItem.z);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("In yat - set item - x = " + presenceItem.x + " z = " + presenceItem.z);
+                    }
 
                 executeScript(PRESENCE_EVENT, null);
-                System.out.println("presenceInfoChanged - " + v3f + "Change type = " + arg1);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("presenceInfoChanged - " + v3f + "Change type = " + arg1);
+                    }
                 }
 
             public void aliasChanged(String arg0, PresenceInfo arg1)
                 {
-                System.out.println("presence aliasChanged");
+                if(traceLevel > 4)
+                    {
+                    System.out.println("presence aliasChanged");
+                    }
                 }
 
             });
@@ -1342,7 +1606,10 @@ public class ScriptingComponent extends CellComponent
      */
     public String getInfo()
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In getInfo - info = " + this.info);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In getInfo - info = " + this.info);
+            }
         return this.info;
         }
     /**
@@ -1360,7 +1627,10 @@ public class ScriptingComponent extends CellComponent
         eventResource = ((ScriptingComponentClientState)clientState).getEventResource();
         cellOwner = ((ScriptingComponentClientState)clientState).getCellOwner();
         useGlobalScripts = ((ScriptingComponentClientState)clientState).getUseGlobalScripts();
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setClientState - info = " + info);
+        if(traceLevel > 4)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In setClientState - info = " + info);
+            }
         }
 
     /**
@@ -1376,17 +1646,26 @@ public class ScriptingComponent extends CellComponent
             {
             case DISK:
                 {
-                System.out.println("ScriptingComponent - DISK - increasing = " + increasing);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("ScriptingComponent - DISK - increasing = " + increasing);
+                    }
                 break;
                 }
             case INACTIVE:
                 {
-                System.out.println("ScriptingComponent - INACTIVE - increasing = " + increasing);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("ScriptingComponent - INACTIVE - increasing = " + increasing);
+                    }
                 break;
                 }
             case VISIBLE:
                 {
-                System.out.println("ScriptingComponent - VISIBLE - increasing = " + increasing);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("ScriptingComponent - VISIBLE - increasing = " + increasing);
+                    }
                 break;
                 }
             case RENDERING:
@@ -1394,12 +1673,16 @@ public class ScriptingComponent extends CellComponent
 /* Get local node */
                 if(increasing)
                     {
-                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - increasing ");
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - increasing ");
+                        }
                     if(!firstEntry)
                         {
                         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
                         userName = session.getUserID().getUsername();
-
+                        proximityUserName = userName;
+                        
                         if(cellOwner.length() == 0)
                             {
                             cellOwner = userName;
@@ -1409,7 +1692,10 @@ public class ScriptingComponent extends CellComponent
 
                         if(cellType.equals("NPC"))
                             {
-                            System.out.println("In ScriptingComponent - setStatus RENDERING - NPC found");
+                            if(traceLevel > 4)
+                                {
+                                System.out.println("In ScriptingComponent - setStatus RENDERING - NPC found");
+                                }
                             }
                         else
                             {
@@ -1434,7 +1720,10 @@ public class ScriptingComponent extends CellComponent
                             intercellListener = new IntercellListener();
                             ClientContext.getInputManager().addGlobalEventListener(intercellListener);
                             }
-                        System.out.println("In component setStatus - renderer = " + ret);
+                        if(traceLevel > 4)
+                            {
+                            System.out.println("In component setStatus - renderer = " + ret);
+                            }
 /* Execute the startup script */
                         executeScript(STARTUP_EVENT, null);
                         firstEntry = true;
@@ -1446,7 +1735,10 @@ public class ScriptingComponent extends CellComponent
 
                     Entity mye = ret.getEntity();
                     RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
-                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - decreasing ");
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - decreasing ");
+                        }
                     if(myKeyListener != null)
                         {
                         myKeyListener.removeFromEntity(mye);
@@ -1468,7 +1760,10 @@ public class ScriptingComponent extends CellComponent
                 }
             case ACTIVE:
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE - increasing = " + increasing);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE - increasing = " + increasing);
+                    }
                 if(increasing)
                     {
 /* Register the change message listener */
@@ -1506,7 +1801,10 @@ public class ScriptingComponent extends CellComponent
                                         }
                                     else
                                         {
-                                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                        if(traceLevel > 4)
+                                            {
+                                            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                            }
                                         }
                                     }
                                 else if(message instanceof ScriptingComponentICEMessage)
@@ -1528,12 +1826,18 @@ public class ScriptingComponent extends CellComponent
                                             }
                                         else
                                             {
-                                            System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getIceCode());
+                                            if(traceLevel > 4)
+                                                {
+                                                System.out.println("ScriptingComponent : Cell " + cell + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getIceCode());
+                                                }
                                             }
                                         }
                                     else
                                         {
-                                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                        if(traceLevel > 4)
+                                            {
+                                            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                            }
                                         }
                                     }
                                 else if(message instanceof ScriptingComponentTransformMessage)
@@ -1590,13 +1894,18 @@ public class ScriptingComponent extends CellComponent
                                         }
                                     else
                                         {
-                                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                        if(traceLevel > 4)
+                                            {
+                                            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is new message - Ignore it");
+                                            }
                                         }
                                     }
                                 else if(message instanceof ScriptingComponentNpcMoveMessage)
                                     {
-                                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is npc move message");
-
+                                    if(traceLevel > 4)
+                                        {
+                                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In messageReceived - This is npc move message");
+                                        }
                                     }
                                 }
 
@@ -1613,7 +1922,10 @@ public class ScriptingComponent extends CellComponent
                 }    // if increasing
             default:
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In default for setStatus - status other than ACTIVE");
+                if(traceLevel > 4)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In default for setStatus - status other than ACTIVE");
+                    }
                 }
             }
         }
@@ -1645,7 +1957,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void establishSocket(int code, int errorCode, String ip, int port)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket int version - Message code " + code + " Error code = " + errorCode);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket int version - Message code " + code + " Error code = " + errorCode);
+            }
         sif = new SocketInterface(ip, port, code, errorCode);
         sif.doIt();
         }
@@ -1660,7 +1975,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void establishSocket(float code, float errorCode, String ip, float port)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket float version - Message code " + code + "Error code = " + errorCode);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket float version - Message code " + code + "Error code = " + errorCode);
+            }
         sif = new SocketInterface(ip, (int)port, (int)code, (int)errorCode);
         sif.doIt();
         }
@@ -1674,7 +1992,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void establishIncomingSocket(int code, int errorCode, int port)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket int version - Message code " + code + " Error code = " + errorCode);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket int version - Message code " + code + " Error code = " + errorCode);
+            }
         isif = new IncomingSocketInterface(port, code, errorCode);
         isif.doIt();
         }
@@ -1688,7 +2009,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void establishIncomingSocket(float code, float errorCode, float port)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket float version - Message code " + code + "Error code = " + errorCode);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishSocket float version - Message code " + code + "Error code = " + errorCode);
+            }
         isif = new IncomingSocketInterface((int)port, (int)code, (int)errorCode);
         isif.doIt();
         }
@@ -1700,7 +2024,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void sendMessage(String buffer)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : sendMessage - Message code "); 
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : sendMessage - Message code ");
+            }
         sif.sendBuffer(buffer);
         }
 
@@ -1711,7 +2038,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void sendIncomingMessage(String buffer)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : sendMessage - Message code ");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : sendMessage - Message code ");
+            }
         isif.sendSocketMessage(buffer);
         }
 
@@ -1724,12 +2054,18 @@ public class ScriptingComponent extends CellComponent
         {
         if(watchMessages.contains(new Float(code)))
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " already in watch list");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " already in watch list");
+                }
             }
         else
             {
             watchMessages.add(new Float(code));
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " added to watch list");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : watchMessage - Message code " + code + " added to watch list");
+                }
             }
         }
 
@@ -1743,17 +2079,26 @@ public class ScriptingComponent extends CellComponent
         if(watchMessages.contains(new Float(code)))
             {
             watchMessages.remove(new Float(code));
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : dontWatchMessage - Message code " + code + " removed from watch list");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : dontWatchMessage - Message code " + code + " removed from watch list");
+                }
             }
         else
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : dontWatchMessage - Message code " + code + " not in watch list");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : dontWatchMessage - Message code " + code + " not in watch list");
+                }
             }
         }
 
     public void clearWatchMessages()
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : clearWatchMessages");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : clearWatchMessages");
+            }
         watchMessages.clear();
         }
     
@@ -1766,16 +2111,29 @@ public class ScriptingComponent extends CellComponent
      */
     public void establishProximity(float outer, float middle, float inner)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishProximity - outer, middle, inner = " + outer + ", " + middle + ", " + inner);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishProximity - outer, middle, inner = " + outer + ", " + middle + ", " + inner);
+            }
         ProximityComponent comp = new ProximityComponent(cell);
         comp.addProximityListener(new ProximityListener() 
             {
             public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
+                    }
+                AvatarCell ac = (AvatarCell)cell.getCellCache().getCell(viewCellID);
+                String uName = ac.getIdentity().getUsername();
+                if(traceLevel > 4)
+                    {
+                    System.out.println("Proximity - CellID = " + viewCellID + " - user = " + uName);
+                    }
                 proximityBounds = proximityIndex;
                 proximityDir = entered;
+                proximityUserName = uName;
                 executeScript(PROXIMITY_EVENT, null);
                 }
             }, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()), new BoundingSphere((float)middle, new Vector3f()), new BoundingSphere((float)inner, new Vector3f())});
@@ -1788,7 +2146,10 @@ public class ScriptingComponent extends CellComponent
                                     }
                                         ); */
         cell.addComponent(comp);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : Prox class = " + cell.getComponent(ProximityComponent.class));                
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : Prox class = " + cell.getComponent(ProximityComponent.class));
+            }
         }
 
     /**
@@ -1799,7 +2160,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void postMessageEvent(String payload, int Code)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
+            }
         ClientContext.getInputManager().postEvent(new IntercellEvent(payload, Code));
         }
     
@@ -1811,7 +2175,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void postMessageEvent(String payload, float Code)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
+            }
         ClientContext.getInputManager().postEvent(new IntercellEvent(payload, (int)Code));
         }
 
@@ -1823,7 +2190,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void postMessageEventToServer(String payload, float Code)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEventToServer with payload = " + payload + " code = " + Code);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEventToServer with payload = " + payload + " code = " + Code);
+            }
         ScriptingComponentICEMessage msg = new ScriptingComponentICEMessage(cell.getCellID(), (int)Code, payload);
         channelComp.send(msg);
         }
@@ -1836,7 +2206,10 @@ public class ScriptingComponent extends CellComponent
      */
     public void postMessageEventToServer(String payload, int Code)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEventToServer with payload = " + payload + " code = " + Code);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEventToServer with payload = " + payload + " code = " + Code);
+            }
         ScriptingComponentICEMessage msg = new ScriptingComponentICEMessage(cell.getCellID(), Code, payload);
         channelComp.send(msg);
         }
@@ -1884,7 +2257,10 @@ public class ScriptingComponent extends CellComponent
     public void setFrameRate(float frames)
         {
         frameRate = frames;
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter setFrameRate - rate = " + frameRate);
+        if(traceLevel > 4)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter setFrameRate - rate = " + frameRate);
+            }
         }
     
     public String getName()
@@ -1904,7 +2280,10 @@ public class ScriptingComponent extends CellComponent
             eventNames[which] = name;
             ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), eventNames, eventScriptType, eventResource, CHANGE_SCRIPTS_MESSAGE);
             channelComp.send(msg);
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptName " + which + " set to " + name);
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptName " + which + " set to " + name);
+                }
             }
 //        else
 //            {
@@ -1919,7 +2298,10 @@ public class ScriptingComponent extends CellComponent
             eventScriptType[which] = name;
             ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), eventNames, eventScriptType, eventResource, CHANGE_SCRIPTS_MESSAGE);
             channelComp.send(msg);
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptType " + which + " set to " + name);
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setScriptType " + which + " set to " + name);
+                }
             }
 //        else
 //            {
@@ -1934,7 +2316,10 @@ public class ScriptingComponent extends CellComponent
             eventResource[which] = resource;
             ScriptingComponentChangeMessage msg = new ScriptingComponentChangeMessage(cell.getCellID(), eventNames, eventScriptType, eventResource, CHANGE_SCRIPTS_MESSAGE);
             channelComp.send(msg);
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setEventResource " + which + " set to " + resource);
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setEventResource " + which + " set to " + resource);
+                }
             }
 //        else
 //            {
@@ -1944,19 +2329,28 @@ public class ScriptingComponent extends CellComponent
 
     public String getScriptName(int which)
         {
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : getScriptName " + which + " get " + eventNames[which]);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : getScriptName " + which + " get " + eventNames[which]);
+            }
         return eventNames[which];
         }
     
     public String getScriptType(int which)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : getScriptType " + which + " get " + eventScriptType[which]);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : getScriptType " + which + " get " + eventScriptType[which]);
+            }
         return eventScriptType[which];
         }
 
     public Boolean getEventResource(int which)
         {
-//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : getEventResource " + which + " get " + eventResource[which]);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : getEventResource " + which + " get " + eventResource[which]);
+            }
         return eventResource[which];
         }
 
@@ -1975,14 +2369,20 @@ public class ScriptingComponent extends CellComponent
             {
             propName = "name" + i.toString();
             propType = "type" + i.toString();
-   //         System.out.println("properties - name = " + propName + " = type = " + propType + " - i = " + i);
+            if(traceLevel > 4)
+                {
+                System.out.println("properties - name = " + propName + " = type = " + propType + " - i = " + i);
+                }
             temp = props.getProperty(propName);
             if(temp != null)
                 eventNames[i] = temp;
             temp = props.getProperty(propType);
             if(temp != null)
                 eventScriptType[i] = temp;
-   //         System.out.println("properties - name = " + eventNames[i] + " = type = " + eventScriptType[i]);
+            if(traceLevel > 4)
+                {
+                System.out.println("properties - name = " + eventNames[i] + " = type = " + eventScriptType[i]);
+                }
             }
         }
 
@@ -2009,7 +2409,10 @@ public class ScriptingComponent extends CellComponent
             propResource = props.getProperty("scripts");
             if(propResource == null)
                 {
-                System.out.println("Received null for cell scripts resource " + propResource);
+                if(traceLevel > 4)
+                    {
+                    System.out.println("Received null for cell scripts resource " + propResource);
+                    }
                 propResource = "webdav";
                 }
             else
@@ -2020,7 +2423,10 @@ public class ScriptingComponent extends CellComponent
             }
         catch(Exception ex)
             {
-//            System.out.println("Exception in load properties" + ex);
+            if(traceLevel > 4)
+                {
+                System.out.println("Exception in load properties" + ex);
+                }
             propResource = "webdav";
             }
         if(propResource.equals("component"))
@@ -2033,11 +2439,11 @@ public class ScriptingComponent extends CellComponent
             if(eventResource[eventType] == true)
                 propResource = "component";
             }
-
-        System.out.println("Scripts property = " + propResource);
-
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Start of executeScript - useGlobalScripts = " + useGlobalScripts + " - userName = " + userName + " - cellOwner = " + cellOwner);
-//        if((!useGlobalScripts && userName.equals(cellOwner)) || useGlobalScripts)
+        if(traceLevel > 4)
+            {
+            System.out.println("Scripts property = " + propResource);
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Start of executeScript - useGlobalScripts = " + useGlobalScripts + " - userName = " + userName + " - cellOwner = " + cellOwner);
+            }
         if(true)
             {
             worldCoor = coorW;
@@ -2052,8 +2458,11 @@ public class ScriptingComponent extends CellComponent
                 thePath = buildScriptPath(eventNames[eventType]);
                 }
 
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : scriptPath = " + thePath);
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script type = " + eventScriptType[eventType]);
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : scriptPath = " + thePath);
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script type = " + eventScriptType[eventType]);
+                }
             try
                 {
                 WonderlandSession session = cell.getCellCache().getSession();
@@ -2064,7 +2473,10 @@ public class ScriptingComponent extends CellComponent
                 }
             catch(Exception ex)
                 {
-                System.out.println("There was a problem getting the classloader or there is no scripting engine for " + eventScriptType[eventType]);
+                if(traceLevel > 0)
+                    {
+                    System.out.println("There was a problem getting the classloader or there is no scripting engine for " + eventScriptType[eventType]);
+                    }
                 }
 // This line passes 'this' instance over to the script
 //           bindings.put("CommThread", mth);
@@ -2096,6 +2508,7 @@ public class ScriptingComponent extends CellComponent
             bindings.put("ICEEventMessage", ICEEventMessage);
             bindings.put("proximityBounds", proximityBounds);
             bindings.put("proximityDir", proximityDir);
+            bindings.put("proximityUserName", proximityUserName);
             bindings.put("aniFrame", aniFrame);
             bindings.put("contentRead", contentRead);
             bindings.put("cellName", cellName);
@@ -2109,24 +2522,36 @@ public class ScriptingComponent extends CellComponent
                 {
                 if(jsEngine instanceof Compilable)
                     {
-                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : This script takes Compiled path");
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : This script takes Compiled path");
+                        }
                     CompiledScript  theScript = scriptMap.get(eventNames[eventType]);
                     if(theScript == null)
                         {
                         Compilable compilingEngine = (Compilable)jsEngine;
                         if(propResource.equals("component"))
                             {
-                            System.out.println("Script takes component path");
+                            if(traceLevel > 4)
+                                {
+                                System.out.println("Script takes component path");
+                                }
                             in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(thePath)));
                             }
                         else if(propResource.equals("cell"))
                             {
-                            System.out.println("Script takes cell path");
+                            if(traceLevel > 4)
+                                {
+                                System.out.println("Script takes cell path");
+                                }
                             in = new BufferedReader(new InputStreamReader(theCell.getClass().getResourceAsStream(thePath)));
                             }
                         else
                             {
-                            System.out.println("Script takes the webdav path");
+                            if(traceLevel > 4)
+                                {
+                                System.out.println("Script takes the webdav path");
+                                }
                             URL myURL = new URL(thePath);
                             in = new BufferedReader(new InputStreamReader(myURL.openStream()));
                             }
@@ -2135,7 +2560,10 @@ public class ScriptingComponent extends CellComponent
                         }
                     else
                         {
-                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script " + eventNames[eventType] + " was already compiled and was already in the script map");
+                        if(traceLevel > 4)
+                            {
+                            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script " + eventNames[eventType] + " was already compiled and was already in the script map");
+                            }
                         }
                     theScript.eval(bindings);
                     }
@@ -2159,17 +2587,26 @@ public class ScriptingComponent extends CellComponent
                 }
             catch(ScriptException ex)
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script exception from the whole mechanism of compiling and executing the script " + ex);
-                ex.printStackTrace();
+                if(traceLevel > 0)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script exception from the whole mechanism of compiling and executing the script " + ex);
+                    ex.printStackTrace();
+                    }
                 }
             catch(FileNotFoundException fnf)
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script file not found");
+                if(traceLevel > 0)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script file " + thePath + " not found");
+                    }
                 }
             catch(Exception e)
                 {
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : General exception in the whole mechanism of compiling and executing the script  " + e);
-                e.printStackTrace();
+                if(traceLevel > 0)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : General exception in the whole mechanism of compiling and executing the script  " + e);
+                    e.printStackTrace();
+                    }
                 }
             }
        }
@@ -2309,7 +2746,10 @@ public class ScriptingComponent extends CellComponent
 
     public void testAxes()
         {
-            System.out.println("Enter testAxes");
+            if(traceLevel > 3)
+                {
+                System.out.println("Enter testAxes");
+                }
             getInitialRotation();
             Quaternion toTurn = new Quaternion();
             Quaternion toRoll = new Quaternion();
@@ -2321,30 +2761,30 @@ public class ScriptingComponent extends CellComponent
             toTurn.fromAngleAxis((float) (Math.PI / 12), new Vector3f(0, 1, 0));
 
             angle = initialQuat.toAngleAxis(axis);
-            System.out.println("Initial rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("Initial rot - angle = " + angle + " - axis " + axis);
 
             step = toTurn.mult(initialQuat);
             angle = step.toAngleAxis(axis);
-            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
 
             toRoll.fromAngleAxis((float) -(Math.PI / 12), new Vector3f((float)Math.cos(angle), 0, -(float)Math.sin(angle)));
 //            toRoll.fromAngleAxis((float) -(Math.PI / 12), new Vector3f(1, 0, -(float)Math.sin(angle)));
 
             to = toRoll.mult(step);
             angle = to.toAngleAxis(axis);
-            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
 
             setRotation(axis.x, axis.y, axis.z, angle, 1);
             mySleep(5000);
             getInitialRotation();
             angle = initialQuat.toAngleAxis(axis);
-            System.out.println("After first rotation Initial rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("After first rotation Initial rot - angle = " + angle + " - axis " + axis);
         }
 
 
     public void testAxesReverse()
         {
-            System.out.println("Enter testAxesReverse");
+//            System.out.println("Enter testAxesReverse");
             getInitialRotation();
             Quaternion toTurn = new Quaternion();
             Quaternion toRoll = new Quaternion();
@@ -2356,29 +2796,29 @@ public class ScriptingComponent extends CellComponent
             toTurn.fromAngleAxis(-(float) (Math.PI / 12), new Vector3f(0, 1, 0));
 
             angle = initialQuat.toAngleAxis(axis);
-            System.out.println("Initial rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("Initial rot - angle = " + angle + " - axis " + axis);
 
             step = toTurn.mult(initialQuat);
             angle = step.toAngleAxis(axis);
-            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
 
             toRoll.fromAngleAxis((float) +(Math.PI / 12), new Vector3f((float)Math.cos(angle), 0, -(float)Math.sin(angle)));
 //            toRoll.fromAngleAxis((float) +(Math.PI / 12), new Vector3f(1, 0, +(float)Math.sin(angle)));
 
             to = toRoll.mult(step);
             angle = to.toAngleAxis(axis);
-            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
 
             setRotation(axis.x, axis.y, axis.z, angle, 1);
             mySleep(5000);
             getInitialRotation();
             angle = initialQuat.toAngleAxis(axis);
-            System.out.println("After first rotation Initial rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("After first rotation Initial rot - angle = " + angle + " - axis " + axis);
         }
 
     public void testAxes2()
         {
-            System.out.println("Enter testAxes2");
+//            System.out.println("Enter testAxes2");
             getInitialRotation();
             Quaternion toTurn = new Quaternion();
             Quaternion toRoll = new Quaternion();
@@ -2392,11 +2832,11 @@ public class ScriptingComponent extends CellComponent
 //            toTurn.fromAngleAxis((float) (Math.PI / 12), new Vector3f(0, 1, 0));
 
             angle = initialQuat.toAngleAxis(axis);
-            System.out.println("Initial rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("Initial rot - angle = " + angle + " - axis " + axis);
 
             step = toRoll.mult(initialQuat);
             angle = step.toAngleAxis(axis);
-            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
 
             toTurn.fromAngleAxis((float) (Math.PI / 12), new Vector3f(0, 1, -(float)Math.sin(angle)));
 
@@ -2405,13 +2845,13 @@ public class ScriptingComponent extends CellComponent
 
             to = toTurn.mult(step);
             angle = to.toAngleAxis(axis);
-            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("Step rot - angle = " + angle + " - axis " + axis);
 
             setRotation(axis.x, axis.y, axis.z, angle, 1);
             mySleep(5000);
             getInitialRotation();
             angle = initialQuat.toAngleAxis(axis);
-            System.out.println("After first rotation Initial rot - angle = " + angle + " - axis " + axis);
+//            System.out.println("After first rotation Initial rot - angle = " + angle + " - axis " + axis);
         }
 
     public void setRotation(float x, float y, float z, float w, int notify)
@@ -2502,20 +2942,20 @@ public class ScriptingComponent extends CellComponent
 
         Quaternion orig = localNode.getLocalRotation();
 
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original quat = " + orig);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original quat = " + orig);
         angle = orig.toAngleAxis(axis);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original angle/axis = " + angle + " / " + axis);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Original angle/axis = " + angle + " / " + axis);
         
         Quaternion roll = new Quaternion();
         roll.fromAngleAxis( w , new Vector3f(x, y, z) );
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() +" : In rotateObject - Change quat = " + roll);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() +" : In rotateObject - Change quat = " + roll);
         angle = roll.toAngleAxis(axis);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Change angle/axis = " + angle + " / " + axis);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Change angle/axis = " + angle + " / " + axis);
 
         sum = roll.mult(orig);
         angle = sum.toAngleAxis(axis);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum quat = " + sum);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum angle/axis = " + angle + " / " + axis);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum quat = " + sum);
+//        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In rotateObject - Sum angle/axis = " + angle + " / " + axis);
         SceneWorker.addWorker(new WorkCommit() 
             {
             public void commit() 
@@ -2558,7 +2998,10 @@ public class ScriptingComponent extends CellComponent
             }
         catch(Exception e)
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Sleep exception in mySleep(int) method");
+            if(traceLevel > 0)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Sleep exception in mySleep(int) method");
+                }
             }
        }
     
@@ -2570,7 +3013,10 @@ public class ScriptingComponent extends CellComponent
             }
         catch(Exception e)
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Sleep exception in mySleep(float) method");
+            if(traceLevel > 0)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Sleep exception in mySleep(float) method");
+                }
             }
        }
     
@@ -2579,7 +3025,10 @@ public class ScriptingComponent extends CellComponent
         String line;
         aniList = new ArrayList();
         String thePath = buildScriptPath(animationName);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildAnimation - The path = " + thePath);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildAnimation - The path = " + thePath);
+            }
         try
             {
             URL myURL = new URL(thePath);
@@ -2609,14 +3058,20 @@ public class ScriptingComponent extends CellComponent
                     ani.payload = new String("");
                     }
                 aniList.add(ani);
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildAnimation - Loading animation - Ani step -> " + ani.xLoc + "," + ani.yLoc + "," + ani.zLoc + "," + 
+                if(traceLevel > 3)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildAnimation - Loading animation - Ani step -> " + ani.xLoc + "," + ani.yLoc + "," + ani.zLoc + "," +
                         ani.xAxis + "," + ani.yAxis + "," + ani.zAxis + "," + ani.rot + "," + ani.delay + "," + ani.rest);
+                    }
                 }
             }
         catch(Exception e)
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception reading while in the process of reading animation - The path = " + thePath);
-            e.printStackTrace();
+            if(traceLevel > 0)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception reading while in the process of reading animation - The path = " + thePath);
+                e.printStackTrace();
+                }
             }
         aniFrame = 0;
         return aniList;
@@ -2627,7 +3082,10 @@ public class ScriptingComponent extends CellComponent
         String line;
         robotList = new ArrayList();
         String thePath = buildScriptPath(robotName);
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildAnimation - The path = " + thePath);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildAnimation - The path = " + thePath);
+            }
         try
             {
             URL myURL = new URL(thePath);
@@ -2635,8 +3093,25 @@ public class ScriptingComponent extends CellComponent
             while((line = in.readLine()) != null)
                 {
                 robotLast++;
-                String[] result = line.split(",");
+                String[] result = line.split(":");
                 Robot robot = new Robot();
+                if(traceLevel > 4)
+                    {
+                    System.out.println("result 0 = " + result[0]);
+                    System.out.println("result 1 = " + result[1]);
+                    System.out.println("result 2 = " + result[2]);
+                    System.out.println("result 3 = " + result[3]);
+                    System.out.println("result 4 = " + result[4]);
+                    System.out.println("result 5 = " + result[5]);
+                    System.out.println("result 6 = " + result[6]);
+                    System.out.println("result 7 = " + result[7]);
+                    System.out.println("result 8 = " + result[8]);
+                    System.out.println("result 9 = " + result[9]);
+                    System.out.println("result 10 = " + result[10]);
+                    System.out.println("result 11 = " + result[11]);
+                    System.out.println("result 12 = " + result[12]);
+                    System.out.println("result 13 = " + result[13]);
+                    }
                 robot.move = new Boolean(result[0]).booleanValue();
                 robot.xLoc = new Float(result[1]).floatValue();
                 robot.yLoc = new Float(result[2]).floatValue();
@@ -2645,16 +3120,42 @@ public class ScriptingComponent extends CellComponent
                 robot.clip = new String(result[5]);
                 robot.playAnimation = new Boolean(result[6]).booleanValue();
                 robot.animationName = new String(result[7]);
+                if(result[8].equals("chatText"))
+                    {
+                    robot.chatText = true;
+                    robot.chatFile = false;
+                    robot.theChatText = new String(result[9]);
+                    }
+                else if(result[8].equals("chatFile"))
+                    {
+                    robot.chatText = false;
+                    robot.chatFile = true;
+                    robot.theChatFile = new String(result[9]);
+                    }
+                robot.chatOrigin = new String(result[10]);
+
+                if(result[11].equals("ice"))
+                    {
+                    robot.ice = true;
+                    robot.iceCode = Integer.parseInt(result[12]);
+                    robot.iceMessage = new String(result[13]);
+                    }
 
                 robotList.add(robot);
-                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildRobot - Loading animation - Ani step -> " + robot.xLoc + "," + robot.yLoc + "," + robot.zLoc + "," +
+                if(traceLevel > 3)
+                    {
+                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildRobot - Loading animation - Ani step -> " + robot.xLoc + "," + robot.yLoc + "," + robot.zLoc + "," +
                         robot.playClip + "," + robot.clip);
+                    }
                 }
             }
         catch(Exception e)
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception reading while in the process of reading robot - The path = " + thePath);
-            e.printStackTrace();
+            if(traceLevel > 0)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Exception reading while in the process of reading robot - The path = " + thePath);
+                e.printStackTrace();
+                }
             }
         robotFrame = 0;
         return robotList;
@@ -2664,7 +3165,10 @@ public class ScriptingComponent extends CellComponent
         {
         public void run()
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In method expired - This is the normal path for a timer expiration");
+            if(traceLevel > 3)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In method expired - This is the normal path for a timer expiration");
+                }
             if(aniFrame < aniLast || animation == 0)
                 executeScript(TIMER_EVENT, worldCoor);
             }
@@ -2672,7 +3176,10 @@ public class ScriptingComponent extends CellComponent
     
     public void startTimer(int timeValue)
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In start timer - This is the method called to initiate a timer");
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In start timer - This is the method called to initiate a timer");
+            }
         Timer timer = new Timer();
         timer.schedule(new expired(), timeValue);
         }
@@ -2749,14 +3256,20 @@ public class ScriptingComponent extends CellComponent
         keepRunning = true;
         Timer timer = new Timer(true);
         timer.schedule(new controllerExpired(), controllerTime);
-        System.out.println("Controller started");
+        if(traceLevel > 3)
+            {
+            System.out.println("Controller started");
+            }
         }
 
     public void stopController()
         {
         keepRunning = false;
         controller = null;
-        System.out.println("Controller stopped");
+        if(traceLevel > 3)
+            {
+            System.out.println("Controller stopped");
+            }
         }
 
     class controllerExpired extends TimerTask
@@ -2853,6 +3366,14 @@ public class ScriptingComponent extends CellComponent
         public  String      clip;
         public  boolean     playAnimation;
         public  String      animationName;
+        public  boolean     chatText;
+        public  String      theChatText;
+        public  boolean     chatFile;
+        public  String      theChatFile;
+        public  String      chatOrigin;
+        public  boolean     ice;
+        public  int         iceCode;
+        public  String      iceMessage;
         }
 
     class Animation
@@ -2881,23 +3402,63 @@ public class ScriptingComponent extends CellComponent
 
     public int playRobotFrame()
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playRobotFrame - Frame = " + robotFrame + " of " + robotLast);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playRobotFrame - Frame = " + robotFrame + " of " + robotLast);
+            }
         if(((Robot) robotList.get(robotFrame)).move)
             {
-            System.out.println("Move");
+            if(traceLevel > 4)
+                {
+                System.out.println("Move");
+                }
             executeAction("move", ((Robot) robotList.get(robotFrame)).xLoc,
                               ((Robot) robotList.get(robotFrame)).yLoc,
                               ((Robot) robotList.get(robotFrame)).zLoc);
             }
         else if (((Robot) robotList.get(robotFrame)).playAnimation)
             {
-            System.out.println("play animation - animation = " + ((Robot) robotList.get(robotFrame)).animationName);
+            if(traceLevel > 4)
+                {
+                System.out.println("play animation - animation = " + ((Robot) robotList.get(robotFrame)).animationName);
+                }
             executeAction("runAnimation", ((Robot) robotList.get(robotFrame)).animationName, 0);
             }
         if(((Robot) robotList.get(robotFrame)).playClip)
             {
-            System.out.println("play clip");
+            if(traceLevel > 4)
+                {
+                System.out.println("play clip");
+                }
             playSound(((Robot) robotList.get(robotFrame)).clip, 1900, 1);
+            }
+        if(((Robot) robotList.get(robotFrame)).chatText)
+            {
+            if(traceLevel > 4)
+                {
+                System.out.println("chat text");
+                }
+            sendChat(((Robot) robotList.get(robotFrame)).theChatText, ((Robot) robotList.get(robotFrame)).chatOrigin, proximityUserName);
+            }
+        if(((Robot) robotList.get(robotFrame)).chatFile)
+            {
+            if(traceLevel > 4)
+                {
+                System.out.println("chat file");
+                }
+            contentReadFile(((Robot) robotList.get(robotFrame)).theChatFile, CONTENT_ROOT);
+            for(Enumeration e = contentRead.elements(); e.hasMoreElements();)
+                {
+                sendChat((String) e.nextElement(), ((Robot) robotList.get(robotFrame)).chatOrigin, proximityUserName);
+                }
+            }
+        if(((Robot) robotList.get(robotFrame)).ice)
+            {
+            if(traceLevel > 4)
+                {
+                System.out.println("chat file");
+                }
+            postMessageEvent(((Robot) robotList.get(robotFrame)).iceMessage, ((Robot) robotList.get(robotFrame)).iceCode);
             }
 
         robotFrame++;
@@ -2915,11 +3476,17 @@ public class ScriptingComponent extends CellComponent
 
     public int playAnimationFrame()
         {
-        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - Frame = " + aniFrame + " of " + aniLast + " rest = " + ((Animation)aniList.get(aniFrame)).rest);
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - Frame = " + aniFrame + " of " + aniLast + " rest = " + ((Animation)aniList.get(aniFrame)).rest);
+            }
         if(((Animation)aniList.get(aniFrame)).rest.equals("r"))
             {
 // set rotation - absolute
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setRotation");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setRotation");
+                }
             setRotation(((Animation)aniList.get(aniFrame)).xAxis,
                 ((Animation)aniList.get(aniFrame)).yAxis,
                 ((Animation)aniList.get(aniFrame)).zAxis,
@@ -2929,7 +3496,10 @@ public class ScriptingComponent extends CellComponent
         else if(((Animation)aniList.get(aniFrame)).rest.equals("q"))
             {
 // set rotation - absolute
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call rotateObject");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call rotateObject");
+                }
             rotateObject(((Animation)aniList.get(aniFrame)).xAxis,
                 ((Animation)aniList.get(aniFrame)).yAxis,
                 ((Animation)aniList.get(aniFrame)).zAxis,
@@ -2939,7 +3509,10 @@ public class ScriptingComponent extends CellComponent
         else if(((Animation)aniList.get(aniFrame)).rest.equals("R"))
             {
 // set rotation - absolute
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setRotation - Notify");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setRotation - Notify");
+                }
             setRotation(((Animation)aniList.get(aniFrame)).xAxis,
                 ((Animation)aniList.get(aniFrame)).yAxis,
                 ((Animation)aniList.get(aniFrame)).zAxis,
@@ -2949,7 +3522,10 @@ public class ScriptingComponent extends CellComponent
         else if(((Animation)aniList.get(aniFrame)).rest.equals("Q"))
             {
 // set rotation - absolute
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call rotateObject - Notify");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call rotateObject - Notify");
+                }
             rotateObject(((Animation)aniList.get(aniFrame)).xAxis,
                 ((Animation)aniList.get(aniFrame)).yAxis,
                 ((Animation)aniList.get(aniFrame)).zAxis,
@@ -2958,8 +3534,11 @@ public class ScriptingComponent extends CellComponent
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("m"))
             {
-// move object - relative move           
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call moveObject");
+// move object - relative move
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call moveObject");
+                }
             moveObject(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
                 ((Animation)aniList.get(aniFrame)).zLoc,
@@ -2967,7 +3546,10 @@ public class ScriptingComponent extends CellComponent
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("t"))
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setTranslation");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setTranslation");
+                }
 //translate object - absolute move            
             setTranslation(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
@@ -2976,8 +3558,11 @@ public class ScriptingComponent extends CellComponent
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("M"))
             {
-// move object - relative move           
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call moveObject - Notify");
+// move object - relative move
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call moveObject - Notify");
+                }
             moveObject(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
                 ((Animation)aniList.get(aniFrame)).zLoc,
@@ -2985,8 +3570,11 @@ public class ScriptingComponent extends CellComponent
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("T"))
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setTranslation - Notify");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setTranslation - Notify");
 //translate object - absolute move            
+                }
             setTranslation(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
                 ((Animation)aniList.get(aniFrame)).zLoc,
@@ -2994,8 +3582,11 @@ public class ScriptingComponent extends CellComponent
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("c"))
             {
-// scale object - relative scale           
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call scaleObject");
+// scale object - relative scale
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call scaleObject");
+                }
             scaleObject(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
                 ((Animation)aniList.get(aniFrame)).zLoc,
@@ -3003,8 +3594,11 @@ public class ScriptingComponent extends CellComponent
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("s"))
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setScale");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setScale");
 //scale object - absolute scale            
+                }
             setScale(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
                 ((Animation)aniList.get(aniFrame)).zLoc,
@@ -3012,8 +3606,11 @@ public class ScriptingComponent extends CellComponent
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("C"))
             {
-// scale object - relative scale           
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call scaleObject - Notify");
+// scale object - relative scale
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call scaleObject - Notify");
+                }
             scaleObject(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
                 ((Animation)aniList.get(aniFrame)).zLoc,
@@ -3021,8 +3618,11 @@ public class ScriptingComponent extends CellComponent
             }
         else if(((Animation)aniList.get(aniFrame)).rest.equals("S"))
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setScale - Notify");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call setScale - Notify");
 //scale object - absolute scale            
+                }
             setScale(((Animation)aniList.get(aniFrame)).xLoc,
                 ((Animation)aniList.get(aniFrame)).yLoc,
                 ((Animation)aniList.get(aniFrame)).zLoc,
@@ -3053,7 +3653,10 @@ public class ScriptingComponent extends CellComponent
 
         if(((Animation)aniList.get(aniFrame)).delay > 0)
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call mySleep ");
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playAnimationFrame - call mySleep ");
+                }
             mySleep(((Animation)aniList.get(aniFrame)).delay);
             }
         aniFrame++;
@@ -3100,7 +3703,10 @@ public class ScriptingComponent extends CellComponent
 
     public void createCellInstance(String className, float x, float y, float z, String cellName)
         {
-        System.out.println("Enter createCellInstance");
+        if(traceLevel > 3)
+            {
+            System.out.println("Enter createCellInstance");
+            }
         ScriptingComponentCellCreateMessage msg =
                 new ScriptingComponentCellCreateMessage(className, x, y, z, cellName);
         channelComp.send(msg);
@@ -3279,38 +3885,50 @@ public class ScriptingComponent extends CellComponent
             {
             if(event instanceof IntercellEvent)
                 {
-                if(!iceEventInFlight)
-                    {
+//                if(!iceEventInFlight)
+//                    {
                     iceEventInFlight = true;
                     IntercellEvent ice = (IntercellEvent)event;
                     if(watchMessages.contains(new Float(ice.getCode())))
                         {
-                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In Intercell listener in commitEvent - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                        if(traceLevel > 4)
+                            {
+                            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In Intercell listener in commitEvent - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                            }
                         ICEEventCode = ice.getCode();
                         ICEEventMessage = ice.getPayload();
                         executeScript(INTERCELL_EVENT, null);
                         }
                     else
                         {
-                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                        if(traceLevel > 4)
+                            {
+                            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In Intercell listener in commitEvent - Code not in list - payload = " + ice.getPayload() + " Code = " + ice.getCode());
+                            }
                         }
                     iceEventInFlight = false;
-                    }
-                else
-                    {
-                    System.out.println("ICE event in flight");
-                    }
+//                    }
+//                else
+//                    {
+//                    System.out.println("ICE event in flight");
+//                    }
                 }
             else if (event instanceof AvatarAnimationEvent)
                 {
-//                System.out.println("************* In computeEvent for AvatarAnimationListener " + event);
+                if(traceLevel > 5)
+                    {
+                    System.out.println("************* In computeEvent for AvatarAnimationListener " + event);
+                    }
                 if(avatarEventEnable == 1)
                     {
                     AvatarAnimationEvent aee = (AvatarAnimationEvent)event;
                     if(aee.getSource().getName().equals(npcAvatarName))
                         {
-                        System.out.println("Avatar name = " + aee.getSource().getName());
-                        System.out.println("Event - type = " + aee.getType() + " - avatar = " + aee.getSource().getName() + " - animation = " + aee.getAnimationName());
+                        if(traceLevel > 5)
+                            {
+                            System.out.println("Avatar name = " + aee.getSource().getName());
+                            System.out.println("Event - type = " + aee.getType() + " - avatar = " + aee.getSource().getName() + " - animation = " + aee.getAnimationName());
+                            }
                         avatarEventType = aee.getType().name();
                         avatarEventSource = aee.getSource().getName();
                         avatarEventAnimation = aee.getAnimationName();
