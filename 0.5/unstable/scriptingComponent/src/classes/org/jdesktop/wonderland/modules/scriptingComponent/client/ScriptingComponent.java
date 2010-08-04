@@ -3080,7 +3080,10 @@ public class ScriptingComponent extends CellComponent
     public ArrayList buildRobot(String robotName)
         {
         String line;
+        String result[];
         robotList = new ArrayList();
+        int     robotVersion = 1;
+
         String thePath = buildScriptPath(robotName);
         if(traceLevel > 3)
             {
@@ -3092,60 +3095,72 @@ public class ScriptingComponent extends CellComponent
             BufferedReader in = new BufferedReader(new InputStreamReader(myURL.openStream()));
             while((line = in.readLine()) != null)
                 {
-                robotLast++;
-                String[] result = line.split(":");
-                Robot robot = new Robot();
-                if(traceLevel > 4)
+                result = line.split(":");
+                if(result[0].equals("version"))
                     {
-                    System.out.println("result 0 = " + result[0]);
-                    System.out.println("result 1 = " + result[1]);
-                    System.out.println("result 2 = " + result[2]);
-                    System.out.println("result 3 = " + result[3]);
-                    System.out.println("result 4 = " + result[4]);
-                    System.out.println("result 5 = " + result[5]);
-                    System.out.println("result 6 = " + result[6]);
-                    System.out.println("result 7 = " + result[7]);
-                    System.out.println("result 8 = " + result[8]);
-                    System.out.println("result 9 = " + result[9]);
-                    System.out.println("result 10 = " + result[10]);
-                    System.out.println("result 11 = " + result[11]);
-                    System.out.println("result 12 = " + result[12]);
-                    System.out.println("result 13 = " + result[13]);
+                    robotVersion = Integer.parseInt(result[1]);
                     }
-                robot.move = new Boolean(result[0]).booleanValue();
-                robot.xLoc = new Float(result[1]).floatValue();
-                robot.yLoc = new Float(result[2]).floatValue();
-                robot.zLoc = new Float(result[3]).floatValue();
-                robot.playClip = new Boolean(result[4]).booleanValue();
-                robot.clip = new String(result[5]);
-                robot.playAnimation = new Boolean(result[6]).booleanValue();
-                robot.animationName = new String(result[7]);
-                if(result[8].equals("chatText"))
+                else
                     {
-                    robot.chatText = true;
-                    robot.chatFile = false;
-                    robot.theChatText = new String(result[9]);
-                    }
-                else if(result[8].equals("chatFile"))
-                    {
-                    robot.chatText = false;
-                    robot.chatFile = true;
-                    robot.theChatFile = new String(result[9]);
-                    }
-                robot.chatOrigin = new String(result[10]);
+                    if(robotVersion == 1)
+                        {
+                        robotLast++;
+                        Robot robot = new Robot();
+                        if(traceLevel > 4)
+                            {
+                            System.out.println("robotVersion = " + robotVersion);
+                            System.out.println("result 0 = " + result[0]);
+                            System.out.println("result 1 = " + result[1]);
+                            System.out.println("result 2 = " + result[2]);
+                            System.out.println("result 3 = " + result[3]);
+                            System.out.println("result 4 = " + result[4]);
+                            System.out.println("result 5 = " + result[5]);
+                            System.out.println("result 6 = " + result[6]);
+                            System.out.println("result 7 = " + result[7]);
+                            System.out.println("result 8 = " + result[8]);
+                            System.out.println("result 9 = " + result[9]);
+                            System.out.println("result 10 = " + result[10]);
+                            System.out.println("result 11 = " + result[11]);
+                            System.out.println("result 12 = " + result[12]);
+                            System.out.println("result 13 = " + result[13]);
+                            }
+                        robot.move = new Boolean(result[0]).booleanValue();
+                        robot.xLoc = new Float(result[1]).floatValue();
+                        robot.yLoc = new Float(result[2]).floatValue();
+                        robot.zLoc = new Float(result[3]).floatValue();
+                        robot.playClip = new Boolean(result[4]).booleanValue();
+                        robot.clip = new String(result[5]);
+                        robot.playAnimation = new Boolean(result[6]).booleanValue();
+                        robot.animationName = new String(result[7]);
+                        if(result[8].equals("chatText"))
+                            {
+                            robot.chatText = true;
+                            robot.chatFile = false;
+                            robot.theChatText = new String(result[9]);
+                            }
+                        else if(result[8].equals("chatFile"))
+                            {
+                            robot.chatText = false;
+                            robot.chatFile = true;
+                            robot.theChatFile = new String(result[9]);
+                            }
+                        robot.chatOrigin = new String(result[10]);
 
-                if(result[11].equals("ice"))
-                    {
-                    robot.ice = true;
-                    robot.iceCode = Integer.parseInt(result[12]);
-                    robot.iceMessage = new String(result[13]);
-                    }
+                        if(result[11].equals("ice"))
+                            {
+                            robot.ice = true;
+                            robot.iceCode = Integer.parseInt(result[12]);
+                            robot.iceMessage = new String(result[13]);
+                            }
 
-                robotList.add(robot);
-                if(traceLevel > 3)
-                    {
-                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildRobot - Loading animation - Ani step -> " + robot.xLoc + "," + robot.yLoc + "," + robot.zLoc + "," +
-                        robot.playClip + "," + robot.clip);
+                        robotList.add(robot);
+                        if(traceLevel > 3)
+                            {
+                            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildRobot - Loading animation - Ani step -> " + robot.xLoc + "," + robot.yLoc + "," + robot.zLoc + "," +
+                                robot.playClip + "," + robot.clip);
+                            }
+                        robot.version = robotVersion;
+                        }
                     }
                 }
             }
@@ -3374,6 +3389,7 @@ public class ScriptingComponent extends CellComponent
         public  boolean     ice;
         public  int         iceCode;
         public  String      iceMessage;
+        public  int         version;
         }
 
     class Animation
