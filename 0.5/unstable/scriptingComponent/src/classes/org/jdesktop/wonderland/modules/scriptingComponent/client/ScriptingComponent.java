@@ -3422,6 +3422,43 @@ public class ScriptingComponent extends CellComponent
             {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In playRobotFrame - Frame = " + robotFrame + " of " + robotLast);
             }
+        if(((Robot) robotList.get(robotFrame)).playClip)
+            {
+            if(traceLevel > 4)
+                {
+                System.out.println("play clip");
+                }
+            playSound(((Robot) robotList.get(robotFrame)).clip, 1900, 0);
+            }
+        if(((Robot) robotList.get(robotFrame)).chatText)
+            {
+            if(traceLevel > 4)
+                {
+                System.out.println("chat text");
+                }
+            sendChat(((Robot) robotList.get(robotFrame)).theChatText, ((Robot) robotList.get(robotFrame)).chatOrigin, proximityUserName);
+            }
+        if(((Robot) robotList.get(robotFrame)).chatFile)
+            {
+            if(traceLevel > 4)
+                {
+                System.out.println("chat file");
+                }
+            String thePath = "chats/" + cellName + "/" + ((Robot) robotList.get(robotFrame)).theChatFile;
+            contentReadFile(thePath, CONTENT_ROOT);
+            for(Enumeration e = contentRead.elements(); e.hasMoreElements();)
+                {
+                sendChat((String) e.nextElement(), ((Robot) robotList.get(robotFrame)).chatOrigin, proximityUserName);
+                }
+            }
+        if(((Robot) robotList.get(robotFrame)).ice)
+            {
+            if(traceLevel > 4)
+                {
+                System.out.println("chat file");
+                }
+            postMessageEvent(((Robot) robotList.get(robotFrame)).iceMessage, ((Robot) robotList.get(robotFrame)).iceCode);
+            }
         if(((Robot) robotList.get(robotFrame)).move)
             {
             if(traceLevel > 4)
@@ -3439,42 +3476,6 @@ public class ScriptingComponent extends CellComponent
                 System.out.println("play animation - animation = " + ((Robot) robotList.get(robotFrame)).animationName);
                 }
             executeAction("runAnimation", ((Robot) robotList.get(robotFrame)).animationName, 0);
-            }
-        if(((Robot) robotList.get(robotFrame)).playClip)
-            {
-            if(traceLevel > 4)
-                {
-                System.out.println("play clip");
-                }
-            playSound(((Robot) robotList.get(robotFrame)).clip, 1900, 1);
-            }
-        if(((Robot) robotList.get(robotFrame)).chatText)
-            {
-            if(traceLevel > 4)
-                {
-                System.out.println("chat text");
-                }
-            sendChat(((Robot) robotList.get(robotFrame)).theChatText, ((Robot) robotList.get(robotFrame)).chatOrigin, proximityUserName);
-            }
-        if(((Robot) robotList.get(robotFrame)).chatFile)
-            {
-            if(traceLevel > 4)
-                {
-                System.out.println("chat file");
-                }
-            contentReadFile(((Robot) robotList.get(robotFrame)).theChatFile, CONTENT_ROOT);
-            for(Enumeration e = contentRead.elements(); e.hasMoreElements();)
-                {
-                sendChat((String) e.nextElement(), ((Robot) robotList.get(robotFrame)).chatOrigin, proximityUserName);
-                }
-            }
-        if(((Robot) robotList.get(robotFrame)).ice)
-            {
-            if(traceLevel > 4)
-                {
-                System.out.println("chat file");
-                }
-            postMessageEvent(((Robot) robotList.get(robotFrame)).iceMessage, ((Robot) robotList.get(robotFrame)).iceCode);
             }
 
         robotFrame++;
