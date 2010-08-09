@@ -48,6 +48,8 @@ import com.sun.mpk20.voicelib.app.Player;
 import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.util.ScalableHashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -78,11 +80,18 @@ public class MicrophoneComponentMO extends CellComponentMO {
     private boolean showBounds = false;
     private TalkArea talkArea = new TalkArea();
     private boolean showTalkArea = false;
+
     private ManagedReference<MicrophoneListenAreaProximityListener> listenAreaProximityListenerRef;
     private ManagedReference<MicrophoneTalkAreaProximityListener> talkAreaProximityListenerRef;
 
+    public enum Status { LISTENING, SPEAKING, BOTH };
+    private final ManagedReference<Map<String, Status>> statusMapRef;
+
     public MicrophoneComponentMO(CellMO cellMO) {
         super(cellMO);
+
+        Map<String, Status> statusMap = new ScalableHashMap<String, Status>();
+        statusMapRef = AppContext.getDataManager().createReference(statusMap);
 
         if (cellMO.getComponent(ProximityComponentMO.class) == null) {
             cellMO.addComponent(new ProximityComponentMO(cellMO));
@@ -297,7 +306,9 @@ public class MicrophoneComponentMO extends CellComponentMO {
             }
 
             MicrophoneTalkAreaProximityListener talkAreaProximityListener = 
-		new MicrophoneTalkAreaProximityListener(cellRef.get(), name, volume);
+		new MicrophoneTalkAreaProximityListener(cellRef.get(), name,
+                        volume, AudioGroup.DEFAULT_LISTEN_ATTENUATION,
+                        statusMapRef);
 
 	    talkAreaProximityListenerRef = AppContext.getDataManager().createReference(
 		talkAreaProximityListener);
@@ -325,7 +336,9 @@ public class MicrophoneComponentMO extends CellComponentMO {
             }
 
             MicrophoneListenAreaProximityListener listenAreaProximityListener = 
-		new MicrophoneListenAreaProximityListener(cellRef.get(), name, volume);
+		new MicrophoneListenAreaProximityListener(cellRef.get(), name,
+                        volume, AudioGroup.DEFAULT_LISTEN_ATTENUATION,
+                        statusMapRef);
 
 	    listenAreaProximityListenerRef = AppContext.getDataManager().createReference(
 		listenAreaProximityListener);
