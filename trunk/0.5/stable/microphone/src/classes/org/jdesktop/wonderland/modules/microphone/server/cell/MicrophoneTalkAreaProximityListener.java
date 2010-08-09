@@ -35,192 +35,63 @@
  */
 package org.jdesktop.wonderland.modules.microphone.server.cell;
 
-import com.sun.mpk20.voicelib.app.AudioGroup;
-import com.sun.mpk20.voicelib.app.AudioGroupListener;
-import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo;
-import com.sun.mpk20.voicelib.app.AudioGroupSetup;
-import com.sun.mpk20.voicelib.app.FullVolumeSpatializer;
-import com.sun.mpk20.voicelib.app.Player;
-import com.sun.mpk20.voicelib.app.Spatializer;
-import com.sun.mpk20.voicelib.app.VoiceManager;
-
-import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ManagedObject;
-
-import java.lang.String;
-
-import java.util.logging.Logger;
-
-import org.jdesktop.wonderland.common.cell.CallID;
-import org.jdesktop.wonderland.common.cell.CellID;
-
-import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
-
-import com.jme.bounding.BoundingVolume;
 import com.sun.sgs.app.ManagedReference;
-
-import java.io.Serializable;
-
-import org.jdesktop.wonderland.common.cell.security.ViewAction;
+import java.util.Map;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.security.Action;
-import org.jdesktop.wonderland.server.cell.CellManagerMO;
-import org.jdesktop.wonderland.server.cell.CellResourceManager;
-import org.jdesktop.wonderland.server.security.ActionMap;
-import org.jdesktop.wonderland.server.security.Resource;
-import org.jdesktop.wonderland.server.security.ResourceMap;
-import org.jdesktop.wonderland.server.security.SecureTask;
-import org.jdesktop.wonderland.server.security.SecurityManager;
+import org.jdesktop.wonderland.modules.microphone.common.security.TalkAction;
+import org.jdesktop.wonderland.modules.microphone.server.cell.MicrophoneComponentMO.Status;
+import org.jdesktop.wonderland.server.cell.CellMO;
 
 /**
  * A server cell that provides a microphone proximity listener
  * @author jprovino
+ * @author Jonathan Kaplan <jonathankap@gmail.com>
  */
-public class MicrophoneTalkAreaProximityListener implements ProximityListenerSrv, 
-	ManagedObject, Serializable {
-
+public class MicrophoneTalkAreaProximityListener
+    extends MicrophoneBaseProximityListener
+{
     private static final Logger logger =
             Logger.getLogger(MicrophoneTalkAreaProximityListener.class.getName());
 
-    private CellID cellID;
-    private String name;
-    private double volume;
-
-    public MicrophoneTalkAreaProximityListener(CellMO cellMO, String name, double volume) {
-	cellID = cellMO.getCellID();
-        this.name = name;
-	this.volume = volume;
+    public MicrophoneTalkAreaProximityListener(CellMO cellMO, String name,
+            double speakingVolume, double listenVolume,
+            ManagedReference<Map<String, Status>> statusMapRef)
+    {
+        super (cellMO, name, speakingVolume, listenVolume, statusMapRef);
     }
 
-    public void viewEnterExit(boolean entered, CellID cellID,
-            CellID viewCellID, BoundingVolume proximityVolume,
-            int proximityIndex) {
-
-	logger.info("viewEnterExit talk area:  " + entered + " cellID " + cellID
-	    + " viewCellID " + viewCellID);
-
-	System.out.println("viewEnterExit talk area:  " + entered + " cellID " + cellID
-	    + " viewCellID " + viewCellID + " bounds " + proximityVolume);
-
-	String callId = CallID.getCallID(viewCellID);
-
-	if (entered) {
-	    talkAreaEntered(callId);
-	} else {
-	    talkAreaExited(callId);
-	}
+    @Override
+    protected String getAreaType() {
+        return "talk";
     }
 
-    private void talkAreaEntered(String callId) {
-	logger.info(callId + " entered talk area " + name);
+    @Override
+    protected Action getAction() {
+        return new TalkAction();
+    }
 
-        // get the security manager
-        SecurityManager security = AppContext.getManager(SecurityManager.class);
-        CellResourceManager crm = AppContext.getManager(CellResourceManager.class);
-
-        // create a request
-        Action viewAction = new ViewAction();
-        Resource resource = crm.getCellResource(this.cellID);
-        if (resource != null) {
-            // there is security on this cell perform the enter notification
-            // securely
-            ActionMap am = new ActionMap(resource, new Action[] { viewAction });
-            ResourceMap request = new ResourceMap();
-            request.put(resource.getId(), am);
-
-            // perform the security check
-            security.doSecure(request, new CellEnteredTask(this, resource.getId(), callId));
+    @Override
+    protected Status entered(Status prev) {
+        if (prev == null) {
+            return Status.SPEAKING;
+        } else if (prev == Status.LISTENING) {
+            return Status.BOTH;
         } else {
-            // no security, just make the call directly
-            cellEntered(callId);
+            logger.warning("Enter talk area when already talking");
+            return prev;
         }
     }
 
-    // OWL issue #79 - make sure this is a static inner class that refers
-    // to the listener via a ManagedReference
-    private static class CellEnteredTask implements SecureTask, Serializable {
-        private final ManagedReference<MicrophoneTalkAreaProximityListener> listenerRef;
-        private final String resourceID;
-        private final String callId;
-
-        public CellEnteredTask(MicrophoneTalkAreaProximityListener listener,
-                               String resourceID, String callId)
-        {
-            this.listenerRef = AppContext.getDataManager().createReference(listener);
-            this.resourceID = resourceID;
-            this.callId = callId;
-        }
-
-        public void run(ResourceMap granted) {
-            ActionMap am = granted.get(resourceID);
-            if (am != null && !am.isEmpty()) {
-                // request was granted -- the user has permission to enter
-                listenerRef.get().cellEntered(callId);
-            } else {
-                logger.warning("Access denied to enter microphone talk area.");
-            }
+    @Override
+    protected Status exited(Status prev) {
+        if (prev == Status.SPEAKING) {
+            return null;
+        } else if (prev == Status.BOTH) {
+            return Status.LISTENING;
+        } else {
+            logger.warning("Exit talk area when not talking");
+            return prev;
         }
     }
-
-    private void cellEntered(String callId) {
-
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-	
-        Player player = vm.getPlayer(callId);
-
-	System.out.println("Talk area entered, Setting speaking volume to " 
-	    + volume + " for " + player);
-
-        if (player == null) {
-            logger.warning("Can't find player for " + callId);
-            return;
-        }
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-	if (audioGroup == null) {
-	    CellMO cellMO = CellManagerMO.getCellManager().getCell(cellID);
-
-	    MicrophoneComponentMO microphoneComponentMO = 
-		cellMO.getComponent(MicrophoneComponentMO.class);
-
-	    audioGroup = microphoneComponentMO.createAudioGroup(name);
-	}
-
-	if (audioGroup.getPlayerInfo(player) == null) {
-            audioGroup.addPlayer(player, new AudioGroupPlayerInfo(true,
-                AudioGroupPlayerInfo.ChatType.PUBLIC));
-	} else {
-	    audioGroup.setSpeaking(player, true);
-	}
-
-	audioGroup.setSpeakingAttenuation(player, volume);
-    }
-
-    private void talkAreaExited(String callId) {
-	logger.info(callId + " exited talk area " + name);
-
-	VoiceManager vm = AppContext.getManager(VoiceManager.class);
-
-        AudioGroup audioGroup = vm.getAudioGroup(name);
-
-	if (audioGroup == null) {
-	    logger.info("Audio group doesn't exit:  " + name);
-	    return;
-	}
-
-        Player player = vm.getPlayer(callId);
-
-        if (player == null) {
-            logger.warning("Can't find player for " + callId);
-            return;
-        }
-
-	System.out.println("Talk area exit, Player is no longer speaking in audio group. " 
-	    + player);
-
-	audioGroup.setSpeaking(player, false);
-	audioGroup.setSpeakingAttenuation(player, volume);
-    }
-
 }
