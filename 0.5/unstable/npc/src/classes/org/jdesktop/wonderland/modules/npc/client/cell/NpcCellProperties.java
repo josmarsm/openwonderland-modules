@@ -35,13 +35,16 @@
  */
 package org.jdesktop.wonderland.modules.npc.client.cell;
 
+import java.net.URL;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
-import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.modules.avatarbase.client.cell.AvatarConfigComponent;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
@@ -59,6 +62,10 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     private static final Logger LOGGER =
             Logger.getLogger(NpcCellProperties.class.getName());
 
+    private final int totalAvatars = 100;
+    private String[] theAvatar = new String[totalAvatars];
+    private int thisAvatar = 0;
+
     // The cell property editor panel, used to indicate clean/dirty state
     CellPropertiesEditor editor = null;
 
@@ -66,7 +73,8 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     private String originalConfigURL = null;
 
     /** Creates new form SampleCellProperties */
-    public NpcCellProperties() {
+    public NpcCellProperties()
+        {
         initComponents();
     }
 
@@ -100,8 +108,18 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
         Cell cell = editor.getCell();
         AvatarConfigComponent acc = cell.getComponent(AvatarConfigComponent.class);
         originalConfigURL = acc.getAvatarConfigInfo().getAvatarConfigURL();
-
+        System.out.println("OriginalConfigURL = " + originalConfigURL);
+        
         avatarCB.setSelectedItem(originalConfigURL);
+
+//        if(jRadioIMI.isSelected())
+//            {
+//            jRadioIMIActionPerformed(null);
+//            }
+//        else if(jRadioEvolver.isSelected())
+//            {
+//            jRadioEvolverActionPerformed(null);
+//            }
     }
 
     /**
@@ -117,13 +135,34 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     public void apply() {
         // Take the value from the configuration URL and populate the server
         // state with it.
-        String uri = "wla://avatarbaseart/assets/configurations/" + (String) avatarCB.getSelectedItem();
+        String uri = null;
 
+        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        String userName = session.getUserID().getUsername();
+
+        if(jRadioIMI.isSelected())
+            {
+            uri = "wla://avatarbaseart/assets/configurations/" + (String) avatarCB.getSelectedItem();
+            System.out.println("In apply IMI selected - URI = " + uri);
+            }
+        else if(jRadioEvolver.isSelected())
+            {
+            uri = "wlcontent://users/" + userName + "/avatars/multimesh-evolver/" + (String) avatarCB.getSelectedItem();
+            System.out.println("In apply Evolver selected - URI = " + uri);
+            }
         AvatarConfigComponentServerState accss = (AvatarConfigComponentServerState)
                  editor.getCellServerState().getComponentServerState(AvatarConfigComponentServerState.class);
         AvatarConfigInfo info = accss.getAvatarConfigInfo();
-        accss.setAvatarConfigInfo(new AvatarConfigInfo(uri, info.getLoaderFactoryClassName()));
-
+        if(jRadioIMI.isSelected())
+            {
+            System.out.println("In apply iconfig IMI - loader = " + info.getLoaderFactoryClassName());
+            accss.setAvatarConfigInfo(new AvatarConfigInfo(uri, "org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory"));
+            }
+        else if(jRadioEvolver.isSelected())
+            {
+            System.out.println("In apply iconfig Evolver");
+            accss.setAvatarConfigInfo(new AvatarConfigInfo(uri, "org.jdesktop.wonderland.modules.evolvermulti.client.evolver.MultimeshEvolverAvatarLoaderFactory"));
+            }
         LOGGER.warning("Setting config info to " + accss.getAvatarConfigInfo().getAvatarConfigURL());
         editor.addToUpdateList(accss);
     }
@@ -144,16 +183,38 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         avatarCB = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        jRadioIMI = new javax.swing.JRadioButton();
+        jRadioEvolver = new javax.swing.JRadioButton();
 
         jLabel1.setText("Choose Avatar:");
 
         avatarCB.setEditable(true);
-        avatarCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "MaleD_CA_00_bin.xml", "MaleD_CA_01_bin.xml", "FemaleD_AZ_00_bin.xml", "FemaleD_CA_00_bin.xml", "FemaleFG_AA_01_bin.xml", "FemaleFG_AA_02_bin.xml", "FemaleFG_AA_03_bin.xml", "FemaleFG_CA_00_bin.xml", "FemaleFG_CA_01_bin.xml", "FemaleFG_CA_02_bin.xml", "FemaleFG_CA_03_bin.xml", "FemaleFG_CA_04_bin.xml", "MaleD_CA_00_bin.xml", "MaleD_CA_01_bin.xml", "MaleFG_AA_00_bin.xml", "MaleFG_AA_01_bin.xml", "MaleFG_CA_01_bin.xml", "MaleFG_CA_03_bin.xml", "MaleFG_CA_04_bin.xml", "MaleMeso_00.xml", "MaleMeso_01.xml" }));
         avatarCB.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 avatarCBActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Avatar Type");
+
+        buttonGroup1.add(jRadioIMI);
+        jRadioIMI.setText("IMI Avatars");
+        jRadioIMI.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioIMIActionPerformed(evt);
+            }
+        });
+
+        buttonGroup1.add(jRadioEvolver);
+        jRadioEvolver.setSelected(true);
+        jRadioEvolver.setText("Evolver Avatars");
+        jRadioEvolver.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioEvolverActionPerformed(evt);
             }
         });
 
@@ -162,20 +223,34 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(avatarCB, 0, 344, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(51, 51, 51)
+                        .add(jRadioIMI)
+                        .add(29, 29, 29)
+                        .add(jRadioEvolver))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jLabel1)
+                        .add(40, 40, 40)
+                        .add(avatarCB, 0, 310, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(16, 16, 16)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(jRadioIMI)
+                    .add(jRadioEvolver))
+                .add(53, 53, 53)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(avatarCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(141, Short.MAX_VALUE))
+                .addContainerGap(59, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -190,8 +265,85 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
         }
     }//GEN-LAST:event_avatarCBActionPerformed
 
+    private void jRadioIMIActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioIMIActionPerformed
+        avatarCB.removeAllItems();
+        thisAvatar = 0;
+        try
+            {
+            URL urell = AssetUtils.getAssetURL("wla://avatarbaseart/assets/configurations/content.txt");
+
+            System.out.println("The avatar path = " + urell);
+            java.net.URLConnection con = urell.openConnection();
+            con.connect();
+
+            java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(con.getInputStream()));
+            String line;
+            for(; (line = in.readLine()) != null; )
+                {
+//                System.out.println("File = " + line);
+                theAvatar[thisAvatar] = line;
+                thisAvatar++;
+                if(thisAvatar >= totalAvatars)
+                    {
+                    break;
+                    }
+                }
+            }
+        catch (Exception ex)
+            {
+            ex.printStackTrace();
+            }
+      for(int i = 0; i < thisAvatar; i++)
+            {
+            avatarCB.addItem(theAvatar[i]);
+            }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jRadioIMIActionPerformed
+
+    private void jRadioEvolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioEvolverActionPerformed
+        avatarCB.removeAllItems();
+        thisAvatar = 0;
+        try
+            {
+            WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+            String userName = session.getUserID().getUsername();
+            String thePath = session.getSessionManager().getServerURL();
+            URL urell = new URL(thePath + "/webdav/content/users/" + userName + "/avatars/multimesh-evolver/content.txt");
+
+            System.out.println("The avatar path = " + urell);
+            java.net.URLConnection con = urell.openConnection();
+            con.connect();
+
+            java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(con.getInputStream()));
+            String line;
+            for(; (line = in.readLine()) != null; )
+                {
+//                System.out.println("File = " + line);
+                theAvatar[thisAvatar] = line;
+                thisAvatar++;
+                if(thisAvatar >= totalAvatars)
+                    {
+                    break;
+                    }
+                }
+            }
+        catch (Exception ex)
+            {
+            ex.printStackTrace();
+            }
+
+        for(int i = 0; i < thisAvatar; i++)
+            {
+            avatarCB.addItem(theAvatar[i]);
+            }
+    }//GEN-LAST:event_jRadioEvolverActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox avatarCB;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JRadioButton jRadioEvolver;
+    private javax.swing.JRadioButton jRadioIMI;
     // End of variables declaration//GEN-END:variables
 }
