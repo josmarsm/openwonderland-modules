@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
@@ -139,7 +141,7 @@ public class ScriptingComponent extends CellComponent
     public String testName = "morrisford";
     public int testInt = 99;
     private Vector3f worldCoor = null;
-    private float frameRate = (float)0.0;
+    private float myFrameRate;
     public final int totalEvents = 30;
     public static final int MOUSE1_EVENT = 0;
     public static final int MOUSE2_EVENT = 1;
@@ -321,16 +323,6 @@ public class ScriptingComponent extends CellComponent
         this.cellName = cell.getName();
         this.thisCellID = cell.getCellID().toString();
         this.thees = this;
-
-        wm = ClientContextJME.getWorldManager();
-        wm.getRenderManager().setFrameRateListener(new FrameRateListener()
-            {
-            public void currentFramerate(float frames) 
-                {
-                frameRate = frames;
-                }
-            
-            }, 100);
         repo = ContentRepositoryRegistry.getInstance().getRepository(cell.getCellCache().getSession().getSessionManager());
         }
 
@@ -1715,6 +1707,19 @@ public class ScriptingComponent extends CellComponent
                                 myKeyListener.addToEntity(mye);
                                 }
                             }
+
+        wm = ClientContextJME.getWorldManager();
+        wm.getRenderManager().setFrameRateListener(new FrameRateListener()
+            {
+            public void currentFramerate(float frames)
+                {
+//                myFrameRate = frames;
+                setFrameRate(frames);
+//                System.out.println("Framerate listener " + myFrameRate);
+                }
+
+            }, 100);
+
                         if(intercellListener == null)
                             {
                             intercellListener = new IntercellListener();
@@ -2256,10 +2261,10 @@ public class ScriptingComponent extends CellComponent
     
     public void setFrameRate(float frames)
         {
-        frameRate = frames;
+        myFrameRate = frames;
         if(traceLevel > 4)
             {
-            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter setFrameRate - rate = " + frameRate);
+            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter setFrameRate - rate = " + myFrameRate);
             }
         }
     
@@ -2401,6 +2406,7 @@ public class ScriptingComponent extends CellComponent
         Bindings bindings = null;
         ScriptEngine jsEngine = null;
 
+//        System.out.println("&&&&&&&&&&&&&&&& frame rate " + this.myFrameRate);
         Properties props = new Properties();
         try
             {
@@ -2486,7 +2492,7 @@ public class ScriptingComponent extends CellComponent
             bindings.put("stateBoolean", stateBoolean);
             bindings.put("stateFloat", stateFloat);
             bindings.put("Event", eventType);
-            bindings.put("FrameRate", frameRate);
+            bindings.put("FrameRate", myFrameRate);
             bindings.put("eventNames", eventNames);
             bindings.put("eventScriptType", eventScriptType);
             bindings.put("initialX", initialX);
@@ -3727,6 +3733,19 @@ public class ScriptingComponent extends CellComponent
         ScriptingComponentCellCreateMessage msg =
                 new ScriptingComponentCellCreateMessage(className, x, y, z, cellName);
         channelComp.send(msg);
+        }
+
+    public void deleteCellInstance(String cellName)
+        {
+        Collection coll = cell.getCellCache().getRootCells();
+        for (Cell aCell : cell.getCellCache().getRootCells())
+            {
+            if(cellName.equals(aCell.getName()))
+                {
+                System.out.println("Delete cell - found a match");
+                CellUtils.deleteCell(aCell);
+                }
+            }
         }
 
     class KeyEventListener extends EventClassListener
