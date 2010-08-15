@@ -446,7 +446,7 @@ public class NpcCell extends Cell
                 attachEditorGeometry();
                 attachCellLocationUpdater();
                 attachAnimationListener();
-                attachNpcName("ralph");
+                attachNpcName(" ");
             }
         });
     }
