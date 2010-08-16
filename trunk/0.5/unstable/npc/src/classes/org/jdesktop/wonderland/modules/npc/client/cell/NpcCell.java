@@ -63,6 +63,7 @@ import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -73,6 +74,7 @@ import org.jdesktop.wonderland.client.jme.AvatarRenderManager.RendererUnavailabl
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.AvatarJME;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -85,8 +87,10 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTa
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry.PickBox;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.messages.AvatarConfigMessage;
+import org.jdesktop.wonderland.modules.evolvermulti.client.evolver.MultimeshEvolverAvatarLoaderFactory;
 import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingActionClass;
 import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingComponent;
 import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingRunnable;
@@ -114,6 +118,8 @@ public class NpcCell extends Cell
     private final ContextMenuFactorySPI menuFactory;
 
     private String[] nameList = null;
+    public static final int IMI_AVATAR = 0;
+    public static final int EVOLVER_AVATAR = 1;
 
     public NpcCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -212,24 +218,58 @@ public class NpcCell extends Cell
         };
 
 
-    public void avatarSelectAvatar(String avatar)
+    public void avatarSelectAvatar(String avatar, int imiOrEvolver)
         {
+        String uri = null;
+        String urlString = null;
+
         ChannelComponent cc = NpcCell.this.getComponent(ChannelComponent.class);
 
-        // From the partial URI, add the module prefix
-        String uri = "wla://avatarbaseart/" + avatar;
-        String urlString = null;
-        try {
-            urlString = AssetUtils.getAssetURL(uri, NpcCell.this).toExternalForm();
-        } catch (java.net.MalformedURLException excp) {
-            logger.log(Level.WARNING, "Unable to form URL from " + uri, excp);
-            return;
-        }
+        switch(imiOrEvolver)
+            {
+            case IMI_AVATAR:
+                {
+                uri = "wla://avatarbaseart/assets/configurations/" + avatar;
+                try 
+                    {
+                    urlString = AssetUtils.getAssetURL(uri, NpcCell.this).toExternalForm();
+                    } 
+                catch (java.net.MalformedURLException excp) 
+                    {
+                    logger.log(Level.WARNING, "Unable to form URL from " + uri, excp);
+                    return;
+                    }
 
         // Form up a message and send
-        String className = ImiAvatarLoaderFactory.class.getName();
-        AvatarConfigInfo info = new AvatarConfigInfo(urlString, className);
-        cc.send(AvatarConfigMessage.newRequestMessage(info));
+                String className = ImiAvatarLoaderFactory.class.getName();
+                AvatarConfigInfo info = new AvatarConfigInfo(urlString, className);
+                cc.send(AvatarConfigMessage.newRequestMessage(info));
+                break;
+                }
+            case EVOLVER_AVATAR:
+                {
+                WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+                String userName = session.getUserID().getUsername();
+
+                uri = "wlcontent://users/" + userName + "/avatars/multimesh-evolver/" + avatar;
+                System.out.println("In apply Evolver selected - URI = " + uri);
+                try
+                    {
+                    urlString = AssetUtils.getAssetURL(uri, NpcCell.this).toExternalForm();
+                    }
+                catch (java.net.MalformedURLException excp)
+                    {
+                    logger.log(Level.WARNING, "Unable to form URL from " + uri, excp);
+                    return;
+                    }
+                
+                String className = MultimeshEvolverAvatarLoaderFactory.class.getName();
+                AvatarConfigInfo info = new AvatarConfigInfo(urlString, className);
+                cc.send(AvatarConfigMessage.newRequestMessage(info));
+                break;
+                }
+            }
+        // From the partial URI, add the module prefix
         }
 
     ScriptingRunnable avatarSelectAvatarRun = new ScriptingRunnable()
@@ -237,7 +277,7 @@ public class NpcCell extends Cell
         @Override
         public void run()
             {
-            avatarSelectAvatar(avatar);
+            avatarSelectAvatar(animation, a);
             System.out.println("ScriptingActionClass - enter avatarStartForward");
             }
         };
