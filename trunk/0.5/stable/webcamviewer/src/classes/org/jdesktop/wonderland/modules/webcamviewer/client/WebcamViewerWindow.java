@@ -81,7 +81,7 @@ public class WebcamViewerWindow extends WindowSwing implements WebcamViewerToolL
     private CamStream camStream;
     private WebcamViewerPanel webcamViewerPanel;
     private WebcamViewerToolManager toolManager;
-    private WebcamViewerControlPanel controls;
+    private WebcamViewerControls controls;
     private HUDMessage messageComponent;
     private HUDComponent controlComponent;
     private boolean synced = true;
@@ -292,6 +292,13 @@ public class WebcamViewerWindow extends WindowSwing implements WebcamViewerToolL
     }
 
     /**
+     * Clear the window
+     */
+    public void clear() {
+        webcamViewerPanel.clear();
+    }
+
+    /**
      * Synchronize with the shared state
      */
     public void sync() {
@@ -396,15 +403,15 @@ public class WebcamViewerWindow extends WindowSwing implements WebcamViewerToolL
 
                 if (controlComponent == null) {
                     // create control panel
-                    controls = new WebcamViewerControlPanel(WebcamViewerWindow.this);
+                    controls = createControls(WebcamViewerWindow.this);
 
                     // add event listeners
-                    toolManager = new WebcamViewerToolManager(WebcamViewerWindow.this);
+                    toolManager = createToolManager(WebcamViewerWindow.this);
                     toolManager.setSSC(ssc);
                     controls.addCellMenuListener(toolManager);
 
                     // create HUD control panel
-                    controlComponent = mainHUD.createComponent(controls, cell);
+                    controlComponent = mainHUD.createComponent(controls.getComponent(), cell);
                     controlComponent.setPreferredLocation(Layout.SOUTH);
 
                     // add HUD control panel to HUD
@@ -443,5 +450,13 @@ public class WebcamViewerWindow extends WindowSwing implements WebcamViewerToolL
         controls.setSynced(isSynced());
 
         controls.setOnHUD(!toolManager.isOnHUD());
+    }
+
+    protected WebcamViewerControls createControls(WebcamViewerWindow window) {
+        return new WebcamViewerControlPanel(window);
+    }
+
+    protected WebcamViewerToolManager createToolManager(WebcamViewerWindow window) {
+        return new WebcamViewerToolManager(window);
     }
 }

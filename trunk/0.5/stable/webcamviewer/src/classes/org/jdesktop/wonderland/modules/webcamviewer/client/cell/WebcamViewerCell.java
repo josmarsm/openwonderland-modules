@@ -111,7 +111,7 @@ public class WebcamViewerCell extends App2DCell implements SharedMapListenerCli 
                 // the cell is now visible
                 if (increasing) {
                     if (this.getApp() == null) {
-                        webcamViewerApp = new WebcamViewerApp(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcamviewer/client/resources/Bundle").getString("WEBCAM"), clientState.getPixelScale());
+                        webcamViewerApp = createApp(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcamviewer/client/resources/Bundle").getString("WEBCAM"), clientState.getPixelScale());
                         setApp(webcamViewerApp);
                     }
                     // tell the app to be displayed in this cell.
@@ -124,7 +124,7 @@ public class WebcamViewerCell extends App2DCell implements SharedMapListenerCli 
 
                     // this app has only one window, so it is always top-level
                     try {
-                        webcamViewerWindow = new WebcamViewerWindow(this, webcamViewerApp,
+                        webcamViewerWindow = createWindow(this, webcamViewerApp,
                                 clientState.getPreferredWidth(), clientState.getPreferredHeight(),
                                 true, clientState.getPixelScale());
                         webcamViewerWindow.setDecorated(clientState.getDecorated());
@@ -177,6 +177,18 @@ public class WebcamViewerCell extends App2DCell implements SharedMapListenerCli 
                 }
                 break;
         }
+    }
+
+    protected WebcamViewerApp createApp(String name, Vector2f pixelScale) {
+        return new WebcamViewerApp(name, pixelScale);
+    }
+
+    protected WebcamViewerWindow createWindow(WebcamViewerCell cell, App2D app,
+            int width, int height,
+            boolean topLevel, Vector2f pixelScale)
+        throws InstantiationException
+    {
+        return new WebcamViewerWindow(cell, app, width, height, topLevel, pixelScale);
     }
 
     public void propertyChanged(SharedMapEventCli event) {
