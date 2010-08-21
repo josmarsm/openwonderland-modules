@@ -127,8 +127,15 @@ public abstract class MicrophoneBaseProximityListener implements ProximityListen
         // required because the voicemanager does not update until a transaction
         // commits, and we therefore run into trouble if the user does more than
         // one action in a single transaction
-        AppContext.getTaskManager().scheduleTask(new EnterExitTask(this, callId,
-                                                                   entered));
+        // AppContext.getTaskManager().scheduleTask(new EnterExitTask(this, callId,
+        //                                                           entered));
+
+        // handle enter and exit directly to avoid out-of-order commits
+        if (entered) {
+            proximityEntered(callId);
+        } else {
+            proximityExited(callId);
+        }
     }
 
     // a separate task for enter and exit
