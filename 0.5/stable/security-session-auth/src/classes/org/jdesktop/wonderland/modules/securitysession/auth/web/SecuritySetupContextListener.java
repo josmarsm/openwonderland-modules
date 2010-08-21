@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -58,22 +76,27 @@ public class SecuritySetupContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent evt) {
         // get the URL for the web server
         String serverUrl = System.getProperty(Constants.WEBSERVER_URL_PROP);
+        String internalServerUrl = System.getProperty(Constants.WEBSERVER_URL_INTERNAL_PROP);
+
         serverUrl += SECURITY_PATH;
-        
+        internalServerUrl += SECURITY_PATH;
+
         // set the login type and URL
-        AuthenticationInfo authInfo;
+        AuthenticationInfo.Type type;
         if (AuthUtils.isGuestLoginAllowed()) {
-            authInfo = new AuthenticationInfo(
-                    AuthenticationInfo.Type.EITHER, serverUrl);    
+            type = AuthenticationInfo.Type.EITHER;
         } else {
-            authInfo = new AuthenticationInfo(
-                    AuthenticationInfo.Type.WEB_SERVICE, serverUrl);
+            type = AuthenticationInfo.Type.WEB_SERVICE;
         }
+        
+        AuthenticationInfo authInfo = new AuthenticationInfo(type, serverUrl);
+        AuthenticationInfo internalAuthInfo = new AuthenticationInfo(type, internalServerUrl);
 
         logger.fine("Setting auth URL: " + serverUrl);
 
         ServerInfo.getServerDetails().setAuthInfo(authInfo);
-
+        ServerInfo.getInternalServerDetails().setAuthInfo(internalAuthInfo);
+        
         // create initial users
         if (!Boolean.parseBoolean(DEFAULT_USERS_PROP)) {
             createInitialUsers();

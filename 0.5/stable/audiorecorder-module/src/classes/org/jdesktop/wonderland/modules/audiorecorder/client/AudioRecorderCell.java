@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -21,6 +39,8 @@ package org.jdesktop.wonderland.modules.audiorecorder.client;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -288,7 +308,20 @@ public class AudioRecorderCell extends Cell {
                     String tapeName = nodeName.substring(0, index);
                     Tape aTape = new Tape(tapeName);
                     ContentResource r = (ContentResource) contentNode;
-                    aTape.setURL(r.getURL());
+
+                    // get the URL as a wlcontent:// URL that can be translated
+                    // into a real URL by the server
+                    URL contentURL;
+                    try {
+                        contentURL = new URL("wlcontent://system/" +
+                                             AUDIO_RECORDINGS_DIRECTORY + "/" +
+                                             nodeName);
+                    } catch (MalformedURLException mue) {
+                        logger.log(Level.WARNING, "Error creating URL", mue);
+                        contentURL = r.getURL();
+                    }
+                    
+                    aTape.setURL(contentURL.toString());
                     aTape.setUsed();
                     tapes.add(aTape);
                 }
