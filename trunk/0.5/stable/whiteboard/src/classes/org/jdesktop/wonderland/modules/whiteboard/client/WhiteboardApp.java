@@ -52,7 +52,14 @@ public class WhiteboardApp extends App2D implements ControlChangeListener {
      * (in world meters per pixel).
      */
     public WhiteboardApp(String name, Vector2f pixelScale) {
-        super(name, new ControlArbMulti(), pixelScale);
+        super(name, new ControlArbMulti() {
+            @Override
+            protected void updateKeyFocus(boolean hasControl) {
+                // calling super.updateKeyFocus() prevents the main window
+                // from getting focus. We need the main window to have focus
+                // for our key listener to work.
+            }
+        }, pixelScale);
         controlArb.setApp(this);
         controlArb.addListener(this);
     }
