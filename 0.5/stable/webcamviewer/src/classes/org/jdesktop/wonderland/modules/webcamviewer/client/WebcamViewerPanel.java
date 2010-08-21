@@ -59,6 +59,7 @@ public class WebcamViewerPanel extends JPanel implements ExceptionReporter,
     private WebcamViewerWindow window;
     private Image frame;
     private NumberFormat formatter = NumberFormat.getInstance();
+    private boolean clear = false;
 
     public WebcamViewerPanel(WebcamViewerWindow window) {
         this.window = window;
@@ -77,6 +78,10 @@ public class WebcamViewerPanel extends JPanel implements ExceptionReporter,
             return;
         }
 
+        // make sure to add the size of the bar at the bottom
+        size.setSize(size.getWidth(), size.getHeight() + jPanel1.getHeight());
+
+        // check if the window is already the right size
         if (!size.equals(new Dimension(window.getWidth(), window.getHeight()))) {
             // resize the webcam viewer window
             logger.fine("resizing to: " + size);
@@ -126,6 +131,14 @@ public class WebcamViewerPanel extends JPanel implements ExceptionReporter,
         fpsStr = null;
     }
 
+    /**
+     * Clear the image
+     */
+    public void clear() {
+        clear = true;
+        repaint();
+    }
+
     // Cambozola ImageChangeListener method
     public void imageChanged(ImageChangeEvent e) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -133,16 +146,11 @@ public class WebcamViewerPanel extends JPanel implements ExceptionReporter,
             public void run() {
                 frame = window.getFrame();
                 if (frame != null) {
+                    // see if we need to resize
+                    int width = frame.getWidth(WebcamViewerPanel.this);
+                    int height = frame.getHeight(WebcamViewerPanel.this);
 
-                    if ((frame.getWidth(null) > 0) && (frame.getHeight(null) > 0)) {
-                        if ((frame.getWidth(WebcamViewerPanel.this) != WebcamViewerPanel.this.getWidth()) ||
-                                frame.getHeight(WebcamViewerPanel.this) != WebcamViewerPanel.this.getHeight()) {
-                            // video frame isn't the same size as the window,
-                            // resize the window to fit the video frame
-                            //resizeToFit(new Dimension(frame.getWidth(WebcamViewerPanel.this),
-                            //        frame.getHeight(WebcamViewerPanel.this)));
-                        }
-                    }
+                    resizeToFit(new Dimension(width, height));
                 }
                 repaint();
             }
@@ -157,6 +165,13 @@ public class WebcamViewerPanel extends JPanel implements ExceptionReporter,
             g2.drawImage(frame, 0, 0, this);
             g2.setColor(Color.green);
             frame = null;
+        }
+
+        if (clear) {
+            g2.setColor(Color.DARK_GRAY);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+
+            clear = false;
         }
     }
 
