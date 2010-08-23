@@ -20,6 +20,8 @@ package org.jdesktop.wonderland.modules.npc.common;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+//import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory;
+import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
 
 /**
  * Represents the server-side configuration information for the NPC cell.
@@ -35,6 +37,15 @@ public class NpcCellServerState extends CellServerState {
 
     /** Default constructor */
     public NpcCellServerState() {
+        if(this.getComponentServerState(this.getClass()) == null)
+            {
+            NpcAvatarConfigComponentServerState accss = new NpcAvatarConfigComponentServerState();
+            String url = "wla://avatarbaseart/assets/configurations/MaleMeso_01.xml";
+            String className = "org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory";
+            AvatarConfigInfo info = new AvatarConfigInfo(url, className);
+            accss.setAvatarConfigInfo(info);
+            this.addComponentServerState(accss);
+            }
     }
 
     @Override

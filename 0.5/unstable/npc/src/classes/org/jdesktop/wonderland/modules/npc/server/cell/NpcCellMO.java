@@ -65,7 +65,6 @@ public class NpcCellMO extends CellMO {
     public NpcCellMO()
         {
         addComponent(new ScriptingComponentMO(this), ScriptingComponentMO.class);
-        System.out.println("In NPC MO constructor");
         }
 
     /**
@@ -97,6 +96,12 @@ public class NpcCellMO extends CellMO {
         }
         return super.getServerState(state);
     }
+
+    @Override
+    public void setServerState(CellServerState state) {
+        super.setServerState(state);
+    }
+
 
     /**
      * {@inheritDoc}
