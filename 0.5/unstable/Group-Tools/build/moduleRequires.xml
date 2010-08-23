@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<module-requires>
+    <requires>
+        <name>audiomanager</name>
+        <version>
+            <major>0</major>
+            <minor>5</minor>
+            <mini>-1</mini>
+        </version>
+    </requires>
+</module-requires>
