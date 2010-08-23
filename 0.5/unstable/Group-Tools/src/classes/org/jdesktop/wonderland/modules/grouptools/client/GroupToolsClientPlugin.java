@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClient;
 import org.jdesktop.wonderland.modules.audiomanager.client.HUDTabbedPanel;
 
 /**
@@ -38,6 +39,8 @@ public class GroupToolsClientPlugin extends BaseClientPlugin {
 
     @Override
     public void initialize(ServerSessionManager loginInfo) {
+        // make sure we are using the tabbed HUD panel
+        System.setProperty(AudioManagerClient.TABBED_PANEL_PROP, "true");
 
         //HUD mechanics
 
