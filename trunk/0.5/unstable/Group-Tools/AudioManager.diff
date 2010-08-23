@@ -1,0 +1,57 @@
+Index: src/classes/org/jdesktop/wonderland/modules/audiomanager/client/AudioManagerClient.java
+===================================================================
+--- src/classes/org/jdesktop/wonderland/modules/audiomanager/client/AudioManagerClient.java	(revision 4501)
++++ src/classes/org/jdesktop/wonderland/modules/audiomanager/client/AudioManagerClient.java	(working copy)
+@@ -155,6 +155,7 @@
+             Collections.synchronizedList(new ArrayList());
+     private HUDComponent userListHUDComponent;
+     private UserListHUDPanel userListHUDPanel;
++    private HUDTabbedPanel tabbedPanel;
+     private boolean usersMenuSelected = false;
+     private HUDComponent vuMeterComponent;
+     private ImageIcon voiceChatIcon;
+@@ -317,14 +318,19 @@
+         }
+ 
+         if (userListHUDComponent == null) {
+-            userListHUDPanel = new UserListHUDPanel(controls, cell);
++            //tabbedPanel = new HUDTabbedPanel(controls, cell);
++            tabbedPanel = HUDTabbedPanel.getInstance();
++            tabbedPanel.configInstance(controls, cell);
++            //userListHUDPanel = new UserListHUDPanel(controls, cell);
+             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+-            userListHUDComponent = mainHUD.createComponent(userListHUDPanel);
+-            userListHUDPanel.setHUDComponent(userListHUDComponent);
++            //userListHUDComponent = mainHUD.createComponent(userListHUDPanel);
++            userListHUDComponent = mainHUD.createComponent(tabbedPanel);
++            //userListHUDPanel.setHUDComponent(userListHUDComponent);
++            tabbedPanel.setHUDComponent(userListHUDComponent);
+             userListHUDComponent.setPreferredLocation(Layout.NORTHWEST);
+             userListHUDComponent.setName(BUNDLE.getString("Users") + " (0)");
+             userListHUDComponent.setIcon(userListIcon);
+-
++            
+             mainHUD.addComponent(userListHUDComponent);
+             userListHUDComponent.addEventListener(new HUDEventListener() {
+ 
+@@ -336,8 +342,9 @@
+                 }
+             });
+         }
+-
+-        userListHUDPanel.setUserList();
++        
++        //userListHUDPanel.setUserList();
++        tabbedPanel.setUserList();        
+         userListHUDComponent.setVisible(usersMenuSelected);
+     }
+ 
+@@ -390,7 +397,7 @@
+     @Override
+     public void disconnected() {
+         super.disconnected();
+-
++        HUDTabbedPanel.getInstance().uninitialize();
+ 	connected = false;
+ 
+         // remove open dialogs
