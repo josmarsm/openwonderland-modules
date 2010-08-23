@@ -43,13 +43,16 @@ import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import com.jme.scene.shape.Box;
 import imi.character.avatar.Avatar;
+import imi.character.avatar.AvatarContext;
 import imi.character.avatar.AvatarContext.TriggerNames;
 import imi.character.behavior.CharacterBehaviorManager;
+import imi.character.behavior.GoSit;
 import imi.character.behavior.GoTo;
 import imi.character.statemachine.GameContext;
 import imi.character.statemachine.GameContextListener;
 import imi.character.statemachine.GameState;
 import imi.character.statemachine.corestates.CycleActionState;
+import imi.objects.AvatarChair;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
@@ -121,6 +124,8 @@ public class NpcCell extends Cell
     public static final int IMI_AVATAR = 0;
     public static final int EVOLVER_AVATAR = 1;
 
+    private NpcChair ac = null;
+
     public NpcCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
 
@@ -176,6 +181,9 @@ public class NpcCell extends Cell
             sac.insertCmdMap("runAnimation", avatarRunAnimationRun);
             sac.insertCmdMap("stopAnimation", avatarStopAnimationRun);
             sac.insertCmdMap("attachNpcName", avatarAttachNpcNameRun);
+            sac.insertCmdMap("makeChair", makeChairRun);
+            sac.insertCmdMap("goSit", goSitRun);
+
  //           System.out.println("in sac stuff - nameList = " + nameList);
             scriptingComponent.putActionObject(sac);
 
@@ -278,7 +286,7 @@ public class NpcCell extends Cell
         public void run()
             {
             avatarSelectAvatar(animation, a);
-            System.out.println("ScriptingActionClass - enter avatarStartForward");
+            System.out.println("ScriptingActionClass - enter avatarSelectAvatar");
             }
         };
 
@@ -465,7 +473,46 @@ public class NpcCell extends Cell
         public void run()
             {
             attachNpcName(avatar);
-            System.out.println("ScriptingActionClass - enter avatarStopRight");
+            System.out.println("ScriptingActionClass - enter avatarAttachNpcName");
+            }
+        };
+
+    public void makeChair(float x, float y, float z, float xx, float yy, float zz)
+        {
+        ac = new NpcChair(new Vector3f(x, y, z), new Vector3f(xx, yy, zz));
+//        ac = new NpcChair(new Vector3f(5.0f, 0.0f, 5.0f), new Vector3f(1.0f, 0.0f, 1.0f), "wlcontent://users/morris/chairs/cube1.kmz");
+//        ac = new NpcChair();
+        }
+
+    ScriptingRunnable makeChairRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            System.out.println("ScriptingActionClass - enter makeChair");
+            makeChair(x, y, z, xx, yy, zz);
+            }
+        };
+
+    public void goSit()
+        {
+        if(ac != null)
+            {
+            GameContext context = renderer.getAvatarCharacter().getContext();
+            CharacterBehaviorManager helm = context.getBehaviorManager();
+            helm.clearTasks();
+            helm.setEnable(true);
+            helm.addTaskToTop(new GoSit(ac, (AvatarContext) context));
+            }
+        }
+
+    ScriptingRunnable goSitRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            System.out.println("ScriptingActionClass - enter goSit");
+            goSit();
             }
         };
 

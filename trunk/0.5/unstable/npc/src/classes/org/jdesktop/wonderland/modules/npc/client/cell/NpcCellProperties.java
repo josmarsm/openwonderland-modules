@@ -143,24 +143,20 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
         if(jRadioIMI.isSelected())
             {
             uri = "wla://avatarbaseart/assets/configurations/" + (String) avatarCB.getSelectedItem();
-            System.out.println("In apply IMI selected - URI = " + uri);
             }
         else if(jRadioEvolver.isSelected())
             {
             uri = "wlcontent://users/" + userName + "/avatars/multimesh-evolver/" + (String) avatarCB.getSelectedItem();
-            System.out.println("In apply Evolver selected - URI = " + uri);
             }
         AvatarConfigComponentServerState accss = (AvatarConfigComponentServerState)
                  editor.getCellServerState().getComponentServerState(AvatarConfigComponentServerState.class);
         AvatarConfigInfo info = accss.getAvatarConfigInfo();
         if(jRadioIMI.isSelected())
             {
-            System.out.println("In apply iconfig IMI - loader = " + info.getLoaderFactoryClassName());
             accss.setAvatarConfigInfo(new AvatarConfigInfo(uri, "org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory"));
             }
         else if(jRadioEvolver.isSelected())
             {
-            System.out.println("In apply iconfig Evolver");
             accss.setAvatarConfigInfo(new AvatarConfigInfo(uri, "org.jdesktop.wonderland.modules.evolvermulti.client.evolver.MultimeshEvolverAvatarLoaderFactory"));
             }
         LOGGER.warning("Setting config info to " + accss.getAvatarConfigInfo().getAvatarConfigURL());
@@ -272,7 +268,6 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
             {
             URL urell = AssetUtils.getAssetURL("wla://avatarbaseart/assets/configurations/content.txt");
 
-            System.out.println("The avatar path = " + urell);
             java.net.URLConnection con = urell.openConnection();
             con.connect();
 
@@ -280,7 +275,6 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
             String line;
             for(; (line = in.readLine()) != null; )
                 {
-//                System.out.println("File = " + line);
                 theAvatar[thisAvatar] = line;
                 thisAvatar++;
                 if(thisAvatar >= totalAvatars)
@@ -310,7 +304,6 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
             String thePath = session.getSessionManager().getServerURL();
             URL urell = new URL(thePath + "/webdav/content/users/" + userName + "/avatars/multimesh-evolver/content.txt");
 
-            System.out.println("The avatar path = " + urell);
             java.net.URLConnection con = urell.openConnection();
             con.connect();
 
@@ -318,7 +311,6 @@ public class NpcCellProperties extends JPanel implements PropertiesFactorySPI {
             String line;
             for(; (line = in.readLine()) != null; )
                 {
-//                System.out.println("File = " + line);
                 theAvatar[thisAvatar] = line;
                 thisAvatar++;
                 if(thisAvatar >= totalAvatars)
