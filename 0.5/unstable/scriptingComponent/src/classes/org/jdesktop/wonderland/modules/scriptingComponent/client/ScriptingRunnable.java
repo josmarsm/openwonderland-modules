@@ -16,6 +16,9 @@ public class ScriptingRunnable implements Runnable
     public float x;
     public float y;
     public float z;
+    public float xx;
+    public float yy;
+    public float zz;
     public int a;
     public String avatar;
     public String[] nameArray;
@@ -59,6 +62,13 @@ public class ScriptingRunnable implements Runnable
         x = X;
         y = Y;
         z = Z;
+        }
+
+    public void setOtherPoint(float XX, float YY, float ZZ)
+        {
+        xx = XX;
+        yy = YY;
+        zz = ZZ;
         }
 
     public void set2Strings(String one, String two)
