@@ -747,6 +747,18 @@ public class ScriptingComponent extends CellComponent
         runny.run();
         }
 
+    public void executeAction(String Name, float x, float y, float z, float xx, float yy, float zz)
+        {
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - three floats");
+            }
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.setPoint(x, y, z);
+        runny.setOtherPoint(xx, yy, zz);
+        runny.run();
+        }
+
     public void executeAction(String Name)
         {
         if(traceLevel > 3)
