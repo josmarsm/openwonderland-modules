@@ -28,16 +28,51 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 public class SittingCellComponentClientState extends CellComponentClientState {
 
     private String info;
+    private float heading = 0.1f;
+    private float offset = 0.1f;
+    private String mouse = "Left Mouse";
 
     /** Default constructor */
     public SittingCellComponentClientState() {
     }
 
-    public String getInfo() {
-        return info;
-    }
+    public float getHeading()
+        {
+        return heading;
+        }
 
-    public void setInfo(String info) {
+    public void setHeading(float Heading)
+        {
+        heading = Heading;
+        }
+
+    public float getOffset()
+        {
+        return offset;
+        }
+
+    public void setOffset(float Offset)
+        {
+        offset = Offset;
+        }
+
+    public String getInfo()
+        {
+        return info;
+        }
+
+    public void setInfo(String info)
+        {
         this.info = info;
-    }
+        }
+
+    public String getMouse()
+        {
+        return mouse;
+        }
+
+    public void setMouse(String Mouse)
+        {
+        this.mouse = Mouse;
+        }
 }

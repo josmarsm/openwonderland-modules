@@ -19,7 +19,9 @@
 package org.jdesktop.wonderland.modules.sitting.common;
 
 import java.util.logging.Logger;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 
@@ -30,25 +32,66 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
  */
 @XmlRootElement(name="sitting-cell-component")
 @ServerState
-public class SittingCellComponentServerState extends CellComponentServerState {
+public class SittingCellComponentServerState extends CellComponentServerState
+    {
 
+    @XmlElement(name="info")
     private String info;
+    @XmlElement(name="heading")
+    private float heading;
+    @XmlElement(name="offset")
+    private float offset;
+    @XmlElement(name="mouse")
+    private String mouse = "Left Mouse";
 
     /** Default constructor */
-    public SittingCellComponentServerState() {
-    }
+    public SittingCellComponentServerState()
+        {
+        }
 
     @Override
-    public String getServerComponentClassName() {
+    public String getServerComponentClassName()
+        {
         return "org.jdesktop.wonderland.modules.sitting.server.SittingCellComponentMO";
-    }
+        }
 
-    public String getInfo() {
+    @XmlTransient public float getHeading()
+        {
+        return heading;
+        }
+
+    public void setHeading(float Heading)
+        {
+        heading = Heading;
+        }
+
+    @XmlTransient public float getOffset()
+        {
+        return offset;
+        }
+
+    public void setOffset(float Offset)
+        {
+        offset = Offset;
+        }
+
+    @XmlTransient public String getInfo()
+        {
         return info;
-    }
+        }
 
-    public void setInfo(String info) {
-        Logger.getLogger(SittingCellComponentServerState.class.getName()).warning("SETTING INFO TO " + info);
+    public void setInfo(String info)
+        {
         this.info = info;
+        }
+
+    @XmlTransient public String getMouse()
+        {
+        return mouse;
+        }
+
+    public void setMouse(String Mouse)
+        {
+        this.mouse = Mouse;
+        }
     }
-}

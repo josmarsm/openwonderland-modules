@@ -34,25 +34,32 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  *
  * @author Morris Ford
  */
-public class SittingCellComponentMO extends CellComponentMO {
+public class SittingCellComponentMO extends CellComponentMO
+    {
 
     private static Logger logger = Logger.getLogger(SittingCellComponentMO.class.getName());
     private String info = null;
+    private float heading = 0.1f;
+    private float offset = 0.1f;
+    private String mouse = "Left Mouse";
 
-    public SittingCellComponentMO(CellMO cell) {
+    public SittingCellComponentMO(CellMO cell)
+        {
         super(cell);
-    }
+        }
 
     @Override
-    protected String getClientClass() {
+    protected String getClientClass()
+        {
         return "org.jdesktop.wonderland.modules.sitting.client.SittingCellComponent";
-    }
+        }
 
     @Override
-    protected void setLive(boolean live) {
+    protected void setLive(boolean live)
+        {
         super.setLive(live);
         logger.warning("Setting SittingCellComponentMO to live = " + live);
-    }
+        }
 
 
     @Override
@@ -61,6 +68,9 @@ public class SittingCellComponentMO extends CellComponentMO {
             state = new SittingCellComponentClientState();
         }
         ((SittingCellComponentClientState)state).setInfo(info);
+        ((SittingCellComponentClientState)state).setHeading(heading);
+        ((SittingCellComponentClientState)state).setOffset(offset);
+        ((SittingCellComponentClientState)state).setMouse(mouse);
         return super.getClientState(state, clientID, capabilities);
     }
 
@@ -70,6 +80,9 @@ public class SittingCellComponentMO extends CellComponentMO {
             state = new SittingCellComponentServerState();
         }
         ((SittingCellComponentServerState)state).setInfo(info);
+        ((SittingCellComponentServerState)state).setHeading(heading);
+        ((SittingCellComponentServerState)state).setOffset(offset);
+        ((SittingCellComponentServerState)state).setMouse(mouse);
         return super.getServerState(state);
     }
 
@@ -77,5 +90,8 @@ public class SittingCellComponentMO extends CellComponentMO {
     public void setServerState(CellComponentServerState state) {
         super.setServerState(state);
         info = ((SittingCellComponentServerState)state).getInfo();
+        heading = ((SittingCellComponentServerState)state).getHeading();
+        offset = ((SittingCellComponentServerState)state).getOffset();
+        mouse = ((SittingCellComponentServerState)state).getMouse();
     }
 }
