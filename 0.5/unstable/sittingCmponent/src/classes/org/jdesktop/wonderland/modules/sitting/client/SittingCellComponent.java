@@ -18,6 +18,7 @@
 
 package org.jdesktop.wonderland.modules.sitting.client;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import imi.character.avatar.AvatarContext;
@@ -54,15 +55,82 @@ public class SittingCellComponent extends CellComponent
 
     private static Logger logger = Logger.getLogger(SittingCellComponent.class.getName());
     private String info = null;
-    private int traceLevel = 5;
+    private int traceLevel = 1;
     private MouseEventListener myListener = null;
     private WlAvatarCharacter myAvatar;
-    private   CellRendererJME ret = null;
+    private CellRendererJME ret = null;
     private Node localNode = null;
+    private float heading = 0.1f;
+    private float offset = 0.1f;
+    private String myMouse = "Left Mouse";
 
     public SittingCellComponent(Cell cell)
         {
         super(cell);
+        }
+
+    public void testMouse(MouseButtonEvent3D mbe)
+        {
+        MouseEvent awt = (MouseEvent) mbe.getAwtEvent();
+        if(awt.getID() != MouseEvent.MOUSE_PRESSED)
+            {
+            return;
+            }
+
+        int mask = 77;
+        mask = awt.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK;
+
+        if((awt.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) > 0)
+            {
+            ButtonId butt = mbe.getButton();
+            if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON1) && myMouse.equals("Shift Left Mouse"))
+                {
+                goSit();
+                }
+            if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON2) && myMouse.equals("Shift Middle Mouse"))
+                {
+                goSit();
+                }
+            if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON3) && myMouse.equals("Shift Right Mouse"))
+                {
+                goSit();
+                }
+            }
+        else if((awt.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) > 0)
+            {
+            ButtonId butt = mbe.getButton();
+            if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON1) && myMouse.equals("Control Left Mouse"))
+                {
+                goSit();
+                }
+            if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON2) && myMouse.equals("Control Middle Mouse"))
+                {
+                goSit();
+                }
+            if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON3) && myMouse.equals("Control Right Mouse"))
+                {
+                goSit();
+                }
+            }
+        else
+            {
+            ButtonId butt = mbe.getButton();
+            if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON1))
+                {
+                if(myMouse.equals("Left Mouse"))
+                    {
+                    goSit();
+                    }
+                }
+            if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON2) && myMouse.equals("Middle Mouse"))
+                {
+                goSit();
+                }
+            if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON3) && myMouse.equals("Right Mouse"))
+                {
+                goSit();
+                }
+            }
         }
 
     public void goSit()
@@ -72,8 +140,19 @@ public class SittingCellComponent extends CellComponent
         RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
         localNode = rc.getSceneRoot();
         Vector3f v3f = localNode.getLocalTranslation();
+        Quaternion quat = localNode.getLocalRotation();
 
-        SittingChair ac = new SittingChair(new Vector3f(v3f.x, 0.0f, v3f.z), new Vector3f(1.0f, 0.0f, 1.0f));
+        Vector3f axis = new Vector3f();
+        float angle;
+        angle = quat.toAngleAxis(axis);
+
+        float xRotationInc = (float)Math.sin(angle + ((heading / 180) * 3.14159)) * 10;
+        float zRotationInc = (float)Math.cos(angle + ((heading / 180) * 3.14159)) * 10;
+
+        float xSittingInc = (float)Math.sin(angle + ((heading / 180) * 3.14159)) * offset;
+        float zSittingInc = (float)Math.cos(angle + ((heading / 180) * 3.14159)) * offset;
+
+        SittingChair ac = new SittingChair(new Vector3f(v3f.x + xSittingInc, 0.0f, v3f.z + zSittingInc), new Vector3f(xRotationInc, 0.0f, zRotationInc));
 
         Cell avatarCell = ClientContextJME.getViewManager().getPrimaryViewCell();
         CellRenderer rend = avatarCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
@@ -82,7 +161,6 @@ public class SittingCellComponent extends CellComponent
             {
             System.out.println(" avatar X = " + myAvatar.getPositionRef().getX() + " - Y = " + myAvatar.getPositionRef().getY() + " - Z = " + myAvatar.getPositionRef().getZ());
             }
-
 
         GameContext context = myAvatar.getContext();
         CharacterBehaviorManager helm = context.getBehaviorManager();
@@ -95,7 +173,11 @@ public class SittingCellComponent extends CellComponent
     public void setClientState(CellComponentClientState clientState)
         {
         super.setClientState(clientState);
+        
         info = ((SittingCellComponentClientState)clientState).getInfo();
+        heading = ((SittingCellComponentClientState)clientState).getHeading();
+        offset = ((SittingCellComponentClientState)clientState).getOffset();
+        myMouse = ((SittingCellComponentClientState)clientState).getMouse();
         }
 
     @Override
@@ -140,7 +222,7 @@ public class SittingCellComponent extends CellComponent
                         }
                     if(myListener == null)
                         {
-                        CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+                        ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
                         Entity mye = ret.getEntity();
 
                         myListener = new MouseEventListener();
@@ -151,7 +233,7 @@ public class SittingCellComponent extends CellComponent
                     {
                     if(myListener != null)
                         {
-                        CellRendererJME ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
+                        ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
                         Entity mye = ret.getEntity();
                         
                         myListener.removeFromEntity(mye);
@@ -194,94 +276,9 @@ public class SittingCellComponent extends CellComponent
         @Override
         public void computeEvent(Event event)
             {
-//            System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In commitEvent for mouse event");
             MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
-//            if (mbe.isClicked() == false)
-//                {
-//                return;
-//                }
-            MouseEvent awt = (MouseEvent) mbe.getAwtEvent();
-            if(awt.getID() != MouseEvent.MOUSE_PRESSED)
-                {
-                return;
-                }
-
-            int mask = 77;
-            mask = awt.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK;
-//            System.out.println("Condition = " + mask + " Button = " + mbe.getButton() + " awt.id = " + awt.getID());
-
-            if((awt.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) > 0)
-                {
-//                System.out.println("Inside the shift down mask test");
-                ButtonId butt = mbe.getButton();
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON1) )
-                    {
-//                    System.out.println("**********    Event for Mouse 1 and shift");
-                    }
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON2) )
-                    {
-//                    System.out.println("**********    Event for Mouse 2 and shift");
-                    }
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON3) )
-                    {
-//                    System.out.println("**********    Event for Mouse3 and shift");
-                    }
-                }
-            else if((awt.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) > 0)
-                {
-//                System.out.println("Inside the control down mask test");
-                ButtonId butt = mbe.getButton();
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON1) )
-                    {
-//                    System.out.println("**********    Event for Mouse 1 and control");
-                    }
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON2) )
-                    {
-//                    System.out.println("**********    Event for Mouse 2 and control");
-                    }
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON3) )
-                    {
-//                    System.out.println("**********    Event for Mouse 3 and control");
-                    }
-                }
-            else if((awt.getModifiersEx() & MouseEvent.ALT_DOWN_MASK) > 0)
-                {
-//                System.out.println("Inside the alt down mask test");
-                ButtonId butt = mbe.getButton();
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON1) )
-                    {
-//                    System.out.println("**********    Event for Mouse 1 and alt");
-//                    System.out.println("Inside button 1 test");
-                    }
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON2) )
-                    {
-//                    System.out.println("**********    Event for Mouse 2 and alt");
-                    }
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON3) )
-                    {
-//                    System.out.println("**********    Event for Mouse 3 and alt");
-                    }
-                }
-
-            else
-                {
-//                System.out.println("Inside the no shift down mask test");
-                ButtonId butt = mbe.getButton();
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON1) )
-                    {
-                    System.out.println("**********    Event for Mouse 1");
-                    goSit();
-                    }
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON2) )
-                    {
-//                    System.out.println("**********    Event for Mouse 2");
-                    }
-                if (awt.getID()== MouseEvent.MOUSE_PRESSED && (butt == ButtonId.BUTTON3) )
-                    {
-//                    System.out.println("**********    Event for Mouse 3");
-                    }
-                }
-           }
+            testMouse(mbe);
+            }
         }
 
     }
