@@ -146,6 +146,9 @@ public class SittingCellComponent extends CellComponent
         float angle;
         angle = quat.toAngleAxis(axis);
 
+        if(axis.y < 0.0f)
+            angle = -angle;
+
         float xRotationInc = (float)Math.sin(angle + ((heading / 180) * 3.14159)) * 10;
         float zRotationInc = (float)Math.cos(angle + ((heading / 180) * 3.14159)) * 10;
 
