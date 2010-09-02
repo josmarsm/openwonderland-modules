@@ -6,59 +6,49 @@
 package org.jdesktop.wonderland.modules.grouptools.client;
 
 import javax.swing.SwingWorker;
-import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
-import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 
 
 /**
  *
  * @author Ryan
  */
-public class BackgroundNotificationWorker extends SwingWorker<Integer, Integer> {
-
-    private boolean urgent;
-    private String message;
-    public BackgroundNotificationWorker(boolean urgent) {
-        this.urgent = urgent;
+public class BackgroundNotificationWorker extends SwingWorker {
+    private final HUDComponent component;
+    private final long delay;
+    
+    public BackgroundNotificationWorker(HUDComponent component, long delay) {
+        this.component = component;
+        this.delay = delay;
     }
+
     @Override
-    protected Integer doInBackground() throws Exception {
-        message = GroupChatManager.getNotificationBuffer().poll();
-        //sanity check
-        if(message == null) {
-            System.out.println("Empty queue in BackgroundNotificationWorker");
-            return -1;
-        }
-
-        //if this isn't the first message, go ahead and sleep
-        if(!urgent)  {
-            Thread.currentThread().sleep(1000 * 10); //sleep for 10 seconds
-        }
-        else {
-            //if it is the first, return right away so the message is displayed.
-            return 0;
-        }
-        if(!GroupChatManager.getNotificationBuffer().isEmpty()) {
-            new BackgroundNotificationWorker(false).execute();
-        }
-        
-        return 0;
+    protected Object doInBackground() throws Exception {
+        Thread.sleep(delay); //sleep for 10 seconds
+        return null;
     }
 
-
+    @Override
     protected void done() {
         //display notification
         System.out.println("Done in BackgrondNotificationWorker.");
-        HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
-        NotifyPanel panel = new NotifyPanel(message);
-        HUDComponent component = hud.createComponent(panel);
-        component.setDecoratable(true);
-        component.setPreferredLocation(Layout.NORTHEAST);
-        component.setVisible(true);
-        component.setVisible(false, 10 * 1000);
-        return;
-    }
 
+        // hide the component
+        component.setVisible(false);
+
+        // remove the message we just finished displaying
+        String message = GroupChatManager.getNotificationBuffer().poll();
+        if (message == null) {
+            // shouldn't happen
+            return;
+        }
+        
+        // if there is a new message to display, display it now and schedule
+        // a new worker to clean up
+        message = GroupChatManager.getNotificationBuffer().peek();
+        if (message != null) {
+            HUDComponent hc = GroupChatManager.doShowNotification(message);
+            new BackgroundNotificationWorker(hc, delay).execute();
+        }
+    }
 }

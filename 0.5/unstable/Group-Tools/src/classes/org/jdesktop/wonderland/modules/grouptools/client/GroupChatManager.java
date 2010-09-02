@@ -263,14 +263,13 @@ public class GroupChatManager implements GroupChatConnectionListener {
                         panel.appendTextMessage(message, from);
                     }
                 });
-                HUDComponent c = groupChatHUDMap.get(toGroup);
-                if(c.isVisible()) {
 
+                HUDComponent c = groupChatHUDMap.get(toGroup);
+                if(c != null && c.isVisible()) {
                     reactivateChat(toGroup);
-                }
-                else {
+                } else {
                     //show notification
-                    String notification = "Unread message(s) for " +toGroup;
+                    String notification = "Unread message(s) for " + toGroup;
                     //getNotificationBuffer().add(notification);
                     showNotification(notification);
                 }
@@ -279,39 +278,52 @@ public class GroupChatManager implements GroupChatConnectionListener {
             }
         }
     }
-    public void showNotification(String message) {
-
-        if(getNotificationBuffer().isEmpty()) {
-            //this is the first message on the queue so show it right away
-            getNotificationBuffer().add(message);
-            new BackgroundNotificationWorker(true).execute();
-        }
-        else {
-           //task should already be running
-            getNotificationBuffer().add(message);
-        }
-
-
-
-
-
-        /*
+    public void showNotification(final String message) {
+        // be sure to update the buffer on the AWT event thread to avoid
+        // synchronization issues
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-                NotifyPanel panel = new NotifyPanel(message);
-                HUDComponent component = mainHUD.createComponent(panel);///;
-                component.setDecoratable(true);
-                component.setPreferredLocation(Layout.NORTHEAST);
-                component.setName("New messages!");
-                mainHUD.addComponent(component);
-                component.setVisible(true);
-                component.setVisible(false, 1000 * 4); //disappear in four seconds
+                // check if this is the first message before we add anything
+                // the the buffer
+                boolean firstMessage = getNotificationBuffer().isEmpty();
+
+                // if this same message is already in the buffer, don't add
+                // it again
+                if (getNotificationBuffer().contains(message)) {
+                    return;
+                }
+
+                // add our message to the buffer. The message will stay in
+                // the buffer until the notification worker removes it
+                // when the message is done displaying
+                getNotificationBuffer().add(message);
+
+                if (firstMessage) {
+                    // if this is the first message in the queue, display it
+                    // and schedule a worker to check the queue when the message
+                    // disappears
+                    HUDComponent component = doShowNotification(message);
+                    new BackgroundNotificationWorker(component, 5 * 1000).execute();
+                }
             }
         });
-         
-         */
     }
+
+    // must be called from AWT event thread
+    static HUDComponent doShowNotification(String message) {
+        // display in the HUD
+        HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
+        NotifyPanel panel = new NotifyPanel(message);
+
+        HUDComponent component = hud.createComponent(panel);
+        component.setDecoratable(false);
+        component.setPreferredLocation(Layout.NORTHEAST);
+        hud.addComponent(component);
+        component.setVisible(true);
+
+        return component;
+    }
+
     /**
      * Populate my group's panels with logs
      * @param message
