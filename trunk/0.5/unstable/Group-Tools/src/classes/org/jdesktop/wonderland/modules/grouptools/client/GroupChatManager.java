@@ -21,8 +21,10 @@ package org.jdesktop.wonderland.modules.grouptools.client;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import javax.swing.SwingUtilities;
@@ -70,6 +72,14 @@ public class GroupChatManager implements GroupChatConnectionListener {
     private int currentChatPanelIndex = 0;
 
     private HUDComponent component;
+    private static Queue<String> notificationBuffer;
+
+    public static Queue<String> getNotificationBuffer() {
+        if(notificationBuffer == null) {
+            notificationBuffer = new LinkedList();
+        }
+        return notificationBuffer;
+    }
 
     public GroupChatManager(final ServerSessionManager loginInfo, GroupListHUDPanel groupList) {
         
@@ -260,14 +270,32 @@ public class GroupChatManager implements GroupChatConnectionListener {
                 }
                 else {
                     //show notification
-                    showNotification("Unread message(s) for " + toGroup);
+                    String notification = "Unread message(s) for " +toGroup;
+                    //getNotificationBuffer().add(notification);
+                    showNotification(notification);
                 }
                // panel.appendTextMessage(message, from);
 
             }
         }
     }
-    public void showNotification(final String message) {
+    public void showNotification(String message) {
+
+        if(getNotificationBuffer().isEmpty()) {
+            //this is the first message on the queue so show it right away
+            getNotificationBuffer().add(message);
+            new BackgroundNotificationWorker(true).execute();
+        }
+        else {
+           //task should already be running
+            getNotificationBuffer().add(message);
+        }
+
+
+
+
+
+        /*
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
@@ -281,6 +309,8 @@ public class GroupChatManager implements GroupChatConnectionListener {
                 component.setVisible(false, 1000 * 4); //disappear in four seconds
             }
         });
+         
+         */
     }
     /**
      * Populate my group's panels with logs

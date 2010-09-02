@@ -54,6 +54,7 @@ public class GroupToolsConnection extends BaseConnection {
     private static GroupToolsConnection instance;
     private GroupChatManager chatManager;
     private Queue<GroupChatMessage> backBuffer = new LinkedList();
+   
 
     private GroupToolsConnection() {
         listeners = new ArrayList<GroupChatConnectionListener>();
