@@ -38,10 +38,11 @@ public class SittingComponentProperties extends JPanel implements PropertiesFact
 
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/sitting/client/resources/Bundle");
     private CellPropertiesEditor editor = null;
-    private String originalInfo = null;
     private float originalOffset = 0.1f;
     private float originalHeading = 0.1f;
     private String originalMouse = "Left Mouse";
+    private boolean originalMouseEnable = false;
+    private boolean mouseEnable = false;
 
     /** Creates new form SampleComponentProperties */
     public SittingComponentProperties()
@@ -50,7 +51,6 @@ public class SittingComponentProperties extends JPanel implements PropertiesFact
         initComponents();
 
         // Listen for changes to the info text field
-        infoTextField.getDocument().addDocumentListener(new InfoTextFieldListener());
         jTextHeading.getDocument().addDocumentListener(new jTextHeadingListener());
         jTextOffset.getDocument().addDocumentListener(new jTextOffsetListener());
         }
@@ -89,8 +89,8 @@ public class SittingComponentProperties extends JPanel implements PropertiesFact
         if (state != null)
             {
             SittingCellComponentServerState sittingCellComponentServerState = (SittingCellComponentServerState) compState;
-            originalInfo = sittingCellComponentServerState.getInfo();
-            infoTextField.setText(originalInfo);
+            originalMouseEnable = sittingCellComponentServerState.getMouseEnable();
+            jComboMouse.setEnabled(originalMouseEnable);
             originalHeading = sittingCellComponentServerState.getHeading();
             jTextHeading.setText(Float.toString(originalHeading));
             originalOffset = sittingCellComponentServerState.getOffset();
@@ -115,7 +115,7 @@ public class SittingComponentProperties extends JPanel implements PropertiesFact
         // Fetch the latest from the info text field and set it.
         CellServerState state = editor.getCellServerState();
         CellComponentServerState compState = state.getComponentServerState(SittingCellComponentServerState.class);
-        ((SittingCellComponentServerState) compState).setInfo(infoTextField.getText());
+        ((SittingCellComponentServerState) compState).setMouseEnable(mouseEnable);
         ((SittingCellComponentServerState) compState).setHeading(Float.valueOf(jTextHeading.getText()));
         ((SittingCellComponentServerState) compState).setOffset(Float.valueOf(jTextOffset.getText()));
         ((SittingCellComponentServerState) compState).setMouse((String) jComboMouse.getSelectedItem());
@@ -128,45 +128,9 @@ public class SittingComponentProperties extends JPanel implements PropertiesFact
     public void restore()
         {
         // Restore from the original state stored.
-        infoTextField.setText(originalInfo);
+        jToggleMouseEnable.setEnabled(originalMouseEnable);
         jTextHeading.setText(Float.toString(originalHeading));
         jTextOffset.setText(Float.toString(originalOffset));
-        }
-
-    /**
-     * Inner class to listen for changes to the text field and fire off dirty
-     * or clean indications to the cell properties editor.
-     */
-    class InfoTextFieldListener implements DocumentListener
-        {
-
-        public void insertUpdate(DocumentEvent e)
-            {
-            checkDirty();
-            }
-
-        public void removeUpdate(DocumentEvent e)
-            {
-            checkDirty();
-            }
-
-        public void changedUpdate(DocumentEvent e)
-            {
-            checkDirty();
-            }
-
-        private void checkDirty()
-            {
-            String name = infoTextField.getText();
-            if (editor != null && name.equals(originalInfo) == false)
-                {
-                editor.setPanelDirty(SittingComponentProperties.class, true);
-                }
-            else if (editor != null)
-                {
-                editor.setPanelDirty(SittingComponentProperties.class, false);
-                }
-            }
         }
 
     class jTextOffsetListener implements DocumentListener
@@ -243,16 +207,13 @@ public class SittingComponentProperties extends JPanel implements PropertiesFact
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        infoTextField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jTextHeading = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jTextOffset = new javax.swing.JTextField();
         jComboMouse = new javax.swing.JComboBox();
-        jLabel6 = new javax.swing.JLabel();
-
-        jLabel1.setText("Info:");
+        jToggleMouseEnable = new javax.swing.JToggleButton();
+        jLabel1 = new javax.swing.JLabel();
 
         jLabel2.setText("Heading");
 
@@ -271,21 +232,23 @@ public class SittingComponentProperties extends JPanel implements PropertiesFact
             }
         });
 
-        jLabel6.setText("Mouse Event");
+        jToggleMouseEnable.setText("Enable Mouse");
+        jToggleMouseEnable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jToggleMouseEnableActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Sittable");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(infoTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
                             .add(jLabel5))
@@ -293,31 +256,31 @@ public class SittingComponentProperties extends JPanel implements PropertiesFact
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jTextOffset)
                             .add(jTextHeading, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE))
-                        .add(39, 39, 39)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(jComboMouse, 0, 0, Short.MAX_VALUE)
-                            .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 161, Short.MAX_VALUE))
-                        .add(15, 15, 15))))
+                        .add(56, 56, 56)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jToggleMouseEnable)
+                            .add(jComboMouse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 180, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(layout.createSequentialGroup()
+                        .add(171, 171, 171)
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(68, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(infoTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jLabel1)
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
-                    .add(jLabel6)
-                    .add(jTextHeading, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jTextHeading, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jToggleMouseEnable))
                 .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(jLabel5)
-                        .add(jTextOffset, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(jTextOffset, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jComboMouse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(160, Short.MAX_VALUE))
+                .addContainerGap(170, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -328,14 +291,30 @@ public class SittingComponentProperties extends JPanel implements PropertiesFact
         editor.setPanelDirty(SittingComponentProperties.class, true);
     }//GEN-LAST:event_jComboMouseActionPerformed
 
+    private void jToggleMouseEnableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleMouseEnableActionPerformed
+        if(jToggleMouseEnable.isSelected())
+            {
+            jComboMouse.setEnabled(true);
+            mouseEnable = true;
+            jToggleMouseEnable.setText("Disable Mouse");
+            editor.setPanelDirty(SittingComponentProperties.class, true);
+            }
+        else
+            {
+            jComboMouse.setEnabled(false);
+            mouseEnable = false;
+            jToggleMouseEnable.setText("Enable Mouse");
+            editor.setPanelDirty(SittingComponentProperties.class, true);
+            }
+    }//GEN-LAST:event_jToggleMouseEnableActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField infoTextField;
     private javax.swing.JComboBox jComboMouse;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JTextField jTextHeading;
     private javax.swing.JTextField jTextOffset;
+    private javax.swing.JToggleButton jToggleMouseEnable;
     // End of variables declaration//GEN-END:variables
 }

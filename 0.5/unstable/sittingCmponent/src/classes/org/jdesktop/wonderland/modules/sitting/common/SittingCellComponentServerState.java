@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.sitting.common;
 
-import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -35,8 +34,8 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 public class SittingCellComponentServerState extends CellComponentServerState
     {
 
-    @XmlElement(name="info")
-    private String info;
+    @XmlElement(name="mouse-enable")
+    private boolean mouseEnable;
     @XmlElement(name="heading")
     private float heading;
     @XmlElement(name="offset")
@@ -75,14 +74,14 @@ public class SittingCellComponentServerState extends CellComponentServerState
         offset = Offset;
         }
 
-    @XmlTransient public String getInfo()
+    @XmlTransient public boolean getMouseEnable()
         {
-        return info;
+        return mouseEnable;
         }
 
-    public void setInfo(String info)
+    public void setMouseEnable(boolean enable)
         {
-        this.info = info;
+        this.mouseEnable = enable;
         }
 
     @XmlTransient public String getMouse()

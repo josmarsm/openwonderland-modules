@@ -40,7 +40,6 @@ public class SittingCellComponentFactory implements CellComponentFactorySPI {
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
         SittingCellComponentServerState state = new SittingCellComponentServerState();
-        state.setInfo(BUNDLE.getString("Default"));
         return (T) state;
     }
 
