@@ -25,6 +25,7 @@ import imi.character.avatar.AvatarContext;
 import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoSit;
 import imi.character.statemachine.GameContext;
+import imi.objects.SittingChair;
 import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
@@ -33,12 +34,20 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
@@ -54,7 +63,6 @@ public class SittingCellComponent extends CellComponent
     {
 
     private static Logger logger = Logger.getLogger(SittingCellComponent.class.getName());
-    private String info = null;
     private int traceLevel = 1;
     private MouseEventListener myListener = null;
     private WlAvatarCharacter myAvatar;
@@ -63,6 +71,10 @@ public class SittingCellComponent extends CellComponent
     private float heading = 0.1f;
     private float offset = 0.1f;
     private String myMouse = "Left Mouse";
+    private boolean mouseEnable = false;
+
+    @UsesCellComponent private ContextMenuComponent contextComp = null;
+    private ContextMenuFactorySPI menuFactory = null;
 
     public SittingCellComponent(Cell cell)
         {
@@ -177,7 +189,7 @@ public class SittingCellComponent extends CellComponent
         {
         super.setClientState(clientState);
         
-        info = ((SittingCellComponentClientState)clientState).getInfo();
+        mouseEnable = ((SittingCellComponentClientState)clientState).getMouseEnable();
         heading = ((SittingCellComponentClientState)clientState).getHeading();
         offset = ((SittingCellComponentClientState)clientState).getOffset();
         myMouse = ((SittingCellComponentClientState)clientState).getMouse();
@@ -231,6 +243,22 @@ public class SittingCellComponent extends CellComponent
                         myListener = new MouseEventListener();
                         myListener.addToEntity(mye);
                         }
+                    if (menuFactory == null)
+                        {
+                        final MenuItemListener l = new MenuItemListener();
+                        menuFactory = new ContextMenuFactorySPI()
+                            {
+                            public ContextMenuItem[] getContextMenuItems(ContextEvent event)
+                                {
+                                return new ContextMenuItem[]
+                                    {
+                                    new SimpleContextMenuItem("Sit Here", l)
+                                    };
+                                }
+                            };
+                        contextComp.addContextMenuFactory(menuFactory);
+                        }
+
                     }
                 else
                     {
@@ -241,6 +269,11 @@ public class SittingCellComponent extends CellComponent
                         
                         myListener.removeFromEntity(mye);
                         myListener = null;
+                        }
+                    if (menuFactory != null)
+                        {
+                        contextComp.removeContextMenuFactory(menuFactory);
+                        menuFactory = null;
                         }
                     }
                 break;
@@ -279,9 +312,21 @@ public class SittingCellComponent extends CellComponent
         @Override
         public void computeEvent(Event event)
             {
-            MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
-            testMouse(mbe);
+            if(mouseEnable)
+                {
+                MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
+                testMouse(mbe);
+                }
             }
         }
+
+    class MenuItemListener implements ContextMenuActionListener
+        {
+        public void actionPerformed(ContextMenuItemEvent event)
+            {
+            goSit();
+            }
+        }
+
 
     }

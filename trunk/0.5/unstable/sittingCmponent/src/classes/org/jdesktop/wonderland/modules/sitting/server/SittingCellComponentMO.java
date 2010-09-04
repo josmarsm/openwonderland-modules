@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.sitting.server;
 
-import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -27,7 +26,6 @@ import org.jdesktop.wonderland.modules.sitting.common.SittingCellComponentClient
 import org.jdesktop.wonderland.modules.sitting.common.SittingCellComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -38,10 +36,10 @@ public class SittingCellComponentMO extends CellComponentMO
     {
 
     private static Logger logger = Logger.getLogger(SittingCellComponentMO.class.getName());
-    private String info = null;
     private float heading = 0.1f;
     private float offset = 0.1f;
     private String mouse = "Left Mouse";
+    private boolean mouseEnable = false;
 
     public SittingCellComponentMO(CellMO cell)
         {
@@ -67,7 +65,7 @@ public class SittingCellComponentMO extends CellComponentMO
         if (state == null) {
             state = new SittingCellComponentClientState();
         }
-        ((SittingCellComponentClientState)state).setInfo(info);
+        ((SittingCellComponentClientState)state).setMouseEnable(mouseEnable);
         ((SittingCellComponentClientState)state).setHeading(heading);
         ((SittingCellComponentClientState)state).setOffset(offset);
         ((SittingCellComponentClientState)state).setMouse(mouse);
@@ -79,7 +77,7 @@ public class SittingCellComponentMO extends CellComponentMO
         if (state == null) {
             state = new SittingCellComponentServerState();
         }
-        ((SittingCellComponentServerState)state).setInfo(info);
+        ((SittingCellComponentServerState)state).setMouseEnable(mouseEnable);
         ((SittingCellComponentServerState)state).setHeading(heading);
         ((SittingCellComponentServerState)state).setOffset(offset);
         ((SittingCellComponentServerState)state).setMouse(mouse);
@@ -89,7 +87,7 @@ public class SittingCellComponentMO extends CellComponentMO
     @Override
     public void setServerState(CellComponentServerState state) {
         super.setServerState(state);
-        info = ((SittingCellComponentServerState)state).getInfo();
+        mouseEnable = ((SittingCellComponentServerState)state).getMouseEnable();
         heading = ((SittingCellComponentServerState)state).getHeading();
         offset = ((SittingCellComponentServerState)state).getOffset();
         mouse = ((SittingCellComponentServerState)state).getMouse();
