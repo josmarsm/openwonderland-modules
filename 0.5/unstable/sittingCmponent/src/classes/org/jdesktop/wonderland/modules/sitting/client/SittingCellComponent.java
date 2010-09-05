@@ -25,7 +25,6 @@ import imi.character.avatar.AvatarContext;
 import imi.character.behavior.CharacterBehaviorManager;
 import imi.character.behavior.GoSit;
 import imi.character.statemachine.GameContext;
-import imi.objects.SittingChair;
 import java.awt.event.MouseEvent;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
