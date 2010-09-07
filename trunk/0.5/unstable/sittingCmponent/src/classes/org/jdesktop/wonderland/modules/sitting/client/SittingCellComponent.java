@@ -150,12 +150,19 @@ public class SittingCellComponent extends CellComponent
         Entity mye = ret.getEntity();
         RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
         localNode = rc.getSceneRoot();
+
         Vector3f v3f = localNode.getLocalTranslation();
         Quaternion quat = localNode.getLocalRotation();
 
+        Vector3f v3fa = localNode.getWorldTranslation();
+        Quaternion quata = localNode.getWorldRotation();
+        System.out.println("Model local - trans = " + v3f + " - local rot = " + quat);
+        System.out.println("Model world - trans = " + v3fa + " - world rot = " + quata);
+
         Vector3f axis = new Vector3f();
         float angle;
-        angle = quat.toAngleAxis(axis);
+//        angle = quat.toAngleAxis(axis);
+        angle = quata.toAngleAxis(axis);
 
         if(axis.y < 0.0f)
             angle = -angle;
@@ -166,7 +173,8 @@ public class SittingCellComponent extends CellComponent
         float xSittingInc = (float)Math.sin(angle + ((heading / 180) * 3.14159)) * offset;
         float zSittingInc = (float)Math.cos(angle + ((heading / 180) * 3.14159)) * offset;
 
-        SittingChair ac = new SittingChair(new Vector3f(v3f.x + xSittingInc, 0.0f, v3f.z + zSittingInc), new Vector3f(xRotationInc, 0.0f, zRotationInc));
+//        SittingChair ac = new SittingChair(new Vector3f(v3f.x + xSittingInc, 0.0f, v3f.z + zSittingInc), new Vector3f(xRotationInc, 0.0f, zRotationInc));
+        SittingChair ac = new SittingChair(new Vector3f(v3fa.x + xSittingInc, 0.0f, v3fa.z + zSittingInc), new Vector3f(xRotationInc, 0.0f, zRotationInc));
 
         Cell avatarCell = ClientContextJME.getViewManager().getPrimaryViewCell();
         CellRenderer rend = avatarCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
