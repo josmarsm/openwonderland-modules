@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>quickstartguide</name>
+        </general-data>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
+            <!-- Do not use Project Properties customizer when editing this file manually. -->
+            <name>quickstartguide</name>
+            <properties/>
+            <folders>
+                <source-folder>
+                    <label>model-loader-sample</label>
+                    <location>.</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>src/classes</label>
+                    <type>java</type>
+                    <location>src/classes</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <target>package</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>package</target>
+                </action>
+            </ide-actions>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>src/classes</label>
+                        <location>src/classes</location>
+                    </source-folder>
+                    <source-file>
+                        <location>build.xml</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
+                </context-menu>
+            </view>
+            <subprojects/>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>src/classes</package-root>
+                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/common/vecmath.jar:../../../wonderland/modules/tools/security-group/build/lib/client/securitygroups-client.jar:../../../wonderland/modules/foundation/security/build/lib/server/security-server.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-internal-api-0.9.10.jar:../../../wonderland/modules/foundation/xremwin/build/client/xremwin-client-cell.jar</classpath>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+        </java-data>
+    </configuration>
+</project>
