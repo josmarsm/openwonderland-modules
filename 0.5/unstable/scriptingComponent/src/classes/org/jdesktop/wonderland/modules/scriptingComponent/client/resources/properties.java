@@ -42,6 +42,7 @@ class properties extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroupPath = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -63,11 +64,65 @@ class properties extends javax.swing.JFrame {
         jScriptsExit = new javax.swing.JButton();
         jScriptsRetrieve = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
-        jButtonGetAvatarLocation = new javax.swing.JButton();
-        AvatarX = new javax.swing.JLabel();
-        AvatarY = new javax.swing.JLabel();
-        AvatarZ = new javax.swing.JLabel();
+        jTextStepDescription = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTextRootSteps = new javax.swing.JTextArea();
+        jPanel4 = new javax.swing.JPanel();
+        jRadioRobot = new javax.swing.JRadioButton();
+        jRadioPath = new javax.swing.JRadioButton();
+        jButtonCreateStep = new javax.swing.JButton();
+        jButtonEditStep = new javax.swing.JButton();
+        jButtonWriteFile = new javax.swing.JButton();
+        jButtonRetrievePath = new javax.swing.JButton();
+        jComboPathFiles = new javax.swing.JComboBox();
+        jCheckWebdav = new javax.swing.JCheckBox();
+        jLabelPath = new javax.swing.JLabel();
+        jCheckUseGoto = new javax.swing.JCheckBox();
+        jCheckUseAudio = new javax.swing.JCheckBox();
+        jCheckUseChat = new javax.swing.JCheckBox();
+        jCheckUseICE = new javax.swing.JCheckBox();
+        jTextCurrentFile = new javax.swing.JTextField();
+        jButtonRetrievePathFiles = new javax.swing.JButton();
+        jButtonRewriteStep = new javax.swing.JButton();
+        jButtonShowPath = new javax.swing.JButton();
+        jButtonHidePath = new javax.swing.JButton();
+        jCheckUseAnimation = new javax.swing.JCheckBox();
+        jLabelNPCName = new javax.swing.JLabel();
+        jTextNPCName = new javax.swing.JTextField();
+        jButtonTestPath = new javax.swing.JButton();
+        jPanel6 = new javax.swing.JPanel();
+        jButtonPlayClip = new javax.swing.JButton();
         jComboSoundFiles = new javax.swing.JComboBox();
+        jTextChatTo = new javax.swing.JTextField();
+        jTextChatFrom = new javax.swing.JTextField();
+        jTextICEMessage = new javax.swing.JTextField();
+        jTextICECode = new javax.swing.JTextField();
+        jLabelChatTo = new javax.swing.JLabel();
+        jLabelChatFrom = new javax.swing.JLabel();
+        jLabelICECode = new javax.swing.JLabel();
+        jLabelICEMessage = new javax.swing.JLabel();
+        jButtonRetrieveAudio = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTextAreaChat = new javax.swing.JTextArea();
+        jCheckChatText = new javax.swing.JCheckBox();
+        jButtonRetrieveChat = new javax.swing.JButton();
+        jComboChatFiles = new javax.swing.JComboBox();
+        jTextCurrentChat = new javax.swing.JTextField();
+        jButtonRetrieveThisChat = new javax.swing.JButton();
+        jTextCurrentAudio = new javax.swing.JTextField();
+        jButtonWriteThisChat = new javax.swing.JButton();
+        jLabelAnimation = new javax.swing.JLabel();
+        jComboAnimation = new javax.swing.JComboBox();
+        jCheckMaleAnimation = new javax.swing.JCheckBox();
+        jPanel5 = new javax.swing.JPanel();
+        jLabelAvatarX = new javax.swing.JLabel();
+        jLabelAvatarY = new javax.swing.JLabel();
+        jLabelAvatarZ = new javax.swing.JLabel();
+        jTextAvatarY = new javax.swing.JTextField();
+        jTextAvatarZ = new javax.swing.JTextField();
+        jTextAvatarX = new javax.swing.JTextField();
+        jButtonGetAvatarLocation = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -138,7 +193,7 @@ class properties extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 643, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 977, Short.MAX_VALUE)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(51, 51, 51)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -151,19 +206,14 @@ class properties extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
-                            .addComponent(jLabel3))
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jTextObject, javax.swing.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE)
-                                .addGap(6, 6, 6))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap())))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jCheckUserScripts, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jTextObject, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jCheckUserScripts, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -174,22 +224,26 @@ class properties extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jRetrieveEdit)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jTextObject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel2)))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTestScript)
-                    .addComponent(jLabel3)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(EditRetrieveScript)
-                    .addComponent(jCheckUserScripts))
-                .addGap(18, 18, 18)
-                .addComponent(jSaveEdit)
-                .addGap(18, 18, 18)
-                .addComponent(jEditExit)
-                .addContainerGap(41, Short.MAX_VALUE))
+                        .addComponent(jLabel2)
+                        .addComponent(jTextObject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jTestScript)
+                            .addComponent(jLabel3))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(EditRetrieveScript)
+                            .addComponent(jCheckUserScripts))
+                        .addGap(18, 18, 18)
+                        .addComponent(jSaveEdit)
+                        .addGap(18, 18, 18)
+                        .addComponent(jEditExit))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(121, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Edit", jPanel1);
@@ -287,10 +341,524 @@ class properties extends javax.swing.JFrame {
                         .addComponent(jScriptsRetrieve)
                         .addGap(18, 18, 18)
                         .addComponent(jScriptsExit)))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addContainerGap(98, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Script Properties", jPanel2);
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jLabel1.setText("Step Description");
+
+        jTextRootSteps.setColumns(20);
+        jTextRootSteps.setRows(5);
+        jScrollPane3.setViewportView(jTextRootSteps);
+
+        jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        buttonGroupPath.add(jRadioRobot);
+        jRadioRobot.setText("Create Robot Sequence");
+        jRadioRobot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioRobotActionPerformed(evt);
+            }
+        });
+
+        buttonGroupPath.add(jRadioPath);
+        jRadioPath.setSelected(true);
+        jRadioPath.setText("Create Simple Path");
+        jRadioPath.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jRadioPathActionPerformed(evt);
+            }
+        });
+
+        jButtonCreateStep.setText("Create Step");
+        jButtonCreateStep.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonCreateStepActionPerformed(evt);
+            }
+        });
+
+        jButtonEditStep.setText("Edit Step");
+        jButtonEditStep.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonEditStepActionPerformed(evt);
+            }
+        });
+
+        jButtonWriteFile.setText("Write Path File");
+        jButtonWriteFile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonWriteFileActionPerformed(evt);
+            }
+        });
+
+        jButtonRetrievePath.setText("Retrieve Path File");
+        jButtonRetrievePath.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRetrievePathActionPerformed(evt);
+            }
+        });
+
+        jComboPathFiles.setEditable(true);
+        jComboPathFiles.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboPathFiles.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jComboPathFilesMouseClicked(evt);
+            }
+        });
+        jComboPathFiles.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboPathFilesActionPerformed(evt);
+            }
+        });
+
+        jCheckWebdav.setSelected(true);
+        jCheckWebdav.setText("Global Webdav");
+
+        jLabelPath.setText("Path File:");
+
+        jCheckUseGoto.setSelected(true);
+        jCheckUseGoto.setText("Use Goto");
+        jCheckUseGoto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckUseGotoActionPerformed(evt);
+            }
+        });
+
+        jCheckUseAudio.setText("Use Audio");
+        jCheckUseAudio.setEnabled(false);
+        jCheckUseAudio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckUseAudioActionPerformed(evt);
+            }
+        });
+
+        jCheckUseChat.setText("Use Chat");
+        jCheckUseChat.setEnabled(false);
+        jCheckUseChat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckUseChatActionPerformed(evt);
+            }
+        });
+
+        jCheckUseICE.setText("Use ICE");
+        jCheckUseICE.setEnabled(false);
+        jCheckUseICE.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckUseICEActionPerformed(evt);
+            }
+        });
+
+        jTextCurrentFile.setText("empty");
+
+        jButtonRetrievePathFiles.setText("Retrieve Path Files");
+        jButtonRetrievePathFiles.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRetrievePathFilesActionPerformed(evt);
+            }
+        });
+
+        jButtonRewriteStep.setText("Rewrite Step");
+        jButtonRewriteStep.setEnabled(false);
+        jButtonRewriteStep.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRewriteStepActionPerformed(evt);
+            }
+        });
+        jButtonRewriteStep.addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+                jButtonRewriteStepAncestorRemoved(evt);
+            }
+        });
+
+        jButtonShowPath.setText("Show Path");
+        jButtonShowPath.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonShowPathActionPerformed(evt);
+            }
+        });
+
+        jButtonHidePath.setText("Hide Path");
+        jButtonHidePath.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonHidePathActionPerformed(evt);
+            }
+        });
+
+        jCheckUseAnimation.setText("Use Animation");
+        jCheckUseAnimation.setEnabled(false);
+        jCheckUseAnimation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckUseAnimationActionPerformed(evt);
+            }
+        });
+
+        jLabelNPCName.setText("NPC Name");
+        jLabelNPCName.setEnabled(false);
+
+        jTextNPCName.setText("empty");
+        jTextNPCName.setEnabled(false);
+
+        jButtonTestPath.setText("Test Path");
+        jButtonTestPath.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonTestPathActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jRadioRobot)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jButtonCreateStep)
+                                    .addComponent(jButtonEditStep)
+                                    .addComponent(jButtonRewriteStep))
+                                .addGap(40, 40, 40)
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jButtonRetrievePathFiles)
+                                    .addComponent(jButtonRetrievePath)
+                                    .addComponent(jButtonWriteFile)))
+                            .addComponent(jRadioPath))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 74, Short.MAX_VALUE))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabelNPCName)
+                                .addGap(36, 36, 36)
+                                .addComponent(jTextNPCName, javax.swing.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
+                                .addGap(168, 168, 168))
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addComponent(jLabelPath)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel4Layout.createSequentialGroup()
+                                        .addComponent(jComboPathFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                                    .addGroup(jPanel4Layout.createSequentialGroup()
+                                        .addComponent(jTextCurrentFile, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                                        .addGap(36, 36, 36)))))))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jCheckWebdav))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jCheckUseAudio)
+                            .addComponent(jCheckUseGoto)
+                            .addComponent(jCheckUseICE)
+                            .addComponent(jCheckUseChat)
+                            .addComponent(jCheckUseAnimation)
+                            .addComponent(jButtonShowPath)
+                            .addComponent(jButtonHidePath)
+                            .addComponent(jButtonTestPath))))
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jRadioRobot)
+                    .addComponent(jCheckWebdav))
+                .addGap(6, 6, 6)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jRadioPath)
+                    .addComponent(jCheckUseGoto))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonCreateStep)
+                    .addComponent(jButtonWriteFile)
+                    .addComponent(jCheckUseAudio))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonEditStep)
+                            .addComponent(jButtonRetrievePath))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonRewriteStep)
+                            .addComponent(jButtonRetrievePathFiles))
+                        .addGap(14, 14, 14)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabelPath)
+                            .addComponent(jTextCurrentFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jComboPathFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jCheckUseICE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jCheckUseChat)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jCheckUseAnimation)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonShowPath)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonHidePath)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelNPCName)
+                    .addComponent(jTextNPCName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButtonTestPath))
+                .addContainerGap(7, Short.MAX_VALUE))
+        );
+
+        jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jButtonPlayClip.setText("Play Clip");
+        jButtonPlayClip.setEnabled(false);
+        jButtonPlayClip.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonPlayClipActionPerformed(evt);
+            }
+        });
+
+        jComboSoundFiles.setEditable(true);
+        jComboSoundFiles.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboSoundFiles.setEnabled(false);
+        jComboSoundFiles.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jComboSoundFilesMouseClicked(evt);
+            }
+        });
+        jComboSoundFiles.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboSoundFilesActionPerformed(evt);
+            }
+        });
+
+        jTextChatTo.setEnabled(false);
+
+        jTextChatFrom.setEnabled(false);
+
+        jTextICEMessage.setEnabled(false);
+
+        jTextICECode.setEnabled(false);
+
+        jLabelChatTo.setText("Chat to:");
+        jLabelChatTo.setEnabled(false);
+
+        jLabelChatFrom.setText("Chat from:");
+        jLabelChatFrom.setEnabled(false);
+
+        jLabelICECode.setText("ICE code:");
+        jLabelICECode.setEnabled(false);
+
+        jLabelICEMessage.setText("ICE message:");
+        jLabelICEMessage.setEnabled(false);
+
+        jButtonRetrieveAudio.setText("Retrieve Audio Files");
+        jButtonRetrieveAudio.setEnabled(false);
+        jButtonRetrieveAudio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRetrieveAudioActionPerformed(evt);
+            }
+        });
+
+        jTextAreaChat.setColumns(20);
+        jTextAreaChat.setRows(5);
+        jTextAreaChat.setEnabled(false);
+        jScrollPane4.setViewportView(jTextAreaChat);
+
+        jCheckChatText.setSelected(true);
+        jCheckChatText.setText("Chat text");
+        jCheckChatText.setEnabled(false);
+
+        jButtonRetrieveChat.setText("Retrieve chat files");
+        jButtonRetrieveChat.setEnabled(false);
+        jButtonRetrieveChat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRetrieveChatActionPerformed(evt);
+            }
+        });
+
+        jComboChatFiles.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboChatFiles.setEnabled(false);
+        jComboChatFiles.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jComboChatFilesMouseClicked(evt);
+            }
+        });
+        jComboChatFiles.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboChatFilesActionPerformed(evt);
+            }
+        });
+
+        jTextCurrentChat.setText("empty");
+        jTextCurrentChat.setEnabled(false);
+
+        jButtonRetrieveThisChat.setText("Retrieve this file");
+        jButtonRetrieveThisChat.setEnabled(false);
+        jButtonRetrieveThisChat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonRetrieveThisChatActionPerformed(evt);
+            }
+        });
+
+        jTextCurrentAudio.setText("empty");
+        jTextCurrentAudio.setEnabled(false);
+
+        jButtonWriteThisChat.setText("Write this file");
+        jButtonWriteThisChat.setEnabled(false);
+
+        jLabelAnimation.setText("Animation");
+        jLabelAnimation.setEnabled(false);
+
+        jComboAnimation.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Male_Wave", "Male_PublicSpeaking", "Male_AnswerCell", "Male_Cheer", "Male_RaiseHand", "Male_No", "Male_Follow", "Male_MaleBow", "Male_TakeDamage", "Male_Laugh", "Male_Yes", "Male_ShakeHands", "Male_Clap" }));
+        jComboAnimation.setEnabled(false);
+
+        jCheckMaleAnimation.setSelected(true);
+        jCheckMaleAnimation.setText("Male");
+        jCheckMaleAnimation.setEnabled(false);
+        jCheckMaleAnimation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckMaleAnimationActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jCheckChatText)
+                            .addComponent(jTextICECode, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelAnimation, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(50, 50, 50)
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel6Layout.createSequentialGroup()
+                                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(jPanel6Layout.createSequentialGroup()
+                                        .addComponent(jLabelChatFrom)
+                                        .addGap(26, 26, 26))
+                                    .addGroup(jPanel6Layout.createSequentialGroup()
+                                        .addComponent(jTextChatFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(18, 18, 18)))
+                                .addGap(18, 18, 18)
+                                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 282, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabelICEMessage)
+                            .addGroup(jPanel6Layout.createSequentialGroup()
+                                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jComboAnimation, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jTextICEMessage, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                                .addGap(33, 33, 33)
+                                .addComponent(jCheckMaleAnimation))))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addGap(23, 23, 23)
+                        .addComponent(jLabelChatTo))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jButtonRetrieveAudio)
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTextCurrentAudio, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
+                            .addComponent(jComboSoundFiles, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jButtonPlayClip)))
+                .addGap(69, 69, 69))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jTextChatTo, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(541, 541, 541))
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jButtonRetrieveChat)
+                        .addGap(31, 31, 31)
+                        .addComponent(jComboChatFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 245, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jLabelICECode)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 144, Short.MAX_VALUE)
+                        .addComponent(jTextCurrentChat, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jButtonWriteThisChat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButtonRetrieveThisChat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(58, Short.MAX_VALUE))
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonRetrieveAudio)
+                            .addComponent(jComboSoundFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButtonPlayClip))
+                        .addGap(2, 2, 2)
+                        .addComponent(jTextCurrentAudio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabelChatTo)
+                            .addComponent(jLabelChatFrom))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jTextChatTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jTextChatFrom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jCheckChatText)
+                        .addGap(24, 24, 24)
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jComboChatFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButtonRetrieveThisChat)
+                            .addComponent(jButtonRetrieveChat)))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addGap(72, 72, 72)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonWriteThisChat)
+                            .addComponent(jTextCurrentChat, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(19, 19, 19))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabelICECode)
+                            .addComponent(jLabelICEMessage))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jTextICECode, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTextICEMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelAnimation)
+                    .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jComboAnimation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jCheckMaleAnimation)))
+                .addContainerGap(21, Short.MAX_VALUE))
+        );
+
+        jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jLabelAvatarX.setText("Avatar X");
+
+        jLabelAvatarY.setText("Avatar Y");
+
+        jLabelAvatarZ.setText("Avatar Z");
 
         jButtonGetAvatarLocation.setText("Get Avatar Location");
         jButtonGetAvatarLocation.addActionListener(new java.awt.event.ActionListener() {
@@ -299,47 +867,87 @@ class properties extends javax.swing.JFrame {
             }
         });
 
-        AvatarX.setText("Avatar X");
-
-        AvatarY.setText("Avatar Y");
-
-        AvatarZ.setText("Avatar Z");
-
-        jComboSoundFiles.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addComponent(jButtonGetAvatarLocation)
+                .addContainerGap(120, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel5Layout.createSequentialGroup()
+                        .addComponent(jLabelAvatarZ)
+                        .addGap(42, 42, 42)
+                        .addComponent(jTextAvatarZ))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabelAvatarY)
+                            .addComponent(jLabelAvatarX))
+                        .addGap(42, 42, 42)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTextAvatarY)
+                            .addComponent(jTextAvatarX, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))))
+                .addContainerGap(65, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelAvatarX)
+                    .addComponent(jTextAvatarX, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelAvatarY)
+                    .addComponent(jTextAvatarY, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabelAvatarZ)
+                    .addComponent(jTextAvatarZ, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButtonGetAvatarLocation)
+                .addContainerGap(198, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButtonGetAvatarLocation)
-                .addGap(66, 66, 66)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(AvatarZ)
-                    .addComponent(AvatarY)
-                    .addComponent(AvatarX))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
-                .addComponent(jComboSoundFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(93, 93, 93))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, 622, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(1437, 1437, 1437)
+                        .addComponent(jLabel1)
+                        .addGap(5, 5, 5)
+                        .addComponent(jTextStepDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 425, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(168, 168, 168)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButtonGetAvatarLocation)
-                            .addComponent(AvatarX))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(AvatarY)
-                        .addGap(18, 18, 18)
-                        .addComponent(AvatarZ))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jComboSoundFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(383, Short.MAX_VALUE))
+                        .addGap(6, 6, 6)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jTextStepDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1))
+                    .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Robot", jPanel3);
@@ -349,16 +957,14 @@ class properties extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 664, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 998, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 696, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 776, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -484,11 +1090,105 @@ class properties extends javax.swing.JFrame {
 
     private void jButtonGetAvatarLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGetAvatarLocationActionPerformed
         float[] location = getAvatarLocation();
-        AvatarX.setText(String.valueOf(location[0]));
-        AvatarY.setText(String.valueOf(location[1]));
-        AvatarZ.setText(String.valueOf(location[2]));
+        jTextAvatarX.setText(String.valueOf(location[0]));
+        jTextAvatarY.setText(String.valueOf(location[1]));
+        jTextAvatarZ.setText(String.valueOf(location[2]));
+    }//GEN-LAST:event_jButtonGetAvatarLocationActionPerformed
 
-        Vector v = getFileList("sounds", 1);
+    private void jTextObjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextObjectActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextObjectActionPerformed
+
+    private void jButtonWriteFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWriteFileActionPerformed
+        jButtonRewriteStep.setEnabled(false);
+        String theText = jTextRootSteps.getText();
+        contentWriteFile("paths/", jTextCurrentFile.getText(), theText, 1);
+}//GEN-LAST:event_jButtonWriteFileActionPerformed
+
+    private void jRadioPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioPathActionPerformed
+        jButtonRetrieveAudio.setEnabled(false);
+        jComboSoundFiles.setEnabled(false);
+        jButtonPlayClip.setEnabled(false);
+        jLabelChatTo.setEnabled(false);
+        jLabelChatFrom.setEnabled(false);
+        jTextChatTo.setEnabled(false);
+        jTextChatFrom.setEnabled(false);
+        jTextAreaChat.setEnabled(false);
+        jLabelICECode.setEnabled(false);
+        jLabelICEMessage.setEnabled(false);
+        jTextICECode.setEnabled(false);
+        jTextICEMessage.setEnabled(false);
+        jCheckUseAudio.setEnabled(false);
+        jCheckUseChat.setEnabled(false);
+        jCheckUseICE.setEnabled(false);
+        jCheckChatText.setEnabled(false);
+        jButtonRetrieveChat.setEnabled(false);
+        jComboChatFiles.setEnabled(false);
+        jButtonRetrieveThisChat.setEnabled(false);
+        jButtonWriteThisChat.setEnabled(false);
+        jTextCurrentAudio.setEnabled(false);
+        jTextCurrentChat.setEnabled(false);
+        jButtonWriteFile.setText("Write Path File");
+        jButtonRetrievePath.setText("Retrieve Path File");
+        jLabelPath.setText("Path File");
+        jLabelNPCName.setEnabled(false);
+        jTextNPCName.setEnabled(false);
+        jCheckUseAnimation.setEnabled(false);
+        jLabelAnimation.setEnabled(false);
+        jComboAnimation.setEnabled(false);
+        jCheckMaleAnimation.setEnabled(false);
+    }//GEN-LAST:event_jRadioPathActionPerformed
+
+    private void jRadioRobotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioRobotActionPerformed
+        if(jCheckUseAudio.isSelected() == true)
+            {
+            jButtonRetrieveAudio.setEnabled(true);
+            jComboSoundFiles.setEnabled(true);
+            jButtonPlayClip.setEnabled(true);
+            jTextCurrentAudio.setEnabled(true);
+            }
+        if(jCheckUseChat.isSelected() == true)
+            {
+            jLabelChatTo.setEnabled(true);
+            jLabelChatFrom.setEnabled(true);
+            jTextChatTo.setEnabled(true);
+            jTextChatFrom.setEnabled(true);
+            jTextAreaChat.setEnabled(true);
+            jCheckChatText.setEnabled(true);
+            jButtonRetrieveChat.setEnabled(true);
+            jComboChatFiles.setEnabled(true);
+            jButtonRetrieveThisChat.setEnabled(true);
+            jButtonWriteThisChat.setEnabled(true);
+            jTextCurrentChat.setEnabled(true);
+            }
+        if(jCheckUseICE.isSelected() == true)
+            {
+            jLabelICECode.setEnabled(true);
+            jLabelICEMessage.setEnabled(true);
+            jTextICECode.setEnabled(true);
+            jTextICEMessage.setEnabled(true);
+            }
+        if(jCheckUseAnimation.isSelected() == true)
+            {
+            jLabelAnimation.setEnabled(true);
+            jComboAnimation.setEnabled(true);
+            jCheckMaleAnimation.setEnabled(true);
+            }
+        jCheckUseAudio.setEnabled(true);
+        jCheckUseChat.setEnabled(true);
+        jCheckUseICE.setEnabled(true);
+        jButtonWriteFile.setText("Write Robot File");
+        jButtonRetrievePath.setText("Retrieve Robot File");
+        jLabelPath.setText("Robot File");
+        jLabelNPCName.setEnabled(true);
+        jTextNPCName.setEnabled(true);
+        jCheckUseAnimation.setEnabled(true);
+
+    }//GEN-LAST:event_jRadioRobotActionPerformed
+
+    private void jButtonRetrieveAudioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetrieveAudioActionPerformed
+        String thePath = "sounds/" + jTextNPCName.getText();
+        Vector v = getFileList(thePath, 1);
 
         jComboSoundFiles.removeAllItems();
         for(Enumeration e = v.elements(); e.hasMoreElements();)
@@ -498,12 +1198,406 @@ class properties extends javax.swing.JFrame {
 
             jComboSoundFiles.addItem(myString);
             }
+    }//GEN-LAST:event_jButtonRetrieveAudioActionPerformed
 
-    }//GEN-LAST:event_jButtonGetAvatarLocationActionPerformed
-
-    private void jTextObjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextObjectActionPerformed
+    private void jCheckUseGotoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckUseGotoActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextObjectActionPerformed
+    }//GEN-LAST:event_jCheckUseGotoActionPerformed
+
+    private void jCheckUseAudioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckUseAudioActionPerformed
+        if(jCheckUseAudio.isSelected() == true)
+            {
+            jButtonRetrieveAudio.setEnabled(true);
+            jComboSoundFiles.setEnabled(true);
+            jButtonPlayClip.setEnabled(true);
+            jTextCurrentAudio.setEnabled(true);
+            }
+        else
+            {
+            jButtonRetrieveAudio.setEnabled(false);
+            jComboSoundFiles.setEnabled(false);
+            jButtonPlayClip.setEnabled(false);
+            jTextCurrentAudio.setEnabled(false);
+            }
+    }//GEN-LAST:event_jCheckUseAudioActionPerformed
+
+    private void jCheckUseChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckUseChatActionPerformed
+        if(jCheckUseChat.isSelected() == true)
+            {
+            jLabelChatTo.setEnabled(true);
+            jLabelChatFrom.setEnabled(true);
+            jTextChatTo.setEnabled(true);
+            jTextChatFrom.setEnabled(true);
+            jTextAreaChat.setEnabled(true);
+            jCheckChatText.setEnabled(true);
+            jButtonRetrieveChat.setEnabled(true);
+            jComboChatFiles.setEnabled(true);
+            jButtonRetrieveThisChat.setEnabled(true);
+            jButtonWriteThisChat.setEnabled(true);
+            jTextCurrentChat.setEnabled(true);
+            }
+        else
+            {
+            jLabelChatTo.setEnabled(false);
+            jLabelChatFrom.setEnabled(false);
+            jTextChatTo.setEnabled(false);
+            jTextChatFrom.setEnabled(false);
+            jTextAreaChat.setEnabled(false);
+            jCheckChatText.setEnabled(false);
+            jButtonRetrieveChat.setEnabled(false);
+            jComboChatFiles.setEnabled(false);
+            jButtonRetrieveThisChat.setEnabled(false);
+            jButtonWriteThisChat.setEnabled(false);
+            jTextCurrentChat.setEnabled(false);
+            }
+    }//GEN-LAST:event_jCheckUseChatActionPerformed
+
+    private void jCheckUseICEActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckUseICEActionPerformed
+        if(jCheckUseICE.isSelected() == true)
+            {
+            jLabelICECode.setEnabled(true);
+            jLabelICEMessage.setEnabled(true);
+            jTextICECode.setEnabled(true);
+            jTextICEMessage.setEnabled(true);
+            }
+        else
+            {
+            jLabelICECode.setEnabled(false);
+            jLabelICEMessage.setEnabled(false);
+            jTextICECode.setEnabled(false);
+            jTextICEMessage.setEnabled(false);
+            }
+    }//GEN-LAST:event_jCheckUseICEActionPerformed
+
+    private void jButtonCreateStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCreateStepActionPerformed
+        jButtonRewriteStep.setEnabled(false);
+        String line = "";
+        if(jRadioRobot.isSelected() == true)
+            {
+            if(jCheckUseGoto.isSelected() == true)
+                {
+                line = "true:" + jTextAvatarX.getText() + ":" + jTextAvatarY.getText() + ":" + jTextAvatarZ.getText() + ":";
+                }
+            else
+                {
+                line = "false: : : :";
+                }
+            if(jCheckUseAudio.isSelected() == true)
+                {
+                line = line + "true:" + jTextCurrentAudio.getText() + ":";
+                }
+            else
+                {
+                line = line + "false: :";
+                }
+            if(jCheckUseAnimation.isSelected() == true)
+                {
+                line = line + "true:" + (String)jComboAnimation.getSelectedItem() + ":";
+                }
+            else
+                {
+                line = line + "false: :";
+                }
+            if(jCheckUseChat.isSelected() == true)
+                {
+                if(jCheckChatText.isSelected() == true)
+                    {
+                    line = line + "chatText:" + jTextAreaChat.getText() + ":" + jTextChatFrom.getText() + ":";
+                    }
+                else
+                    {
+                    line = line + "chatFile:" + jTextCurrentChat.getText() + ":" + jTextChatFrom.getText() + ":";
+                    }
+                }
+            else
+                {
+                line = line + "false: : :";
+                }
+            if(jCheckUseICE.isSelected() == true)
+                {
+                line = line + "ice:" + jTextICECode.getText() + ":" + jTextICEMessage.getText() + ":";
+                }
+            else
+                {
+                line = line + " : : :";
+                }
+            jTextRootSteps.append(line + newline);
+            }
+        else if(jRadioPath.isSelected() == true)
+            {
+            float[] location = getAvatarLocation();
+            jTextAvatarX.setText(String.valueOf(location[0]));
+            jTextAvatarY.setText(String.valueOf(location[1]));
+            jTextAvatarZ.setText(String.valueOf(location[2]));
+            line = jTextAvatarX.getText() + ":" + jTextAvatarY.getText() + ":" + jTextAvatarZ.getText();
+            jTextRootSteps.append(line + newline);
+            }
+    }//GEN-LAST:event_jButtonCreateStepActionPerformed
+
+    private void jButtonEditStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditStepActionPerformed
+        jButtonRewriteStep.setEnabled(true);
+        String step = jTextRootSteps.getSelectedText();
+
+        if(jRadioPath.isSelected() == true)
+            {
+            String[] result = step.split(":");
+            jTextAvatarX.setText(result[0]);
+            jTextAvatarY.setText(result[1]);
+            jTextAvatarZ.setText(result[2]);
+            }
+        else if(jRadioRobot.isSelected() == true)
+            {
+            String[] result = step.split(":");
+// GoTo
+            if(result[0].equals("true"))
+                {
+                jCheckUseGoto.setSelected(true);
+                jTextAvatarX.setText(result[1]);
+                jTextAvatarY.setText(result[2]);
+                jTextAvatarZ.setText(result[3]);
+                }
+            else
+                {
+                jCheckUseGoto.setSelected(false);
+                jTextAvatarX.setText("");
+                jTextAvatarY.setText("");
+                jTextAvatarZ.setText("");
+                }
+// Audio
+            if(result[4].equals("true"))
+                {
+                jCheckUseAudio.setSelected(true);
+                jTextCurrentAudio.setText(result[5]);
+                jComboSoundFiles.setSelectedItem((Object)result[5]);
+                }
+            else
+                {
+                jCheckUseAudio.setSelected(false);
+                jTextCurrentAudio.setText("");
+                }
+// Animation
+            if(result[6].equals("true"))
+                {
+                jCheckUseAnimation.setSelected(true);
+                jComboAnimation.setSelectedItem((Object)result[7]);
+                }
+            else
+                {
+                jCheckUseAnimation.setSelected(false);
+                }
+// Chat
+            if(result[8].equals("chatText"))
+                {
+                jCheckUseChat.setSelected(true);
+                jTextAreaChat.setText(result[9]);
+                jTextChatFrom.setText(result[10]);
+                jCheckChatText.setSelected(true);
+                }
+            else if(result[8].equals("chatFile"))
+                {
+                jCheckUseChat.setSelected(false);
+                jTextCurrentChat.setText(result[9]);
+                jTextChatFrom.setText(result[10]);
+                jCheckChatText.setSelected(false);
+                }
+            else
+                {
+                jCheckUseChat.setSelected(false);
+                jTextAreaChat.setText("");
+                jTextChatFrom.setText("");
+                jCheckChatText.setSelected(true);
+                }
+// ICE
+            if(result[11].equals("ice"))
+                {
+                jCheckUseICE.setSelected(true);
+                jTextICECode.setText(result[12]);
+                jTextICEMessage.setText(result[13]);
+                }
+            else
+                {
+                jCheckUseICE.setSelected(false);
+                jTextICECode.setText("");
+                jTextICEMessage.setText("");
+                }
+            }
+
+    }//GEN-LAST:event_jButtonEditStepActionPerformed
+
+    private void jButtonRetrievePathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetrievePathActionPerformed
+        jButtonRewriteStep.setEnabled(false);
+        jTextRootSteps.setText("");
+        String path = "paths/" + jTextCurrentFile.getText();
+        contentReadFile(path, 1);
+        Vector v = getContentRead();
+
+        for(Enumeration e = v.elements(); e.hasMoreElements();)
+            {
+            String myString = (String) e.nextElement();
+
+            jTextRootSteps.append(myString + newline);
+            }
+    }//GEN-LAST:event_jButtonRetrievePathActionPerformed
+
+    private void jButtonRetrieveChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetrieveChatActionPerformed
+        String thePath = "chats/" + jTextNPCName.getText();
+        Vector v = getFileList(thePath, 1);
+
+        jComboChatFiles.removeAllItems();
+        for(Enumeration e = v.elements(); e.hasMoreElements();)
+            {
+            String myString = (String) e.nextElement();
+            System.out.println("Item = " + myString);
+
+            jComboChatFiles.addItem(myString);
+            }
+
+    }//GEN-LAST:event_jButtonRetrieveChatActionPerformed
+
+    private void jButtonRetrievePathFilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetrievePathFilesActionPerformed
+        jButtonRewriteStep.setEnabled(false);
+        Vector v = getFileList("paths", 1);
+
+        jComboPathFiles.removeAllItems();
+        for(Enumeration e = v.elements(); e.hasMoreElements();)
+            {
+            String myString = (String) e.nextElement();
+            System.out.println("Item = " + myString);
+
+            jComboPathFiles.addItem(myString);
+            }
+
+    }//GEN-LAST:event_jButtonRetrievePathFilesActionPerformed
+
+    private void jComboPathFilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboPathFilesActionPerformed
+        jTextCurrentFile.setText((String)jComboPathFiles.getSelectedItem());
+    }//GEN-LAST:event_jComboPathFilesActionPerformed
+
+    private void jComboPathFilesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jComboPathFilesMouseClicked
+        jTextCurrentFile.setText((String)jComboPathFiles.getSelectedItem());
+    }//GEN-LAST:event_jComboPathFilesMouseClicked
+
+    private void jButtonRewriteStepAncestorRemoved(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_jButtonRewriteStepAncestorRemoved
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButtonRewriteStepAncestorRemoved
+
+    private void jButtonRewriteStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRewriteStepActionPerformed
+        jButtonRewriteStep.setEnabled(false);
+        String line = jTextAvatarX.getText() + ":" + jTextAvatarY.getText() + ":" + jTextAvatarZ.getText();
+        jTextRootSteps.replaceSelection(line);
+        
+    }//GEN-LAST:event_jButtonRewriteStepActionPerformed
+
+    private void jComboSoundFilesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jComboSoundFilesMouseClicked
+        jTextCurrentAudio.setText((String)jComboSoundFiles.getSelectedItem());
+    }//GEN-LAST:event_jComboSoundFilesMouseClicked
+
+    private void jComboSoundFilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboSoundFilesActionPerformed
+        jTextCurrentAudio.setText((String)jComboSoundFiles.getSelectedItem());
+    }//GEN-LAST:event_jComboSoundFilesActionPerformed
+
+    private void jComboChatFilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboChatFilesActionPerformed
+        jTextCurrentChat.setText((String)jComboChatFiles.getSelectedItem());
+    }//GEN-LAST:event_jComboChatFilesActionPerformed
+
+    private void jComboChatFilesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jComboChatFilesMouseClicked
+        jTextCurrentChat.setText((String)jComboChatFiles.getSelectedItem());
+    }//GEN-LAST:event_jComboChatFilesMouseClicked
+
+    private void jButtonPlayClipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPlayClipActionPerformed
+        playSound(jTextNPCName.getText() + "/" + jTextCurrentAudio.getText(), 1900, 1);
+    }//GEN-LAST:event_jButtonPlayClipActionPerformed
+
+    private void jButtonRetrieveThisChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetrieveThisChatActionPerformed
+        jTextRootSteps.setText("");
+        String path = "chats/" + jTextNPCName.getText() + "/" + jTextCurrentFile.getText();
+        contentReadFile(path, 1);
+        Vector v = getContentRead();
+
+        for(Enumeration e = v.elements(); e.hasMoreElements();)
+            {
+            String myString = (String) e.nextElement();
+
+            jTextRootSteps.append(myString + newline);
+            }
+    }//GEN-LAST:event_jButtonRetrieveThisChatActionPerformed
+
+    private void jButtonShowPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonShowPathActionPerformed
+        String theText = jTextRootSteps.getText();
+        String[] result = theText.split(newline);
+
+        for(int i = 0; i < result.length; i++)
+            {
+            String[] innerResult = result[i].split(":");
+            createCellInstance("org.jdesktop.wonderland.modules.waypost.common.waypostCellServerState", Float.valueOf(innerResult[0]), 1.0f, Float.valueOf(innerResult[2]), "waypost" + i);
+            }
+
+}//GEN-LAST:event_jButtonShowPathActionPerformed
+
+    private void jButtonHidePathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonHidePathActionPerformed
+        String theText = jTextRootSteps.getText();
+        String[] result = theText.split(newline);
+        for(int i = 0; i < result.length; i++)
+            {
+            deleteCellInstance("waypost" + i);
+            }
+    }//GEN-LAST:event_jButtonHidePathActionPerformed
+
+    private void jCheckUseAnimationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckUseAnimationActionPerformed
+        if(jCheckUseAnimation.isSelected() == true)
+            {
+            jLabelAnimation.setEnabled(true);
+            jComboAnimation.setEnabled(true);
+            jCheckMaleAnimation.setEnabled(true);
+            }
+        else
+            {
+            jLabelAnimation.setEnabled(false);
+            jComboAnimation.setEnabled(false);
+            jCheckMaleAnimation.setEnabled(false);
+            }
+    }//GEN-LAST:event_jCheckUseAnimationActionPerformed
+
+    private void jCheckMaleAnimationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckMaleAnimationActionPerformed
+        if(jCheckMaleAnimation.isSelected() == true)
+            {
+            jComboAnimation.removeAllItems();
+            jComboAnimation.addItem("Male_Wave");
+            jComboAnimation.addItem("Male_PublicSpeaking");
+            jComboAnimation.addItem("Male_AnswerCall");
+            jComboAnimation.addItem("Male_Cheer");
+            jComboAnimation.addItem("Male_RaiseHand");
+            jComboAnimation.addItem("Male_No");
+            jComboAnimation.addItem("Male_Follow");
+            jComboAnimation.addItem("Male_Bow");
+            jComboAnimation.addItem("Male_TakeDamage");
+            jComboAnimation.addItem("Male_Laugh");
+            jComboAnimation.addItem("Male_Yes");
+            jComboAnimation.addItem("Male_ShakeHands");
+            jComboAnimation.addItem("Male_Clap");
+            }
+        else
+            {
+            jComboAnimation.removeAllItems();
+            jComboAnimation.addItem("Female_Wave");
+            jComboAnimation.addItem("Female_PublicSpeaking");
+            jComboAnimation.addItem("Female_AnswerCall");
+            jComboAnimation.addItem("Female_Cheer");
+            jComboAnimation.addItem("Female_RaiseHand");
+            jComboAnimation.addItem("Female_No");
+            jComboAnimation.addItem("Female_Follow");
+            jComboAnimation.addItem("Female_Bow");
+            jComboAnimation.addItem("Female_TakeDamage");
+            jComboAnimation.addItem("Female_Laugh");
+            jComboAnimation.addItem("Female_Yes");
+            jComboAnimation.addItem("Female_ShakeHands");
+            jComboAnimation.addItem("Female_Clap");
+            }
+}//GEN-LAST:event_jCheckMaleAnimationActionPerformed
+
+    private void jButtonTestPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonTestPathActionPerformed
+        playPath(jTextCurrentFile.getText());
+    }//GEN-LAST:event_jButtonTestPathActionPerformed
 
     public static void setScriptContext(ScriptContext ctx)
         {
@@ -981,6 +2075,91 @@ class properties extends javax.swing.JFrame {
             jComboBox1.addItem(ScriptsTable.getValueAt(i, 1));
             }
         }
+
+    private void playSound(String clipPath, int responseCode, int area)
+        {
+// Do setup for testMethod(String)
+        try
+            {
+            Class partypes[] = new Class[3];
+            partypes[0] = clipPath.getClass();
+            partypes[1] = Integer.TYPE;
+            partypes[2] = Integer.TYPE;
+            Method meth = sc.getMethod("playSound", partypes);
+            Object arglist[] = new Object[3];
+            arglist[0] = clipPath;
+            arglist[1] = new Integer(responseCode);
+            arglist[2] = new Integer(area);
+            meth.invoke(myClassObject, arglist);
+            }
+        catch(Exception e)
+            {
+            System.out.println("Exception for playSound");
+            e.printStackTrace();
+            }
+        }
+
+    private void createCellInstance(String cellClass, float x, float y, float z, String name)
+        {
+        try
+            {
+            Class partypes[] = new Class[5];
+            partypes[0] = cellClass.getClass();
+            partypes[1] = Float.TYPE;
+            partypes[2] = Float.TYPE;
+            partypes[3] = Float.TYPE;
+            partypes[4] = name.getClass();
+            Method meth = sc.getMethod("createCellInstance", partypes);
+            Object arglist[] = new Object[5];
+            arglist[0] = cellClass;
+            arglist[1] = new Float(x);
+            arglist[2] = new Float(y);
+            arglist[3] = new Float(z);
+            arglist[4] = name;
+            meth.invoke(myClassObject, arglist);
+            }
+        catch(Exception e)
+            {
+            System.out.println("Exception for createCellInstance");
+            e.printStackTrace();
+            }
+        }
+
+    private void deleteCellInstance(String name)
+        {
+        try
+            {
+            Class partypes[] = new Class[1];
+            partypes[0] = name.getClass();
+            Method meth = sc.getMethod("deleteCellInstance", partypes);
+            Object arglist[] = new Object[1];
+            arglist[0] = name;
+            meth.invoke(myClassObject, arglist);
+            }
+        catch(Exception e)
+            {
+            System.out.println("Exception for deleteCellInstance");
+            e.printStackTrace();
+            }
+        }
+
+    private void playPath(String name)
+        {
+        try
+            {
+            Class partypes[] = new Class[1];
+            partypes[0] = name.getClass();
+            Method meth = sc.getMethod("playPath", partypes);
+            Object arglist[] = new Object[1];
+            arglist[0] = name;
+            meth.invoke(myClassObject, arglist);
+            }
+        catch(Exception e)
+            {
+            System.out.println("Exception for playPath");
+            e.printStackTrace();
+            }
+        }
   
     /**
      * @param args the command line arguments
@@ -1002,21 +2181,60 @@ class properties extends javax.swing.JFrame {
         }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel AvatarX;
-    private javax.swing.JLabel AvatarY;
-    private javax.swing.JLabel AvatarZ;
     private javax.swing.JButton EditRetrieveScript;
     private javax.swing.JTable ScriptsTable;
+    private javax.swing.ButtonGroup buttonGroupPath;
+    private javax.swing.JButton jButtonCreateStep;
+    private javax.swing.JButton jButtonEditStep;
     private javax.swing.JButton jButtonGetAvatarLocation;
+    private javax.swing.JButton jButtonHidePath;
+    private javax.swing.JButton jButtonPlayClip;
+    private javax.swing.JButton jButtonRetrieveAudio;
+    private javax.swing.JButton jButtonRetrieveChat;
+    private javax.swing.JButton jButtonRetrievePath;
+    private javax.swing.JButton jButtonRetrievePathFiles;
+    private javax.swing.JButton jButtonRetrieveThisChat;
+    private javax.swing.JButton jButtonRewriteStep;
+    private javax.swing.JButton jButtonShowPath;
+    private javax.swing.JButton jButtonTestPath;
+    private javax.swing.JButton jButtonWriteFile;
+    private javax.swing.JButton jButtonWriteThisChat;
+    private javax.swing.JCheckBox jCheckChatText;
+    private javax.swing.JCheckBox jCheckMaleAnimation;
+    private javax.swing.JCheckBox jCheckUseAnimation;
+    private javax.swing.JCheckBox jCheckUseAudio;
+    private javax.swing.JCheckBox jCheckUseChat;
+    private javax.swing.JCheckBox jCheckUseGoto;
+    private javax.swing.JCheckBox jCheckUseICE;
     private javax.swing.JCheckBox jCheckUserScripts;
+    private javax.swing.JCheckBox jCheckWebdav;
+    private javax.swing.JComboBox jComboAnimation;
     private javax.swing.JComboBox jComboBox1;
+    private javax.swing.JComboBox jComboChatFiles;
+    private javax.swing.JComboBox jComboPathFiles;
     private javax.swing.JComboBox jComboSoundFiles;
     private javax.swing.JButton jEditExit;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabelAnimation;
+    private javax.swing.JLabel jLabelAvatarX;
+    private javax.swing.JLabel jLabelAvatarY;
+    private javax.swing.JLabel jLabelAvatarZ;
+    private javax.swing.JLabel jLabelChatFrom;
+    private javax.swing.JLabel jLabelChatTo;
+    private javax.swing.JLabel jLabelICECode;
+    private javax.swing.JLabel jLabelICEMessage;
+    private javax.swing.JLabel jLabelNPCName;
+    private javax.swing.JLabel jLabelPath;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JRadioButton jRadioPath;
+    private javax.swing.JRadioButton jRadioRobot;
     private javax.swing.JButton jRetrieveEdit;
     private javax.swing.JButton jSaveEdit;
     private javax.swing.JButton jScriptsExit;
@@ -1024,10 +2242,26 @@ class properties extends javax.swing.JFrame {
     private javax.swing.JButton jScriptsSave;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton jTestScript;
+    private javax.swing.JTextArea jTextAreaChat;
+    private javax.swing.JTextField jTextAvatarX;
+    private javax.swing.JTextField jTextAvatarY;
+    private javax.swing.JTextField jTextAvatarZ;
+    private javax.swing.JTextField jTextChatFrom;
+    private javax.swing.JTextField jTextChatTo;
+    private javax.swing.JTextField jTextCurrentAudio;
+    private javax.swing.JTextField jTextCurrentChat;
+    private javax.swing.JTextField jTextCurrentFile;
+    private javax.swing.JTextField jTextICECode;
+    private javax.swing.JTextField jTextICEMessage;
+    private javax.swing.JTextField jTextNPCName;
     private javax.swing.JTextField jTextObject;
+    private javax.swing.JTextArea jTextRootSteps;
     private javax.swing.JTextArea jTextScriptContent;
+    private javax.swing.JTextField jTextStepDescription;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -6,6 +6,9 @@ import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import imi.character.avatar.AvatarContext.TriggerNames;
+import imi.character.behavior.CharacterBehaviorManager;
+import imi.character.behavior.GoTo;
+import imi.character.statemachine.GameContext;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -15,7 +18,6 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -99,10 +101,8 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
-//import org.jdesktop.wonderland.modules.npc.client.cell.NpcCell;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentCellCreateMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentNpcMoveMessage;
-//import org.jdesktop.wonderland.modules.scriptingImager.client.jme.cellrenderer.ScriptingImagerCellRenderer;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
@@ -142,7 +142,7 @@ public class ScriptingComponent extends CellComponent
     public int testInt = 99;
     private Vector3f worldCoor = null;
     private float myFrameRate;
-    public final int totalEvents = 30;
+    public final int totalEvents = 25;
     public static final int MOUSE1_EVENT = 0;
     public static final int MOUSE2_EVENT = 1;
     public static final int MOUSE3_EVENT = 2;
@@ -302,6 +302,8 @@ public class ScriptingComponent extends CellComponent
 
     private int audioEventsEnable = 0;
     private String npcAvatarName = null;
+
+    private ArrayList sitTargetGroup;
 
     /**
      * The ScriptingComponent constructor
@@ -512,7 +514,7 @@ public class ScriptingComponent extends CellComponent
                     {
                     String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/sounds/" + theCell.getName() + "/" + clipFile;
                     soundURL = new URL(thePath);
-                    if(traceLevel > 1)
+                    if(traceLevel > 0)
                         {
                         System.out.println("Gonna try to play - " + thePath + " - URL - " + soundURL);
                         }
@@ -521,7 +523,7 @@ public class ScriptingComponent extends CellComponent
                     {
                     String thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/sounds/" + clipFile;
                     soundURL = new URL(thePath);
-                    if(traceLevel > 1)
+                    if(traceLevel > 0)
                         {
                         System.out.println("Gonna try to play - " + thePath + " - URL - " + soundURL);
                         }
@@ -972,8 +974,8 @@ public class ScriptingComponent extends CellComponent
 /**
  * contentCreateFile - method for calls from a script to create a directory path in the user area on the content area
  *
- * @param theDir String contains the directory path to create
- * @param theFile String contains the filename to create
+ * @param theDir String contains the directory path to read
+ * @param theFile String contains the filename to read
  * @return
  */
     public int contentReadFile(String thePath, int repository)
@@ -1338,6 +1340,9 @@ public class ScriptingComponent extends CellComponent
         {
         List<ContentNode> children = null;
         ContentCollection current = null;
+        ContentResource currentChild = null;
+        int     i;
+        int     j;
 
         if(traceLevel > 3)
             {
@@ -1381,33 +1386,53 @@ public class ScriptingComponent extends CellComponent
                     break;
                     }
                 }
-            children = ccr.getChildren();
-            
-//            current = (ContentResource)ccr.getChild(thePath);
+//             children = ccr.getChildren();
 
-            int size = children.size();
-            
-            for(int i = 0; i < size; i++)
+            current = ccr;
+
+            String[] result = thePath.split("/");
+            for (i = 0; i < result.length; i++)
                 {
-                String name = children.get(i).getName();
-                if(traceLevel > 4)
+                int size = current.getChildren().size();
+                children = current.getChildren();
+
+                for(j = 0; j < size; j++)
                     {
-                    System.out.println("Checking node = " + name);
+                    String name = children.get(j).getName();
+                    if(traceLevel > 4)
+                        {
+                        System.out.println("Checking node = " + name);
+                        }
+                    if(name.equals(result[i]))
+                        {
+                        if(traceLevel > 4)
+                            {
+                            System.out.println("Found the node - " + result[i] + " - get it");
+                            }
+                        current = (ContentCollection) current.getChild(result[i]);
+                        break;
+                        }
                     }
-                if(name.equals(thePath))
+                 if(traceLevel > 4)
+                    {
+                    System.out.println("Exit for loop with " + j);
+                    }
+                 if(j == size)
                     {
                     if(traceLevel > 4)
                         {
-                        System.out.println("Found");
+                        System.out.println("Cannot find the node - " + result[i]);
                         }
-                    current = (ContentCollection) children.get(i);
-                    break;
+                    return null;
+//                    current.createChild(result[i], Type.COLLECTION);
+//                    current = (ContentCollection) current.getChild(result[i]);
                     }
                 }
-            
+
             children = current.getChildren();
-            size = children.size();
-            for(int i = 0; i < size; i++)
+            int size = children.size();
+
+            for(i = 0; i < size; i++)
                 {
                 String name = children.get(i).getName();
                 tempBuf.addElement(new String(name));
@@ -1421,10 +1446,12 @@ public class ScriptingComponent extends CellComponent
             {
             if(traceLevel > 0)
                 {
-                System.err.println("Exception in contentReadFile - " + ex);
-            }
+                System.err.println("Exception in getFileList - " + ex);
+                }
+            traceLevel = 1;
             return null;
             }
+        traceLevel = 1;
         return tempBuf;
         }
 
@@ -1719,19 +1746,17 @@ public class ScriptingComponent extends CellComponent
                                 myKeyListener.addToEntity(mye);
                                 }
                             }
-
+/*
         wm = ClientContextJME.getWorldManager();
         wm.getRenderManager().setFrameRateListener(new FrameRateListener()
             {
             public void currentFramerate(float frames)
                 {
-//                myFrameRate = frames;
                 setFrameRate(frames);
-//                System.out.println("Framerate listener " + myFrameRate);
                 }
 
             }, 100);
-
+*/
                         if(intercellListener == null)
                             {
                             intercellListener = new IntercellListener();
@@ -1771,6 +1796,8 @@ public class ScriptingComponent extends CellComponent
 // Stop a repeater if running
                     stopRepeater();
                     ClientContext.getInputManager().removeGlobalEventListener(intercellListener);
+
+
                     intercellListener = null;
                     }
                 break;
@@ -2274,7 +2301,7 @@ public class ScriptingComponent extends CellComponent
     public void setFrameRate(float frames)
         {
         myFrameRate = frames;
-        if(traceLevel > 4)
+        if(traceLevel > 0)
             {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter setFrameRate - rate = " + myFrameRate);
             }
@@ -2443,7 +2470,7 @@ public class ScriptingComponent extends CellComponent
             {
             if(traceLevel > 4)
                 {
-                System.out.println("Exception in load properties" + ex);
+                System.out.println("Exception in load properties - " + ex);
                 }
             propResource = "webdav";
             }
@@ -3389,6 +3416,15 @@ public class ScriptingComponent extends CellComponent
         mobileType = (int)type;
         }
 
+    class Path
+        {
+        public float xLoc;
+        public float yLoc;
+        public float zLoc;
+        public int nodeType;
+        public int version;
+        }
+
     class Robot
         {
         public  boolean     move;
@@ -3432,6 +3468,25 @@ public class ScriptingComponent extends CellComponent
         public  float   z;
         public  String  name;
         public  BigInteger  clientID;
+        }
+
+    public void playPath(String thePath)
+        {
+        getMyAvatar();
+
+        GameContext context = myAvatar.getContext();
+        CharacterBehaviorManager helm = context.getBehaviorManager();
+        helm.clearTasks();
+        helm.setEnable(true);
+        contentReadFile("paths/" + thePath, CONTENT_ROOT);
+        for(Enumeration e = contentRead.elements(); e.hasMoreElements();)
+            {
+            String ele = (String)e.nextElement();
+
+            String[] result = ele.split(":");
+            Vector3f v3f = new Vector3f(Float.valueOf(result[0]), Float.valueOf(result[1]), Float.valueOf(result[2]));
+            helm.addTaskToBottom(new GoTo(v3f, context));
+            }
         }
 
     public int playRobotFrame()
@@ -3747,9 +3802,29 @@ public class ScriptingComponent extends CellComponent
         channelComp.send(msg);
         }
 
+    public void createSitTargetList(String[] sitNameList)
+        {
+        sitTargetGroup.clear();
+
+        for (Cell aCell : cell.getCellCache().getRootCells())
+            {
+            for(int i = 0; i < sitNameList.length; i++)
+                {
+                if(aCell.getName().equals(sitNameList[i]))
+                    {
+//                    if(aCell instanceof SittingChair)
+//                        {
+//                        sitTargetGroup.add((ChairObject)aCell);
+//                        }
+
+
+                    }
+                }
+            }
+        }
+
     public void deleteCellInstance(String cellName)
         {
-        Collection coll = cell.getCellCache().getRootCells();
         for (Cell aCell : cell.getCellCache().getRootCells())
             {
             if(cellName.equals(aCell.getName()))
