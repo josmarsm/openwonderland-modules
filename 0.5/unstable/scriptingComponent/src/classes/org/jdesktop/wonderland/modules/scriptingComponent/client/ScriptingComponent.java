@@ -1746,17 +1746,16 @@ public class ScriptingComponent extends CellComponent
                                 myKeyListener.addToEntity(mye);
                                 }
                             }
-/*
-        wm = ClientContextJME.getWorldManager();
-        wm.getRenderManager().setFrameRateListener(new FrameRateListener()
-            {
-            public void currentFramerate(float frames)
-                {
-                setFrameRate(frames);
-                }
 
-            }, 100);
-*/
+                        wm = ClientContextJME.getWorldManager();
+                        wm.getRenderManager().setFrameRateListener(new FrameRateListener()
+                            {
+                            public void currentFramerate(float frames)
+                                {
+                                setFrameRate(frames);
+                                }
+                            }, 50);
+
                         if(intercellListener == null)
                             {
                             intercellListener = new IntercellListener();
@@ -2301,10 +2300,16 @@ public class ScriptingComponent extends CellComponent
     public void setFrameRate(float frames)
         {
         myFrameRate = frames;
-        if(traceLevel > 0)
+        if(traceLevel > 3)
             {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter setFrameRate - rate = " + myFrameRate);
             }
+        }
+
+    public float getFrameRate()
+        {
+        System.out.println("Framerate = " + myFrameRate);
+        return myFrameRate;
         }
     
     public String getName()
@@ -3832,6 +3837,52 @@ public class ScriptingComponent extends CellComponent
                 System.out.println("Delete cell - found a match");
                 CellUtils.deleteCell(aCell);
                 }
+            }
+        }
+
+    public void teleportAvatar(float X, float Y, float Z)
+        {
+        Vector3f v3f = new Vector3f(X, Y, Z);
+        Quaternion quat = new Quaternion();
+        try
+            {
+            ClientContextJME.getClientMain().gotoLocation(null, v3f, quat);
+            }
+        catch (IOException ex)
+            {
+            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    public void teleportAvatar(float X, float Y, float Z, float rX, float rY, float rZ, float W)
+        {
+        Vector3f v3f = new Vector3f(X, Y, Z);
+        Quaternion quat = new Quaternion();
+        quat.fromAngleNormalAxis(W , new Vector3f(rX, rY, rZ));
+
+        try
+            {
+            ClientContextJME.getClientMain().gotoLocation(null, v3f, quat);
+            }
+        catch (IOException ex)
+            {
+            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    public void teleportAvatar(float X, float Y, float Z, float angleX, float angleY, float angleZ)
+        {
+        Vector3f v3f = new Vector3f(X, Y, Z);
+        Quaternion quat = new Quaternion();
+        quat.fromAngles((float) ((Math.PI / 180) * angleX), (float) ((Math.PI / 180) * angleY), (float) ((Math.PI / 180) * angleZ));
+
+        try
+            {
+            ClientContextJME.getClientMain().gotoLocation(null, v3f, quat);
+            }
+        catch (IOException ex)
+            {
+            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
