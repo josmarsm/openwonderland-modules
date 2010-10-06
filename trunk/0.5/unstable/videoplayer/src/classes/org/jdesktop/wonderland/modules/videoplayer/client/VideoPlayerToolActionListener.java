@@ -77,6 +77,11 @@ public interface VideoPlayerToolActionListener {
     public void forwardAction();
 
     /**
+     * Absolute position action
+     */
+    public void setPositionAction(double position);
+
+    /**
      * Toggle synchronized state action
      */
     public void syncAction();

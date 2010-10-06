@@ -51,7 +51,7 @@ public class VideoPlayerCellClientState extends App2DCellClientState {
     private int preferredWidth;
     private int preferredHeight;
     private boolean decorated;           // show window decorations?
-    private String checksum;
+    private long serverTime;
 
     public VideoPlayerCellClientState() {
         this(null);
@@ -109,20 +109,21 @@ public class VideoPlayerCellClientState extends App2DCellClientState {
         return decorated;
     }
 
-    /*
-     * Set the checksum
-     * @param checksum the checksum
+    /**
+     * Get the server's view of the current time, used for mapping state
+     * change times into local time values.
+     * @return the server's current time
      */
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
+    public long getServerTime() {
+        return serverTime;
     }
 
-    /*
-     * Get the checksum
-     * @return the checksum
+    /**
+     * Set the server's view of the current time.
+     * @param serverTime the server's view of the local time
      */
-    public String getChecksum() {
-        return checksum;
+    public void setServerTime(long serverTime) {
+        this.serverTime = serverTime;
     }
 
     /**

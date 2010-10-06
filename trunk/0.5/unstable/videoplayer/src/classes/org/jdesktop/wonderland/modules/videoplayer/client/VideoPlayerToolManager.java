@@ -263,6 +263,23 @@ public class VideoPlayerToolManager implements VideoPlayerToolActionListener {
     /**
      * {@inheritDoc}
      */
+    public void setPositionAction(final double position) {
+        if (videoPlayerWindow.isPlayable()) {
+            actionExecutor.execute(new Runnable() {
+                public void run() {
+                    if (videoPlayerWindow.isSynced()) {
+                        statusMap.put(VideoPlayerConstants.MEDIA_POSITION, SharedString.valueOf(Double.toString(position)));
+                    } else {
+                        videoPlayerWindow.setPosition(position);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public void syncAction() {
         actionExecutor.execute(new Runnable() {
 

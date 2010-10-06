@@ -40,6 +40,7 @@ import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import com.jme.math.Vector2f;
 import com.jme.math.Vector3f;
 import java.awt.BorderLayout;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
@@ -49,6 +50,7 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.hud.HUDMessage;
 import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
@@ -62,7 +64,7 @@ import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerActions;
  * @author nsimpson
  */
 @ExperimentalAPI
-public class VideoPlayerWindow extends WindowSwing implements VideoPlayer {
+public class VideoPlayerWindow extends Window2D implements VideoPlayer {
 
     /** The logger used by this class. */
     private static final Logger logger = Logger.getLogger(VideoPlayerWindow.class.getName());
@@ -74,7 +76,6 @@ public class VideoPlayerWindow extends WindowSwing implements VideoPlayer {
     private SharedMapCli statusMap;
     protected static final float ACTIVE_FRAME_RATE = 10.0f;
     protected static final float INACTIVE_FRAME_RATE = 2.0f;
-    private VideoPlayerPanel videoPlayerPanel;
     private VideoPlayerToolManager toolManager;
     private VideoPlayerControlPanel controls;
     private VideoMeter timeline;
@@ -96,13 +97,14 @@ public class VideoPlayerWindow extends WindowSwing implements VideoPlayer {
      */
     public VideoPlayerWindow(VideoPlayerCell cell, App2D app, int width, int height,
             boolean topLevel, Vector2f pixelScale)
-            throws InstantiationException {
-        super(app, Type.PRIMARY, width, height, topLevel, pixelScale);
+            throws InstantiationException 
+    {
+        super(app, Type.PRIMARY, width, height, topLevel, pixelScale,
+              new VideoDrawingSurface());
+
         this.cell = cell;
         setTitle(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/videoplayer/client/resources/Bundle").getString("VIDEO_PLAYER"));
 
-        videoPlayerPanel = new VideoPlayerPanel(this);
-        setComponent(videoPlayerPanel);
         initHUD();
         setDisplayMode(DisplayMode.HUD);
         showControls(false);
@@ -245,9 +247,9 @@ public class VideoPlayerWindow extends WindowSwing implements VideoPlayer {
                                 break;
                             case MEDIA_READY:
                                 timeline.setDuration(mediaPlayer.getDuration());
-                                videoPlayerPanel.showSource(mediaPlayer.getMedia());
-                                videoPlayerPanel.setConnected(true);
-                                videoPlayerPanel.resizeToFit(mediaPlayer.getFrameSize());
+                                //videoPlayerPanel.showSource(mediaPlayer.getMedia());
+                                //videoPlayerPanel.setConnected(true);
+                                //videoPlayerPanel.resizeToFit(mediaPlayer.getFrameSize());
                                 showHUDMessage(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/videoplayer/client/resources/Bundle").getString("LOADED"), 3000);
                                 if (isSynced()) {
                                     double position = Double.valueOf(((SharedString) statusMap.get(VideoPlayerConstants.MEDIA_POSITION)).getValue());
@@ -255,8 +257,12 @@ public class VideoPlayerWindow extends WindowSwing implements VideoPlayer {
                                     String state = ((SharedString) statusMap.get(VideoPlayerConstants.PLAYER_STATE)).getValue();
                                     if (state.equals(VideoPlayerActions.PLAY.name())) {
                                         long lastChange = Long.valueOf(((SharedString) statusMap.get(VideoPlayerConstants.STATE_CHANGE_TIME)).getValue());
+                                        
+                                        // apply the time difference
+                                        lastChange += cell.getTimeDiff();
+
                                         long current = System.currentTimeMillis();
-                                        logger.info("catch up estimate: " + ((double) (current - lastChange) / 1000d));
+                                        logger.warning("catch up estimate: " + ((double) (current - lastChange) / 1000d));
                                         setPosition(position + (double) (current - lastChange) / 1000d);
                                         play();
                                     } else if (state.equals(VideoPlayerActions.PAUSE.name())) {
@@ -286,7 +292,7 @@ public class VideoPlayerWindow extends WindowSwing implements VideoPlayer {
                     }
                 }
             });
-            mediaPlayer.addFrameListener(videoPlayerPanel);
+            mediaPlayer.addFrameListener((VideoDrawingSurface) getSurface());
         }
 
         if (!uri.equals(mediaPlayer.getMedia())) {
@@ -300,10 +306,10 @@ public class VideoPlayerWindow extends WindowSwing implements VideoPlayer {
             } catch (Exception e) {
                 logger.warning("failed to open video: " + e.toString());
                 showHUDMessage(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/videoplayer/client/resources/Bundle").getString("UNABLE_TO_OPEN_VIDEO"), 5000);
-                videoPlayerPanel.showSource(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/videoplayer/client/resources/Bundle").getString("UNABLE_TO_OPEN_VIDEO"));
-                videoPlayerPanel.setConnected(false);
+                //videoPlayerPanel.showSource(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/videoplayer/client/resources/Bundle").getString("UNABLE_TO_OPEN_VIDEO"));
+                //videoPlayerPanel.setConnected(false);
             }
-            videoPlayerPanel.repaint();
+            //videoPlayerPanel.repaint();
         }
     }
 
@@ -540,9 +546,8 @@ public class VideoPlayerWindow extends WindowSwing implements VideoPlayer {
             timeline = new VideoMeter();
             // listen for user actions on the timeline
             timeline.addTimeListener(new TimeListener() {
-
                 public void timeChanged(double newTime) {
-                    //mediaPlayer.setPosition(newTime);
+                    toolManager.setPositionAction(newTime);
                 }
             });
             controls.getPanel().add(timeline, BorderLayout.CENTER);

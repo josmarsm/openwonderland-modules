@@ -129,6 +129,7 @@ public class VideoPlayerCellMO extends App2DCellMO implements SharedMapListenerS
         ((VideoPlayerCellClientState) cellClientState).setPreferredWidth(preferredWidth);
         ((VideoPlayerCellClientState) cellClientState).setPreferredHeight(preferredHeight);
         ((VideoPlayerCellClientState) cellClientState).setDecorated(decorated);
+        ((VideoPlayerCellClientState) cellClientState).setServerTime(System.currentTimeMillis());
 
         return super.getClientState(cellClientState, clientID, capabilities);
     }
