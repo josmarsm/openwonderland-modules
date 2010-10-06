@@ -74,7 +74,10 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
     private int timeLabelHeight;
     private Point puckPosition = new Point();
     private Dimension labelBounds;
+    
     private boolean draggable = false;
+    private double dragTime;
+
     private List timeListeners;
 
     public VideoMeter() {
@@ -210,7 +213,7 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
         this.currentTime = (currentTime > timelineDuration) ? timelineDuration
                 : (currentTime < 0.0d) ? 0.0d : currentTime;
         repaint();
-        notifyTimeListeners(currentTime);
+        //notifyTimeListeners(currentTime);
     }
 
     /**
@@ -320,7 +323,14 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
      * @return the position of the puck in pixels
      */
     private Point getPuckPosition(Point point) {
-        point.x = leftMargin + labelBounds.width + labelGap + (int) ((currentTime / timelineDuration) * getTimelineWidth());
+        return getPuckPosition(point, currentTime);
+    }
+
+    /**
+     * Get the position of the puck for the given time
+     */
+    private Point getPuckPosition(Point point, double time) {
+        point.x = leftMargin + labelBounds.width + labelGap + (int) ((time / timelineDuration) * getTimelineWidth());
         point.y = topMargin + lineThickness / 2 - puckDiameter / 2;
 
         return point;
@@ -370,7 +380,13 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
         if (labelBounds == null) {
             labelBounds = getMaxLabelBounds();
         }
-        getPuckPosition(puckPosition);
+        
+        double time = currentTime;
+        if (draggable) {
+            time = dragTime;
+        }
+        
+        getPuckPosition(puckPosition, time);
 
         // set rendering quality
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -396,7 +412,7 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
         // draw the value
         g2.setColor(Color.WHITE);
         g2.setFont(font);
-        g2.drawString(getTimeAsString(currentTime), leftMargin, topMargin + lineThickness / 2 + labelBounds.height / 3);
+        g2.drawString(getTimeAsString(time), leftMargin, topMargin + lineThickness / 2 + labelBounds.height / 3);
 
         g2.setStroke(defaultStroke);
     }
@@ -447,21 +463,29 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
             // the mouse was pressed on the puck, allow the user to drag the
             // puck directly
             draggable = true;
+            dragTime = getPositionAsTime(evt.getX());
         } else {
             // the mouse was not pressed on the puck, move the puck to the
             // pressed position
-            setTime(getPositionAsTime(evt.getX()));
+            notifyTimeListeners(getPositionAsTime(evt.getX()));
         }
     }//GEN-LAST:event_formMousePressed
 
     private void formMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseReleased
+        if (draggable) {
+            notifyTimeListeners(dragTime);
+        }
+
         draggable = false;
     }//GEN-LAST:event_formMouseReleased
 
     private void formMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
-        if (draggable) {
-            setTime(getPositionAsTime(evt.getX()));
-        }
+        dragTime = getPositionAsTime(evt.getX());
+
+        // don't update until drag is finished
+        //if (draggable) {
+        //    notifyTimeListeners(getPositionAsTime(evt.getX()));
+        //}
     }//GEN-LAST:event_formMouseDragged
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables

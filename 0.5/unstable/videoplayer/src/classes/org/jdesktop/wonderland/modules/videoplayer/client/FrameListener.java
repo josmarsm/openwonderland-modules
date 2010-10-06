@@ -17,12 +17,28 @@
  */
 package org.jdesktop.wonderland.modules.videoplayer.client;
 
-import java.awt.image.BufferedImage;
+import com.xuggle.xuggler.IPixelFormat;
+import com.xuggle.xuggler.IVideoPicture;
 
 /**
  *
  * @author nsimpson
  */
 public interface FrameListener {
-    public void frameUpdate(BufferedImage frame);
+    public void openVideo(int videoWidth, int videoHeight,
+                          IPixelFormat.Type videoFormat);
+
+    public void previewFrame(IVideoPicture frame);
+    public void playVideo(FrameQueue queue);
+    public void stopVideo();
+
+    public void closeVideo();
+
+    public interface FrameQueue {
+        /**
+         * Get the next frame in the queue
+         * @return the next frame, or null if the current frame is active
+         */
+        public IVideoPicture nextFrame();
+    }
 }

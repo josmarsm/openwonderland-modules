@@ -52,6 +52,7 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 import org.jdesktop.wonderland.client.utils.VideoLibraryLoader;
 import org.jdesktop.wonderland.modules.videoplayer.client.VideoPlayerApp;
+import org.jdesktop.wonderland.modules.videoplayer.client.VideoPlayerImpl;
 import org.jdesktop.wonderland.modules.videoplayer.client.VideoPlayerWindow;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerConstants;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerActions;
@@ -67,12 +68,6 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
 
     private static final Logger logger = Logger.getLogger(VideoPlayerCell.class.getName());
     
-    // check whether video is available. Be sure to do this in the static
-    // initialize for the class, so we load the libraries before xuggler
-    // tries to
-    private static final boolean VIDEO_AVAILABLE = 
-            VideoLibraryLoader.loadVideoLibraries();
-
     // The (singleton) window created by the video player app
     private VideoPlayerWindow videoPlayerWindow;
     // the video player application
@@ -82,6 +77,9 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
     private SharedStateComponent ssc;
     private SharedMapCli statusMap;
     private VideoPlayerCellClientState clientState;
+
+    // difference from server time to our local time
+    private long timeDiff;
 
     /**
      * Create an instance of VideoPlayerCell.
@@ -98,7 +96,7 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
      * @return true if video is available or false if not
      */
     public static boolean isVideoAvailable() {
-        return VIDEO_AVAILABLE;
+        return VideoPlayerImpl.isVideoAvailable();
     }
 
     /**
@@ -110,6 +108,8 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
     public void setClientState(CellClientState state) {
         super.setClientState(state);
         clientState = (VideoPlayerCellClientState) state;
+
+        timeDiff = System.currentTimeMillis() - clientState.getServerTime();
     }
 
     /**
@@ -212,6 +212,16 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
         } else {
             logger.warning("unrecognized shared map: " + map.getName());
         }
+    }
+
+    /**
+     * Get the approximate time difference between the client and the server.
+     * This is used when guessing where to synchronize with the server, based
+     * on the last state change time recorded by the server.
+     * @return the approximate time difference
+     */
+    public long getTimeDiff() {
+        return timeDiff;
     }
 
     private void handleStatusChange(String key, SharedData oldData, SharedData newData) {
