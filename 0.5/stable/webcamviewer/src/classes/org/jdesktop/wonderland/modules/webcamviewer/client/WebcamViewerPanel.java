@@ -73,8 +73,9 @@ public class WebcamViewerPanel extends JPanel implements ExceptionReporter,
      * @param size the new size of the webcam panel
      */
     private void resizeToFit(final Dimension size) {
-        if ((size.getWidth() == 0) || (size.getHeight() == 0)) {
-            // don't allow the window to shrink to invisibility
+        //Fix for issue 118
+        if ((size.getWidth() <= 0) || (size.getHeight() <= 0)) {
+            //logger.warning("invalid dimensions for frame: " + size);
             return;
         }
 
