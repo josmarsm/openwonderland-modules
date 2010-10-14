@@ -46,6 +46,7 @@ import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 import org.jdesktop.wonderland.modules.webcamviewer.common.WebcamViewerConstants;
 import org.jdesktop.wonderland.modules.webcamviewer.common.WebcamViewerState;
@@ -94,6 +95,13 @@ public class WebcamViewerToolManager implements WebcamViewerToolListener {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             connectCameraPanel = new WebcamViewerConnectPanel();
             connectCameraComponent = mainHUD.createComponent(connectCameraPanel);
+            //Set the textfields of the panel according to the shared state
+            SharedString cameraURI = (SharedString) statusMap.get(WebcamViewerConstants.CAMERA_URI);
+            connectCameraPanel.setCameraURI(cameraURI.getValue());
+            SharedString cameraPassword = (SharedString) statusMap.get(WebcamViewerConstants.CAMERA_PASSWORD);
+            connectCameraPanel.setPassword(cameraPassword.getValue());
+            SharedString cameraUsername = (SharedString) statusMap.get(WebcamViewerConstants.CAMERA_USERNAME);
+            connectCameraPanel.setUsername(cameraUsername.getValue());
             connectCameraComponent.setPreferredLocation(Layout.CENTER);
             connectCameraComponent.setName(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcamviewer/client/resources/Bundle").getString("CONNECT_TO_WEBCAM"));
             connectCameraPanel.addActionListener(new ActionListener() {
