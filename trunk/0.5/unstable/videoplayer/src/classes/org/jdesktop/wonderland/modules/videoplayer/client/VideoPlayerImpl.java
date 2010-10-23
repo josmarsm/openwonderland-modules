@@ -1465,7 +1465,9 @@ public class VideoPlayerImpl implements VideoPlayer, TimedEventSource {
          */
         private void closeJavaSound() {
             // close the line.
-            line.close();
+            if (line != null) {
+                line.close();
+            }
         }
     }
 
