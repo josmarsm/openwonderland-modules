@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -17,7 +35,7 @@
  */
 package org.jdesktop.wonderland.modules.colladaavatar.client;
 
-import com.jme.scene.Spatial;
+import com.jme.scene.Node;
 import imi.character.CharacterParams;
 import imi.character.MaleAvatarParams;
 import imi.scene.PMatrix;
@@ -83,27 +101,31 @@ public class ColladaAvatarLoader implements AvatarLoaderSPI {
         attributes.setAnimateBody(false);
         attributes.setAnimateFace(false);
 
-        // Create the avatar character, but don't add it to the world just yet.
-        WlAvatarCharacter avatar =
-                new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm).addEntity(false).build();
-
         // Load the avatar using the new collada loading manager
-        Spatial spatial = null;
-        try {
-            URL url = new URL(baseURL + avatarURL);
-            DeployedModel dm = LoaderManager.getLoaderManager().getLoaderFromDeployment(url);
-            spatial = dm.getModelLoader().loadDeployedModel(dm, null);
-//            spatial.setLocalTranslation(0.0f, 1.0f, 0.0f);
-        } catch (MalformedURLException excp) {
-            logger.log(Level.WARNING, "Unable to for .dep URL", excp);
-            return null;
-        } catch (IOException excp) {
-            logger.log(Level.WARNING, "Error loading avatar model", excp);
-            return null;
+        Node node = null;
+        try
+        {
+          URL url = new URL(baseURL + avatarURL);
+          DeployedModel dm = LoaderManager.getLoaderManager().getLoaderFromDeployment(url);
+          node = dm.getModelLoader().loadDeployedModel(dm, null);
+        }
+        catch (MalformedURLException excp)
+        {
+          logger.log(Level.WARNING, "Unable to for .dep URL", excp);
+          return null;
+        }
+        catch (IOException excp)
+        {
+          logger.log(Level.WARNING, "Error loading avatar model", excp);
+          return null;
         }
 
-        avatar.getJScene().getExternalKidsRoot().attachChild(spatial);
-        avatar.getJScene().setExternalKidsChanged(true);
-        return avatar;
+        // Create the avatar character, but don't add it to the world just yet.
+        WlAvatarCharacter.WlAvatarCharacterBuilder builder =
+                new WlAvatarCharacter.WlAvatarCharacterBuilder(attributes, wm);
+        builder.addEntity(false);
+        builder.setSimpleStaticGeometry(node);
+
+        return builder.build();
     }
 }
