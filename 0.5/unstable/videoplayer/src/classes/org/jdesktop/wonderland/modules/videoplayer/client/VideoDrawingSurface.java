@@ -32,6 +32,7 @@ import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
+import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
@@ -139,7 +140,7 @@ public class VideoDrawingSurface implements DrawingSurface, FrameListener {
         if (getTexture() != null && getTexture().getTextureId() != 0) {
             SceneWorker.addWorker(new WorkCommit() {
                 public void commit() {
-                    renderFrame(picture);
+                    renderImage(resampleFrame(picture));
                 }
             });
         }
@@ -224,23 +225,23 @@ public class VideoDrawingSurface implements DrawingSurface, FrameListener {
         checkUpdating();
     }
 
-    protected synchronized void renderCurrentFrame() {
+    protected synchronized Image getCurrentFrame() {
         // double check that we are still updating
         if (!isUpdating()) {
-            return;
+            return null;
         }
 
         // get the next frame
         IVideoPicture currentFrame = queue.nextFrame();
         if (currentFrame == null) {
-            return;
+            return null;
         }
 
         // render the frame
-        renderFrame(currentFrame);
+        return resampleFrame(currentFrame);
     }
 
-    protected synchronized void renderFrame(IVideoPicture frame) {
+    protected synchronized Image resampleFrame(IVideoPicture frame) {
         // get the current resampler, checking if anything has changed
         // since we got it
         if (!checkResampler()) {
@@ -252,9 +253,11 @@ public class VideoDrawingSurface implements DrawingSurface, FrameListener {
         resampler.resample(textureFrame, frame);
 
         // create an image with the data from the resampler
-        Image i = new Image(Image.Format.RGB8, textureFrame.getWidth(),
-                            textureFrame.getHeight(), textureFrame.getByteBuffer());
+        return new Image(Image.Format.RGB8, textureFrame.getWidth(),
+                         textureFrame.getHeight(), textureFrame.getByteBuffer());
+    }
 
+    protected synchronized void renderImage(Image i) {
         // now draw the updated texture
         DisplaySystem.getDisplaySystem().getRenderer().updateTextureSubImage(
                 texture, 0, 0, i, 0, 0, i.getWidth(), i.getHeight());
@@ -321,10 +324,29 @@ public class VideoDrawingSurface implements DrawingSurface, FrameListener {
     }
 
     private class UpdateProcessor extends ProcessorComponent {
+        private Image frame;
+
         public void initialize() {}
-        public void compute(ProcessorArmingCollection collection) {}
-        public void commit(ProcessorArmingCollection collection) {
-            renderCurrentFrame();
+        
+        public synchronized void compute(ProcessorArmingCollection collection) {
+            // resample the frame to the correct aspect ratio, etc
+            frame = getCurrentFrame();
+        }
+        
+        public synchronized void commit(ProcessorArmingCollection collection) {
+            if (frame != null) {
+                // make sure to release the AWT lock to avoid deadlocks on
+                // Linux
+                RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+                rm.releaseSwingLock();
+
+                try {
+                    // draw the frame to the display
+                    renderImage(frame);
+                } finally {
+                    rm.acquireSwingLock();
+                }
+            }
         }
 
         private void start() {
