@@ -17,7 +17,7 @@
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
-        <path location="${modules.dir}/world/containercell/build/lib/common/container-cell-common.jar"/>
+        <path location="${modules.dir}/world/containercell/build/lib/client/container-cell-client.jar"/>
         <path location="${current.dir}/../layout-api/build/lib/layout-api.jar"/>
     </pathconvert>
 
