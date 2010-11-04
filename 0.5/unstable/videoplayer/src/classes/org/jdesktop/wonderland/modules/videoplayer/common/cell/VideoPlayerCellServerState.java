@@ -67,6 +67,11 @@ public class VideoPlayerCellServerState extends App2DCellServerState implements 
     // the time that the player state last changed
     @XmlElement(name = "stateChangedTime")
     public long stateChangedTime = System.currentTimeMillis();
+    // the volume level
+    @XmlElement(name = "volume")
+    public float volume = 1.0f;
+    // the audio radius, in meters
+    public float audioRadius = 30f;
 
     public VideoPlayerCellServerState() {
     }
@@ -118,5 +123,23 @@ public class VideoPlayerCellServerState extends App2DCellServerState implements 
     @XmlTransient
     public long getStateChangeTime() {
         return stateChangedTime;
+    }
+
+    public void setAudioRadius(float audioRadius) {
+        this.audioRadius = audioRadius;
+    }
+
+    @XmlTransient
+    public float getAudioRadius() {
+        return audioRadius;
+    }
+
+    public void setVolume(float volume) {
+        this.volume = volume;
+    }
+
+    @XmlTransient
+    public float getVolume() {
+        return volume;
     }
 }

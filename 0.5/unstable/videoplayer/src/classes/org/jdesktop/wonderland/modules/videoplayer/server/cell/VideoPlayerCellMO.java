@@ -82,6 +82,10 @@ public class VideoPlayerCellMO extends App2DCellMO implements SharedMapListenerS
     private VideoPlayerActions playerState = VideoPlayerActions.STOP;
     // the time that the player state last changed
     private long stateChangedTime = System.currentTimeMillis();
+    // the audio volume
+    private float volume;
+    // the audio radius
+    private float audioRadius;
 
     public VideoPlayerCellMO() {
         super();
@@ -105,16 +109,30 @@ public class VideoPlayerCellMO extends App2DCellMO implements SharedMapListenerS
         if (live) {
             // get or create the shared maps we use
             SharedMapSrv statusMap = sscRef.get().get(VideoPlayerConstants.STATUS_MAP);
-            statusMap.addSharedMapListener(this);
-
-            // put the current status
-            statusMap.put(VideoPlayerConstants.MEDIA_URI, SharedString.valueOf(mediaURI));
-            statusMap.put(VideoPlayerConstants.MEDIA_POSITION, SharedString.valueOf(mediaPosition));
-            statusMap.put(VideoPlayerConstants.PLAYER_STATE, SharedString.valueOf(playerState.name()));
-            statusMap.put(VideoPlayerConstants.STATE_CHANGE_TIME, SharedString.valueOf(String.valueOf(System.currentTimeMillis())));
-
+            statusMap.addSharedMapListener(this);    
             statusMapRef = AppContext.getDataManager().createReference(statusMap);
+
+            updateStatusMap();
         }
+    }
+
+    /**
+     * Update the status map with the latest values
+     */
+    protected void updateStatusMap() {
+        if (!isLive() || statusMapRef == null) {
+            return;
+        }
+
+        SharedMapSrv statusMap = statusMapRef.get();
+
+        // put the current status
+        statusMap.put(VideoPlayerConstants.MEDIA_URI, SharedString.valueOf(mediaURI));
+        statusMap.put(VideoPlayerConstants.MEDIA_POSITION, SharedString.valueOf(mediaPosition));
+        statusMap.put(VideoPlayerConstants.PLAYER_STATE, SharedString.valueOf(playerState.name()));
+        statusMap.put(VideoPlayerConstants.STATE_CHANGE_TIME, SharedString.valueOf(String.valueOf(System.currentTimeMillis())));
+        statusMap.put(VideoPlayerConstants.VOLUME, SharedString.valueOf(String.valueOf(volume)));
+        statusMap.put(VideoPlayerConstants.AUDIO_RADIUS, SharedString.valueOf(String.valueOf(audioRadius)));
     }
 
     /** 
@@ -147,6 +165,8 @@ public class VideoPlayerCellMO extends App2DCellMO implements SharedMapListenerS
         ((VideoPlayerCellServerState) state).setPreferredWidth(preferredWidth);
         ((VideoPlayerCellServerState) state).setPreferredHeight(preferredHeight);
         ((VideoPlayerCellServerState) state).setStateChangeTime(stateChangedTime);
+        ((VideoPlayerCellServerState) state).setVolume(volume);
+        ((VideoPlayerCellServerState) state).setAudioRadius(audioRadius);
 
         return super.getServerState(state);
     }
@@ -165,6 +185,10 @@ public class VideoPlayerCellMO extends App2DCellMO implements SharedMapListenerS
         decorated = state.getDecorated();
         pixelScale = new Vector2f(state.getPixelScaleX(), state.getPixelScaleY());
         stateChangedTime = state.getStateChangeTime();
+        volume = state.getVolume();
+        audioRadius = state.getAudioRadius();
+
+        updateStatusMap();
     }
 
     /**
@@ -196,6 +220,10 @@ public class VideoPlayerCellMO extends App2DCellMO implements SharedMapListenerS
             SharedMapSrv statusMap = sscRef.get().get(VideoPlayerConstants.STATUS_MAP);
             stateChangedTime = System.currentTimeMillis();
             statusMap.put(VideoPlayerConstants.STATE_CHANGE_TIME, SharedString.valueOf(String.valueOf(stateChangedTime)));
+        } else if (key.equals(VideoPlayerConstants.VOLUME)) {
+            volume = Float.valueOf(((SharedString) newData).getValue());
+        } else if (key.equals(VideoPlayerConstants.AUDIO_RADIUS)) {
+            audioRadius = Float.valueOf(((SharedString) newData).getValue());
         }
 
         return true;

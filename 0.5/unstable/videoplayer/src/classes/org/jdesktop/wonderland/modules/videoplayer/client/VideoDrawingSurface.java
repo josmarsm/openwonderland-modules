@@ -134,16 +134,10 @@ public class VideoDrawingSurface implements DrawingSurface, FrameListener {
         checkUpdating();
     }
 
-    public void previewFrame(final IVideoPicture picture) {
+    public void previewFrame(IVideoPicture picture) {
         this.previewFrame = picture;
-        
-        if (getTexture() != null && getTexture().getTextureId() != 0) {
-            SceneWorker.addWorker(new WorkCommit() {
-                public void commit() {
-                    renderImage(resampleFrame(picture));
-                }
-            });
-        }
+
+        SceneWorker.addWorker(new PreviewCommit());
     }
 
     public synchronized void stopVideo() {
@@ -168,13 +162,13 @@ public class VideoDrawingSurface implements DrawingSurface, FrameListener {
 
     public synchronized void setTexture(Texture texture) {
         this.texture = texture;
+        updateResampler = true;
 
         // new texture -- redisplay the preview frame (if any)
         if (previewFrame != null) {
             previewFrame(previewFrame);
         }
 
-        updateResampler = true;
         checkUpdating();
     }
 
@@ -260,7 +254,7 @@ public class VideoDrawingSurface implements DrawingSurface, FrameListener {
     protected synchronized void renderImage(Image i) {
         // now draw the updated texture
         DisplaySystem.getDisplaySystem().getRenderer().updateTextureSubImage(
-                texture, 0, 0, i, 0, 0, i.getWidth(), i.getHeight());
+                getTexture(), 0, 0, i, 0, 0, i.getWidth(), i.getHeight());
     }
 
     protected boolean checkResampler() {
@@ -320,6 +314,38 @@ public class VideoDrawingSurface implements DrawingSurface, FrameListener {
         if (updateEntity != null) {
             ClientContextJME.getWorldManager().removeEntity(updateEntity);
             updateEntity = null;
+        }
+    }
+
+    private class PreviewCommit implements WorkCommit {
+        public void commit() {
+            LOGGER.fine("Preview commit");
+
+            // make sure there is a frame to render
+            IVideoPicture picture;
+            synchronized (VideoDrawingSurface.this) {
+                if (previewFrame == null) {
+                    return;
+                }
+
+                picture = previewFrame;
+            }
+
+            // make sure there is a texture to render to
+            Texture t = getTexture();
+            if (t == null) {
+                return;
+            }
+
+            // if the texture ID has not yet been assigned, try again later
+            // in the hope that it will be assigned
+            if (t.getTextureId() == 0) {
+                SceneWorker.addWorker(this);
+                return;
+            }
+
+            // we are good to go -- render the frame
+            renderImage(resampleFrame(picture));
         }
     }
 

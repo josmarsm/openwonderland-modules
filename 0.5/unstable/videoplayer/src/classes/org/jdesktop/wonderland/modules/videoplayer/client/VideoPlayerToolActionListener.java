@@ -85,4 +85,9 @@ public interface VideoPlayerToolActionListener {
      * Toggle synchronized state action
      */
     public void syncAction();
+
+    /**
+     * Change local volume action
+     */
+    public void volumeAction();
 }
