@@ -120,6 +120,18 @@ public interface VideoPlayer {
     public boolean isMuted();
 
     /**
+     * Set the current volume
+     * @param volume the volume, normalized to between 0 and 1
+     */
+    public void setVolume(float volume);
+
+    /**
+     * Get the current volume
+     * @return the current volume, normalized to between 0 and 1
+     */
+    public float getVolume();
+
+    /**
      * Gets the state of the player
      * @return the player state
      */

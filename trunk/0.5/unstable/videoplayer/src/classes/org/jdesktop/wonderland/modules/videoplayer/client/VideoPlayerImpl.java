@@ -35,8 +35,6 @@
  *******************************************************************************/
 package org.jdesktop.wonderland.modules.videoplayer.client;
 
-import com.xuggle.xuggler.Global;
-import com.xuggle.xuggler.IAudioResampler;
 import com.xuggle.xuggler.IAudioSamples;
 import com.xuggle.xuggler.ICodec;
 import com.xuggle.xuggler.IContainer;
@@ -52,6 +50,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
@@ -60,7 +61,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.BooleanControl;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import org.jdesktop.wonderland.client.assetmgr.AssetInputStream;
@@ -274,16 +277,14 @@ public class VideoPlayerImpl implements VideoPlayer, TimedEventSource {
      * @param uri the URI of the video media to open
      */
     public void openMedia(final String uri) {
+        // close any media we currently have open
+        if (isPlayable()) {
+            closeMedia();
+        }
+                
         new Thread(new Runnable() {
-
             public void run() {
                 logger.warning("opening video: " + uri);
-
-                // close any media we currently have open
-                if (isPlayable()) {
-                    closeMedia();
-                }
-
                 String loadURI = uri;
 
                 try {
@@ -995,6 +996,14 @@ public class VideoPlayerImpl implements VideoPlayer, TimedEventSource {
         return audioQueue.isMuted();
     }
 
+    public void setVolume(float volume) {
+        audioQueue.setVolume(volume);
+    }
+
+    public float getVolume() {
+        return audioQueue.getVolume();
+    }
+
     /**
      * Sets the state of the player
      * @param mediaState the new player state
@@ -1261,11 +1270,15 @@ public class VideoPlayerImpl implements VideoPlayer, TimedEventSource {
         private boolean started = false;
         private boolean threadRunning = false;
         private boolean muted = false;
+        private float volume = 1.0f;
 
         public void open(IStreamCoder iAudioCoder)
                 throws LineUnavailableException
         {
             line = openJavaSound(iAudioCoder);
+
+            // sync up mute and volume
+            updateMute();
         }
 
         public void close() {
@@ -1301,11 +1314,6 @@ public class VideoPlayerImpl implements VideoPlayer, TimedEventSource {
         public synchronized void add(IAudioSamples inSamples) {
             logger.fine("Add audio packet at " + 
                         microsecondsToSeconds(inSamples.getTimeStamp()));
-
-            // make sure we aren't muted
-            if (isMuted()) {
-                return;
-            }
 
 //            // resample if necessary
 //            if (resampler != null) {
@@ -1361,11 +1369,30 @@ public class VideoPlayerImpl implements VideoPlayer, TimedEventSource {
         }
 
         public synchronized void setMuted(boolean muted) {
-            // this.muted = muted;
+            this.muted = muted;
+            updateMute();
         }
 
         public synchronized boolean isMuted() {
             return muted;
+        }
+
+        private void updateMute() {
+            if (line != null) {
+                BooleanControl mute = (BooleanControl)
+                        line.getControl(BooleanControl.Type.MUTE);
+                if (mute != null) {
+                    mute.setValue(isMuted());
+                }
+            }
+        }
+
+        public synchronized void setVolume(float volume) {
+            this.volume = volume;
+        }
+
+        public synchronized float getVolume() {
+            return this.volume;
         }
 
         public synchronized void setPosition(double position) {
@@ -1443,7 +1470,7 @@ public class VideoPlayerImpl implements VideoPlayer, TimedEventSource {
                     false);
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
             SourceDataLine out = (SourceDataLine) AudioSystem.getLine(info);
-           
+
             // try opening the line.
             out.open(audioFormat);
             return out;
@@ -1456,8 +1483,49 @@ public class VideoPlayerImpl implements VideoPlayer, TimedEventSource {
         private void play(byte[] rawBytes) {
             // we're just going to dump all the samples into the line
             if (line != null) {
+                // adjust the volume manually
+                rawBytes = adjustVolume(rawBytes, 0, rawBytes.length);
                 line.write(rawBytes, 0, rawBytes.length);
             }
+        }
+
+        /**
+         * Manually adjust the volume of a byte buffer. We do this since
+         * JavaSound volume controls don't always work, and the gain
+         * controls are unreliable.
+         * @param buffer the buffer to adjust (changes are made in place)
+         * @param offset the start of the buffer to adjust
+         * @param length the length of data to adjust
+         */
+        private byte[] adjustVolume(byte[] buffer, int offset, int length) {
+            float vol = getVolume();
+            if (vol == 1f) {
+                return buffer;
+            }
+
+            // create a buffer with the right endian-ness
+            ByteBuffer bb = ByteBuffer.wrap(buffer, offset, length);
+            bb.order(line.getFormat().isBigEndian()?ByteOrder.BIG_ENDIAN:ByteOrder.LITTLE_ENDIAN);
+
+            // turn into a short buffer
+            ShortBuffer sb = bb.asShortBuffer();
+
+            for (int i = sb.position(); i < sb.limit(); i++) {
+                // get the sample value
+                int sample = sb.get(i);
+
+                // multiply by the volume
+                sample *= vol;
+
+                // clamp to a short range
+                sample = Math.min(sample, Short.MAX_VALUE);
+                sample = Math.max(sample, Short.MIN_VALUE);
+
+                // set the sample value
+                sb.put(i, (short) sample);
+            }
+
+            return bb.array();
         }
 
         /**

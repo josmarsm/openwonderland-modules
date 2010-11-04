@@ -34,10 +34,24 @@
  */
 package org.jdesktop.wonderland.modules.videoplayer.client.cell;
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector2f;
+import com.jme.math.Vector3f;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.ProximityComponent;
+import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
@@ -50,7 +64,6 @@ import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedData;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
-import org.jdesktop.wonderland.client.utils.VideoLibraryLoader;
 import org.jdesktop.wonderland.modules.videoplayer.client.VideoPlayerApp;
 import org.jdesktop.wonderland.modules.videoplayer.client.VideoPlayerImpl;
 import org.jdesktop.wonderland.modules.videoplayer.client.VideoPlayerWindow;
@@ -64,10 +77,13 @@ import org.jdesktop.wonderland.modules.videoplayer.common.cell.VideoPlayerCellCl
  * @author nsimpson
  */
 @ExperimentalAPI
-public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
+public class VideoPlayerCell extends App2DCell 
+        implements SharedMapListenerCli, ProximityListener, ContextMenuActionListener
+{
+    private static final Logger LOGGER = Logger.getLogger(VideoPlayerCell.class.getName());
+    private static final ResourceBundle BUNDLE =
+            ResourceBundle.getBundle("org.jdesktop.wonderland.modules.videoplayer.client.resources.Bundle");
 
-    private static final Logger logger = Logger.getLogger(VideoPlayerCell.class.getName());
-    
     // The (singleton) window created by the video player app
     private VideoPlayerWindow videoPlayerWindow;
     // the video player application
@@ -77,6 +93,16 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
     private SharedStateComponent ssc;
     private SharedMapCli statusMap;
     private VideoPlayerCellClientState clientState;
+
+    @UsesCellComponent
+    private ContextMenuComponent contextMenu;
+    private final ContextMenuFactorySPI menuFactory;
+    private final ContextMenuItem muteItem;
+    private final ContextMenuItem playItem;
+    private final ContextMenuItem volumeItem;
+
+    @UsesCellComponent
+    private ProximityComponent proximity;
 
     // difference from server time to our local time
     private long timeDiff;
@@ -89,6 +115,23 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
      */
     public VideoPlayerCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
+
+        menuFactory = new ContextMenuFactorySPI() {
+            public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                muteItem.setLabel(videoPlayerWindow.isMuted() ?
+                    BUNDLE.getString("unmute") : BUNDLE.getString("mute"));
+                playItem.setLabel(videoPlayerWindow.isPlaying() ?
+                    BUNDLE.getString("STOP") : BUNDLE.getString("PLAY"));
+
+                return new ContextMenuItem[] {
+                    muteItem, playItem, volumeItem
+                };
+            }
+        };
+
+        muteItem = new SimpleContextMenuItem(BUNDLE.getString("mute"), this);
+        playItem = new SimpleContextMenuItem(BUNDLE.getString("PLAY"), this);
+        volumeItem = new SimpleContextMenuItem(BUNDLE.getString("volume"), this);
     }
 
     /**
@@ -97,6 +140,14 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
      */
     public static boolean isVideoAvailable() {
         return VideoPlayerImpl.isVideoAvailable();
+    }
+
+    /**
+     * Get the video player window
+     * @return the video player window
+     */
+    public VideoPlayerWindow getWindow() {
+        return videoPlayerWindow;
     }
 
     /**
@@ -152,6 +203,25 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
                     statusMap = ssc.get(VideoPlayerConstants.STATUS_MAP);
                     statusMap.addSharedMapListener(this);
 
+                    // add context menu listeners
+                    contextMenu.addContextMenuFactory(menuFactory);
+
+                    // initially set the cell to mute -- if we are close to
+                    // it, the proximity listener will unmute
+                    videoPlayerWindow.mute();
+
+                    // add proximity listener
+                    String audioRadius = statusMap.get(VideoPlayerConstants.AUDIO_RADIUS,
+                                                       SharedString.class).getValue();
+                    BoundingVolume bv = new BoundingSphere(Float.parseFloat(audioRadius),
+                                                           new Vector3f(0, 0, 0));
+                    proximity.addProximityListener(this, new BoundingVolume[] { bv });
+
+                    // get the current volume
+                    String volume = statusMap.get(VideoPlayerConstants.VOLUME,
+                                                  SharedString.class).getValue();
+                    videoPlayerWindow.setVolume(Float.parseFloat(volume));
+
                     // get the current video URI
                     SharedString documentURI = statusMap.get(VideoPlayerConstants.MEDIA_URI,
                             SharedString.class);
@@ -189,6 +259,12 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
                             }
                         });
                     }
+
+                    // remove context menu listeners
+                    contextMenu.removeContextMenuFactory(menuFactory);
+
+                    // remove the proximity listener
+                    proximity.removeProximityListener(this);
                 }
                 break;
         }
@@ -210,7 +286,37 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
             handleStatusChange(event.getPropertyName(), event.getOldValue(),
                     event.getNewValue());
         } else {
-            logger.warning("unrecognized shared map: " + map.getName());
+            LOGGER.warning("unrecognized shared map: " + map.getName());
+        }
+    }
+
+    public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID,
+                              BoundingVolume proximityVolume, int proximityIndex)
+    {
+        LOGGER.fine("View enter / exit: " + entered);
+
+        if (entered) {
+            videoPlayerWindow.unmute();
+        } else {
+            videoPlayerWindow.mute();
+        }
+    }
+
+    public void actionPerformed(ContextMenuItemEvent event) {
+        if (event.getContextMenuItem() == muteItem) {
+            if (videoPlayerWindow.isMuted()) {
+                videoPlayerWindow.unmute();
+            } else {
+                videoPlayerWindow.mute();
+            }
+        } else if (event.getContextMenuItem() == playItem) {
+            if (videoPlayerWindow.isPlaying()) {
+                videoPlayerWindow.getToolManager().stopAction();
+            } else {
+                videoPlayerWindow.getToolManager().playAction();
+            }
+        } else if (event.getContextMenuItem() == volumeItem) {
+            videoPlayerWindow.getToolManager().volumeAction();
         }
     }
 
@@ -236,15 +342,19 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
             handleMediaStateChanged(key, oldData, newData);
         } else if (key.equals(VideoPlayerConstants.STATE_CHANGE_TIME)) {
             // time of state change - ignored
-        } else {
-            logger.warning("unhandled status change event: " + key);
+        } else if (key.equals(VideoPlayerConstants.VOLUME)){
+            handleVolumeChange(key, oldData, newData);
+        } else if (key.equals(VideoPlayerConstants.AUDIO_RADIUS)) {
+            handleAudioRadiusChange(key, oldData, newData);
+        }  else {
+            LOGGER.warning("unhandled status change event: " + key);
         }
     }
 
     private void handleOpenMedia(String media, SharedData oldData, SharedData newData) {
         if ((newData != null) && videoPlayerWindow.isSynced()) {
             String mediaURI = ((SharedString) newData).getValue();
-            logger.fine("handle open media: " + mediaURI);
+            LOGGER.fine("handle open media: " + mediaURI);
             videoPlayerWindow.openMedia(mediaURI);
         }
     }
@@ -252,7 +362,7 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
     private void handleMediaPositionChanged(String media, SharedData oldData, SharedData newData) {
         if ((newData != null) && videoPlayerWindow.isSynced()) {
             Double position = Double.valueOf(((SharedString) newData).getValue());
-            logger.fine("handle set position: " + position);
+            LOGGER.fine("handle set position: " + position);
             videoPlayerWindow.setPosition(position);
         }
     }
@@ -260,7 +370,7 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
     private void handleMediaStateChanged(String key, SharedData oldData, SharedData newData) {
         if ((newData != null) && videoPlayerWindow.isSynced()) {
             String state = ((SharedString) newData).getValue();
-            logger.fine("handle state change: " + state);
+            LOGGER.fine("handle state change: " + state);
             if (state.equals(VideoPlayerActions.PLAY.name())) {
                 // play
                 videoPlayerWindow.play();
@@ -271,6 +381,23 @@ public class VideoPlayerCell extends App2DCell implements SharedMapListenerCli {
                 // stop
                 videoPlayerWindow.stop();
             } 
+        }
+    }
+
+    private void handleVolumeChange(String key, SharedData oldData, SharedData newData) {
+        if ((newData != null) && videoPlayerWindow.isSynced()) {
+            float volume = Float.parseFloat(((SharedString) newData).getValue());
+            videoPlayerWindow.setVolume(volume);
+        }
+    }
+
+    private void handleAudioRadiusChange(String key, SharedData oldData, SharedData newData) {
+        if (newData != null) {
+            proximity.removeProximityListener(this);
+
+            float audioRadius = Float.parseFloat(((SharedString) newData).getValue());
+            BoundingVolume bv = new BoundingSphere(audioRadius, new Vector3f(0, 0, 0));
+            proximity.addProximityListener(this, new BoundingVolume[] { bv });
         }
     }
 }

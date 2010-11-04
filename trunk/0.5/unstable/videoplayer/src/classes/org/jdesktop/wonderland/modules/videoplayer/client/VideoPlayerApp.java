@@ -90,10 +90,5 @@ public class VideoPlayerApp extends App2D implements ControlChangeListener {
      */
     public void updateControl(ControlArb controlArb) {
         videoPlayerWindow.showControls(controlArb.hasControl());
-        if (controlArb.hasControl()) {
-            videoPlayerWindow.unmute();
-        } else {
-            videoPlayerWindow.mute();
-        }
     }
 }

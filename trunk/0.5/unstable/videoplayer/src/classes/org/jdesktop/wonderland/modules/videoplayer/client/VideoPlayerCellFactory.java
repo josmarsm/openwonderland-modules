@@ -37,6 +37,8 @@ package org.jdesktop.wonderland.modules.videoplayer.client;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -50,12 +52,23 @@ import org.jdesktop.wonderland.modules.videoplayer.common.cell.VideoPlayerCellSe
  */
 @CellFactory
 public class VideoPlayerCellFactory implements CellFactorySPI {
+    private static final String[] EXTENSIONS = new String[] { 
+        "mov", "mp4", "avi", "ogg", "flv", "m4a", "3gp", "3g2", "mj2", "m4v",
+        "wmv"
+    };
 
     /**
      * {@inheritDoc}
      */
     public String[] getExtensions() {
-        return new String[]{"mov", "MOV"};
+        List<String> out = new ArrayList<String>(EXTENSIONS.length * 2);
+
+        for (String ext : EXTENSIONS) {
+            out.add(ext.toLowerCase());
+            out.add(ext.toUpperCase());
+        }
+        
+        return out.toArray(new String[out.size()]);
     }
 
     /**

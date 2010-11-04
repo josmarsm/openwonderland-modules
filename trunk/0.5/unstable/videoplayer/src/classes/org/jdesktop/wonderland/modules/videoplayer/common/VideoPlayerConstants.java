@@ -51,4 +51,8 @@ public class VideoPlayerConstants {
     public static final String MEDIA_POSITION = "media-position";
     // the key for the time the state last changed
     public static final String STATE_CHANGE_TIME = "state-change-time";
+    // the key for the volume to play audio at
+    public static final String VOLUME = "volume";
+    // the key for the radius within which audio should be heard
+    public static final String AUDIO_RADIUS = "audio-radius";
 }

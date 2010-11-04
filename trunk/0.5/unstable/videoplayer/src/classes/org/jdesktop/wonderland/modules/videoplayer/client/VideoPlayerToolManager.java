@@ -36,18 +36,21 @@ package org.jdesktop.wonderland.modules.videoplayer.client;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ResourceBundle;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDDialog;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
+import org.jdesktop.wonderland.modules.videoplayer.client.VideoPlayer.VideoPlayerState;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerConstants;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerActions;
 
@@ -58,15 +61,23 @@ import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerActions;
  */
 public class VideoPlayerToolManager implements VideoPlayerToolActionListener {
 
-    private static final Logger logger = Logger.getLogger(VideoPlayerToolManager.class.getName());
+    private static final Logger LOGGER =
+            Logger.getLogger(VideoPlayerToolManager.class.getName());
+    private static ResourceBundle BUNDLE =
+            ResourceBundle.getBundle("org/jdesktop/wonderland/modules/videoplayer/client/resources/Bundle");
+
     private VideoPlayerWindow videoPlayerWindow;
     private SharedMapCli statusMap;
     private HUDDialog openMediaComponent;
     private Executor actionExecutor = Executors.newSingleThreadExecutor();
 
+    private VolumeControlPanel volumeControlPanel;
+    private HUDComponent volumeComponent;
+
     VideoPlayerToolManager(VideoPlayerWindow videoPlayerWindow) {
         this.videoPlayerWindow = videoPlayerWindow;
         createOpenMediaDialog();
+        createVolumeComponent();
     }
 
     public void setSSC(SharedStateComponent ssc) {
@@ -99,7 +110,7 @@ public class VideoPlayerToolManager implements VideoPlayerToolActionListener {
         if (openMediaComponent == null) {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-            openMediaComponent = mainHUD.createDialog(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/videoplayer/client/resources/Bundle").getString("OPEN_VIDEO:"));
+            openMediaComponent = mainHUD.createDialog(BUNDLE.getString("OPEN_VIDEO:"));
             openMediaComponent.setPreferredLocation(Layout.CENTER);
             mainHUD.addComponent(openMediaComponent);
             openMediaComponent.addPropertyChangeListener(new PropertyChangeListener() {
@@ -123,6 +134,33 @@ public class VideoPlayerToolManager implements VideoPlayerToolActionListener {
                                 openMediaComponent.setVisible(false);
                             }
                         });
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Creates the dialog used to specify the URL of a video
+     */
+    private void createVolumeComponent() {
+        if (volumeComponent == null) {
+            HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+            volumeControlPanel = new VolumeControlPanel();
+            volumeComponent = mainHUD.createComponent(volumeControlPanel);
+            volumeComponent.setPreferredLocation(Layout.CENTER);
+            mainHUD.addComponent(volumeComponent);
+            volumeControlPanel.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent e) {
+                    if (e.getPropertyName().equals("done")) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                volumeComponent.setVisible(false);
+                            }
+                        });
+                    } else if (e.getPropertyName().equals("volume")) {
+                        videoPlayerWindow.setVolume((Float) e.getNewValue());
                     }
                 }
             });
@@ -171,7 +209,14 @@ public class VideoPlayerToolManager implements VideoPlayerToolActionListener {
 
                 public void run() {
                     if (videoPlayerWindow.isSynced()) {
-                        statusMap.put(VideoPlayerConstants.MEDIA_POSITION, SharedString.valueOf(Double.toString(videoPlayerWindow.getPosition())));
+                        double position = videoPlayerWindow.getPosition();
+                        if (videoPlayerWindow.getState() == VideoPlayerState.STOPPED) {
+                            // loop from the start if we were at the end of
+                            // the video
+                            position = 0d;
+                        }
+
+                        statusMap.put(VideoPlayerConstants.MEDIA_POSITION, SharedString.valueOf(Double.toString(position)));
                         statusMap.put(VideoPlayerConstants.PLAYER_STATE, SharedString.valueOf(VideoPlayerActions.PLAY.name()));
                     } else {
                         videoPlayerWindow.play();
@@ -194,7 +239,7 @@ public class VideoPlayerToolManager implements VideoPlayerToolActionListener {
                         // so we send the correct pause position to other clients
                         videoPlayerWindow.pause();
                         double current = videoPlayerWindow.getPosition();
-                        logger.fine("pausing at position: " + current);
+                        LOGGER.fine("pausing at position: " + current);
                         statusMap.put(VideoPlayerConstants.PLAYER_STATE, SharedString.valueOf(VideoPlayerActions.PAUSE.name()));
                         statusMap.put(VideoPlayerConstants.MEDIA_POSITION, SharedString.valueOf(Double.toString(current)));
                     } else {
@@ -291,6 +336,18 @@ public class VideoPlayerToolManager implements VideoPlayerToolActionListener {
                     // unsynced -> synced
                     videoPlayerWindow.sync(true);
                 }
+            }
+        });
+    }
+
+    /**
+     * {@inheritDOc}
+     */
+    public void volumeAction() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                volumeControlPanel.setVolume(videoPlayerWindow.getVolume());
+                volumeComponent.setVisible(true);
             }
         });
     }
