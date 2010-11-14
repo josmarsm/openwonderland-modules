@@ -22,8 +22,8 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry.PickBox;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.ImiPickGeometry;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.ImiPickGeometry.PickBox;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 
 /**
@@ -34,12 +34,12 @@ class PickGeometryEditor extends javax.swing.JFrame {
     private static final Logger logger =
             Logger.getLogger(PickGeometryEditor.class.getName());
 
-    private final PickGeometry geometry;
+    private final ImiPickGeometry geometry;
     private PickBox box;
     private boolean active = false;
 
     /** Creates new form PickGeometryEditor */
-    public PickGeometryEditor(PickGeometry geometry, PickBox box,
+    public PickGeometryEditor(ImiPickGeometry geometry, PickBox box,
                               WlAvatarCharacter avatar)
     {
         this.geometry = geometry;
