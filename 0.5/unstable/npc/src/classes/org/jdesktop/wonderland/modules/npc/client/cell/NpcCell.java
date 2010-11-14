@@ -86,9 +86,10 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.avatarbase.client.imi.ImiAvatarLoaderFactory;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME.AvatarChangedListener;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.ImiPickGeometry;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.ImiPickGeometry.PickBox;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry;
-import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.PickGeometry.PickBox;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigComponentServerState;
 import org.jdesktop.wonderland.modules.avatarbase.common.cell.AvatarConfigInfo;
@@ -146,10 +147,14 @@ public class NpcCell extends Cell
             frame.setVisible(true);
         } else if (event.getContextMenuItem().getLabel().equals("Pick Geometry...")) {
             PickGeometry pg = renderer.getPickGeometry();
-            for (Spatial s : pg.getChildren()) {
-                PickGeometryEditor editor = new PickGeometryEditor(pg, (PickBox) s, renderer.getAvatarCharacter());
-                editor.pack();
-                editor.setVisible(true);
+            if (pg instanceof  ImiPickGeometry) {
+                ImiPickGeometry ipg = (ImiPickGeometry) pg;
+
+                for (Spatial s : ipg.getChildren()) {
+                    PickGeometryEditor editor = new PickGeometryEditor(ipg, (PickBox) s, renderer.getAvatarCharacter());
+                    editor.pack();
+                    editor.setVisible(true);
+                }
             }
         }
     }
