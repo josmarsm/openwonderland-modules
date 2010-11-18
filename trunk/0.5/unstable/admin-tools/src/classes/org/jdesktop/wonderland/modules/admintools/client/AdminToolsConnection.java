@@ -32,8 +32,11 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.common.comms.ConnectionType;
 import org.jdesktop.wonderland.common.messages.Message;
 import org.jdesktop.wonderland.modules.admintools.common.AdminToolsConnectionType;
+import org.jdesktop.wonderland.modules.admintools.common.BroadcastMessage;
 import org.jdesktop.wonderland.modules.admintools.common.DisconnectMessage;
 import org.jdesktop.wonderland.modules.admintools.common.MuteMessage;
+import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClient;
+import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClientPlugin;
 
 /**
  * Connection type for admin tools
@@ -62,6 +65,9 @@ public class AdminToolsConnection extends BaseConnection {
             mainHUD.addComponent(hm);
             hm.setVisible(true);
             hm.setVisible(false, 10000);
+
+            // OWL issue #128: update the mute UI when we are forced mute
+            AudioManagerClientPlugin.getClient().forceMute();
         } else if (message instanceof DisconnectMessage) {
             LOGGER.warning("Disconnected");
 
@@ -75,6 +81,14 @@ public class AdminToolsConnection extends BaseConnection {
                     BUNDLE.getString("Disconnected_By"),
                     BUNDLE.getString("Disconnected"),
                     JOptionPane.ERROR_MESSAGE);
+        } else if (message instanceof BroadcastMessage) {
+            HUDMessage hm = mainHUD.createMessage(
+                    ((BroadcastMessage) message).getText(),
+                    MESSAGE_TYPE.INFO, BUTTONS.NONE);
+            hm.setPreferredLocation(Layout.NORTHEAST);
+            mainHUD.addComponent(hm);
+            hm.setVisible(true);
+            hm.setVisible(false, 10000);
         }
     }
 }

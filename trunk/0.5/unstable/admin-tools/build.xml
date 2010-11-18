@@ -22,6 +22,7 @@
         <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
+        <path location="${modules.dir}/tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
@@ -36,13 +37,22 @@
         <path location="${modules.dir}/foundation/security/build/lib/server/security-server.jar"/>
     </pathconvert>
 
+    <pathconvert property="module-web.classpath">
+        <path location="${wonderland.dir}/web/front/dist/wonderland-webadmin-core.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
+        <path location="${wonderland.dir}/web/runner/dist/wonderland-runner-api.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-client.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-common.jar"/>
+    </pathconvert>
+
 
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
-                                                -module-compile-client"/>
+                                                -module-compile-client,
+                                                -module-compile-web"/>
     
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
@@ -51,7 +61,7 @@
             <requires name="avatarbase" majorversion="0" minorversion="5" miniVersion="1"/>
             <requires name="security" majorversion="0" minorversion="5"/>
             <requires name="presencemanager" majorversion="0" minorversion="5"/>
-            <requires name="audiomanager" majorversion="0" minorversion="5"/>
+            <requires name="audiomanager" majorversion="0" minorversion="5" miniVersion="3"/>
 
             <client>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
@@ -71,6 +81,16 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
+
+            <part name="web">
+                <jar name="${module.name}.war">
+                    <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
+                        <include name="${module.src}/web/**"/>
+                        <include name="${module.src}/common/**"/>
+                    </zipfileset>
+                    <fileset dir="${current.dir}/web"/>
+                </jar>
+            </part>
 
             <art dir="${current.dir}/art"/>
         </module>
