@@ -20,8 +20,6 @@ package org.jdesktop.wonderland.modules.admintools.web.resources;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
@@ -31,10 +29,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.jdesktop.wonderland.modules.admintools.common.UserList;
-import org.jdesktop.wonderland.modules.admintools.common.UserList.User;
 import org.jdesktop.wonderland.modules.admintools.web.AdminToolsServletContainer;
 import org.jdesktop.wonderland.modules.admintools.web.AdminToolsWebConnection;
 
@@ -48,8 +45,15 @@ public class UsersResource {
     private static final Logger LOGGER =
             Logger.getLogger(UsersResource.class.getName());
 
+    // make sure results are not cached
+    private static final CacheControl NO_CACHE = new CacheControl();
+
     @Context
     private ServletContext context;
+
+    static {
+        NO_CACHE.setNoCache(true);
+    }
 
     @GET @Path("list")
     @Produces({"application/xml", "application/json"})
@@ -60,7 +64,7 @@ public class UsersResource {
         }
 
         try {
-            return Response.ok(conn.getUsers()).build();
+            return Response.ok(conn.getUsers()).cacheControl(NO_CACHE).build();
         } catch (InterruptedException ie) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
