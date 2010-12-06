@@ -50,7 +50,6 @@ import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.admintools.common.AdminToolsComponentClientState;
@@ -155,11 +154,10 @@ public class AdminToolsComponent extends CellComponent
 
         if (status == CellStatus.ACTIVE && increasing) {
             channel.addMessageReceiver(InvisibleMessage.class, this);
-
-            // setup invisibility if necessary
-            doSetInvisible(invisible);
         } else if (status == CellStatus.INACTIVE && !increasing) {
             channel.removeMessageReceiver(InvisibleMessage.class);
+        } else if (status == CellStatus.RENDERING && increasing) {
+            doSetInvisible(invisible);
         }
     }
 
@@ -175,7 +173,7 @@ public class AdminToolsComponent extends CellComponent
 
         this.invisible = invisible;
 
-        if (status.ordinal() < CellStatus.ACTIVE.ordinal()) {
+        if (status.ordinal() < CellStatus.RENDERING.ordinal()) {
             return;
         }
 

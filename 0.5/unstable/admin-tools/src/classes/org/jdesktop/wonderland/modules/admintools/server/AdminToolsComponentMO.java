@@ -17,31 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.admintools.server;
 
-import com.sun.mpk20.voicelib.app.Call;
-import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
-import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
-import com.sun.sgs.app.Task;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.security.ModifyAction;
 import org.jdesktop.wonderland.common.cell.security.ViewAction;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.modules.admintools.common.AdminToolsComponentClientState;
-import org.jdesktop.wonderland.modules.admintools.common.AdminToolsConnectionType;
 import org.jdesktop.wonderland.modules.admintools.common.DisconnectMessage;
 import org.jdesktop.wonderland.modules.admintools.common.InvisibleMessage;
 import org.jdesktop.wonderland.modules.admintools.common.MuteMessage;
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-import org.jdesktop.wonderland.modules.presencemanager.server.PresenceManagerSrv;
-import org.jdesktop.wonderland.modules.presencemanager.server.PresenceManagerSrvFactory;
 import org.jdesktop.wonderland.modules.security.common.ActionDTO;
 import org.jdesktop.wonderland.modules.security.common.Permission;
 import org.jdesktop.wonderland.modules.security.common.Permission.Access;
@@ -50,7 +39,6 @@ import org.jdesktop.wonderland.modules.security.common.Principal.Type;
 import org.jdesktop.wonderland.modules.security.common.SecurityComponentServerState;
 import org.jdesktop.wonderland.modules.security.server.SecurityComponentMO;
 import org.jdesktop.wonderland.modules.security.server.service.GroupMemberResource;
-import org.jdesktop.wonderland.server.WonderlandContext;
 import org.jdesktop.wonderland.server.auth.ClientIdentityManager;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
@@ -58,7 +46,6 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.NoSnapshot;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
-import org.jdesktop.wonderland.server.comms.CommsManager;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.security.ActionMap;
@@ -89,6 +76,11 @@ public class AdminToolsComponentMO extends CellComponentMO {
         super (cellMO);
         
         cellRef = AppContext.getDataManager().createReference(cellMO);
+        String invisibilityOverride = System.getProperty("wonderland.admintools.invisible");
+        if (invisibilityOverride != null) {
+            invisible = Boolean.parseBoolean(invisibilityOverride);
+            LOGGER.warning("Overriding invisibility to: " + invisible);
+    }
     }
 
     @Override
@@ -105,6 +97,7 @@ public class AdminToolsComponentMO extends CellComponentMO {
             channelRef.get().addMessageReceiver(InvisibleMessage.class, mr);
             channelRef.get().addMessageReceiver(MuteMessage.class, mr);
             channelRef.get().addMessageReceiver(DisconnectMessage.class, mr);
+            setInvisible(invisible);
         } else {
             channelRef.get().removeMessageReceiver(InvisibleMessage.class);
             channelRef.get().removeMessageReceiver(MuteMessage.class);
@@ -136,28 +129,7 @@ public class AdminToolsComponentMO extends CellComponentMO {
         LOGGER.warning("Handle invsible request for " + clientID.getID() +
                        " invisible: " + invisible.isInvisible());
 
-        SecurityComponentServerState scss = (SecurityComponentServerState)
-                securityRef.get().getServerState(null);
-
-        // make sure owner is set up
-        if (scss.getPermissions().getOwners().isEmpty()) {
-            ClientIdentityManager cim = AppContext.getManager(ClientIdentityManager.class);
-            WonderlandIdentity id = cim.getClientID();
-            scss.getPermissions().getOwners().add(
-                    new Principal(id.getUsername(), Type.USER));
-        }
-
-        // add or update the view permission for everyone
-        Permission perm = new Permission(
-                new Principal("users", Type.EVERYBODY),
-                new ActionDTO(new ViewAction()),
-                invisible.isInvisible()?Access.DENY:Access.GRANT);
-        
-        scss.getPermissions().getPermissions().remove(perm);
-        scss.getPermissions().getPermissions().add(perm);
-
-        // update the security component
-        securityRef.get().setServerState(scss);
+        setInvisible(invisible.isInvisible());
 
         // notify everyone who still sees the cell
         sender.send(invisible);
@@ -175,6 +147,33 @@ public class AdminToolsComponentMO extends CellComponentMO {
                     MuteMessage mute)
     {
         AdminToolsUtils.handleMute(sender, mute);
+    }
+
+    private void setInvisible(boolean invisible) {
+        LOGGER.warning("Handling invisibility");
+
+        SecurityComponentServerState scss = (SecurityComponentServerState)
+                securityRef.get().getServerState(null);
+
+        // make sure owner is set up
+        if (scss.getPermissions().getOwners().isEmpty()) {
+            ClientIdentityManager cim = AppContext.getManager(ClientIdentityManager.class);
+            WonderlandIdentity id = cim.getClientID();
+            scss.getPermissions().getOwners().add(
+                    new Principal(id.getUsername(), Type.USER));
+        }
+
+        // add or update the view permission for everyone
+        Permission perm = new Permission(
+                new Principal("users", Type.EVERYBODY),
+                new ActionDTO(new ViewAction()),
+                invisible?Access.DENY:Access.GRANT);
+        
+        scss.getPermissions().getPermissions().remove(perm);
+        scss.getPermissions().getPermissions().add(perm);
+
+        // update the security component
+        securityRef.get().setServerState(scss);
     }
 
     private static class MessageReceiver extends AbstractComponentMessageReceiver
