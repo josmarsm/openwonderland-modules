@@ -5,6 +5,7 @@
 
 package org.jdesktop.wonderland.modules.modulator.client;
 
+
 import com.jme.animation.AnimationController;
 import com.jme.animation.BoneAnimation;
 import com.jme.animation.BoneTransform;
@@ -13,7 +14,6 @@ import com.jme.math.Vector3f;
 import com.jme.scene.Controller;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
-import com.sun.scenario.animation.Animation;
 import java.io.IOException;
 import java.lang.String;
 import java.net.MalformedURLException;
@@ -22,15 +22,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
-import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderComponent;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.client.jme.cellrenderer.ModelRenderer;
 import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
+
 /**
  *
  * @author morris
@@ -40,6 +39,7 @@ public class ModulatorRenderer extends BasicRenderer
     private Node root = null;
     private ModulatorCell motherCell = null;
     private Entity mye = null;
+    private ArrayList vect = new ArrayList();
 
     public ModulatorRenderer(Cell cell)
         {
@@ -68,43 +68,57 @@ public class ModulatorRenderer extends BasicRenderer
             if(spatial instanceof Node)
                 {
                 System.out.println("Node controller count = " + spatial.getControllerCount());
-/*                if(spatial.getControllerCount() > 0)
+                if(spatial.getControllerCount() > 0)
                     {
+                    System.out.println("Found a node with a controller " + spatial);
+                    
+
                     ArrayList al = spatial.getControllers();
-                    System.out.println("Controller = " + al.get(0).toString());
+
+ //                   System.out.println("Controller = " + al.get(0).toString());
                     Controller co = spatial.getController(0);
-                    float max = co.getMaxTime();
-                    float min = co.getMinTime();
+//                    float max = co.getMaxTime();
+//                    float min = co.getMinTime();
                     AnimationController ac = (AnimationController)co;
                     ArrayList bans = ac.getAnimations();
-                    System.out.println(" bans 0 - " + bans.get(0));
-                    BoneAnimation ani = ac.getAnimation(bans.get(0).toString());
-                    float kft[] = ani.getKeyFrameTimes();
-                    for(int i = 0; i < kft.length; i++)
+                    if(bans != null)
                         {
-                        System.out.println("kft - " + kft[i]);
-                        }
-                    ArrayList<BoneTransform> bt = ani.getBoneTransforms();
-                    System.out.println("bt size = " + bt.size());
-                    for(int j = 0; j < bt.size(); j++)
-                        {
-                        System.out.println("bt = " + bt.get(j).toString());
+//                        System.out.println("%%%%%%%%%% - bans = " + bans.size());
+                        ModulatorANode man = new ModulatorANode();
+                        man.nodeName = spatial.getName();
+                        vect.add(man);
                         
-                        }
-                    Quaternion qt[] = bt.get(0).getRotations();
-                    for(int i = 0; i < qt.length; i++)
-                        {
-                        System.out.println("rots = " + qt[i]);
-                        }
-                    System.out.println(" start frame = " + ani.getStartFrame() + " - end frame = " + ani.getEndFrame());
-                    Vector3f v3f[] = bt.get(0).getTranslations();
-                    for(int i = 0; i < v3f.length; i++)
-                        {
-                        System.out.println("trans = " + v3f[i]);
+/*                        System.out.println(" bans 0 - " + bans.get(0));
+                        BoneAnimation ani = ac.getAnimation(bans.get(0).toString());
+                        float kft[] = ani.getKeyFrameTimes();
+                        for(int i = 0; i < kft.length; i++)
+                            {
+                            System.out.println("kft - " + kft[i]);
+                            }
+                        ArrayList<BoneTransform> bt = ani.getBoneTransforms();
+                        System.out.println("bt size = " + bt.size());
+                        for(int j = 0; j < bt.size(); j++)
+                            {
+                            System.out.println("bt = " + bt.get(j).toString());
+                        
+                            }
+                        Quaternion qt[] = bt.get(0).getRotations();
+                        for(int i = 0; i < qt.length; i++)
+                            {
+                            System.out.println("rots = " + qt[i]);
+                            }
+                        System.out.println(" start frame = " + ani.getStartFrame() + " - end frame = " + ani.getEndFrame());
+                        Vector3f v3f[] = bt.get(0).getTranslations();
+                        for(int i = 0; i < v3f.length; i++)
+                            {
+                            System.out.println("trans = " + v3f[i]);
+                            }
+ */
                         }
                     }
-*/
+
                 printTree((Node)spatial, indent + 1);
+                    
                 }
             else
                 {
@@ -125,6 +139,11 @@ public class ModulatorRenderer extends BasicRenderer
             }
         }
 
+    public void releaseNodeList()
+        {
+        vect.clear();
+        }
+
     protected Node createSceneGraph(Entity entity)
         {
         try
@@ -139,6 +158,7 @@ public class ModulatorRenderer extends BasicRenderer
             theModel.setLocalTranslation(0, 0, 0.3f);
             root.attachChild(theModel);
             root.setName("Cell_" + cell.getCellID() + ":" + cell.getName());
+            releaseNodeList();
             printTree(root, 2);
 //            SceneMonitor.getMonitor().registerNode(root);
 //            SceneMonitor.getMonitor().showViewer(true);
@@ -164,6 +184,12 @@ public class ModulatorRenderer extends BasicRenderer
         {
         return mye;
         }
+
+        public ArrayList getVect()
+        {
+        return vect;
+        }
+
     }
 
 

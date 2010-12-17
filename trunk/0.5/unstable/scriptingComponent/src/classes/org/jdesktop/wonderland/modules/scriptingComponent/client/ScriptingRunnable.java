@@ -28,6 +28,8 @@ public class ScriptingRunnable implements Runnable
     public String string3;
     public String string4;
     public String string5;
+    public String string6;
+    public String string7;
     public Vector3f animationStartTranslate;
     public float[] animationStartRotation;
     public int animationTimeMultiplier;
@@ -101,6 +103,27 @@ public class ScriptingRunnable implements Runnable
         string5 = five;
         }
 
+    public void set6Strings(String one, String two, String three, String four, String five, String six)
+        {
+        string1 = one;
+        string2 = two;
+        string3 = three;
+        string4 = four;
+        string5 = five;
+        string6 = six;
+        }
+
+    public void set7Strings(String one, String two, String three, String four, String five, String six, String seven)
+        {
+        string1 = one;
+        string2 = two;
+        string3 = three;
+        string4 = four;
+        string5 = five;
+        string6 = six;
+        string7 = seven;
+        }
+
     public void setSingleInt(int A)
         {
         a = A;
@@ -114,6 +137,7 @@ public class ScriptingRunnable implements Runnable
     public void setAnimationStartRotation(float[] startRotation)
         {
         animationStartRotation = startRotation;
+        System.out.println("Start rotation from runnable = " + animationStartRotation);
         }
 
     public void setAnimationTimeMultiplier(int timeMultiplier)

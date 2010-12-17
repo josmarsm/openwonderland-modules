@@ -205,7 +205,7 @@ public class ModulatorThreeNodes
         Tani = Tac.getAnimation(0);
         Tkft = Tani.getKeyFrameTimes();
         if(traceLoad)
-            System.out.println("node1Tkft size = " + Tkft.length);
+            System.out.println("node2Tkft size = " + Tkft.length);
 
 // Make storage for the transforms at each keyframe
 
@@ -327,7 +327,7 @@ public class ModulatorThreeNodes
         Tani = Tac.getAnimation(0);
         Tkft = Tani.getKeyFrameTimes();
         if(traceLoad)
-            System.out.println("node1Tkft size = " + Tkft.length);
+            System.out.println("node3Tkft size = " + Tkft.length);
 
 // Make storage for the transforms at each keyframe
 

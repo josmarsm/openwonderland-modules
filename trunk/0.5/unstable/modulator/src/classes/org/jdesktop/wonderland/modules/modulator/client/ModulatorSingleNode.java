@@ -34,12 +34,16 @@ public class ModulatorSingleNode
     private float[] angleZ;
     private Quaternion[] keyFrames;
     private Vector3f[] keyTrans;
-    private int aniSpeedMultiplier;
-
-    public ModulatorSingleNode(ModulatorRenderer Renderer, String nodeName, int speedMultiplier)
+    private Vector3f animationStartTranslate;
+    private float[] animationStartRotation;
+    private int animationTimeMultiplier;
+    private int animationStartKeyframe = 0;
+    private int animationEndKeyframe = 0;
+    private int animationIceCode = 0;
+    
+    public ModulatorSingleNode(ModulatorRenderer Renderer, String nodeName)
         {
         renderer = Renderer;
-        aniSpeedMultiplier = speedMultiplier;
 
         theSpatial = renderer.getNode(nodeName);
 
@@ -155,9 +159,13 @@ public class ModulatorSingleNode
             {
             Timeline t = new Timeline(this);
             t.addPropertyToInterpolate("Quat", keyFrames[j], keyFrames[j + 1], new ModulatorQuaternionInterpolator());
+
+            Vector3f tempVec = new Vector3f(keyTrans[j].x + animationStartTranslate.x, keyTrans[j].y + animationStartTranslate.y, keyTrans[j].z + animationStartTranslate.z);
+            Vector3f tempVecPlus = new Vector3f(keyTrans[j + 1].x + animationStartTranslate.x, keyTrans[j + 1].y + animationStartTranslate.y, keyTrans[j + 1].z + animationStartTranslate.z);
+            t.addPropertyToInterpolate("Node1Trans", tempVec, tempVecPlus, new ModulatorVectorInterpolator());
             t.addPropertyToInterpolate("Trans", keyTrans[j], keyTrans[j + 1], new ModulatorVectorInterpolator());
 //        t.setEase(new Spline(0.4f));
-            t.setDuration((long)(Tkft[j + 1] - Tkft[j]) * 1000 * aniSpeedMultiplier);
+            t.setDuration(((long)(Tkft[j + 1] - Tkft[j]) * 1000) * animationTimeMultiplier);
             result.addScenarioActor(t);
             }
 
@@ -198,5 +206,34 @@ public class ModulatorSingleNode
         {
         theSpatial.setLocalTranslation(newTrans);
         ClientContextJME.getWorldManager().addToUpdateList(theSpatial);
+        }
+
+    public void setAnimationStartTranslate(Vector3f startTranslate)
+        {
+        animationStartTranslate = startTranslate;
+        }
+
+    public void setAnimationStartRotation(float[] startRotation)
+        {
+        animationStartRotation = startRotation;
+        }
+
+    public void setAnimationTimeMultiplier(int timeMultiplier)
+        {
+        animationTimeMultiplier = timeMultiplier;
+        }
+    public void setAnimationStartKeyframe(int start)
+        {
+        animationStartKeyframe = start;
+        }
+
+    public void setAnimationEndKeyframe(int end)
+        {
+        animationEndKeyframe = end;
+        }
+
+    public void setAnimationIceCode(int code)
+        {
+        animationIceCode = code;
         }
     }
