@@ -123,6 +123,9 @@ class properties extends javax.swing.JFrame {
         jTextAvatarZ = new javax.swing.JTextField();
         jTextAvatarX = new javax.swing.JTextField();
         jButtonGetAvatarLocation = new javax.swing.JButton();
+        jCheckWrapperType = new javax.swing.JCheckBox();
+        jComboWrapperType = new javax.swing.JComboBox();
+        jButtonGenerateWrapper = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -243,7 +246,7 @@ class properties extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(121, Short.MAX_VALUE))
+                .addContainerGap(105, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Edit", jPanel1);
@@ -341,7 +344,7 @@ class properties extends javax.swing.JFrame {
                         .addComponent(jScriptsRetrieve)
                         .addGap(18, 18, 18)
                         .addComponent(jScriptsExit)))
-                .addContainerGap(98, Short.MAX_VALUE))
+                .addContainerGap(84, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Script Properties", jPanel2);
@@ -533,14 +536,14 @@ class properties extends javax.swing.JFrame {
                                     .addComponent(jButtonRetrievePath)
                                     .addComponent(jButtonWriteFile)))
                             .addComponent(jRadioPath))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 74, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addComponent(jLabelNPCName)
                                 .addGap(36, 36, 36)
-                                .addComponent(jTextNPCName, javax.swing.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
+                                .addComponent(jTextNPCName, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
                                 .addGap(168, 168, 168))
                             .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addComponent(jLabelPath)
@@ -552,21 +555,17 @@ class properties extends javax.swing.JFrame {
                                     .addGroup(jPanel4Layout.createSequentialGroup()
                                         .addComponent(jTextCurrentFile, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
                                         .addGap(36, 36, 36)))))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCheckWebdav))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jCheckUseAudio)
-                            .addComponent(jCheckUseGoto)
-                            .addComponent(jCheckUseICE)
-                            .addComponent(jCheckUseChat)
-                            .addComponent(jCheckUseAnimation)
-                            .addComponent(jButtonShowPath)
-                            .addComponent(jButtonHidePath)
-                            .addComponent(jButtonTestPath))))
+                    .addComponent(jCheckWebdav)
+                    .addComponent(jCheckUseAudio)
+                    .addComponent(jCheckUseGoto)
+                    .addComponent(jCheckUseICE)
+                    .addComponent(jCheckUseChat)
+                    .addComponent(jCheckUseAnimation)
+                    .addComponent(jButtonShowPath)
+                    .addComponent(jButtonHidePath)
+                    .addComponent(jButtonTestPath))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
@@ -616,7 +615,7 @@ class properties extends javax.swing.JFrame {
                     .addComponent(jLabelNPCName)
                     .addComponent(jTextNPCName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButtonTestPath))
-                .addContainerGap(7, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -752,9 +751,7 @@ class properties extends javax.swing.JFrame {
                                     .addGroup(jPanel6Layout.createSequentialGroup()
                                         .addComponent(jLabelChatFrom)
                                         .addGap(26, 26, 26))
-                                    .addGroup(jPanel6Layout.createSequentialGroup()
-                                        .addComponent(jTextChatFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)))
+                                    .addComponent(jTextChatFrom, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGap(18, 18, 18)
                                 .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 282, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jLabelICEMessage)
@@ -796,7 +793,7 @@ class properties extends javax.swing.JFrame {
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButtonWriteThisChat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButtonRetrieveThisChat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -867,13 +864,19 @@ class properties extends javax.swing.JFrame {
             }
         });
 
+        jCheckWrapperType.setText("Create Wrapper");
+
+        jComboWrapperType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jButtonGenerateWrapper.setText("Generate Wrapper");
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addComponent(jButtonGetAvatarLocation)
-                .addContainerGap(120, Short.MAX_VALUE))
+                .addContainerGap(149, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -890,6 +893,15 @@ class properties extends javax.swing.JFrame {
                             .addComponent(jTextAvatarY)
                             .addComponent(jTextAvatarX, javax.swing.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE))))
                 .addContainerGap(65, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButtonGenerateWrapper)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addComponent(jCheckWrapperType)
+                        .addGap(18, 18, 18)
+                        .addComponent(jComboWrapperType, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -908,7 +920,13 @@ class properties extends javax.swing.JFrame {
                     .addComponent(jTextAvatarZ, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButtonGetAvatarLocation)
-                .addContainerGap(198, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jCheckWrapperType)
+                    .addComponent(jComboWrapperType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jButtonGenerateWrapper)
+                .addContainerGap(121, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -947,7 +965,7 @@ class properties extends javax.swing.JFrame {
                         .addComponent(jLabel1))
                     .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(62, Short.MAX_VALUE))
+                .addContainerGap(42, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Robot", jPanel3);
@@ -1179,6 +1197,7 @@ class properties extends javax.swing.JFrame {
         jCheckUseICE.setEnabled(true);
         jButtonWriteFile.setText("Write Robot File");
         jButtonRetrievePath.setText("Retrieve Robot File");
+        jButtonRetrievePathFiles.setText("Retrieve Robot Files");
         jLabelPath.setText("Robot File");
         jLabelNPCName.setEnabled(true);
         jTextNPCName.setEnabled(true);
@@ -1456,15 +1475,31 @@ class properties extends javax.swing.JFrame {
 
     private void jButtonRetrievePathFilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetrievePathFilesActionPerformed
         jButtonRewriteStep.setEnabled(false);
-        Vector v = getFileList("paths", 1);
-
-        jComboPathFiles.removeAllItems();
-        for(Enumeration e = v.elements(); e.hasMoreElements();)
+        if(jRadioPath.isSelected() == true)
             {
-            String myString = (String) e.nextElement();
-            System.out.println("Item = " + myString);
+            Vector v = getFileList("paths", 1);
 
-            jComboPathFiles.addItem(myString);
+            jComboPathFiles.removeAllItems();
+            for(Enumeration e = v.elements(); e.hasMoreElements();)
+                {
+                String myString = (String) e.nextElement();
+                jComboPathFiles.addItem(myString);
+                }
+            }
+        else
+            {
+            if(jRadioRobot.isSelected() == true)
+                {
+                Vector v = getFileList("robots", 1);
+
+                jComboPathFiles.removeAllItems();
+                for(Enumeration e = v.elements(); e.hasMoreElements();)
+                    {
+                    String myString = (String) e.nextElement();
+                    jComboPathFiles.addItem(myString);
+                    }
+                }
+
             }
 
     }//GEN-LAST:event_jButtonRetrievePathFilesActionPerformed
@@ -1526,12 +1561,25 @@ class properties extends javax.swing.JFrame {
         String theText = jTextRootSteps.getText();
         String[] result = theText.split(newline);
 
-        for(int i = 0; i < result.length; i++)
+        if(jRadioPath.isSelected() == true)
             {
-            String[] innerResult = result[i].split(":");
-            createCellInstance("org.jdesktop.wonderland.modules.waypost.common.waypostCellServerState", Float.valueOf(innerResult[0]), 1.0f, Float.valueOf(innerResult[2]), "waypost" + i);
+            for(int i = 0; i < result.length; i++)
+                {
+                String[] innerResult = result[i].split(":");
+                createCellInstance("org.jdesktop.wonderland.modules.waypost.common.waypostCellServerState", Float.valueOf(innerResult[0]), 1.0f, Float.valueOf(innerResult[2]), "waypost" + i);
+                }
             }
-
+        else
+            {
+            if(jRadioRobot.isSelected() == true)
+                {
+                for(int i = 0; i < result.length; i++)
+                    {
+                    String[] innerResult = result[i].split(":");
+                    createCellInstance("org.jdesktop.wonderland.modules.waypost.common.waypostCellServerState", Float.valueOf(innerResult[1]), 1.0f, Float.valueOf(innerResult[3]), "waypost" + i);
+                    }
+                }
+            }
 }//GEN-LAST:event_jButtonShowPathActionPerformed
 
     private void jButtonHidePathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonHidePathActionPerformed
@@ -1596,7 +1644,17 @@ class properties extends javax.swing.JFrame {
 }//GEN-LAST:event_jCheckMaleAnimationActionPerformed
 
     private void jButtonTestPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonTestPathActionPerformed
-        playPath(jTextCurrentFile.getText());
+        if(jRadioPath.isSelected() == true)
+            {
+            playPath(jTextCurrentFile.getText());
+            }
+        else
+            {
+            if(jRadioRobot.isSelected() == true)
+                {
+                playRobot(jTextCurrentFile.getText());
+                }
+            }
     }//GEN-LAST:event_jButtonTestPathActionPerformed
 
     public static void setScriptContext(ScriptContext ctx)
@@ -2160,6 +2218,24 @@ class properties extends javax.swing.JFrame {
             e.printStackTrace();
             }
         }
+
+    private void playRobot(String name)
+        {
+        try
+            {
+            Class partypes[] = new Class[1];
+            partypes[0] = name.getClass();
+            Method meth = sc.getMethod("playRobot", partypes);
+            Object arglist[] = new Object[1];
+            arglist[0] = name;
+            meth.invoke(myClassObject, arglist);
+            }
+        catch(Exception e)
+            {
+            System.out.println("Exception for playRobot");
+            e.printStackTrace();
+            }
+        }
   
     /**
      * @param args the command line arguments
@@ -2186,6 +2262,7 @@ class properties extends javax.swing.JFrame {
     private javax.swing.ButtonGroup buttonGroupPath;
     private javax.swing.JButton jButtonCreateStep;
     private javax.swing.JButton jButtonEditStep;
+    private javax.swing.JButton jButtonGenerateWrapper;
     private javax.swing.JButton jButtonGetAvatarLocation;
     private javax.swing.JButton jButtonHidePath;
     private javax.swing.JButton jButtonPlayClip;
@@ -2208,11 +2285,13 @@ class properties extends javax.swing.JFrame {
     private javax.swing.JCheckBox jCheckUseICE;
     private javax.swing.JCheckBox jCheckUserScripts;
     private javax.swing.JCheckBox jCheckWebdav;
+    private javax.swing.JCheckBox jCheckWrapperType;
     private javax.swing.JComboBox jComboAnimation;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JComboBox jComboChatFiles;
     private javax.swing.JComboBox jComboPathFiles;
     private javax.swing.JComboBox jComboSoundFiles;
+    private javax.swing.JComboBox jComboWrapperType;
     private javax.swing.JButton jEditExit;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

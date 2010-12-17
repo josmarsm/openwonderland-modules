@@ -116,7 +116,7 @@ import org.mortbay.jetty.servlet.ServletHolder;
 @ExperimentalAPI
 public class ScriptingComponent extends CellComponent
     {
-    private int traceLevel = 1;
+    private int traceLevel = 5;
     private Node localNode = null;
     public String stateString[] = {null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null};
     public int stateInt[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -768,6 +768,12 @@ public class ScriptingComponent extends CellComponent
             System.out.println("ScriptingComponent - enter executeAction - no parms");
             }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.setAnimationStartTranslate(animationStartTranslate);
+        runny.setAnimationStartRotation(animationStartRotation);
+        runny.setAnimationTimeMultiplier(animationTimeMultiplier);
+        runny.setAnimationStartKeyframe(animationStartKeyframe);
+        runny.setAnimationEndKeyframe(animationEndKeyframe);
+        runny.setAnimationIceCode(animationIceCode);
         runny.run();
         }
 
@@ -861,6 +867,47 @@ public class ScriptingComponent extends CellComponent
         runny.run();
         }
 
+    public void executeAction(String Name, String one, String two, String three, String four, String five, String six)
+        {
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - 6 String params");
+            }
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.set6Strings(one, two, three, four, five, six);
+        runny.setAnimationStartTranslate(animationStartTranslate);
+        runny.setAnimationStartRotation(animationStartRotation);
+        runny.setAnimationTimeMultiplier(animationTimeMultiplier);
+        runny.setAnimationStartKeyframe(animationStartKeyframe);
+        runny.setAnimationEndKeyframe(animationEndKeyframe);
+        runny.setAnimationIceCode(animationIceCode);
+        runny.run();
+        }
+
+    public void executeAction(String Name, String one, String two, String three, String four, String five, String six, String seven)
+        {
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - 7 String params");
+            System.out.println("1 = " + one);
+            System.out.println("2 = " + two);
+            System.out.println("3 = " + three);
+            System.out.println("4 = " + four);
+            System.out.println("5 = " + five);
+            System.out.println("6 = " + six);
+            System.out.println("7 = " + seven);
+            }
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.set7Strings(one, two, three, four, five, six, seven);
+        runny.setAnimationStartTranslate(animationStartTranslate);
+        runny.setAnimationStartRotation(animationStartRotation);
+        runny.setAnimationTimeMultiplier(animationTimeMultiplier);
+        runny.setAnimationStartKeyframe(animationStartKeyframe);
+        runny.setAnimationEndKeyframe(animationEndKeyframe);
+        runny.setAnimationIceCode(animationIceCode);
+        runny.run();
+        }
+
     public void executeAction(String Name, String animation, int animationNumber)
         {
         if(traceLevel > 3)
@@ -881,6 +928,7 @@ public class ScriptingComponent extends CellComponent
 
     public void setAnimationStartRotation(float X, float Y, float Z)
         {
+        System.out.println("********** In setAnimationStarrtRotation " + X + " : " + Y + " : " + Z);
         animationStartRotation[0] = X;
         animationStartRotation[1] = Y;
         animationStartRotation[2] = Z;
@@ -2300,7 +2348,7 @@ public class ScriptingComponent extends CellComponent
     public void setFrameRate(float frames)
         {
         myFrameRate = frames;
-        if(traceLevel > 3)
+        if(traceLevel > 6)
             {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Enter setFrameRate - rate = " + myFrameRate);
             }
@@ -3879,6 +3927,52 @@ public class ScriptingComponent extends CellComponent
         try
             {
             ClientContextJME.getClientMain().gotoLocation(null, v3f, quat);
+            }
+        catch (IOException ex)
+            {
+            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    public void teleportAvatar(String url, float X, float Y, float Z)
+        {
+        Vector3f v3f = new Vector3f(X, Y, Z);
+        Quaternion quat = new Quaternion();
+        try
+            {
+            ClientContextJME.getClientMain().gotoLocation(url, v3f, quat);
+            }
+        catch (IOException ex)
+            {
+            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    public void teleportAvatar(String url, float X, float Y, float Z, float rX, float rY, float rZ, float W)
+        {
+        Vector3f v3f = new Vector3f(X, Y, Z);
+        Quaternion quat = new Quaternion();
+        quat.fromAngleNormalAxis(W , new Vector3f(rX, rY, rZ));
+
+        try
+            {
+            ClientContextJME.getClientMain().gotoLocation(url, v3f, quat);
+            }
+        catch (IOException ex)
+            {
+            Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    public void teleportAvatar(String url, float X, float Y, float Z, float angleX, float angleY, float angleZ)
+        {
+        Vector3f v3f = new Vector3f(X, Y, Z);
+        Quaternion quat = new Quaternion();
+        quat.fromAngles((float) ((Math.PI / 180) * angleX), (float) ((Math.PI / 180) * angleY), (float) ((Math.PI / 180) * angleZ));
+
+        try
+            {
+            ClientContextJME.getClientMain().gotoLocation(url, v3f, quat);
             }
         catch (IOException ex)
             {

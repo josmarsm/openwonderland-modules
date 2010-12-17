@@ -13,7 +13,6 @@ import com.jme.scene.Spatial;
 //import com.sun.scenario.animation.Clip.RepeatBehavior;
 //import com.sun.scenario.animation.Timeline;
 import java.util.ArrayList;
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
@@ -21,15 +20,12 @@ import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.modulator.common.ModulatorCellClientState;
 import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingActionClass;
 import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingComponent;
 import org.jdesktop.wonderland.modules.scriptingComponent.client.ScriptingRunnable;
-import org.pushingpixels.trident.Timeline;
-import org.pushingpixels.trident.TimelineScenario;
 
 public class ModulatorCell extends Cell
     {
@@ -52,7 +48,9 @@ public class ModulatorCell extends Cell
     private Quaternion minuteFinal = new Quaternion();
     private ModulatorSingleNode msn = null;
     private ModulatorThreeNodes m3n = null;
-
+    private ModulatorMultipleNodes mmn = null;
+    private ModulatorAllNodes man = null;
+    
     public ModulatorCell(CellID cellID, CellCache cellCache)
         {
         super(cellID, cellCache);
@@ -104,7 +102,13 @@ public class ModulatorCell extends Cell
             sac.insertCmdMap("getMinuteValues", getMinuteValuesRun);
             sac.insertCmdMap("setTime", setTimeRun);
             sac.insertCmdMap("animate3Nodes", animate3NodesRun);
-
+            sac.insertCmdMap("animate2Nodes", animate2NodesRun);
+            sac.insertCmdMap("animateOneNode", animateOneNodeRun);
+            sac.insertCmdMap("animate4Nodes", animate4NodesRun);
+            sac.insertCmdMap("animate5Nodes", animate5NodesRun);
+            sac.insertCmdMap("animate6Nodes", animate6NodesRun);
+            sac.insertCmdMap("animate7Nodes", animate7NodesRun);
+            sac.insertCmdMap("animateAllNodes", animateAllNodesRun);
             scriptingComponent.putActionObject(sac);
             }
 
@@ -441,26 +445,189 @@ public class ModulatorCell extends Cell
             }
         };
 
+    ScriptingRunnable animateOneNodeRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            if(mmn == null)
+                {
+                mmn = new ModulatorMultipleNodes(renderer, string1, string2);
+                }
+            mmn.setAnimationStartTranslate(animationStartTranslate);
+            mmn.setAnimationStartRotation(animationStartRotation);
+            mmn.setAnimationTimeMultiplier(animationTimeMultiplier);
+            mmn.setAnimationStartKeyframe(animationStartKeyframe);
+            mmn.setAnimationEndKeyframe(animationEndKeyframe);
+            mmn.setAnimationIceCode(animationIceCode);
+            mmn.setAnimationSaveTransform(animationSaveTransform);
+            mmn.setAnimationPlayReverse(animationPlayReverse);
+            System.out.println("ScriptingActionClass - enter animateOneNode - startRot = " + animationStartRotation[0] + ":" + animationStartRotation[1] + ":" + animationStartRotation[2]);
+
+            mmn.animateNode();
+            }
+        };
+
+    ScriptingRunnable animate2NodesRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            if(mmn == null)
+                {
+                mmn = new ModulatorMultipleNodes(renderer, string1, string2);
+                }
+            mmn.setAnimationStartTranslate(animationStartTranslate);
+            mmn.setAnimationStartRotation(animationStartRotation);
+            mmn.setAnimationTimeMultiplier(animationTimeMultiplier);
+            mmn.setAnimationStartKeyframe(animationStartKeyframe);
+            mmn.setAnimationEndKeyframe(animationEndKeyframe);
+            mmn.setAnimationIceCode(animationIceCode);
+            mmn.setAnimationSaveTransform(animationSaveTransform);
+            mmn.setAnimationPlayReverse(animationPlayReverse);
+            System.out.println("ScriptingActionClass - enter animate2Nodes - startRot = " + animationStartRotation[0] + ":" + animationStartRotation[1] + ":" + animationStartRotation[2]);
+
+            mmn.animateNode();
+            }
+        };
+
     ScriptingRunnable animate3NodesRun = new ScriptingRunnable()
         {
         @Override
         public void run()
             {
-            if(m3n == null)
+            if(mmn == null)
                 {
-                m3n = new ModulatorThreeNodes(renderer, string1, string2, string3);
+                mmn = new ModulatorMultipleNodes(renderer, string1, string2, string3);
                 }
-            m3n.setAnimationStartTranslate(animationStartTranslate);
-            m3n.setAnimationStartRotation(animationStartRotation);
-            m3n.setAnimationTimeMultiplier(animationTimeMultiplier);
-            m3n.setAnimationStartKeyframe(animationStartKeyframe);
-            m3n.setAnimationEndKeyframe(animationEndKeyframe);
-            m3n.setAnimationIceCode(animationIceCode);
-            m3n.setAnimationSaveTransform(animationSaveTransform);
-            m3n.setAnimationPlayReverse(animationPlayReverse);
+            mmn.setAnimationStartTranslate(animationStartTranslate);
+            mmn.setAnimationStartRotation(animationStartRotation);
+            mmn.setAnimationTimeMultiplier(animationTimeMultiplier);
+            mmn.setAnimationStartKeyframe(animationStartKeyframe);
+            mmn.setAnimationEndKeyframe(animationEndKeyframe);
+            mmn.setAnimationIceCode(animationIceCode);
+            mmn.setAnimationSaveTransform(animationSaveTransform);
+            mmn.setAnimationPlayReverse(animationPlayReverse);
             System.out.println("ScriptingActionClass - enter animate3Nodes - startRot = " + animationStartRotation[0] + ":" + animationStartRotation[1] + ":" + animationStartRotation[2]);
 
-            m3n.animateNode();
+            mmn.animateNode();
             }
         };
+
+    ScriptingRunnable animate4NodesRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            if(mmn == null)
+                {
+                mmn = new ModulatorMultipleNodes(renderer, string1, string2, string3, string4);
+                }
+            mmn.setAnimationStartTranslate(animationStartTranslate);
+            mmn.setAnimationStartRotation(animationStartRotation);
+            mmn.setAnimationTimeMultiplier(animationTimeMultiplier);
+            mmn.setAnimationStartKeyframe(animationStartKeyframe);
+            mmn.setAnimationEndKeyframe(animationEndKeyframe);
+            mmn.setAnimationIceCode(animationIceCode);
+            mmn.setAnimationSaveTransform(animationSaveTransform);
+            mmn.setAnimationPlayReverse(animationPlayReverse);
+            System.out.println("ScriptingActionClass - enter animate4Nodes - startRot = " + animationStartRotation[0] + ":" + animationStartRotation[1] + ":" + animationStartRotation[2]);
+
+            mmn.animateNode();
+            }
+        };
+
+    ScriptingRunnable animate5NodesRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            if(mmn == null)
+                {
+                mmn = new ModulatorMultipleNodes(renderer, string1, string2, string3, string4, string5);
+                }
+            mmn.setAnimationStartTranslate(animationStartTranslate);
+            mmn.setAnimationStartRotation(animationStartRotation);
+            mmn.setAnimationTimeMultiplier(animationTimeMultiplier);
+            mmn.setAnimationStartKeyframe(animationStartKeyframe);
+            mmn.setAnimationEndKeyframe(animationEndKeyframe);
+            mmn.setAnimationIceCode(animationIceCode);
+            mmn.setAnimationSaveTransform(animationSaveTransform);
+            mmn.setAnimationPlayReverse(animationPlayReverse);
+            System.out.println("ScriptingActionClass - enter animate5Nodes - startRot = " + animationStartRotation[0] + ":" + animationStartRotation[1] + ":" + animationStartRotation[2]);
+
+            mmn.animateNode();
+            }
+        };
+
+    ScriptingRunnable animate6NodesRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            if(mmn == null)
+                {
+                mmn = new ModulatorMultipleNodes(renderer, string1, string2, string3, string4, string5, string6);
+                }
+            mmn.setAnimationStartTranslate(animationStartTranslate);
+            mmn.setAnimationStartRotation(animationStartRotation);
+            mmn.setAnimationTimeMultiplier(animationTimeMultiplier);
+            mmn.setAnimationStartKeyframe(animationStartKeyframe);
+            mmn.setAnimationEndKeyframe(animationEndKeyframe);
+            mmn.setAnimationIceCode(animationIceCode);
+            mmn.setAnimationSaveTransform(animationSaveTransform);
+            mmn.setAnimationPlayReverse(animationPlayReverse);
+            System.out.println("ScriptingActionClass - enter animate6Nodes - startRot = " + animationStartRotation[0] + ":" + animationStartRotation[1] + ":" + animationStartRotation[2]);
+
+            mmn.animateNode();
+            }
+        };
+
+    ScriptingRunnable animate7NodesRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            if(mmn == null)
+                {
+                mmn = new ModulatorMultipleNodes(renderer, string1, string2, string3, string4, string5, string6, string7);
+                }
+            mmn.setAnimationStartTranslate(animationStartTranslate);
+            mmn.setAnimationStartRotation(animationStartRotation);
+            mmn.setAnimationTimeMultiplier(animationTimeMultiplier);
+            mmn.setAnimationStartKeyframe(animationStartKeyframe);
+            mmn.setAnimationEndKeyframe(animationEndKeyframe);
+            mmn.setAnimationIceCode(animationIceCode);
+            mmn.setAnimationSaveTransform(animationSaveTransform);
+            mmn.setAnimationPlayReverse(animationPlayReverse);
+            System.out.println("ScriptingActionClass - enter animate7Nodes - startRot = " + animationStartRotation[0] + ":" + animationStartRotation[1] + ":" + animationStartRotation[2]);
+
+            mmn.animateNode();
+            }
+        };
+
+    ScriptingRunnable animateAllNodesRun = new ScriptingRunnable()
+        {
+        @Override
+        public void run()
+            {
+            if(man == null)
+                {
+                man = new ModulatorAllNodes(renderer, renderer.getVect());
+                man.setAnimationStartTranslate(animationStartTranslate);
+                man.setAnimationStartRotation(animationStartRotation);
+                man.setAnimationTimeMultiplier(animationTimeMultiplier);
+                man.setAnimationStartKeyframe(animationStartKeyframe);
+                man.setAnimationEndKeyframe(animationEndKeyframe);
+                man.setAnimationIceCode(animationIceCode);
+                man.setAnimationSaveTransform(animationSaveTransform);
+                man.setAnimationPlayReverse(animationPlayReverse);
+                man.allNodesDisassembly();
+                }
+
+            man.initializeNodes();
+            man.animateNodes();
+            }
+        };
+
     }
