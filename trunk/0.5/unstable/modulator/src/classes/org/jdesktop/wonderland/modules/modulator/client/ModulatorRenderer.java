@@ -75,15 +75,15 @@ public class ModulatorRenderer extends BasicRenderer
 
                     ArrayList al = spatial.getControllers();
 
- //                   System.out.println("Controller = " + al.get(0).toString());
+//                    System.out.println("Controller = " + al.get(0).toString() + " for node " + spatial);
                     Controller co = spatial.getController(0);
 //                    float max = co.getMaxTime();
 //                    float min = co.getMinTime();
+//                    System.out.println("Time max = " + max + " - min = " + min + " for node " + spatial);
                     AnimationController ac = (AnimationController)co;
                     ArrayList bans = ac.getAnimations();
                     if(bans != null)
                         {
-//                        System.out.println("%%%%%%%%%% - bans = " + bans.size());
                         ModulatorANode man = new ModulatorANode();
                         man.nodeName = spatial.getName();
                         vect.add(man);

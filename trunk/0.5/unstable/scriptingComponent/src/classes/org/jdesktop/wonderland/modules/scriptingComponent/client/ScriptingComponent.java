@@ -116,7 +116,7 @@ import org.mortbay.jetty.servlet.ServletHolder;
 @ExperimentalAPI
 public class ScriptingComponent extends CellComponent
     {
-    private int traceLevel = 5;
+    private int traceLevel = 1;
     private Node localNode = null;
     public String stateString[] = {null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null};
     public int stateInt[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
