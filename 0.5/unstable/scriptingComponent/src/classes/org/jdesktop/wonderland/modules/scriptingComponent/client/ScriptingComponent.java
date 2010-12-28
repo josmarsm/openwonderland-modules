@@ -62,6 +62,12 @@ import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
+import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.input.Event;
@@ -103,9 +109,8 @@ import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryExcep
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentCellCreateMessage;
 import org.jdesktop.wonderland.modules.scriptingComponent.common.ScriptingComponentNpcMoveMessage;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
+import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 
 /**
  *
@@ -182,10 +187,6 @@ public class ScriptingComponent extends CellComponent
     public static final int CHANGE_SCRIPTS_MESSAGE = 1;
     public static final int CHANGE_USER_MESSAGE = 2;
 
-    public static final int ANDROID_SERVLET_PASS_DATA = 0;
-    public static final int ANDROID_SERVLET_ACT_SCRIPT = 1;
-    public static final int ANDROID_SERVLET_ACT_DIRECTLY = 77;
-
 /*
     private String[] eventNames;
     private String[] eventScriptType;
@@ -246,7 +247,6 @@ public class ScriptingComponent extends CellComponent
     private   String userName;
     
     private   CellRendererJME ret = null;
-    private ControllerInterface controller;
     private   boolean       keepRunning;
     private   boolean       activeVehicle;
     private   int controllerTime = 100;
@@ -255,8 +255,6 @@ public class ScriptingComponent extends CellComponent
     protected ChannelComponent channelComp;
     
     protected ChannelComponent.ComponentMessageReceiver msgReceiver=null;
-    private truck     myTruck;
-    private fixedWing myFixedWing;
     private int       mobileType = 1;
     private Quaternion initialQuat;
 
@@ -278,11 +276,6 @@ public class ScriptingComponent extends CellComponent
     private IntercellListener intercellListener = null;
 
     private WlAvatarCharacter myAvatar = null;
-    private Server server = null;
-    private int androidCode = 0;
-    private int androidErrorCode = 0;
-    private int androidMode = 0;
-    private int androidPort = 0;
 
     private ScheduledFuture futureTask = null;
 
@@ -304,6 +297,10 @@ public class ScriptingComponent extends CellComponent
     private String npcAvatarName = null;
 
     private ArrayList sitTargetGroup;
+
+    @UsesCellComponent private ContextMenuComponent contextComp = null;
+    private ContextMenuFactorySPI menuFactory = null;
+
 
     /**
      * The ScriptingComponent constructor
@@ -427,72 +424,6 @@ public class ScriptingComponent extends CellComponent
             }
         }
 
-    public void simpleServerStart(int code, int errorCode, int mode, int port)
-        {
-        this.androidCode = code;
-        this.androidErrorCode = errorCode;
-        this.androidMode = mode;
-        this.androidPort = port;
-
-        new simpleServerThread(code, errorCode, mode, port).start();
-        }
-
-    public void simpleServerStop()
-        {
-        try
-            {
-            if(server != null)
-                {
-                server.stop();
-                server = null;
-                }
-            }
-        catch (Exception ex)
-            {
-            if(traceLevel > 0)
-                {
-                Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-
-    class simpleServerThread extends Thread
-        {
-        private int code = 0;
-        private int errorCode = 0;
-        private int mode = 0;
-        private int port = 0;
-
-        public simpleServerThread(int Code, int ErrorCode, int Mode, int Port)
-            {
-            code = Code;
-            errorCode = ErrorCode;
-            mode = Mode;
-            port = Port;
-            }
-
-@Override
-        public void run()
-            {
-            try
-                {
-                server = new Server(port);
-                Context context = new Context(server, "/");
-                context.addServlet(new ServletHolder(new AndroidServlet(code, errorCode, mode)), "/*");
-                
-                server.start();
-                server.join();
-                }
-            catch (Exception ex)
-                {
-                if(traceLevel > 0)
-                    {
-                    Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        }
-    
     public void playSound(String clipFile, int responseCode, int localOrGlobal)
         {
         this.clipFile = clipFile;
@@ -1809,6 +1740,21 @@ public class ScriptingComponent extends CellComponent
                             intercellListener = new IntercellListener();
                             ClientContext.getInputManager().addGlobalEventListener(intercellListener);
                             }
+                        if (menuFactory == null)
+                            {
+                            final MenuItemListener l = new MenuItemListener();
+                            menuFactory = new ContextMenuFactorySPI()
+                                {
+                                public ContextMenuItem[] getContextMenuItems(ContextEvent event)
+                                    {
+                                    return new ContextMenuItem[]
+                                        {
+                                        new SimpleContextMenuItem("Properties Editor", l)
+                                        };
+                                    }
+                                };
+                            contextComp.addContextMenuFactory(menuFactory);
+                            }
                         if(traceLevel > 4)
                             {
                             System.out.println("In component setStatus - renderer = " + ret);
@@ -1838,12 +1784,14 @@ public class ScriptingComponent extends CellComponent
                         myListener.removeFromEntity(mye);
                         myListener = null;
                         }
-// Stop the servlet server if it is running
-                    simpleServerStop();
+                    if (menuFactory != null)
+                        {
+                        contextComp.removeContextMenuFactory(menuFactory);
+                        menuFactory = null;
+                        }
 // Stop a repeater if running
                     stopRepeater();
                     ClientContext.getInputManager().removeGlobalEventListener(intercellListener);
-
 
                     intercellListener = null;
                     }
@@ -3297,178 +3245,6 @@ public class ScriptingComponent extends CellComponent
         timer.schedule(new expired(), timeValue);
         }
 
-    public void establishMobile()
-        {
-        switch(mobileType)
-            {
-            case 0:
-                {
-                myTruck = new truck(this);
-                break;
-                }
-            case 1:
-                {
-                myFixedWing = new fixedWing(this);
-                break;
-                }
-            default:
-                {
-                break;
-                }
-            }
-        activeVehicle = true;
-        }
-
-    public void removeMobile()
-        {
-        switch(mobileType)
-            {
-            case 0:
-                {
-                myTruck = null;
-                break;
-                }
-            case 1:
-                {
-                myFixedWing = null;
-                break;
-                }
-            default:
-                {
-                break;
-                }
-            }
-        activeVehicle = false;
-        }
-
-    public void moveMobile(float XData, float ZData)
-        {
-//        System.out.println("Enter moveVehicle()");
-        switch(mobileType)
-            {
-            case 0:
-                {
-                myTruck.motivate(XData, ZData);
-                break;
-                }
-            case 1:
-                {
-                myFixedWing.motivate(XData, ZData);
-                break;
-                }
-            default:
-                {
-                break;
-                }
-            }
-        }
-
-    public void startController()
-        {
-        controller = new ControllerInterface("Logitech Attack 3");
-        keepRunning = true;
-        Timer timer = new Timer(true);
-        timer.schedule(new controllerExpired(), controllerTime);
-        if(traceLevel > 3)
-            {
-            System.out.println("Controller started");
-            }
-        }
-
-    public void stopController()
-        {
-        keepRunning = false;
-        controller = null;
-        if(traceLevel > 3)
-            {
-            System.out.println("Controller stopped");
-            }
-        }
-
-    class controllerExpired extends TimerTask
-        {
-        public void run()
-            {
-            float XData = controller.getComponent11();
-            float ZData = controller.getComponent12();
-
-            moveMobile(XData, ZData);
-            if(keepRunning)
-                {
-                Timer timer = new Timer(true);
-                timer.schedule(new controllerExpired(), controllerTime);
-                }
-            }
-        }
-
-    public void setControllerTime(int cTime)
-        {
-        controllerTime = cTime;
-        }
-
-    public void setControllerTime(float cTime)
-        {
-        controllerTime = (int)cTime;
-        }
-
-    public void configureMobile(String command, float value1)
-        {
-        if(activeVehicle)
-            {
-            switch(mobileType)
-                {
-                case 0:
-                    {
-                    myTruck.configureMobile(command, value1);
-                    break;
-                    }
-                case 1:
-                    {
-                    myFixedWing.configureMobile(command, value1);
-                    break;
-                    }
-                default:
-                    {
-                    break;
-                    }
-                }
-            }
-        }
-
-    public void configureMobile(String command, float value1, float value2)
-        {
-        if(activeVehicle)
-            {
-            switch(mobileType)
-                {
-                case 0:
-                    {
-                    myTruck.configureMobile(command, value1, value2);
-                    break;
-                    }
-                case 1:
-                    {
-                    myFixedWing.configureMobile(command, value1, value2);
-                    break;
-                    }
-                default:
-                    {
-                    break;
-                    }
-                }
-            }
-        }
-
-    public void setMobileType(int type)
-        {
-        mobileType = type;
-        }
-
-    public void setMobileType(float type)
-        {
-        mobileType = (int)type;
-        }
-
     class Path
         {
         public float xLoc;
@@ -4206,5 +3982,11 @@ public class ScriptingComponent extends CellComponent
                 }
             }
         }
-    
+        class MenuItemListener implements ContextMenuActionListener
+        {
+        public void actionPerformed(ContextMenuItemEvent event)
+            {
+            executeScript(PROPERTIES_EVENT, null);
+            }
+        }
     }
