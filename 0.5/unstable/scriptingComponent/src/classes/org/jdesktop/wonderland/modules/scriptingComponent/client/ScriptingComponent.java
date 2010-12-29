@@ -247,15 +247,11 @@ public class ScriptingComponent extends CellComponent
     private   String userName;
     
     private   CellRendererJME ret = null;
-    private   boolean       keepRunning;
-    private   boolean       activeVehicle;
-    private   int controllerTime = 100;
 
     @UsesCellComponent
     protected ChannelComponent channelComp;
     
     protected ChannelComponent.ComponentMessageReceiver msgReceiver=null;
-    private int       mobileType = 1;
     private Quaternion initialQuat;
 
     private JMenuItem editScripts;
@@ -959,9 +955,9 @@ public class ScriptingComponent extends CellComponent
  */
     public int contentReadFile(String thePath, int repository)
         {
-        if(traceLevel > 3)
+        if(traceLevel > 0)
             {
-            System.out.println("Enter contentReadFile");
+            System.out.println("Enter contentReadFile - path = " + thePath);
             }
         ContentResource current = null;
         ContentCollection ccr = null;
@@ -1058,6 +1054,11 @@ public class ScriptingComponent extends CellComponent
         {
         int     i = -1;
         int     j = 0;
+
+        if(traceLevel > 0)
+            {
+            System.out.println("Enter contentWriteFile - path = " + theDir + " - file = " + theFile);
+            }
 
         List<ContentNode> children = null;
         ContentCollection current = null;
@@ -1414,10 +1415,20 @@ public class ScriptingComponent extends CellComponent
             for(i = 0; i < size; i++)
                 {
                 String name = children.get(i).getName();
-                tempBuf.addElement(new String(name));
-                if(traceLevel > 4)
+                if(current.getChild(name) instanceof ContentCollection)
                     {
-                    System.out.println("Possible node = " + name);
+                    if(traceLevel > 0)
+                        {
+                        System.out.println("Directory ? = " + name);
+                        }
+                    }
+                else
+                    {
+                    tempBuf.addElement(new String(name));
+                    if(traceLevel > 0)
+                        {
+                        System.out.println("Possible node = " + name);
+                        }
                     }
                 }
             }
@@ -1749,7 +1760,7 @@ public class ScriptingComponent extends CellComponent
                                     {
                                     return new ContextMenuItem[]
                                         {
-                                        new SimpleContextMenuItem("Properties Editor", l)
+                                        new SimpleContextMenuItem("Scripting Editor", l)
                                         };
                                     }
                                 };
