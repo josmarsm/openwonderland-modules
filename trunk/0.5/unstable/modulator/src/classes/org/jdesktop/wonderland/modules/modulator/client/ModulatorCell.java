@@ -614,17 +614,16 @@ public class ModulatorCell extends Cell
             if(man == null)
                 {
                 man = new ModulatorAllNodes(renderer, renderer.getVect());
-                man.setAnimationStartTranslate(animationStartTranslate);
-                man.setAnimationStartRotation(animationStartRotation);
-                man.setAnimationTimeMultiplier(animationTimeMultiplier);
-                man.setAnimationStartKeyframe(animationStartKeyframe);
-                man.setAnimationEndKeyframe(animationEndKeyframe);
-                man.setAnimationIceCode(animationIceCode);
-                man.setAnimationSaveTransform(animationSaveTransform);
-                man.setAnimationPlayReverse(animationPlayReverse);
-                man.allNodesDisassembly();
                 }
-
+            man.setAnimationStartTranslate(animationStartTranslate);
+            man.setAnimationStartRotation(animationStartRotation);
+            man.setAnimationTimeMultiplier(animationTimeMultiplier);
+            man.setAnimationStartKeyframe(animationStartKeyframe);
+            man.setAnimationEndKeyframe(animationEndKeyframe);
+            man.setAnimationIceCode(animationIceCode);
+            man.setAnimationSaveTransform(animationSaveTransform);
+            man.setAnimationPlayReverse(animationPlayReverse);
+            man.allNodesDisassembly();
             man.initializeNodes();
             man.animateNodes();
             }
