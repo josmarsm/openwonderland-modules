@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -19,8 +37,8 @@ package org.jdesktop.wonderland.modules.topmap.client;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -38,13 +56,13 @@ public class TopMapJPanel extends javax.swing.JPanel {
     private static final int MAP_WIDTH = 256;
 
     // The buffered image in which to draw the camera scene
-    private BufferedImage bufferedImage = null;
+    private final BufferedImage bufferedImage;
 
     // The component that displays the top map
-    private CaptureJComponent mapComponent = null;
+    private final CaptureJComponent mapComponent;
 
     // The model behind the elevation spinner value
-    private SpinnerNumberModel elevationModel = null;
+    private final SpinnerNumberModel elevationModel;
 
     // The initial elevation to use and display in the spinner
     private static final float INITIAL_ELEVATION = 10.0f;
@@ -53,12 +71,12 @@ public class TopMapJPanel extends javax.swing.JPanel {
     private float elevation = INITIAL_ELEVATION;
 
     // A set of listeners for changes to the elevation
-    private Set<ElevationListener> listenerSet = null;
+    private final Set<ElevationListener> listenerSet;
 
     /** Default constructor */
     public TopMapJPanel() {
         // Initialize the GUI
-        listenerSet = new HashSet<ElevationListener>();
+        listenerSet = new CopyOnWriteArraySet<ElevationListener>();
         initComponents();
 
         // Put a model on the spinner for elevation, with a min of 0, a max
@@ -115,9 +133,7 @@ public class TopMapJPanel extends javax.swing.JPanel {
      * @param listener The listener to add
      */
     public void addElevationListener(ElevationListener listener) {
-        synchronized (listenerSet) {
-            listenerSet.add(listener);
-        }
+        listenerSet.add(listener);
     }
 
     /**
@@ -127,19 +143,15 @@ public class TopMapJPanel extends javax.swing.JPanel {
      * @param listener The listener to remove
      */
     public void removeElevationListener(ElevationListener listener) {
-        synchronized (listenerSet) {
-            listenerSet.remove(listener);
-        }
+        listenerSet.remove(listener);
     }
 
     /**
      * Notifies all listeners that an elevation change has happened.
      */
     private void fireElevationListener(float elevation) {
-        synchronized (listenerSet) {
-            for (ElevationListener listener : listenerSet) {
-                listener.elevationChanged(elevation);
-            }
+        for (ElevationListener listener : listenerSet) {
+            listener.elevationChanged(elevation);
         }
     }
 
