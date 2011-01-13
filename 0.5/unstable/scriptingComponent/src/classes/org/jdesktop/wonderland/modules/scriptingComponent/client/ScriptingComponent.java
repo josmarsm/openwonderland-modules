@@ -293,6 +293,7 @@ public class ScriptingComponent extends CellComponent
     private String npcAvatarName = null;
 
     private ArrayList sitTargetGroup;
+    private boolean takeAvatar = false;
 
     @UsesCellComponent private ContextMenuComponent contextComp = null;
     private ContextMenuFactorySPI menuFactory = null;
@@ -319,6 +320,11 @@ public class ScriptingComponent extends CellComponent
         this.thisCellID = cell.getCellID().toString();
         this.thees = this;
         repo = ContentRepositoryRegistry.getInstance().getRepository(cell.getCellCache().getSession().getSessionManager());
+        }
+
+    public void setTakeAvatar(boolean take)
+        {
+        takeAvatar = take;
         }
 
     public void setTraceLevel(int trace)
@@ -680,7 +686,7 @@ public class ScriptingComponent extends CellComponent
         {
         if(traceLevel > 3)
             {
-            System.out.println("ScriptingComponent - enter executeAction - three floats");
+            System.out.println("ScriptingComponent - enter executeAction - six floats");
             }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.setPoint(x, y, z);
@@ -701,6 +707,7 @@ public class ScriptingComponent extends CellComponent
         runny.setAnimationStartKeyframe(animationStartKeyframe);
         runny.setAnimationEndKeyframe(animationEndKeyframe);
         runny.setAnimationIceCode(animationIceCode);
+        runny.setTakeAvatar(takeAvatar);
         runny.run();
         }
 
@@ -844,6 +851,17 @@ public class ScriptingComponent extends CellComponent
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.setAnimation(animation);
         runny.setSingleInt(animationNumber);
+        runny.run();
+        }
+
+    public void executeAction(String Name, boolean flag)
+        {
+        if(traceLevel > 3)
+            {
+            System.out.println("ScriptingComponent - enter executeAction - one boolean");
+            }
+        ScriptingRunnable runny = actionObject.getCmdMap(Name);
+        runny.setBooleanFlag(flag);
         runny.run();
         }
 
@@ -1055,7 +1073,7 @@ public class ScriptingComponent extends CellComponent
         int     i = -1;
         int     j = 0;
 
-        if(traceLevel > 0)
+        if(traceLevel > 4)
             {
             System.out.println("Enter contentWriteFile - path = " + theDir + " - file = " + theFile);
             }
@@ -1152,7 +1170,7 @@ public class ScriptingComponent extends CellComponent
                 }
             if(traceLevel > 4)
                 {
-                System.out.println("whereFileGoes = " + whereFileGoes.getName());
+                System.out.println("whereFileGoes = " + whereFileGoes.getName() + " - theFile = " + theFile);
                 }
             whereFileGoes.removeChild(theFile);
             ContentResource tf = (ContentResource) whereFileGoes.createChild(theFile, Type.RESOURCE);
@@ -2210,7 +2228,7 @@ public class ScriptingComponent extends CellComponent
      */
     public void postMessageEvent(String payload, int Code)
         {
-        if(traceLevel > 3)
+        if(traceLevel > 0)
             {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In postMessageEvent with payload = " + payload + " code = " + Code);
             }
@@ -2682,6 +2700,20 @@ public class ScriptingComponent extends CellComponent
         return thePath;
         }
 
+    private String buildRobotPath(String theRobot)
+        {
+        String  thePath = null;
+        if(useGlobalScripts)
+            {
+            thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/robots/" + theCell.getName() + "/" + theRobot;
+            }
+        else
+            {
+            thePath = cell.getCellCache().getSession().getSessionManager().getServerURL() + "/webdav/content/users/" + userName + "/robots/" + theCell.getName() + "/" + theRobot;
+            }
+        return thePath;
+        }
+
     public void getInitialRotation()
         {
         Vector3f axis = new Vector3f();
@@ -3141,7 +3173,7 @@ public class ScriptingComponent extends CellComponent
         robotList = new ArrayList();
         int     robotVersion = 1;
 
-        String thePath = buildScriptPath(robotName);
+        String thePath = buildRobotPath(robotName);
         if(traceLevel > 3)
             {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In buildAnimation - The path = " + thePath);
@@ -3368,7 +3400,7 @@ public class ScriptingComponent extends CellComponent
             {
             if(traceLevel > 4)
                 {
-                System.out.println("chat file");
+                System.out.println("ice message");
                 }
             postMessageEvent(((Robot) robotList.get(robotFrame)).iceMessage, ((Robot) robotList.get(robotFrame)).iceCode);
             }
@@ -3631,9 +3663,88 @@ public class ScriptingComponent extends CellComponent
 //        cell.getComponent(MovableComponent.class).localMoveRequest(cell.getLocalTransform());
         }
 
+    public void playRobot(String robotName, String npcName)
+        {
+        postMessageEvent("Test message", 400);
+        }
+
+    public void createRobot(String robotName, String npcName)
+        {
+        String newline = "\n";
+
+        String script = null;
+        script = "print('Hello from startup script for " + npcName + "\\r\\n');" + newline;
+//        script = script + "MyClass.executeAction('selectAvatar', 'My_Avatar__5_1.xml', 1);" + newline;
+        script = script + "MyClass.executeAction('selectAvatar', 'NewAvatar1_1.xml', 0);" + newline;
+        script = script + "MyClass.setNpcAvatarName('" + npcName + "');" + newline;
+        script = script + "MyClass.watchMessage(400);" + newline;
+        contentWriteFile("scripts/" + npcName + "/", "startup.js", script, 1);
+
+        script = "print('Hello from ice.js script for " + npcName + "\\r\\n');" + newline;
+        script = script + "MyClass.buildRobot('" + robotName + "');" + newline;
+        script = script + "MyClass.setNpcAvatarName('" + npcName + "');" + newline;
+        script = script + "stateInt[0] = 0;" + newline;
+        script = script + "stateInt[1] = 0;" + newline;
+        script = script + "stateInt[2] = 0;" + newline;
+        script = script + "stateInt[3] = 0;" + newline;
+        script = script + "stateInt[4] = 1;" + newline;
+        script = script + "MyClass.enableAvatarEvents();" + newline;
+        script = script + "MyClass.playRobotFrame();" + newline;
+        contentWriteFile("scripts/" + npcName + "/", "ice.js", script, 1);
+
+        script = "print('Enter avatar.js script\\r\\n');" + newline;
+        script = script + "print('Event type - ' + avatarEventType + '\\r\\n');" + newline;
+        script = script + "print('Event source - ' + avatarEventSource + '\\r\\n');" + newline;
+        script = script + "print('Event animation - ' + avatarEventAnimation + '\\r\\n');" + newline;
+        script = script + "if(stateInt[0] == 0)" + newline;
+        script = script + "    {" + newline;
+        script = script + "    if(avatarEventType == 'STARTED')" + newline;
+        script = script + "        {" + newline;
+        script = script + "        if(avatarEventAnimation == 'Walk')" + newline;
+        script = script + "            {" + newline;
+        script = script + "            stateInt[0] = 1;" + newline;
+        script = script + "            stateInt[1] = 0;" + newline;
+        script = script + "            stateInt[2] = 1;" + newline;
+        script = script + "            stateInt[3] = 0;" + newline;
+        script = script + "            }" + newline;
+        script = script + "        if(avatarEventAnimation == 'Male_PublicSpeaking' || avatarEventAnimation == 'Female_PublicSpeaking')" + newline;
+        script = script + "            {" + newline;
+        script = script + "            stateInt[0] = 1;" + newline;
+        script = script + "            stateInt[1] = 0;" + newline;
+        script = script + "            stateInt[2] = 1;" + newline;
+        script = script + "            stateInt[3] = 1;" + newline;
+        script = script + "            }" + newline;
+        script = script + "        }" + newline;
+        script = script + "    }" + newline;
+        script = script + "else" + newline;
+        script = script + "    {" + newline;
+        script = script + "    if(avatarEventType == 'STOPPED')" + newline;
+        script = script + "        {" + newline;
+        script = script + "        if(avatarEventAnimation == null)" + newline;
+        script = script + "            {" + newline;
+        script = script + "            stateInt[3]--;" + newline;
+        script = script + "            }" + newline;
+        script = script + "        else" + newline;
+        script = script + "            {" + newline;
+        script = script + "            stateInt[2]--;" + newline;
+        script = script + "            }" + newline;
+        script = script + "        }" + newline;
+        script = script + "    if(stateInt[1] == 0 && stateInt[2] == 0 && stateInt[3] == 0)" + newline;
+        script = script + "        {" + newline;
+        script = script + "        stateInt[0] = 0;" + newline;
+        script = script + "        print('Playing next frame\\r\\n');" + newline;
+        script = script + "        if(stateInt[4] == 1)" + newline;
+        script = script + "            stateInt[4] = MyClass.playRobotFrame();" + newline;
+        script = script + "        }" + newline;
+        script = script + "    }" + newline;
+        contentWriteFile("scripts/" + npcName + "/", "avatar.js", script, 1);
+
+        createCellInstance("org.jdesktop.wonderland.modules.npc.common.NpcCellServerState", 1.0f, 0.0f, 1.0f, "rupert");
+        }
+
     public void createCellInstance(String className, float x, float y, float z, String cellName)
         {
-        if(traceLevel > 3)
+        if(traceLevel > 0)
             {
             System.out.println("Enter createCellInstance");
             }

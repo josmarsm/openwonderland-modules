@@ -38,7 +38,9 @@ public class ScriptingRunnable implements Runnable
     public int animationIceCode = 0;
     public boolean animationSaveTransform = false;
     public boolean animationPlayReverse = false;
-
+    public boolean takeAvatar = false;
+    public boolean booleanFlag = false;
+    
     public void setNameArray(String[] NameArray)
         {
         nameArray = NameArray;
@@ -167,6 +169,16 @@ public class ScriptingRunnable implements Runnable
     public void setAnimationPlayReverse(boolean reverse)
         {
         animationPlayReverse = reverse;
+        }
+
+    public void setTakeAvatar(boolean take)
+        {
+        takeAvatar = take;
+        }
+
+    public void setBooleanFlag(boolean flag)
+        {
+        booleanFlag = flag;
         }
 
     public void run()
