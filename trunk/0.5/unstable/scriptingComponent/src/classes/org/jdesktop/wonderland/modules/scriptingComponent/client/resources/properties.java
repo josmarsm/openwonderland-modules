@@ -2,7 +2,10 @@
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.ScriptContext;
+import javax.swing.text.BadLocationException;
 
 /*
  * SetScripts3.java
@@ -23,6 +26,9 @@ class properties extends javax.swing.JFrame {
     private static Object myClassObject = null;
     private final static String newline = "\n";
     private final static int MAX_EVENTS = 25;
+    private int currentLine = 0;
+    private int currentEnd = 0;
+    private int currentStart = 0;
 
     /** Creates new form SetScripts3 */
     public properties()
@@ -91,6 +97,7 @@ class properties extends javax.swing.JFrame {
         jLabelNPCName = new javax.swing.JLabel();
         jTextNPCName = new javax.swing.JTextField();
         jButtonTestPath = new javax.swing.JButton();
+        jButtonCreateRobot = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         jButtonPlayClip = new javax.swing.JButton();
         jComboSoundFiles = new javax.swing.JComboBox();
@@ -505,13 +512,20 @@ class properties extends javax.swing.JFrame {
         jLabelNPCName.setText("NPC Name");
         jLabelNPCName.setEnabled(false);
 
-        jTextNPCName.setText("empty");
         jTextNPCName.setEnabled(false);
 
         jButtonTestPath.setText("Test Path");
         jButtonTestPath.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonTestPathActionPerformed(evt);
+            }
+        });
+
+        jButtonCreateRobot.setText("Create Robot");
+        jButtonCreateRobot.setEnabled(false);
+        jButtonCreateRobot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonCreateRobotActionPerformed(evt);
             }
         });
 
@@ -528,94 +542,111 @@ class properties extends javax.swing.JFrame {
                             .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jButtonCreateStep)
-                                    .addComponent(jButtonEditStep)
-                                    .addComponent(jButtonRewriteStep))
-                                .addGap(40, 40, 40)
+                                    .addComponent(jButtonEditStep))
+                                .addGap(46, 46, 46)
                                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jButtonRetrievePathFiles)
                                     .addComponent(jButtonRetrievePath)
-                                    .addComponent(jButtonWriteFile)))
+                                    .addComponent(jButtonWriteFile)
+                                    .addComponent(jButtonRetrievePathFiles)))
                             .addComponent(jRadioPath))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 212, Short.MAX_VALUE))
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel4Layout.createSequentialGroup()
+                                    .addComponent(jButtonRewriteStep)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                                .addGroup(jPanel4Layout.createSequentialGroup()
+                                    .addComponent(jLabelPath)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(jPanel4Layout.createSequentialGroup()
+                                            .addComponent(jComboPathFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                                        .addGroup(jPanel4Layout.createSequentialGroup()
+                                            .addComponent(jTextCurrentFile, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                                            .addGap(24, 24, 24))
+                                        .addGroup(jPanel4Layout.createSequentialGroup()
+                                            .addGap(24, 24, 24)
+                                            .addComponent(jTextNPCName, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(34, 34, 34)
+                                            .addComponent(jButtonCreateRobot)
+                                            .addGap(18, 18, 18)))))
                             .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addComponent(jLabelNPCName)
-                                .addGap(36, 36, 36)
-                                .addComponent(jTextNPCName, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
-                                .addGap(168, 168, 168))
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(jLabelPath)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel4Layout.createSequentialGroup()
-                                        .addComponent(jComboPathFiles, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                                    .addGroup(jPanel4Layout.createSequentialGroup()
-                                        .addComponent(jTextCurrentFile, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                                        .addGap(36, 36, 36)))))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckWebdav)
-                    .addComponent(jCheckUseAudio)
-                    .addComponent(jCheckUseGoto)
-                    .addComponent(jCheckUseICE)
-                    .addComponent(jCheckUseChat)
-                    .addComponent(jCheckUseAnimation)
-                    .addComponent(jButtonShowPath)
-                    .addComponent(jButtonHidePath)
-                    .addComponent(jButtonTestPath))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButtonHidePath)
+                            .addComponent(jButtonShowPath)
+                            .addComponent(jCheckUseAnimation)
+                            .addComponent(jCheckUseChat)
+                            .addComponent(jCheckUseICE)
+                            .addComponent(jCheckUseAudio)
+                            .addComponent(jCheckUseGoto)
+                            .addComponent(jCheckWebdav)
+                            .addComponent(jButtonTestPath))))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jRadioRobot)
-                    .addComponent(jCheckWebdav))
-                .addGap(6, 6, 6)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jRadioPath)
-                    .addComponent(jCheckUseGoto))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButtonCreateStep)
-                    .addComponent(jButtonWriteFile)
-                    .addComponent(jCheckUseAudio))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(17, 17, 17)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButtonEditStep)
-                            .addComponent(jButtonRetrievePath))
+                            .addComponent(jRadioRobot)
+                            .addComponent(jCheckWebdav))
+                        .addGap(6, 6, 6)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jRadioPath)
+                            .addComponent(jCheckUseGoto))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButtonRewriteStep)
-                            .addComponent(jButtonRetrievePathFiles))
-                        .addGap(14, 14, 14)
+                            .addComponent(jButtonCreateStep)
+                            .addComponent(jButtonWriteFile)))
+                    .addComponent(jCheckUseAudio))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonEditStep)
+                            .addComponent(jButtonRetrievePath)
+                            .addComponent(jCheckUseICE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonRewriteStep)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabelPath)
-                            .addComponent(jTextCurrentFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboPathFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jTextCurrentFile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jCheckUseICE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jCheckUseChat)
+                        .addGap(35, 35, 35)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jCheckUseChat)
+                            .addComponent(jButtonRetrievePathFiles))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCheckUseAnimation)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonShowPath)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonHidePath)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabelNPCName)
-                    .addComponent(jTextNPCName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButtonTestPath))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jCheckUseAnimation)))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                                .addComponent(jButtonShowPath)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButtonHidePath)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(jComboPathFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                        .addComponent(jButtonTestPath)
+                        .addContainerGap(40, Short.MAX_VALUE))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(64, 64, 64)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabelNPCName)
+                            .addComponent(jTextNPCName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButtonCreateRobot))
+                        .addContainerGap())))
         );
 
         jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -716,6 +747,11 @@ class properties extends javax.swing.JFrame {
 
         jButtonWriteThisChat.setText("Write this file");
         jButtonWriteThisChat.setEnabled(false);
+        jButtonWriteThisChat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonWriteThisChatActionPerformed(evt);
+            }
+        });
 
         jLabelAnimation.setText("Animation");
         jLabelAnimation.setEnabled(false);
@@ -869,6 +905,11 @@ class properties extends javax.swing.JFrame {
         jComboWrapperType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jButtonGenerateWrapper.setText("Generate Wrapper");
+        jButtonGenerateWrapper.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonGenerateWrapperActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -947,7 +988,7 @@ class properties extends javax.swing.JFrame {
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 425, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 386, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -965,7 +1006,7 @@ class properties extends javax.swing.JFrame {
                         .addComponent(jLabel1))
                     .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(42, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Robot", jPanel3);
@@ -1118,9 +1159,21 @@ class properties extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextObjectActionPerformed
 
     private void jButtonWriteFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWriteFileActionPerformed
-        jButtonRewriteStep.setEnabled(false);
-        String theText = jTextRootSteps.getText();
-        contentWriteFile("paths/", jTextCurrentFile.getText(), theText, 1);
+        if(jRadioPath.isSelected() == true)
+            {
+            jButtonRewriteStep.setEnabled(false);
+            String theText = jTextRootSteps.getText();
+            contentWriteFile("paths/", jTextCurrentFile.getText(), theText, 1);
+            }
+        else
+            {
+            if(jRadioRobot.isSelected() == true)
+                {
+                jButtonRewriteStep.setEnabled(false);
+                String theText = jTextRootSteps.getText();
+                contentWriteFile("robots/" + jTextNPCName.getText() + "/", jTextCurrentFile.getText(), theText, 1);
+                }
+            }
 }//GEN-LAST:event_jButtonWriteFileActionPerformed
 
     private void jRadioPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioPathActionPerformed
@@ -1149,12 +1202,16 @@ class properties extends javax.swing.JFrame {
         jButtonWriteFile.setText("Write Path File");
         jButtonRetrievePath.setText("Retrieve Path File");
         jLabelPath.setText("Path File");
+        jButtonRetrievePathFiles.setText("Retrieve Path Files");
+        jButtonTestPath.setText("Test Path");
         jLabelNPCName.setEnabled(false);
         jTextNPCName.setEnabled(false);
         jCheckUseAnimation.setEnabled(false);
         jLabelAnimation.setEnabled(false);
         jComboAnimation.setEnabled(false);
         jCheckMaleAnimation.setEnabled(false);
+        jButtonCreateRobot.setEnabled(false);
+
     }//GEN-LAST:event_jRadioPathActionPerformed
 
     private void jRadioRobotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioRobotActionPerformed
@@ -1199,10 +1256,11 @@ class properties extends javax.swing.JFrame {
         jButtonRetrievePath.setText("Retrieve Robot File");
         jButtonRetrievePathFiles.setText("Retrieve Robot Files");
         jLabelPath.setText("Robot File");
+        jButtonTestPath.setText("Test Robot");
         jLabelNPCName.setEnabled(true);
         jTextNPCName.setEnabled(true);
         jCheckUseAnimation.setEnabled(true);
-
+        jButtonCreateRobot.setEnabled(true);
     }//GEN-LAST:event_jRadioRobotActionPerformed
 
     private void jButtonRetrieveAudioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetrieveAudioActionPerformed
@@ -1293,53 +1351,7 @@ class properties extends javax.swing.JFrame {
         String line = "";
         if(jRadioRobot.isSelected() == true)
             {
-            if(jCheckUseGoto.isSelected() == true)
-                {
-                line = "true:" + jTextAvatarX.getText() + ":" + jTextAvatarY.getText() + ":" + jTextAvatarZ.getText() + ":";
-                }
-            else
-                {
-                line = "false: : : :";
-                }
-            if(jCheckUseAudio.isSelected() == true)
-                {
-                line = line + "true:" + jTextCurrentAudio.getText() + ":";
-                }
-            else
-                {
-                line = line + "false: :";
-                }
-            if(jCheckUseAnimation.isSelected() == true)
-                {
-                line = line + "true:" + (String)jComboAnimation.getSelectedItem() + ":";
-                }
-            else
-                {
-                line = line + "false: :";
-                }
-            if(jCheckUseChat.isSelected() == true)
-                {
-                if(jCheckChatText.isSelected() == true)
-                    {
-                    line = line + "chatText:" + jTextAreaChat.getText() + ":" + jTextChatFrom.getText() + ":";
-                    }
-                else
-                    {
-                    line = line + "chatFile:" + jTextCurrentChat.getText() + ":" + jTextChatFrom.getText() + ":";
-                    }
-                }
-            else
-                {
-                line = line + "false: : :";
-                }
-            if(jCheckUseICE.isSelected() == true)
-                {
-                line = line + "ice:" + jTextICECode.getText() + ":" + jTextICEMessage.getText() + ":";
-                }
-            else
-                {
-                line = line + " : : :";
-                }
+            line = buildRobotLine();
             jTextRootSteps.append(line + newline);
             }
         else if(jRadioPath.isSelected() == true)
@@ -1355,8 +1367,25 @@ class properties extends javax.swing.JFrame {
 
     private void jButtonEditStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditStepActionPerformed
         jButtonRewriteStep.setEnabled(true);
+        jButtonEditStep.setEnabled(false);
+        int pos = jTextRootSteps.getCaretPosition();
+        try
+            {
+            currentLine = jTextRootSteps.getLineOfOffset(pos);
+            currentStart = jTextRootSteps.getLineStartOffset(currentLine);
+            currentEnd = jTextRootSteps.getLineEndOffset(currentLine);
+            jTextRootSteps.select(currentStart, currentEnd);
+            }
+        catch (BadLocationException ex)
+            {
+            
+            }
         String step = jTextRootSteps.getSelectedText();
-
+        String replace = ">>" + step;
+        jTextRootSteps.replaceRange(replace, currentStart, currentEnd);
+        jTextRootSteps.select(currentStart, currentEnd);
+        jTextRootSteps.setCaretPosition(currentStart);
+        
         if(jRadioPath.isSelected() == true)
             {
             String[] result = step.split(":");
@@ -1382,27 +1411,48 @@ class properties extends javax.swing.JFrame {
                 jTextAvatarY.setText("");
                 jTextAvatarZ.setText("");
                 }
+
+            jCheckUseAudio.setEnabled(true);
+            jCheckUseAnimation.setEnabled(true);
+            jCheckUseChat.setEnabled(true);
+            jCheckUseICE.setEnabled(true);
 // Audio
             if(result[4].equals("true"))
                 {
                 jCheckUseAudio.setSelected(true);
                 jTextCurrentAudio.setText(result[5]);
                 jComboSoundFiles.setSelectedItem((Object)result[5]);
+                jTextCurrentAudio.setEnabled(true);
+                jComboSoundFiles.setEnabled(true);
+                jButtonRetrieveAudio.setEnabled(true);
+                jButtonPlayClip.setEnabled(true);
+                jTextCurrentAudio.setEnabled(true);
                 }
             else
                 {
                 jCheckUseAudio.setSelected(false);
                 jTextCurrentAudio.setText("");
+                jTextCurrentAudio.setEnabled(false);
+                jComboSoundFiles.setEnabled(false);
+                jButtonRetrieveAudio.setEnabled(false);
+                jButtonPlayClip.setEnabled(false);
+                jTextCurrentAudio.setEnabled(false);
                 }
 // Animation
             if(result[6].equals("true"))
                 {
                 jCheckUseAnimation.setSelected(true);
                 jComboAnimation.setSelectedItem((Object)result[7]);
+                jLabelAnimation.setEnabled(true);
+                jComboAnimation.setEnabled(true);
+                jCheckMaleAnimation.setEnabled(true);
                 }
             else
                 {
                 jCheckUseAnimation.setSelected(false);
+                jLabelAnimation.setEnabled(false);
+                jComboAnimation.setEnabled(false);
+                jCheckMaleAnimation.setEnabled(false);
                 }
 // Chat
             if(result[8].equals("chatText"))
@@ -1411,6 +1461,18 @@ class properties extends javax.swing.JFrame {
                 jTextAreaChat.setText(result[9]);
                 jTextChatFrom.setText(result[10]);
                 jCheckChatText.setSelected(true);
+                jLabelChatTo.setEnabled(true);
+                jLabelChatFrom.setEnabled(true);
+                jTextChatTo.setEnabled(true);
+                jTextChatFrom.setEnabled(true);
+                jTextAreaChat.setEnabled(true);
+
+                jCheckChatText.setEnabled(true);
+                jButtonRetrieveChat.setEnabled(true);
+                jComboChatFiles.setEnabled(true);
+                jButtonRetrieveThisChat.setEnabled(true);
+                jButtonWriteThisChat.setEnabled(true);
+                jTextCurrentChat.setEnabled(true);
                 }
             else if(result[8].equals("chatFile"))
                 {
@@ -1418,6 +1480,18 @@ class properties extends javax.swing.JFrame {
                 jTextCurrentChat.setText(result[9]);
                 jTextChatFrom.setText(result[10]);
                 jCheckChatText.setSelected(false);
+                jLabelChatTo.setEnabled(true);
+                jLabelChatFrom.setEnabled(true);
+                jTextChatTo.setEnabled(true);
+                jTextChatFrom.setEnabled(true);
+                jTextAreaChat.setEnabled(true);
+
+                jCheckChatText.setEnabled(true);
+                jButtonRetrieveChat.setEnabled(true);
+                jComboChatFiles.setEnabled(true);
+                jButtonRetrieveThisChat.setEnabled(true);
+                jButtonWriteThisChat.setEnabled(true);
+                jTextCurrentChat.setEnabled(true);
                 }
             else
                 {
@@ -1425,6 +1499,18 @@ class properties extends javax.swing.JFrame {
                 jTextAreaChat.setText("");
                 jTextChatFrom.setText("");
                 jCheckChatText.setSelected(true);
+                jLabelChatTo.setEnabled(false);
+                jLabelChatFrom.setEnabled(false);
+                jTextChatTo.setEnabled(false);
+                jTextChatFrom.setEnabled(false);
+                jTextAreaChat.setEnabled(false);
+
+                jCheckChatText.setEnabled(false);
+                jButtonRetrieveChat.setEnabled(false);
+                jComboChatFiles.setEnabled(false);
+                jButtonRetrieveThisChat.setEnabled(false);
+                jButtonWriteThisChat.setEnabled(false);
+                jTextCurrentChat.setEnabled(false);
                 }
 // ICE
             if(result[11].equals("ice"))
@@ -1432,12 +1518,20 @@ class properties extends javax.swing.JFrame {
                 jCheckUseICE.setSelected(true);
                 jTextICECode.setText(result[12]);
                 jTextICEMessage.setText(result[13]);
+                jLabelICECode.setEnabled(true);
+                jLabelICEMessage.setEnabled(true);
+                jTextICECode.setEnabled(true);
+                jTextICEMessage.setEnabled(true);
                 }
             else
                 {
                 jCheckUseICE.setSelected(false);
                 jTextICECode.setText("");
                 jTextICEMessage.setText("");
+                jLabelICECode.setEnabled(false);
+                jLabelICEMessage.setEnabled(false);
+                jTextICECode.setEnabled(false);
+                jTextICEMessage.setEnabled(false);
                 }
             }
 
@@ -1446,15 +1540,34 @@ class properties extends javax.swing.JFrame {
     private void jButtonRetrievePathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetrievePathActionPerformed
         jButtonRewriteStep.setEnabled(false);
         jTextRootSteps.setText("");
-        String path = "paths/" + jTextCurrentFile.getText();
-        contentReadFile(path, 1);
-        Vector v = getContentRead();
-
-        for(Enumeration e = v.elements(); e.hasMoreElements();)
+        if(jRadioPath.isSelected() == true)
             {
-            String myString = (String) e.nextElement();
+            String path = "paths/" + jTextCurrentFile.getText();
+            contentReadFile(path, 1);
+            Vector v = getContentRead();
 
-            jTextRootSteps.append(myString + newline);
+            for(Enumeration e = v.elements(); e.hasMoreElements();)
+                {
+                String myString = (String) e.nextElement();
+
+                jTextRootSteps.append(myString + newline);
+                }
+            }
+        else
+            {
+            if(jRadioRobot.isSelected() == true)
+                {
+                String path = "robots/" + jTextNPCName.getText() + "/" + jTextCurrentFile.getText();
+                contentReadFile(path, 1);
+                Vector v = getContentRead();
+
+                for(Enumeration e = v.elements(); e.hasMoreElements();)
+                    {
+                    String myString = (String) e.nextElement();
+
+                    jTextRootSteps.append(myString + newline);
+                    }
+                }
             }
     }//GEN-LAST:event_jButtonRetrievePathActionPerformed
 
@@ -1490,7 +1603,7 @@ class properties extends javax.swing.JFrame {
             {
             if(jRadioRobot.isSelected() == true)
                 {
-                Vector v = getFileList("robots", 1);
+                Vector v = getFileList("robots/" + jTextNPCName.getText() + "/", 1);
 
                 jComboPathFiles.removeAllItems();
                 for(Enumeration e = v.elements(); e.hasMoreElements();)
@@ -1517,12 +1630,89 @@ class properties extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonRewriteStepAncestorRemoved
 
     private void jButtonRewriteStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRewriteStepActionPerformed
+        jButtonEditStep.setEnabled(true);
         jButtonRewriteStep.setEnabled(false);
-        String line = jTextAvatarX.getText() + ":" + jTextAvatarY.getText() + ":" + jTextAvatarZ.getText();
-        jTextRootSteps.replaceSelection(line);
-        
+        String line = null;
+        int pos = jTextRootSteps.getCaretPosition();
+        try
+            {
+            currentLine = jTextRootSteps.getLineOfOffset(pos);
+            currentStart = jTextRootSteps.getLineStartOffset(currentLine);
+            currentEnd = jTextRootSteps.getLineEndOffset(currentLine);
+            jTextRootSteps.select(currentStart, currentEnd);
+            }
+        catch (BadLocationException ex)
+            {
+
+            }
+        if(jRadioPath.isSelected() == true)
+            {
+            jButtonRewriteStep.setEnabled(false);
+            line = jTextAvatarX.getText() + ":" + jTextAvatarY.getText() + ":" + jTextAvatarZ.getText();
+            jTextRootSteps.replaceRange(line + newline, currentStart, currentEnd);
+            }
+        else
+            {
+            if(jRadioRobot.isSelected() == true)
+                {
+                line = buildRobotLine();
+                jTextRootSteps.replaceRange(line + newline, currentStart, currentEnd);
+                }
+            }
     }//GEN-LAST:event_jButtonRewriteStepActionPerformed
 
+    private String buildRobotLine()
+    {
+        String line = null;
+        if(jCheckUseGoto.isSelected() == true)
+            {
+            line = "true:" + jTextAvatarX.getText() + ":" + jTextAvatarY.getText() + ":" + jTextAvatarZ.getText() + ":";
+            }
+        else
+            {
+            line = "false: : : :";
+            }
+        if(jCheckUseAudio.isSelected() == true)
+            {
+            line = line + "true:" + jTextCurrentAudio.getText() + ":";
+            }
+        else
+            {
+            line = line + "false: :";
+            }
+        if(jCheckUseAnimation.isSelected() == true)
+            {
+            line = line + "true:" + (String)jComboAnimation.getSelectedItem() + ":";
+            }
+        else
+            {
+            line = line + "false: :";
+            }
+        if(jCheckUseChat.isSelected() == true)
+            {
+            if(jCheckChatText.isSelected() == true)
+                {
+                line = line + "chatText:" + jTextAreaChat.getText() + ":" + jTextChatFrom.getText() + ":";
+                }
+            else
+                {
+                line = line + "chatFile:" + jTextCurrentChat.getText() + ":" + jTextChatFrom.getText() + ":";
+                }
+            }
+        else
+            {
+            line = line + "false: : :";
+            }
+        if(jCheckUseICE.isSelected() == true)
+            {
+            line = line + "ice:" + jTextICECode.getText() + ":" + jTextICEMessage.getText() + ":";
+            }
+        else
+            {
+            line = line + " : : :";
+            }
+        return line;
+    }
     private void jComboSoundFilesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jComboSoundFilesMouseClicked
         jTextCurrentAudio.setText((String)jComboSoundFiles.getSelectedItem());
     }//GEN-LAST:event_jComboSoundFilesMouseClicked
@@ -1544,16 +1734,15 @@ class properties extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonPlayClipActionPerformed
 
     private void jButtonRetrieveThisChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonRetrieveThisChatActionPerformed
-        jTextRootSteps.setText("");
-        String path = "chats/" + jTextNPCName.getText() + "/" + jTextCurrentFile.getText();
+        jTextAreaChat.setText("");
+        String path = "chats/" + jTextNPCName.getText() + "/" + jTextCurrentChat.getText();
         contentReadFile(path, 1);
         Vector v = getContentRead();
 
         for(Enumeration e = v.elements(); e.hasMoreElements();)
             {
             String myString = (String) e.nextElement();
-
-            jTextRootSteps.append(myString + newline);
+            jTextAreaChat.append(myString + newline);
             }
     }//GEN-LAST:event_jButtonRetrieveThisChatActionPerformed
 
@@ -1652,10 +1841,24 @@ class properties extends javax.swing.JFrame {
             {
             if(jRadioRobot.isSelected() == true)
                 {
-                playRobot(jTextCurrentFile.getText());
+                playRobot(jTextCurrentFile.getText(), jTextNPCName.getText());
                 }
             }
     }//GEN-LAST:event_jButtonTestPathActionPerformed
+
+    private void jButtonWriteThisChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWriteThisChatActionPerformed
+            String theText = jTextAreaChat.getText();
+            contentWriteFile("chats/" + jTextNPCName.getText() + "/", jTextCurrentChat.getText(), theText, 1);
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButtonWriteThisChatActionPerformed
+
+    private void jButtonGenerateWrapperActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGenerateWrapperActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButtonGenerateWrapperActionPerformed
+
+    private void jButtonCreateRobotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCreateRobotActionPerformed
+        createRobot(jTextCurrentFile.getText(), jTextNPCName.getText());
+    }//GEN-LAST:event_jButtonCreateRobotActionPerformed
 
     public static void setScriptContext(ScriptContext ctx)
         {
@@ -2219,20 +2422,42 @@ class properties extends javax.swing.JFrame {
             }
         }
 
-    private void playRobot(String name)
+    private void playRobot(String robotName, String npcName)
         {
         try
             {
-            Class partypes[] = new Class[1];
-            partypes[0] = name.getClass();
+            Class partypes[] = new Class[2];
+            partypes[0] = robotName.getClass();
+            partypes[1] = npcName.getClass();
             Method meth = sc.getMethod("playRobot", partypes);
-            Object arglist[] = new Object[1];
-            arglist[0] = name;
+            Object arglist[] = new Object[2];
+            arglist[0] = robotName;
+            arglist[1] = npcName;
             meth.invoke(myClassObject, arglist);
             }
         catch(Exception e)
             {
             System.out.println("Exception for playRobot");
+            e.printStackTrace();
+            }
+        }
+
+    private void createRobot(String robotName, String npcName)
+        {
+        try
+            {
+            Class partypes[] = new Class[2];
+            partypes[0] = robotName.getClass();
+            partypes[1] = npcName.getClass();
+            Method meth = sc.getMethod("createRobot", partypes);
+            Object arglist[] = new Object[2];
+            arglist[0] = robotName;
+            arglist[1] = npcName;
+            meth.invoke(myClassObject, arglist);
+            }
+        catch(Exception e)
+            {
+            System.out.println("Exception for createRobot");
             e.printStackTrace();
             }
         }
@@ -2260,6 +2485,7 @@ class properties extends javax.swing.JFrame {
     private javax.swing.JButton EditRetrieveScript;
     private javax.swing.JTable ScriptsTable;
     private javax.swing.ButtonGroup buttonGroupPath;
+    private javax.swing.JButton jButtonCreateRobot;
     private javax.swing.JButton jButtonCreateStep;
     private javax.swing.JButton jButtonEditStep;
     private javax.swing.JButton jButtonGenerateWrapper;

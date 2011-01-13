@@ -278,7 +278,7 @@ public class ScriptingComponentMO extends CellComponentMO
             {
             Class cl = getClass().forName(className);
             System.out.println("In createInstance - cl = " + cl);
-            ccs =     (CellServerState) cl.newInstance();
+            ccs = (CellServerState) cl.newInstance();
             System.out.println("In createInstance - ccs = " + ccs);
             }
         catch (InstantiationException ex)
@@ -295,8 +295,7 @@ public class ScriptingComponentMO extends CellComponentMO
             }
     // get the current position of the cell
 
-        PositionComponentServerState pcss = (PositionComponentServerState)
-        ccs.getComponentServerState(PositionComponentServerState.class);
+        PositionComponentServerState pcss = (PositionComponentServerState)ccs.getComponentServerState(PositionComponentServerState.class);
         if (pcss == null)
             {
         // add the position component if it doesn't exist
