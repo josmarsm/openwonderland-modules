@@ -23,7 +23,6 @@
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
-        <path location="../AVPS-Cell/build/client/AVPS-client.jar"/>
         <path location="${modules.dir}/world/containercell/build/lib/client/container-cell-client.jar"/>
 	<path location="${current.dir}/lib/jbullet.jar"/>
 	<path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
@@ -32,7 +31,6 @@
 
     <pathconvert property="module-server.classpath">
         <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
-        <path location="../AVPS-Cell/build/server/AVPS-server.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common,

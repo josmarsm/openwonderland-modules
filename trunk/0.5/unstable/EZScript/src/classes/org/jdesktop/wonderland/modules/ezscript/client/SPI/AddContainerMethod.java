@@ -9,9 +9,6 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
-import org.jdesktop.wonderland.modules.avps.common.AVPSCellServerState;
-import org.jdesktop.wonderland.modules.avps.common.AVPSutil.AVPSTYPE;
-import org.jdesktop.wonderland.modules.avps.common.AVPSutil.STATE;
 import org.jdesktop.wonderland.modules.containercell.client.ContainerComponent;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
