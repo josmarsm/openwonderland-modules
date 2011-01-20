@@ -86,8 +86,10 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.FarCellEventSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.FarCellEvent;
+import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.common.FarCellEventMessage;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
@@ -231,15 +233,22 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         //scriptBindings.put("ScriptContext", this);
         //scriptEngine.setBindings(scriptBindings, ScriptContext.ENGINE_SCOPE);
 
+
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
         Iterator<ScriptMethodSPI> iter = loader.getInstances(ScriptMethod.class,
                                                         ScriptMethodSPI.class);
-
+        //grab all global void methods
         while(iter.hasNext()) {
             this.addFunctionBinding(iter.next());
         }
 
+        //grab all returnables
+        Iterator<ReturnableScriptMethodSPI> returnables = loader.getInstances(ReturnableScriptMethod.class, ReturnableScriptMethodSPI.class);
+        while(iter.hasNext()) {
+            this.addFunctionBinding(returnables.next());
+        }
 
+        //grab all events
         Iterator<FarCellEventSPI> eventIter = loader.getInstances(FarCellEvent.class,
                                                              FarCellEventSPI.class);
         while(eventIter.hasNext()) {
@@ -679,7 +688,28 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         } catch (ScriptException e) {
             e.printStackTrace();
         }
+    }
 
+    public void addFunctionBinding(ReturnableScriptMethodSPI method) {
+        scriptBindings.put("this"+method.getFunctionName(), method);
+        String scriptx  = "function " + method.getFunctionName()+"() {\n"
+            + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+            +"\tfor(var i = 0; i < arguments.length; i++) {\n"
+            + "\targs[i] = arguments[i];\n"
+            + "\t}\n"
+
+           // + "\targs = "+method.getFunctionName()+".arguments;\n"
+            + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
+            + "\tthis"+method.getFunctionName()+".run();\n"
+            + "\treturn this"+method.getFunctionName()+".return();\n"
+            +"}";
+
+        try {
+            System.out.println("evaluating script: \n"+scriptx);
+            scriptEngine.eval(scriptx, scriptBindings);
+        } catch (ScriptException e) {
+            e.printStackTrace();
+        }
     }
 
     public void fireFarCellEvent(CellID cellID, String label, Object[] args) {
