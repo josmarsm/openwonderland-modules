@@ -343,7 +343,6 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         }
     }
 
-
     public void enableMouseEvents() {
         if(mouseEventListener == null) {
             mouseEventListener = new MouseEventListener();
@@ -683,6 +682,9 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
     }
 
+    public void fireFarCellEvent(CellID cellID, String label, Object[] args) {
+        channelComponent.send(new FarCellEventMessage(cellID, label, args));
+    }
 
     /**
      *  EXPERIMENTAL - THIS WILL PROBABLY BE REMOVED FROM THIS CLASS IN THE NEAR
