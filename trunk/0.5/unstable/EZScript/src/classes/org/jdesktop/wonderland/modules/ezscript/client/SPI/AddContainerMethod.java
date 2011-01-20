@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.jdesktop.wonderland.modules.ezscript.client.SPI;
 
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -30,11 +25,6 @@ public class AddContainerMethod implements ScriptMethodSPI {
     }
 
     public void run() {
-        /*state = new AVPSCellServerState();
-        state.setType(AVPSTYPE.SPACE);
-        state.setState(STATE.TRANSPARENT);
-        state.setRadius(1.0f);
-        state.setLockable(true);*/
 
         if(cell.getComponent(ContainerComponent.class) == null) {
             new Thread(new Runnable() {

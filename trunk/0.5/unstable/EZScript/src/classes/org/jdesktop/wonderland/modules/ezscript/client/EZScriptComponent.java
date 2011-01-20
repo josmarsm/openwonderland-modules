@@ -48,10 +48,7 @@ import javax.swing.SwingUtilities;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import org.jdesktop.mtgame.AwtEventCondition;
-import org.jdesktop.mtgame.CollisionInfo;
-import org.jdesktop.mtgame.CollisionManager;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -59,6 +56,8 @@ import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 
@@ -81,12 +80,16 @@ import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarCharacter;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.FarCellEventSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.annotation.FarCellEvent;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
+import org.jdesktop.wonderland.modules.ezscript.common.FarCellEventMessage;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
@@ -155,6 +158,10 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
     private List<Runnable> callbacksOnApproach;     //avatar approach
     private List<Runnable> callbacksOnLeave;        //avatar leave
     private Map<String, List<Runnable>> callbacksOnKeyPress; // keypress
+
+    //Functions to be run from remote cells to alter this particular cell
+    //only one runnable per name, no overloading supported as of yet...
+    private Map<String, FarCellEventSPI> farCellEvents;
     
     //event listeners
     private MouseEventListener mouseEventListener;
@@ -179,6 +186,10 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
     private ContextMenuFactorySPI menuFactory;
     private MenuItemListener menuListener;
 
+    //ChannelComponent variables
+    @UsesCellComponent
+    private ChannelComponent channelComponent;
+
     //state variables
     private boolean mouseEventsEnabled = false;
     private boolean proximityEventsEnabled = false;
@@ -186,7 +197,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
     public EZScriptComponent(Cell cell) {
         super(cell);
-
+        
         //initialize callback containers
         callbacksOnClick = new ArrayList<Runnable>();
         callbacksOnLoad = new ArrayList<Runnable>();
@@ -204,6 +215,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
             callbacksOnKeyPress.put(letter, l);
         }
 
+        farCellEvents = new HashMap<String, FarCellEventSPI>();
 
         //intialize listeners
         mouseEventListener = new MouseEventListener();
@@ -226,15 +238,26 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         while(iter.hasNext()) {
             this.addFunctionBinding(iter.next());
         }
-        CollisionManager cm = ClientContextJME.getWorldManager().getCollisionManager();
-        JMECollisionSystem cs = (JMECollisionSystem)cm.loadCollisionSystem(JMECollisionSystem.class);
-        CollisionInfo info = cs.findAllCollisions(new Node(), keyEventsEnabled);
-        for(int i = 0; i < info.size(); i++) {
 
+
+        Iterator<FarCellEventSPI> eventIter = loader.getInstances(FarCellEvent.class,
+                                                             FarCellEventSPI.class);
+        while(eventIter.hasNext()) {
+            FarCellEventSPI spi = eventIter.next();
+            if(spi.getCellClassName().equals(cell.getClass().getName())) {
+                if(!farCellEvents.containsKey(spi.getEventName())) {
+                    farCellEvents.put(spi.getEventName(), spi);
+                }
+                else {
+                    logger.info("Cell already has event defined: "
+                                                           +spi.getEventName());
+                }
+            }
+            else {
+                logger.finest("This event is not for our cell: "
+                                                           +spi.getEventName());
+            }
         }
-
-
-
     }
 
     @Override
@@ -273,6 +296,8 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                 break;
             case ACTIVE:
                 if(increasing) {
+                    channelComponent.addMessageReceiver(FarCellEventMessage.class,
+                                                        new FarCellEventReceiver());
                     //intialize shared state component and map
                     scriptBindings.put("ScriptContext", this);
                     scriptBindings.put("cell", this.cell);
@@ -289,6 +314,8 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                            //get other maps here.
                         }
                     }).start();
+
+
                 }
                 break;
             case INACTIVE:
@@ -616,6 +643,24 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         }
     }
 
+    class FarCellEventReceiver implements ComponentMessageReceiver {
+
+        public void messageReceived(CellMessage message) {
+            if(message instanceof FarCellEventMessage) {
+                FarCellEventMessage fcem = (FarCellEventMessage)message;
+                String name = fcem.getEventName();
+
+                if(farCellEvents.containsKey(name)) {
+                    farCellEvents.get(name).setArguments(fcem.getArguments());
+                    farCellEvents.get(name).run();
+                } else {
+                    logger.warning("Received an event request with no associated event: "+fcem.getEventName());
+                }
+            }
+        }
+
+    }
+
     public void addFunctionBinding(ScriptMethodSPI method) {
         scriptBindings.put("this"+method.getFunctionName(), method);
         String scriptx  = "function " + method.getFunctionName()+"() {\n"
@@ -635,6 +680,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         } catch (ScriptException e) {
             e.printStackTrace();
         }
+
     }
 
 
@@ -982,6 +1028,4 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         }
 
     }
-
-
 }
