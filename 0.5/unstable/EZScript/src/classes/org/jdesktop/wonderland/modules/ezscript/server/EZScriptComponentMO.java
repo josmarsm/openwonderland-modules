@@ -21,16 +21,20 @@ package org.jdesktop.wonderland.modules.ezscript.server;
 import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.ezscript.common.EZScriptComponentClientState;
 import org.jdesktop.wonderland.modules.ezscript.common.EZScriptComponentServerState;
+import org.jdesktop.wonderland.modules.ezscript.common.FarCellEventMessage;
 import org.jdesktop.wonderland.modules.sharedstate.server.SharedStateComponentMO;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * Scripting CellComponentMO based on a sample cell component by,
@@ -51,8 +55,6 @@ public class EZScriptComponentMO extends CellComponentMO {
     
     public EZScriptComponentMO(CellMO cell) {
         super(cell);
-       //channelComponentRef.getForUpdate();
-       //current trying to add
        
     }
 
@@ -65,6 +67,12 @@ public class EZScriptComponentMO extends CellComponentMO {
     protected void setLive(boolean live) {
         super.setLive(live);
         logger.warning("Setting EZScriptComponentMO to live = " + live);
+        if(live) {
+            channelComponentRef.getForUpdate().addMessageReceiver(FarCellEventMessage.class,
+                    (ChannelComponentMO.ComponentMessageReceiver)new FarCellEventReceiver(this.cellRef.get()));
+        } else {
+            channelComponentRef.getForUpdate().removeMessageReceiver(FarCellEventMessage.class);
+        }
     }
 
 
@@ -90,5 +98,18 @@ public class EZScriptComponentMO extends CellComponentMO {
     public void setServerState(CellComponentServerState state) {
         super.setServerState(state);
         info = ((EZScriptComponentServerState)state).getInfo();
+    }
+
+    private static class FarCellEventReceiver extends AbstractComponentMessageReceiver {
+
+        public FarCellEventReceiver(CellMO cellMO) {
+            super(cellMO);
+        }
+
+        @Override
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {            
+            CellMO cellMO = getCell();
+            cellMO.sendCellMessage(clientID, message);            
+        }
     }
 }
