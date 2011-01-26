@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
@@ -25,10 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -40,6 +55,9 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
+import org.jdesktop.wonderland.modules.poster.common.PosterCellClientState;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
@@ -53,12 +71,11 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
  * 
  * @author Bernard Horan
  */
-public class PosterCell extends Cell {
+public class PosterCell extends App2DCell {
 
     final private static String SHARED_MAP_KEY = "Poster";
     final private static String TEXT_LABEL_KEY = "text";
     final private static String MODE_LABEL_KEY = "mode";
-    private static final Logger posterCellLogger = Logger.getLogger(PosterCell.class.getName());
 
     @UsesCellComponent
     private ContextMenuComponent contextComp = null;
@@ -70,9 +87,6 @@ public class PosterCell extends Cell {
     @UsesCellComponent
     protected SharedStateComponent sharedStateComp;
 
-    // The Cell's renderer
-    private PosterCellRenderer cellRenderer = null;
-
     // The listener for changes to the shared map
     private SharedMapListenerCli mapListener = null;
     
@@ -80,7 +94,15 @@ public class PosterCell extends Cell {
     private boolean billboardMode = false;
     private PosterForm posterForm;
 
-    /** Constructor, takes Cell's ID and Cache */
+    /** The (singleton) window created by the Poster app */
+    private PosterWindow window;
+    /** The cell client state message received from the server cell */
+    private PosterCellClientState clientState;
+
+    /** Constructor, takes Cell's ID and Cache
+     * @param cellID The ID of the cell.
+     * @param cellCache the cell cache which instantiated, and owns, this cell.
+     */
     public PosterCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         mapListener = new MySharedMapListener();
@@ -92,10 +114,11 @@ public class PosterCell extends Cell {
                     }
                 });
             } catch (InterruptedException ex) {
-                posterCellLogger.log(Level.SEVERE, "Failed to create poster form", ex);
+                logger.log(Level.SEVERE, "Failed to create poster form", ex);
             } catch (InvocationTargetException ex) {
-                posterCellLogger.log(Level.SEVERE, "Failed to create poster form", ex);
+                logger.log(Level.SEVERE, "Failed to create poster form", ex);
             }
+        
     }
 
     /**
@@ -105,7 +128,6 @@ public class PosterCell extends Cell {
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
         if (increasing && status == CellStatus.ACTIVE) {
-            //posterCellLogger.severe("active and increasing");
 
             // Create the shared hash map and initialize the poster text
             // if it does not already exist.
@@ -117,7 +139,6 @@ public class PosterCell extends Cell {
             }
 
             posterText = posterString.toString();
-            //posterCellLogger.severe("posterText: " + posterText);
 
             SharedBoolean billboardModeBoolean = sharedMap.get(MODE_LABEL_KEY, SharedBoolean.class);
             if (billboardModeBoolean == null) {
@@ -125,7 +146,6 @@ public class PosterCell extends Cell {
                 sharedMap.put(MODE_LABEL_KEY, billboardModeBoolean);
             }
             billboardMode = billboardModeBoolean.getValue();
-            //posterCellLogger.severe("billboardMode: " + billboardMode);
 
             //Add menu item to edit the text from the context menu
             if (menuFactory == null) {
@@ -145,12 +165,31 @@ public class PosterCell extends Cell {
                 };
                 contextComp.addContextMenuFactory(menuFactory);
             }
+            //Create the poster app
+            PosterApp stApp = new PosterApp("Poster", clientState.getPixelScale());
+            setApp(stApp);
+
+            // Tell the app to be displayed in this cell.
+            stApp.addDisplayer(this);
+
+            // This app has only one window, so it is always top-level
+            try {
+                window = new PosterWindow(this, stApp, clientState.getPreferredWidth(),
+                        clientState.getPreferredHeight(), true, pixelScale);
+                window.setTitle("Poster");
+                window.setDecorated(false);
+            } catch (InstantiationException ex) {
+                throw new RuntimeException(ex);
+            }
+
+            // Both the app and the user want this window to be visible
+            window.setVisibleApp(true);
+            window.setVisibleUser(this, true);
         }
         if (status == CellStatus.RENDERING && increasing == true) {
             // Initialize the render with the current poster text
-            //posterCellLogger.severe("rendering and increasing");
             posterForm.updateForm();
-            cellRenderer.updateNode();
+            window.updateLabel();
 
 
             // Listen for changes in the poster text from other clients
@@ -169,16 +208,9 @@ public class PosterCell extends Cell {
                 contextComp.removeContextMenuFactory(menuFactory);
                 menuFactory = null;
             }
+            window.setVisibleApp(false);
+            window = null;
         }
-    }
-
-    @Override
-    protected CellRenderer createCellRenderer(RendererType rendererType) {
-        if (rendererType == RendererType.RENDERER_JME) {
-            cellRenderer = new PosterCellRenderer(this);
-            return cellRenderer;
-        }
-        return super.createCellRenderer(rendererType);
     }
 
     Image getPosterImage() {
@@ -211,9 +243,7 @@ public class PosterCell extends Cell {
     }
 
     void setPosterText(String text) {
-        //posterCellLogger.severe("text: " + text);
         if (!text.equals(posterText)) {
-            //posterCellLogger.severe("not equal");
             posterText = text;
             SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
             SharedString labelTextString = SharedString.valueOf(posterText);
@@ -222,9 +252,7 @@ public class PosterCell extends Cell {
     }
 
     void setBillboardMode(boolean mode) {
-        //posterCellLogger.severe("mode: " + mode);
         if (billboardMode != mode) {
-            //posterCellLogger.severe("not equal");
             billboardMode = mode;
             SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
             SharedBoolean billboardModeBoolean = SharedBoolean.valueOf(billboardMode);
@@ -233,12 +261,22 @@ public class PosterCell extends Cell {
     }
 
     /**
+     * Initialize the cell with parameters from the server.
+     *
+     * @param state the client state with which initialize the cell.
+     */
+    @Override
+    public void setClientState(CellClientState state) {
+        super.setClientState(state);
+        clientState = (PosterCellClientState) state;
+    }
+
+    /**
      * Listens to changes in the shared map and updates the poster text or billboard mode
      */
     class MySharedMapListener implements SharedMapListenerCli {
 
         public void propertyChanged(SharedMapEventCli event) {
-            //posterCellLogger.severe("property changed: " + event.getPropertyName() + " -- " + event.getNewValue());
             if (event.getPropertyName().equals(TEXT_LABEL_KEY)) {
                 SharedString posterTextString = (SharedString) event.getNewValue();
                 posterText = posterTextString.getValue();
@@ -248,8 +286,7 @@ public class PosterCell extends Cell {
                 billboardMode = billboardModeBoolean.getValue();
             }
             posterForm.updateForm();
-            cellRenderer.updateNode();
-
+            window.updateLabel();
         }
     }
 }
