@@ -5,7 +5,7 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.SPI;
 
-import org.jdesktop.wonderland.modules.ezscript.client.StateMachine;
+import org.jdesktop.wonderland.modules.ezscript.client.StringStateMachine;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
@@ -13,7 +13,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
  * @author JagWire
  */
 @ScriptMethod
-public class CreateStateMachine implements ReturnableScriptMethodSPI {
+public class CreateStringStateMachine implements ReturnableScriptMethodSPI {
 
     public String getFunctionName() {
         return "CreateStateMachine";
@@ -28,7 +28,7 @@ public class CreateStateMachine implements ReturnableScriptMethodSPI {
     }
 
     public Object returns() {
-        return new StateMachine();
+        return new StringStateMachine();
     }
 
 }

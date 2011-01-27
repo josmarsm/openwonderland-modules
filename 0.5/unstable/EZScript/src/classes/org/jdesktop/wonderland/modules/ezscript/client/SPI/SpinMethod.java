@@ -12,6 +12,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.modules.ezscript.client.StringStateMachine;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
@@ -24,6 +25,7 @@ public class SpinMethod implements ScriptMethodSPI {
     Cell cell;
     float rotations;
     float time; //in seconds, assume 30 frames per second
+    StringStateMachine machine;//optional
     public String getFunctionName() {
         return "spin";
     }
@@ -32,7 +34,10 @@ public class SpinMethod implements ScriptMethodSPI {
         cell = (Cell)args[0];
         rotations = ((Double)args[1]).floatValue();
         time = ((Double)args[2]).floatValue();
+        if(args[3] != null) {
+            machine = (StringStateMachine)args[3];
 
+        }
 
     }
 
@@ -108,6 +113,9 @@ public class SpinMethod implements ScriptMethodSPI {
         public void compute(ProcessorArmingCollection collection) {
             if(frameIndex == 30*time) {
                 this.getEntity().removeComponent(SpinProcessor.class);
+                if(machine != null) {
+                    machine.fireCurrentState();
+                }
 
             }
             degrees += increment;

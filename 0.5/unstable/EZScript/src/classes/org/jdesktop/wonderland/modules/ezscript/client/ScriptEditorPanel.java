@@ -24,10 +24,19 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
     /** Creates new form ScriptEditorPanel */
     private EZScriptComponent scriptComponent;
     private JDialog dialog;
+    private boolean isGlobal = false;
     public ScriptEditorPanel(EZScriptComponent component, JDialog dialog) {
         initComponents();
-
+        isGlobal = false;
         this.scriptComponent = component;
+        this.dialog = dialog;
+        this.setMinimumSize(new Dimension(600, 400));
+        this.setPreferredSize(new Dimension(600, 400));
+    }
+
+    public ScriptEditorPanel(JDialog dialog) {
+        initComponents();
+        isGlobal = true;
         this.dialog = dialog;
         this.setMinimumSize(new Dimension(600, 400));
         this.setPreferredSize(new Dimension(600, 400));
@@ -107,15 +116,17 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
 
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
         // TODO add your handling code here:
+        if(!isGlobal) {
+            System.out.println("executed button pressed!");
+            new Thread(new Runnable() {
+                public void run() {
+                    scriptComponent.getScriptMap().put("editor", SharedString.valueOf(scriptArea.getText()));
+                  //  scriptComponent.clearCallbacks();
 
-        new Thread(new Runnable() {
-            public void run() {
-                scriptComponent.getScriptMap().put("editor", SharedString.valueOf(scriptArea.getText()));
-              //  scriptComponent.clearCallbacks();
-                
-                //scriptComponent.evaluateScript(scriptArea.getText());
-            }
-        }).start();
+                    //scriptComponent.evaluateScript(scriptArea.getText());
+                }
+            }).start();
+        }
 
         
     }//GEN-LAST:event_executeButtonActionPerformed
