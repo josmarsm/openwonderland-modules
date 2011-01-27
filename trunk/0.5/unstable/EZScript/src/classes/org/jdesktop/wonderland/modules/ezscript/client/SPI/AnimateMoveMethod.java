@@ -16,6 +16,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.modules.ezscript.client.IntStateMachine;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
@@ -33,6 +34,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
     private float y;
     private float z;
     private float seconds;
+    private IntStateMachine machine = null;
 
     public String getFunctionName() {
         return "animateMove";
@@ -44,10 +46,19 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         y = ((Double)args[2]).floatValue();
         z = ((Double)args[3]).floatValue();
         seconds = ((Double)args[4]).floatValue();
+        //optional
+        if(args.length > 5) {
+            machine = (IntStateMachine)args[5];
+        }
 
     }
 
     public void run() {
+        if(machine != null && machine.isLocked()) {
+            machine.addTransition(this);
+            return;
+        }
+        
         SceneWorker.addWorker(new WorkCommit() {
 
             public void commit() {
@@ -129,6 +140,9 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         public void compute(ProcessorArmingCollection collection) {
             if(frameIndex == 30*seconds) {
                 this.getEntity().removeComponent(TranslationProcessor.class);
+                if(machine != null) {
+                    machine.unlock();
+                }
 
             }
             translate.x += xInc;

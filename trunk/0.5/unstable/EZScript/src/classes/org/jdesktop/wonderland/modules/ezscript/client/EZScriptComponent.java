@@ -164,6 +164,9 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
     //Functions to be run from remote cells to alter this particular cell
     //only one runnable per name, no overloading supported as of yet...
     private Map<String, FarCellEventSPI> farCellEvents;
+
+    //List of behaviors
+    private List<Behavior> behaviors;
     
     //event listeners
     private MouseEventListener mouseEventListener;
@@ -218,7 +221,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         }
 
         farCellEvents = new HashMap<String, FarCellEventSPI>();
-
+        behaviors = new ArrayList();
         //intialize listeners
         mouseEventListener = new MouseEventListener();
         keyEventListener = new KeyboardEventListener();
@@ -242,9 +245,12 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
             this.addFunctionBinding(iter.next());
         }
 
-        //grab all returnables
-        Iterator<ReturnableScriptMethodSPI> returnables = loader.getInstances(ReturnableScriptMethod.class, ReturnableScriptMethodSPI.class);
-        while(iter.hasNext()) {
+        //grab all returnablesa
+
+        Iterator<ReturnableScriptMethodSPI> returnables 
+                            = loader.getInstances(ReturnableScriptMethod.class,
+                                               ReturnableScriptMethodSPI.class);
+        while(returnables.hasNext()) {
             this.addFunctionBinding(returnables.next());
         }
 
@@ -317,12 +323,14 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                            callbacksMap = sharedStateComponent.get("callbacks");
                            scriptsMap = sharedStateComponent.get("scripts");
                            callbacksMap.addSharedMapListener(mapListener);
-                           callbacksMap.addSharedMapListener(mapListener);
+                           scriptsMap.addSharedMapListener(mapListener);
                            //don't grab any persisted scripts just yet.
 
                            //get other maps here.
                         }
                     }).start();
+
+                    
 
 
                 }
@@ -600,6 +608,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                 SharedString script = (SharedString)event.getNewValue();
                 try {
                     //execute script typed in Scripting Editor
+                    System.out.println("executing script...");
                     scriptEngine.eval(script.getValue(), scriptBindings);
                 } catch(Exception e) {
                     e.printStackTrace();
@@ -633,7 +642,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                         //dialog.setName("Script Editor");
                         dialog.setTitle("Script Editor - " + cell.getName());
                         //2. Optional: What happens when the frame closes?
-                        dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+                        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
                         //3. Create component and put them in the frame.
 
@@ -683,7 +692,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
             +"}";
 
         try {
-            System.out.println("evaluating script: \n"+scriptx);
+            //System.out.println("evaluating script: \n"+scriptx);
             scriptEngine.eval(scriptx, scriptBindings);
         } catch (ScriptException e) {
             e.printStackTrace();
@@ -695,13 +704,15 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         String scriptx  = "function " + method.getFunctionName()+"() {\n"
             + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
             +"\tfor(var i = 0; i < arguments.length; i++) {\n"
-            + "\targs[i] = arguments[i];\n"
+            + "\t\targs[i] = arguments[i];\n"
             + "\t}\n"
 
            // + "\targs = "+method.getFunctionName()+".arguments;\n"
             + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
             + "\tthis"+method.getFunctionName()+".run();\n"
-            + "\treturn this"+method.getFunctionName()+".return();\n"
+
+            + "\tvar tmp = this"+method.getFunctionName()+".returns();\n"
+            + "\treturn tmp\n;"
             +"}";
 
         try {
@@ -714,6 +725,40 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
     public void fireFarCellEvent(CellID cellID, String label, Object[] args) {
         channelComponent.send(new FarCellEventMessage(cellID, label, args));
+    }
+
+    public void attachBehavior(Behavior b) {
+        behaviors.add(b);
+        
+        if(b.onClick() != null) {
+            callbacksOnClick.add(b.onClick());
+        }
+
+        if(b.onMouseEnter() != null) {
+            callbacksOnMouseEnter.add(b.onMouseEnter());
+        }
+
+        if(b.onMouseExit() != null) {
+            callbacksOnMouseExit.add(b.onMouseExit());
+        }
+
+        if(b.onApproach() != null) {
+            callbacksOnApproach.add(b.onApproach());
+        }
+
+        if(b.onLeave() != null) {
+            callbacksOnLeave.add(b.onLeave());
+        }
+        
+        for(Object o: b.getKeyPresses().keySet()) {
+            Runnable r = b.onKeyPress((String)o);
+            callbacksOnKeyPress.get((String)o).add(r);
+        }
+    }
+
+    public void removeBehavior(Behavior b) {
+        if(behaviors.contains(b))
+            behaviors.remove(b);
     }
 
     /**

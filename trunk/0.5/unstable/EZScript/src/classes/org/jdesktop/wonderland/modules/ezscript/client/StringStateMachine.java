@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * DESIGN TEMPLATE:
  *
- * var x = new StateMachine();
+ * var x = new StringStateMachine();
  *
  * function one() {
  * x.state = "two";
@@ -34,22 +34,23 @@ import java.util.Map;
  *  x.fireCurrentState();
  * }
  *
- *
+ * Shortcomings: linear progression of states; what if more than one option
+ * is listed as a "next" progression.
  */
 
 /**
  *
  * @author JagWire
  */
-public class StateMachine {
+public class StringStateMachine {
 
     private Map<String, Runnable> states;
     private String state;
-    public StateMachine() {
+    public StringStateMachine() {
         states = new HashMap<String, Runnable>();
     }
 
-    public StateMachine(int stateAmount) {
+    public StringStateMachine(int stateAmount) {
 
     }
 

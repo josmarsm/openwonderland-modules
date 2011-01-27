@@ -9,6 +9,8 @@ package org.jdesktop.wonderland.modules.ezscript.client.SPI;
  *
  * @author JagWire
  */
-public interface ReturnableScriptMethodSPI extends ScriptMethodSPI {
+public interface ReturnableScriptMethodSPI extends Runnable {
+    public String getFunctionName();
+    public void setArguments(Object[] args);
     public Object returns();
 }
