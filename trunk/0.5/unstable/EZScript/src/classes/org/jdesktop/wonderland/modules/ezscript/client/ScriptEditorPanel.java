@@ -117,7 +117,7 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
         // TODO add your handling code here:
         if(!isGlobal) {
-            System.out.println("executed button pressed!");
+            System.out.println("executed button press!");
             new Thread(new Runnable() {
                 public void run() {
                     scriptComponent.getScriptMap().put("editor", SharedString.valueOf(scriptArea.getText()));
