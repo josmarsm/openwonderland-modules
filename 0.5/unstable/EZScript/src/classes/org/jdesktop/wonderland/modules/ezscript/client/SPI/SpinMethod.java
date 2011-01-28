@@ -3,6 +3,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.SPI;
 
 import com.jme.math.Quaternion;
 import com.jme.scene.Node;
+import java.util.concurrent.Semaphore;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -26,6 +27,7 @@ public class SpinMethod implements ScriptMethodSPI {
     float rotations;
     float time; //in seconds, assume 30 frames per second
     StringStateMachine machine;//optional
+    private Semaphore lock;
     public String getFunctionName() {
         return "spin";
     }
@@ -34,10 +36,7 @@ public class SpinMethod implements ScriptMethodSPI {
         cell = (Cell)args[0];
         rotations = ((Double)args[1]).floatValue();
         time = ((Double)args[2]).floatValue();
-        if(args[3] != null) {
-            machine = (StringStateMachine)args[3];
-
-        }
+        lock = new Semaphore(0);
 
     }
 
@@ -51,6 +50,13 @@ public class SpinMethod implements ScriptMethodSPI {
             }
 
         });
+        try {
+            lock.acquire();
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("spin finished...");
+        }
     }
 
     class SpinProcessor extends ProcessorComponent {
@@ -113,9 +119,7 @@ public class SpinMethod implements ScriptMethodSPI {
         public void compute(ProcessorArmingCollection collection) {
             if(frameIndex == 30*time) {
                 this.getEntity().removeComponent(SpinProcessor.class);
-                if(machine != null) {
-                    machine.fireCurrentState();
-                }
+                lock.release();
 
             }
             degrees += increment;

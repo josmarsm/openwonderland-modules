@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-
+    
 /**
  *
  * @author JagWire
@@ -17,7 +17,6 @@ import java.util.Queue;
 public class IntStateMachine {
     Map<Integer, Runnable> states;
     Queue<Runnable> pending;
-    boolean locked = false;
     int state;
     public IntStateMachine() {
         states = new HashMap();
@@ -32,26 +31,15 @@ public class IntStateMachine {
        }
     }
     /**
-     * Linear model.
+     * We're going to assume the runnable will release the lock when it's done
      */
     public void fireCurrentState() {
-        if(locked) {
-            return;
-        }
+    
         states.get(Integer.valueOf(state)).run();
-        state += 1;
     }
 
     public void fireState(int state) {
-        if(locked && state != this.state) {
-            //enqueue next method if possible
-            pending.offer(states.get(Integer.valueOf(state)));
-            return;
-        } else if(state != this.state) {
-            this.state = state;
-            fireCurrentState();
-        }
-
+        states.get(Integer.valueOf(state)).run();
     }
 
     public int getCurrentState() {
@@ -60,24 +48,6 @@ public class IntStateMachine {
 
     public void setCurrentState(int state) {
            this.state = state;
-    }
-
-    public void unlock() {
-        while(!pending.isEmpty()) {
-            Runnable r = pending.poll();
-            if(r != null) {
-                r.run();
-            }
-        }
-        locked = false;
-    }
-
-    public void lock() {
-        locked = true;
-    }
-
-    public boolean isLocked() {
-        return locked;
     }
 
     public void addTransition(Runnable r) {
