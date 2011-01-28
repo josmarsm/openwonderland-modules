@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.SPI;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import java.util.concurrent.Semaphore;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -34,7 +35,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
     private float y;
     private float z;
     private float seconds;
-    private IntStateMachine machine = null;
+    private Semaphore lock;
 
     public String getFunctionName() {
         return "animateMove";
@@ -46,19 +47,10 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         y = ((Double)args[2]).floatValue();
         z = ((Double)args[3]).floatValue();
         seconds = ((Double)args[4]).floatValue();
-        //optional
-        if(args.length > 5) {
-            machine = (IntStateMachine)args[5];
-        }
 
     }
 
-    public void run() {
-        if(machine != null && machine.isLocked()) {
-            machine.addTransition(this);
-            return;
-        }
-        
+    public void run() {        
         SceneWorker.addWorker(new WorkCommit() {
 
             public void commit() {
@@ -69,6 +61,16 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
             }
 
         });
+
+        //Block until animation is finished
+        try {
+            lock.acquire();
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            System.out.println("animateMove finished!");
+        }
+
     }
 
     class TranslationProcessor extends ProcessorComponent {
@@ -76,15 +78,6 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
          * The WorldManager - used for adding to update list
          */
         private WorldManager worldManager = null;
-        /**
-         * The current degrees of rotation
-         */
-        private float degrees = 0.0f;
-
-        /**
-         * The increment to rotate each frame
-         */
-        private float increment = 0.0f;
 
         /**
          * The rotation matrix to apply to the target
@@ -112,7 +105,6 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         public TranslationProcessor(String name, Node target, float increment) {
             this.worldManager = ClientContextJME.getWorldManager();
             this.target = target;
-            this.increment = increment;
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
             translate = target.getLocalTranslation();
@@ -140,10 +132,8 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         public void compute(ProcessorArmingCollection collection) {
             if(frameIndex == 30*seconds) {
                 this.getEntity().removeComponent(TranslationProcessor.class);
-                if(machine != null) {
-                    machine.unlock();
-                }
 
+                lock.release(); //this should give control back to the state machine.                
             }
             translate.x += xInc;
             translate.y += yInc;

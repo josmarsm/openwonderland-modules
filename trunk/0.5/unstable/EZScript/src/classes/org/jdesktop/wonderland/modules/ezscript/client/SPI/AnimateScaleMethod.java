@@ -8,6 +8,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.SPI;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import java.util.concurrent.Semaphore;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -31,6 +32,7 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
     private Cell cell;
     private float scale;
     private float seconds;
+    private Semaphore lock;
 
     public String getFunctionName() {
        return "animateScale";
@@ -40,6 +42,7 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
         cell = (Cell)args[0];
         scale = ((Double)args[1]).floatValue();
         seconds = ((Double)args[2]).floatValue();
+        lock = new Semaphore(0);
     }
 
     public void run() {
@@ -50,6 +53,15 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
                 r.getEntity().addComponent(ScaleProcessor.class, new ScaleProcessor("scale", n, scale));
             }
         });
+
+        try {
+            lock.acquire();
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
+        finally {
+            System.out.println("animateScale finished...");
+        }
     }
 
     class ScaleProcessor extends ProcessorComponent {
@@ -122,6 +134,7 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
         public void compute(ProcessorArmingCollection collection) {
             if(frameIndex == 30*seconds) {
                 this.getEntity().removeComponent(ScaleProcessor.class);
+                lock.release();
 
             }
             s.x += xInc;
