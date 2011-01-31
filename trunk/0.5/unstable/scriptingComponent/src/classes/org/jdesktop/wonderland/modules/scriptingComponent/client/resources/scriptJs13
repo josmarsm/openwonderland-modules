@@ -1,0 +1,2 @@
+// Default startup.js script
+print("Default startup.js script\r\n");

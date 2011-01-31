@@ -823,13 +823,6 @@ public class ScriptingComponent extends CellComponent
         if(traceLevel > 3)
             {
             System.out.println("ScriptingComponent - enter executeAction - 7 String params");
-            System.out.println("1 = " + one);
-            System.out.println("2 = " + two);
-            System.out.println("3 = " + three);
-            System.out.println("4 = " + four);
-            System.out.println("5 = " + five);
-            System.out.println("6 = " + six);
-            System.out.println("7 = " + seven);
             }
         ScriptingRunnable runny = actionObject.getCmdMap(Name);
         runny.set7Strings(one, two, three, four, five, six, seven);
@@ -2628,7 +2621,18 @@ public class ScriptingComponent extends CellComponent
                                 System.out.println("Script takes the webdav path");
                                 }
                             URL myURL = new URL(thePath);
-                            in = new BufferedReader(new InputStreamReader(myURL.openStream()));
+                            try
+                                {
+                                in = new BufferedReader(new InputStreamReader(myURL.openStream()));
+                                }
+                            catch(FileNotFoundException FNF)
+                                {
+                                if(propResource.equals("webdav") || propResource.equals("cell"))
+                                    {
+                                    thePath = "resources/" + eventNames[eventType];
+                                    in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(thePath)));
+                                    }
+                                }
                             }
                         theScript = compilingEngine.compile(in);
                         scriptMap.put(eventNames[eventType], theScript);
@@ -2673,6 +2677,7 @@ public class ScriptingComponent extends CellComponent
                 if(traceLevel > 0)
                     {
                     System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : Script file " + thePath + " not found");
+                    fnf.printStackTrace();
                     }
                 }
             catch(Exception e)
@@ -3875,6 +3880,92 @@ public class ScriptingComponent extends CellComponent
         catch (IOException ex)
             {
             Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    public void fillDefaults(String type, String cellName, boolean global, int fillValue)
+        {
+        String[] baseEventNames = new String[totalEvents];
+
+        baseEventNames[MOUSE1_EVENT] = "mouse1";
+        baseEventNames[MOUSE2_EVENT] = "mouse2";
+        baseEventNames[MOUSE3_EVENT] = "mouse3";
+        baseEventNames[MOUSE1S_EVENT] = "mouse1s";
+        baseEventNames[MOUSE2S_EVENT] = "mouse2s";
+        baseEventNames[MOUSE3S_EVENT] = "mouse3s";
+        baseEventNames[MOUSE1C_EVENT] = "mouse1c";
+        baseEventNames[MOUSE2C_EVENT] = "mouse2c";
+        baseEventNames[MOUSE3C_EVENT] = "mouse3c";
+        baseEventNames[MOUSE1A_EVENT] = "mouse1a";
+        baseEventNames[MOUSE2A_EVENT] = "mouse2a";
+        baseEventNames[MOUSE3A_EVENT] = "mouse3a";
+        baseEventNames[TIMER_EVENT] = "timer";
+        baseEventNames[STARTUP_EVENT] = "startup";
+        baseEventNames[PROXIMITY_EVENT] = "prox";
+        baseEventNames[MESSAGE1_EVENT] = "message1";
+        baseEventNames[MESSAGE2_EVENT] = "message2";
+        baseEventNames[MESSAGE3_EVENT] = "message3";
+        baseEventNames[MESSAGE4_EVENT] = "message4";
+        baseEventNames[INTERCELL_EVENT] = "ice";
+        baseEventNames[CHAT_EVENT] = "chat";
+        baseEventNames[PRESENCE_EVENT] = "presence";
+        baseEventNames[CONTROLLER_EVENT] = "controller";
+        baseEventNames[PROPERTIES_EVENT] = "properties";
+        baseEventNames[AVATAR_EVENT] = "avatar";
+        System.out.println("fillValue = " + fillValue);
+
+        BufferedReader br = null;
+        String myString = null;
+
+        if(type.equals("javascript"))
+            {
+            for(int i = 0; i < totalEvents; i++)
+                {
+                switch (fillValue)
+                    {
+                    case 0:
+                        {
+                        br = new BufferedReader(new InputStreamReader(theCell.getClass().getResourceAsStream("resources/" + "scriptJs" + i)));
+                        break;
+                        }
+                    case 1:
+                        {
+                        br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("resources/" + "scriptJs" + i)));
+                        break;
+                        }
+                    }
+
+                String temp = "";
+                try
+                    {
+                    while ((myString = br.readLine()) != null)
+                        {
+                        temp = temp + myString + "\r\n";
+                        }
+                    }
+                catch (IOException ex)
+                    {
+                    Logger.getLogger(ScriptingComponent.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                System.out.println("default script " + i + " read -> ");
+                System.out.println(temp);
+                contentWriteFile("scripts/" + cellName + "/", baseEventNames[i] + ".js", temp, 1);
+                }
+            }
+        else if(type.equals("php"))
+            {
+
+            }
+        else if(type.equals("jython"))
+            {
+
+            }
+        else if(type.equals("jruby"))
+            {
+            }
+        else if(type.equals("sleep"))
+            {
+
             }
         }
 

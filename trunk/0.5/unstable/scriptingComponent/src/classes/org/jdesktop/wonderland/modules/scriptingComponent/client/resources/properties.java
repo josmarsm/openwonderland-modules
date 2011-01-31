@@ -49,6 +49,7 @@ class properties extends javax.swing.JFrame {
     private void initComponents() {
 
         buttonGroupPath = new javax.swing.ButtonGroup();
+        buttonGroupFill = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -63,6 +64,10 @@ class properties extends javax.swing.JFrame {
         EditRetrieveScript = new javax.swing.JButton();
         jEditExit = new javax.swing.JButton();
         jComboBox1 = new javax.swing.JComboBox();
+        jButtonFillScripts = new javax.swing.JButton();
+        jComboScriptType = new javax.swing.JComboBox();
+        jRadioFillCell = new javax.swing.JRadioButton();
+        jRadioFillComponent = new javax.swing.JRadioButton();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         ScriptsTable = new javax.swing.JTable();
@@ -199,6 +204,22 @@ class properties extends javax.swing.JFrame {
             }
         });
 
+        jButtonFillScripts.setText("Fill defaults");
+        jButtonFillScripts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonFillScriptsActionPerformed(evt);
+            }
+        });
+
+        jComboScriptType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "javascript", "php", "jython", "jruby", "sleep", " " }));
+
+        buttonGroupFill.add(jRadioFillCell);
+        jRadioFillCell.setSelected(true);
+        jRadioFillCell.setText("Cell");
+
+        buttonGroupFill.add(jRadioFillComponent);
+        jRadioFillComponent.setText("Component");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -212,18 +233,29 @@ class properties extends javax.swing.JFrame {
                     .addComponent(EditRetrieveScript, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jTestScript, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jRetrieveEdit, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
-                .addGap(102, 102, 102)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(102, 102, 102)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jTextObject, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jCheckUserScripts, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(195, 195, 195)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jComboScriptType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButtonFillScripts))
+                        .addGap(53, 53, 53)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jTextObject, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jCheckUserScripts, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                            .addComponent(jRadioFillComponent)
+                            .addComponent(jRadioFillCell))))
+                .addGap(150, 150, 150))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -247,12 +279,22 @@ class properties extends javax.swing.JFrame {
                             .addComponent(EditRetrieveScript)
                             .addComponent(jCheckUserScripts))
                         .addGap(18, 18, 18)
-                        .addComponent(jSaveEdit)
-                        .addGap(18, 18, 18)
-                        .addComponent(jEditExit))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jSaveEdit)
+                            .addComponent(jButtonFillScripts)
+                            .addComponent(jRadioFillCell)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jEditExit)
+                            .addComponent(jComboScriptType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(jRadioFillComponent)))
                 .addContainerGap(105, Short.MAX_VALUE))
         );
 
@@ -1860,6 +1902,20 @@ class properties extends javax.swing.JFrame {
         createRobot(jTextCurrentFile.getText(), jTextNPCName.getText());
     }//GEN-LAST:event_jButtonCreateRobotActionPerformed
 
+    private void jButtonFillScriptsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonFillScriptsActionPerformed
+        int fillSourceValue = 0;
+
+        if(jRadioFillCell.isSelected())
+            fillSourceValue = 0;
+        else
+            fillSourceValue = 1;
+
+        if(jCheckUserScripts.isSelected())
+            fillDefaults((String)jComboScriptType.getSelectedItem(), jTextObject.getText(), true, fillSourceValue);
+        else
+            fillDefaults((String)jComboScriptType.getSelectedItem(), jTextObject.getText(), false, fillSourceValue);
+    }//GEN-LAST:event_jButtonFillScriptsActionPerformed
+
     public static void setScriptContext(ScriptContext ctx)
         {
         myContext = ctx;
@@ -2422,6 +2478,31 @@ class properties extends javax.swing.JFrame {
             }
         }
 
+    private void fillDefaults(String type, String cellName, boolean global, int fillSource)
+        {
+        try
+            {
+            Class partypes[] = new Class[4];
+            
+            partypes[0] = type.getClass();
+            partypes[1] = cellName.getClass();
+            partypes[2] = Boolean.TYPE;
+            partypes[3] = Integer.TYPE;
+            Method meth = sc.getMethod("fillDefaults", partypes);
+            Object arglist[] = new Object[4];
+            arglist[0] = type;
+            arglist[1] = cellName;
+            arglist[2] = new Boolean(global);
+            arglist[3] = new Integer(fillSource);
+            meth.invoke(myClassObject, arglist);
+            }
+        catch(Exception e)
+            {
+            System.out.println("Exception for fillDefaults");
+            e.printStackTrace();
+            }
+        }
+
     private void playRobot(String robotName, String npcName)
         {
         try
@@ -2484,10 +2565,12 @@ class properties extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton EditRetrieveScript;
     private javax.swing.JTable ScriptsTable;
+    private javax.swing.ButtonGroup buttonGroupFill;
     private javax.swing.ButtonGroup buttonGroupPath;
     private javax.swing.JButton jButtonCreateRobot;
     private javax.swing.JButton jButtonCreateStep;
     private javax.swing.JButton jButtonEditStep;
+    private javax.swing.JButton jButtonFillScripts;
     private javax.swing.JButton jButtonGenerateWrapper;
     private javax.swing.JButton jButtonGetAvatarLocation;
     private javax.swing.JButton jButtonHidePath;
@@ -2516,6 +2599,7 @@ class properties extends javax.swing.JFrame {
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JComboBox jComboChatFiles;
     private javax.swing.JComboBox jComboPathFiles;
+    private javax.swing.JComboBox jComboScriptType;
     private javax.swing.JComboBox jComboSoundFiles;
     private javax.swing.JComboBox jComboWrapperType;
     private javax.swing.JButton jEditExit;
@@ -2538,6 +2622,8 @@ class properties extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JRadioButton jRadioFillCell;
+    private javax.swing.JRadioButton jRadioFillComponent;
     private javax.swing.JRadioButton jRadioPath;
     private javax.swing.JRadioButton jRadioRobot;
     private javax.swing.JButton jRetrieveEdit;
