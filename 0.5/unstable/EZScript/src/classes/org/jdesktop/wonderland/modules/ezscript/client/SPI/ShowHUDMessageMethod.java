@@ -37,7 +37,7 @@ public class ShowHUDMessageMethod implements ReturnableScriptMethodSPI {
                 panel.setComponent(component);
                 component.setDecoratable(true);
                 component.setPreferredLocation(Layout.CENTER);
-
+                
                 hud.addComponent(component);
             }
         });
