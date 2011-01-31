@@ -40,6 +40,8 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
     public ScriptEditorPanel(JDialog dialog) {
         initComponents();
         isGlobal = true;
+        library = new ScriptLibraryPanel();
+        jTabbedPane1.addTab("Library", library);
         this.dialog = dialog;
         this.setMinimumSize(new Dimension(600, 400));
         this.setPreferredSize(new Dimension(600, 400));
