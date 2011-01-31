@@ -72,6 +72,12 @@ public class MoveNpcToMethod implements ScriptMethodSPI {
 
     }
 
+    public String getDescription() {
+        return "usage: MoveNPC(cell, x, y, z)\n\n"
+                +"- make the specified NPC walk to x, y, z\n"
+                +"- animation blocks on the executing thread.";
+    }
+
 
     class BlockingGoTo extends GoTo {                
 
