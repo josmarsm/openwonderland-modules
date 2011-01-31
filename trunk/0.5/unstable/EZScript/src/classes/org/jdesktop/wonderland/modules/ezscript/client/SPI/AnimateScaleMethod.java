@@ -139,7 +139,7 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
          * The Calculate method
          */
         public void compute(ProcessorArmingCollection collection) {
-            if(frameIndex == 30*seconds) {
+            if(frameIndex >= 30*seconds) {
                 this.getEntity().removeComponent(ScaleProcessor.class);
                 lock.release();
 

@@ -47,6 +47,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         y = ((Double)args[2]).floatValue();
         z = ((Double)args[3]).floatValue();
         seconds = ((Double)args[4]).floatValue();
+        lock = new Semaphore(0);
 
     }
 
@@ -135,7 +136,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
          * The Calculate method
          */
         public void compute(ProcessorArmingCollection collection) {
-            if(frameIndex == 30*seconds) {
+            if(frameIndex >= 30*seconds) {
                 this.getEntity().removeComponent(TranslationProcessor.class);
 
                 lock.release(); //this should give control back to the state machine.                
