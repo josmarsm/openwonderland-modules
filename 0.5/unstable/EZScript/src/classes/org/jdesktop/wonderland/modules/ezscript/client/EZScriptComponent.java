@@ -122,6 +122,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
     private ScriptEngineManager engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
     private ScriptEngine scriptEngine = null;
     private Bindings scriptBindings = null;
+    private JDialog dialog;
     private ScriptEditorPanel panel = null;
     private String[] alphabet = {"a", "b", "c", "d", "e", "f", "g", "h", "i",
                                  "j", "k", "l", "m", "n", "o", "p", "q", "r",
@@ -235,23 +236,32 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         
         //scriptBindings.put("ScriptContext", this);
         //scriptEngine.setBindings(scriptBindings, ScriptContext.ENGINE_SCOPE);
-
-
+        dialog = new JDialog();
+        panel = new ScriptEditorPanel(this, dialog);
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
         Iterator<ScriptMethodSPI> iter = loader.getInstances(ScriptMethod.class,
                                                         ScriptMethodSPI.class);
         //grab all global void methods
         while(iter.hasNext()) {
-            this.addFunctionBinding(iter.next());
+            final ScriptMethodSPI method = iter.next();
+            this.addFunctionBinding(method);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    panel.addLibraryEntry(method.getFunctionName(),
+                                  method.getDescription());
+                }
+            });
         }
 
         //grab all returnablesa
-
         Iterator<ReturnableScriptMethodSPI> returnables 
                             = loader.getInstances(ReturnableScriptMethod.class,
                                                ReturnableScriptMethodSPI.class);
         while(returnables.hasNext()) {
-            this.addFunctionBinding(returnables.next());
+            ReturnableScriptMethodSPI method = returnables.next();
+            this.addFunctionBinding(method);
+            panel.addLibraryEntry(method.getFunctionName(),
+                                  method.getDescription());
         }
 
         //grab all events
@@ -328,11 +338,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
                            //get other maps here.
                         }
-                    }).start();
-
-                    
-
-
+                    }).start();                    
                 }
                 break;
             case INACTIVE:
@@ -637,16 +643,15 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                 System.out.println("[iSocial] menu item fired!");
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        //1. Create the frame.
-                        JDialog dialog = new JDialog();
-                        //dialog.setName("Script Editor");
+                        dialog.setResizable(false);
+                        
                         dialog.setTitle("Script Editor - " + cell.getName());
                         //2. Optional: What happens when the frame closes?
                         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
                         //3. Create component and put them in the frame.
 
-                        dialog.setContentPane(new ScriptEditorPanel(getLocalInstance(), dialog));
+                        dialog.setContentPane(panel);
 
                         //4. Size the frame.
                         dialog.pack();
@@ -682,7 +687,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         scriptBindings.put("this"+method.getFunctionName(), method);
         String scriptx  = "function " + method.getFunctionName()+"() {\n"
             + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
-            +"\tfor(var i = 0; i < arguments.length; i++) {\n"
+            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
             + "\targs[i] = arguments[i];\n"
             + "\t}\n"
 
@@ -703,11 +708,9 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         scriptBindings.put("this"+method.getFunctionName(), method);
         String scriptx  = "function " + method.getFunctionName()+"() {\n"
             + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
-            +"\tfor(var i = 0; i < arguments.length; i++) {\n"
+            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
             + "\t\targs[i] = arguments[i];\n"
             + "\t}\n"
-
-           // + "\targs = "+method.getFunctionName()+".arguments;\n"
             + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
             + "\tthis"+method.getFunctionName()+".run();\n"
 
@@ -716,7 +719,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
             +"}";
 
         try {
-            System.out.println("evaluating script: \n"+scriptx);
+           // System.out.println("evaluating script: \n"+scriptx);
             scriptEngine.eval(scriptx, scriptBindings);
         } catch (ScriptException e) {
             e.printStackTrace();
@@ -835,9 +838,6 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         world.addRigidBody(avatarBody);
         bodiesToNodes.put(avatarBody, avatarRoot);
         avatarRoot.addGeometricUpdateListener(this);
-
-
-
     }
 
     public void geometricDataChanged(Spatial spatial) {
@@ -1026,10 +1026,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         public PhysicsProcessor(String name, float seconds) {
             this.name = name;
             this.seconds = seconds;
-            setArmingCondition(new NewFrameCondition(this));
-
-
-            
+            setArmingCondition(new NewFrameCondition(this));            
         }
         public void idle() {
             setArmingCondition(new AwtEventCondition(this));
@@ -1095,14 +1092,12 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                            /* System.out.printf("world pos = %f,%f,%f\n", trans.origin.x,
                                             trans.origin.y, trans.origin.z);*/
                     }
-                }
-            
+                }            
         }
 
         @Override
         public void initialize() {
             //throw new UnsupportedOperationException("Not supported yet.");
         }
-
     }
 }
