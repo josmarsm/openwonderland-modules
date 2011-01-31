@@ -123,7 +123,7 @@ public class SpinMethod implements ScriptMethodSPI {
          * The Calculate method
          */
         public void compute(ProcessorArmingCollection collection) {
-            if(frameIndex == 30*time) {
+            if(frameIndex >= 30*time) {
                 this.getEntity().removeComponent(SpinProcessor.class);
                 lock.release();
 
