@@ -64,6 +64,13 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
         }
     }
 
+    public String getDescription() {
+        return "usage: animateScale(cell, scale, seconds)\n\n"
+                +"-animate a cell resizing by scale in the duration of seconds.\n"
+                +"-the method blocks the executing thread until animation is finished.";
+
+    }
+
     class ScaleProcessor extends ProcessorComponent {
         /**
          * The WorldManager - used for adding to update list

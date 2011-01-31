@@ -31,4 +31,10 @@ public class CreateStringStateMachine implements ReturnableScriptMethodSPI {
         return new StringStateMachine();
     }
 
+    public String getDescription() {
+        return "usage: CreateStateMachine()\n\n"
+                +"-returns a StringStateMachine object\n"
+                +"-StringStateMachine objects are not currently used in production";
+    }
+
 }

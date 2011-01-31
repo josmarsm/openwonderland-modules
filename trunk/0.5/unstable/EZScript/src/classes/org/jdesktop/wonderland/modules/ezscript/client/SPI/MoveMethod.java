@@ -59,4 +59,9 @@ public class MoveMethod implements ScriptMethodSPI, Runnable {
         translate.setTranslation(new Vector3f(x, y, z));
         mc.localMoveRequest(translate);
     }
+
+    public String getDescription() {
+        return "move(cell, x, y, z)\n\n"
+                +"-immediately moves a cell to x, y, z";
+    }
 }

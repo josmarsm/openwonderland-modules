@@ -47,4 +47,9 @@ public class AddContainerMethod implements ScriptMethodSPI {
 
     }
 
+    public String getDescription() {
+        return "usage: AddContainer(cell)\n\n"
+                +"-creates a container component for the given cell.";
+    }
+
 }

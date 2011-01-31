@@ -58,7 +58,7 @@ public class JBulletDemoMethod implements ScriptMethodSPI {
     private float seconds;
     private ZBufferState zbuf;
     public String getFunctionName() {
-        return "jbulletdemo";
+        return "jbulletdemo(cell, seconds)";
     }
 
     public void setArguments(Object[] args) {
@@ -212,6 +212,10 @@ public class JBulletDemoMethod implements ScriptMethodSPI {
 
     }
 
+    public String getDescription() {
+        return "usage: jbulletdemo()";
+    }
+
 
         class JBulletProcessor extends ProcessorComponent {
 
@@ -277,6 +281,5 @@ public class JBulletDemoMethod implements ScriptMethodSPI {
             }    
         }
     }
-
 
 }

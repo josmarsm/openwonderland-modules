@@ -59,6 +59,12 @@ public class SpinMethod implements ScriptMethodSPI {
         }
     }
 
+    public String getDescription() {
+        return "usage: spin(cell, rotations, time)\n\n"
+                +"-spin a cell a certain amount of rotations in the specified duration of seconds."
+                +"-blocks on the executing thread until animation is finished.";
+    }
+
     class SpinProcessor extends ProcessorComponent {
         /**
          * The WorldManager - used for adding to update list

@@ -32,5 +32,11 @@ public class CreateIntStateMachine implements ReturnableScriptMethodSPI {
        
     }
 
+    public String getDescription() {
+        return "usage: CreateIntStateMachine()\n\n"
+                +"- creates an IntStateMachine object.\n"
+                +"- IntStateMachine objects are not currently used.";
+    }
+
 
 }
