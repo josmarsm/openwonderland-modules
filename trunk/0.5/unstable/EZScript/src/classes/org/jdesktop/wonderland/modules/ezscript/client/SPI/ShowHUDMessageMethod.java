@@ -50,7 +50,6 @@ public class ShowHUDMessageMethod implements ReturnableScriptMethodSPI {
                 component.setVisible(true);
             }
         });
-        //component.setVisible(true);
     }
 
     public Object returns() {
