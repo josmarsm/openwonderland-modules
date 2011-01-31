@@ -63,4 +63,10 @@ public class ExpandCellBoundsMethod implements ScriptMethodSPI {
         cell.setLocalBounds(bounds);
     }
 
+    public String getDescription() {
+        return "usage: ExpandCellBounds(cell, integer_modifier)\n\n"
+                +"- increases/decreases the bounds of a cell by the specified modifier.";
+
+    }
+
 }

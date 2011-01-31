@@ -8,4 +8,5 @@ public interface ScriptMethodSPI extends Runnable {
     
     public String getFunctionName();
     public void setArguments(Object[] args);
+    public String getDescription();
 }

@@ -36,4 +36,9 @@ public class ScaleMethod implements ScriptMethodSPI {
         mc.localMoveRequest(scale);
     }
 
+    public String getDescription() {
+        return "usage: scale(cell, scale);\n\n"
+                +"-immediately resize a cell by scale.";
+    }
+
 }

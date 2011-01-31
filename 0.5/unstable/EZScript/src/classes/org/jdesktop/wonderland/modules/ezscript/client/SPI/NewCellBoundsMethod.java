@@ -72,4 +72,10 @@ public class NewCellBoundsMethod implements ScriptMethodSPI {
         cell.setLocalBounds(volume);
     }
 
+    public String getDescription() {
+        return "usage: NewCellBounds(cell, 'Sphere', radius);\n\n"
+                +"- creates a new bounding volume for a cell.\n"
+                +"- GREAT utility for scripting proximity events.";
+    }
+
 }
