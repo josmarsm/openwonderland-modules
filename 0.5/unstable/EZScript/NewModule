@@ -1,0 +1,4 @@
+#!/bin/sh
+cp -r ../../stable/samplemodule ./$1
+find ./$1 -name ".svn" -type d -exec rm -rf {} \;
+
