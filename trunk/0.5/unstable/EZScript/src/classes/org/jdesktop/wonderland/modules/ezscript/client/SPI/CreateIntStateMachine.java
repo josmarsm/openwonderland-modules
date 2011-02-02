@@ -38,5 +38,9 @@ public class CreateIntStateMachine implements ReturnableScriptMethodSPI {
                 +"- IntStateMachine objects are not currently used.";
     }
 
+    public String getCategory() {
+       return "utilities";
+    }
+
 
 }

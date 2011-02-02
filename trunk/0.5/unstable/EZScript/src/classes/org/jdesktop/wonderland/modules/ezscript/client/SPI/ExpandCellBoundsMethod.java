@@ -69,4 +69,8 @@ public class ExpandCellBoundsMethod implements ScriptMethodSPI {
 
     }
 
+    public String getCategory() {
+        return "architecture";
+    }
+
 }

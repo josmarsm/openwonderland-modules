@@ -41,4 +41,8 @@ public class ScaleMethod implements ScriptMethodSPI {
                 +"-immediately resize a cell by scale.";
     }
 
+    public String getCategory() {
+        return "transformation";
+    }
+
 }

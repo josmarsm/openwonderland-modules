@@ -15,43 +15,105 @@ import java.awt.Dimension;
 import java.lang.String;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.DefaultListModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.JTree;
+import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 
 /**
  *
  * @author JagWire
  */
 public class ScriptLibraryPanel extends javax.swing.JPanel
-    implements ListSelectionListener {
+    implements TreeSelectionListener {
 
     /** Creates new form ScriptLibraryPanel */
+    private Map<String, DefaultMutableTreeNode> categories;
+    private DefaultMutableTreeNode top;
     private Map<String, String> entries;
-    private DefaultListModel model;
+    private DefaultTreeModel model;
+    //private List<> categories;
     public ScriptLibraryPanel() {
         initComponents();
-        model = new DefaultListModel();
-        jList1.setModel(model);
-        jList1.addListSelectionListener(this);
+        top = new DefaultMutableTreeNode("Library");
+        model = new DefaultTreeModel(top, true);
+        libraryTree = new JTree(top);
+        libraryTree.setModel(model);
+        model.setRoot(top);
+        jScrollPane1.setViewportView(libraryTree);
+        
+        categories = new HashMap<String, DefaultMutableTreeNode>();
         entries = new HashMap<String, String>();
 
+        libraryTree.addTreeSelectionListener(this);
         this.setPreferredSize(new Dimension(600, 400));
         this.setMinimumSize(new Dimension(600, 400));
     }
 
-    public void addEntry(String methodName, String description) {
-        //DefaultListModel m = model;
+    public void addEntry(ScriptMethodSPI method) {
+        DefaultMutableTreeNode category;
+        DefaultMutableTreeNode entry;
+        if(!categories.containsKey(method.getCategory())) {
+            category = new DefaultMutableTreeNode(method.getCategory());
+            categories.put(method.getCategory(), category);
+            model.insertNodeInto(category, top, top.getChildCount());
+            //top.add(category);
+            entry = new DefaultMutableTreeNode(method.getFunctionName());
+            entry.setAllowsChildren(false);
+            model.insertNodeInto(entry, category, category.getChildCount());
+            //category.add(entry);
+            entries.put(method.getFunctionName(), method.getDescription());
+            model.nodeStructureChanged(top);
+            System.out.println("Adding category: "+method.getCategory());
+            System.out.println("Adding entry: "+method.getFunctionName());
 
-        entries.put(methodName, description);
-        model.insertElementAt(methodName, jList1.getLastVisibleIndex() +1);
-        
-        //m.addElement(methodName);
-        //jList1.setModel(m);
-        //model = m;
-
+        }
+        else {
+            category = categories.get(method.getCategory());
+            entry = new DefaultMutableTreeNode(method.getFunctionName());
+            entry.setAllowsChildren(false);
+           model.insertNodeInto(entry, category, category.getChildCount());
+            //category.add(new DefaultMutableTreeNode(method.getFunctionName()));
+            entries.put(method.getFunctionName(), method.getDescription());
+            //model.nodeStructureChanged(category);
+            System.out.println("Adding entry: "+method.getFunctionName());
+        }
     }
 
+    public void addEntry(ReturnableScriptMethodSPI method) {
+        DefaultMutableTreeNode category;
+        DefaultMutableTreeNode entry;
+        if(!categories.containsKey(method.getCategory())) {
+            category = new DefaultMutableTreeNode(method.getCategory());
+            categories.put(method.getCategory(), category);
+            model.insertNodeInto(category, top, top.getChildCount());
+            //top.add(category);
+            entry = new DefaultMutableTreeNode(method.getFunctionName());
+            entry.setAllowsChildren(false);
+            model.insertNodeInto(entry, category, category.getChildCount());
+            //category.add(entry);
+            entries.put(method.getFunctionName(), method.getDescription());
+            model.nodeStructureChanged(top);
+            System.out.println("Adding category: "+method.getCategory());
+            System.out.println("Adding entry: "+method.getFunctionName());
+
+        }
+        else {
+            category = categories.get(method.getCategory());
+            entry = new DefaultMutableTreeNode(method.getFunctionName());
+            entry.setAllowsChildren(false);
+           model.insertNodeInto(entry, category, category.getChildCount());
+            //category.add(new DefaultMutableTreeNode(method.getFunctionName()));
+            entries.put(method.getFunctionName(), method.getDescription());
+            //model.nodeStructureChanged(category);
+            System.out.println("Adding entry: "+method.getFunctionName());
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -63,12 +125,13 @@ public class ScriptLibraryPanel extends javax.swing.JPanel
 
         descriptionLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
+        libraryTree = new javax.swing.JTree();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
 
-        jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jScrollPane1.setViewportView(jList1);
+        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
+        libraryTree.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
+        jScrollPane1.setViewportView(libraryTree);
 
         jScrollPane2.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         jScrollPane2.setBorder(null);
@@ -85,12 +148,11 @@ public class ScriptLibraryPanel extends javax.swing.JPanel
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 160, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 370, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(37, 37, 37))
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 395, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(20, 20, 20))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -99,28 +161,34 @@ public class ScriptLibraryPanel extends javax.swing.JPanel
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 306, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel descriptionLabel;
-    private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTree libraryTree;
     // End of variables declaration//GEN-END:variables
 
-    public void valueChanged(ListSelectionEvent lse) {
-        if(!lse.getValueIsAdjusting()) {
-            if(jList1.getSelectedIndex() != -1) {
-                //when the value changes, change the description area to match
-                //the selected method name
-                String method = (String)jList1.getSelectedValue();
-                jTextArea1.setText(entries.get(method));
-            }
+
+    public void valueChanged(TreeSelectionEvent tse) {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)
+                           libraryTree.getLastSelectedPathComponent();
+
+        if (node == null)
+            return;
+
+        Object nodeInfo = node.getUserObject();
+        if (node.isLeaf()) {
+            String entry = (String)nodeInfo;
+             jTextArea1.setText(entries.get(entry));
+
+        } else {
+
         }
     }
-
 }

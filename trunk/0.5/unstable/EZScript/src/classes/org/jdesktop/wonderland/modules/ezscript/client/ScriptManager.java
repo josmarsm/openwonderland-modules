@@ -29,7 +29,7 @@ public class ScriptManager {
     private ScriptEditorPanel scriptEditor;
     private JDialog dialog;
     private ScriptEditorPanel panel;
-    private ScriptEngineManager engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
+    private ScriptEngineManager engineManager;// = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
     private ScriptEngine scriptEngine = null;
     private Bindings scriptBindings = null;
 
@@ -62,6 +62,7 @@ public class ScriptManager {
         //Add the necessary script bindings
         scriptBindings.put("Client", ClientContextJME.getClientMain());
 
+        engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
         //Load the methods into the library
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
         Iterator<ScriptMethodSPI> iter = loader.getInstances(ScriptMethod.class,
@@ -72,8 +73,7 @@ public class ScriptManager {
             addFunctionBinding(method);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    panel.addLibraryEntry(method.getFunctionName(),
-                                  method.getDescription());
+                    panel.addLibraryEntry(method);
                 }
             });
         }
@@ -85,8 +85,7 @@ public class ScriptManager {
         while(returnables.hasNext()) {
             ReturnableScriptMethodSPI method = returnables.next();
             addFunctionBinding(method);
-            panel.addLibraryEntry(method.getFunctionName(),
-                                  method.getDescription());
+            panel.addLibraryEntry(method);
         }
     }
 

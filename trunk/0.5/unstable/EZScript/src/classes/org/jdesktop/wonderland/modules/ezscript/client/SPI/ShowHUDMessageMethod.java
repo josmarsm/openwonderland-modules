@@ -61,4 +61,8 @@ public class ShowHUDMessageMethod implements ReturnableScriptMethodSPI {
                 +"-shows a window on the HUD with the specified string.\n"
                 +"-GREAT for simulating conversations onApproach with NPCs";
     }
+
+    public String getCategory() {
+        return "HUD";
+    }
 }

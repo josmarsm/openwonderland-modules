@@ -37,4 +37,8 @@ public class CreateStringStateMachine implements ReturnableScriptMethodSPI {
                 +"-StringStateMachine objects are not currently used in production";
     }
 
+    public String getCategory() {
+        return "utilities";
+    }
+
 }

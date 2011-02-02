@@ -13,6 +13,8 @@ package org.jdesktop.wonderland.modules.ezscript.client;
 
 import java.awt.Dimension;
 import javax.swing.JDialog;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 
 /**
@@ -47,9 +49,12 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         this.setPreferredSize(new Dimension(600, 400));
     }
 
-    public void addLibraryEntry(String methodName, String description) {
-        library.addEntry(methodName, description);
-        System.out.println("Adding library entry: "+methodName);
+    public void addLibraryEntry(ReturnableScriptMethodSPI method) {
+        library.addEntry(method);
+    }
+
+    public void addLibraryEntry(ScriptMethodSPI method) {
+        library.addEntry(method);
     }
     /** This method is called from within the constructor to
      * initialize the form.

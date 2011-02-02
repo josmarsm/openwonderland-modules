@@ -64,4 +64,8 @@ public class MoveMethod implements ScriptMethodSPI, Runnable {
         return "move(cell, x, y, z)\n\n"
                 +"-immediately moves a cell to x, y, z";
     }
+
+    public String getCategory() {
+        return "transformation";
+    }
 }

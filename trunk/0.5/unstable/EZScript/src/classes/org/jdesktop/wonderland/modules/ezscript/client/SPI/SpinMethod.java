@@ -65,6 +65,10 @@ public class SpinMethod implements ScriptMethodSPI {
                 +"-blocks on the executing thread until animation is finished.";
     }
 
+    public String getCategory() {
+        return "animation";
+    }
+
     class SpinProcessor extends ProcessorComponent {
         /**
          * The WorldManager - used for adding to update list
