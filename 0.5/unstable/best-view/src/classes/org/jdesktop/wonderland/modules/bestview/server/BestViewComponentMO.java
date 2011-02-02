@@ -25,13 +25,11 @@ import org.jdesktop.wonderland.modules.bestview.common.BestViewClientState;
 import org.jdesktop.wonderland.modules.bestview.common.BestViewServerState;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.annotation.NoSnapshot;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
  * Server side cell component for best view
  */
-@NoSnapshot
 public class BestViewComponentMO extends CellComponentMO {
     private static final Logger LOGGER =
             Logger.getLogger(BestViewComponentMO.class.getName());

@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.bestview.server;
 
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
+import org.jdesktop.wonderland.modules.imageviewer.server.cell.ImageViewerCellMO;
 import org.jdesktop.wonderland.server.ServerPlugin;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
 
@@ -32,5 +33,6 @@ public class BestViewServerPlugin implements ServerPlugin {
     public void initialize() {
         CellManagerMO cm = CellManagerMO.getCellManager();
         cm.registerCellComponent(App2DCellMO.class, BestViewComponentMO.class);
+        cm.registerCellComponent(ImageViewerCellMO.class, BestViewComponentMO.class);
     }
 }
