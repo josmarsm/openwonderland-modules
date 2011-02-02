@@ -71,6 +71,10 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
 
     }
 
+    public String getCategory() {
+        return "animation";
+    }
+
     class ScaleProcessor extends ProcessorComponent {
         /**
          * The WorldManager - used for adding to update list

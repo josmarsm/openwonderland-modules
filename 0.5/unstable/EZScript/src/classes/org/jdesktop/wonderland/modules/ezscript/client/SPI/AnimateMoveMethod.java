@@ -79,6 +79,10 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
                 +"-animate a cell moving to the x,y,z coordinates in the duration of seconds.";
     }
 
+    public String getCategory() {
+        return "animation";
+    }
+
     class TranslationProcessor extends ProcessorComponent {
         /**
          * The WorldManager - used for adding to update list
@@ -157,7 +161,4 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
             worldManager.addToUpdateList(target);
         }
     }
-
-
-
 }

@@ -247,8 +247,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
             this.addFunctionBinding(method);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    panel.addLibraryEntry(method.getFunctionName(),
-                                  method.getDescription());
+                    panel.addLibraryEntry(method);
                 }
             });
         }
@@ -260,8 +259,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         while(returnables.hasNext()) {
             ReturnableScriptMethodSPI method = returnables.next();
             this.addFunctionBinding(method);
-            panel.addLibraryEntry(method.getFunctionName(),
-                                  method.getDescription());
+            panel.addLibraryEntry(method);
         }
 
         //grab all events

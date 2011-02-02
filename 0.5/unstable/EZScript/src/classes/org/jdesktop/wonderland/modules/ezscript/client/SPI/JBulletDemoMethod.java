@@ -216,6 +216,10 @@ public class JBulletDemoMethod implements ScriptMethodSPI {
         return "usage: jbulletdemo()";
     }
 
+    public String getCategory() {
+        return "simulation";
+    }
+
 
         class JBulletProcessor extends ProcessorComponent {
 

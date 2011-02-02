@@ -78,4 +78,8 @@ public class NewCellBoundsMethod implements ScriptMethodSPI {
                 +"- GREAT utility for scripting proximity events.";
     }
 
+    public String getCategory() {
+        return "architecture";
+    }
+
 }

@@ -61,4 +61,8 @@ public class GetUsersGroups implements ReturnableScriptMethodSPI {
         }
     }
 
+    public String getCategory() {
+        return "utilities";
+    }
+
 }
