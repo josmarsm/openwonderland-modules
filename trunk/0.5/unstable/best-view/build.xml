@@ -29,6 +29,7 @@
         <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
         <path location="${modules.dir}/foundation/security/build/lib/server/security-server.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/server/appbase-server.jar"/>
+        <path location="${current.dir}/../../stable/image-viewer/build/server/imageviewer-server.jar"/>
     </pathconvert>
 
 
@@ -46,6 +47,7 @@
             <requires name="sharedstate" majorversion="0" minorversion="5" miniversion="1"/>
             <requires name="security" majorversion="0" minorversion="5"/>
             <requires name="appbase" majorversion="0" minorversion="5"/>
+            <requires name="imageviewer" majorversion="1" minorversion="0"/>
 
             <client>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
