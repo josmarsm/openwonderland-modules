@@ -78,6 +78,10 @@ public class MoveNpcToMethod implements ScriptMethodSPI {
                 +"- animation blocks on the executing thread.";
     }
 
+    public String getCategory() {
+        return "NPCs";
+    }
+
 
     class BlockingGoTo extends GoTo {                
 
