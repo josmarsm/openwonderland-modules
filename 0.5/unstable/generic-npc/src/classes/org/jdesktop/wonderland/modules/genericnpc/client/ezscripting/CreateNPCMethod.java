@@ -56,4 +56,8 @@ public class CreateNPCMethod implements ScriptMethodSPI {
                 +"-create a new NPC cell.";
     }
 
+    public String getCategory() {
+        return "NPCs";
+    }
+
 }

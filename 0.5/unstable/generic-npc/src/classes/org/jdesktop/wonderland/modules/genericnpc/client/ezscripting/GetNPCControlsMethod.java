@@ -45,4 +45,8 @@ public class GetNPCControlsMethod implements ReturnableScriptMethodSPI {
                 +"- return an NpcControls object from the specified NpcCell.";
     }
 
+    public String getCategory() {
+        return "NPCs";
+    }
+
 }
