@@ -61,7 +61,7 @@ public class ScriptManager {
 
         //Add the necessary script bindings
         scriptBindings.put("Client", ClientContextJME.getClientMain());
-
+        
         engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
         //Load the methods into the library
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
