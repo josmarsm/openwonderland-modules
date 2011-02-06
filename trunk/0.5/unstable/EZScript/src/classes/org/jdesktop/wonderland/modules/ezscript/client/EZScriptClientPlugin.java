@@ -14,6 +14,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
+
 /**
  *
  * @author JagWire
@@ -29,17 +30,17 @@ public class EZScriptClientPlugin extends BaseClientPlugin {
     public void initialize(ServerSessionManager loginInfo) {
         ScriptManager.getInstance();
         menuItem = new JMenuItem("Script Editor");
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                
-                ScriptManager.getInstance().showScriptEditor();
-            }
-        });
-
+        
         super.initialize(loginInfo);
     }
     @Override
     public void activate() {
+
+        menuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ScriptManager.getInstance().showScriptEditor();
+            }
+        });
         JmeClientMain.getFrame().addToToolsMenu(menuItem);
     }
 

@@ -24,6 +24,7 @@
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${modules.dir}/tools/security-group/build/lib/client/securitygroups-client.jar"/>
+	<path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
         <path location="${modules.dir}/world/containercell/build/lib/client/container-cell-client.jar"/>
 	<path location="${current.dir}/lib/jbullet.jar"/>
 	<path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
