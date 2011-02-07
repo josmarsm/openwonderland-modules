@@ -177,7 +177,8 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
     @UsesCellComponent
     private SharedStateComponent sharedStateComponent;
     private SharedMapCli callbacksMap; // used in syncing callbacks across clients
-    private SharedMapCli scriptsMap;// used for persisting scripts and client sync
+    private SharedMapCli scriptsMap;// used for executing scripts and client sync
+    private SharedMapCli behaviorsMap; //used for persisting scripts
    
     private SharedMapListener mapListener;
 
@@ -358,7 +359,8 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                         keyEventListener.removeFromEntity(renderer.getEntity());
                         keyEventListener = null;
                     }                        
-
+                    callbacksMap.clear();
+                    scriptsMap.clear();
                     renderer = null;
                 }
         }
@@ -730,36 +732,73 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
     public void attachBehavior(Behavior b) {
         behaviors.add(b);
-        
-        if(b.onClick() != null) {
-            callbacksOnClick.add(b.onClick());
-        }
 
-        if(b.onMouseEnter() != null) {
-            callbacksOnMouseEnter.add(b.onMouseEnter());
-        }
 
-        if(b.onMouseExit() != null) {
-            callbacksOnMouseExit.add(b.onMouseExit());
-        }
 
-        if(b.onApproach() != null) {
-            callbacksOnApproach.add(b.onApproach());
-        }
-
-        if(b.onLeave() != null) {
-            callbacksOnLeave.add(b.onLeave());
-        }
-        
+        addCallback(callbacksOnClick, b.onClick());
+        addCallback(callbacksOnMouseEnter, b.onMouseEnter());
+        addCallback(callbacksOnMouseExit, b.onMouseExit());
+        addCallback(callbacksOnApproach, b.onApproach());
+        addCallback(callbacksOnLeave, b.onLeave());
         for(Object o: b.getKeyPresses().keySet()) {
-            Runnable r = b.onKeyPress((String)o);
-            callbacksOnKeyPress.get((String)o).add(r);
+            addCallback(callbacksOnKeyPress.get((String)o), b.onKeyPress((String)o));
         }
+//        if(b.onClick() != null) {
+//            callbacksOnClick.add(b.onClick());
+//        }
+//
+//        if(b.onMouseEnter() != null) {
+//            callbacksOnMouseEnter.add(b.onMouseEnter());
+//        }
+//
+//        if(b.onMouseExit() != null) {
+//            callbacksOnMouseExit.add(b.onMouseExit());
+//        }
+//
+//        if(b.onApproach() != null) {
+//            callbacksOnApproach.add(b.onApproach());
+//        }
+//
+//        if(b.onLeave() != null) {
+//            callbacksOnLeave.add(b.onLeave());
+//        }
+//
+//        for(Object o: b.getKeyPresses().keySet()) {
+//            Runnable r = b.onKeyPress((String)o);
+//            callbacksOnKeyPress.get((String)o).add(r);
+//        }
     }
 
     public void removeBehavior(Behavior b) {
-        if(behaviors.contains(b))
+        if(behaviors.contains(b)) {
+            removeCallback(callbacksOnClick, b.onClick());
+            removeCallback(callbacksOnMouseEnter, b.onMouseEnter());
+            removeCallback(callbacksOnMouseExit, b.onMouseExit());
+            removeCallback(callbacksOnApproach, b.onApproach());
+            removeCallback(callbacksOnLeave, b.onLeave());
+
+            //for every list of runnables per key press...
+            for(String s : callbacksOnKeyPress.keySet()) {
+                //remove the behavior's key press runnable, IF it exists.
+                removeCallback(callbacksOnKeyPress.get(s), b.onKeyPress(s));
+            }
+        }
             behaviors.remove(b);
+       
+    }
+
+    public void removeCallback(List l, Runnable r) {
+        if(r == null)
+            return;
+
+    }
+
+    public void addCallback(List l, Runnable r) {
+        if (r == null)
+            return;
+        if(!l.contains(r)) {
+            l.add(r);
+        }
     }
 
     /**
