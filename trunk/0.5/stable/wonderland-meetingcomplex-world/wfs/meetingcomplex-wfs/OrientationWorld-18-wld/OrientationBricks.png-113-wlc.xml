@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<image-viewer-cell>
+    <name>OrientationBricks.png</name>
+    <metadata/>
+    <position-component>
+        <translation>
+            <x>38.013</x>
+            <y>0.47464854</y>
+            <z>22.847</z>
+        </translation>
+        <bounds>
+            <type>SPHERE</type>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </bounds>
+        <scale>
+            <x>0.3</x>
+            <y>0.3</y>
+            <z>0.3</z>
+        </scale>
+        <rotation>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+            <angle>0.0</angle>
+        </rotation>
+    </position-component>
+    <image-uri>wla://wonderland-meetingcomplex-world/OrientationBricks.png</image-uri>
+</image-viewer-cell>
