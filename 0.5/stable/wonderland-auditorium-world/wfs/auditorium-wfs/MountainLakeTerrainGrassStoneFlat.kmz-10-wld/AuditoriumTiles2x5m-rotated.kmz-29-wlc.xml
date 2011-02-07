@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>AuditoriumTiles2x5m-rotated.kmz</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-auditorium-world/AuditoriumTiles2x5m-rotated.kmz/AuditoriumTiles2x5m-rotated.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <position-component>
+        <translation>
+            <x>3.4344304</x>
+            <y>-19.387785</y>
+            <z>-36.461346</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>2.5</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+            <angle>0.0</angle>
+        </rotation>
+    </position-component>
+    <placemark-component>
+        <placemarkName>Auditorium</placemarkName>
+    </placemark-component>
+</model-cell>
