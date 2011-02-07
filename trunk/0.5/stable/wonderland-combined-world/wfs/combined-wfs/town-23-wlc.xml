@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>town</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-town-world/DefaultTownSquare-20ft.kmz/DefaultTownSquare-20ft.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <interaction-component>
+        <collidable>true</collidable>
+        <selectable>false</selectable>
+    </interaction-component>
+    <position-component>
+        <translation>
+<x>1000.4663</x>
+            <y>0.0</y>
+<z>0.499</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>3.047999858856201</x>
+            <y>0.06350000202655792</y>
+            <z>3.047999858856201</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>-0.0</z>
+            <angle>3.1964238</angle>
+        </rotation>
+    </position-component>
+    <placemark-component>
+        <placemarkName>Town</placemarkName>
+    </placemark-component>
+</model-cell>

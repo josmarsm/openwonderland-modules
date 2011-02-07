@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>JapanHex-90m.kmz</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-japanesepavilion-world/JapanHex-90m.kmz/JapanHex-90m.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <interaction-component>
+        <collidable>true</collidable>
+        <selectable>false</selectable>
+    </interaction-component>
+    <position-component>
+        <translation>
+            <x>-0.15283203</x>
+            <y>2.91</y>
+            <z>-2.788391</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>90.0</x>
+            <y>3.0</y>
+            <z>77.9422836303711</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>-1.0</y>
+            <z>0.0</z>
+            <angle>0.870186</angle>
+        </rotation>
+    </position-component>
+</model-cell>

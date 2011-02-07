@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>gallery</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-gallery-world/ATransparentSquare3x3m.kmz/ATransparentSquare3x3m.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <position-component>
+        <translation>
+<x>2977</x>
+            <y>-0.22289006</y>
+<z>1020.6602</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>1.5</x>
+            <y>0.015000000596046448</y>
+            <z>1.5000001192092896</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>-0.99999994</y>
+            <z>0.0</z>
+            <angle>1.5707963</angle>
+        </rotation>
+    </position-component>
+</model-cell>

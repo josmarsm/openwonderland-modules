@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>japanese pavilion</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-japanesepavilion-world/GrassCircle-120m.kmz/GrassCircle-120m.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <interaction-component>
+        <collidable>true</collidable>
+        <selectable>false</selectable>
+    </interaction-component>
+    <position-component>
+        <translation>
+<x>1000</x>
+            <y>0.0</y>
+<z>1000</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>120.00000762939453</x>
+            <y>0.05000000074505806</y>
+            <z>120.00000762939453</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>-0.0</z>
+            <angle>3.1415927</angle>
+        </rotation>
+    </position-component>
+    <placemark-component>
+        <placemarkName>Japanese Pavilion</placemarkName>
+    </placemark-component>
+</model-cell>

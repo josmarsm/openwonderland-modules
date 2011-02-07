@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>Table_Wood_Rustic.kmz</name>
+    <metadata/>
+    <cell-performance-component/>
+    <position-component>
+        <translation>
+<x>3.07704</x>
+            <y>0.3022153</y>
+<z>2.25187</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>0.7555127143859863</x>
+            <y>0.2627831995487213</y>
+            <z>0.42790496349334717</z>
+        </bounds>
+        <scale>
+            <x>1.2</x>
+            <y>1.2</y>
+            <z>1.2</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>-0.0</z>
+            <angle>3.1415927</angle>
+        </rotation>
+    </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-combined-world/Table_Wood_Rustic.kmz/Table_Wood_Rustic.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>false</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+</model-cell>
