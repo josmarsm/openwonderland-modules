@@ -6,6 +6,8 @@
 package org.jdesktop.wonderland.modules.ezscript.client;
 
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -87,6 +89,14 @@ public class ScriptManager {
             ReturnableScriptMethodSPI method = returnables.next();
             addFunctionBinding(method);
             panel.addLibraryEntry(method);
+        }
+    }
+    public void evaluate(String script) {
+        try {
+            scriptEngine.eval(script, scriptBindings);
+        } catch (ScriptException ex) {
+            ex.printStackTrace();
+            //Logger.getLogger(ScriptManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

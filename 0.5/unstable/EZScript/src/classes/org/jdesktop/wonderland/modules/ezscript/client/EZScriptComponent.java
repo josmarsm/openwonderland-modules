@@ -162,6 +162,18 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
     private List<Runnable> callbacksOnLeave;        //avatar leave
     private Map<String, List<Runnable>> callbacksOnKeyPress; // keypress
 
+    //local callback containers
+    // - these Runnables only get executed on the local client, they do not get
+    // propogated across the network.
+    private List<Runnable> localOnClick;
+    private List<Runnable> localOnLoad;
+    private List<Runnable> localOnUnload;
+    private List<Runnable> localOnMouseEnter;
+    private List<Runnable> localOnMouseExit;
+    private List<Runnable> localOnApproach;
+    private List<Runnable> localOnLeave;
+    private Map<String, List<Runnable>> localOnKeyPress;
+
     //Functions to be run from remote cells to alter this particular cell
     //only one runnable per name, no overloading supported as of yet...
     private Map<String, FarCellEventSPI> farCellEvents;
@@ -220,6 +232,19 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
             //for each letter in the alphabet, add an entry in the hashmap
             List<Runnable> l = new ArrayList<Runnable>();
             callbacksOnKeyPress.put(letter, l);
+        }
+
+        //initialize local callbacks
+        localOnClick = new ArrayList<Runnable>();
+        localOnLoad = new ArrayList<Runnable>();
+        localOnUnload = new ArrayList<Runnable>();
+        localOnMouseEnter = new ArrayList<Runnable>();
+        localOnMouseExit = new ArrayList<Runnable>();
+        localOnApproach = new ArrayList<Runnable>();
+        localOnLeave = new ArrayList<Runnable>();
+        for(String letter: alphabet) {
+            List<Runnable> l = new ArrayList<Runnable>();
+            localOnKeyPress.put(letter, l);
         }
 
         farCellEvents = new HashMap<String, FarCellEventSPI>();
@@ -424,89 +449,179 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         proximityEventsEnabled = false;
     }
 
-    public void onClick(Runnable r) {
-        callbacksOnClick.add(r);
-    }
-
-    public void onMouseEnter(Runnable r) {
-        callbacksOnMouseEnter.add(r);
-    }
-
-    public void onMouseExit(Runnable r) {
-        callbacksOnMouseExit.add(r);
-    }
-
-    public void onLoad(Runnable r) {
-        callbacksOnLoad.add(r);
-    }
-
-    public void onUnload(Runnable r) {
-        callbacksOnUnload.add(r);
-    }
-
-    public void onApproach(Runnable r) {
-        callbacksOnApproach.add(r);
-    }
-
-    public void onLeave(Runnable r) {
-        callbacksOnLeave.add(r);
-    }
-
-    public void onKeyPress(String key, Runnable r) {
-        List<Runnable> list = callbacksOnKeyPress.get(key);
-        if(list == null) {
-            list = new ArrayList();
-            //list.add(r);
-            
+    public void onClick(Runnable r, boolean local) {
+        if(local) {
+            localOnClick.add(r);
+        } else {
+            callbacksOnClick.add(r);
         }
-        list.add(r);
-        callbacksOnKeyPress.put(key, list);
     }
 
-    public void executeOnClick() {
-        for(Runnable r: callbacksOnClick) {
+    public void onMouseEnter(Runnable r, boolean local) {
+        if(local) {
+            localOnMouseEnter.add(r);
+        } else {
+            callbacksOnMouseEnter.add(r);
+        }
+    }
+
+    public void onMouseExit(Runnable r, boolean local) {
+        if(local)  {
+            localOnMouseExit.add(r);
+        } else {
+            callbacksOnMouseExit.add(r);
+        }
+    }
+
+    public void onLoad(Runnable r, boolean local) {
+        if(local) {
+            localOnLoad.add(r);
+        } else {
+            callbacksOnLoad.add(r);
+        }
+    }
+
+    public void onUnload(Runnable r, boolean local) {
+        if(local) {
+            localOnLoad.add(r);
+        } else {
+            callbacksOnUnload.add(r);
+        }
+    }
+
+    public void onApproach(Runnable r, boolean local) {
+        if(local) {
+            localOnApproach.add(r);
+        } else {
+            callbacksOnApproach.add(r);
+        }
+        
+    }
+
+    public void onLeave(Runnable r, boolean local) {
+        if(local) {
+            localOnLeave.add(r);
+        } else {
+            callbacksOnLeave.add(r);
+        }
+    }
+
+    public void onKeyPress(String key, Runnable r, boolean local) {
+        List<Runnable> list;
+        if(local) {
+            list = localOnKeyPress.get(key);
+            if(list == null) {
+                list = new ArrayList();
+            }
+            list.add(r);
+            localOnKeyPress.put(key, list);
+                            
+        } else {
+            list = callbacksOnKeyPress.get(key);
+            if(list == null) {
+                list = new ArrayList();
+            }
+            list.add(r);
+            callbacksOnKeyPress.put(key, list);
+        }
+    }
+
+    public void executeOnClick(boolean local) {
+        if(local) {
+            for(Runnable r: localOnClick) {
             r.run();
+            }
+        } else {
+            for(Runnable r: callbacksOnClick) {
+                r.run();
+            }
+        }
+
+    }
+
+    public void executeOnMouseEnter(boolean local) {
+        if(local) {
+            for(Runnable r: localOnMouseEnter) {
+                r.run();
+            }    
+        } else {
+            for(Runnable r: callbacksOnMouseEnter) {
+                r.run();
+            }
         }
     }
 
-    public void executeOnMouseEnter() {
-        for(Runnable r: callbacksOnMouseEnter) {
-            r.run();
+    public void executeOnMouseExit(boolean local) {
+        if(local) {
+            for(Runnable r: localOnMouseExit) {
+                r.run();
+            }
+        } else {
+            for(Runnable r: callbacksOnMouseExit) {
+                r.run();
+            }            
+        }
+
+    }
+
+    public void executeOnLoad(boolean local) {
+        if(local) {
+            for(Runnable r: localOnLoad) {
+                r.run();
+            }
+        } else {
+            for(Runnable r: callbacksOnLoad) {
+                r.run();
+            }
         }
     }
 
-    public void executeOnMouseExit() {
-        for(Runnable r: callbacksOnMouseExit) {
-            r.run();
+    public void executeOnUnload(boolean local) {
+        if(local) {
+            for(Runnable r: localOnUnload) {
+                r.run();
+            }
+        } else {
+            for(Runnable r: callbacksOnUnload) {
+                r.run();
+            }
         }
     }
 
-    public void executeOnLoad() {
-        for(Runnable r: callbacksOnLoad) {
-            r.run();
+    public void executeOnApproach(boolean local) {
+        if(local) {
+            for(Runnable r: localOnApproach) {
+                r.run();
+            }
+        } else {
+            for(Runnable r: callbacksOnApproach) {
+                r.run();
+            }
+        }
+
+    }
+
+    public void executeOnLeave(boolean local) {
+        if(local) {
+            for(Runnable r: localOnLeave) {
+                r.run();
+            }
+        } else {
+            for(Runnable r: callbacksOnLeave) {
+                r.run();
+            }
         }
     }
 
-    public void executeOnUnload() {
-        for(Runnable r: callbacksOnUnload) {
-            r.run();
-        }
-    }
+    public void executeOnKeyPress(String key, boolean local) {
+        List<Runnable> rs;
+        if(local) {
+            rs = localOnKeyPress.get(key);
 
-    public void executeOnApproach() {
-        for(Runnable r: callbacksOnApproach) {
-            r.run();
+        } else {
+            rs = callbacksOnKeyPress.get(key);
         }
-    }
-
-    public void executeOnLeave() {
-        for(Runnable r: callbacksOnLeave) {
-            r.run();
-        }
-    }
-
-    public void executeOnKeyPress(String key) {
-        List<Runnable> rs = callbacksOnKeyPress.get(key);
+         
         if(rs == null) {
             return;
         }
@@ -561,13 +676,16 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                 MouseButtonEvent3D m = (MouseButtonEvent3D)event;
 
                 if(m.isClicked())
+                    executeOnClick(true);
                     callbacksMap.put("onClick", new SharedString());
             }
             else if(event instanceof MouseEnterExitEvent3D) {
                 MouseEnterExitEvent3D m = (MouseEnterExitEvent3D)event;
                 if(m.isEnter()) {
+                    executeOnMouseEnter(true);
                     callbacksMap.put("onMouseEnter", new SharedString());
                 } else {
+                    executeOnMouseExit(true);
                     callbacksMap.put("onMouseExit", new SharedString());
                 }
             }
@@ -586,6 +704,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
            if(event instanceof KeyEvent3D) {
                KeyEvent3D e = (KeyEvent3D)event;
                if(e.isPressed()) {
+                   executeOnKeyPress(Character.toString(e.getKeyChar()), true);
                    callbacksMap.put("onKeyPress", SharedString.valueOf(
                                                     Character.toString(
                                                         e.getKeyChar())));
@@ -599,17 +718,17 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         public void propertyChanged(SharedMapEventCli event) {
             String property = event.getPropertyName();
             if(property.equals("onClick")) {
-                executeOnClick();
+                executeOnClick(false);
             } else if(property.equals("onMouseEnter")) {
-                executeOnMouseEnter();
+                executeOnMouseEnter(false);
             } else if(property.equals("onMouseExit")) {
-                executeOnMouseExit();
+                executeOnMouseExit(false);
             } else if(property.equals("onApproach")) {
-                executeOnApproach();
+                executeOnApproach(false);
             } else if(property.equals("onLeave")) {
-                executeOnLeave();
+                executeOnLeave(false);
             } else if(property.equals("onKeyPress")) {                
-                executeOnKeyPress(event.getNewValue().toString());
+                executeOnKeyPress(event.getNewValue().toString(), false);
             } else if(property.equals("editor")) {
                 SharedString script = (SharedString)event.getNewValue();
                 try {
@@ -628,9 +747,11 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
         public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
             if(entered) {
+                executeOnApproach(true);
                 callbacksMap.put("onApproach", new SharedString());
             }
             else {
+                executeOnLeave(true);
                 callbacksMap.put("onLeave", new SharedString());
             }
         }
@@ -732,8 +853,6 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
     public void attachBehavior(Behavior b) {
         behaviors.add(b);
-
-
 
         addCallback(callbacksOnClick, b.onClick());
         addCallback(callbacksOnMouseEnter, b.onMouseEnter());

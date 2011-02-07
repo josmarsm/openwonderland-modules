@@ -162,6 +162,9 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
                     //scriptComponent.evaluateScript(scriptArea.getText());
                 }
             }).start();
+        } else {
+            //TODO execute on client, not over network.
+            ScriptManager.getInstance().evaluate(scriptArea.getText());
         }
 
         
