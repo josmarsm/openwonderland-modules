@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>JapanesePavilion7.kmz</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-japanesepavilion-world/JapanesePavilion7.kmz/JapanesePavilion7.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <interaction-component>
+        <collidable>true</collidable>
+        <selectable>false</selectable>
+    </interaction-component>
+    <position-component>
+        <translation>
+            <x>0.0</x>
+            <y>5.7999997</y>
+            <z>0.0</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>22.386383056640625</x>
+            <y>4.985481262207031</y>
+            <z>30.789676666259766</z>
+        </bounds>
+        <scale>
+            <x>1.2</x>
+            <y>1.2</y>
+            <z>1.2</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>0.0</z>
+            <angle>3.1415927</angle>
+        </rotation>
+    </position-component>
+</model-cell>

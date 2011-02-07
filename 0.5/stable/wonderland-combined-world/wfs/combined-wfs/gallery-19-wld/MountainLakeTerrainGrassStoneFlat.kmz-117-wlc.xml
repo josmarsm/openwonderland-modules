@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>MountainLakeTerrainGrassStoneFlat.kmz</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-gallery-world/MountainLakeTerrainGrassStoneFlat.kmz/MountainLakeTerrainGrassStoneFlat.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <interaction-component>
+        <collidable>true</collidable>
+        <selectable>false</selectable>
+    </interaction-component>
+    <position-component>
+        <translation>
+            <x>44.14209</x>
+            <y>29.12289</y>
+            <z>27.252441</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>175.87594604492188</x>
+            <y>19.629119873046875</y>
+            <z>131.07351684570312</z>
+        </bounds>
+        <scale>
+            <x>1.5</x>
+            <y>1.5</y>
+            <z>1.5</z>
+        </scale>
+        <rotation>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+            <angle>0.0</angle>
+        </rotation>
+    </position-component>
+</model-cell>

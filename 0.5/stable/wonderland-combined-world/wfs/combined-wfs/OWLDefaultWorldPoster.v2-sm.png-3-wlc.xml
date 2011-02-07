@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<image-viewer-cell>
+    <name>OWLDefaultWorldPoster.v2-sm.png</name>
+    <metadata/>
+    <cell-performance-component/>
+    <position-component>
+        <translation>
+<x>0</x>
+            <y>3.577292</y>
+<z>0</z>
+        </translation>
+        <bounds>
+            <type>SPHERE</type>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </bounds>
+        <scale>
+            <x>0.1</x>
+            <y>0.1</y>
+            <z>0.1</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>0.0</z>
+            <angle>3.1415927</angle>
+        </rotation>
+    </position-component>
+    <image-uri>wla://wonderland-combined-world/OWLDefaultWorldPoster.v2-sm.png</image-uri>
+</image-viewer-cell>

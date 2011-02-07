@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>entrance</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-almostempty-world/TreeHillGrassHex-120m-perged.kmz/TreeHillGrassHex-120m-perged.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <interaction-component>
+        <collidable>true</collidable>
+        <selectable>false</selectable>
+    </interaction-component>
+    <position-component>
+        <translation>
+<x>0</x>
+            <y>0.0</y>
+<z>0</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>103.92304229736328</x>
+            <y>0.02500000037252903</y>
+            <z>120.00000762939453</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>0.99999994</y>
+            <z>0.0</z>
+            <angle>2.7052605</angle>
+        </rotation>
+    </position-component>
+</model-cell>

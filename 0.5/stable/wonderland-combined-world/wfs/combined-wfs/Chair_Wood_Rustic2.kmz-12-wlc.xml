@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>Chair_Wood_Rustic2.kmz</name>
+    <metadata/>
+    <tooltip-cell-component>
+        <text>Right-click on chair to sit</text>
+        <timeout>-1</timeout>
+    </tooltip-cell-component>
+    <sitting-cell-component>
+        <mouse-enable>false</mouse-enable>
+        <heading>0.0</heading>
+        <offset>0.5</offset>
+        <mouse>Left Mouse</mouse>
+    </sitting-cell-component>
+    <cell-performance-component/>
+    <position-component>
+        <translation>
+<x>-2.19174</x>
+            <y>0.54753506</y>
+<z>-0.081</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>0.5434140563011169</x>
+            <y>0.5519024729728699</y>
+            <z>0.5061493515968323</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>0.0</z>
+            <angle>1.5380536</angle>
+        </rotation>
+    </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-combined-world/Chair_Wood_Rustic.kmz/Chair_Wood_Rustic.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>false</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+</model-cell>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>AuditoriumTiles2x5m-rotated.kmz</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-gallery-world/AuditoriumTiles2x5m-rotated.kmz/AuditoriumTiles2x5m-rotated.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <interaction-component>
+        <collidable>true</collidable>
+        <selectable>false</selectable>
+    </interaction-component>
+    <position-component>
+        <translation>
+            <x>-9.570801</x>
+            <y>0.21685599</y>
+            <z>-17.886963</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>2.5</z>
+        </bounds>
+        <scale>
+            <x>1.8000001</x>
+            <y>1.8000001</y>
+            <z>1.8000001</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>-1.0</y>
+            <z>0.0</z>
+            <angle>2.5507567</angle>
+        </rotation>
+    </position-component>
+    <placemark-component>
+        <placemarkName>Gallery</placemarkName>
+    </placemark-component>
+</model-cell>
