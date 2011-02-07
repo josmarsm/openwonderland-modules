@@ -28,7 +28,7 @@
     <target name="-modules-stable-dist-copy-selected" unless="modules.include.all">
         <copy todir="dist">
             <filelist dir=".">
-                <file name="orientationworld/dist/orientationworld.jar"/>
+                <file name="wonderland-meetingcomplex-world/dist/wonderland-meetingcomplex-world.jar"/>
                 <file name="pdfviewer/dist/pdfviewer.jar"/>
                 <file name="telepointer/dist/telepointer.jar"/>
                 <file name="whiteboard/dist/whiteboard.jar"/>
