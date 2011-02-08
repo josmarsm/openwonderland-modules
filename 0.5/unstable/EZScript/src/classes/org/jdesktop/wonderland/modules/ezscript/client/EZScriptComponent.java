@@ -10,6 +10,7 @@ import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
 import com.bulletphysics.collision.shapes.BoxShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.collision.shapes.SphereShape;
+//import com.bulletphysics.demos.applet.Sphere;
 import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
@@ -19,8 +20,10 @@ import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.ObjectArrayList;
 import com.jme.bounding.BoundingVolume;
 //import com.jme.entity.Entity;
+//import com.jme.entity.Entity;
 import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
+//import com.jme.math.Vector3f;
 import com.jme.renderer.ColorRGBA;
 import com.jme.scene.GeometricUpdateListener;
 import com.jme.scene.Node;
@@ -242,6 +245,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         localOnMouseExit = new ArrayList<Runnable>();
         localOnApproach = new ArrayList<Runnable>();
         localOnLeave = new ArrayList<Runnable>();
+        localOnKeyPress = new HashMap();
         for(String letter: alphabet) {
             List<Runnable> l = new ArrayList<Runnable>();
             localOnKeyPress.put(letter, l);
@@ -383,9 +387,10 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                     if(keyEventListener != null) {
                         keyEventListener.removeFromEntity(renderer.getEntity());
                         keyEventListener = null;
-                    }                        
-                    callbacksMap.clear();
-                    scriptsMap.clear();
+                    }
+                   
+                  //  callbacksMap.clear();
+                   // scriptsMap.clear();
                     renderer = null;
                 }
         }
@@ -590,22 +595,31 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
     public void executeOnApproach(boolean local) {
         if(local) {
-            for(Runnable r: localOnApproach) {
-                r.run();
-            }
+            new Thread(new Runnable() {
+                public void run() {
+                    for(Runnable r: localOnApproach) {
+                        r.run();
+                    }
+                }
+            }).start();
+
         } else {
             for(Runnable r: callbacksOnApproach) {
                 r.run();
             }
         }
-
     }
 
     public void executeOnLeave(boolean local) {
         if(local) {
-            for(Runnable r: localOnLeave) {
-                r.run();
-            }
+              new Thread(new Runnable() {
+                public void run() {
+                    for(Runnable r: localOnLeave) {
+                        r.run();
+                    }
+                }
+            }).start();
+
         } else {
             for(Runnable r: callbacksOnLeave) {
                 r.run();
