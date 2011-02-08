@@ -38,6 +38,11 @@
             <art dir="${current.dir}/art"/>
 
             <part name="wfs" dir="${current.dir}/wfs"/>
+            
+            <part name="properties" dir="${current.dir}">
+                <include name="system.properties"/>
+            </part>
+
         </module>
     </target>                                  
                  
