@@ -533,22 +533,31 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
     public void executeOnClick(boolean local) {
         if(local) {
-            for(Runnable r: localOnClick) {
-            r.run();
-            }
+            new Thread(new Runnable() {
+                public void run() {
+                    for(Runnable r: localOnClick) {
+                        r.run();
+                    }
+                }
+            }).start();
+
         } else {
             for(Runnable r: callbacksOnClick) {
                 r.run();
             }
         }
-
     }
 
     public void executeOnMouseEnter(boolean local) {
         if(local) {
-            for(Runnable r: localOnMouseEnter) {
-                r.run();
-            }    
+            new Thread(new Runnable() {
+                public void run() {
+                    for(Runnable r: localOnMouseEnter) {
+                        r.run();
+                    }
+                }
+            }).start();
+  
         } else {
             for(Runnable r: callbacksOnMouseEnter) {
                 r.run();
@@ -558,15 +567,19 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
 
     public void executeOnMouseExit(boolean local) {
         if(local) {
-            for(Runnable r: localOnMouseExit) {
-                r.run();
-            }
+            new Thread(new Runnable() {
+                public void run() {
+                    for(Runnable r: localOnMouseExit) {
+                        r.run();
+                    }
+                }
+            }).start();
+
         } else {
             for(Runnable r: callbacksOnMouseExit) {
                 r.run();
             }            
         }
-
     }
 
     public void executeOnLoad(boolean local) {
@@ -628,10 +641,16 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
     }
 
     public void executeOnKeyPress(String key, boolean local) {
-        List<Runnable> rs;
+        final List<Runnable> rs;
         if(local) {
             rs = localOnKeyPress.get(key);
-
+            new Thread(new Runnable() {
+                public void run() {
+                    for(Runnable r: rs) {
+                        r.run();
+                    }
+                }
+             }).start();
         } else {
             rs = callbacksOnKeyPress.get(key);
         }
@@ -639,6 +658,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
         if(rs == null) {
             return;
         }
+
         for(Runnable r: rs) {
             r.run();
         }
