@@ -17,7 +17,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.modules.ezscript.client.IntStateMachine;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
@@ -36,42 +36,47 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
     private float z;
     private float seconds;
     private Semaphore lock;
-
+    private Node node;
     public String getFunctionName() {
         return "animateMove";
     }
 
     public void setArguments(Object[] args) {
         cell = (Cell)args[0];
-        x = ((Double)args[1]).floatValue();
-        y = ((Double)args[2]).floatValue();
-        z = ((Double)args[3]).floatValue();
+        BasicRenderer r = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        node = r.getSceneRoot();
+        
+        x = ((Double)args[1]).floatValue();// + node.getLocalTranslation().x;
+        y = ((Double)args[2]).floatValue();// + node.getLocalTranslation().y;
+        z = ((Double)args[3]).floatValue();// + node.getLocalTranslation().z;
+
+
+
         seconds = ((Double)args[4]).floatValue();
         lock = new Semaphore(0);
 
     }
 
-    public void run() {        
-        SceneWorker.addWorker(new WorkCommit() {
+    public void run() {
 
+        SceneWorker.addWorker(new WorkCommit() {        
             public void commit() {
                 BasicRenderer r = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                Node n = r.getSceneRoot();
+                node = r.getSceneRoot();
+                
                 r.getEntity().addComponent(TranslationProcessor.class,
-                                           new TranslationProcessor("trans", n,0));
+                                           new TranslationProcessor("trans", node,0));
             }
-
         });
 
         //Block until animation is finished
         try {
-            lock.acquire();
+            lock.acquire();            
         } catch(InterruptedException e) {
             e.printStackTrace();
         } finally {
             System.out.println("animateMove finished!");
         }
-
     }
 
     public String getDescription() {
@@ -118,9 +123,9 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
             translate = target.getLocalTranslation();
-            xInc = x/(30*seconds);
-            yInc = y/(30*seconds);
-            zInc = z/(30*seconds);
+            xInc = (float) (x / Double.valueOf(30*seconds));
+            yInc = (float) (y / Double.valueOf(30*seconds));
+            zInc = (float) (z / Double.valueOf(30*seconds));
             
         }
 
