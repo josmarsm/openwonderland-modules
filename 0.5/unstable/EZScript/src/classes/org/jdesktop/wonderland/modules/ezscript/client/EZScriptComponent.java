@@ -375,6 +375,7 @@ public class EZScriptComponent extends CellComponent implements GeometricUpdateL
                         contextMenuComponent.removeContextMenuFactory(menuFactory);
                         menuFactory = null;
                     }
+                    channelComponent.removeMessageReceiver(FarCellEventMessage.class);
                 }
                 break;
             case DISK:
