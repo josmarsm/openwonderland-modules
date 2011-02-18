@@ -17,6 +17,7 @@ import org.pushingpixels.trident.Timeline;
 import org.pushingpixels.trident.Timeline.TimelineState;
 import org.pushingpixels.trident.TimelineScenario;
 import org.pushingpixels.trident.callback.TimelineCallback;
+import org.pushingpixels.trident.callback.TimelineScenarioCallback;
 
 
 /**
@@ -52,6 +53,13 @@ public class AnimationNode {
     public void play() {
         
         scenario.play();
+        scenario.addCallback(new TimelineScenarioCallback() {
+
+            public void onTimelineScenarioDone() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+        });
     }
 
     /**
@@ -129,7 +137,7 @@ public class AnimationNode {
                     translations[j + 1].x + finalTranslation.x + (translations[j + 1].x * (float)Math.sin(finalRotationAngles[1])),
                     translations[j + 1].y + finalTranslation.y,
                     translations[j + 1].z + finalTranslation.z + (translations[j + 1].z * (float)Math.cos(finalRotationAngles[1])));
-                timeline.addPropertyToInterpolate("NodeTrans", tempVec, tempVecPlus, new VectorInterpolator());
+                timeline.addPropertyToInterpolate("NodeTranslation", tempVec, tempVecPlus, new VectorInterpolator());
             }
             if(j == endFrame - 1) {
                 timeline.addCallback(new TimelineCallback() {
