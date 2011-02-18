@@ -16,7 +16,6 @@
             <z>0.0</z>
             <angle>0.0</angle>
         </look>
-        <serverURL>http://199.17.224.246:8080/</serverURL>
         <uploadFile>false</uploadFile>
         <volume>1.0</volume>
     </portal-component>
