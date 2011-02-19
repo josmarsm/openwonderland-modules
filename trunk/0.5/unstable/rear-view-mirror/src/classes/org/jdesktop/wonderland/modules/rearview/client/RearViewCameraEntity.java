@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -24,6 +42,7 @@ import com.jme.scene.Node;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -278,6 +297,13 @@ public class RearViewCameraEntity extends Entity implements RenderUpdater {
         BufferedImage bi = captureComponent.getBufferedImage();
         ByteBuffer bb = textureBuffer.getTextureData();
         fill(bi, bb, bi.getWidth(), bi.getHeight());
-        captureComponent.repaint();
+
+        // OWL issue #153: do this on the AWT event thread to prevent
+        // a deadlock on Linux
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                captureComponent.repaint();
+            }
+        });
     }
 }
