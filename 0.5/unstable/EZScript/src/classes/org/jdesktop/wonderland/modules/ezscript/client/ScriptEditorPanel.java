@@ -37,6 +37,7 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         this.dialog = dialog;
         this.setMinimumSize(new Dimension(600, 400));
         this.setPreferredSize(new Dimension(600, 400));
+
     }
 
     public ScriptEditorPanel(JDialog dialog) {
@@ -55,6 +56,10 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
 
     public void addLibraryEntry(ScriptMethodSPI method) {
         library.addEntry(method);
+    }
+
+    public void setScriptTextArea(String s) {
+        scriptArea.setText(s);
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -157,6 +162,7 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
             new Thread(new Runnable() {
                 public void run() {
                     scriptComponent.getScriptMap().put("editor", SharedString.valueOf(scriptArea.getText()));
+                    scriptComponent.getStateMap().put("script", SharedString.valueOf(scriptArea.getText())); // for persistenceh
                   //  scriptComponent.clearCallbacks();
 
                     //scriptComponent.evaluateScript(scriptArea.getText());

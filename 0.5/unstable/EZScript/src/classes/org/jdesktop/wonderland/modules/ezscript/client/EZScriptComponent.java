@@ -142,7 +142,7 @@ public class EZScriptComponent extends CellComponent {
     private SharedMapCli callbacksMap; // used in syncing callbacks across clients
     private SharedMapCli scriptsMap;// used for executing scripts and client sync
     private SharedMapCli behaviorsMap; //used for persisting scripts
-    private SharedMapCli stateMap; //used for persisting state variables
+    private SharedMapCli stateMap; //used for persisting state variables, including current script
    
     private SharedMapListener mapListener;
 
@@ -314,7 +314,9 @@ public class EZScriptComponent extends CellComponent {
                            scriptsMap.addSharedMapListener(mapListener);
                            stateMap.addSharedMapListener(mapListener);
 
-                           //don't grab any persisted scripts just yet.
+                           //process the states map
+                           handleStates(stateMap);
+                           handleScript(stateMap);
 
                            //get other maps here.
                         }
@@ -349,6 +351,40 @@ public class EZScriptComponent extends CellComponent {
                    // scriptsMap.clear();
                     renderer = null;
                 }
+        }
+    }
+    public void handleStates(SharedMapCli states) {
+        if(states.containsKey("proximity")) {
+            SharedBoolean enabled = (SharedBoolean)states.get("proximity");
+            if(enabled.getValue()) {
+                enableProximityEvents();
+            }
+        }
+
+        if(states.containsKey("mouse")) {
+            SharedBoolean enabled = (SharedBoolean)states.get("mouse");
+            if(enabled.getValue()) {
+                enableMouseEvents();
+            }
+        }
+
+        if(states.containsKey("keyboard")) {
+            SharedBoolean enabled = (SharedBoolean)states.get("keyboard");
+            if(enabled.getValue()) {
+                enableKeyEvents();
+            }
+        }
+    }
+
+    public void handleScript(SharedMapCli states) {
+        if(states.containsKey("script")) {
+            final SharedString script = (SharedString)states.get("script");
+            new Thread(new Runnable() {
+                public void run() {
+                    System.out.println("[EZScript] handling persisted script");
+                    evaluateScript(script.getValue());
+                }
+            }).start();
         }
     }
 
@@ -665,12 +701,18 @@ public class EZScriptComponent extends CellComponent {
         callbacksOnKeyPress.clear();
     }
 
-    public void evaluateScript(String script) {
+    public void evaluateScript(final String script) {
 
         try {
             scriptEngine.eval(script, scriptBindings);
         } catch(Exception e) {
             e.printStackTrace();
+        } finally {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    panel.setScriptTextArea(script);
+                }
+            });
         }
     }
 
@@ -773,6 +815,10 @@ public class EZScriptComponent extends CellComponent {
 
             //state messages should be send least frequently
             if(name.equals("state")) {
+
+                if(property.equals("script")) {
+                    return;
+                }
                 SharedBoolean p = (SharedBoolean)event.getNewValue();
                 if(property.equals("proximity")) {
                     if(p.getValue())
@@ -815,7 +861,6 @@ public class EZScriptComponent extends CellComponent {
 
         public void actionPerformed(ContextMenuItemEvent event) {
             if(event.getContextMenuItem().getLabel().equals("Script")) {
-                System.out.println("[iSocial] menu item fired!");
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         dialog.setResizable(false);
