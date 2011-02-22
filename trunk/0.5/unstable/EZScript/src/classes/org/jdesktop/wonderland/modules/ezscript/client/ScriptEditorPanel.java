@@ -28,6 +28,7 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
     private JDialog dialog;
     private boolean isGlobal = false;
     private ScriptLibraryPanel library;
+    private CommandPanel commandPanel;
     public ScriptEditorPanel(EZScriptComponent component, JDialog dialog) {
         initComponents();
         library = new ScriptLibraryPanel();
@@ -45,6 +46,8 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         isGlobal = true;
         library = new ScriptLibraryPanel();
         jTabbedPane1.addTab("Library", library);
+        commandPanel = new CommandPanel();
+        jTabbedPane1.addTab("REPL", commandPanel);
         this.dialog = dialog;
         this.setMinimumSize(new Dimension(600, 400));
         this.setPreferredSize(new Dimension(600, 400));
