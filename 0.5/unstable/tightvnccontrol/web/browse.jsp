@@ -17,17 +17,16 @@
     </head>
     <body>
         <h2>Manage TightVNC Viewers</h2>
-        <p>Use this page to configure TightVNC Viewers.</p>
+        
         <table class="installed" id="runnerTable">
-            <col width="10%"/>
-            <col width="20%"/>
-            <col width="50%"/>
-            <col width="20%"/>
+            <caption>
+              <span class="heading">Configure TightVNC Viewers.</span>
+            </caption>
             <tr class="header">
-                <td class="installed"><b>CellID</b></td>
-                <td class="installed"><b>Cell Name</b></td>
-                <td class="installed"><b>Settings</b></td>
-                <td class="installed"><b>Actions</b></td>
+                <td class="installed">CellID</td>
+                <td class="installed">Cell Name</td>
+                <td class="installed">Settings</td>
+                <td class="installed">Actions</td>
             </tr>
             <c:forEach var="record" items="${requestScope['records']}">
                 <tr>
@@ -35,7 +34,6 @@
                     <td class="installed">${record.cellName}</td>
                     <td class="installed">
                         <table>
-
                             <tr>
                                 <td>VNC Server:</td>
                                 <td><c:choose>
@@ -69,7 +67,6 @@
                                             ${record.vncUsername}
                                         </c:otherwise>
                                     </c:choose>
-
                                 </td>
                             </tr>
                             <tr>
