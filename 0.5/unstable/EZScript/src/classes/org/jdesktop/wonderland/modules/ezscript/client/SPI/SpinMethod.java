@@ -17,6 +17,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.StringStateMachine;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
+ * LOTS OF MATH PROBLEMS HERE.
  *
  * @author JagWire
  */
@@ -63,6 +64,7 @@ public class SpinMethod implements ScriptMethodSPI {
         return "usage: spin(cell, rotations, time)\n\n"
                 +"-spin a cell a certain amount of rotations in the specified duration of seconds."
                 +"-blocks on the executing thread until animation is finished.";
+                
     }
 
     public String getCategory() {

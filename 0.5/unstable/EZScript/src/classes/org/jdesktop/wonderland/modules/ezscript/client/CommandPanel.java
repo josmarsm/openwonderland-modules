@@ -51,6 +51,14 @@ public class CommandPanel extends javax.swing.JPanel {
     }
 
     public void evaluate(String string) {
+        // before we evaluate the string for scripts, let's do some of our
+        // own command line processing first
+        if(string.equals("clear")) {
+            jTextArea1.setText("> ");
+        }
+
+        //after processing our own commands, let's evaluate the script...
+
        ScriptManager.getInstance().evaluate(string);
         
     }

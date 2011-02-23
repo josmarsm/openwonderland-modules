@@ -81,7 +81,8 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
 
     public String getDescription() {
         return "usage: animateMove(cell, x, y, z, seconds);\n\n"
-                +"-animate a cell moving to the x,y,z coordinates in the duration of seconds.";
+                +"-animate a cell moving to the x,y,z coordinates in the duration of seconds."
+                +"-moves relative to the current position";
     }
 
     public String getCategory() {
