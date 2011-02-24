@@ -827,6 +827,7 @@ public class EZScriptComponent extends CellComponent {
                 if(property.equals("bounds")) {
                     SharedBounds b = (SharedBounds)event.getNewValue();
                     updateCellBounds(b.getValue(), b.getExtents());
+                    return;
                 }
                 SharedBoolean p = (SharedBoolean)event.getNewValue();
                 if(property.equals("proximity")) {

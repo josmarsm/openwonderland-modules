@@ -17,13 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.ezscript.client;
 
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.math.Vector3f;
 import javax.swing.JPanel;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.ezscript.common.EZScriptComponentServerState;
@@ -51,6 +58,7 @@ public class EZScriptComponentProperties
     private SharedBoolean originalFarCellEnabled = SharedBoolean.valueOf(false);
     private SharedBounds originalBounds = SharedBounds.BOX;
     private BoundsViewerEntity boundsEntity;
+    private boolean originalShowBounds = false;
 
     /** Creates new form SampleComponentProperties */
     public EZScriptComponentProperties() {
@@ -60,6 +68,9 @@ public class EZScriptComponentProperties
         // Listen for changes to the info text field
         infoTextField.getDocument().addDocumentListener(
                 new InfoTextFieldListener());
+        radiusSpinner.getModel().addChangeListener(new RadiusSpinnerChangeListener());
+        ySpinner.getModel().addChangeListener(new YSpinnerChangeListener());
+        zSpinner.getModel().addChangeListener(new ZSpinnerChangeListener());
     }
 
     /**
@@ -117,6 +128,9 @@ public class EZScriptComponentProperties
             if(states.get("bounds") != null)
                 originalBounds = (SharedBounds)states.get("bounds");
 
+            originalBounds = SharedBounds.valueOf(editor.getCell().getLocalBounds());
+           
+
             if(originalBounds.getValue().equals("BOX")) {
                 boxButton.setSelected(true);
                 radiusSpinner.getModel().setValue(originalBounds.getExtents()[0]);
@@ -131,9 +145,7 @@ public class EZScriptComponentProperties
             proximityCheckbox.setSelected(originalProximityEnabled.getValue());
             mouseCheckbox.setSelected(originalMouseEnabled.getValue());
             keyboardCheckbox.setSelected(originalKeyboardEnabled.getValue());
-            cellsCheckbox.setSelected(originalFarCellEnabled.getValue());
-
-            
+            cellsCheckbox.setSelected(originalFarCellEnabled.getValue());            
         }
     }
 
@@ -176,8 +188,10 @@ public class EZScriptComponentProperties
                         SharedBoolean.valueOf(cellsCheckbox.isSelected()));
                 putBounds(states);
 
-
+                
             }
+            
+            hideBounds();
         } else {
             editor.setPanelDirty(EZScriptComponentProperties.class,
                                 false);
@@ -197,6 +211,7 @@ public class EZScriptComponentProperties
         keyboardCheckbox.setSelected(originalKeyboardEnabled.getValue());
         cellsCheckbox.setSelected(originalFarCellEnabled.getValue());
         restoreBounds();
+        showBounds();
 
 
     }
@@ -259,31 +274,116 @@ public class EZScriptComponentProperties
             value = "SPHERE";
         }
 
-        xs[0] = ((Double)radiusSpinner.getValue()).floatValue();
-        xs[1] = ((Double)ySpinner.getValue()).floatValue();
-        xs[2] = ((Double)zSpinner.getValue()).floatValue();
+        xs[0] = ((SpinnerNumberModel)radiusSpinner.getModel()).getNumber().floatValue();
+        xs[1] = ((SpinnerNumberModel)ySpinner.getModel()).getNumber().floatValue();
+        xs[2] = ((SpinnerNumberModel)zSpinner.getModel()).getNumber().floatValue();
 
         map.put("bounds", SharedBounds.valueOf(value, xs));
         
     }
     private boolean areBoundsDirty() {
-        if(originalBounds.equals("BOX") && boxButton.isSelected() == false)
+        if(originalBounds.getValue().equals("BOX") && boxButton.isSelected() == false)
             return true;
 
-        if(originalBounds.equals("SPHERE") && sphereButton.isSelected() == false)
+        if(originalBounds.getValue().equals("SPHERE") && sphereButton.isSelected() == false)
             return true;
 
-        if(originalBounds.getExtents()[0] != ((Double)radiusSpinner.getValue()).floatValue())
+
+        SpinnerNumberModel snm = (SpinnerNumberModel)radiusSpinner.getModel();
+        if(originalBounds.getExtents()[0] != snm.getNumber().floatValue())
+            return true;
+        snm = (SpinnerNumberModel)ySpinner.getModel();
+        if(originalBounds.getExtents()[1] != snm.getNumber().floatValue())
             return true;
 
-        if(originalBounds.getExtents()[1] != ((Double)ySpinner.getValue()).floatValue())
-            return true;
-
-        if(originalBounds.getExtents()[2] != ((Double)zSpinner.getValue()).floatValue())
+        snm = (SpinnerNumberModel)zSpinner.getModel();
+        if(originalBounds.getExtents()[2] != snm.getNumber().floatValue())
             return true;
         
         return false;
     }
+    /**
+     * Highly adapted from MicrophoneComponentProperties.
+     * Thanks to author Joe Provino
+     */
+    private void showBounds() {
+        if(boundsEntity != null) {
+            boundsEntity.dispose();
+            boundsEntity = null;
+        }
+
+        if(!boundsCheckbox.isSelected()) {
+           return;
+        }
+        boundsEntity = new BoundsViewerEntity(editor.getCell());
+        Vector3f origin = getCellTranslation();
+        SpinnerNumberModel snm = (SpinnerNumberModel)radiusSpinner.getModel();
+        if(boxButton.isSelected()) {
+            SpinnerNumberModel ynm = (SpinnerNumberModel)ySpinner.getModel();
+            SpinnerNumberModel znm = (SpinnerNumberModel)zSpinner.getModel();
+            boundsEntity.showBounds(new BoundingBox(origin,
+                                                    snm.getNumber().floatValue(),
+                                                    ynm.getNumber().floatValue(),
+                                                    znm.getNumber().floatValue()));
+        }
+        else {
+            boundsEntity.showBounds(new BoundingSphere(snm.getNumber().floatValue(),
+                                                        origin));
+
+        }
+    }
+
+    private Vector3f getCellTranslation() {
+        Cell cell = editor.getCell();
+        CellTransform transform = cell.getLocalTransform();
+        return transform.getTranslation(null);
+    }
+    private void hideBounds() {
+        if(boundsEntity != null) {
+            boundsEntity.dispose();
+            boundsEntity = null;
+
+            boundsCheckbox.setSelected(false);
+        }
+
+    }
+
+    class RadiusSpinnerChangeListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            if(editor!= null) {
+                editor.setPanelDirty(EZScriptComponentProperties.class, isDirty());
+                showBounds();
+            }
+        }
+
+    }
+
+    class YSpinnerChangeListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            if(editor!= null) {
+                editor.setPanelDirty(EZScriptComponentProperties.class, isDirty());
+                showBounds();
+            }
+        }
+
+    }
+
+    class ZSpinnerChangeListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            if(editor!= null) {
+                editor.setPanelDirty(EZScriptComponentProperties.class, isDirty());
+                showBounds();
+            }
+        }
+
+    }
+
+
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -311,6 +411,7 @@ public class EZScriptComponentProperties
         jLabel3 = new javax.swing.JLabel();
         clearButton = new javax.swing.JButton();
         openEditorButton = new javax.swing.JButton();
+        boundsCheckbox = new javax.swing.JCheckBox();
 
         callbacksLabel.setText("Callbacks:");
 
@@ -343,10 +444,21 @@ public class EZScriptComponentProperties
         });
 
         boundsButtonGroup.add(sphereButton);
+        sphereButton.setSelected(true);
         sphereButton.setText("Sphere");
+        sphereButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sphereButtonActionPerformed(evt);
+            }
+        });
 
         boundsButtonGroup.add(boxButton);
         boxButton.setText("Box");
+        boxButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                boxButtonActionPerformed(evt);
+            }
+        });
 
         radiusSpinner.setModel(new javax.swing.SpinnerNumberModel(1.0d, 1.0d, 100.0d, 1.0d));
 
@@ -374,34 +486,36 @@ public class EZScriptComponentProperties
             }
         });
 
+        boundsCheckbox.setText("Show Bounds");
+        boundsCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                boundsCheckboxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(callbacksLabel))
-                    .add(layout.createSequentialGroup()
-                        .add(32, 32, 32)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cellsCheckbox)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(mouseCheckbox)
-                                    .add(proximityCheckbox)
-                                    .add(keyboardCheckbox))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(clearButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(9, 9, 9)
                         .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(375, Short.MAX_VALUE)
-                        .add(openEditorButton))
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(callbacksLabel))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(32, 32, 32)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(cellsCheckbox)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 192, Short.MAX_VALUE)
+                                .add(clearButton))
+                            .add(mouseCheckbox)
+                            .add(proximityCheckbox)
+                            .add(keyboardCheckbox)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -414,24 +528,28 @@ public class EZScriptComponentProperties
                             .add(boxButton)
                             .add(zSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(ySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(radiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(radiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(boundsCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 243, Short.MAX_VALUE)
+                        .add(openEditorButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(20, 20, 20)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
-                        .add(callbacksLabel)
-                        .add(18, 18, 18)
-                        .add(proximityCheckbox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(mouseCheckbox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(keyboardCheckbox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(cellsCheckbox))
+                .add(callbacksLabel)
+                .add(18, 18, 18)
+                .add(proximityCheckbox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(mouseCheckbox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(keyboardCheckbox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cellsCheckbox)
                     .add(clearButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -454,8 +572,10 @@ public class EZScriptComponentProperties
                         .add(jLabel2)
                         .add(18, 18, 18)
                         .add(jLabel3)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 32, Short.MAX_VALUE)
-                .add(openEditorButton)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 27, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(openEditorButton)
+                    .add(boundsCheckbox))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -514,8 +634,43 @@ public class EZScriptComponentProperties
         component.showEditorWindow();
     }//GEN-LAST:event_openEditorButtonActionPerformed
 
+    private void boundsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boundsCheckboxActionPerformed
+        // TODO add your handling code here:
+        if(editor == null) {
+            return;
+        }
+
+        editor.setPanelDirty(EZScriptComponentProperties.class, isDirty());
+        showBounds();        
+    }//GEN-LAST:event_boundsCheckboxActionPerformed
+
+    private void boxButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boxButtonActionPerformed
+        // TODO add your handling code here:
+        if(boxButton.isSelected() == false) {
+            return;
+        }
+
+        if(editor != null) {
+            editor.setPanelDirty(EZScriptComponentProperties.class, isDirty());
+            showBounds();
+        }
+    }//GEN-LAST:event_boxButtonActionPerformed
+
+    private void sphereButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sphereButtonActionPerformed
+        // TODO add your handling code here:
+        if(sphereButton.isSelected() == false) {
+            return;
+        }
+
+        if(editor != null) {
+            editor.setPanelDirty(EZScriptComponentProperties.class, isDirty());
+            showBounds();
+        }
+    }//GEN-LAST:event_sphereButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup boundsButtonGroup;
+    private javax.swing.JCheckBox boundsCheckbox;
     private javax.swing.JRadioButton boxButton;
     private javax.swing.JLabel callbacksLabel;
     private javax.swing.JCheckBox cellsCheckbox;
