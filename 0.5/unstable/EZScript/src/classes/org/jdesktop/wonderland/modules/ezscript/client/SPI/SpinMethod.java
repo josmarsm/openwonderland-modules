@@ -1,7 +1,9 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.SPI;
 
+import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.util.concurrent.Semaphore;
 import org.jdesktop.mtgame.NewFrameCondition;
@@ -46,10 +48,13 @@ public class SpinMethod implements ScriptMethodSPI {
 
             public void commit() {
                 BasicRenderer r = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                Node node = r.getSceneRoot();
-                r.getEntity().addComponent(SpinProcessor.class, new SpinProcessor("Spin", node, 360/(30*time)));
-            }
+                Node node = r.getSceneRoot();                
 
+                r.getEntity().addComponent(SpinProcessor.class,
+                        new SpinProcessor("Spin",
+                                           node,
+                                           (rotations * FastMath.PI * 2)/(30.0f*time)));
+            }
         });
         try {
             lock.acquire();
@@ -79,7 +84,7 @@ public class SpinMethod implements ScriptMethodSPI {
         /**
          * The current degrees of rotation
          */
-        private float degrees = 0.0f;
+        private float radians = 0.0f;
 
         /**
          * The increment to rotate each frame
@@ -134,8 +139,9 @@ public class SpinMethod implements ScriptMethodSPI {
                 lock.release();
 
             }
-            degrees += increment;
-            quaternion.fromAngles(0.0f, degrees, 0.0f);
+            radians += increment;
+            //quaternion.fromAngles(0.0f, increment, 0.0f);
+            quaternion.fromAngleAxis(radians, Vector3f.UNIT_Y);
             frameIndex +=1;
 
         }

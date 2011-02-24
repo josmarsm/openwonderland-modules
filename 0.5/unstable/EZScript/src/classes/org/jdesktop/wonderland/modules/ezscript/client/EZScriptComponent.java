@@ -43,6 +43,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -58,6 +59,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.FarCellEvent;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.common.FarCellEventMessage;
+import org.jdesktop.wonderland.modules.ezscript.common.SharedBounds;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
@@ -736,7 +738,7 @@ public class EZScriptComponent extends CellComponent {
                 //MouseButtonEvent3D m = (MouseButtonEvent3D)event;
                 MouseButtonEvent3D m = (MouseButtonEvent3D)event;
 
-                if(m.isClicked())
+                if(m.isClicked() && m.getButton() == ButtonId.BUTTON1)
                     executeOnClick(true);
                     callbacksMap.put("onClick", new SharedString());
             }
@@ -794,6 +796,8 @@ public class EZScriptComponent extends CellComponent {
                     executeOnLeave(false);
                 } else if(property.equals("onKeyPress")) {                
                     executeOnKeyPress(event.getNewValue().toString(), false);
+                } else if(property.equals("clear")) {
+                    clearCallbacks();
                 }
                 return;
             }
@@ -818,6 +822,11 @@ public class EZScriptComponent extends CellComponent {
 
                 if(property.equals("script")) {
                     return;
+                }
+
+                if(property.equals("bounds")) {
+                    SharedBounds b = (SharedBounds)event.getNewValue();
+                    updateCellBounds(b.getValue(), b.getExtents());
                 }
                 SharedBoolean p = (SharedBoolean)event.getNewValue();
                 if(property.equals("proximity")) {
@@ -1021,5 +1030,31 @@ public class EZScriptComponent extends CellComponent {
 
     public SharedMapCli getStateMap() {
         return stateMap;
+    }
+
+    public SharedMapCli getCallbacksMap() {
+        return callbacksMap;
+    }
+
+    public JDialog getDialog() {
+        return dialog;
+    }
+
+    public void showEditorWindow() {
+        dialog.setResizable(false);
+
+        dialog.setTitle("Script Editor - " + cell.getName());
+        //2. Optional: What happens when the frame closes?
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        //3. Create component and put them in the frame.
+
+        dialog.setContentPane(panel);
+
+        //4. Size the frame.
+        dialog.pack();
+
+        //5. Show it.
+        dialog.setVisible(true);
     }
 }
