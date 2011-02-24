@@ -28,6 +28,7 @@ public class CommandPanel extends javax.swing.JPanel {
 
     /** Creates new form CommandPanel */
     private TextAreaOutputStream redirectedOutput;
+    private PrintStream originalOut;
     public CommandPanel() {
         initComponents();
         jTextArea1.getInputMap().put(KeyStroke.getKeyStroke(">"), "none");
@@ -63,13 +64,6 @@ public class CommandPanel extends javax.swing.JPanel {
         
     }
 
-    /**
-     * Pre process the jTextArea string to parse out the command
-     */
-    public void preProcess() {
-        int length = jTextArea1.getText().length();
-
-    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -107,10 +101,16 @@ public class CommandPanel extends javax.swing.JPanel {
             int index = s.lastIndexOf("> ");
             int length = s.length();
             String subS = s.substring(index+2, length);
+            System.setOut(new PrintStream(redirectedOutput, true));
             evaluate(subS);
         
             for(MouseListener ml : jTextArea1.getMouseListeners()) {
                 jTextArea1.removeMouseListener(ml);
+            }
+
+            System.setOut(originalOut);
+            if(!jTextArea1.getText().endsWith("> ")) {
+                jTextArea1.append("\n> ");
             }
         }
     }
@@ -161,11 +161,11 @@ public class CommandPanel extends javax.swing.JPanel {
         private PrintStream original = System.out;
         public void focusGained(FocusEvent fe) {
 
-            System.setOut(new PrintStream(redirectedOutput, true));
+            //System.setOut(new PrintStream(redirectedOutput, true));
         }
 
         public void focusLost(FocusEvent fe) {
-            System.setOut(original);
+            //System.setOut(original);
 
         }
     }
