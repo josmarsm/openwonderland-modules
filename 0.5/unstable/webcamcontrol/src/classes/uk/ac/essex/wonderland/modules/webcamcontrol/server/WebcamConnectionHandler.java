@@ -34,7 +34,6 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 import org.jdesktop.wonderland.modules.sharedstate.server.SharedMapSrv;
 import org.jdesktop.wonderland.modules.sharedstate.server.SharedStateComponentMO;
 import org.jdesktop.wonderland.modules.webcamviewer.common.WebcamViewerConstants;
-import org.jdesktop.wonderland.modules.webcamviewer.common.WebcamViewerState;
 import org.jdesktop.wonderland.modules.webcamviewer.server.cell.WebcamViewerCellMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.CellManagerMO;
@@ -138,7 +137,7 @@ public class WebcamConnectionHandler
     {
 
         int cellID = request.getCellID();
-        logger.log(Level.WARNING, "CellID: {0}", cellID);
+        //logger.log(Level.WARNING, "CellID: {0}", cellID);
         
         //get the cell
         CellMO cellMO = CellManagerMO.getCell(new CellID(cellID));
@@ -153,7 +152,7 @@ public class WebcamConnectionHandler
             // return the result
             return new WebcamSettingsResponseMessage(request.getMessageID(), record);
         } else {
-            logger.log(Level.SEVERE, "Can''t find tight Webcam cell for cellID: {0} found: {1}", new Object[]{cellID, cellMO});
+            logger.log(Level.SEVERE, "Can''t find Webcam cell for cellID: {0} found: {1}", new Object[]{cellID, cellMO});
             ErrorMessage error = new ErrorMessage(request.getMessageID(),
                                                   "Webcam settings retrieval error");
             return error;
@@ -166,7 +165,7 @@ public class WebcamConnectionHandler
        Set<CellID> rootCells = CellManagerMO.getCellManager().getRootCells();
         for (CellID cellID1 : rootCells) {
             CellMO rootCell = CellManagerMO.getCell(cellID1);
-            logger.log(Level.WARNING, "CellID: {0} -> {1}", new Object[]{cellID1, rootCell});
+            //logger.log(Level.WARNING, "CellID: {0} -> {1}", new Object[]{cellID1, rootCell});
             if (rootCell instanceof WebcamViewerCellMO) {
                 cellIDs.add(cellID1.hashCode());
             }
@@ -174,7 +173,7 @@ public class WebcamConnectionHandler
             int i = 0;
             for (ManagedReference<CellMO> managedReference : children) {
                 CellMO child = managedReference.get();
-                logger.log(Level.WARNING, "Child: {0} -> {1}", new Object[]{i++, child});
+                //logger.log(Level.WARNING, "Child: {0} -> {1}", new Object[]{i++, child});
                 if (child instanceof WebcamViewerCellMO) {
                     cellIDs.add(child.getCellID().hashCode());
                 }

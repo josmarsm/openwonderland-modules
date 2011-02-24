@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.jdesktop.wonderland.modules.webcamviewer.common.WebcamViewerState;
 
 /**
  * Record to represent a Webcam Viewer

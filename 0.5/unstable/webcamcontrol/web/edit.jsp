@@ -17,24 +17,38 @@
         <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
     </head>
     <body>
-        <h2>Modify Webcam Viewer Settings</h2>
+        <h2>Manage Webcam Viewers</h2>
 
         <form id="nameForm" action="/webcamcontrol/webcamcontrol/browse">
             <input type="hidden" name="action" value="change"/>
 
             <table class="installed" id="runnerTable">
+                <caption>
+                    <span class="heading">Modify Webcam Viewer Settings</span>
+                </caption>
                 <tr class="header">
-                    <td class="installed"><b>Webcam Viewer Name</b></td>
-                    <td class="installed"><b>Webcam Viewer Settings</b></td>
+                    <td class="installed">Webcam Viewer Name</td>
+                    <td class="installed">Webcam Viewer Settings</td>
                 </tr>
                 <tr>
                     <td class="installed">${requestScope['record'].cellName}</td>
                     <td class="installed">
-                        
-                            Webcam URI: <input type="text" name="cameraURI" value="${record.cameraURI}"/><br />
-                            Webcam User: <input type="text" name="cameraUsername" value="${record.cameraUsername}"/><br/>
-                            Webcam Password: <input type="password" name="cameraPassword" value="${record.cameraPassword}"/><br/>
-                            Webcam status: <input type="radio" name="cameraState" value="PLAYING" 
+                        <table>
+                            <tr>
+                                <td>Webcam URI:</td>
+                                <td><input type="text" name="cameraURI" value="${record.cameraURI}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Webcam User:</td>
+                                <td><input type="text" name="cameraUsername" value="${record.cameraUsername}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Webcam Password:</td>
+                                <td><input type="password" name="cameraPassword" value="${record.cameraPassword}"/></td>
+                            </tr>
+                            <tr>
+                                <td>Webcam status:</td>
+                                <td><input type="radio" name="cameraState" value="PLAYING"
                                                     <c:if test='${record.cameraState == "PLAYING"}'>
                                                     checked
                                                     </c:if>
@@ -47,7 +61,9 @@
                                                    <c:if test='${record.cameraState == "PAUSED"}'>
                                                     checked
                                                     </c:if>/> Paused
-                            <input type="hidden" name="cellID" value="${requestScope['record'].cellID}"/>
+                                            <input type="hidden" name="cellID" value="${requestScope['record'].cellID}"/></td>
+                            </tr>
+                        </table>
                         
                     </td>
 

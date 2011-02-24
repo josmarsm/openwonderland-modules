@@ -78,12 +78,12 @@ public class WebcamServlet extends HttpServlet implements ServletContextListener
 
         
         try {
-            logger.warning("getting records");
+            //logger.warning("getting records");
             cellCollection.addAll(conn.getWebcamRecords());
         } catch (InterruptedException ex) {
             logger.log(Level.SEVERE, null, ex);
         } catch (RuntimeException ex) {
-            logger.warning("runtime exception: " + ex.getMessage());
+            logger.severe("runtime exception: " + ex.getMessage());
         }
         
 
@@ -92,7 +92,7 @@ public class WebcamServlet extends HttpServlet implements ServletContextListener
         // handle it and fall through to below to re-load the page
         try {
             String action = request.getParameter("action");
-            logger.warning("ACTION: " + action);
+            //logger.warning("ACTION: " + action);
             if (action != null && action.equalsIgnoreCase("edit") == true) {
                 handleEdit(request, response, cellCollection);
             }
@@ -157,26 +157,26 @@ public class WebcamServlet extends HttpServlet implements ServletContextListener
         throws ServletException, IOException
     {
         String cellID = request.getParameter("cellID");
-        logger.warning("cellID: " + cellID);
+        //logger.warning("cellID: " + cellID);
         int id = Integer.parseInt(cellID);
         WebcamRecord record = getRecord(c, id);
         String cameraURI = request.getParameter("cameraURI");
-        logger.warning("cameraURI: " + cameraURI);
+        //logger.warning("cameraURI: " + cameraURI);
         if (!record.getCameraURI().equalsIgnoreCase(cameraURI)) {
             record.setCameraURI(cameraURI);
         }
         String cameraUsername = request.getParameter("cameraUsername");
-        logger.warning("cameraUsername: " + cameraUsername);
+        //logger.warning("cameraUsername: " + cameraUsername);
         if (!cameraUsername.equals(record.getCameraUsername())) {
             record.setCameraUsername(cameraUsername);
         }
         String cameraPassword = request.getParameter("cameraPassword");
-        logger.warning("cameraPassword: " + cameraPassword);
+        //logger.warning("cameraPassword: " + cameraPassword);
         if (!cameraPassword.equals(record.getCameraPassword())) {
             record.setCameraPassword(cameraPassword);
         }
         String cameraState = request.getParameter("cameraState");
-        logger.warning("cameraState: " + cameraState);
+        //logger.warning("cameraState: " + cameraState);
         if (!record.getCameraState().equals(cameraState)) {
             record.setCameraState(cameraState);
         }
@@ -291,7 +291,7 @@ public class WebcamServlet extends HttpServlet implements ServletContextListener
         } catch (ConnectionFailureException ex) {
             logger.log(Level.SEVERE, "Connection failed", ex);
         } catch (LoginFailureException ex) {
-            logger.log(Level.WARNING, "Login failed", ex);
+            logger.log(Level.SEVERE, "Login failed", ex);
         }
     }
 
