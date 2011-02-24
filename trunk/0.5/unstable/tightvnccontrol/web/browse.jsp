@@ -20,7 +20,7 @@
         
         <table class="installed" id="runnerTable">
             <caption>
-              <span class="heading">Configure TightVNC Viewers.</span>
+              <span class="heading">Configure TightVNC Viewers</span>
             </caption>
             <tr class="header">
                 <td class="installed">CellID</td>

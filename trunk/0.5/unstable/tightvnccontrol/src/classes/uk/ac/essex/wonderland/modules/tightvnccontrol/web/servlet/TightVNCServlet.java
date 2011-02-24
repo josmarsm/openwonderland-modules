@@ -78,12 +78,12 @@ public class TightVNCServlet extends HttpServlet implements ServletContextListen
 
         
         try {
-            logger.warning("getting records");
+            //logger.warning("getting records");
             cellCollection.addAll(conn.getTightVNCRecords());
         } catch (InterruptedException ex) {
             logger.log(Level.SEVERE, null, ex);
         } catch (RuntimeException ex) {
-            logger.warning("runtime exception: " + ex.getMessage());
+            logger.severe("runtime exception: " + ex.getMessage());
         }
         
 
@@ -92,7 +92,7 @@ public class TightVNCServlet extends HttpServlet implements ServletContextListen
         // handle it and fall through to below to re-load the page
         try {
             String action = request.getParameter("action");
-            logger.warning("ACTION: " + action);
+            //logger.warning("ACTION: " + action);
             if (action != null && action.equalsIgnoreCase("edit") == true) {
                 handleEdit(request, response, cellCollection);
             }
@@ -157,16 +157,16 @@ public class TightVNCServlet extends HttpServlet implements ServletContextListen
         throws ServletException, IOException
     {
         String cellID = request.getParameter("cellID");
-        logger.warning("cellID: " + cellID);
+        //logger.warning("cellID: " + cellID);
         int id = Integer.parseInt(cellID);
         TightVNCRecord record = getRecord(c, id);
         String vncServer = request.getParameter("vncServer");
-        logger.warning("vncServer: " + vncServer);
+        //logger.warning("vncServer: " + vncServer);
         if (!record.getVncServer().equalsIgnoreCase(vncServer)) {
             record.setVncServer(vncServer);
         }
         String vncPortString = request.getParameter("vncPort");
-        logger.warning("vncPortString: " + vncPortString);
+        //logger.warning("vncPortString: " + vncPortString);
         if (vncPortString != null) {
             int vncPort = Integer.parseInt(vncPortString);
             if (record.getVncPort() != vncPort) {
@@ -174,12 +174,12 @@ public class TightVNCServlet extends HttpServlet implements ServletContextListen
             }
         }
         String vncUsername = request.getParameter("vncUsername");
-        logger.warning("vncUsername: " + vncUsername);
+        //logger.warning("vncUsername: " + vncUsername);
         if (!record.getVncUsername().equals(vncUsername)) {
             record.setVncUsername(vncUsername);
         }
         String vncPassword = request.getParameter("vncPassword");
-        logger.warning("vncPassword: " + vncPassword);
+        //logger.warning("vncPassword: " + vncPassword);
         if (!record.getVncPassword().equals(vncPassword)) {
             record.setVncPassword(vncPassword);
         }
@@ -294,7 +294,7 @@ public class TightVNCServlet extends HttpServlet implements ServletContextListen
         } catch (ConnectionFailureException ex) {
             logger.log(Level.SEVERE, "Connection failed", ex);
         } catch (LoginFailureException ex) {
-            logger.log(Level.WARNING, "Login failed", ex);
+            logger.log(Level.SEVERE, "Login failed", ex);
         }
     }
 
