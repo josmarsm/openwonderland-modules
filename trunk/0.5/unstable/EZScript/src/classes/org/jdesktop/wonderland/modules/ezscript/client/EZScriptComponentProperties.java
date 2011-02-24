@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.ezscript.client;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.properties.CellPropertiesEditor;
 import org.jdesktop.wonderland.client.cell.properties.annotation.PropertiesFactory;
 import org.jdesktop.wonderland.client.cell.properties.spi.PropertiesFactorySPI;
@@ -29,6 +30,7 @@ import org.jdesktop.wonderland.modules.ezscript.common.EZScriptComponentServerSt
 import org.jdesktop.wonderland.modules.ezscript.common.SharedBounds;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 
 /**
  *
@@ -48,6 +50,7 @@ public class EZScriptComponentProperties
     private SharedBoolean originalKeyboardEnabled = SharedBoolean.valueOf(false);
     private SharedBoolean originalFarCellEnabled = SharedBoolean.valueOf(false);
     private SharedBounds originalBounds = SharedBounds.BOX;
+    private BoundsViewerEntity boundsEntity;
 
     /** Creates new form SampleComponentProperties */
     public EZScriptComponentProperties() {
@@ -139,6 +142,10 @@ public class EZScriptComponentProperties
      */
     public void close() {
         // Do nothing for now.
+        if(boundsEntity != null) {
+            boundsEntity.dispose();
+            boundsEntity = null;
+        }
     }
 
     /**
@@ -302,6 +309,8 @@ public class EZScriptComponentProperties
         zSpinner = new javax.swing.JSpinner();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        clearButton = new javax.swing.JButton();
+        openEditorButton = new javax.swing.JButton();
 
         callbacksLabel.setText("Callbacks:");
 
@@ -351,6 +360,20 @@ public class EZScriptComponentProperties
 
         jLabel3.setText("Z-Extent");
 
+        clearButton.setText("Clear Callbacks");
+        clearButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearButtonActionPerformed(evt);
+            }
+        });
+
+        openEditorButton.setText("Open Editor");
+        openEditorButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openEditorButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -363,44 +386,53 @@ public class EZScriptComponentProperties
                     .add(layout.createSequentialGroup()
                         .add(32, 32, 32)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(mouseCheckbox)
-                            .add(proximityCheckbox)
-                            .add(keyboardCheckbox)
-                            .add(cellsCheckbox))))
-                .addContainerGap(344, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(9, 9, 9)
-                .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
-                .add(20, 20, 20))
-            .add(layout.createSequentialGroup()
-                .add(125, 125, 125)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(jLabel1)
-                        .add(jLabel2)
-                        .add(jLabel3))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, sphereButton))
-                .add(45, 45, 45)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(boxButton)
-                    .add(zSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(ySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(radiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(173, Short.MAX_VALUE))
+                            .add(cellsCheckbox)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(mouseCheckbox)
+                                    .add(proximityCheckbox)
+                                    .add(keyboardCheckbox))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(clearButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(9, 9, 9)
+                        .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap(375, Short.MAX_VALUE)
+                        .add(openEditorButton))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(jLabel1)
+                                .add(jLabel2)
+                                .add(jLabel3))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, sphereButton))
+                        .add(45, 45, 45)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(boxButton)
+                            .add(zSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(ySpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(radiusSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(callbacksLabel)
-                .add(18, 18, 18)
-                .add(proximityCheckbox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(mouseCheckbox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(keyboardCheckbox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(cellsCheckbox)
+                .add(20, 20, 20)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(layout.createSequentialGroup()
+                        .add(callbacksLabel)
+                        .add(18, 18, 18)
+                        .add(proximityCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(mouseCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(keyboardCheckbox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(cellsCheckbox))
+                    .add(clearButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(18, 18, 18)
@@ -422,7 +454,9 @@ public class EZScriptComponentProperties
                         .add(jLabel2)
                         .add(18, 18, 18)
                         .add(jLabel3)))
-                .addContainerGap(78, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 32, Short.MAX_VALUE)
+                .add(openEditorButton)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -466,11 +500,26 @@ public class EZScriptComponentProperties
         }
     }//GEN-LAST:event_cellsCheckboxActionPerformed
 
+    private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
+        // TODO add your handling code here:
+        Cell cell = editor.getCell();
+        EZScriptComponent component = cell.getComponent(EZScriptComponent.class);
+        component.getCallbacksMap().put("clear", SharedString.valueOf("clear"));
+    }//GEN-LAST:event_clearButtonActionPerformed
+
+    private void openEditorButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openEditorButtonActionPerformed
+        // TODO add your handling code here:
+        Cell cell = editor.getCell();
+        EZScriptComponent component = cell.getComponent(EZScriptComponent.class);
+        component.showEditorWindow();
+    }//GEN-LAST:event_openEditorButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup boundsButtonGroup;
     private javax.swing.JRadioButton boxButton;
     private javax.swing.JLabel callbacksLabel;
     private javax.swing.JCheckBox cellsCheckbox;
+    private javax.swing.JButton clearButton;
     private javax.swing.JTextField infoTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -478,6 +527,7 @@ public class EZScriptComponentProperties
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox keyboardCheckbox;
     private javax.swing.JCheckBox mouseCheckbox;
+    private javax.swing.JButton openEditorButton;
     private javax.swing.JCheckBox proximityCheckbox;
     private javax.swing.JSpinner radiusSpinner;
     private javax.swing.JRadioButton sphereButton;
