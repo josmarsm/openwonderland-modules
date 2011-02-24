@@ -60,7 +60,7 @@ public class WebcamConnection extends BaseConnection {
      * @throws InterruptedException
      */
     public Collection<WebcamRecord> getWebcamRecords() throws InterruptedException {
-        logger.warning("getting records");
+        //logger.warning("getting records");
         //Get the IDs of the cells that are webcam viewer cells
         ResponseMessage response;
         Collection<WebcamRecord> webcamRecords = new HashSet<WebcamRecord>();
@@ -71,10 +71,10 @@ public class WebcamConnection extends BaseConnection {
         }
         //Success, get the cell contents for each cell id
         Set<Integer> cellIDs = ((WebcamCollectionResponseMessage) response).getCellIDs();
-        logger.warning("got records: " + cellIDs);
+        //logger.warning("got records: " + cellIDs);
 
         for (int cellID : cellIDs) {
-            logger.warning("getting record for cellid: " + cellID);
+            //logger.warning("getting record for cellid: " + cellID);
             response = sendAndWait(new WebcamSettingsRequestMessage(cellID));
             // the response should be either a WebcamSettingsResponseMessage on
             // success, or an ErrorMessage on failure.  Handled these two cases
