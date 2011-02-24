@@ -107,15 +107,16 @@ public class TightVNCConnectionHandler
                                 Message message)
     {
         if (message instanceof TightVNCSettingsRequestMessage) {
-            // handle a cell creation request
-            ResponseMessage response = handleGetContents(
+            // handle a request for the settings of a vnc viewer
+            ResponseMessage response = handleGetSettings(
                     (TightVNCSettingsRequestMessage) message, clientID);
             sender.send(clientID, response);
         } else if (message instanceof TightVNCCollectionRequestMessage) {
-            // handle a color change request
+            // handle a request for the ids of all the tight vnc cells
             ResponseMessage response = handleGetCollection((TightVNCCollectionRequestMessage) message);
             sender.send(clientID, response);
         } else if (message instanceof ChangeSettingsMessage) {
+            // handle a request to change the settings of a tightvnc cell
             handleChangeSettings((ChangeSettingsMessage) message);
         }
 
@@ -134,12 +135,12 @@ public class TightVNCConnectionHandler
      * @return a response to the request, either a TightVNCSettingsResponseMessage
      * on success, or an ErrorMessage if there is an error
      */
-    protected ResponseMessage handleGetContents(TightVNCSettingsRequestMessage request,
+    protected ResponseMessage handleGetSettings(TightVNCSettingsRequestMessage request,
                                                WonderlandClientID creator)
     {
 
         int cellID = request.getCellID();
-        logger.log(Level.WARNING, "CellID: {0}", cellID);
+        //logger.log(Level.WARNING, "CellID: {0}", cellID);
         
         //get the cell
         CellMO cellMO = CellManagerMO.getCell(new CellID(cellID));
@@ -167,7 +168,7 @@ public class TightVNCConnectionHandler
        Set<CellID> rootCells = CellManagerMO.getCellManager().getRootCells();
         for (CellID cellID1 : rootCells) {
             CellMO rootCell = CellManagerMO.getCell(cellID1);
-            logger.log(Level.WARNING, "CellID: {0} -> {1}", new Object[]{cellID1, rootCell});
+            //logger.log(Level.WARNING, "CellID: {0} -> {1}", new Object[]{cellID1, rootCell});
             if (rootCell instanceof TightVNCViewerCellMO) {
                 cellIDs.add(cellID1.hashCode());
             }
@@ -175,7 +176,7 @@ public class TightVNCConnectionHandler
             int i = 0;
             for (ManagedReference<CellMO> managedReference : children) {
                 CellMO child = managedReference.get();
-                logger.log(Level.WARNING, "Child: {0} -> {1}", new Object[]{i++, child});
+                //logger.log(Level.WARNING, "Child: {0} -> {1}", new Object[]{i++, child});
                 if (child instanceof TightVNCViewerCellMO) {
                     cellIDs.add(child.getCellID().hashCode());
                 }

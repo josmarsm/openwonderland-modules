@@ -60,7 +60,7 @@ public class TightVNCConnection extends BaseConnection {
      * @throws InterruptedException
      */
     public Collection<TightVNCRecord> getTightVNCRecords() throws InterruptedException {
-        logger.warning("getting records");
+        //logger.warning("getting records");
         //Get the IDs of the cells that are tightVNC viewer cells
         ResponseMessage response;
         Collection<TightVNCRecord> tightVNCRecords = new HashSet<TightVNCRecord>();
@@ -71,10 +71,10 @@ public class TightVNCConnection extends BaseConnection {
         }
         //Success, get the cell contents for each cell id
         Set<Integer> cellIDs = ((TightVNCCollectionResponseMessage) response).getCellIDs();
-        logger.warning("got records: " + cellIDs);
+        //logger.warning("got records: " + cellIDs);
 
         for (int cellID : cellIDs) {
-            logger.warning("getting record for cellid: " + cellID);
+            //logger.warning("getting record for cellid: " + cellID);
             response = sendAndWait(new TightVNCSettingsRequestMessage(cellID));
             // the response should be either a TightVNCSettingsResponseMessage on
             // success, or an ErrorMessage on failure.  Handled these two cases
