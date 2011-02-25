@@ -316,7 +316,7 @@ public class EZScriptComponentProperties
            return;
         }
         boundsEntity = new BoundsViewerEntity(editor.getCell());
-        Vector3f origin = getCellTranslation();
+        Vector3f origin = new Vector3f();//getCellTranslation();
         SpinnerNumberModel snm = (SpinnerNumberModel)radiusSpinner.getModel();
         if(boxButton.isSelected()) {
             SpinnerNumberModel ynm = (SpinnerNumberModel)ySpinner.getModel();
