@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<wonderland-module>
+    <name>module-converter</name>
+    <version>
+        <major>0</major>
+        <minor>1</minor>
+        <mini>0</mini>
+    </version>
+</wonderland-module>
