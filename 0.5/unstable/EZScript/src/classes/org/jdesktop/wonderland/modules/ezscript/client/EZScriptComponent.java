@@ -457,11 +457,11 @@ public class EZScriptComponent extends CellComponent {
     public void updateCellBounds(String spatial, float[] info) {
         BoundingVolume volume;
         CellTransform t = cell.getLocalTransform();
-        Vector3f translation = t.getTranslation(null);
+        //Vector3f translation = new Vector3f();//t.getTranslation(null);
         if(spatial.equals("BOX")) {
-            volume = new BoundingBox(translation, info[0], info[1], info[2]);
+            volume = new BoundingBox(new Vector3f(), info[0], info[1], info[2]);
         } else {
-            volume = new BoundingSphere(info[0], translation);
+            volume = new BoundingSphere(info[0], new Vector3f());
         }
 
         cell.setLocalBounds(volume);
@@ -826,6 +826,9 @@ public class EZScriptComponent extends CellComponent {
 
                 if(property.equals("bounds")) {
                     SharedBounds b = (SharedBounds)event.getNewValue();
+                    System.out.println(event.getNewValue());
+                    //updating cell bounds takes care of updating the proximity
+                    //listener as well.
                     updateCellBounds(b.getValue(), b.getExtents());
                     return;
                 }
