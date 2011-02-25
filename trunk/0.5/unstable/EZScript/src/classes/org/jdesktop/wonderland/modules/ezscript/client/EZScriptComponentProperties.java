@@ -268,7 +268,7 @@ public class EZScriptComponentProperties
     private void putBounds(SharedMapCli map) {
         String value;
         float[] xs = { 1, 1, 1};
-        if(boxButton.isEnabled()) {
+        if(boxButton.isSelected()) {
             value = "BOX";
         } else {
             value = "SPHERE";
@@ -288,17 +288,24 @@ public class EZScriptComponentProperties
         if(originalBounds.getValue().equals("SPHERE") && sphereButton.isSelected() == false)
             return true;
 
-
         SpinnerNumberModel snm = (SpinnerNumberModel)radiusSpinner.getModel();
         if(originalBounds.getExtents()[0] != snm.getNumber().floatValue())
             return true;
         snm = (SpinnerNumberModel)ySpinner.getModel();
-        if(originalBounds.getExtents()[1] != snm.getNumber().floatValue())
-            return true;
+        if (originalBounds.getExtents().length > 1) {
+            if (originalBounds.getExtents()[1] != snm.getNumber().floatValue()) {
+                return true;
+
+            }
+        }
 
         snm = (SpinnerNumberModel)zSpinner.getModel();
-        if(originalBounds.getExtents()[2] != snm.getNumber().floatValue())
-            return true;
+        if (originalBounds.getExtents().length > 2) {
+            if (originalBounds.getExtents()[2] != snm.getNumber().floatValue()) {
+                return true;
+
+            }
+        }
         
         return false;
     }
@@ -345,7 +352,6 @@ public class EZScriptComponentProperties
 
             boundsCheckbox.setSelected(false);
         }
-
     }
 
     class RadiusSpinnerChangeListener implements ChangeListener {
@@ -380,9 +386,6 @@ public class EZScriptComponentProperties
         }
 
     }
-
-
-
 
     /** This method is called from within the constructor to
      * initialize the form.
