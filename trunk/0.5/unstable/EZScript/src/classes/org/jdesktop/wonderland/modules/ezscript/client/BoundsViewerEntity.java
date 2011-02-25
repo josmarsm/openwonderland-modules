@@ -108,25 +108,31 @@ public class BoundsViewerEntity extends Entity {
         wf.setEnabled(true);
         rootNode.setRenderState(wf);
 
+        CellTransform transform = cell.getWorldTransform();
         // Draw some geometry that mimics the bounds, either a sphere or a
         // box. Add to the scene graph of this Entity.
         if (bounds instanceof BoundingSphere) {
             float radius = ((BoundingSphere) bounds).radius;
             Vector3f center = ((BoundingSphere) bounds).getCenter();
             Sphere sphere = new Sphere("Sphere", center, 30, 30, radius);
+
             rootNode.attachChild(sphere);
+            //rootNode.getChild("Sphere").setLocalTranslation(center);
         } else if (bounds instanceof BoundingBox) {
             float xExtent = ((BoundingBox)bounds).xExtent;
             float yExtent = ((BoundingBox)bounds).yExtent;
             float zExtent = ((BoundingBox)bounds).zExtent;
             Vector3f origin = ((BoundingBox)bounds).getCenter();
             Box box = new Box("Box", origin, xExtent, yExtent, zExtent);
+            
             rootNode.attachChild(box);
+           // rootNode.getChild("Box").setLocalTranslation(origin);
+            
         }
 
         // Fetch the world translation for the root node of the cell and set
         // the translation for this entity root node
-	CellTransform transform = cell.getWorldTransform();
+	
 
         rootNode.setLocalTranslation(transform.getTranslation(null));
 	rootNode.setLocalRotation(transform.getRotation(null));
