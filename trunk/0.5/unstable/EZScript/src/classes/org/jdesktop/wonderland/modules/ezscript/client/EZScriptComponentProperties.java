@@ -130,7 +130,6 @@ public class EZScriptComponentProperties
 
             originalBounds = SharedBounds.valueOf(editor.getCell().getLocalBounds());
            
-
             if(originalBounds.getValue().equals("BOX")) {
                 boxButton.setSelected(true);
                 radiusSpinner.getModel().setValue(originalBounds.getExtents()[0]);
@@ -186,9 +185,7 @@ public class EZScriptComponentProperties
                         SharedBoolean.valueOf(keyboardCheckbox.isSelected()));
                 states.put("farcell",
                         SharedBoolean.valueOf(cellsCheckbox.isSelected()));
-                putBounds(states);
-
-                
+                putBounds(states);                
             }
             
             hideBounds();
@@ -196,8 +193,6 @@ public class EZScriptComponentProperties
             editor.setPanelDirty(EZScriptComponentProperties.class,
                                 false);
         }
-
-
     }
 
     /**
