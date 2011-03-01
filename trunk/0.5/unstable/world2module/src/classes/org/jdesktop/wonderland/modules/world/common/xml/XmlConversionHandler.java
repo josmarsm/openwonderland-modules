@@ -240,8 +240,8 @@ public class XmlConversionHandler extends DefaultHandler2 {
                         contentDestination.writeStartDocument();
                     }
                 }
+                contentDestination.writeCharacters("\n");
             }
-            contentDestination.writeCharacters("\n");
         }
         catch (XMLStreamException xse) {
             throw new SAXException("Failed to open document!", xse);
