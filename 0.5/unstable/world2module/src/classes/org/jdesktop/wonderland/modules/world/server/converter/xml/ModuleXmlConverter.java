@@ -20,6 +20,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import org.jdesktop.wonderland.modules.world.common.xml.XmlUtil;
 import org.jdesktop.wonderland.modules.world.common.xml.tags.TagContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -32,8 +33,6 @@ import org.xml.sax.SAXNotSupportedException;
  * @author Carl Jokl
  */
 public class ModuleXmlConverter {
-
-    public static final Charset UTF8 = Charset.forName("UTF-8");
 
     private XmlConversionHandler xmlModifier;
     private XmlDocumentDetailsRetriever xmlDocDetailsRetriever;
@@ -96,10 +95,10 @@ public class ModuleXmlConverter {
      */
     public boolean convertXml(InputStream xmlInputStream, OutputStream convertedXmlDestination, boolean closeSourceAfter, boolean closeDestinationAfter) {
         if (conversionParser != null && xmlInputStream != null && convertedXmlDestination != null) {
-            String encodingName = UTF8.displayName();
+            String encodingName = XmlUtil.UTF8.displayName();
             XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newFactory();
             try {
-                XMLStreamWriter xmlWriter = xmlOutputFactory.createXMLStreamWriter(new OutputStreamWriter(convertedXmlDestination, UTF8));
+                XMLStreamWriter xmlWriter = xmlOutputFactory.createXMLStreamWriter(new OutputStreamWriter(convertedXmlDestination, XmlUtil.UTF8));
                 xmlModifier.setContentDestination(xmlWriter, encodingName);
                 conversionParser.parse(xmlInputStream, xmlModifier);
                 xmlWriter.flush();

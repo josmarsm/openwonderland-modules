@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.jdesktop.wonderland.modules.world.common.xml.XmlUtil;
 import org.jdesktop.wonderland.modules.world.server.converter.xml.ModuleXmlConverter;
 import org.jdesktop.wonderland.modules.world.common.xml.tags.TagHandlerLoader;
 import org.jdesktop.wonderland.modules.world.server.converter.xml.tags.ColladaTagHandler;
@@ -173,47 +174,57 @@ public class WorldToModuleConverter {
         //Check all the required parameters exist. The world name as server meta data parameters will have been checked by toWorldWfsDir.
         if (worldWfsDir != null && worldWfsDir.exists() && moduleOutputStream != null && moduleMetaData != null) {
             try {
+                /* Create a jar file. */
                 JarOutputStream moduleJarOutputStream = new JarOutputStream(moduleOutputStream, toManifest(moduleMetaData, serverMetaData));
                 File[] worldFiles = worldWfsDir.listFiles();
+                /* Create the main directories in the Jar file. */
                 String wfsDirName = String.format("%s/", serverMetaData.getWFSDirectoryName());
                 moduleJarOutputStream.putNextEntry(new ZipEntry(wfsDirName));
                 moduleJarOutputStream.closeEntry();
                 String projectWfsDirName = String.format("%s%s-%s/", wfsDirName, moduleMetaData.getModuleName(), serverMetaData.getWFSDirectoryName());
                 moduleJarOutputStream.putNextEntry(new ZipEntry(projectWfsDirName));
                 moduleJarOutputStream.closeEntry();
-                Collection<TagContentHandler> allTagHandlers = getTagHandlerLoader().loadTagConentHandlers();
-                Map<String, String> dependencies = new HashMap<String, String>();
-                Map<String, String> optionalDependencies = new HashMap<String, String>();
-                DependencyListBuildingDependencyListener dependencyListener = new DependencyListBuildingDependencyListener(dependencies, optionalDependencies);
-                ModuleXmlConverter converter = new ModuleXmlConverter();
-                for (TagContentHandler handler : allTagHandlers) {
-                    handler.init(moduleMetaData, serverMetaData);
-                    handler.setDependencyListener(dependencyListener);
-                }
-                converter.setHandlers(allTagHandlers);
-                InputStream currentInputStream = null;
-                for (File worldFile : worldFiles) {
-                    moduleJarOutputStream.putNextEntry(new ZipEntry(projectWfsDirName.concat(worldFile.getName())));
-                    currentInputStream = new FileInputStream(worldFile);
-                    if (ContentHandlingConstants.WONDERLAND_CONTENT_FILE_FILTER.accept(worldFile)) {
-                        if (!converter.convertXml(currentInputStream, moduleJarOutputStream, true, false)) {
-                            Logger.getLogger(getClass().getName()).log(Level.SEVERE, String.format("Failed to convert file %s for use in module archive!", worldFile.getName()));
-                            success = false;
-                        }
+                /* Create Module Info and Module Requirements XML files. */
+                ModuleXmlFileCreator creator = new ModuleInfoXmlFileCreator();
+                success = creator.writeAsEntry(moduleJarOutputStream, XmlUtil.UTF8, moduleMetaData, serverMetaData);
+                creator = new ModuleDependenciesXmlFileCreator();
+                success = success && creator.writeAsEntry(moduleJarOutputStream, XmlUtil.UTF8, moduleMetaData, serverMetaData);
+                if (success) {
+                    /* Process XML files */
+                    Collection<TagContentHandler> allTagHandlers = getTagHandlerLoader().loadTagConentHandlers();
+                    Map<String, String> dependencies = new HashMap<String, String>();
+                    Map<String, String> optionalDependencies = new HashMap<String, String>();
+                    DependencyListBuildingDependencyListener dependencyListener = new DependencyListBuildingDependencyListener(dependencies, optionalDependencies);
+                    ModuleXmlConverter converter = new ModuleXmlConverter();
+                    for (TagContentHandler handler : allTagHandlers) {
+                        handler.init(moduleMetaData, serverMetaData);
+                        handler.setDependencyListener(dependencyListener);
                     }
-                    else {
-                        if (!plainCopy(currentInputStream, moduleJarOutputStream)) {
-                            Logger.getLogger(getClass().getName()).log(Level.SEVERE, String.format("Failed copy file %s to module archive!", worldFile.getName()));
-                            success = false;
+                    converter.setHandlers(allTagHandlers);
+                    InputStream currentInputStream = null;
+                    for (File worldFile : worldFiles) {
+                        moduleJarOutputStream.putNextEntry(new ZipEntry(projectWfsDirName.concat(worldFile.getName())));
+                        currentInputStream = new FileInputStream(worldFile);
+                        if (ContentHandlingConstants.WONDERLAND_CONTENT_FILE_FILTER.accept(worldFile)) {
+                            if (!converter.convertXml(currentInputStream, moduleJarOutputStream, true, false)) {
+                                Logger.getLogger(getClass().getName()).log(Level.SEVERE, String.format("Failed to convert file %s for use in module archive!", worldFile.getName()));
+                                success = false;
+                            }
                         }
+                        else {
+                            if (!plainCopy(currentInputStream, moduleJarOutputStream)) {
+                                Logger.getLogger(getClass().getName()).log(Level.SEVERE, String.format("Failed copy file %s to module archive!", worldFile.getName()));
+                                success = false;
+                            }
+                        }
+                        moduleJarOutputStream.closeEntry();
                     }
-                    moduleJarOutputStream.closeEntry();
+                    if (!handleDependencies(serverMetaData, dependencies, optionalDependencies, converter, moduleJarOutputStream, allTagHandlers)) {
+                         Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Failed to handle files / art upon which the world depends!");
+                         success = false;
+                    }
+                    dependencyListener.dispose();
                 }
-                if (!handleDependencies(serverMetaData, dependencies, optionalDependencies, converter, moduleJarOutputStream, allTagHandlers)) {
-                     Logger.getLogger(getClass().getName()).log(Level.SEVERE, "Failed to handle files / art upon which the world depends!");
-                     success = false;
-                }
-                dependencyListener.dispose();
                 moduleJarOutputStream.finish();
                 moduleJarOutputStream.close();
             }

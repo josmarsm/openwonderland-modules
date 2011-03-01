@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.world.common.xml;
 
+import java.nio.charset.Charset;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -10,6 +11,11 @@ import javax.xml.stream.XMLStreamWriter;
  * @author Carl Jokl
  */
 public abstract class XmlUtil {
+
+    /**
+     * The UTF-8 Character set which is used by default for encoding XML.
+     */
+    public static final Charset UTF8 = Charset.forName("UTF-8");
 
     /**
      * The default XML version to use in the XML document prefix.
@@ -84,7 +90,7 @@ public abstract class XmlUtil {
         }
         xmlDeclarationBuilder.append(" standalone=\"");
         xmlDeclarationBuilder.append(standalone ? "yes" : "no");
-        xmlDeclarationBuilder.append("\"?>");
+        xmlDeclarationBuilder.append("\"?>\n");
         //Work around to avoid the angle brackets getting escaped.
         outputWriter.writeDTD(xmlDeclarationBuilder.toString());
     }
