@@ -596,8 +596,10 @@ public class XmlConversionHandler extends DefaultHandler2 {
                 handler = getFrom(generalHandlers, uri, localName, qName);
             }
             if (handler != null) {
-                if (currentTagHandler.peekFirst() != handler) {
+                TagContentHandler currentHandler = currentTagHandler.peekFirst();
+                if (currentHandler != handler) {
                     currentTagHandler.push(handler);
+                    currentHandler.switchedTo(handler);
                 }
             }
             else {
@@ -609,7 +611,7 @@ public class XmlConversionHandler extends DefaultHandler2 {
         /**
          * Method to be called when a start tag is encountered in an XML document.
          *
-         * @param uri The uri of the tag which has been closed (future use).
+         * @param uri The URI of the tag which has been closed (future use).
          * @param localName The local XML tag name of the tag which was closed.
          * @param qName The fully qualified XML tag name of the tag which was closed.
          * @return The tag content handler associated with this tag (if any).
@@ -622,6 +624,10 @@ public class XmlConversionHandler extends DefaultHandler2 {
             if (handler != null) {
                 if (currentTagHandler.peekFirst() == handler) {
                     handler = currentTagHandler.pop();
+                    TagContentHandler currentHandler = currentTagHandler.peekFirst();
+                    if (currentHandler != null) {
+                        currentHandler.switchedBackFrom(handler);
+                    }
                 }
             }
             else {
