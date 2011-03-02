@@ -1,6 +1,5 @@
 package org.jdesktop.wonderland.modules.world.common.xml.tags;
 
-import org.jdesktop.wonderland.modules.world.common.xml.tags.TagContentHandler;
 import java.io.FileFilter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -169,6 +168,22 @@ public abstract class SimpleTagContentHandlerAdapter implements TagContentHandle
         }
         tagContentBuilder.delete(0, tagContentBuilder.length());
         return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void switchedBackFrom(TagContentHandler handler) {
+        //Ignore event.
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void switchedTo(TagContentHandler handler) {
+        //Ignore event.
     }
 
     /**
