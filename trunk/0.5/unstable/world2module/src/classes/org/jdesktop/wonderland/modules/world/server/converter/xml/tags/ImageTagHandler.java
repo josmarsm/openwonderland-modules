@@ -1,17 +1,15 @@
 package org.jdesktop.wonderland.modules.world.server.converter.xml.tags;
 
 import org.jdesktop.wonderland.modules.world.common.xml.tags.ContentHandlingConstants;
-import org.jdesktop.wonderland.modules.world.common.xml.tags.SimpleTagContentHandlerAdapter;
 import org.jdesktop.wonderland.modules.world.common.xml.tags.IgnoreAllFileFilter;
-import org.jdesktop.wonderland.modules.world.server.converter.ModuleMetaData;
-import org.jdesktop.wonderland.modules.world.server.converter.ServerMetaData;
+import org.jdesktop.wonderland.modules.world.common.xml.tags.SimpleModuleConversionTagContentHandler;
 
 /**
  * This tag handler is used for performing conversions within Image xml documents when converting a snapshot to a module.
  *
  * @author Carl Jokl
  */
-public class ImageTagHandler extends SimpleTagContentHandlerAdapter {
+public class ImageTagHandler extends SimpleModuleConversionTagContentHandler {
 
     /**
      * The tag used for setting the URL of an image in Wonderland image content.
@@ -22,8 +20,6 @@ public class ImageTagHandler extends SimpleTagContentHandlerAdapter {
      * The tag name of the root tag for an image cell.
      */
     public static final String IMAGE_CELL_ROOT_TAG_NAME = "image-viewer-cell";
-
-    private String moduleName;
     
     /**
      * Create a new instance of ColladaTagHandler to perform conversions of tag contents within
@@ -33,15 +29,6 @@ public class ImageTagHandler extends SimpleTagContentHandlerAdapter {
     public ImageTagHandler() {
         super(new IgnoreAllFileFilter(), IMAGE_URI_TAG_NAME);
         setCompatibleRootTags(IMAGE_CELL_ROOT_TAG_NAME);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean init(ModuleMetaData moduleMetaData, ServerMetaData serverMetaData) {
-        moduleName = moduleMetaData.getModuleName();
-        return moduleName != null;
     }
 
     /**

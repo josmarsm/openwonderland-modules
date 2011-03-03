@@ -25,7 +25,6 @@ public abstract class SimpleTagContentHandlerAdapter implements TagContentHandle
     private String[] handledTags;
     private FileFilter handledFiles;
     private Attributes currentAttributes;
-    private DependentResourceNotificationListener dependentResourceListener;
 
     /**
      * This constructor is intended to be called by implementations of this class to
@@ -77,41 +76,6 @@ public abstract class SimpleTagContentHandlerAdapter implements TagContentHandle
     @Override
     public String[] getCompatibleRootTags() {
         return compatibleRootTags;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean setDependencyListener(DependentResourceNotificationListener dependencyListener) {
-        dependentResourceListener = dependencyListener;
-        return true;
-    }
-
-    /**
-     * Method which can be called by the implementing class to inform the DependentResourceNotificationListener
-     * (if set) that the XML file depends on an external resource.
-     *
-     * @param originalURI The URI of the current original location of the resource.
-     * @param destinationURI The URI of the destination location to which the resource is expected to be moved.
-     */
-    protected void dependencyFound(String originalURI, String destinationURI) {
-        if (dependentResourceListener != null) {
-            dependentResourceListener.dependencyFound(originalURI, destinationURI);
-        }
-    }
-
-    /**
-     * Method which can be called by the implementing class to inform the DependentResourceNotificationListener
-     * (if set) that the XML file may depend on the specified optional external resource.
-     *
-     * @param checkURI The URI of the location where the optional resource can be found if it exists.
-     * @param destinationURI The URI of the destination location to which the resource is expected to be moved if it exists.
-     */
-    protected void optionalDependencyCheck(String checkURI, String destinationURI) {
-        if (dependentResourceListener != null) {
-            dependentResourceListener.optionalDependencyCheck(checkURI, destinationURI);
-        }
     }
 
     /**
@@ -168,22 +132,6 @@ public abstract class SimpleTagContentHandlerAdapter implements TagContentHandle
         }
         tagContentBuilder.delete(0, tagContentBuilder.length());
         return true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void switchedBackFrom(TagContentHandler handler) {
-        //Ignore event.
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void switchedTo(TagContentHandler handler) {
-        //Ignore event.
     }
 
     /**

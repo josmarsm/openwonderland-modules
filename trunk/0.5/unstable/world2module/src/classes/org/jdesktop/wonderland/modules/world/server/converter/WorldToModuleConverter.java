@@ -27,7 +27,9 @@ import org.jdesktop.wonderland.modules.world.server.converter.xml.ModuleXmlConve
 import org.jdesktop.wonderland.modules.world.common.xml.tags.TagHandlerLoader;
 import org.jdesktop.wonderland.modules.world.server.converter.xml.tags.ColladaTagHandler;
 import org.jdesktop.wonderland.modules.world.common.xml.tags.ContentHandlingConstants;
+import org.jdesktop.wonderland.modules.world.common.xml.tags.DependencyListenable;
 import org.jdesktop.wonderland.modules.world.common.xml.tags.DependentResourceNotificationListener;
+import org.jdesktop.wonderland.modules.world.common.xml.tags.ModuleConversionInitializable;
 import org.jdesktop.wonderland.modules.world.server.converter.xml.tags.ImageTagHandler;
 import org.jdesktop.wonderland.modules.world.common.xml.tags.TagContentHandler;
 
@@ -197,8 +199,12 @@ public class WorldToModuleConverter {
                     DependencyListBuildingDependencyListener dependencyListener = new DependencyListBuildingDependencyListener(dependencies, optionalDependencies);
                     ModuleXmlConverter converter = new ModuleXmlConverter();
                     for (TagContentHandler handler : allTagHandlers) {
-                        handler.init(moduleMetaData, serverMetaData);
-                        handler.setDependencyListener(dependencyListener);
+                        if (handler instanceof ModuleConversionInitializable) {
+                            ((ModuleConversionInitializable) handler).init(moduleMetaData, serverMetaData);
+                        }
+                        if (handler instanceof DependencyListenable) {
+                            ((DependencyListenable) handler).setDependencyListener(dependencyListener);
+                        }
                     }
                     converter.setHandlers(allTagHandlers);
                     InputStream currentInputStream = null;

@@ -1,11 +1,9 @@
 package org.jdesktop.wonderland.modules.world.server.converter.xml.tags;
 
 import org.jdesktop.wonderland.modules.world.common.xml.tags.ContentHandlingConstants;
-import org.jdesktop.wonderland.modules.world.common.xml.tags.SimpleTagContentHandlerAdapter;
 import java.io.File;
 import java.io.FileFilter;
-import org.jdesktop.wonderland.modules.world.server.converter.ModuleMetaData;
-import org.jdesktop.wonderland.modules.world.server.converter.ServerMetaData;
+import org.jdesktop.wonderland.modules.world.common.xml.tags.SimpleModuleConversionTagContentHandler;
 import org.jdesktop.wonderland.modules.world.server.converter.WonderlandDirectoryConstants;
 
 /**
@@ -13,7 +11,7 @@ import org.jdesktop.wonderland.modules.world.server.converter.WonderlandDirector
  *
  * @author Carl Jokl
  */
-public class ColladaTagHandler extends SimpleTagContentHandlerAdapter {
+public class ColladaTagHandler extends SimpleModuleConversionTagContentHandler {
 
     /**
      * This is the name of the Collada model URL tag.
@@ -46,7 +44,6 @@ public class ColladaTagHandler extends SimpleTagContentHandlerAdapter {
      */
     public static final String OPTIONAL_IMAGES_DIR_NAME = "images";
 
-    private String moduleName;
     private final String artDirectoryMatchString;
     
     /**
@@ -59,17 +56,6 @@ public class ColladaTagHandler extends SimpleTagContentHandlerAdapter {
         setCompatibleRootTags(MODEL_CELL_ROOT_TAG_NAME, DEPLOYED_MODEL_ROOT_TAG_NAME);
         artDirectoryMatchString = String.format("/%s/", WonderlandDirectoryConstants.DEFAULT_ART_DIRECTORY_NAME);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean init(ModuleMetaData moduleMetaData, ServerMetaData serverMetaData) {
-        moduleName = moduleMetaData.getModuleName();
-        return moduleName != null;
-    }
-
-
 
     /**
      * Modify the value of the Collada tags to change the content reference locations
