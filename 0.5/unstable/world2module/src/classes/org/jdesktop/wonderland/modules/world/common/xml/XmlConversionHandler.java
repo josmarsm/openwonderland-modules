@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamWriter;
+import org.jdesktop.wonderland.modules.world.common.xml.tags.ActiveStateListeningTagContentHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
@@ -599,7 +600,9 @@ public class XmlConversionHandler extends DefaultHandler2 {
                 TagContentHandler currentHandler = currentTagHandler.peekFirst();
                 if (currentHandler != handler) {
                     currentTagHandler.push(handler);
-                    currentHandler.switchedTo(handler);
+                    if (currentHandler instanceof ActiveStateListeningTagContentHandler) {
+                        ((ActiveStateListeningTagContentHandler) currentHandler).switchedTo(handler);
+                    }
                 }
             }
             else {
@@ -625,8 +628,8 @@ public class XmlConversionHandler extends DefaultHandler2 {
                 if (currentTagHandler.peekFirst() == handler) {
                     handler = currentTagHandler.pop();
                     TagContentHandler currentHandler = currentTagHandler.peekFirst();
-                    if (currentHandler != null) {
-                        currentHandler.switchedBackFrom(handler);
+                    if (currentHandler instanceof ActiveStateListeningTagContentHandler) {
+                        ((ActiveStateListeningTagContentHandler) currentHandler).switchedBackFrom(handler);
                     }
                 }
             }
