@@ -19,6 +19,7 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 /**
  * Usage: animateScale(cell, scale, seconds);
@@ -54,7 +55,6 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
                 r.getEntity().addComponent(ScaleProcessor.class, new ScaleProcessor("scale", n, scale));
             }
         });
-
         try {
             lock.acquire();
         } catch(InterruptedException e) {
@@ -74,6 +74,13 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
 
     public String getCategory() {
         return "animation";
+    }
+
+    public MovableComponent getMovable(Cell cell) {
+        if(cell.getComponent(MovableComponent.class) != null) {
+            return cell.getComponent(MovableComponent.class);
+        }
+        return null;
     }
 
     class ScaleProcessor extends ProcessorComponent {
@@ -114,7 +121,6 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
             xInc = scaleVector.x/(30*seconds);
             yInc = scaleVector.y/(30*seconds);
             zInc = scaleVector.z/(30*seconds);
-
         }
 
             @Override
@@ -135,7 +141,10 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
             if(frameIndex >= 30*seconds) {
                 this.getEntity().removeComponent(ScaleProcessor.class);
                 lock.release();
-
+                CellTransform transform = cell.getLocalTransform();
+                transform.setScaling(this.scale);
+                getMovable(cell).localMoveRequest(transform);
+                return;
             }
             s.x += xInc;
             s.y += yInc;
