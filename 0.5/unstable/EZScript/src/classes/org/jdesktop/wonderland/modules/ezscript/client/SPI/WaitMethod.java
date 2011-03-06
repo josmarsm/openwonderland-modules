@@ -24,6 +24,7 @@ public class WaitMethod extends ProcessorBasedMethod {
         return "Wait";
     }
 
+    @Override
     public void setArguments(Object[] args) {
         super.setArguments(args);
        seconds = ((Double)args[1]).intValue();

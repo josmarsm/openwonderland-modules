@@ -140,6 +140,9 @@ public class SpinMethod implements ScriptMethodSPI {
 
             }
             radians += increment;
+            //1 revolution = (3.14 * 2) ~ 6.28
+            //
+            System.out.println("current radians: "+radians);
             //quaternion.fromAngles(0.0f, increment, 0.0f);
             quaternion.fromAngleAxis(radians, Vector3f.UNIT_Y);
             frameIndex +=1;

@@ -14,9 +14,11 @@ import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
@@ -88,6 +90,13 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         return "animation";
     }
 
+    public MovableComponent getMovable(Cell cell) {
+        if(cell.getComponent(MovableComponent.class) != null) {
+            return cell.getComponent(MovableComponent.class);
+        }
+        return null;
+    }
+
     class TranslationProcessor extends ProcessorComponent {
         /**
          * The WorldManager - used for adding to update list
@@ -145,10 +154,14 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
          * The Calculate method
          */
         public void compute(ProcessorArmingCollection collection) {
-            if(frameIndex >= 30*seconds) {
+            if(frameIndex >  30*seconds) {
                 this.getEntity().removeComponent(TranslationProcessor.class);
 
-                lock.release(); //this should give control back to the state machine.                
+                CellTransform transform = cell.getLocalTransform();
+                transform.setTranslation(translate);
+                getMovable(cell).localMoveRequest(transform);
+                lock.release(); //this should give control back to the state machine.
+                return;
             }
             translate.x += xInc;
             translate.y += yInc;

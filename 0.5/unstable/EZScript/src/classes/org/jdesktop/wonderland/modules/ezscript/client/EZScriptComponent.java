@@ -738,9 +738,10 @@ public class EZScriptComponent extends CellComponent {
                 //MouseButtonEvent3D m = (MouseButtonEvent3D)event;
                 MouseButtonEvent3D m = (MouseButtonEvent3D)event;
 
-                if(m.isClicked() && m.getButton() == ButtonId.BUTTON1)
+                if(m.isClicked() && m.getButton() == ButtonId.BUTTON1) {
                     executeOnClick(true);
                     callbacksMap.put("onClick", new SharedString());
+                }
             }
             else if(event instanceof MouseEnterExitEvent3D) {
                 MouseEnterExitEvent3D m = (MouseEnterExitEvent3D)event;
