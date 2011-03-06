@@ -15,6 +15,7 @@ import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
@@ -76,54 +77,43 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
     }
 
     class ScaleProcessor extends ProcessorComponent {
-        /**
-         * The WorldManager - used for adding to update list
-         */
+
         private WorldManager worldManager = null;
-        /**
-         * The current degrees of rotation
-         */
         private float degrees = 0.0f;
-
-        /**
-         * The increment to rotate each frame
-         */
-        private float increment = 0.0f;
-
-        /**
-         * The rotation matrix to apply to the target
-         */
+        private float scale = 0.0f;
         private Quaternion quaternion = new Quaternion();
-
-        /**
-         * The rotation target
-         */
         private Node target = null;
-
-        /**
-         * A name
-         */
         private String name = null;
-
-        /**
-         * The constructor
-         */
         int frameIndex = 0;
         private Vector3f s; //scale
         private float xInc;
         private float yInc;
         private float zInc;
 
-        public ScaleProcessor(String name, Node target, float increment) {
+        public ScaleProcessor(String name, Node target, float scale) {
             this.worldManager = ClientContextJME.getWorldManager();
             this.target = target;
-            this.increment = increment;
+            this.scale = scale;
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
             s = target.getLocalScale();
-            xInc = scale/(30*seconds);
-            yInc = scale/(30*seconds);
-            zInc = scale/(30*seconds);
+
+            // s = 5; scale = 12
+            // 12 - 5 = 6
+            // 6/(30 * 3) = 1/15
+            // 5 += (1/15)
+            //
+            // s = 5; scale = 3
+            // 3 - 5 = -2
+            // -2/(30*3) = -1/30
+            //5 += (-1/30)
+            Vector3f scaleVector = new Vector3f();
+            scaleVector.x = scale - s.x;
+            scaleVector.y = scale - s.y;
+            scaleVector.z = scale - s.z;
+            xInc = scaleVector.x/(30*seconds);
+            yInc = scaleVector.y/(30*seconds);
+            zInc = scaleVector.z/(30*seconds);
 
         }
 
@@ -136,7 +126,6 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
          * The initialize method
          */
         public void initialize() {
-            //setArmingCondition(new NewFrameCondition(this));
         }
 
         /**
@@ -154,14 +143,9 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
             frameIndex +=1;
         }
 
-        /**
-         * The commit method
-         */
         public void commit(ProcessorArmingCollection collection) {
             target.setLocalScale(s);
             worldManager.addToUpdateList(target);
         }
     }
-
-
 }
