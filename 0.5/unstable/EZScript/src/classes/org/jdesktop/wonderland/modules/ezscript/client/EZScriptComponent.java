@@ -10,6 +10,7 @@ import com.jme.bounding.BoundingVolume;
 //import com.jme.entity.Entity;
 //import com.jme.math.Vector3f;
 import com.jme.math.Vector3f;
+import java.awt.Container;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,7 +59,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.FarCellEvent;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
-import org.jdesktop.wonderland.modules.ezscript.common.FarCellEventMessage;
+import org.jdesktop.wonderland.modules.ezscript.common.CellTriggerEventMessage;
 import org.jdesktop.wonderland.modules.ezscript.common.SharedBounds;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
@@ -129,7 +130,7 @@ public class EZScriptComponent extends CellComponent {
 
     //Functions to be run from remote cells to alter this particular cell
     //only one runnable per name, no overloading supported as of yet...
-    private Map<String, FarCellEventSPI> farCellEvents;
+    private Map<String, FarCellEventSPI> triggerCellEvents;
 
     //List of behaviors
     private List<Behavior> behaviors;
@@ -202,7 +203,7 @@ public class EZScriptComponent extends CellComponent {
             localOnKeyPress.put(letter, l);
         }
 
-        farCellEvents = new HashMap<String, FarCellEventSPI>();
+        triggerCellEvents = new HashMap<String, FarCellEventSPI>();
         behaviors = new ArrayList();
         //intialize listeners
         mouseEventListener = new MouseEventListener();
@@ -249,8 +250,8 @@ public class EZScriptComponent extends CellComponent {
         while(eventIter.hasNext()) {
             FarCellEventSPI spi = eventIter.next();
             if(spi.getCellClassName().equals(cell.getClass().getName())) {
-                if(!farCellEvents.containsKey(spi.getEventName())) {
-                    farCellEvents.put(spi.getEventName(), spi);
+                if(!triggerCellEvents.containsKey(spi.getEventName())) {
+                    triggerCellEvents.put(spi.getEventName(), spi);
                 }
                 else {
                     logger.info("Cell already has event defined: "
@@ -300,8 +301,8 @@ public class EZScriptComponent extends CellComponent {
                 break;
             case ACTIVE:
                 if(increasing) {
-                    channelComponent.addMessageReceiver(FarCellEventMessage.class,
-                                                        new FarCellEventReceiver());
+                    channelComponent.addMessageReceiver(CellTriggerEventMessage.class,
+                                                        new TriggerCellEventReceiver());
                     //intialize shared state component and map
                     scriptBindings.put("ScriptContext", this);
                     scriptBindings.put("cell", this.cell);
@@ -331,7 +332,7 @@ public class EZScriptComponent extends CellComponent {
                         contextMenuComponent.removeContextMenuFactory(menuFactory);
                         menuFactory = null;
                     }
-                    channelComponent.removeMessageReceiver(FarCellEventMessage.class);
+                    channelComponent.removeMessageReceiver(CellTriggerEventMessage.class);
                     callbacksMap.removeSharedMapListener(mapListener);
                     scriptsMap.removeSharedMapListener(mapListener);
                     stateMap.removeSharedMapListener(mapListener);
@@ -556,124 +557,76 @@ public class EZScriptComponent extends CellComponent {
 
     public void executeOnClick(boolean local) {
         if(local) {
-            new Thread(new Runnable() {
-                public void run() {
-                    for(Runnable r: localOnClick) {
-                        r.run();
-                    }
-                }
-            }).start();
+            threadedExecute(localOnClick);
 
         } else {
-            for(Runnable r: callbacksOnClick) {
-                r.run();
-            }
+            threadedExecute(callbacksOnClick);
         }
     }
 
     public void executeOnMouseEnter(boolean local) {
         if(local) {
-            new Thread(new Runnable() {
-                public void run() {
-                    for(Runnable r: localOnMouseEnter) {
-                        r.run();
-                    }
-                }
-            }).start();
+            threadedExecute(localOnMouseEnter);
   
         } else {
-            for(Runnable r: callbacksOnMouseEnter) {
-                r.run();
-            }
+            threadedExecute(callbacksOnMouseEnter);
         }
     }
 
     public void executeOnMouseExit(boolean local) {
         if(local) {
-            new Thread(new Runnable() {
-                public void run() {
-                    for(Runnable r: localOnMouseExit) {
-                        r.run();
-                    }
-                }
-            }).start();
+            threadedExecute(localOnMouseExit);
 
         } else {
-            for(Runnable r: callbacksOnMouseExit) {
-                r.run();
-            }            
+            threadedExecute(callbacksOnMouseExit);
         }
     }
 
     public void executeOnLoad(boolean local) {
         if(local) {
-            for(Runnable r: localOnLoad) {
-                r.run();
-            }
+            threadedExecute(localOnLoad);
         } else {
-            for(Runnable r: callbacksOnLoad) {
-                r.run();
-            }
+            threadedExecute(callbacksOnLoad);
         }
     }
 
     public void executeOnUnload(boolean local) {
         if(local) {
-            for(Runnable r: localOnUnload) {
-                r.run();
-            }
+            threadedExecute(localOnUnload);
         } else {
-            for(Runnable r: callbacksOnUnload) {
-                r.run();
-            }
+            threadedExecute(callbacksOnUnload);
         }
     }
 
     public void executeOnApproach(boolean local) {
         if(local) {
-            new Thread(new Runnable() {
-                public void run() {
-                    for(Runnable r: localOnApproach) {
-                        r.run();
-                    }
-                }
-            }).start();
+            threadedExecute(localOnApproach);
 
         } else {
-            for(Runnable r: callbacksOnApproach) {
-                r.run();
-            }
+            threadedExecute(callbacksOnApproach);
         }
     }
 
     public void executeOnLeave(boolean local) {
         if(local) {
-              new Thread(new Runnable() {
-                public void run() {
-                    for(Runnable r: localOnLeave) {
-                        r.run();
-                    }
-                }
-            }).start();
+            threadedExecute(localOnLeave);
 
         } else {
-            for(Runnable r: callbacksOnLeave) {
-                r.run();
-            }
+            threadedExecute(callbacksOnLeave);
         }
+    }
+
+    private void threadedExecute(List<Runnable> rs) {
+
+        for(Runnable r: rs)
+            new Thread(r).start();
+
     }
 
     public void executeOnKeyPress(String key, boolean local) {
         final List<Runnable> rs;
         if(local) {
             rs = localOnKeyPress.get(key);
-            new Thread(new Runnable() {
-                public void run() {
-                    for(Runnable r: rs) {
-                        r.run();
-                    }
-                }
-             }).start();
         } else {
             rs = callbacksOnKeyPress.get(key);
         }
@@ -682,9 +635,7 @@ public class EZScriptComponent extends CellComponent {
             return;
         }
 
-        for(Runnable r: rs) {
-            r.run();
-        }
+        threadedExecute(rs);
     }
 
     public void clearCallbacks() {
@@ -721,6 +672,7 @@ public class EZScriptComponent extends CellComponent {
     public SharedMapCli getScriptMap() {
         return this.scriptsMap;
     }
+    
     private EZScriptComponent getLocalInstance() {
         return this;
     }
@@ -899,18 +851,18 @@ public class EZScriptComponent extends CellComponent {
         }
     }
 
-    class FarCellEventReceiver implements ComponentMessageReceiver {
+    class TriggerCellEventReceiver implements ComponentMessageReceiver {
 
         public void messageReceived(CellMessage message) {
-            if(message instanceof FarCellEventMessage) {
-                FarCellEventMessage fcem = (FarCellEventMessage)message;
-                String name = fcem.getEventName();
+            if(message instanceof CellTriggerEventMessage) {
+                CellTriggerEventMessage eventMessage = (CellTriggerEventMessage)message;
+                String name = eventMessage.getEventName();
 
-                if(farCellEvents.containsKey(name)) {
-                    farCellEvents.get(name).setArguments(fcem.getArguments());
-                    farCellEvents.get(name).run();
+                if(triggerCellEvents.containsKey(name)) {
+                    triggerCellEvents.get(name).setArguments(eventMessage.getArguments());
+                    triggerCellEvents.get(name).run();
                 } else {
-                    logger.warning("Received an event request with no associated event: "+fcem.getEventName());
+                    logger.warning("Received an event request with no associated event: "+eventMessage.getEventName());
                 }
             }
         }
@@ -960,8 +912,8 @@ public class EZScriptComponent extends CellComponent {
         }
     }
 
-    public void fireFarCellEvent(CellID cellID, String label, Object[] args) {
-        channelComponent.send(new FarCellEventMessage(cellID, label, args));
+    public void fireTriggerCellEvent(CellID cellID, String label, Object[] args) {
+        channelComponent.send(new CellTriggerEventMessage(cellID, label, args));
     }
 
     public void attachBehavior(Behavior b) {
