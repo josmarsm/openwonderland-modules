@@ -26,7 +26,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.ezscript.common.EZScriptComponentClientState;
 import org.jdesktop.wonderland.modules.ezscript.common.EZScriptComponentServerState;
-import org.jdesktop.wonderland.modules.ezscript.common.FarCellEventMessage;
+import org.jdesktop.wonderland.modules.ezscript.common.CellTriggerEventMessage;
 import org.jdesktop.wonderland.modules.sharedstate.server.SharedStateComponentMO;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
@@ -68,10 +68,10 @@ public class EZScriptComponentMO extends CellComponentMO {
         super.setLive(live);
         logger.warning("Setting EZScriptComponentMO to live = " + live);
         if(live) {
-            channelComponentRef.getForUpdate().addMessageReceiver(FarCellEventMessage.class,
+            channelComponentRef.getForUpdate().addMessageReceiver(CellTriggerEventMessage.class,
                     (ChannelComponentMO.ComponentMessageReceiver)new FarCellEventReceiver(this.cellRef.get()));
         } else {
-            channelComponentRef.getForUpdate().removeMessageReceiver(FarCellEventMessage.class);
+            channelComponentRef.getForUpdate().removeMessageReceiver(CellTriggerEventMessage.class);
         }
     }
 

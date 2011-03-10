@@ -12,12 +12,12 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  *
  * @author JagWire
  */
-public class FarCellEventMessage extends CellMessage {
+public class CellTriggerEventMessage extends CellMessage {
 
     private String eventName;
     private Object[] arguments;
 
-    public FarCellEventMessage(CellID cellID, String eventName, Object[] args) {
+    public CellTriggerEventMessage(CellID cellID, String eventName, Object[] args) {
         super(cellID);
         this.eventName = eventName;
         this.arguments = args;

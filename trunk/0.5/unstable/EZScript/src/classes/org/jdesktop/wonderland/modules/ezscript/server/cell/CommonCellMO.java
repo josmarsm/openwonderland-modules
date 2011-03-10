@@ -15,6 +15,9 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 public class CommonCellMO extends CellMO {
 
 
+    public CommonCellMO() {
+        super();
+    }
     @UsesCellComponentMO(EZScriptComponentMO.class)
     ManagedReference<EZScriptComponentMO> ezref;
 
