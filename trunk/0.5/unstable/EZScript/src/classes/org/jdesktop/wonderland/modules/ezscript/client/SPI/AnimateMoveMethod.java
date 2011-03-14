@@ -107,7 +107,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         /**
          * The rotation matrix to apply to the target
          */
-        private Vector3f translate;
+        private Vector3f translate = null;
 
         /**
          * The rotation target
@@ -128,11 +128,17 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         float zInc = 0;
         private boolean done = false;
 
+        //as a post process
+        private Node parent = null;
+        private Node targetClone = null;
+
         public TranslationProcessor(String name, Node target, float increment) {
             this.worldManager = ClientContextJME.getWorldManager();
             this.target = target;
+            
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
+            //translate = target.getLocalTranslation();
             translate = target.getLocalTranslation();
             xInc = (float) (x / Double.valueOf(30*seconds));
             yInc = (float) (y / Double.valueOf(30*seconds));
@@ -157,7 +163,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
          * The Calculate method
          */
         public void compute(ProcessorArmingCollection collection) {
-            if(frameIndex >  30*seconds) {
+            if(frameIndex >=  30*seconds) {
                 done = true;
                 return;
                 //this.getEntity().removeComponent(TranslationProcessor.class);
@@ -189,16 +195,32 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
                 this.getEntity().removeComponent(TranslationProcessor.class);
                 
                 
-//                CellTransform transform = cell.getLocalTransform();
-//                Vector3f translation = transform.getTranslation(null);
+                CellTransform transform = cell.getLocalTransform();
+                Vector3f translation = target.getWorldTranslation();
+                Vector3f inverted = new Vector3f();
 //                translation.x += translate.x;
 //                translation.y += translate.y;
 //                translation.z += translate.z;
-//                transform.setTranslation(translation);
-//                target.setLocalTranslation(translation);
-//                getMovable(cell).localMoveRequest(transform);
-//                worldManager.addToUpdateList(target);
-                lock.release(); //this should give control back to the state machine.                  
+                //inverted.x += translate.x * -1;
+                //inverted.y += translate.y * -1;
+                //inverted.z += translate.z * -1;
+                transform.setTranslation(translation);
+                target.setLocalTranslation(inverted);
+                worldManager.addToUpdateList(target);
+                getMovable(cell).localMoveRequest(transform);
+
+                lock.release(); //this should give control back to the state machine.
+//                String position = "X: " + translate.x + "\n"
+//                        +       "Y: " + translate.y + "\n"
+//                        +       "Z: " + translate.z;
+//
+//                String incs = "Xinc: " + xInc + "\n"
+//                        +       "Yinc: " + yInc + "\n"
+//                        +       "Zinc: " + zInc;
+//
+//                System.out.println("global position: " + translation);
+//                System.out.println("local position: " + inverted);
+//                System.out.println("Incs: "+ incs);
                 return;
             }
             
@@ -207,7 +229,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
            // transform.setTranslation(translate);
             //getMovable(cell).localMoveRequest(transform);
             
-            target.setLocalTranslation(translate);
+            target.setLocalTranslation(translate);            
             worldManager.addToUpdateList(target);
         }
     }
