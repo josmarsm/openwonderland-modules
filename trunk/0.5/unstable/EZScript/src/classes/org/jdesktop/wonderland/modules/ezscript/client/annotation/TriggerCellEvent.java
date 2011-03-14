@@ -13,6 +13,6 @@ import java.lang.annotation.Target;
  * @author JagWire
  */
 @Target(ElementType.TYPE)
-public @interface FarCellEvent {
+public @interface TriggerCellEvent {
 
 }
