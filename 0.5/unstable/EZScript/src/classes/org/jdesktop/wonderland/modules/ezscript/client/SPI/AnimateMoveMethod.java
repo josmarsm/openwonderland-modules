@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.SPI;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
+import com.jme.scene.Spatial.CullHint;
 import java.util.concurrent.Semaphore;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
@@ -125,6 +126,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         float xInc = 0;
         float yInc = 0;
         float zInc = 0;
+        private boolean done = false;
 
         public TranslationProcessor(String name, Node target, float increment) {
             this.worldManager = ClientContextJME.getWorldManager();
@@ -135,6 +137,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
             xInc = (float) (x / Double.valueOf(30*seconds));
             yInc = (float) (y / Double.valueOf(30*seconds));
             zInc = (float) (z / Double.valueOf(30*seconds));
+            done = false;
             
         }
 
@@ -155,26 +158,55 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
          */
         public void compute(ProcessorArmingCollection collection) {
             if(frameIndex >  30*seconds) {
-                this.getEntity().removeComponent(TranslationProcessor.class);
-
-                CellTransform transform = cell.getLocalTransform();
-                transform.setTranslation(translate);
-                getMovable(cell).localMoveRequest(transform);
-                lock.release(); //this should give control back to the state machine.
+                done = true;
                 return;
+                //this.getEntity().removeComponent(TranslationProcessor.class);
             }
             translate.x += xInc;
             translate.y += yInc;
             translate.z += zInc;
+            String position = "X: " + translate.x + "\n"
+                    + "Y: " +translate.y + "\n"
+                    + "Z: " +translate.z;
+            System.out.println(position);
             //quaternion.fromAngles(0.0f, degrees, 0.0f);
             frameIndex +=1;
 
         }
 
         /**
-         * The commit method
+         * Currently, the cell's geometry gets moved without the cell.
+         * If we try to move the cell once the geometry has moved, the
+         * geometry's translation get's moved with it. -No bueno.
+         *
+         * If we try to 0 the translation before the cell gets moved, both the
+         * cell and geometry wind up at 0, 0, 0 - No bueno tambien.
+         *
+         * Other ideas?
          */
         public void commit(ProcessorArmingCollection collection) {
+            if(done) {
+                this.getEntity().removeComponent(TranslationProcessor.class);
+                
+                
+//                CellTransform transform = cell.getLocalTransform();
+//                Vector3f translation = transform.getTranslation(null);
+//                translation.x += translate.x;
+//                translation.y += translate.y;
+//                translation.z += translate.z;
+//                transform.setTranslation(translation);
+//                target.setLocalTranslation(translation);
+//                getMovable(cell).localMoveRequest(transform);
+//                worldManager.addToUpdateList(target);
+                lock.release(); //this should give control back to the state machine.                  
+                return;
+            }
+            
+            //CellTransform transform = cell.getWorldTransform();
+            
+           // transform.setTranslation(translate);
+            //getMovable(cell).localMoveRequest(transform);
+            
             target.setLocalTranslation(translate);
             worldManager.addToUpdateList(target);
         }

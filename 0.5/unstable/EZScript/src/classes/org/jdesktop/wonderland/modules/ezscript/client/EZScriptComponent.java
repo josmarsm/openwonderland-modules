@@ -56,7 +56,7 @@ import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.FarCellEventSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
-import org.jdesktop.wonderland.modules.ezscript.client.annotation.FarCellEvent;
+import org.jdesktop.wonderland.modules.ezscript.client.annotation.TriggerCellEvent;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.common.CellTriggerEventMessage;
@@ -130,7 +130,8 @@ public class EZScriptComponent extends CellComponent {
 
     //Functions to be run from remote cells to alter this particular cell
     //only one runnable per name, no overloading supported as of yet...
-    private Map<String, FarCellEventSPI> triggerCellEvents;
+    private Map<String, List<Runnable>> triggerCellEvents;
+    private Map<String, List<Runnable>> localTriggerEvents;
 
     //List of behaviors
     private List<Behavior> behaviors;
@@ -203,7 +204,8 @@ public class EZScriptComponent extends CellComponent {
             localOnKeyPress.put(letter, l);
         }
 
-        triggerCellEvents = new HashMap<String, FarCellEventSPI>();
+        triggerCellEvents = new HashMap<String, List<Runnable>>();
+        localTriggerEvents = new HashMap<String, List<Runnable>>();
         behaviors = new ArrayList();
         //intialize listeners
         mouseEventListener = new MouseEventListener();
@@ -245,24 +247,24 @@ public class EZScriptComponent extends CellComponent {
         }
 
         //grab all events
-        Iterator<FarCellEventSPI> eventIter = loader.getInstances(FarCellEvent.class,
-                                                             FarCellEventSPI.class);
-        while(eventIter.hasNext()) {
-            FarCellEventSPI spi = eventIter.next();
-            if(spi.getCellClassName().equals(cell.getClass().getName())) {
-                if(!triggerCellEvents.containsKey(spi.getEventName())) {
-                    triggerCellEvents.put(spi.getEventName(), spi);
-                }
-                else {
-                    logger.info("Cell already has event defined: "
-                                                           +spi.getEventName());
-                }
-            }
-            else {
-                logger.finest("This event is not for our cell: "
-                                                           +spi.getEventName());
-            }
-        }
+//        Iterator<FarCellEventSPI> eventIter = loader.getInstances(TriggerCellEvent.class,
+//                                                             FarCellEventSPI.class);
+//        while(eventIter.hasNext()) {
+//            FarCellEventSPI spi = eventIter.next();
+//            if(spi.getCellClassName().equals(cell.getClass().getName())) {
+//                if(!triggerCellEvents.containsKey(spi.getEventName())) {
+//                    triggerCellEvents.put(spi.getEventName(), spi);
+//                }
+//                else {
+//                    logger.info("Cell already has event defined: "
+//                                                           +spi.getEventName());
+//                }
+//            }
+//            else {
+//                logger.finest("This event is not for our cell: "
+//                                                           +spi.getEventName());
+//            }
+//        }
     }
 
     @Override
@@ -442,8 +444,8 @@ public class EZScriptComponent extends CellComponent {
                                                     cell.getLocalBounds()
                                                 });
         proximityEventsEnabled = true;
-
     }
+    
 
     /**
      * Updates the bounding volume for a cell. If proximity events are enabled,
@@ -476,6 +478,28 @@ public class EZScriptComponent extends CellComponent {
     public void disableProximityEvents() {
         proximityComponent.removeProximityListener(proximityListener);
         proximityEventsEnabled = false;
+    }
+
+    public void setTrigger(String s, Runnable r, boolean local) {
+
+        if(local) {
+            if(localTriggerEvents.containsKey(s)) {
+                localTriggerEvents.get(s).add(r);
+            } else {
+                List<Runnable> l = new ArrayList();
+                l.add(r);
+                localTriggerEvents.put(s, l);
+            }
+        } else {
+            if(triggerCellEvents.containsKey(s)) {
+                triggerCellEvents.get(s).add(r);
+            } else {
+
+                List<Runnable> l = new ArrayList();
+                l.add(r);
+                triggerCellEvents.put(s, l);
+            }
+        }
     }
 
     public void onClick(Runnable r, boolean local) {
@@ -614,6 +638,22 @@ public class EZScriptComponent extends CellComponent {
         } else {
             threadedExecute(callbacksOnLeave);
         }
+    }
+
+    public void trigger(String s, boolean local) {
+        final List<Runnable> rs;
+        if(local) {            
+            rs = localTriggerEvents.get(s);
+            //threadedExecute(triggerCellEvents.get(s));
+        } else {
+            rs = triggerCellEvents.get(s);
+        }
+
+        if(rs == null)
+            return;
+
+        threadedExecute(rs);
+
     }
 
     private void threadedExecute(List<Runnable> rs) {
@@ -762,7 +802,9 @@ public class EZScriptComponent extends CellComponent {
                     try {
                         //execute script typed in Scripting Editor
                         System.out.println("executing script...");
-                        scriptEngine.eval(script.getValue(), scriptBindings);
+                        //scriptEngine.eval(script.getValue(), scriptBindings);
+                        //Need to add this script to the script editor panel.
+                        evaluateScript(script.getValue());
                     } catch(Exception e) {
                         e.printStackTrace();
                     }
@@ -859,8 +901,9 @@ public class EZScriptComponent extends CellComponent {
                 String name = eventMessage.getEventName();
 
                 if(triggerCellEvents.containsKey(name)) {
-                    triggerCellEvents.get(name).setArguments(eventMessage.getArguments());
-                    triggerCellEvents.get(name).run();
+                    threadedExecute(triggerCellEvents.get(name));
+                    //triggerCellEvents.get(name).setArguments(eventMessage.getArguments());
+                    //triggerCellEvents.get(name).run();
                 } else {
                     logger.warning("Received an event request with no associated event: "+eventMessage.getEventName());
                 }
@@ -912,7 +955,7 @@ public class EZScriptComponent extends CellComponent {
         }
     }
 
-    public void fireTriggerCellEvent(CellID cellID, String label, Object[] args) {
+    public void triggerCell(CellID cellID, String label, Object[] args) {
         channelComponent.send(new CellTriggerEventMessage(cellID, label, args));
     }
 

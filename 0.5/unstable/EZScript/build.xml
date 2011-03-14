@@ -28,6 +28,9 @@
 	<path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
         <path location="${modules.dir}/world/containercell/build/lib/client/container-cell-client.jar"/>
 	<path location="${current.dir}/lib/jbullet.jar"/>
+        <path location="${current.dir}/lib/lti-civil-no_s_w_t.jar"/>
+        <path location="${current.dir}/lib/lti-civil-noutils.jar"/>
+        <path location="${current.dir}/lib/lti-civil.jar"/>
 	<path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
 	<path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
     </pathconvert>
@@ -47,7 +50,7 @@
         <mkdir dir="${module.dist.dir}"/>
 
         <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
-            <client>
+            <client dir="${current.dir}/lib">
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
@@ -55,6 +58,9 @@
                         <include name="${module.src}/client/resources/**"/>
                     </fileset>
                 </clientjar>
+                <include name="lti-civil-no_s_w_t.jar"/>
+                <include name="lti-civil-noutils.jar"/>
+                <include name="lti-civil.jar" />
             </client>
 
             <server>
