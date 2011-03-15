@@ -5,17 +5,19 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client;
 
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
@@ -34,6 +36,9 @@ public class ScriptManager {
     private ScriptEngineManager engineManager;// = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
     private ScriptEngine scriptEngine = null;
     private Bindings scriptBindings = null;
+
+    //utilities
+    private Map<String, CellID> stringToCellID;
 
     private static ScriptManager instance;
 
@@ -64,7 +69,10 @@ public class ScriptManager {
 
         //Add the necessary script bindings
         scriptBindings.put("Client", ClientContextJME.getClientMain());
-        
+
+
+        stringToCellID = new HashMap<String, CellID>();
+
         
         //Load the methods into the library
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
@@ -146,4 +154,29 @@ public class ScriptManager {
             e.printStackTrace();
         }
     }
+
+    public void addCell(Cell cell) {
+        if(!stringToCellID.containsKey(cell.getName())) {
+            stringToCellID.put(cell.getName(), cell.getCellID());
+        } else {
+            return; //return gracefully.
+        }
+    }
+
+    public CellID getCellID(String name) {
+        if(stringToCellID.containsKey(name)) {
+            return stringToCellID.get(name);
+        } else {
+            return null;
+        }
+    }
+
+    public void removeCell(Cell cell) {
+        if(stringToCellID.containsKey(cell.getName())) {
+            stringToCellID.remove(cell.getName());
+        } else {
+            return; //return gracefully
+        }
+    }
+    
 }

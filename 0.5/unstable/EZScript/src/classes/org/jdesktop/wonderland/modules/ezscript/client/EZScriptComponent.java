@@ -216,10 +216,7 @@ public class EZScriptComponent extends CellComponent {
         scriptEngine = engineManager.getEngineByName("JavaScript");
         cell.getClass().getName();
         scriptBindings = scriptEngine.createBindings();
-        //scriptBindings.put("cell", cell);
-        
-        //scriptBindings.put("ScriptContext", this);
-        //scriptEngine.setBindings(scriptBindings, ScriptContext.ENGINE_SCOPE);
+        ScriptManager.getInstance().addCell(cell);
         dialog = new JDialog();
         panel = new ScriptEditorPanel(this, dialog);
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
@@ -306,7 +303,7 @@ public class EZScriptComponent extends CellComponent {
                     channelComponent.addMessageReceiver(CellTriggerEventMessage.class,
                                                         new TriggerCellEventReceiver());
                     //intialize shared state component and map
-                    scriptBindings.put("ScriptContext", this);
+                    scriptBindings.put("context", this);
                     scriptBindings.put("cell", this.cell);
                     new Thread(new Runnable() {
                         public void run() {
@@ -351,7 +348,7 @@ public class EZScriptComponent extends CellComponent {
                         keyEventListener.removeFromEntity(renderer.getEntity());
                         keyEventListener = null;
                     }
-                   
+                    ScriptManager.getInstance().removeCell(this.cell);
                   //  callbacksMap.clear();
                    // scriptsMap.clear();
                     renderer = null;
@@ -909,7 +906,6 @@ public class EZScriptComponent extends CellComponent {
                 }
             }
         }
-
     }
 
     public void addFunctionBinding(ScriptMethodSPI method) {
@@ -956,6 +952,7 @@ public class EZScriptComponent extends CellComponent {
     }
 
     public void triggerCell(CellID cellID, String label, Object[] args) {
+
         channelComponent.send(new CellTriggerEventMessage(cellID, label, args));
     }
 
@@ -1056,5 +1053,9 @@ public class EZScriptComponent extends CellComponent {
 
         //5. Show it.
         dialog.setVisible(true);
+    }
+
+    public CellID getCellIDByName(String name) {
+        return ScriptManager.getInstance().getCellID(name);
     }
 }
