@@ -92,10 +92,8 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
         private Node target = null;
         private String name = null;
         int frameIndex = 0;
-        private Vector3f s; //scale
-        private float xInc;
-        private float yInc;
-        private float zInc;
+        private float currentScale; //scale
+        private float inc;
 
         public ScaleProcessor(String name, Node target, float scale) {
             this.worldManager = ClientContextJME.getWorldManager();
@@ -103,7 +101,8 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
             this.scale = scale;
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
-            s = target.getLocalScale();
+            currentScale = target.getLocalScale().length();
+            target.getLocalScale().length();
 
             // s = 5; scale = 12
             // 12 - 5 = 6
@@ -115,12 +114,8 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
             // -2/(30*3) = -1/30
             //5 += (-1/30)
             Vector3f scaleVector = new Vector3f();
-            scaleVector.x = scale - s.x;
-            scaleVector.y = scale - s.y;
-            scaleVector.z = scale - s.z;
-            xInc = scaleVector.x/(30*seconds);
-            yInc = scaleVector.y/(30*seconds);
-            zInc = scaleVector.z/(30*seconds);
+            float scaleDifference = scale - currentScale;
+            inc = scaleDifference/(30*seconds);
         }
 
             @Override
@@ -146,14 +141,13 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
                 getMovable(cell).localMoveRequest(transform);
                 return;
             }
-            s.x += xInc;
-            s.y += yInc;
-            s.z += zInc;
+            currentScale += inc;
             frameIndex +=1;
         }
 
         public void commit(ProcessorArmingCollection collection) {
-            target.setLocalScale(s);
+
+            target.setLocalScale(currentScale);
             worldManager.addToUpdateList(target);
         }
     }
