@@ -77,82 +77,63 @@ public class SpinMethod implements ScriptMethodSPI {
     }
 
     class SpinProcessor extends ProcessorComponent {
-        /**
-         * The WorldManager - used for adding to update list
-         */
+
         private WorldManager worldManager = null;
-        /**
-         * The current degrees of rotation
-         */
+
         private float radians = 0.0f;
 
-        /**
-         * The increment to rotate each frame
-         */
         private float increment = 0.0f;
 
-        /**
-         * The rotation matrix to apply to the target
-         */
         private Quaternion quaternion = new Quaternion();
 
-        /**
-         * The rotation target
-         */
         private Node target = null;
 
-        /**
-         * A name
-         */
         private String name = null;
-
-        /**
-         * The constructor
-         */
+        private float[] angles;
         int frameIndex = 0;
+        private boolean done = false;
+
         public SpinProcessor(String name, Node target, float increment) {
             this.worldManager = ClientContextJME.getWorldManager();
             this.target = target;
             this.increment = increment;
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
+            quaternion = target.getWorldRotation();//cell.getLocalTransform().getRotation(null);
+            angles = quaternion.toAngles(null);
+            for(float f: angles)
+                System.out.println(f);
         }
 
-            @Override
+        @Override
         public String toString() {
             return (name);
         }
 
-        /**
-         * The initialize method
-         */
         public void initialize() {
-            //setArmingCondition(new NewFrameCondition(this));
+            
         }
 
-        /**
-         * The Calculate method
-         */
         public void compute(ProcessorArmingCollection collection) {
             if(frameIndex >= 30*time) {
                 this.getEntity().removeComponent(SpinProcessor.class);
                 lock.release();
-
+                done = true;
             }
             radians += increment;
             //1 revolution = (3.14 * 2) ~ 6.28
             //
             System.out.println("current radians: "+radians);
             //quaternion.fromAngles(0.0f, increment, 0.0f);
-            quaternion.fromAngleAxis(radians, Vector3f.UNIT_Y);
+            quaternion = new Quaternion(new float[] {angles[0], radians, angles[2] });
             frameIndex +=1;
 
         }
 
-        /**
-         * The commit method
-         */
         public void commit(ProcessorArmingCollection collection) {
+            if(done)
+                return;
+
             target.setLocalRotation(quaternion);
             worldManager.addToUpdateList(target);
         }
