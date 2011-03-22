@@ -303,6 +303,7 @@ public class EZScriptComponent extends CellComponent {
                     channelComponent.addMessageReceiver(CellTriggerEventMessage.class,
                                                         new TriggerCellEventReceiver());
                     //intialize shared state component and map
+                    
                     scriptBindings.put("context", this);
                     scriptBindings.put("cell", this.cell);
                     new Thread(new Runnable() {
