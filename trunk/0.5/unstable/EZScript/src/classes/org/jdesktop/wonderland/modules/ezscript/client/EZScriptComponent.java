@@ -304,8 +304,9 @@ public class EZScriptComponent extends CellComponent {
                                                         new TriggerCellEventReceiver());
                     //intialize shared state component and map
                     
-                    scriptBindings.put("context", this);
                     scriptBindings.put("cell", this.cell);
+                    scriptBindings.put("Context", this);
+                    
                     new Thread(new Runnable() {
                         public void run() {
                             //grab the "callbacks" map in order to hopefully
