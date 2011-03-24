@@ -145,7 +145,6 @@ public class EZScriptComponent extends CellComponent {
     private SharedStateComponent sharedStateComponent;
     private SharedMapCli callbacksMap; // used in syncing callbacks across clients
     private SharedMapCli scriptsMap;// used for executing scripts and client sync
-    private SharedMapCli behaviorsMap; //used for persisting scripts
     private SharedMapCli stateMap; //used for persisting state variables, including current script
    
     private SharedMapListener mapListener;
@@ -357,6 +356,7 @@ public class EZScriptComponent extends CellComponent {
                 }
         }
     }
+
     public void handleStates(SharedMapCli states) {
         if(states.containsKey("proximity")) {
             SharedBoolean enabled = (SharedBoolean)states.get("proximity");
@@ -402,9 +402,11 @@ public class EZScriptComponent extends CellComponent {
             mouseEventsEnabled = true;
         }
     }
+
     public MouseEventListener getMouseEventListener() {
         return this.mouseEventListener;
     }
+
     public boolean getMouseEventsEnabled() {
         return mouseEventsEnabled;
     }
@@ -434,6 +436,7 @@ public class EZScriptComponent extends CellComponent {
         keyEventListener = null;
         keyEventsEnabled = false;
     }
+
     public void enableProximityEvents() {
         if(proximityListener == null) {
             proximityListener = new ProximityListenerImpl();
@@ -445,7 +448,6 @@ public class EZScriptComponent extends CellComponent {
         proximityEventsEnabled = true;
     }
     
-
     /**
      * Updates the bounding volume for a cell. If proximity events are enabled,
      * they will be reprocessed after calling this method.
@@ -639,7 +641,7 @@ public class EZScriptComponent extends CellComponent {
         }
     }
 
-    public void trigger(String s, boolean local) {
+    private void trigger(String s, boolean local) {
         final List<Runnable> rs;
         if(local) {            
             rs = localTriggerEvents.get(s);
@@ -686,11 +688,30 @@ public class EZScriptComponent extends CellComponent {
         callbacksOnApproach.clear();
         callbacksOnLeave.clear();
 
+        localOnClick.clear();
+        localOnLoad.clear();
+        localOnUnload.clear();
+        localOnMouseEnter.clear();
+        localOnMouseExit.clear();
+        localOnApproach.clear();
+        localOnLeave.clear();
+
         //to be thorough...
-        for(List l : callbacksOnKeyPress.values()) {
+        clearMap(callbacksOnKeyPress);
+        clearMap(localOnKeyPress);
+        clearMap(triggerCellEvents);
+        clearMap(localTriggerEvents);
+
+    }
+    /**
+     * Utility method to clear the given callback map.
+     * @param m the map of a string associated with a list of Runnable
+     */
+    private void clearMap(Map<String, List<Runnable>> m) {
+        for(List l: m.values())
             l.clear();
-        }
-        callbacksOnKeyPress.clear();
+
+        m.clear();
     }
 
     public void evaluateScript(final String script) {
@@ -712,10 +733,6 @@ public class EZScriptComponent extends CellComponent {
         return this.scriptsMap;
     }
     
-    private EZScriptComponent getLocalInstance() {
-        return this;
-    }
-
     public class MouseEventListener extends EventClassListener {
         @Override
         public Class[] eventClassesToConsume() {
@@ -770,6 +787,7 @@ public class EZScriptComponent extends CellComponent {
    }
 
     class SharedMapListener implements SharedMapListenerCli {
+        
         public void propertyChanged(SharedMapEventCli event) {
             String property = event.getPropertyName();
             String name = event.getMap().getName();
@@ -839,12 +857,10 @@ public class EZScriptComponent extends CellComponent {
                         disableMouseEvents();
                 } else if(property.equals("keyboard")) {
                     if(p.getValue())
-                        enableMouseEvents();
+                        enableKeyEvents();
                     else
-                        disableMouseEvents();
-                } else if(property.equals("farcell")) {
-                    //do nothing yet.
-                }
+                        disableKeyEvents();
+                } 
                 return;
             }
         }
