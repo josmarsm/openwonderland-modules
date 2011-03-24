@@ -68,8 +68,8 @@ public class ScriptLibraryPanel extends javax.swing.JPanel
             //category.add(entry);
             entries.put(method.getFunctionName(), method.getDescription());
             model.nodeStructureChanged(top);
-            System.out.println("Adding category: "+method.getCategory());
-            System.out.println("Adding entry: "+method.getFunctionName());
+            //System.out.println("Adding category: "+method.getCategory());
+            //System.out.println("Adding entry: "+method.getFunctionName());
 
         }
         else {
@@ -80,7 +80,7 @@ public class ScriptLibraryPanel extends javax.swing.JPanel
             //category.add(new DefaultMutableTreeNode(method.getFunctionName()));
             entries.put(method.getFunctionName(), method.getDescription());
             //model.nodeStructureChanged(category);
-            System.out.println("Adding entry: "+method.getFunctionName());
+            //System.out.println("Adding entry: "+method.getFunctionName());
         }
     }
 
@@ -98,8 +98,8 @@ public class ScriptLibraryPanel extends javax.swing.JPanel
             //category.add(entry);
             entries.put(method.getFunctionName(), method.getDescription());
             model.nodeStructureChanged(top);
-            System.out.println("Adding category: "+method.getCategory());
-            System.out.println("Adding entry: "+method.getFunctionName());
+            //System.out.println("Adding category: "+method.getCategory());
+            //System.out.println("Adding entry: "+method.getFunctionName());
 
         }
         else {
@@ -110,7 +110,7 @@ public class ScriptLibraryPanel extends javax.swing.JPanel
             //category.add(new DefaultMutableTreeNode(method.getFunctionName()));
             entries.put(method.getFunctionName(), method.getDescription());
             //model.nodeStructureChanged(category);
-            System.out.println("Adding entry: "+method.getFunctionName());
+            //System.out.println("Adding entry: "+method.getFunctionName());
         }
     }
     
