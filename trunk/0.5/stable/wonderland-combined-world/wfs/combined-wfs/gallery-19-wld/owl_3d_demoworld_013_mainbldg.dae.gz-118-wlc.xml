@@ -9,6 +9,7 @@
         <LightingEnabled>true</LightingEnabled>
         <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
         <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+        <TransparencyMode>NONE</TransparencyMode>
     </model-cell-component>
     <interaction-component>
         <collidable>true</collidable>

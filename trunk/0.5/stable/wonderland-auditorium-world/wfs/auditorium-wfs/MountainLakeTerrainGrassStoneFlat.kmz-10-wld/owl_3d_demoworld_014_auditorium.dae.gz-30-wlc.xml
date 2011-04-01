@@ -9,6 +9,7 @@
         <LightingEnabled>true</LightingEnabled>
         <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
         <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+        <TransparencyMode>INVERSE</TransparencyMode>
     </model-cell-component>
     <position-component>
         <translation>
