@@ -3,7 +3,6 @@ package org.jdesktop.wonderland.modules.ezscript.client.SPI;
 
 import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.util.concurrent.Semaphore;
 import org.jdesktop.mtgame.NewFrameCondition;
@@ -11,10 +10,12 @@ import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
-import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+//import org.jdesktop.wonderland.common.wfs.CellList.Cell;
+//import org.jdesktop.wonderland.common.wfs.CellList.Cell;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.modules.ezscript.client.StringStateMachine;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
@@ -40,6 +41,7 @@ public class SpinMethod implements ScriptMethodSPI {
         rotations = ((Double)args[1]).floatValue();
         time = ((Double)args[2]).floatValue();
         lock = new Semaphore(0);
+        
 
     }
 

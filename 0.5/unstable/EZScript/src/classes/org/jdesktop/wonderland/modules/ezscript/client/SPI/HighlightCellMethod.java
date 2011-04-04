@@ -54,7 +54,7 @@ public class HighlightCellMethod implements ScriptMethodSPI {
         cell = (Cell)args[0];
         highlight = ((Boolean)args[1]).booleanValue();
         color = (String)args[2];
-
+        
         renderer = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         rootNode = renderer.getSceneRoot();
 
@@ -62,7 +62,7 @@ public class HighlightCellMethod implements ScriptMethodSPI {
 
     public String getDescription() {
         return "Highlights a cell by making it glow!\n\n"
-                + "usage: HighlightCell(cell, true, color); \n\\n"
+                + "usage: HighlightCell(cell, true, ''red''); \n\\n"
                 + " -supported colors include: red, yellow, green, blue, black, and white";
     }
 
@@ -79,6 +79,7 @@ public class HighlightCellMethod implements ScriptMethodSPI {
                         s.setGlowColor(getColorRGBA(color));
                         s.setGlowScale(new Vector3f(1.3f, 1.3f, 1.3f));
                         ClientContextJME.getWorldManager().addToUpdateList(s);
+
                     }
                 };
                 ClientContextJME.getWorldManager().addRenderUpdater(updater, null);

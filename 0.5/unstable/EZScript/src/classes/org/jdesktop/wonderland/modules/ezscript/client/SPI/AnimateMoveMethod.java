@@ -51,9 +51,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         x = ((Double)args[1]).floatValue();// + node.getLocalTranslation().x;
         y = ((Double)args[2]).floatValue();// + node.getLocalTranslation().y;
         z = ((Double)args[3]).floatValue();// + node.getLocalTranslation().z;
-
-
-
+        
         seconds = ((Double)args[4]).floatValue();
         lock = new Semaphore(0);
 
@@ -99,29 +97,15 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
     }
 
     class TranslationProcessor extends ProcessorComponent {
-        /**
-         * The WorldManager - used for adding to update list
-         */
+
         private WorldManager worldManager = null;
 
-        /**
-         * The rotation matrix to apply to the target
-         */
         private Vector3f translate = null;
 
-        /**
-         * The rotation target
-         */
         private Node target = null;
 
-        /**
-         * A name
-         */
         private String name = null;
 
-        /**
-         * The constructor
-         */
         int frameIndex = 0;
         float xInc = 0;
         float yInc = 0;
