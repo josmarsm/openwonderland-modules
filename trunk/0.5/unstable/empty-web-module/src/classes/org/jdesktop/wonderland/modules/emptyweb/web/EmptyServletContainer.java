@@ -48,7 +48,7 @@ public class EmptyServletContainer extends ServletContainer
 
         // register with the UI
         AdminRegistration ar = new AdminRegistration("Connected Users",
-                                                     "/admin-tools/admin-tools");
+                                                     "/empty-web-module/empty-web-module");
         ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);
         context.setAttribute(ADMIN_REG_KEY, ar);
