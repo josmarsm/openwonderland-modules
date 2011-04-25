@@ -1,0 +1,56 @@
+----------------------
+-- Webcaster Module --
+----------------------
+
+This module allows in-world video feeds to be streamed to a Red5 server. Before it can be used, Red5 
+needs to be installed as a component of Wonderland and the Xuggler libraries core update must be applied:
+
+
+-------------------------------
+Install the Xuggler Core Update
+-------------------------------
+
+1. Download the xuggler-core-pre.zip file from http://download.openwonderland.org/preview/video3pre/xuggler-core-pre.zip
+   # Extract the zip file to the OWL source directory - this will overwrite serveral files
+
+2. Recompile Open Wonderland
+
+
+---------------------------------------------
+Download and Install Red5 as an OWL Component
+---------------------------------------------
+
+1. Create a directory for Red5
+   # mkdir red5-latest
+   # cd red5-latest
+
+2. Checkout the main Red5 source
+   # svn co http://red5.googlecode.com/svn/java/server/trunk red5
+
+3. Build Red5
+   # cd red5
+   # ant dist
+   
+4. In the red5-server module, open build.xml
+   # Edit red5.dir property so it points to the Red5 source folder
+   # Comment out references to the Red5 examples and oflaDemo
+
+5. Install Red5 as an Open Wonderland component
+   # Open the Open Wonderland web administration and select 'Server Components'
+   # Click Edit > Add Component
+   # Enter the following values:
+
+	Component Name:  Red5 Video Server
+	Component Class: org.jdesktop.wonderland.modules.red5.weblib.Red5Runner
+	Location:        Local
+
+   # Click 'Add Component'
+
+   To test Red5 is operational, go to http://localhost:5080. If it is working, a test page will be visible.
+
+
+----------------------------
+Install the Webcaster Module
+----------------------------
+
+- Install the webcaster module from the administration web UI
