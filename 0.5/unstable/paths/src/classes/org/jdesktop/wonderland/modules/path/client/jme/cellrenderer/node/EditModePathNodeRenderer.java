@@ -9,6 +9,7 @@ import com.jme.scene.state.MaterialState;
 import com.jme.system.DisplaySystem;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
+import org.jdesktop.wonderland.modules.path.common.style.node.CoreNodeStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 
 /**
@@ -42,14 +43,14 @@ public class EditModePathNodeRenderer extends AbstractPathNodeRenderer implement
     }
 
     /**
-     * As this PathNodeRenderer is intended to render PathNodes of any NodeStyleType which are being edited,
-     * no NodeStyleType is applicable to this PathNodeRenderer and the method simply returns null.
+     * As this PathNodeRenderer is intended to render PathNodes of any NodeStyleType which are being edited.
+     * As such it does not use any style meta-data. This method always returns the EDIT_MODE node style type.
      *
-     * @return Null as no NodeStyleType is applicable to this PathNodeRenderer.
+     * @return The EDIT_MODE NodeStyleType.
      */
     @Override
     public NodeStyleType getRenderedType() {
-        return null;
+        return CoreNodeStyleType.EDIT_MODE;
     }
 
     /**
@@ -67,12 +68,20 @@ public class EditModePathNodeRenderer extends AbstractPathNodeRenderer implement
         node.setRenderState(nodeMaterial);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected Node createSceneGraph(Entity entity) {
-        Node editNode = new Node(entity.getName());
-        TriMesh nodeSphere = new Sphere(editNode.getName(), 8, 8, 0.25f);
-        editNode.attachChild(nodeSphere);
-        initMaterial(editNode);
-        return editNode;
+    public Node createSceneGraph(Entity entity) {
+        if (rootNode != null) {
+            return rootNode;
+        }
+        else {
+            rootNode = new Node(entity.getName());
+            TriMesh nodeSphere = new Sphere(rootNode.getName(), pathNode.getPosition(), 8, 8, 0.25f);
+            rootNode.attachChild(nodeSphere);
+            initMaterial(rootNode);
+        }
+        return rootNode;
     }
 }

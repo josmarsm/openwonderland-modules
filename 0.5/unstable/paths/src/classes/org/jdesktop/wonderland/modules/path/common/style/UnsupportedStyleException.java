@@ -1,5 +1,7 @@
 package org.jdesktop.wonderland.modules.path.common.style;
 
+import java.io.Serializable;
+
 /**
  * This is an Exception which is thrown when a style factory fails to create a style
  * or when a NodeStyle is attempted to be used with a PathStyle for which is is
@@ -7,7 +9,12 @@ package org.jdesktop.wonderland.modules.path.common.style;
  *
  * @author Carl Jokl
  */
-public class UnsupportedStyleException extends Exception {
+public class UnsupportedStyleException extends Exception implements Serializable {
+
+    /**
+     * The version number for serialization.
+     */
+    private static final long serialVersionUID = 1L;
 
     private Object style;
     

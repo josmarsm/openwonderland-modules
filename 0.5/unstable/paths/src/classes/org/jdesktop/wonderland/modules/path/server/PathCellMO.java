@@ -1,8 +1,8 @@
 package org.jdesktop.wonderland.modules.path.server;
 
-import com.sun.sgs.app.ManagedReference;
+import java.util.ArrayList;
+import java.util.List;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.path.common.PathNode;
@@ -12,6 +12,7 @@ import org.jdesktop.wonderland.modules.path.common.NodePath;
 import org.jdesktop.wonderland.modules.path.common.PathCellServerState;
 import org.jdesktop.wonderland.modules.path.common.PathCellState;
 import org.jdesktop.wonderland.modules.path.common.PathNodeGroup;
+import org.jdesktop.wonderland.modules.path.common.PathNodeState;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
 import org.jdesktop.wonderland.modules.path.server.receivers.EditModeChangedMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
@@ -25,11 +26,25 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientID;
  */
 public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
 
+    /**
+     * The fully qualified name of the client PathCell class.
+     */
     public static final String CLIENT_CELL_CLASS_NAME = "org.jdesktop.wonderland.modules.path.client.PathCell";
     
     private boolean editMode;
     private boolean closedPath;
     private PathStyle pathStyle;
+    private List<PathNodeState> nodes;
+
+    public PathCellMO() {
+        nodes = new ArrayList<PathNodeState>();
+        editMode = true;
+        closedPath = true;
+        nodes.add(new PathNodeState(-1.0f, 0.0f, -1.0f, "One", nodes.size()));
+        nodes.add(new PathNodeState(1.0f, 0.0f, -1.0f, "Two", nodes.size()));
+        nodes.add(new PathNodeState(1.0f, 0.0f, 1.0f, "Three", nodes.size()));
+        nodes.add(new PathNodeState(-1.0f, 0.0f, 1.0f, "Four", nodes.size()));
+    }
 
     /**
      * {@inheritDoc}
@@ -45,7 +60,11 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
     @Override
     public CellServerState getServerState(CellServerState state) {
         if (state == null) {
-            state = new PathCellServerState(pathStyle, editMode, closedPath);
+            PathCellServerState pathState = new PathCellServerState(pathStyle, editMode, closedPath);
+            for (PathNodeState nodeState : nodes) {
+                pathState.addPathNodeState(nodeState);
+            }
+            state = pathState;
         }
         return super.getServerState(state);
     }
@@ -57,10 +76,15 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
     public void setServerState(CellServerState state) {
         super.setServerState(state);
         if (state instanceof PathCellState) {
-            PathCellState shapeState = (PathCellState) state;
-            editMode = shapeState.isEditMode();
-            closedPath = shapeState.isClosedPath();
-            pathStyle = shapeState.getPathStyle();
+            PathCellState pathState = (PathCellState) state;
+            editMode = pathState.isEditMode();
+            closedPath = pathState.isClosedPath();
+            pathStyle = pathState.getPathStyle();
+            final int noOfNodes = pathState.noOfNodeStates();
+            nodes.clear();
+            for (int nodeIndex = 0; nodeIndex < noOfNodes; nodeIndex++) {
+                nodes.add(pathState.getPathNodeState(nodeIndex));
+            }
         }
     }
 
@@ -70,7 +94,11 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
     @Override
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities) {
         if (cellClientState == null) {
-            cellClientState = new PathCellClientState(pathStyle, editMode, closedPath);
+            PathCellClientState pathState = new PathCellClientState(pathStyle, editMode, closedPath);
+            for (PathNodeState nodeState : nodes) {
+                pathState.addPathNodeState(nodeState);
+            }
+            cellClientState = pathState;
         }
         return super.getClientState(cellClientState, clientID, capabilities);
     }
@@ -143,20 +171,12 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
      */
     @Override
     public PathNode getPathNode(int index) throws IndexOutOfBoundsException {
-        if (index >= 0 && index < getNumChildren()) {
-            CellMO currentChild = null;
-            PathNode currentNode = null;
-            for (ManagedReference<CellMO> childMO : getAllChildrenRefs()) {
-                currentChild = childMO.get();
-                if (currentChild instanceof PathNode) {
-                    currentNode = (PathNode) childMO;
-                    if (currentNode.getSequenceIndex() == index) {
-                        return currentNode;
-                    }
-                }
-            }
+        if (index >= 0 && index < nodes.size()) {
+            return nodes.get(index);
         }
-        throw new IndexOutOfBoundsException(String.format("The specified index: %d is outside the range of valid node indices! No of nodes: %d.", index, getNumChildren()));
+        else {
+            throw new IndexOutOfBoundsException(String.format("The specified index: %d is outside the range of node states! No of node states %d.", index, nodes.size()));
+        }
     }
 
     /**
@@ -164,17 +184,7 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
      */
     @Override
     public int noOfNodes() {
-        return getNumChildren();
-    }
-
-    @Override
-    public void addChild(CellMO child) throws MultipleParentException {
-        if (child instanceof PathNode) {
-            addChild(child);
-        }
-        else {
-            throw new IllegalArgumentException("Only path node managed objects can be added as children of a path managed object!");
-        }
+        return nodes.size();
     }
 }
 

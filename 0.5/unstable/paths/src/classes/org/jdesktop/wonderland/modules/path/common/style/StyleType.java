@@ -11,6 +11,15 @@ import java.io.Serializable;
 public interface StyleType extends Serializable {
 
     /**
+     * Whether this StyleType is an internal StyleType which is not
+     * intended to be user selectable. This would cover StyleTypes such
+     * as the edit mode style types.
+     *
+     * @return True if this StyleType is internal and not intended to be user selectable.
+     */
+    public boolean isInternal();
+
+    /**
      * Get the integer id value which identifies this StyleType. The id is should be globally unique for the sake of ease of
      * serialization and de-serialization.
      *

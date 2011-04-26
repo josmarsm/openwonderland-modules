@@ -12,8 +12,11 @@ import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.client.PathCell;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PathNodeEditModeRendererFactory;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PathNodeRendererFactory;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
 import org.jdesktop.wonderland.modules.path.common.style.UnsupportedStyleException;
+import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyle;
 
 /**
@@ -62,23 +65,54 @@ public class PathCellRenderer extends BasicRenderer {
                 final int noOfNodes = nodes.size();
                 if (pathCell.isEditMode()) {
                     PathSegmentRenderer editModeSegmentRenderer = rendererFactory.getEditSegmentRenderer();
+                    PathNodeEditModeRendererFactory nodeRendererFactory = rendererFactory.getEditNodeRendererFactory();
+                    PathNodeRenderer currentRenderer = null;
+                    Entity currentNodeEntity = null;
+                    nodeRenderers.clear();
                     for (ClientPathNode currentNode : nodes) {
                         if (currentNode.hasNext()) {
                             addIfNotNull(editModeSegmentRenderer.render(null, currentNode, currentNode.getNext()));
+                        }
+                        currentRenderer = nodeRendererFactory.createRenderer(currentNode);
+                        if (currentRenderer != null) {
+                            currentNodeEntity = new Entity(currentNode.getName());
+                            if (addIfNotNull(currentRenderer.createSceneGraph(currentNodeEntity))) {
+                                //entityAddChild(entity, currentNodeEntity);
+                                nodeRenderers.add(currentRenderer);
+                            }
                         }
                     }
                 }
                 else if (noOfNodes > 0) {
                     PathStyle pathStyle = pathCell.getPathStyle();
+                    NodeStyle currentNodeStyle = null;
                     SegmentStyle currentSegmentStyle = null;
+                    PathNodeRendererFactory currentRendererFactory = null;
                     PathNodeRenderer currentNodeRenderer =  null;
                     PathSegmentRenderer currentSegmentRenderer = null;
+                    Entity currentNodeEntity = null;
                     for (ClientPathNode currentNode : nodes) {
                         try {
-                            currentSegmentStyle = pathStyle.getSegmentStyle(currentNode.getSequenceIndex(), true);
-                            currentSegmentRenderer = currentSegmentStyle != null ? rendererFactory.getSegmentRenderer(currentSegmentStyle.getStyleType()) : null;
-                            if (currentSegmentRenderer != null) {
-                                addIfNotNull(currentSegmentRenderer.render(currentSegmentStyle, currentNode, currentNode.getNext()));
+                            if (currentNode.hasNext()) {
+                                currentSegmentStyle = pathStyle.getSegmentStyle(currentNode.getSequenceIndex(), true);
+                                currentSegmentRenderer = currentSegmentStyle != null ? rendererFactory.getSegmentRenderer(currentSegmentStyle.getStyleType()) : null;
+                                if (currentSegmentRenderer != null) {
+                                    addIfNotNull(currentSegmentRenderer.render(currentSegmentStyle, currentNode, currentNode.getNext()));
+                                }
+                            }
+                            currentNodeStyle = pathStyle.getNodeStyle(currentNode.getSequenceIndex(), true);
+                            if (currentNodeStyle != null) {
+                                currentRendererFactory = rendererFactory.getNodeRendererFactory(currentNodeStyle.getStyleType());
+                                if (currentRendererFactory != null) {
+                                    currentNodeRenderer = currentRendererFactory.createRenderer(currentNode, currentNodeStyle);
+                                    if (currentNodeRenderer != null) {
+                                        currentNodeEntity = new Entity(currentNode.getName());
+                                        if (addIfNotNull(currentNodeRenderer.createSceneGraph(currentNodeEntity))) {
+                                            entityAddChild(entity, currentNodeEntity);
+                                            nodeRenderers.add(currentNodeRenderer);
+                                        }
+                                    }
+                                }
                             }
                         }
                         catch (IllegalArgumentException iae) {
@@ -99,11 +133,15 @@ public class PathCellRenderer extends BasicRenderer {
      * Add the specified JME child Node if the Node is not null.
      *
      * @param jmeChildNode the JME child Node to be added if it is not null.
+     * @return True if the supplied child node was not null and was able to be
+     *         added to the root node of the path rendering screen graph.
      */
-    private void addIfNotNull(Node jmeChildNode) {
+    private boolean addIfNotNull(Node jmeChildNode) {
         if (jmeChildNode != null) {
             cellRootNode.attachChild(jmeChildNode);
+            return true;
         }
+        return false;
     }
 
     /**
@@ -123,7 +161,7 @@ public class PathCellRenderer extends BasicRenderer {
                             ClientContextJME.getWorldManager().addToUpdateList(node);
                         } */
             }
-            cellRootNode.setName(String.format("Path Cell: %s (%s)", cell.getName(), cell.getCellID().toString()));
+            cellRootNode.setName(String.format("Path Cell: %s (%s)", name, cell.getCellID().toString()));
         }
     }
 

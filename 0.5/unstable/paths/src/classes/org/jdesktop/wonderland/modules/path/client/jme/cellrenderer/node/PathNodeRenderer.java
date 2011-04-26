@@ -1,6 +1,7 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node;
 
-import org.jdesktop.wonderland.client.cell.CellRenderer;
+import com.jme.scene.Node;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 
@@ -9,7 +10,7 @@ import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
  *
  * @author Carl Jokl
  */
-public interface PathNodeRenderer extends CellRenderer {
+public interface PathNodeRenderer {
 
     /**
      * Get the ClientPathNode contained within this PathNodeRenderer.
@@ -25,6 +26,15 @@ public interface PathNodeRenderer extends CellRenderer {
      *         which this PathNodeRenderer is intended to render.
      */
     public NodeStyleType getRenderedType();
+
+    /**
+     * Create the ScreenGraph for the the ClientPathNode contained within this
+     * PathNodeRenderer.
+     *
+     * @param entity The Multi Threaded Game Entity used to represent this ClientPathNode in the Entity Hierarchy.
+     * @return A JME node of the SceneGraph of objects used to render this ClientPathNode.
+     */
+    public Node createSceneGraph(Entity entity);
 
     /**
      * Dispose of this PathNodeRenderer and any resources which may be held by it.

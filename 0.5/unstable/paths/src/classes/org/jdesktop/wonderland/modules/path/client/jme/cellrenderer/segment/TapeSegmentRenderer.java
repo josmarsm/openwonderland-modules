@@ -8,9 +8,7 @@ import com.jme.scene.TriMesh;
 import com.jme.util.geom.BufferUtils;
 import java.nio.IntBuffer;
 import org.jdesktop.wonderland.modules.path.common.PathNode;
-import org.jdesktop.wonderland.modules.path.common.style.HeightHoldingStyle;
-import org.jdesktop.wonderland.modules.path.common.style.HeightOffsetStyle;
-import org.jdesktop.wonderland.modules.path.common.style.HTexPerMRepeatingStyle;
+import org.jdesktop.wonderland.modules.path.common.style.StyleMetaDataAdapter;
 import org.jdesktop.wonderland.modules.path.common.style.segment.CoreSegmentStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyle;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
@@ -28,11 +26,12 @@ public class TapeSegmentRenderer implements PathSegmentRenderer {
     @Override
     public Node render(SegmentStyle style, PathNode startNode, PathNode endNode) {
         Node tapeNode = new Node("Tape");
-        float height = style instanceof HeightHoldingStyle ? ((HeightHoldingStyle) style).getHeight() : 0.05f;
-        float offset = style instanceof HeightOffsetStyle ? ((HeightOffsetStyle) style).getHeightOffset() : 1.0f;
-        float textureRepeatsPerMeter = style instanceof HTexPerMRepeatingStyle ? ((HTexPerMRepeatingStyle) style).getHTexRepeatsPerM() : 1.0f;
-        Vector3f startPoint = startNode.getLocalPosition();
-        Vector3f endPoint = endNode.getLocalPosition();
+        StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
+        float height = adapter.getHeight(0.05f);
+        float offset = adapter.getYOffset(1.0f);
+        float textureRepeatsPerMeter = adapter.getUTextRepeatsPerM(1.0f);
+        Vector3f startPoint = startNode.getPosition();
+        Vector3f endPoint = endNode.getPosition();
         float startX = startPoint.getX();
         float startLY = startPoint.getY() + offset;
         float startUY = startLY + height;

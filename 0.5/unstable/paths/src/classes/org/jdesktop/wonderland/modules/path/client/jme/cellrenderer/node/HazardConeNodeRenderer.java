@@ -7,12 +7,9 @@ import com.jme.scene.TriMesh;
 import com.jme.scene.shape.Cylinder;
 import com.jme.scene.state.MaterialState;
 import com.jme.system.DisplaySystem;
-import java.awt.Color;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
-import org.jdesktop.wonderland.modules.path.common.style.ColoredStyle;
-import org.jdesktop.wonderland.modules.path.common.style.HeightHoldingStyle;
-import org.jdesktop.wonderland.modules.path.common.style.RadiusHoldingStyle;
+import org.jdesktop.wonderland.modules.path.common.style.StyleMetaDataAdapter;
 import org.jdesktop.wonderland.modules.path.common.style.node.CoreNodeStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
@@ -45,26 +42,29 @@ public class HazardConeNodeRenderer extends AbstractPathNodeRenderer implements 
      * {@inheritDoc}
      */
     @Override
-    protected Node createSceneGraph(Entity entity) {
-        Node hazardConeNode = new Node(entity.getName());
-        NodeStyle style = getNodeStyle();
-        float radius = (style instanceof RadiusHoldingStyle) ? ((RadiusHoldingStyle) style).getRadius() : 0.1f;
-        float height = (style instanceof HeightHoldingStyle) ? ((HeightHoldingStyle) style).getHeight() : 0.5f;
-        TriMesh coneMesh = new Cylinder(hazardConeNode.getName(), 8, 16, 0.0f, radius, height, true, false);
-        hazardConeNode.attachChild(coneMesh);
-        Renderer renderer = DisplaySystem.getDisplaySystem().getRenderer();
-        MaterialState rulerMaterial = renderer.createMaterialState();
-        if (style instanceof ColoredStyle) {
-            ColoredStyle coloredStyle = (ColoredStyle) style;
-            if (coloredStyle.getColorCount() > 0) {
-                Color bodyColor = coloredStyle.getColor(0);
-                rulerMaterial.setAmbient(new ColorRGBA(bodyColor.getRed() / 255.0f, bodyColor.getGreen() / 255.0f, bodyColor.getBlue() / 255.0f, 1.0f));
-                rulerMaterial.setDiffuse(new ColorRGBA(bodyColor.getRed() / 255.0f, bodyColor.getGreen() / 255.0f, bodyColor.getBlue() / 255.0f, 1.0f));
-                rulerMaterial.setSpecular(new ColorRGBA((bodyColor.getRed() * 0.25f) / 255.0f, (bodyColor.getGreen() * 0.25f) / 255.0f, (bodyColor.getBlue() * 0.25f) / 255.0f, 1.0f));
+    public Node createSceneGraph(Entity entity) {
+        if (rootNode == null) {
+            rootNode = new Node(entity.getName());
+            NodeStyle style = getNodeStyle();
+            StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
+            float radius1 = adapter.getRadius1(0.1f, true);
+            float radius2 = adapter.getRadius2(0.125f, true);
+            float height = adapter.getHeight(0.5f);
+            TriMesh coneMesh = new Cylinder(rootNode.getName(), 8, 16, radius1, radius2, height, true, false);
+            rootNode.attachChild(coneMesh);
+            Renderer renderer = DisplaySystem.getDisplaySystem().getRenderer();
+            MaterialState rulerMaterial = renderer.createMaterialState();
+            float[] backgroundColorComponents = adapter.getBackgroundColor(1.0f, 0.31f, 0.0f, 1.0f, true);
+            float[] foregroundColorComponents = adapter.getForegroundColor(1.0f, 1.0f, 1.0f, 1.0f, true);
+            if (backgroundColorComponents != null && backgroundColorComponents.length >= 4) {
+                ColorRGBA backgroundColor = new ColorRGBA(backgroundColorComponents[0], backgroundColorComponents[1], backgroundColorComponents[2], backgroundColorComponents[3]);
+                rulerMaterial.setAmbient(backgroundColor);
+                rulerMaterial.setDiffuse(backgroundColor);
+                rulerMaterial.setSpecular(new ColorRGBA(backgroundColor.r * 0.25f, backgroundColor.g * 0.25f, backgroundColor.b, 1.0f));
                 rulerMaterial.setShininess(0.4f);
             }
+            coneMesh.setRenderState(rulerMaterial);
         }
-        coneMesh.setRenderState(rulerMaterial);
-        return hazardConeNode;
+        return rootNode;
     }
 }

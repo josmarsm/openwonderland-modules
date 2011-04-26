@@ -14,6 +14,11 @@ public enum CoreSegmentStyleType implements SegmentStyleType, Serializable {
     /**
      * This SegmentStyleType represents a path which is not visible such as one used for animation.
      */
+    EDIT_MODE( 0, "Edit Mode", "This is a crude display of a path which just draws a line from point to point to show where the path is when editing.", CoreNodeStyleType.EDIT_MODE),
+
+    /**
+     * This SegmentStyleType represents a path which is not visible such as one used for animation.
+     */
     INVISIBLE( 1, "Invisible Path", "An invisible path which can be followed by an animation.", CoreNodeStyleType.INVISIBLE),
 
      /**
@@ -64,6 +69,15 @@ public enum CoreSegmentStyleType implements SegmentStyleType, Serializable {
         this.name = name;
         this.description = description;
         this.defaultNodeStyleType = defaultNodeStyleType;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isInternal() {
+        return id <= 0;
     }
 
     /**

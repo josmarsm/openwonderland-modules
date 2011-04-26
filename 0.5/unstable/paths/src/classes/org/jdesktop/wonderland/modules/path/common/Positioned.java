@@ -16,12 +16,5 @@ public interface Positioned {
      * @return The position of the item within its parent in the form of a 3D Vector object (Vector3f). This will be the translation
      *         in terms of the local coordinate space.
      */
-    public Vector3f getLocalPosition();
-
-    /**
-     * Get the global position of the item within the world.
-     *
-     * @return The position of the item within the global / world coordinate space in the form of a 3D Vector object (Vector3f).
-     */
-    public Vector3f getGlobalPosition();
+    public Vector3f getPosition();
 }

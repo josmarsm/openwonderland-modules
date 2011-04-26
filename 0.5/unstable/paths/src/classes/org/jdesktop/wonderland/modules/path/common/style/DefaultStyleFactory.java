@@ -1,14 +1,20 @@
 package org.jdesktop.wonderland.modules.path.common.style;
 
+import java.util.HashMap;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyle;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
-import org.jdesktop.wonderland.modules.path.common.style.segment.InvisibleSegmentStyle;
-import org.jdesktop.wonderland.modules.path.common.style.node.InvisibleNodeStyle;
-import org.jdesktop.wonderland.modules.path.common.style.segment.CoreSegmentStyleType;
-import org.jdesktop.wonderland.modules.path.common.style.node.CoreNodeStyleType;
 import java.util.List;
+import java.util.Map;
+import org.jdesktop.wonderland.modules.path.common.style.node.HazardConeNodeStyleBuilder;
+import org.jdesktop.wonderland.modules.path.common.style.node.InvisibleNodeStyleBuilder;
+import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleBuilder;
+import org.jdesktop.wonderland.modules.path.common.style.node.PoleNodeStyleBuilder;
+import org.jdesktop.wonderland.modules.path.common.style.node.SquarePostNodeStyleBuilder;
+import org.jdesktop.wonderland.modules.path.common.style.segment.InvisibleSegmentStyleBuilder;
+import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleBuilder;
+import org.jdesktop.wonderland.modules.path.common.style.segment.TapeSegmentStyleBuilder;
 
 /**
  * This is a default implementation of a StyleFactory which supports the built in 
@@ -18,12 +24,53 @@ import java.util.List;
  */
 public class DefaultStyleFactory implements StyleFactory {
 
+    private NodeStyleBuilder defaultNodeStyleBuilder;
+    private SegmentStyleBuilder defaultSegmentStyleBuilder;
+    private Map<NodeStyleType, NodeStyleBuilder> nodeStyleBuilders;
+    private Map<SegmentStyleType, SegmentStyleBuilder> segmentStyleBuilders;
+
+    /**
+     * Add the specified NodeStyleBuilder to the map of NodeStyleTypes to NodeStyleBuilders.
+     * 
+     * @param builder The NodeStyleBuilder to be added to the Map.
+     * @param builders The Map to which the NodeStyleBuilder will be added.
+     */
+    private static void add(NodeStyleBuilder builder, Map<NodeStyleType, NodeStyleBuilder> builders) {
+        builders.put(builder.getBuiltStyleType(), builder);
+    }
+
+    /**
+     * Add the specified SegmentStyleBuilder to the map of SegmentStyleTypes to SegmentStyleBuilders.
+     *
+     * @param builder The SegmentStyleBuilder to be added to the Map.
+     * @param builders The Map to which the SegmentStyleBuilder will be added.
+     */
+    private static void add(SegmentStyleBuilder builder, Map<SegmentStyleType, SegmentStyleBuilder> builders) {
+        builders.put(builder.getBuiltStyleType(), builder);
+    }
+
+    /**
+     * Create and initialize the DefaultStyleFactory.
+     */
+    public DefaultStyleFactory() {
+        defaultNodeStyleBuilder = new InvisibleNodeStyleBuilder();
+        defaultSegmentStyleBuilder = new InvisibleSegmentStyleBuilder();
+        nodeStyleBuilders = new HashMap<NodeStyleType, NodeStyleBuilder>();
+        segmentStyleBuilders = new HashMap<SegmentStyleType, SegmentStyleBuilder>();
+        add(defaultNodeStyleBuilder, nodeStyleBuilders);
+        add(defaultSegmentStyleBuilder, segmentStyleBuilders);
+        add(new PoleNodeStyleBuilder(), nodeStyleBuilders);
+        add(new SquarePostNodeStyleBuilder(), nodeStyleBuilders);
+        add(new HazardConeNodeStyleBuilder(), nodeStyleBuilders);
+        add(new TapeSegmentStyleBuilder(), segmentStyleBuilders);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public PathStyle createDefaultPathStyle() {
-        return new StandardPathStyle(new InvisibleNodeStyle(), new InvisibleSegmentStyle());
+        return new PathStyle(defaultNodeStyleBuilder.createNodeStyle(), defaultSegmentStyleBuilder.createSegmentStyle());
     }
 
     /**
@@ -33,7 +80,7 @@ public class DefaultStyleFactory implements StyleFactory {
     public PathStyle createPathStyle(NodeStyleType nodeStyleType, SegmentStyleType segmentStyleType) throws UnsupportedStyleException {
         NodeStyle nodeStyle = createNodeStyle(nodeStyleType);
         SegmentStyle segmentStyle = createSegmentStyle(segmentStyleType);
-        return new StandardPathStyle(nodeStyle, segmentStyle);
+        return new PathStyle(nodeStyle, segmentStyle);
     }
 
     /**
@@ -41,7 +88,7 @@ public class DefaultStyleFactory implements StyleFactory {
      */
     @Override
     public PathStyle createPathStyle(NodeStyle nodeStyle, SegmentStyle segmentStyle) throws IllegalArgumentException {
-        return new StandardPathStyle(nodeStyle, segmentStyle);
+        return new PathStyle(nodeStyle, segmentStyle);
     }
 
     /**
@@ -49,7 +96,7 @@ public class DefaultStyleFactory implements StyleFactory {
      */
     @Override
     public PathStyle createPathStyle(NodeStyle[] nodeStyles, SegmentStyle[] segmentStyles) throws IllegalArgumentException {
-        return new StandardPathStyle(nodeStyles, segmentStyles);
+        return new PathStyle(nodeStyles, segmentStyles);
     }
 
     /**
@@ -57,7 +104,7 @@ public class DefaultStyleFactory implements StyleFactory {
      */
     @Override
     public PathStyle createPathStyle(List<NodeStyle> nodeStyles, List<SegmentStyle> segmentStyles) throws IllegalArgumentException {
-        return new StandardPathStyle(nodeStyles, segmentStyles);
+        return new PathStyle(nodeStyles, segmentStyles);
     }
 
     /**
@@ -65,11 +112,17 @@ public class DefaultStyleFactory implements StyleFactory {
      */
     @Override
     public NodeStyle createNodeStyle(NodeStyleType nodeStyleType) throws UnsupportedStyleException {
-        if (nodeStyleType == CoreNodeStyleType.INVISIBLE) {
-            return new InvisibleNodeStyle();
+        if (nodeStyleType != null) {
+            NodeStyleBuilder builder = nodeStyleBuilders.get(nodeStyleType);
+            if (builder != null) {
+                return builder.createNodeStyle();
+            }
+            else {
+                throw new UnsupportedStyleException(nodeStyleType, String.format("Could not create node style for the node style type: %s as it is not supported!", nodeStyleType.getName()));
+            }
         }
         else {
-            throw new UnsupportedStyleException(nodeStyleType, "No supported NodeStyle is available for this NodeStyleType!");
+            throw new UnsupportedStyleException(null, "The specified node style type was null!");
         }
     }
 
@@ -78,11 +131,19 @@ public class DefaultStyleFactory implements StyleFactory {
      */
     @Override
     public SegmentStyle createSegmentStyle(SegmentStyleType segmentStyleType) throws UnsupportedStyleException {
-        if (segmentStyleType == CoreSegmentStyleType.INVISIBLE) {
-            return new InvisibleSegmentStyle();
+        if (segmentStyleType != null) {
+            SegmentStyleBuilder builder = segmentStyleBuilders.get(segmentStyleType);
+            if (builder != null) {
+                return builder.createSegmentStyle();
+            }
+            else {
+                throw new UnsupportedStyleException(segmentStyleType, String.format("Could not create segment style for the segment style type: %s as it is not supported!", segmentStyleType.getName()));
+            }
         }
         else {
-            throw new UnsupportedStyleException(segmentStyleType, "No supported NodeStyle is available for this NodeStyleType!");
+            throw new UnsupportedStyleException(null, "The specified segment style type was null!");
         }
     }
+
+
 }

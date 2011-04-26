@@ -2,6 +2,7 @@ package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.EditModePathNodeRenderer.EditModePathNodeRendererFactory;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PathNodeEditModeRendererFactory;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PathNodeRendererFactory;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.EditModePathSegmentRenderer;
@@ -31,6 +32,7 @@ public class NonDetectingPathRendererFactory implements PathRendererFactory {
         segmentRenderersByType = new HashMap<SegmentStyleType, PathSegmentRenderer>();
         nodeRendererFactoriesByType = new HashMap<NodeStyleType, PathNodeRendererFactory>();
         editModeSegmentRenderer = new EditModePathSegmentRenderer();
+        editModeNodeRendererFactory = new EditModePathNodeRendererFactory();
     }
 
     /**
@@ -75,8 +77,7 @@ public class NonDetectingPathRendererFactory implements PathRendererFactory {
      * {@inheritDoc}
      */
     @Override
-    public PathNodeEditModeRendererFactory getEditNodeRenderer() {
+    public PathNodeEditModeRendererFactory getEditNodeRendererFactory() {
         return editModeNodeRendererFactory;
     }
-
 }

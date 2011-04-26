@@ -8,6 +8,7 @@ import com.jme.scene.Node;
 import com.jme.scene.state.MaterialState;
 import com.jme.system.DisplaySystem;
 import org.jdesktop.wonderland.modules.path.common.PathNode;
+import org.jdesktop.wonderland.modules.path.common.style.segment.CoreSegmentStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyle;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
 
@@ -27,7 +28,7 @@ public class EditModePathSegmentRenderer implements PathSegmentRenderer {
     public Node render(SegmentStyle style, PathNode startNode, PathNode endNode) {
         Node connectorNode = new Node("Connector");
         Line connectorLine = new Line(connectorNode.getName(),
-                                      new Vector3f[] { startNode.getLocalPosition(), endNode.getLocalPosition() },
+                                      new Vector3f[] { startNode.getPosition(), endNode.getPosition() },
                                       null,
                                       new ColorRGBA[] { CONNECTOR_LINE_COLOR, CONNECTOR_LINE_COLOR },
                                       null);
@@ -38,15 +39,14 @@ public class EditModePathSegmentRenderer implements PathSegmentRenderer {
 
     /**
      * This is a generic renderer used for rendering when editing paths of any
-     * style. As such there is no specific SegmentStyleType and so this method
-     * returns null.
+     * style. As such it does not have any style meta-data. This method
+     * always returns the EDIT_MODE SegmentStyleType.
      *
-     * @return Null due to this implementation not being bound to any specific kind
-     *         of SegmentStyleType.
+     * @return The EDIT_MODE SegmentStyleType.
      */
     @Override
     public SegmentStyleType getRenderedType() {
-        return null;
+        return CoreSegmentStyleType.EDIT_MODE;
     }
 
     /**

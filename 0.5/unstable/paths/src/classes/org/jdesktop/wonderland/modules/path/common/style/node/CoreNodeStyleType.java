@@ -12,6 +12,11 @@ import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleTyp
 public enum CoreNodeStyleType implements NodeStyleType, Serializable {
 
     /**
+     * This SegmentStyleType represents a path which is not visible such as one used for animation.
+     */
+    EDIT_MODE( 0, "Edit Mode", "This is a crude display of the node on a path as a simple geometric shape to show where the node is located.", CoreSegmentStyleType.EDIT_MODE),
+
+    /**
      * This style has the node not be displayed at all except when being edited.
      */
     INVISIBLE( 1, "Invisible", "Node is not displayed.", CoreSegmentStyleType.INVISIBLE),
@@ -63,6 +68,14 @@ public enum CoreNodeStyleType implements NodeStyleType, Serializable {
         this.name = name;
         this.description = description;
         this.defaultSegmentStyle = defaultSegmentStyle;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isInternal() {
+        return id <= 0;
     }
 
     /**
