@@ -53,10 +53,11 @@ public class AnimationNode {
     public void play() {
         
         scenario.play();
+        
         scenario.addCallback(new TimelineScenarioCallback() {
 
             public void onTimelineScenarioDone() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                //throw new UnsupportedOperationException("Not supported yet.");
             }
 
         });

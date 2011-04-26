@@ -41,6 +41,7 @@ public class MoveForwardMethod implements ScriptMethodSPI {
         cell = (Cell)args[0];
         distance = ((Double)args[1]).floatValue();
         seconds = ((Double)args[2]).floatValue();
+
         transform = cell.getLocalTransform();
         transform.getLookAt(position, lookAt);
 
