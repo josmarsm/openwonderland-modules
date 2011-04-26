@@ -1,14 +1,9 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client;
 
-
-//import com.bulletphysics.demos.applet.Sphere;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
-//import com.jme.entity.Entity;
-//import com.jme.entity.Entity;
-//import com.jme.math.Vector3f;
 import com.jme.math.Vector3f;
 import java.awt.Container;
 import java.util.ArrayList;
@@ -30,7 +25,6 @@ import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
-
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -68,7 +62,6 @@ import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 
-
 /**
  * Client-side scripting cell component
  * 
@@ -87,8 +80,10 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
  * Callbacks must be enabled before trying to use them.
  * @author JagWire
  */
-public class EZScriptComponent extends CellComponent {
 
+public class EZScriptComponent extends CellComponent {
+    
+    //<editor-fold defaultstate="collapsed" desc="Variables">
     private ScriptEngineManager engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
     private ScriptEngine scriptEngine = null;
     private Bindings scriptBindings = null;
@@ -168,7 +163,9 @@ public class EZScriptComponent extends CellComponent {
     private boolean mouseEventsEnabled = false;
     private boolean proximityEventsEnabled = false;
     private boolean keyEventsEnabled = false;
+//</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="Wonderland Boilerplate">
     public EZScriptComponent(Cell cell) {
         super(cell);
         
@@ -356,6 +353,7 @@ public class EZScriptComponent extends CellComponent {
                 }
         }
     }
+//</editor-fold>
 
     public void handleStates(SharedMapCli states) {
         if(states.containsKey("proximity")) {
@@ -392,6 +390,15 @@ public class EZScriptComponent extends CellComponent {
         }
     }
 
+    public MouseEventListener getMouseEventListener() {
+        return this.mouseEventListener;
+    }
+
+    public boolean getMouseEventsEnabled() {
+        return mouseEventsEnabled;
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Event Dis/Enablers">
     public void enableMouseEvents() {
         if(mouseEventListener == null) {
             mouseEventListener = new MouseEventListener();
@@ -401,14 +408,6 @@ public class EZScriptComponent extends CellComponent {
             mouseEventListener.addToEntity(renderer.getEntity());
             mouseEventsEnabled = true;
         }
-    }
-
-    public MouseEventListener getMouseEventListener() {
-        return this.mouseEventListener;
-    }
-
-    public boolean getMouseEventsEnabled() {
-        return mouseEventsEnabled;
     }
 
     public void disableMouseEvents() {
@@ -480,7 +479,9 @@ public class EZScriptComponent extends CellComponent {
         proximityComponent.removeProximityListener(proximityListener);
         proximityEventsEnabled = false;
     }
+    //</editor-fold>
 
+    // <editor-fold defaultstate="collapsed" desc="Callback Assignments">
     public void setTrigger(String s, Runnable r, boolean local) {
 
         if(local) {
@@ -579,7 +580,34 @@ public class EZScriptComponent extends CellComponent {
             callbacksOnKeyPress.put(key, list);
         }
     }
+    
+    public void clearCallbacks() {
+        callbacksOnClick.clear();
+        callbacksOnLoad.clear();
+        callbacksOnUnload.clear();
+        callbacksOnMouseEnter.clear();
+        callbacksOnMouseExit.clear();
+        callbacksOnApproach.clear();
+        callbacksOnLeave.clear();
 
+        localOnClick.clear();
+        localOnLoad.clear();
+        localOnUnload.clear();
+        localOnMouseEnter.clear();
+        localOnMouseExit.clear();
+        localOnApproach.clear();
+        localOnLeave.clear();
+
+        //to be thorough...
+        clearMap(callbacksOnKeyPress);
+        clearMap(localOnKeyPress);
+        clearMap(triggerCellEvents);
+        clearMap(localTriggerEvents);
+
+    }
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Event Executors">
     public void executeOnClick(boolean local) {
         if(local) {
             threadedExecute(localOnClick);
@@ -678,31 +706,8 @@ public class EZScriptComponent extends CellComponent {
 
         threadedExecute(rs);
     }
+// </editor-fold>
 
-    public void clearCallbacks() {
-        callbacksOnClick.clear();
-        callbacksOnLoad.clear();
-        callbacksOnUnload.clear();
-        callbacksOnMouseEnter.clear();
-        callbacksOnMouseExit.clear();
-        callbacksOnApproach.clear();
-        callbacksOnLeave.clear();
-
-        localOnClick.clear();
-        localOnLoad.clear();
-        localOnUnload.clear();
-        localOnMouseEnter.clear();
-        localOnMouseExit.clear();
-        localOnApproach.clear();
-        localOnLeave.clear();
-
-        //to be thorough...
-        clearMap(callbacksOnKeyPress);
-        clearMap(localOnKeyPress);
-        clearMap(triggerCellEvents);
-        clearMap(localTriggerEvents);
-
-    }
     /**
      * Utility method to clear the given callback map.
      * @param m the map of a string associated with a list of Runnable
@@ -732,7 +737,8 @@ public class EZScriptComponent extends CellComponent {
     public SharedMapCli getScriptMap() {
         return this.scriptsMap;
     }
-    
+
+    //<editor-fold defaultstate="collapsed" desc="Event Listeners">
     public class MouseEventListener extends EventClassListener {
         @Override
         public Class[] eventClassesToConsume() {
@@ -925,6 +931,7 @@ public class EZScriptComponent extends CellComponent {
             }
         }
     }
+    //</editor-fold>
 
     public void addFunctionBinding(ScriptMethodSPI method) {
         scriptBindings.put("this"+method.getFunctionName(), method);
@@ -972,61 +979,6 @@ public class EZScriptComponent extends CellComponent {
     public void triggerCell(CellID cellID, String label, Object[] args) {
 
         channelComponent.send(new CellTriggerEventMessage(cellID, label, args));
-    }
-
-    public void attachBehavior(Behavior b) {
-        behaviors.add(b);
-
-        addCallback(callbacksOnClick, b.onClick());
-        addCallback(callbacksOnMouseEnter, b.onMouseEnter());
-        addCallback(callbacksOnMouseExit, b.onMouseExit());
-        addCallback(callbacksOnApproach, b.onApproach());
-        addCallback(callbacksOnLeave, b.onLeave());
-        for(Object o: b.getKeyPresses().keySet()) {
-            addCallback(callbacksOnKeyPress.get((String)o), b.onKeyPress((String)o));
-        }
-//        if(b.onClick() != null) {
-//            callbacksOnClick.add(b.onClick());
-//        }
-//
-//        if(b.onMouseEnter() != null) {
-//            callbacksOnMouseEnter.add(b.onMouseEnter());
-//        }
-//
-//        if(b.onMouseExit() != null) {
-//            callbacksOnMouseExit.add(b.onMouseExit());
-//        }
-//
-//        if(b.onApproach() != null) {
-//            callbacksOnApproach.add(b.onApproach());
-//        }
-//
-//        if(b.onLeave() != null) {
-//            callbacksOnLeave.add(b.onLeave());
-//        }
-//
-//        for(Object o: b.getKeyPresses().keySet()) {
-//            Runnable r = b.onKeyPress((String)o);
-//            callbacksOnKeyPress.get((String)o).add(r);
-//        }
-    }
-
-    public void removeBehavior(Behavior b) {
-        if(behaviors.contains(b)) {
-            removeCallback(callbacksOnClick, b.onClick());
-            removeCallback(callbacksOnMouseEnter, b.onMouseEnter());
-            removeCallback(callbacksOnMouseExit, b.onMouseExit());
-            removeCallback(callbacksOnApproach, b.onApproach());
-            removeCallback(callbacksOnLeave, b.onLeave());
-
-            //for every list of runnables per key press...
-            for(String s : callbacksOnKeyPress.keySet()) {
-                //remove the behavior's key press runnable, IF it exists.
-                removeCallback(callbacksOnKeyPress.get(s), b.onKeyPress(s));
-            }
-        }
-            behaviors.remove(b);
-       
     }
 
     public void removeCallback(List l, Runnable r) {
