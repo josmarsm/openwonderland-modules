@@ -4,9 +4,7 @@ import com.jme.scene.Node;
 import com.jme.scene.shape.Cylinder;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
-import org.jdesktop.wonderland.modules.path.common.style.HeightHoldingStyle;
-import org.jdesktop.wonderland.modules.path.common.style.HeightOffsetStyle;
-import org.jdesktop.wonderland.modules.path.common.style.RadiusHoldingStyle;
+import org.jdesktop.wonderland.modules.path.common.style.StyleMetaDataAdapter;
 import org.jdesktop.wonderland.modules.path.common.style.node.CoreNodeStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
@@ -35,17 +33,24 @@ public class PoleNodeRenderer extends AbstractPathNodeRenderer implements PathNo
         return CoreNodeStyleType.POLE;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected Node createSceneGraph(Entity entity) {
-        Node node = new Node(entity.getName());
-        NodeStyle style = getNodeStyle();
-        float radius = style instanceof RadiusHoldingStyle ? ((RadiusHoldingStyle) style).getRadius() : 0.1f;
-        float height = style instanceof HeightHoldingStyle ? ((HeightHoldingStyle) style).getHeight() : 1.0f;
-        float heightOffset = style instanceof HeightOffsetStyle ? ((HeightOffsetStyle) style).getHeightOffset() : 0.0f;
-        Cylinder cylinder = new Cylinder(entity.getName(), 4, 16, radius, height);
-        cylinder.setLocalTranslation(0, heightOffset + (height / 2.0f), 0);
-        node.attachChild(cylinder);
-        return node;
+    public Node createSceneGraph(Entity entity) {
+        if (rootNode == null) {
+            rootNode = new Node(entity.getName());
+            NodeStyle style = getNodeStyle();
+            StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
+            float radius1 = adapter.getRadius1(0.0625f, true);
+            float radius2 = adapter.getRadius2(0.0625f, true);
+            float height = adapter.getHeight(1.0f);
+            float yOffset = adapter.getYOffset(0.0f);
+            Cylinder cylinder = new Cylinder(entity.getName(), 4, 16, radius1, radius2, height, true, false);
+            cylinder.setLocalTranslation(0, yOffset + (height / 2.0f), 0);
+            rootNode.attachChild(cylinder);
+        }
+        return rootNode;
     }
 
 }

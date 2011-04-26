@@ -33,8 +33,11 @@ public class InvisibleNodeRenderer extends AbstractPathNodeRenderer implements P
     }
 
     @Override
-    protected Node createSceneGraph(Entity entity) {
-        return new Node(entity.getName());
+    public Node createSceneGraph(Entity entity) {
+        if (rootNode == null) {
+            rootNode = new Node(entity.getName());
+        }
+        return rootNode;
     }
 
 }

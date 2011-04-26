@@ -48,5 +48,5 @@ public interface PathRendererFactory {
      *
      * @return A PathNodeEditModeRendererFactory used to create PathNodeRenderers to render PathNode when in edit mode.
      */
-    public PathNodeEditModeRendererFactory getEditNodeRenderer();
+    public PathNodeEditModeRendererFactory getEditNodeRendererFactory();
 }

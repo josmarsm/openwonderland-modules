@@ -1,7 +1,6 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node;
 
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import com.jme.scene.Node;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.common.NodePath;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
@@ -13,9 +12,10 @@ import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
  *
  * @author Carl Jokl
  */
-public abstract class AbstractPathNodeRenderer extends BasicRenderer implements PathNodeRenderer {
+public abstract class AbstractPathNodeRenderer implements PathNodeRenderer {
 
     protected ClientPathNode pathNode;
+    protected Node rootNode;
 
     /**
      * Initialize this AbstractPathNodeRenderer to render the specified ClientPathNode.
@@ -23,16 +23,10 @@ public abstract class AbstractPathNodeRenderer extends BasicRenderer implements 
      * @param pathNode The ClientPathNode to be rendered.
      */
     protected AbstractPathNodeRenderer(ClientPathNode pathNode) {
-        super(pathNode instanceof Cell ? (Cell) pathNode : null);
         if (pathNode == null) {
             throw new IllegalArgumentException("The client path node for a path node renderer cannot be null!");
         }
-        if (pathNode instanceof Cell) {
-            this.pathNode = pathNode;
-        }
-        else {
-            throw new IllegalArgumentException("The client path node for a path node must be an instance of a cell!");
-        }
+        this.pathNode = pathNode;
     }
 
     /**
@@ -51,7 +45,6 @@ public abstract class AbstractPathNodeRenderer extends BasicRenderer implements 
         return null;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -65,8 +58,12 @@ public abstract class AbstractPathNodeRenderer extends BasicRenderer implements 
      */
     @Override
     public void dispose() {
+        if (rootNode != null) {
+            rootNode.detachAllChildren();
+            rootNode.removeFromParent();
+            rootNode = null;
+        }
         pathNode = null;
-        super.cleanupSceneGraph(entity);
     }
 
 }

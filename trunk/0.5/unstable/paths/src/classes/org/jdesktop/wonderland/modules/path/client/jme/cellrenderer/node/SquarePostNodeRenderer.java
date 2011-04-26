@@ -5,9 +5,7 @@ import com.jme.scene.Node;
 import com.jme.scene.shape.Box;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
-import org.jdesktop.wonderland.modules.path.common.style.HeightHoldingStyle;
-import org.jdesktop.wonderland.modules.path.common.style.HeightOffsetStyle;
-import org.jdesktop.wonderland.modules.path.common.style.WidthHoldingStyle;
+import org.jdesktop.wonderland.modules.path.common.style.StyleMetaDataAdapter;
 import org.jdesktop.wonderland.modules.path.common.style.node.CoreNodeStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
@@ -40,17 +38,20 @@ public class SquarePostNodeRenderer extends AbstractPathNodeRenderer implements 
      * {@inheritDoc}
      */
     @Override
-    protected Node createSceneGraph(Entity entity) {
-        Node node = new Node(entity.getName());
-        NodeStyle style = getNodeStyle();
-        float height = style instanceof HeightHoldingStyle ? ((HeightHoldingStyle) style).getHeight() : 1.0f;
-        float heightOffset = style instanceof HeightOffsetStyle ? ((HeightOffsetStyle) style).getHeightOffset() : 0.0f;
-        float width = style instanceof WidthHoldingStyle ? ((WidthHoldingStyle) style).getWidth() : 0.1f;
-        Vector3f min = new Vector3f(-width, heightOffset, -width);
-        Vector3f max = new Vector3f(width, height + heightOffset, width);
-        Box box = new Box(entity.getName(), min, max);
-        node.attachChild(box);
-        return node;
+    public Node createSceneGraph(Entity entity) {
+        rootNode = new Node(entity.getName());
+        if (rootNode == null) {
+            NodeStyle style = getNodeStyle();
+            StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
+            float height = adapter.getHeight(1.0f);
+            float yOffset = adapter.getYOffset(0.0f);
+            float width = adapter.getWidth(0.0623f);
+            Vector3f min = new Vector3f(-width, yOffset, -width);
+            Vector3f max = new Vector3f(width, height + yOffset, width);
+            Box box = new Box(entity.getName(), min, max);
+            rootNode.attachChild(box);
+        }
+        return rootNode;
     }
 
     

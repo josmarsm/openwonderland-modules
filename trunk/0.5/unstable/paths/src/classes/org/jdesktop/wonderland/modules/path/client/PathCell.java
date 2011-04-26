@@ -1,9 +1,9 @@
 package org.jdesktop.wonderland.modules.path.client;
 
+import com.jme.math.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.logging.Level;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
@@ -13,13 +13,11 @@ import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.PathCellRenderer;
 import org.jdesktop.wonderland.modules.path.common.NodePath;
 import org.jdesktop.wonderland.modules.path.common.PathCellState;
-import org.jdesktop.wonderland.modules.path.common.PathNode;
-import org.jdesktop.wonderland.modules.path.common.PathNodeGroup;
+import org.jdesktop.wonderland.modules.path.common.PathNodeState;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
 
 /**
@@ -27,13 +25,14 @@ import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
  *
  * @author Carl Jokl
  */
-public class PathCell extends Cell implements NodePath, PathNodeGroup {
+public class PathCell extends Cell implements ClientNodePath {
 
     private boolean editMode;
     private boolean closedPath;
     private PathStyle pathStyle;
     private PathCellRenderer renderer;
     private MouseEventListener listener;
+    private List<ClientPathNode> pathNodes;
 
     /**
      * Create a new instance of a PathCell.
@@ -43,8 +42,7 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      */
     public PathCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        editMode = false;
-        closedPath = false;
+        pathNodes = new ArrayList<ClientPathNode>();
     }
 
     /**
@@ -60,6 +58,13 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
             pathStyle = pathState.getPathStyle();
             closedPath = pathState.isClosedPath();
             editMode = pathState.isEditMode();
+            removeAllNodes();
+            final int noOfNodes = pathState.noOfNodeStates();
+            PathNodeState currentNode = null;
+            for (int nodeIndex = 0; nodeIndex < noOfNodes; nodeIndex++) {
+                currentNode = pathState.getPathNodeState(nodeIndex);
+                addNode(currentNode.getPosition(), currentNode.getName());
+            }
         }
     }
 
@@ -127,7 +132,7 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      * @return The number of PathNodes in this path.
      */
     public int getNoOfNodes() {
-        return getNumChildren();
+        return pathNodes.size();
     }
 
     /**
@@ -135,8 +140,9 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      *
      * @return The first PathNode on the PathCell or null if the PathCell has no PathNodes.
      */
-    public PathNode getFirst() {
-        return getNumChildren() > 0 ? (PathNode) getChildren().get(0) : null;
+    @Override
+    public ClientPathNode getFirstPathNode() {
+        return pathNodes.isEmpty() ? null : pathNodes.get(0);
     }
 
     /**
@@ -144,15 +150,9 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      *
      * @return The last PathNode on the PathCell or null if the PathCell has not PathNodes.
      */
-    public PathNode getLast() {
-        List<Cell> children = getChildren();
-        if (!children.isEmpty()) {
-            Cell last = children.get(children.size() - 1);
-            if (last instanceof PathNode) {
-                return (PathNode) last;
-            }
-        }
-        return null;
+    @Override
+    public ClientPathNode getLastPathNode() {
+        return pathNodes.isEmpty() ? null : pathNodes.get(pathNodes.size() - 1);
     }
 
     /**
@@ -164,47 +164,8 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      */
     @Override
     public ClientPathNode getPathNode(int nodeIndex) throws IndexOutOfBoundsException {
-        if (nodeIndex >= 0 && nodeIndex < getNumChildren()) {
-            List<Cell> children = getChildren();
-            Cell child = children.get(nodeIndex);
-            ClientPathNode node = null;
-            boolean after = true;
-            if (child instanceof ClientPathNode) {
-                node = (ClientPathNode) child;
-                if (node.getSequenceIndex() == nodeIndex) {
-                    return node;
-                }
-                else {
-                    after = node.getSequenceIndex() < nodeIndex;
-                }
-            }
-            //If this is reached then the node was not the desired one.
-            final int noOfChildren = children.size();
-            if (after) {
-                for (int index = nodeIndex + 1; index < noOfChildren; index++) {
-                    child = children.get(index);
-                    if (child instanceof ClientPathNode) {
-                        node = (ClientPathNode) child;
-                        if (node.getSequenceIndex() == nodeIndex) {
-                            return node;
-                        }
-                        else if (node.getSequenceIndex() > nodeIndex) {
-                            after = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            for (int index = nodeIndex - 1; index >= 0; index--) {
-                child = children.get(index);
-                if (child instanceof ClientPathNode) {
-                    node = (ClientPathNode) child;
-                    if (node.getSequenceIndex() == nodeIndex) {
-                        return node;
-                    }
-                }
-            }
-            return null;
+        if (nodeIndex >= 0 && nodeIndex < pathNodes.size()) {
+            return pathNodes.get(nodeIndex);
         }
         throw new IndexOutOfBoundsException(String.format("The index: %d was outside the valid range of path node indices!", nodeIndex));
     }
@@ -216,12 +177,12 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      * @return The PathNode with the specified label or null if no PathNode
      *         was found with that with that label.
      */
-    public ClientPathNode getNode(String label) {
+    @Override
+    public ClientPathNode getPathNode(String label) {
         if (label != null) {
-            List<Cell> children = getChildren();
-            for (Cell child : children) {
-                if (label.equals(child.getName()) && child instanceof ClientPathNode) {
-                    return (ClientPathNode) child;
+            for (ClientPathNode node : pathNodes) {
+                if (label.equals(node.getName())) {
+                    return node;
                 }
             }
         }
@@ -234,19 +195,101 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      * @param node The node to be added to this PathCell.
      * @return True if the node was able to be added successfully.
      */
+    @Override
     public boolean addNode(ClientPathNode node) {
-        if (node instanceof Cell) {
-            try {
-                super.addChild((Cell) node);
+        if (node != null) {
+            ClientPathNode previous = pathNodes.isEmpty() ? null : pathNodes.get(pathNodes.size() - 1);
+            if (pathNodes.add(node)) {
+                if (previous != null) {
+                    node.setPrevious(previous);
+                    previous.setNext(node);
+                    if (closedPath) {
+                        ClientPathNode next = pathNodes.get(0);
+                        next.flagSentinel();
+                        node.setNext(next);
+                        next.setPrevious(node);
+                    }
+                }
                 return true;
-            }
-            catch (MultipleParentException mpe) {
-                logger.log(Level.SEVERE, "Failed to add node to the path as it already has a parent!", mpe);
             }
         }
         return false;
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean addNode(Vector3f position, String name) {
+        return position != null && addNode(new PathNode(this, position, name));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean addNode(float x, float y, float z, String name) {
+        return addNode(new PathNode(this, new Vector3f(x, y, z), name));
+    }
+
+    /**
+     * Insert the specified ClientPathNode at the specified node index.
+     *
+     * @param nodeIndex The index at which the ClientPathNode is to be inserted. If the insertion index is the
+     *                  same as the number of nodes before insertion then the method is essentially like addNode
+     *                  except there is no ClientPathNode to be returned by the method in that case.
+     * @param node The ClientPathNode to be inserted at the specified index.
+     * @return The ClientPathNode which used to be at the specified index (if any).
+     * @throws IndexOutOfBoundsException If the specified nodeIndex at which to insert the node is invalid.
+     */
+    @Override
+    public ClientPathNode insertNode(int nodeIndex, ClientPathNode node) throws IllegalArgumentException, IndexOutOfBoundsException {
+        if (node == null) {
+            throw new IllegalArgumentException("The specified path node to be inserted was null!");
+        }
+        else if(nodeIndex >= 0) {
+            if (nodeIndex < pathNodes.size()) {
+                ClientPathNode current = pathNodes.get(nodeIndex);
+                ClientPathNode next = current.getNext();
+                pathNodes.add(nodeIndex, node);
+                if (current.isSentinel()) {
+                    current.clearSentinel();
+                    node.flagSentinel();
+                }
+                node.setPrevious(current);
+                current.setNext(node);
+                node.setNext(next);
+                return current;
+            }
+            else if (nodeIndex == pathNodes.size()) {
+                addNode(node);
+                return null;
+            }
+        }
+        throw new IndexOutOfBoundsException(String.format("The node index: %d at which the path node was to be inserted was outside the range of valid indices at which to insert! No of path nodes: %d.", nodeIndex, pathNodes.size()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ClientPathNode insertNode(int nodeIndex, Vector3f position, String name) throws IllegalArgumentException, IndexOutOfBoundsException {
+        if (position == null) {
+            throw new IllegalArgumentException("The specified position of the path node to be insterted was null!");
+        }
+        else {
+            return insertNode(nodeIndex, new PathNode(this, position, name));
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ClientPathNode insertNode(int nodeIndex, float x, float y, float z, String name) throws IndexOutOfBoundsException {
+        return insertNode(nodeIndex, new PathNode(this, new Vector3f(x, y, z), name));
+    }
+
     /**
      * Remove the specified PathNode from the PathCell.
      *
@@ -254,10 +297,11 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      * @return True if the PathNode was not null and existed in the PathCell
      *         and was able to be removed successfully.
      */
+    @Override
     public boolean removeNode(ClientPathNode node) {
-        if (node instanceof Cell) {
-           removeChild((Cell) node);
-           return true;
+        if (node != null && pathNodes.remove(node)) {
+            node.unlink();
+            return true;
         }
         return false;
     }
@@ -266,14 +310,30 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      * Remove the PathNode at the specified node index.
      *
      * @param nodeIndex The index of the PathNode to be removed.
-     * @return The PathNode removed from the specified Index.
+     * @return The PathNode removed from the specified index.
      */
-    public PathNode removeNodeAt(int nodeIndex) throws IndexOutOfBoundsException {
-        PathNode node = getPathNode(nodeIndex);
-        if (node instanceof Cell) {
-            removeChild((Cell) node);
+    @Override
+    public ClientPathNode removeNodeAt(int nodeIndex) throws IndexOutOfBoundsException {
+        ClientPathNode node = null;
+        if (nodeIndex >= 0 && nodeIndex < pathNodes.size()) {
+            node = pathNodes.remove(nodeIndex);
+            node.unlink();
         }
         return node;
+    }
+
+    /**
+     * Remove all the ClientPathNodes in this PathCell.
+     */
+    @Override
+    public void removeAllNodes() {
+        if (!pathNodes.isEmpty()) {
+            ClientPathNode current = null;
+            while (pathNodes.size() > 0) {
+                current = pathNodes.remove(pathNodes.size() - 1);
+                current.dispose();
+            }
+        }
     }
 
     /**
@@ -282,14 +342,7 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      * @return An array of all the PathNodes in this PathCell.
      */
     public ClientPathNode[] getNodes() {
-        List<Cell> children = getChildren();
-        List<ClientPathNode> nodes = new ArrayList<ClientPathNode>(children.size());
-        for (Cell child : children) {
-            if (child instanceof ClientPathNode) {
-                nodes.add((ClientPathNode) child);
-            }
-        }
-        return nodes.toArray(new ClientPathNode[nodes.size()]);
+        return pathNodes.toArray(new ClientPathNode[pathNodes.size()]);
     }
 
     /**
@@ -298,14 +351,7 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      * @return A List of all the PathNodes in this PathCell.
      */
     public List<ClientPathNode> getNodeList() {
-        List<Cell> children = getChildren();
-        List<ClientPathNode> nodes = new ArrayList<ClientPathNode>(children.size());
-        for (Cell child : children) {
-            if (child instanceof ClientPathNode) {
-                nodes.add((ClientPathNode) child);
-            }
-        }
-        return nodes;
+        return new ArrayList(pathNodes);
     }
 
     /**
@@ -366,24 +412,287 @@ public class PathCell extends Cell implements NodePath, PathNodeGroup {
      */
     @Override
     public int noOfNodes() {
-        return getNumChildren();
+        return pathNodes.size();
     }
 
     /**
-     * Add a child Cell to this PathCell. The only supported Cells which
-     * can be added as children of this PathCell are PathNodes.
-     *
-     * @param child The child to be added to this PathCell which must be a PathNode.
-     * @throws MultipleParentException If the added Child Cell already has a parent
-     * @throws IllegalArgumentException If the specified Cell is not a PathNode.
+     * Simple client implementation of a PathNode.
      */
-    @Override
-    public void addChild(Cell child) throws MultipleParentException, IllegalArgumentException {
-        if (child instanceof PathNode) {
-            addChild(child);
+    private static class PathNode implements ClientPathNode {
+
+        private ClientNodePath parent;
+        private Vector3f position;
+        private String label;
+        private ClientPathNode next;
+        private ClientPathNode previous;
+        private int sequenceIndex;
+        private boolean sentinel;
+
+        /**
+         * Create a new instance of a PathNode for use within this PathCell.
+         *
+         * @param parent The ClientNodePath which is the parent path to which the PathNode belongs.
+         * @param position The 3D Position of the PathNode within the space.
+         * @param label The label which describes what this PathNode represents (optional).
+         */
+        public PathNode(ClientNodePath parent, Vector3f position, String label) {
+            this.parent = parent;
+            this.position = position != null ? position : new Vector3f();
+            this.label = label;
+            sequenceIndex = 0;
         }
-        else {
-            throw new IllegalArgumentException("This PathCell only supports having children which are path nodes!");
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public NodePath getPath() {
+            return parent;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isVisible() {
+            return true;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public ClientPathNode getLast() {
+            if (next == null) {
+                return this;
+            }
+            else {
+                ClientPathNode last = this;
+                ClientPathNode current = next;
+                while (current != null && !current.isSentinel()) {
+                    last = current;
+                    current = current.getNext();
+                }
+                return last;
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public ClientPathNode getNext() {
+            return next;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void setNext(ClientPathNode next) {
+            this.next = next;
+            if (next != null && !next.isSentinel()) {
+                int index = sequenceIndex + 1;
+                if (next.getSequenceIndex() != index) {
+                    ClientPathNode current = next;
+                    while (current != null && !current.isSentinel()) {
+                        current.setSequenceIndex(index);
+                        index++;
+                        current = current.getNext();
+                    }
+                }
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean hasNext() {
+            return next != null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isNextVisible() {
+            return next != null && next.isVisible();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public ClientPathNode getFirst() {
+            if (previous == null) {
+                return this;
+            }
+            else {
+                ClientPathNode last = this;
+                ClientPathNode current = previous;
+                while (current != null) {
+                    last = current;
+                    if (current.isSentinel()) {
+                        break;
+                    }
+                    current = current.getPrevious();
+                }
+                return last;
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public ClientPathNode getPrevious() {
+            return previous;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void setPrevious(ClientPathNode previous) {
+            if (previous != null && !sentinel) {
+                int index = previous.getSequenceIndex() + 1;
+                if (sequenceIndex != index) {
+                    sequenceIndex = index;
+                    if (next != null) {
+                        if (next.getSequenceIndex() != index) {
+                            ClientPathNode current = next;
+                            while (current != null && !current.isSentinel()) {
+                                current.setSequenceIndex(index);
+                                index++;
+                                current = current.getNext();
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                sequenceIndex = 0;
+            }
+            this.previous = previous;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean hasPrevious() {
+            return previous != null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isPreviousVisible() {
+            return previous != null && previous.isVisible();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void flagSentinel() {
+            sentinel = true;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void clearSentinel() {
+            sentinel = false;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isSentinel() {
+            return sentinel;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void unlink() {
+            if (previous != null) {
+                if (next != null) {
+                    next.setPrevious(previous);
+                    previous.setNext(next);
+                    if (sentinel) {
+                        next.flagSentinel();
+                    }
+                    previous = null;
+                    next = null;
+                }
+                else {
+                    previous.setNext(null);
+                    previous = null;
+                }
+            }
+            else if (next != null) {
+                next.setPrevious(null);
+                next = null;
+            }
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getName() {
+            return label;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isNamed() {
+            return label != null;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int getSequenceIndex() {
+            return sequenceIndex;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void setSequenceIndex(int sequenceIndex) {
+            this.sequenceIndex = sequenceIndex;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Vector3f getPosition() {
+            return position;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public void dispose() {
+            parent = null;
+            previous = null;
+            next = null;
+            position = null;
+            label = null;
         }
     }
 

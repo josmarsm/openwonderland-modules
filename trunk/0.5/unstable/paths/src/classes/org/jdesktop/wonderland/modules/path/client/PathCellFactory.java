@@ -6,6 +6,8 @@ import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.path.common.PathCellServerState;
+import org.jdesktop.wonderland.modules.path.common.style.DefaultStyleFactory;
+import org.jdesktop.wonderland.modules.path.common.style.StyleFactory;
 
 /**
  * This factory is used to create PathCells.
@@ -18,7 +20,17 @@ public class PathCellFactory implements CellFactorySPI {
     /**
      * The display name for the PathCell.
      */
-    public static final String DISPLAY_NAME = "Path of Nodes Cell";
+    public static final String DISPLAY_NAME = "Path of Nodes";
+
+    private StyleFactory styleFactory;
+
+    /**
+     * Create a new instance of a PathCellFactory.
+     */
+    public PathCellFactory() {
+        //ToDo Change Style Factory as needed.
+        styleFactory = new DefaultStyleFactory();
+    }
 
     /**
      * The file extensions which the PathCell supports.
@@ -40,7 +52,12 @@ public class PathCellFactory implements CellFactorySPI {
      */
     @Override
     public <T extends CellServerState> T getDefaultCellServerState(Properties properties) {
-        return (T) new PathCellServerState();
+        PathCellServerState serverState = new PathCellServerState(styleFactory.createDefaultPathStyle(), true, true);
+        serverState.addPathNodeState(-1.0f, 0.0f, -1.0f, "LL");
+        serverState.addPathNodeState(1.0f, 0.0f, -1.0f, "LR");
+        serverState.addPathNodeState(1.0f, 0.0f, 1.0f, "UR");
+        serverState.addPathNodeState(-1.0f, 0.0f, 1.0f, "UL");
+        return (T) serverState;
     }
 
     /**
