@@ -23,11 +23,22 @@ public class EditModePathNodeRenderer extends AbstractPathNodeRenderer implement
      * Class used to create an instance of EditModePathNodeRenderer. It acts somewhat like
      * a delegate.
      */
-    public static class EditModePathNodeRendererFactory implements PathNodeEditModeRendererFactory {
+    public static class EditModePathNodeRendererFactory implements PathNodeRendererFactory {
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public PathNodeRenderer createRenderer(ClientPathNode node) throws IllegalArgumentException {
             return new EditModePathNodeRenderer(node);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public NodeStyleType getRenderedNodeStyleType() {
+            return CoreNodeStyleType.EDIT_MODE;
         }
     }
 
@@ -73,6 +84,7 @@ public class EditModePathNodeRenderer extends AbstractPathNodeRenderer implement
      */
     @Override
     public Node createSceneGraph(Entity entity) {
+        setEntity(entity);
         if (rootNode != null) {
             return rootNode;
         }

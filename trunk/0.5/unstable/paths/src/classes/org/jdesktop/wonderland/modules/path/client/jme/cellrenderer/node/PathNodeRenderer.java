@@ -2,7 +2,9 @@ package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node;
 
 import com.jme.scene.Node;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
+import org.jdesktop.wonderland.modules.path.common.Disposable;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 
 /**
@@ -10,7 +12,7 @@ import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
  *
  * @author Carl Jokl
  */
-public interface PathNodeRenderer {
+public interface PathNodeRenderer extends Disposable {
 
     /**
      * Get the ClientPathNode contained within this PathNodeRenderer.
@@ -37,7 +39,20 @@ public interface PathNodeRenderer {
     public Node createSceneGraph(Entity entity);
 
     /**
-     * Dispose of this PathNodeRenderer and any resources which may be held by it.
+     * Inform the PathNodeRenderer that the CellStatus of the Cell in which it is contained has
+     * changed. This can be used to perform optimizations as needed.
+     *
+     * @param status The new CellStatus which the Cell is to have.
+     * @param increasing Whether the CellStatus is increasing to a more active state or decreasing to
+     *                   a less active state.
      */
-    public void dispose();
+    public void statusChanged(CellStatus status, boolean increasing);
+
+    /**
+     * Get the current renderer Entity which represents the PathNode in the object hierarchy.
+     *
+     * @return The entity which represents the PathNode in the object hierarchy or null if none
+     *         currently exists.
+     */
+    public Entity getEntity();
 }

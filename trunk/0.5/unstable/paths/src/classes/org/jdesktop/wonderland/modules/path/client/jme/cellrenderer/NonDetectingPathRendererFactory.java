@@ -3,10 +3,15 @@ package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer;
 import java.util.HashMap;
 import java.util.Map;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.EditModePathNodeRenderer.EditModePathNodeRendererFactory;
-import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PathNodeEditModeRendererFactory;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.HazardConeNodeRenderer.HazardConeNodeRendererFactory;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.InvisibleNodeRenderer.InvisibleNodeRendererFactory;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PathNodeRendererFactory;
-import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.EditModePathSegmentRenderer;
-import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.PathSegmentRenderer;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PoleNodeRenderer.PoleNodeRendererFactory;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.SquarePostNodeRenderer.SquarePostNodeRendererFactory;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.EditModePathSegmentRenderer.EditModePathSegmentRendererFactory;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.InvisibleSegmentRenderer.InvisibleSegmentRendererFactory;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.PathSegmentRendererFactory;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.TapeSegmentRenderer.TapeSegmentRendererFactory;
 import org.jdesktop.wonderland.modules.path.common.style.UnsupportedStyleException;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
@@ -20,34 +25,48 @@ import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleTyp
  */
 public class NonDetectingPathRendererFactory implements PathRendererFactory {
 
-    private Map<SegmentStyleType, PathSegmentRenderer> segmentRenderersByType;
+    private Map<SegmentStyleType, PathSegmentRendererFactory> segmentRendererFactoriesByType;
     private Map<NodeStyleType, PathNodeRendererFactory> nodeRendererFactoriesByType;
-    private PathSegmentRenderer editModeSegmentRenderer;
-    private PathNodeEditModeRendererFactory editModeNodeRendererFactory;
+    private PathSegmentRendererFactory editModeSegmentRendererFactory;
+    private PathNodeRendererFactory editModeNodeRendererFactory;
 
     /**
      * Create a new instance of NonDetectingPathRendererFactory.
      */
     public NonDetectingPathRendererFactory() {
-        segmentRenderersByType = new HashMap<SegmentStyleType, PathSegmentRenderer>();
+        segmentRendererFactoriesByType = new HashMap<SegmentStyleType, PathSegmentRendererFactory>();
         nodeRendererFactoriesByType = new HashMap<NodeStyleType, PathNodeRendererFactory>();
-        editModeSegmentRenderer = new EditModePathSegmentRenderer();
+        editModeSegmentRendererFactory = new EditModePathSegmentRendererFactory();
         editModeNodeRendererFactory = new EditModePathNodeRendererFactory();
+        add(new HazardConeNodeRendererFactory());
+        add(new InvisibleNodeRendererFactory());
+        add(new PoleNodeRendererFactory());
+        add(new SquarePostNodeRendererFactory());
+        add(new InvisibleSegmentRendererFactory());
+        add(new TapeSegmentRendererFactory());
+    }
+
+    private void add(PathNodeRendererFactory factory) {
+        nodeRendererFactoriesByType.put(factory.getRenderedNodeStyleType(), factory);
+    }
+
+    private void add(PathSegmentRendererFactory factory) {
+        segmentRendererFactoriesByType.put(factory.getRenderedSegmentStyleType(), factory);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public PathSegmentRenderer getSegmentRenderer(SegmentStyleType segmentStyleType) throws IllegalArgumentException, UnsupportedStyleException {
+    public PathSegmentRendererFactory getSegmentRendererFactory(SegmentStyleType segmentStyleType) throws IllegalArgumentException, UnsupportedStyleException {
         if (segmentStyleType == null) {
             throw new IllegalArgumentException("The specified segment style type for which to get a path segment renderer was null!");
         }
-        PathSegmentRenderer renderer = segmentRenderersByType.get(segmentStyleType);
-        if (renderer == null) {
+        PathSegmentRendererFactory rendererFactory = segmentRendererFactoriesByType.get(segmentStyleType);
+        if (rendererFactory == null) {
             throw new UnsupportedStyleException(segmentStyleType, String.format("The specified segment style %s does not currently have a renderer associated with it!", segmentStyleType.getName()));
         }
-        return renderer;
+        return rendererFactory;
     }
 
     /**
@@ -69,15 +88,15 @@ public class NonDetectingPathRendererFactory implements PathRendererFactory {
      * {@inheritDoc}
      */
     @Override
-    public PathSegmentRenderer getEditSegmentRenderer() {
-        return editModeSegmentRenderer;
+    public PathSegmentRendererFactory getEditSegmentRendererFactory() {
+        return editModeSegmentRendererFactory;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public PathNodeEditModeRendererFactory getEditNodeRendererFactory() {
+    public PathNodeRendererFactory getEditNodeRendererFactory() {
         return editModeNodeRendererFactory;
     }
 }

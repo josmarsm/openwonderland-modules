@@ -17,6 +17,28 @@ import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 public class PoleNodeRenderer extends AbstractPathNodeRenderer implements PathNodeRenderer {
 
     /**
+     * Simple factory used to create an instance of a PoleNodeRenderer.
+     */
+    public static class PoleNodeRendererFactory implements PathNodeRendererFactory {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public PathNodeRenderer createRenderer(ClientPathNode node) throws IllegalArgumentException {
+            return new PoleNodeRenderer(node);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public NodeStyleType getRenderedNodeStyleType() {
+            return CoreNodeStyleType.POLE;
+        }
+    }
+
+    /**
      * Create a new instance of a PoleNodeRenderer to render the specified ClientPathNode.
      * 
      * @param pathNode The ClientPathNode to be rendered by this PathNodeRenderer.
@@ -38,6 +60,7 @@ public class PoleNodeRenderer extends AbstractPathNodeRenderer implements PathNo
      */
     @Override
     public Node createSceneGraph(Entity entity) {
+        setEntity(entity);
         if (rootNode == null) {
             rootNode = new Node(entity.getName());
             NodeStyle style = getNodeStyle();

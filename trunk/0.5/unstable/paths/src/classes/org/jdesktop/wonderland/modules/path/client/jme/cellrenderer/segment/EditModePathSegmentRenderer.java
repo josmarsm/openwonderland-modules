@@ -7,9 +7,10 @@ import com.jme.scene.Line;
 import com.jme.scene.Node;
 import com.jme.scene.state.MaterialState;
 import com.jme.system.DisplaySystem;
-import org.jdesktop.wonderland.modules.path.common.PathNode;
+import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.modules.path.client.ClientNodePath;
+import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.common.style.segment.CoreSegmentStyleType;
-import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyle;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
 
 /**
@@ -17,24 +18,67 @@ import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleTyp
  *
  * @author Carl Jokl
  */
-public class EditModePathSegmentRenderer implements PathSegmentRenderer {
+public class EditModePathSegmentRenderer extends AbstractPathSegmentRenderer {
 
     private static final ColorRGBA CONNECTOR_LINE_COLOR = new ColorRGBA(0.0f, 0.75f, 0.0f, 1.0f);
+
+    /**
+     * Simple factory class used to create instances of EditModePathSegmentRenderer.
+     */
+    public static class EditModePathSegmentRendererFactory implements PathSegmentRendererFactory {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public PathSegmentRenderer createRenderer(ClientNodePath path, int segmentIndex, int startNodeIndex, int endNodeIndex) throws IllegalArgumentException {
+            return new EditModePathSegmentRenderer(path, segmentIndex, startNodeIndex, endNodeIndex);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public SegmentStyleType getRenderedSegmentStyleType() {
+            return CoreSegmentStyleType.EDIT_MODE;
+        }
+        
+    }
+
+    /**
+     * Create a new instance of EditModePathSegmentRenderer to render the path segment with the specified attributes.
+     * 
+     * @param segmentNodePath The NodePath to which the path segment to be rendered belongs.
+     * @param segmentIndex The index of the path segment to be rendered.
+     * @param startNodeIndex The index of the PathNode at which the path segment to be rendered begins.
+     * @param endNodeIndex The index of the PathNode at which the path segment ends.
+     */
+    public EditModePathSegmentRenderer(ClientNodePath segmentNodePath, int segmentIndex, int startNodeIndex, int endNodeIndex) {
+        super(segmentNodePath, segmentIndex, startNodeIndex, endNodeIndex);
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Node render(SegmentStyle style, PathNode startNode, PathNode endNode) {
-        Node connectorNode = new Node("Connector");
-        Line connectorLine = new Line(connectorNode.getName(),
-                                      new Vector3f[] { startNode.getPosition(), endNode.getPosition() },
-                                      null,
-                                      new ColorRGBA[] { CONNECTOR_LINE_COLOR, CONNECTOR_LINE_COLOR },
-                                      null);
-        connectorNode.attachChild(connectorLine);
-        initMaterial(connectorNode);
-        return connectorNode;
+    public Node createSceneGraph(Entity entity) {
+        setEntity(entity);
+        if (rootNode == null && segmentNodePath != null && startNodeIndex >= 0 && endNodeIndex >= 0) {
+            final int noOfNodes = segmentNodePath.noOfNodes();
+            if (startNodeIndex < noOfNodes && endNodeIndex < noOfNodes) {
+                ClientPathNode startNode = segmentNodePath.getPathNode(startNodeIndex);
+                ClientPathNode endNode = segmentNodePath.getPathNode(endNodeIndex);
+                rootNode = new Node("Connector");
+                Line connectorLine = new Line(rootNode.getName(),
+                                              new Vector3f[] { startNode.getPosition(), endNode.getPosition() },
+                                              null,
+                                              new ColorRGBA[] { CONNECTOR_LINE_COLOR, CONNECTOR_LINE_COLOR },
+                                              null);
+                rootNode.attachChild(connectorLine);
+                initMaterial(rootNode);
+            }
+        }
+        return rootNode;
     }
 
     /**
