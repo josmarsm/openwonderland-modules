@@ -1,8 +1,8 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer;
 
-import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PathNodeEditModeRendererFactory;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PathNodeRendererFactory;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.PathSegmentRenderer;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.PathSegmentRendererFactory;
 import org.jdesktop.wonderland.modules.path.common.style.UnsupportedStyleException;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
@@ -16,15 +16,15 @@ import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleTyp
 public interface PathRendererFactory {
 
     /**
-     * Get the PathSegmentRenderer for the specific SegmentStyleType.
+     * Get the PathSegmentRendererFactory for the specific SegmentStyleType.
      * 
      * @param segmentStyleType The SegmentStyleType which defines the type of path segment style which
      *                         should be used for rendering.
-     * @return A PathSegmentRenderer for the specified SegmentStyleType.
+     * @return A PathSegmentRendererFactory for the specified SegmentStyleType.
      * @throws IllegalArgumentException If the specified SegmentStyleType is null.
      * @throws UnsupportedStyleException If no PathSegmentRenderer can be found to render segments of the specified SegmentStyleType.
      */
-    public PathSegmentRenderer getSegmentRenderer(SegmentStyleType segmentStyleType) throws IllegalArgumentException, UnsupportedStyleException;
+    public PathSegmentRendererFactory getSegmentRendererFactory(SegmentStyleType segmentStyleType) throws IllegalArgumentException, UnsupportedStyleException;
 
     /**
      * Get the PathNodeRendererFactory which can be used to create PathNodeRenderers for the specified NodeStyleType.
@@ -37,16 +37,16 @@ public interface PathRendererFactory {
     public PathNodeRendererFactory getNodeRendererFactory(NodeStyleType nodeStyleType) throws IllegalArgumentException, UnsupportedStyleException;
 
     /**
-     * Get the PathSegmentRenderer used to render path segments when displaying in edit mode.
+     * Get the PathSegmentRendererFactory used to create PathSegmentRenderers to render path segments when displaying in edit mode.
      *
-     * @return The PathSegmentRenderer used for rendering path segments when in edit mode.
+     * @return The PathSegmentRendererFactory used to create PathSegmentRenderers for rendering path segments when in edit mode.
      */
-    public PathSegmentRenderer getEditSegmentRenderer();
+    public PathSegmentRendererFactory getEditSegmentRendererFactory();
 
     /**
      * Get the PathNodeEditModeRendererFactory used to create PathNodeRenderers to render PathNodes when the path is being displayed in edit mode.
      *
      * @return A PathNodeEditModeRendererFactory used to create PathNodeRenderers to render PathNode when in edit mode.
      */
-    public PathNodeEditModeRendererFactory getEditNodeRendererFactory();
+    public PathNodeRendererFactory getEditNodeRendererFactory();
 }

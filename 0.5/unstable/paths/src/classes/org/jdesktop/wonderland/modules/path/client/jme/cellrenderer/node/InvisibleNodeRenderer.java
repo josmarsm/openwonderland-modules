@@ -2,6 +2,7 @@ package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node;
 
 import com.jme.scene.Node;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.common.style.node.CoreNodeStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
@@ -14,6 +15,28 @@ import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
  * @author Carl Jokl
  */
 public class InvisibleNodeRenderer extends AbstractPathNodeRenderer implements PathNodeRenderer {
+
+    /**
+     * Simple factory used to create an instance of a InvisibleNodeRenderer.
+     */
+    public static class InvisibleNodeRendererFactory implements PathNodeRendererFactory {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public PathNodeRenderer createRenderer(ClientPathNode node) throws IllegalArgumentException {
+            return new InvisibleNodeRenderer(node);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public NodeStyleType getRenderedNodeStyleType() {
+            return CoreNodeStyleType.INVISIBLE;
+        }
+    }
 
     /**
      * Create a new instance of the InvisibleNodeRenderer to render the specified ClientPathNode.
@@ -34,10 +57,16 @@ public class InvisibleNodeRenderer extends AbstractPathNodeRenderer implements P
 
     @Override
     public Node createSceneGraph(Entity entity) {
+        //Don't bother with the set method as responding to mouse clicks is not neccecary.
+        nodeEntity = entity;
         if (rootNode == null) {
             rootNode = new Node(entity.getName());
         }
         return rootNode;
     }
 
+    @Override
+    public void statusChanged(CellStatus status, boolean increasing) {
+        //Bypass event listener logic.
+    }
 }

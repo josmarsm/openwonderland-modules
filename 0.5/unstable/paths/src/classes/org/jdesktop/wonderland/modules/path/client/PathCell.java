@@ -7,10 +7,6 @@ import java.util.ListIterator;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.input.Event;
-import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -31,7 +27,6 @@ public class PathCell extends Cell implements ClientNodePath {
     private boolean closedPath;
     private PathStyle pathStyle;
     private PathCellRenderer renderer;
-    private MouseEventListener listener;
     private List<ClientPathNode> pathNodes;
 
     /**
@@ -397,13 +392,7 @@ public class PathCell extends Cell implements ClientNodePath {
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
         if (renderer != null) {
-            if (status == CellStatus.INACTIVE && !increasing && listener != null) {
-                listener.removeFromEntity(renderer.getEntity());
-            }
-            else if (status == CellStatus.RENDERING && increasing && listener == null) {
-                listener = new MouseEventListener();
-                listener.addToEntity(renderer.getEntity());
-            }
+            renderer.setStatus(status, increasing);
         }
     }
 
@@ -693,37 +682,6 @@ public class PathCell extends Cell implements ClientNodePath {
             next = null;
             position = null;
             label = null;
-        }
-    }
-
-    /**
-     * Class to receive events which occur when the item is clicked.
-     */
-    private class MouseEventListener extends EventClassListener {
-
-        public MouseEventListener() {
-            
-        }
-
-        /**
-         * Get the events to which this MouseEventListener listens.
-         *
-         * @return An array of classes of Events to which this mouse listener listens.
-         */
-        @Override
-        public Class[] eventClassesToConsume() {
-            return new Class[] { MouseButtonEvent3D.class };
-        }
-
-        @Override
-        public void commitEvent(Event event) {
-            if (event instanceof MouseButtonEvent3D) {
-                MouseButtonEvent3D mouseButtonEvent = (MouseButtonEvent3D) event;
-                if (mouseButtonEvent.isClicked() && mouseButtonEvent.getButton() == ButtonId.BUTTON1) {
-                    
-                    //renderer.updateShape();
-                }
-            }
         }
     }
 }

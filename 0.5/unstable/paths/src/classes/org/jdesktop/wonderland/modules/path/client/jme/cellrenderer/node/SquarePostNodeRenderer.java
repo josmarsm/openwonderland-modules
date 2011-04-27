@@ -18,6 +18,28 @@ import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 public class SquarePostNodeRenderer extends AbstractPathNodeRenderer implements PathNodeRenderer {
 
     /**
+     * Simple factory used to create an instance of a SquarePostNodeRenderer.
+     */
+    public static class SquarePostNodeRendererFactory implements PathNodeRendererFactory {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public PathNodeRenderer createRenderer(ClientPathNode node) throws IllegalArgumentException {
+            return new SquarePostNodeRenderer(node);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public NodeStyleType getRenderedNodeStyleType() {
+            return CoreNodeStyleType.SQUARE_POST;
+        }
+    }
+
+    /**
      * Create a new instance of SquarePostNodeRenderer to render the specified ClientPathNode.
      *
      * @param pathNode The ClientPathNode to be rendered by this PathNodeRenderer.
@@ -39,8 +61,9 @@ public class SquarePostNodeRenderer extends AbstractPathNodeRenderer implements 
      */
     @Override
     public Node createSceneGraph(Entity entity) {
-        rootNode = new Node(entity.getName());
+        setEntity(entity);
         if (rootNode == null) {
+            rootNode = new Node(entity.getName());
             NodeStyle style = getNodeStyle();
             StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
             float height = adapter.getHeight(1.0f);

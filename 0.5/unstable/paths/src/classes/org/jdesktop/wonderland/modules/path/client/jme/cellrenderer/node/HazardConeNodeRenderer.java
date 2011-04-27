@@ -22,6 +22,28 @@ import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 public class HazardConeNodeRenderer extends AbstractPathNodeRenderer implements PathNodeRenderer {
 
     /**
+     * Simple factory used to create an instance of a HazardConeNodeRenderer.
+     */
+    public static class HazardConeNodeRendererFactory implements PathNodeRendererFactory {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public PathNodeRenderer createRenderer(ClientPathNode node) throws IllegalArgumentException {
+            return new HazardConeNodeRenderer(node);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public NodeStyleType getRenderedNodeStyleType() {
+            return CoreNodeStyleType.HAZARD_CONE;
+        }
+    }
+
+    /**
      * Create a new instance of a HazardConeNodeRenderer to render the specified node.
      *
      * @param pathNode The ClientPathNode to be rendered by this PathNodeRenderer.
@@ -43,6 +65,7 @@ public class HazardConeNodeRenderer extends AbstractPathNodeRenderer implements 
      */
     @Override
     public Node createSceneGraph(Entity entity) {
+        setEntity(entity);
         if (rootNode == null) {
             rootNode = new Node(entity.getName());
             NodeStyle style = getNodeStyle();
