@@ -12,7 +12,10 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
        
-    <target name="build" depends="-module-init, -module-compile-common, 
+   <!-- import web build file -->
+    <import file="${web.dir}/build-tools/build-scripts/web-build.xml"/>
+
+    <target name="build" depends="-module-init, -module-compile-common,
                                                 -module-compile-server,
                                                 -module-compile-client"/>
     
@@ -35,6 +38,17 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
+
+            <part name="web">
+                <jar name="${module.name}.war">
+
+
+                    <fileset dir="${current.dir}/web"/>
+
+
+
+                </jar>
+            </part>
             
             <art dir="${current.dir}/art"/>
         </module>
