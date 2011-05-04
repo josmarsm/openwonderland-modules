@@ -41,14 +41,21 @@ public class CreateHeadlessConnectionMethod implements ScriptMethodSPI {
     }
 
     public void run() {
-        Properties ps = new Properties();
-        ps.put("serverURL", serverURL);
-        Client3DSim client = new Client3DSim();
-        try {
-            client.initialize(username, ps, new EZReplySender());
-        } catch (ProcessingException ex) {
-            Logger.getLogger(CreateHeadlessConnectionMethod.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
+        new Thread(new Runnable() {
+            public void run() {
+                Properties ps = new Properties();
+                ps.put("serverURL", serverURL);
+                Client3DSim client = new Client3DSim();
+                try {
+                    client.initialize(username, ps, new EZReplySender());
+                } catch (ProcessingException ex) {
+                    Logger.getLogger(CreateHeadlessConnectionMethod.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+        }).start();
+
 
 
     }
