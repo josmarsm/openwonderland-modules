@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.ezscript.client.SPI;
+package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import com.lti.civil.CaptureDeviceInfo;
 import com.lti.civil.CaptureException;
@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 

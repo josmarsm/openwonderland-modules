@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.ezscript.client.SPI;
+package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -20,6 +20,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 /**
  * Usage: animateScale(cell, scale, seconds);

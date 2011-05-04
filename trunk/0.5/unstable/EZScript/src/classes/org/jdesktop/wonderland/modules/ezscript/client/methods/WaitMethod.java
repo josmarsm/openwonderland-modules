@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.ezscript.client.SPI;
+package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

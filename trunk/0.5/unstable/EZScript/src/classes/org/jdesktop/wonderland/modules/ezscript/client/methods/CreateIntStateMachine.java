@@ -3,9 +3,10 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.ezscript.client.SPI;
+package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import org.jdesktop.wonderland.modules.ezscript.client.IntStateMachine;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 
 /**
