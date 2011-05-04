@@ -53,7 +53,7 @@ public class TakePictureMethod implements ScriptMethodSPI {
     public void setArguments(Object[] args) {
         try {
             CaptureSystemFactory factory = DefaultCaptureSystemFactorySingleton.instance();
-             system = factory.createCaptureSystem();
+            system = factory.createCaptureSystem();
             system.init();
             List list = system.getCaptureDeviceInfoList();
             CaptureDeviceInfo info = (CaptureDeviceInfo)list.toArray(new CaptureDeviceInfo[] { })[0];
@@ -96,7 +96,7 @@ public class TakePictureMethod implements ScriptMethodSPI {
 
 
     class SimpleCaptureObserver implements CaptureObserver
-{
+    {
 
 	public void onError(CaptureStream sender, CaptureException e)
 	{	System.err.println("onError " + sender);
@@ -150,6 +150,6 @@ public class TakePictureMethod implements ScriptMethodSPI {
                 }
 	}
 
-}
+    }
 
 }

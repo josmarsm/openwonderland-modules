@@ -257,7 +257,7 @@ public class EZScriptComponent extends CellComponent {
 //                logger.finest("This event is not for our cell: "
 //                                                           +spi.getEventName());
 //            }
-//        }
+//        }    
     }
 
     @Override
