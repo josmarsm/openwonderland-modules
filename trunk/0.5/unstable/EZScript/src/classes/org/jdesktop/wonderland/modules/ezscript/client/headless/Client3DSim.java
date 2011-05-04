@@ -113,13 +113,14 @@ public class Client3DSim
 
         // set the login callback to give the right user name
         LoginManager.setLoginUI(new HeadlessClientLoginUI(username, props));
-
+        logger.warning("Created mock LoginUI.");
         // for now, load all plugins.  We should modify this to only load
         // some plugins, depending on the test
         LoginManager.setPluginFilter(new BlacklistPluginFilter());
-
+        logger.warning("Downloading plugins...");
         // create a fake mainframe
         JmeClientMain.setFrame(new FakeMainFrame());
+        logger.warning("Created fake Frame.");
 
         try {        
             ServerSessionManager mgr = LoginManager.getSessionManager(serverURL);
@@ -127,6 +128,7 @@ public class Client3DSim
 
                 public CellClientSession createSession(ServerSessionManager sessionMgr,
                         WonderlandServerInfo serverInfo, ClassLoader loader) {
+                    logger.warning("INSIDE CREATESESSION");
                     CellClientSession ccs = new CellClientSession(sessionMgr, serverInfo, loader) {
 
                         @Override
@@ -137,6 +139,7 @@ public class Client3DSim
 
                                 @Override
                                 protected CellRenderer createCellRenderer(Cell cell) {
+                                    logger.warning("INSIDE createCellRenderer");
                                     return null;
                                 }
                             };
@@ -156,15 +159,17 @@ public class Client3DSim
 //                            mc.addServerCellMoveListener(messageTimer);
 
                             // start the simulator
+                            logger.warning("VIEW CONFIGURED!");
                             userSim.start();
                         }
                     });
                     userSim = new UserSimulator(avatar);
-
+                    logger.warning("END OF CREATESESSION");
                     return ccs;
                 }
             });
         } catch (IOException ioe) {
+            ioe.printStackTrace();
             throw new ProcessingException(ioe);
         } catch (LoginFailureException lfe) {
             lfe.printStackTrace();
