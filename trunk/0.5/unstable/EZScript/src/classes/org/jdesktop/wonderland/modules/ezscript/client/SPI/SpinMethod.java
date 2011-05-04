@@ -113,7 +113,6 @@ public class SpinMethod implements ScriptMethodSPI {
         }
 
         public void initialize() {
-            
         }
 
         public void compute(ProcessorArmingCollection collection) {
@@ -129,7 +128,6 @@ public class SpinMethod implements ScriptMethodSPI {
             //quaternion.fromAngles(0.0f, increment, 0.0f);
             quaternion = new Quaternion(new float[] {angles[0], radians, angles[2] });
             frameIndex +=1;
-
         }
 
         public void commit(ProcessorArmingCollection collection) {
