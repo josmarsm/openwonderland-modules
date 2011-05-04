@@ -54,7 +54,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvat
  * scripting parts
  * @author JagWire
  */
-public class LeftOvers {
+public abstract class LeftOvers {
         //for testing only... not currently used...
     private final String script = "function clickRun() { print(\"hello!\"); }"
                                 + "function enterRun() { print(\"hello mouse enter!\"); }"

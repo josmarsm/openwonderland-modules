@@ -1,5 +1,5 @@
 
-package org.jdesktop.wonderland.modules.ezscript.client.SPI;
+package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
@@ -16,6 +16,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 //import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 //import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.StringStateMachine;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 

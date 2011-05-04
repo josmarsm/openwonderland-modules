@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.jdesktop.wonderland.modules.ezscript.client;
+package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,7 +11,10 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
+import org.jdesktop.wonderland.modules.ezscript.client.AudioCacheHandler;
+import org.jdesktop.wonderland.modules.ezscript.client.AudioCacheHandlerException;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.VolumeConverter;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**

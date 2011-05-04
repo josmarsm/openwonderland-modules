@@ -9,7 +9,7 @@
  * Created on Jan 29, 2011, 1:07:11 PM
  */
 
-package org.jdesktop.wonderland.modules.ezscript.client.SPI;
+package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 
