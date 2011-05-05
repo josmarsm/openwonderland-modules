@@ -53,30 +53,60 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
         return new NonDetectingPathRendererFactory();
     }
 
-    private boolean renderSegment(ClientNodePath path, PathSegmentRendererFactory segmentRendererFactory, int segmentIndex, ClientPathNode currentNode) {
+    /**
+     * Render an individual segment of the NodePath.
+     *
+     * @param renderingEntity The entity supplied to the createSceneGraph method (representing the NodePath).
+     * @param path The NodePath being rendered.
+     * @param segmentRendererFactory The factory used to create PathSegmentRenderers.
+     * @param segmentIndex The index of the segment to be rendered.
+     * @param currentNode The current node which is the beginning of the segment to be rendered.
+     * @return True if the segment was able to be rendered successfully.
+     */
+    private boolean renderSegment(Entity renderingEntity, ClientNodePath path, PathSegmentRendererFactory segmentRendererFactory, int segmentIndex, ClientPathNode currentNode) {
         if (currentNode.hasNext()) {
             PathSegmentRenderer segmentRenderer = segmentRendererFactory.createRenderer(path, segmentIndex, currentNode.getSequenceIndex(), currentNode.getNext().getSequenceIndex());
             if (segmentRenderer != null) {
                 segmentRenderer.setParentRenderer(this);
                 segmentRenderer.setCellRetriever(this);
-                Entity segmentEntity = segmentRenderer.getEntity();
-                if (addIfNotNull(segmentRenderer.getSceneRoot())) {
-                    return segmentRenderers.add(segmentRenderer);
+                segmentRenderer.setCollisionEnabled(true);
+                segmentRenderer.setPickingEnabled(true);
+                //Should cause the scene graph to be created it it hasn't already.
+                entityAddChild(renderingEntity, segmentRenderer.getEntity());
+                //ToDo: Is this neccecary?
+                Node childNode = segmentRenderer.getSceneRoot();
+                if (childNode != null) {
+                    cellRootNode.attachChild(childNode);
                 }
+                return segmentRenderers.add(segmentRenderer);
             }
         }
         return false;
     }
 
-    private boolean renderNode(PathNodeRendererFactory nodeRendererFactory, ClientPathNode node) {
+    /**
+     * Render the individual PathNode in the NodePath being rendered.
+     *
+     * @param renderingEntity The entity supplied to the createSceneGraph method (representing the NodePath).
+     * @param nodeRendererFactory The factory used to create PathNodeRenderers.
+     * @param node The PathNode to be rendered.
+     * @return True if the Path Node was able to be rendered successfully.
+     */
+    private boolean renderNode(Entity renderingEntity, PathNodeRendererFactory nodeRendererFactory, ClientPathNode node) {
         PathNodeRenderer nodeRenderer = nodeRendererFactory.createRenderer(node);
         if (nodeRenderer != null) {
             nodeRenderer.setParentRenderer(this);
             nodeRenderer.setCellRetriever(this);
-            Entity nodeEntity = nodeRenderer.getEntity();
-            if (addIfNotNull(nodeRenderer.getSceneRoot())) {
-                return nodeRenderers.add(nodeRenderer);
+            nodeRenderer.setCollisionEnabled(true);
+            nodeRenderer.setPickingEnabled(true);
+            //Should cause the scene graph to be created it it hasn't already.
+            entityAddChild(renderingEntity, nodeRenderer.getEntity());
+            //ToDo: Is this neccecary?
+            Node childNode = nodeRenderer.getSceneRoot();
+            if (childNode != null) {
+                cellRootNode.attachChild(childNode);
             }
+            return nodeRenderers.add(nodeRenderer);
         }
         return false;
     }
@@ -100,7 +130,6 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
         }
         cellRootNode = new Node(String.format("Path Cell: %s (%s)", cell.getName(), cell.getCellID().toString()));
         if (cell != null) {
-            String name = cell.getCellID().toString();
             if (cell instanceof PathCell) {
                 PathCell pathCell = (PathCell) cell;
                 List<ClientPathNode> nodes = pathCell.getNodeList();
@@ -112,10 +141,10 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
                     currentSegmentRendererFactory = rendererFactory.getEditSegmentRendererFactory();
                     currentNodeRendererFactory = rendererFactory.getEditNodeRendererFactory();
                     for (ClientPathNode currentNode : nodes) {
-                        if (renderSegment(pathCell, currentSegmentRendererFactory, segmentIndex, currentNode)) {
+                        if (renderSegment(entity, pathCell, currentSegmentRendererFactory, segmentIndex, currentNode)) {
                             segmentIndex++;
                         }
-                        renderNode(currentNodeRendererFactory, currentNode);
+                        renderNode(entity, currentNodeRendererFactory, currentNode);
                     }
                 }
                 else if (noOfNodes > 0) {
@@ -128,7 +157,7 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
                                 currentSegmentStyle = pathStyle.getSegmentStyle(segmentIndex, true);
                                 currentSegmentRendererFactory = currentSegmentStyle != null ? rendererFactory.getSegmentRendererFactory(currentSegmentStyle.getStyleType()) : null;
                                 if (currentSegmentRendererFactory != null) {
-                                    if (renderSegment(pathCell, currentSegmentRendererFactory, segmentIndex, currentNode)) {
+                                    if (renderSegment(entity, pathCell, currentSegmentRendererFactory, segmentIndex, currentNode)) {
                                         segmentIndex++;
                                     }
                                 }
@@ -136,7 +165,7 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
                             currentNodeStyle = pathStyle.getNodeStyle(currentNode.getSequenceIndex(), true);
                             currentNodeRendererFactory = currentNodeStyle != null ? rendererFactory.getNodeRendererFactory(currentNodeStyle.getStyleType()) : null;
                             if (currentNodeRendererFactory != null) {
-                                renderNode(currentNodeRendererFactory, currentNode);
+                                renderNode(entity, currentNodeRendererFactory, currentNode);
                             }   
                         }
                         catch (IllegalArgumentException iae) {
@@ -156,36 +185,13 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
     }
 
     /**
-     * Add the specified JME child Node if the Node is not null.
-     *
-     * @param jmeChildNode the JME child Node to be added if it is not null.
-     * @return True if the supplied child node was not null and was able to be
-     *         added to the root node of the path rendering screen graph.
-     */
-    private boolean addIfNotNull(Node jmeChildNode) {
-        if (jmeChildNode != null) {
-            cellRootNode.attachChild(jmeChildNode);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Update the representation of this PathCell after a state change.
      */
     public void updateUI() {
         if (cell != null && cellRootNode != null) {
             final String name = cell.getCellID().toString();
             if (cell instanceof PathCell) {
-                //final CoreSegmentStyleType shapeType = ((PathCell) cell).getShapeType();
                 SceneWorker.addWorker(new PathCellUpdateWorker());
-                     /* TriMesh mesh = getShapeMesh(name, shapeType);
-                        if (mesh != null) {
-                            node.attachChild(mesh);
-                            node.setModelBound(getBoundingVolume(shapeType));
-                            node.updateModelBound();
-                            ClientContextJME.getWorldManager().addToUpdateList(node);
-                        } */
             }
             cellRootNode.setName(String.format("Path Cell: %s (%s)", name, cell.getCellID().toString()));
         }
@@ -196,14 +202,13 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
      */
     @Override
     public void setStatus(CellStatus status, boolean increasing) {
-        logger.warning(String.format("Status change to: %s increacing: %s in class: %s.", status.name(), Boolean.toString(increasing), getClass().getName()));
-        for (PathSegmentRenderer renderer : segmentRenderers) {
-            renderer.setStatus(status, increasing);
-        }
-        for (PathNodeRenderer renderer : nodeRenderers) {
-            renderer.setStatus(status, increasing);
-        }
         super.setStatus(status, increasing);
+        for (ChildRenderer renderer : nodeRenderers) {
+            renderer.setStatus(status, increasing);
+        }
+        for (ChildRenderer renderer : segmentRenderers) {
+            renderer.setStatus(status, increasing);
+        }
         /*Entity pathEntity = getEntity();
         if (pathEntity != null) {
            if (status == CellStatus.INACTIVE && !increasing && listener != null) {
@@ -216,7 +221,6 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
                 listener.addToEntity(entity);
            }
         }*/
-        
     }
 
     /**
