@@ -61,20 +61,17 @@ public class SquarePostNodeRenderer extends AbstractPathNodeRenderer implements 
      */
     @Override
     public Node createSceneGraph(Entity entity) {
-        setEntity(entity);
-        if (rootNode == null) {
-            rootNode = new Node(entity.getName());
-            NodeStyle style = getNodeStyle();
-            StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
-            float height = adapter.getHeight(1.0f);
-            float yOffset = adapter.getYOffset(0.0f);
-            float width = adapter.getWidth(0.0623f);
-            Vector3f min = new Vector3f(-width, yOffset, -width);
-            Vector3f max = new Vector3f(width, height + yOffset, width);
-            Box box = new Box(entity.getName(), min, max);
-            rootNode.attachChild(box);
-        }
-        return rootNode;
+        Node squarePostNode = new Node(entity.getName());
+        NodeStyle style = getNodeStyle();
+        StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
+        float height = adapter.getHeight(1.0f);
+        float yOffset = adapter.getYOffset(0.0f);
+        float width = adapter.getWidth(0.0623f);
+        Vector3f min = new Vector3f(-width, yOffset, -width);
+        Vector3f max = new Vector3f(width, height + yOffset, width);
+        Box box = new Box(entity.getName(), min, max);
+        squarePostNode.attachChild(box);
+        return squarePostNode;
     }
 
     

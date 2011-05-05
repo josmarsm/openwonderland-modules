@@ -1,6 +1,7 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer;
 
 import java.util.logging.Level;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment.PathSegmentRenderer;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node.PathNodeRenderer;
@@ -27,12 +28,13 @@ import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyle;
  *
  * @author Carl Jokl
  */
-public class PathCellRenderer extends BasicRenderer {
+public class PathCellRenderer extends BasicRenderer implements CellRetriever {
 
     private Node cellRootNode;
     private PathRendererFactory rendererFactory;
     private List<PathNodeRenderer> nodeRenderers;
     private List<PathSegmentRenderer> segmentRenderers;
+    //private PathEventListener listener;
 
     /**
      * Create a new PathCellRenderer instance to render the specified PathCell.
@@ -55,9 +57,10 @@ public class PathCellRenderer extends BasicRenderer {
         if (currentNode.hasNext()) {
             PathSegmentRenderer segmentRenderer = segmentRendererFactory.createRenderer(path, segmentIndex, currentNode.getSequenceIndex(), currentNode.getNext().getSequenceIndex());
             if (segmentRenderer != null) {
-                Entity segmentEntity = new Entity(String.format("Segment %d", segmentIndex));
-                if (addIfNotNull(segmentRenderer.createSceneGraph(segmentEntity))) {
-                    entityAddChild(entity, segmentEntity);
+                segmentRenderer.setParentRenderer(this);
+                segmentRenderer.setCellRetriever(this);
+                Entity segmentEntity = segmentRenderer.getEntity();
+                if (addIfNotNull(segmentRenderer.getSceneRoot())) {
                     return segmentRenderers.add(segmentRenderer);
                 }
             }
@@ -68,9 +71,10 @@ public class PathCellRenderer extends BasicRenderer {
     private boolean renderNode(PathNodeRendererFactory nodeRendererFactory, ClientPathNode node) {
         PathNodeRenderer nodeRenderer = nodeRendererFactory.createRenderer(node);
         if (nodeRenderer != null) {
-            Entity nodeEntity = new Entity(node.getName());
-            if (addIfNotNull(nodeRenderer.createSceneGraph(nodeEntity))) {
-                entityAddChild(entity, nodeEntity);
+            nodeRenderer.setParentRenderer(this);
+            nodeRenderer.setCellRetriever(this);
+            Entity nodeEntity = nodeRenderer.getEntity();
+            if (addIfNotNull(nodeRenderer.getSceneRoot())) {
                 return nodeRenderers.add(nodeRenderer);
             }
         }
@@ -104,7 +108,6 @@ public class PathCellRenderer extends BasicRenderer {
                 int segmentIndex = 0;
                 PathNodeRendererFactory currentNodeRendererFactory = null;
                 PathSegmentRendererFactory currentSegmentRendererFactory = null;
-                PathNodeRenderer currentNodeRenderer = null;
                 if (pathCell.isEditMode()) {
                     currentSegmentRendererFactory = rendererFactory.getEditSegmentRendererFactory();
                     currentNodeRendererFactory = rendererFactory.getEditNodeRendererFactory();
@@ -146,6 +149,9 @@ public class PathCellRenderer extends BasicRenderer {
                 }
             }
         }
+        //cellRootNode.setModelBound(new BoundingBox());
+        //cellRootNode.updateModelBound();
+        //cellRootNode.setIsCollidable(false);
         return cellRootNode;
     }
 
@@ -190,13 +196,35 @@ public class PathCellRenderer extends BasicRenderer {
      */
     @Override
     public void setStatus(CellStatus status, boolean increasing) {
-        super.setStatus(status, increasing);
+        logger.warning(String.format("Status change to: %s increacing: %s in class: %s.", status.name(), Boolean.toString(increasing), getClass().getName()));
         for (PathSegmentRenderer renderer : segmentRenderers) {
-            renderer.statusChanged(status, increasing);
+            renderer.setStatus(status, increasing);
         }
         for (PathNodeRenderer renderer : nodeRenderers) {
-            renderer.statusChanged(status, increasing);
+            renderer.setStatus(status, increasing);
         }
+        super.setStatus(status, increasing);
+        /*Entity pathEntity = getEntity();
+        if (pathEntity != null) {
+           if (status == CellStatus.INACTIVE && !increasing && listener != null) {
+                listener.removeFromEntity(entity);
+                listener.dispose();
+                listener = null;
+           }
+           else if (status == CellStatus.RENDERING && increasing && listener == null) {
+                listener = new PathEventListener((PathCell) cell);
+                listener.addToEntity(entity);
+           }
+        }*/
+        
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Cell getContainingCell() {
+        return cell;
     }
 
     private static class PathCellUpdateWorker implements WorkCommit {

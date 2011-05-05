@@ -38,12 +38,6 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
 
     public PathCellMO() {
         nodes = new ArrayList<PathNodeState>();
-        editMode = true;
-        closedPath = true;
-        nodes.add(new PathNodeState(-1.0f, 0.0f, -1.0f, "One", nodes.size()));
-        nodes.add(new PathNodeState(1.0f, 0.0f, -1.0f, "Two", nodes.size()));
-        nodes.add(new PathNodeState(1.0f, 0.0f, 1.0f, "Three", nodes.size()));
-        nodes.add(new PathNodeState(-1.0f, 0.0f, 1.0f, "Four", nodes.size()));
     }
 
     /**
@@ -185,6 +179,14 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
     @Override
     public int noOfNodes() {
         return nodes.size();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isEmpty() {
+        return nodes.isEmpty();
     }
 }
 

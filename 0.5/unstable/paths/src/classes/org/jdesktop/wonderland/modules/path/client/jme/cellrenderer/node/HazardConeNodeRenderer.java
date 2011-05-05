@@ -65,29 +65,26 @@ public class HazardConeNodeRenderer extends AbstractPathNodeRenderer implements 
      */
     @Override
     public Node createSceneGraph(Entity entity) {
-        setEntity(entity);
-        if (rootNode == null) {
-            rootNode = new Node(entity.getName());
-            NodeStyle style = getNodeStyle();
-            StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
-            float radius1 = adapter.getRadius1(0.1f, true);
-            float radius2 = adapter.getRadius2(0.125f, true);
-            float height = adapter.getHeight(0.5f);
-            TriMesh coneMesh = new Cylinder(rootNode.getName(), 8, 16, radius1, radius2, height, true, false);
-            rootNode.attachChild(coneMesh);
-            Renderer renderer = DisplaySystem.getDisplaySystem().getRenderer();
-            MaterialState rulerMaterial = renderer.createMaterialState();
-            float[] backgroundColorComponents = adapter.getBackgroundColor(1.0f, 0.31f, 0.0f, 1.0f, true);
-            float[] foregroundColorComponents = adapter.getForegroundColor(1.0f, 1.0f, 1.0f, 1.0f, true);
-            if (backgroundColorComponents != null && backgroundColorComponents.length >= 4) {
-                ColorRGBA backgroundColor = new ColorRGBA(backgroundColorComponents[0], backgroundColorComponents[1], backgroundColorComponents[2], backgroundColorComponents[3]);
-                rulerMaterial.setAmbient(backgroundColor);
-                rulerMaterial.setDiffuse(backgroundColor);
-                rulerMaterial.setSpecular(new ColorRGBA(backgroundColor.r * 0.25f, backgroundColor.g * 0.25f, backgroundColor.b, 1.0f));
-                rulerMaterial.setShininess(0.4f);
-            }
-            coneMesh.setRenderState(rulerMaterial);
+        Node hazardConeNode = new Node(entity.getName());
+        NodeStyle style = getNodeStyle();
+        StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
+        float radius1 = adapter.getRadius1(0.1f, true);
+        float radius2 = adapter.getRadius2(0.125f, true);
+        float height = adapter.getHeight(0.5f);
+        TriMesh coneMesh = new Cylinder(entity.getName(), 8, 16, radius1, radius2, height, true, false);
+        hazardConeNode.attachChild(coneMesh);
+        Renderer renderer = DisplaySystem.getDisplaySystem().getRenderer();
+        MaterialState rulerMaterial = renderer.createMaterialState();
+        float[] backgroundColorComponents = adapter.getBackgroundColor(1.0f, 0.31f, 0.0f, 1.0f, true);
+        float[] foregroundColorComponents = adapter.getForegroundColor(1.0f, 1.0f, 1.0f, 1.0f, true);
+        if (backgroundColorComponents != null && backgroundColorComponents.length >= 4) {
+            ColorRGBA backgroundColor = new ColorRGBA(backgroundColorComponents[0], backgroundColorComponents[1], backgroundColorComponents[2], backgroundColorComponents[3]);
+            rulerMaterial.setAmbient(backgroundColor);
+            rulerMaterial.setDiffuse(backgroundColor);
+            rulerMaterial.setSpecular(new ColorRGBA(backgroundColor.r * 0.25f, backgroundColor.g * 0.25f, backgroundColor.b, 1.0f));
+            rulerMaterial.setShininess(0.4f);
         }
-        return rootNode;
+        coneMesh.setRenderState(rulerMaterial);
+        return hazardConeNode;
     }
 }

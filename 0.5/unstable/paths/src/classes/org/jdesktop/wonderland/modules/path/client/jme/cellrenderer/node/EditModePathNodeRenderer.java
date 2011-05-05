@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node;
 
+import com.jme.bounding.BoundingSphere;
 import com.jme.renderer.ColorRGBA;
 import com.jme.renderer.Renderer;
 import com.jme.scene.Node;
@@ -44,6 +45,8 @@ public class EditModePathNodeRenderer extends AbstractPathNodeRenderer implement
 
     private static final ColorRGBA EDIT_NODE_COLOR = new ColorRGBA(0.5f, 0.0f, 0.6f, 1.0f);
 
+    private static final float RADIUS = 0.0625f;
+
     /**
      * Create a new instance of EditModePathNodeRenderer to render the specified ClientPathNode.
      *
@@ -84,16 +87,11 @@ public class EditModePathNodeRenderer extends AbstractPathNodeRenderer implement
      */
     @Override
     public Node createSceneGraph(Entity entity) {
-        setEntity(entity);
-        if (rootNode != null) {
-            return rootNode;
-        }
-        else {
-            rootNode = new Node(entity.getName());
-            TriMesh nodeSphere = new Sphere(rootNode.getName(), pathNode.getPosition(), 8, 8, 0.25f);
-            rootNode.attachChild(nodeSphere);
-            initMaterial(rootNode);
-        }
-        return rootNode;
+        Node editNode = new Node(entity.getName());
+        TriMesh nodeSphere = new Sphere(entity.getName(), pathNode.getPosition(), 8, 8, RADIUS);
+        editNode.attachChild(nodeSphere);
+        editNode.setModelBound(new BoundingSphere(RADIUS, pathNode.getPosition()));
+        initMaterial(editNode);
+        return editNode;
     }
 }

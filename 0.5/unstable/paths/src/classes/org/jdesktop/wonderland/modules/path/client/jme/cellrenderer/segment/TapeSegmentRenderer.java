@@ -62,13 +62,13 @@ public class TapeSegmentRenderer extends AbstractPathSegmentRenderer {
      */
     @Override
     public Node createSceneGraph(Entity entity) {
-        setEntity(entity);
-        if (rootNode == null && segmentNodePath != null && startNodeIndex >= 0 && endNodeIndex >= 0) {
+        Node tapeSegmentNode = new Node(entity.getName());
+        if (segmentNodePath != null && startNodeIndex >= 0 && endNodeIndex >= 0) {
             final int noOfNodes = segmentNodePath.noOfNodes();
             if (startNodeIndex < noOfNodes && endNodeIndex < noOfNodes) {
                 ClientPathNode startNode = segmentNodePath.getPathNode(startNodeIndex);
                 ClientPathNode endNode = segmentNodePath.getPathNode(endNodeIndex);
-                rootNode = new Node("Tape");
+                tapeSegmentNode = new Node("Tape");
                 PathStyle pathStyle = segmentNodePath.getPathStyle();
                 StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(pathStyle != null && segmentIndex >= 0 ? pathStyle.getSegmentStyle(segmentIndex, true) : null);
                 float height = adapter.getHeight(0.05f);
@@ -114,11 +114,11 @@ public class TapeSegmentRenderer extends AbstractPathSegmentRenderer {
                     new Vector2f(endTexU, 1.0f)
                 };
                 int[] indices = new int[] { 0, 2, 1, 1, 2, 3, 4, 6, 5, 5, 6, 7 };
-                TriMesh tapeMesh = new TriMesh(rootNode.getName(), BufferUtils.createFloatBuffer(vertices), BufferUtils.createFloatBuffer(normals), null, TexCoords.makeNew(textureVerices), IntBuffer.wrap(indices) );
-                rootNode.attachChild(tapeMesh);
+                TriMesh tapeMesh = new TriMesh(tapeSegmentNode.getName(), BufferUtils.createFloatBuffer(vertices), BufferUtils.createFloatBuffer(normals), null, TexCoords.makeNew(textureVerices), IntBuffer.wrap(indices) );
+                tapeSegmentNode.attachChild(tapeMesh);
             }
         }
-        return rootNode;
+        return tapeSegmentNode;
     }
 
     /**
