@@ -16,7 +16,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
  *
- * @author ryan
+ * @author JagWire
  */
 @ScriptMethod
 public class StrafeRightMethod implements ScriptMethodSPI {
