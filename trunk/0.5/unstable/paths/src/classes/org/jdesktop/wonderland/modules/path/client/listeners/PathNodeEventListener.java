@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.path.client.listeners;
 
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -14,10 +15,12 @@ import org.jdesktop.wonderland.modules.path.common.Disposable;
  */
 public class PathNodeEventListener extends EventClassListener implements Disposable {
 
+    private static final Logger logger = Logger.getLogger(PathNodeEventListener.class.getName());
+
     private ClientPathNode owner;
 
     /**
-     * Create a new PathNodeEventListener to listen for mouse events on the specified
+     * Create a new PathNodeEventListener to listen for events such as mouse events on the specified
      * ClientPathNode.
      *
      * @param owner The ClientPathNode on which this PathNodeEventListener will listen for events.
@@ -27,9 +30,9 @@ public class PathNodeEventListener extends EventClassListener implements Disposa
     }
 
     /**
-     * Get the events to which this PathNodeMouseEventListener listens.
+     * Get the events to which this PathNodeEventListener listens.
      *
-     * @return An array of classes of Events to which this mouse listener listens.
+     * @return An array of classes of Events to which this event listener listens.
      */
     @Override
     public Class[] eventClassesToConsume() {
@@ -43,8 +46,10 @@ public class PathNodeEventListener extends EventClassListener implements Disposa
      */
     @Override
     public void commitEvent(Event event) {
+        logger.warning(String.format("Path Node has received event: %s", event.toString()));
         if (event instanceof MouseButtonEvent3D) {
             MouseButtonEvent3D mouseButtonEvent = (MouseButtonEvent3D) event;
+            logger.warning("Path node event is confirment to be a Mouse 3D event.");
             if (mouseButtonEvent.isClicked() && mouseButtonEvent.getButton() == ButtonId.BUTTON1) {
                 javax.swing.JOptionPane.showMessageDialog(null, String.format("Node Clicked (%d): %s.", owner.getSequenceIndex(), owner.getName()));
             }
@@ -54,6 +59,7 @@ public class PathNodeEventListener extends EventClassListener implements Disposa
     /**
      * Method to dispose of this listener to allow for proper garbage collection.
      */
+    @Override
     public void dispose() {
         owner = null;
     }

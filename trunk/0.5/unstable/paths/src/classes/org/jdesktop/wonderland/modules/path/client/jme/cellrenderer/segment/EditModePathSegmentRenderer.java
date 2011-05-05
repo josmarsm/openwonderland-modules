@@ -62,23 +62,23 @@ public class EditModePathSegmentRenderer extends AbstractPathSegmentRenderer {
      */
     @Override
     public Node createSceneGraph(Entity entity) {
-        setEntity(entity);
-        if (rootNode == null && segmentNodePath != null && startNodeIndex >= 0 && endNodeIndex >= 0) {
+        Node editSegmentNode = new Node(entity.getName());
+        if (segmentNodePath != null && startNodeIndex >= 0 && endNodeIndex >= 0) {
             final int noOfNodes = segmentNodePath.noOfNodes();
             if (startNodeIndex < noOfNodes && endNodeIndex < noOfNodes) {
                 ClientPathNode startNode = segmentNodePath.getPathNode(startNodeIndex);
                 ClientPathNode endNode = segmentNodePath.getPathNode(endNodeIndex);
-                rootNode = new Node("Connector");
-                Line connectorLine = new Line(rootNode.getName(),
+                editSegmentNode = new Node("Connector");
+                Line connectorLine = new Line(editSegmentNode.getName(),
                                               new Vector3f[] { startNode.getPosition(), endNode.getPosition() },
                                               null,
                                               new ColorRGBA[] { CONNECTOR_LINE_COLOR, CONNECTOR_LINE_COLOR },
                                               null);
-                rootNode.attachChild(connectorLine);
-                initMaterial(rootNode);
+                editSegmentNode.attachChild(connectorLine);
+                initMaterial(editSegmentNode);
             }
         }
-        return rootNode;
+        return editSegmentNode;
     }
 
     /**

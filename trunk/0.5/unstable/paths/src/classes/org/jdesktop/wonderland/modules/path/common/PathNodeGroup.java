@@ -25,4 +25,11 @@ public interface PathNodeGroup {
      * @return The number of PathNodes in this PathNodeGroup.
      */
     public int noOfNodes();
+
+    /**
+     * Whether this is an empty PathNodeGroup which contains no PathNodes.
+     *
+     * @return True if the PathNodeGroup is empty, false otherwise.
+     */
+    public boolean isEmpty();
 }

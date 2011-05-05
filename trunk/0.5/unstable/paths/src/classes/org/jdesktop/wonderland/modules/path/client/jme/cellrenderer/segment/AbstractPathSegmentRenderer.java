@@ -1,9 +1,8 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment;
 
-import com.jme.scene.Node;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.modules.path.client.ClientNodePath;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.AbstractChildComponentRenderer;
 import org.jdesktop.wonderland.modules.path.client.listeners.PathSegmentEventListener;
 
 /**
@@ -12,15 +11,12 @@ import org.jdesktop.wonderland.modules.path.client.listeners.PathSegmentEventLis
  *
  * @author Carl Jokl
  */
-public abstract class AbstractPathSegmentRenderer implements PathSegmentRenderer {
+public abstract class AbstractPathSegmentRenderer extends AbstractChildComponentRenderer implements PathSegmentRenderer {
 
     protected ClientNodePath segmentNodePath;
     protected int segmentIndex;
     protected int startNodeIndex;
     protected int endNodeIndex;
-    protected PathSegmentEventListener listener;
-    protected Entity segmentEntity;
-    protected Node rootNode;
 
     /**
      * Initialize this AbstractPathSegmentRenderer with the specified attributes of the path segment to be rendered.
@@ -39,52 +35,38 @@ public abstract class AbstractPathSegmentRenderer implements PathSegmentRenderer
         this.segmentIndex = segmentIndex;
         this.startNodeIndex = startNodeIndex;
         this.endNodeIndex = endNodeIndex;
-        listener = new PathSegmentEventListener(segmentNodePath, segmentIndex);
-    }
-
-    /**
-     * Should be called by the implementing class as soon as an Entity becomes available to set.
-     *
-     * @param segmentEntity The Entity used to represent the path segment.
-     */
-    protected void setEntity(Entity segmentEntity) {
-        if (this.segmentEntity != segmentEntity) {
-            if (listener != null) {
-                if (this.segmentEntity != null) {
-                    listener.removeFromEntity(this.segmentEntity);
-                }
-                if (segmentEntity != null) {
-                    listener.addToEntity(segmentEntity);
-                }
-            }
-            this.segmentEntity = segmentEntity;
-        }
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Entity getEntity() {
-       return segmentEntity;
+    protected EventClassListener createEventListener() {
+        return new PathSegmentEventListener(segmentNodePath, segmentIndex);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void statusChanged(CellStatus status, boolean increasing) {
-       if (segmentEntity != null) {
-           if (status == CellStatus.INACTIVE && !increasing && listener != null) {
-                listener.removeFromEntity(segmentEntity);
-                listener.dispose();
-                listener = null;
-           }
-           else if (status == CellStatus.RENDERING && increasing && listener == null) {
-                listener = new PathSegmentEventListener(segmentNodePath, segmentIndex);
-                listener.addToEntity(segmentEntity);
-           }
-       }
+    protected String getOwnerName() {
+        return String.format("Segment %d", segmentIndex);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean isListeningChild() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean isOwnerSet() {
+        return segmentNodePath != null;
     }
 
     /**
@@ -92,23 +74,7 @@ public abstract class AbstractPathSegmentRenderer implements PathSegmentRenderer
      */
     @Override
     public void dispose() {
-        if (rootNode != null) {
-            rootNode.detachAllChildren();
-            rootNode.removeFromParent();
-            rootNode = null;
-        }
-        if (listener != null) {
-            if (segmentEntity != null) {
-                listener.removeFromEntity(segmentEntity);
-            }
-            listener.dispose();
-            listener = null;
-        }
-        if (segmentEntity != null) {
-            while (segmentEntity.numEntities() > 0)
-            segmentEntity.removeEntity(segmentEntity.getEntity(0));
-            segmentEntity = null;
-        }
+        super.dispose();
         segmentNodePath = null;
     }
 }

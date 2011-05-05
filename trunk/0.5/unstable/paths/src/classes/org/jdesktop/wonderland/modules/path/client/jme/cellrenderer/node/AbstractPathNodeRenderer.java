@@ -1,9 +1,8 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node;
 
-import com.jme.scene.Node;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
+import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.AbstractChildComponentRenderer;
 import org.jdesktop.wonderland.modules.path.client.listeners.PathNodeEventListener;
 import org.jdesktop.wonderland.modules.path.common.NodePath;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
@@ -15,12 +14,9 @@ import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
  *
  * @author Carl Jokl
  */
-public abstract class AbstractPathNodeRenderer implements PathNodeRenderer {
+public abstract class AbstractPathNodeRenderer extends AbstractChildComponentRenderer implements PathNodeRenderer {
 
     protected ClientPathNode pathNode;
-    protected Node rootNode;
-    protected Entity nodeEntity;
-    protected PathNodeEventListener listener;
 
     /**
      * Initialize this AbstractPathNodeRenderer to render the specified ClientPathNode.
@@ -32,7 +28,6 @@ public abstract class AbstractPathNodeRenderer implements PathNodeRenderer {
             throw new IllegalArgumentException("The client path node for a path node renderer cannot be null!");
         }
         this.pathNode = pathNode;
-        listener = new PathNodeEventListener(pathNode);
     }
 
     /**
@@ -60,72 +55,43 @@ public abstract class AbstractPathNodeRenderer implements PathNodeRenderer {
     }
 
     /**
-     * Should be called by the implementing class as soon as an Entity becomes available to set.
-     *
-     * @param nodeEntity The Entity used to represent the PathNode.
+     * {@inheritDoc}
      */
-    protected void setEntity(Entity nodeEntity) {
-        if (this.nodeEntity != nodeEntity) {
-            if (listener != null) {
-                if (this.nodeEntity != null) {
-                    listener.removeFromEntity(this.nodeEntity);
-                }
-                if (nodeEntity != null) {
-                    listener.addToEntity(nodeEntity);
-                }
-            }
-            this.nodeEntity = nodeEntity;
-        }
+    @Override
+    protected EventClassListener createEventListener() {
+        return new PathNodeEventListener(pathNode);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Entity getEntity() {
-        return nodeEntity;
+    protected boolean isListeningChild() {
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean isOwnerSet() {
+        return pathNode != null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected String getOwnerName() {
+        return pathNode != null ? (pathNode.isNamed() ? pathNode.getName() : String.format("Path Node %d", pathNode.getSequenceIndex())) : "Null Node";
     }
     
     /**
      * {@inheritDoc}
      */
     @Override
-    public void statusChanged(CellStatus status, boolean increasing) {
-       if (nodeEntity != null) {
-           if (status == CellStatus.INACTIVE && !increasing && listener != null) {
-                listener.removeFromEntity(nodeEntity);
-                listener.dispose();
-                listener = null;
-           }
-           else if (status == CellStatus.RENDERING && increasing && listener == null) {
-                listener = new PathNodeEventListener(pathNode);
-                listener.addToEntity(nodeEntity);
-           }
-       }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void dispose() {
-        if (rootNode != null) {
-            rootNode.detachAllChildren();
-            rootNode.removeFromParent();
-            rootNode = null;
-        }
-        if (listener != null) {
-            if (nodeEntity != null) {
-                listener.removeFromEntity(nodeEntity);
-            }
-            listener.dispose();
-            listener = null;
-        }
-        if (nodeEntity != null) {
-            while (nodeEntity.numEntities() > 0)
-            nodeEntity.removeEntity(nodeEntity.getEntity(0));
-            nodeEntity = null;
-        }
         pathNode = null;
+        super.dispose();
     }
 }

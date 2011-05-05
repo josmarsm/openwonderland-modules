@@ -54,8 +54,7 @@ public class InvisibleSegmentRenderer extends AbstractPathSegmentRenderer {
      */
     @Override
     public Node createSceneGraph(Entity entity) {
-        segmentEntity = entity;
-        return null;
+        return new Node(entity.getName());
     }
 
     /**
@@ -64,10 +63,5 @@ public class InvisibleSegmentRenderer extends AbstractPathSegmentRenderer {
     @Override
     public SegmentStyleType getRenderedType() {
         return CoreSegmentStyleType.INVISIBLE;
-    }
-
-    @Override
-    public void statusChanged(CellStatus status, boolean increasing) {
-        //Bypass event listener logic.
     }
 }

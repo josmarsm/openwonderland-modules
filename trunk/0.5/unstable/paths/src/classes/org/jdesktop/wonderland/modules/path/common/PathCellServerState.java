@@ -55,7 +55,7 @@ public class PathCellServerState extends CellServerState implements PathCellStat
      * @param closedPath Whether the path represented by this PathCell is a closed path.
      */
     public PathCellServerState(PathStyle pathStyle, boolean editMode, boolean closedPath) {
-        this();
+        nodes = new ArrayList<PathNodeState>();
         this.pathStyle = pathStyle;
         this.editMode = editMode;
         this.closedPath = closedPath;

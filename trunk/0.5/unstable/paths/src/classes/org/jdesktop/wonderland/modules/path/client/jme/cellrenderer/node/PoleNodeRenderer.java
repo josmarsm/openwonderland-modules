@@ -60,20 +60,17 @@ public class PoleNodeRenderer extends AbstractPathNodeRenderer implements PathNo
      */
     @Override
     public Node createSceneGraph(Entity entity) {
-        setEntity(entity);
-        if (rootNode == null) {
-            rootNode = new Node(entity.getName());
-            NodeStyle style = getNodeStyle();
-            StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
-            float radius1 = adapter.getRadius1(0.0625f, true);
-            float radius2 = adapter.getRadius2(0.0625f, true);
-            float height = adapter.getHeight(1.0f);
-            float yOffset = adapter.getYOffset(0.0f);
-            Cylinder cylinder = new Cylinder(entity.getName(), 4, 16, radius1, radius2, height, true, false);
-            cylinder.setLocalTranslation(0, yOffset + (height / 2.0f), 0);
-            rootNode.attachChild(cylinder);
-        }
-        return rootNode;
+        Node poleNode = new Node(entity.getName());
+        NodeStyle style = getNodeStyle();
+        StyleMetaDataAdapter adapter = new StyleMetaDataAdapter(style);
+        float radius1 = adapter.getRadius1(0.0625f, true);
+        float radius2 = adapter.getRadius2(0.0625f, true);
+        float height = adapter.getHeight(1.0f);
+        float yOffset = adapter.getYOffset(0.0f);
+        Cylinder cylinder = new Cylinder(entity.getName(), 4, 16, radius1, radius2, height, true, false);
+        cylinder.setLocalTranslation(0, yOffset + (height / 2.0f), 0);
+        poleNode.attachChild(cylinder);
+        return poleNode;
     }
 
 }

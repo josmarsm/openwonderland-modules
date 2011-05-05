@@ -6,6 +6,7 @@ import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.path.common.PathCellServerState;
+import org.jdesktop.wonderland.modules.path.common.PathNodeState;
 import org.jdesktop.wonderland.modules.path.common.style.DefaultStyleFactory;
 import org.jdesktop.wonderland.modules.path.common.style.StyleFactory;
 
@@ -53,10 +54,15 @@ public class PathCellFactory implements CellFactorySPI {
     @Override
     public <T extends CellServerState> T getDefaultCellServerState(Properties properties) {
         PathCellServerState serverState = new PathCellServerState(styleFactory.createDefaultPathStyle(), true, true);
-        serverState.addPathNodeState(-1.0f, 0.0f, -1.0f, "LL");
-        serverState.addPathNodeState(1.0f, 0.0f, -1.0f, "LR");
-        serverState.addPathNodeState(1.0f, 0.0f, 1.0f, "UR");
-        serverState.addPathNodeState(-1.0f, 0.0f, 1.0f, "UL");
+        double angle = 0.0;
+        final int noOfNodes = 6;
+        final double twoPi = Math.PI * 2.0;
+        final double segmentAngle = twoPi / ((double) noOfNodes);
+        final float radius = 2.5f;
+        for (int index = 0; index < noOfNodes; index++) {
+            angle = segmentAngle * index;
+            serverState.addPathNodeState((float) Math.sin(angle) * radius, 0.0f, (float) Math.cos(angle) * radius, Integer.toString(index));
+        }
         return (T) serverState;
     }
 
