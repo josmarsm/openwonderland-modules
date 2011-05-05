@@ -5,6 +5,7 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
@@ -25,22 +26,21 @@ public class MoveForwardMethod implements ScriptMethodSPI {
     private Cell cell;
     private CellTransform transform;
     private Vector3f position = new Vector3f();
-    private Vector3f lookAt = new Vector3f();
+    private Vector3f lookAt = new Vector3f(0, 0, 1);
     private Semaphore lock = new Semaphore(0);
-    private float distance = 0;
-    private float seconds = 0; //in seconds
     private Vector3f normal = null;
     private MovableComponent mcc;
     private boolean fail = true;
 
     public String getFunctionName() {
         //transform.getTranslation(null).normalize().m
-        logger.warning("inside getFunctionName.");
+        //logger.warning("inside getFunctionName.");
         return "MoveForward";
     }
 
     public void setArguments(Object[] args) {
-        logger.warning("inside setArguments");
+        lookAt = new Vector3f(0, 0, 1);
+        //logger.warning("inside setArguments");
         cell = (Cell)args[0];
 
         //fail fast
@@ -48,22 +48,26 @@ public class MoveForwardMethod implements ScriptMethodSPI {
             logger.warning("cell is null in setArguments!");
             return;
         }
-        //distance = ((Double)args[1]).floatValue();
-        //seconds = ((Double)args[2]).floatValue();
+        
+        transform = cell.getLocalTransform();
+        logger.warning("\ncurrent cell transform: " +transform);
 
-        transform = cell.getWorldTransform();
-        transform.getLookAt(position, lookAt);
-        position = new Vector3f();
-        lookAt.y = 0;
-        Vector3f v = lookAt.normalize();//lookAt.subtract(position);
-        normal = v.normalize();
+        lookAt.multLocal(transform.getScaling());
+        logger.warning("\nlookAt after scaling: "+lookAt);
+        transform.getRotation(null).multLocal(lookAt);
+        logger.warning("\nlookAt after scaling and rotation: "+lookAt);
+        //transform.getLookAt(position, lookAt);
+
+        position = transform.getTranslation(position);
+
+        lookAt.y = position.y;
+        normal = lookAt.normalize();//lookAt.subtract(position);
+        
         mcc = cell.getComponent(MovableComponent.class);
         if(mcc != null) {
             fail = false;
         }
-        logger.warning("CellLookDirection: "+lookAt.normalizeLocal());
-        
-        
+       // logger.warning("CellLookDirection: "+lookAt.normalizeLocal());
     }
 
     public String getDescription() {
@@ -79,9 +83,14 @@ public class MoveForwardMethod implements ScriptMethodSPI {
         if(fail) {
             return;
         }
-        transform.setTranslation(transform.getTranslation(null).add(normal));
+        position.x += normal.x;
+        position.z += normal.z;
+        CellTransform newTransform = new CellTransform();
+        transform.setTranslation(position);
+        logger.warning("\nNew Cell Transform: "+transform);
+       // transform.setRotation(transform.getRotation(null).identityRotation);
+        //transform.setTranslation(position);
         mcc.localMoveRequest(transform);
-
     }
 
 //<editor-fold desc="processor code">
