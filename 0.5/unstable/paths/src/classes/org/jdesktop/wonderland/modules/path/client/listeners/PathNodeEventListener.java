@@ -1,6 +1,7 @@
 package org.jdesktop.wonderland.modules.path.client.listeners;
 
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -18,6 +19,7 @@ public class PathNodeEventListener extends EventClassListener implements Disposa
     private static final Logger logger = Logger.getLogger(PathNodeEventListener.class.getName());
 
     private ClientPathNode owner;
+    private ClickTest test;
 
     /**
      * Create a new PathNodeEventListener to listen for events such as mouse events on the specified
@@ -27,6 +29,7 @@ public class PathNodeEventListener extends EventClassListener implements Disposa
      */
     public PathNodeEventListener(ClientPathNode owner) {
         this.owner = owner;
+        test = new ClickTest(owner);
     }
 
     /**
@@ -51,7 +54,7 @@ public class PathNodeEventListener extends EventClassListener implements Disposa
             MouseButtonEvent3D mouseButtonEvent = (MouseButtonEvent3D) event;
             logger.warning("Path node event is confirment to be a Mouse 3D event.");
             if (mouseButtonEvent.isClicked() && mouseButtonEvent.getButton() == ButtonId.BUTTON1) {
-                javax.swing.JOptionPane.showMessageDialog(null, String.format("Node Clicked (%d): %s.", owner.getSequenceIndex(), owner.getName()));
+                SwingUtilities.invokeLater(test);
             }
         }
     }
@@ -62,5 +65,33 @@ public class PathNodeEventListener extends EventClassListener implements Disposa
     @Override
     public void dispose() {
         owner = null;
+        if (test != null) {
+            test.dispose();
+            test = null;
+        }
+    }
+
+    private static class ClickTest implements Runnable, Disposable {
+
+        private ClientPathNode owner;
+
+        public ClickTest(ClientPathNode owner) {
+            this.owner = owner;
+        }
+
+        @Override
+        public void run() {
+            if (owner.isNamed()) {
+                javax.swing.JOptionPane.showMessageDialog(null, String.format("Node Clicked (%d): %s.", owner.getSequenceIndex(), owner.getName()));
+            }
+            else {
+                javax.swing.JOptionPane.showMessageDialog(null, String.format("Node Clicked: %d.", owner.getSequenceIndex()));
+            }
+        }
+
+        @Override
+        public void dispose() {
+            owner = null;
+        }
     }
 }

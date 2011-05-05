@@ -1,6 +1,7 @@
 package org.jdesktop.wonderland.modules.path.client.listeners;
 
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -19,10 +20,12 @@ public class PathSegmentEventListener extends EventClassListener implements Disp
 
     private int segmentIndex;
     private NodePath owner;
+    private ClickTest test;
 
     public PathSegmentEventListener(NodePath owner, int segmentIndex) {
         this.owner = owner;
         this.segmentIndex = segmentIndex;
+        test = new ClickTest(segmentIndex);
     }
 
     /**
@@ -47,7 +50,7 @@ public class PathSegmentEventListener extends EventClassListener implements Disp
             logger.warning("Path segment event is confirment to be a Mouse 3D event.");
             MouseButtonEvent3D mouseButtonEvent = (MouseButtonEvent3D) event;
             if (mouseButtonEvent.isClicked() && mouseButtonEvent.getButton() == ButtonId.BUTTON1) {
-                javax.swing.JOptionPane.showMessageDialog(null, String.format("Segment Clicked: %d.", segmentIndex));
+                SwingUtilities.invokeLater(test);
             }
         }
     }
@@ -56,5 +59,19 @@ public class PathSegmentEventListener extends EventClassListener implements Disp
     public void dispose() {
         owner = null;
         segmentIndex = -1;
+    }
+
+    private static class ClickTest implements Runnable {
+
+        private int segmentIndex;
+
+        public ClickTest(int segmentIndex) {
+            this.segmentIndex = segmentIndex;
+        }
+
+        @Override
+        public void run() {
+            javax.swing.JOptionPane.showMessageDialog(null, String.format("Segment Clicked: %d.", segmentIndex));
+        }
     }
 }

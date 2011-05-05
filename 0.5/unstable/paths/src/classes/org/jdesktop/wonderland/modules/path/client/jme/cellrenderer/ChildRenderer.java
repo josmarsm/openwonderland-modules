@@ -1,7 +1,8 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer;
-
 import com.jme.scene.Node;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.path.common.Disposable;
 
 /**
@@ -11,7 +12,7 @@ import org.jdesktop.wonderland.modules.path.common.Disposable;
  *
  * @author Carl Jokl
  */
-public interface ChildRenderer extends CellRendererJME, Disposable {
+public interface ChildRenderer extends Disposable {
 
     /**
      * Return the scene root, this is the node created by createSceneGraph.
@@ -47,4 +48,19 @@ public interface ChildRenderer extends CellRendererJME, Disposable {
      * @param containedCellRetriever The CellRetriever used to find the Cell which contains the child component rendered by this ChildRenderer.
      */
     public void setCellRetriever(CellRetriever containedCellRetriever);
+
+    /**
+     * Get the Entity which represents the ChildComponent in the hierarchy.
+     * If the Entity has not yet been created by the time this method has been called then it
+     * will be created as part of this method call.
+     *
+     * @return the Entity which is used to represent the child component.
+     */
+    public Entity getEntity();
+
+    /**
+     * Notify the renderer of a cell status change
+     * @param status
+     */
+    public void setStatus(CellStatus status,boolean increasing);
 }
