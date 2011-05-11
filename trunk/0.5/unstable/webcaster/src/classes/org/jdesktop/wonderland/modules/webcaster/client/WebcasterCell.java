@@ -1,3 +1,21 @@
+/**
+ * Project Wonderland
+ *
+ * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * Sun designates this particular file as subject to the "Classpath"
+ * exception as provided by Sun in the License file that accompanied
+ * this code.
+ */
+
 package org.jdesktop.wonderland.modules.webcaster.client;
 
 import java.awt.image.BufferedImage;
@@ -29,14 +47,28 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.webcaster.client.utils.RTMPOut;
 
+/**
+ * @author Christian O'Connell
+ */
 public class WebcasterCell extends Cell
 {
     private static final boolean VIDEO_AVAILABLE = VideoLibraryLoader.loadVideoLibraries();
-    private static final String SERVER_URL;
+    private static String SERVER_URL;
 
     static
     {
-        SERVER_URL = ("rtmp://" + System.getProperty("wonderland.server.url").substring(System.getProperty("wonderland.server.url").indexOf(":") + 3)).substring(0, System.getProperty("wonderland.server.url").lastIndexOf(":")) + ":1935/";
+        String url = "";
+        try{
+            url = System.getProperty("wonderland.server.url").substring(System.getProperty("wonderland.server.url").indexOf(":") + 3);
+        }
+        catch (NullPointerException e){
+            url = System.getProperty("wonderland.server.url");
+        }
+
+        try{url = url.substring(0, url.lastIndexOf(":"));}catch (NullPointerException e){}
+        if (url == ""){url = "127.0.0.1";}
+
+        SERVER_URL = "rtmp://" + url + ":1935/";
     }
 
     private WebcasterCellRenderer renderer = null;
