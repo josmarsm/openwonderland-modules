@@ -19,6 +19,7 @@ import org.jdesktop.mtgame.PortalBufferController;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.Sector;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
@@ -44,15 +45,18 @@ public class CreatePortalMethod implements ScriptMethodSPI {
     }
 
     public String getDescription() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return "Create prototype portal demo.";
     }
 
     public String getCategory() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return "unsupported";
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void run() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        PortalUtils.createPortalSystem(ClientContextJME.getWorldManager());
+     //   throw new UnsupportedOperationException("Not supported yet.");
     }
 
     Quad createEnterPortal(Portal p, Sector s, ZBufferState zbuf) {

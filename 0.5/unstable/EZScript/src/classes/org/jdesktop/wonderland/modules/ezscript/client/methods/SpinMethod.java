@@ -31,7 +31,6 @@ public class SpinMethod implements ScriptMethodSPI {
     Cell cell;
     float rotations;
     float time; //in seconds, assume 30 frames per second
-    StringStateMachine machine;//optional
     private Semaphore lock;
     public String getFunctionName() {
         return "spin";
@@ -41,9 +40,7 @@ public class SpinMethod implements ScriptMethodSPI {
         cell = (Cell)args[0];
         rotations = ((Double)args[1]).floatValue();
         time = ((Double)args[2]).floatValue();
-        lock = new Semaphore(0);
-        
-
+        lock = new Semaphore(0);       
     }
 
     public void run() {
