@@ -60,12 +60,14 @@ Viewing Streams
 ---------------
 
 Streams use the RTMP protocol, and can be viewed by an appropriate client application. Adobe Flash has 
-native RTMP support and a sample app is included in the 'client' folder. To use the app:
+native RTMP support and a sample app is included. To use the app:
 
-1. Connect to the Red5 Server
+1. Go to http://localhost:8080/webcaster/webcaster
+
+2. Connect to the Red5 Server
    # Enter the IP address of your Open Wonderland server
    # Press 'Connect'
 
-2. Once connected you can view any stream currently being broadcast
+3. Once connected you can view any stream currently being broadcast
    # Enter the stream name you defined in the Webcaster's control panel
    # Press 'Play'
