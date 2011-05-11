@@ -1,7 +1,10 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment;
 
+import com.jme.scene.Node;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.EventClassListener;
-import org.jdesktop.wonderland.modules.path.client.ClientNodePath;
+import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
+import org.jdesktop.wonderland.modules.path.client.PathSegmentComponent;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.AbstractChildComponentRenderer;
 import org.jdesktop.wonderland.modules.path.client.listeners.PathSegmentEventListener;
 
@@ -13,28 +16,27 @@ import org.jdesktop.wonderland.modules.path.client.listeners.PathSegmentEventLis
  */
 public abstract class AbstractPathSegmentRenderer extends AbstractChildComponentRenderer implements PathSegmentRenderer {
 
-    protected ClientNodePath segmentNodePath;
-    protected int segmentIndex;
-    protected int startNodeIndex;
-    protected int endNodeIndex;
+    protected ClientPathNode startNode;
 
     /**
      * Initialize this AbstractPathSegmentRenderer with the specified attributes of the path segment to be rendered.
      *
-     * @param segmentNodePath The ClientNodePath to which the path segment belongs which is to be rendered.
-     * @param segmentIndex The index of the segment within the node path to be rendered.
-     * @param startNodeIndex The index of the start PathNode at which the segment begins.
-     * @param endNodeIndex The index of the end PathNode at which the segment ends.
-     * @throws IllegalArgumentException
+     * @param startNode The ClientPathNode to which the path segment belongs which is to be rendered.
+     * @throws IllegalArgumentException If the specified start ClientPathNode was null.
      */
-    protected AbstractPathSegmentRenderer(ClientNodePath segmentNodePath, int segmentIndex, int startNodeIndex, int endNodeIndex) throws IllegalArgumentException {
-        if (segmentNodePath == null) {
-            throw new IllegalArgumentException("The path segment's node path cannot be null!");
+    protected AbstractPathSegmentRenderer(ClientPathNode startNode) throws IllegalArgumentException {
+        if (startNode == null) {
+            throw new IllegalArgumentException("The start ClientPathNode of the segment cannot be null!");
         }
-        this.segmentNodePath = segmentNodePath;
-        this.segmentIndex = segmentIndex;
-        this.startNodeIndex = startNodeIndex;
-        this.endNodeIndex = endNodeIndex;
+        this.startNode = startNode;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ClientPathNode getStartNode() {
+        return startNode;
     }
 
     /**
@@ -42,7 +44,7 @@ public abstract class AbstractPathSegmentRenderer extends AbstractChildComponent
      */
     @Override
     protected EventClassListener createEventListener() {
-        return new PathSegmentEventListener(segmentNodePath, segmentIndex);
+        return new PathSegmentEventListener(startNode);
     }
 
     /**
@@ -50,7 +52,7 @@ public abstract class AbstractPathSegmentRenderer extends AbstractChildComponent
      */
     @Override
     protected String getOwnerName() {
-        return String.format("Segment %d", segmentIndex);
+        return String.format("Segment %d", startNode.getSequenceIndex());
     }
 
     /**
@@ -66,7 +68,16 @@ public abstract class AbstractPathSegmentRenderer extends AbstractChildComponent
      */
     @Override
     protected boolean isOwnerSet() {
-        return segmentNodePath != null;
+        return startNode != null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void addComponents(Entity entity, Node childTopNode) {
+        super.addComponents(entity, childTopNode);
+        entity.addComponent(PathSegmentComponent.class, new PathSegmentComponent(startNode));
     }
 
     /**
@@ -75,6 +86,6 @@ public abstract class AbstractPathSegmentRenderer extends AbstractChildComponent
     @Override
     public void dispose() {
         super.dispose();
-        segmentNodePath = null;
+        startNode = null;
     }
 }

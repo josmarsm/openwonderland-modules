@@ -3,7 +3,12 @@ package org.jdesktop.wonderland.modules.path.client;
 import com.jme.math.Vector3f;
 import java.io.Serializable;
 import org.jdesktop.wonderland.modules.path.common.NodePath;
+import org.jdesktop.wonderland.modules.path.common.PathCellState;
 import org.jdesktop.wonderland.modules.path.common.PathNodeGroup;
+import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
+import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
+import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyle;
+import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
 
 /**
  * This interface contains the functionality of a client version of the NodePath.
@@ -143,4 +148,63 @@ public interface ClientNodePath extends NodePath, PathNodeGroup, Serializable {
      * Remove all of the PathNodes which are part of this ClientNodePath.
      */
     public void removeAllNodes();
+
+    /**
+     * Set the IndexedPathNode position and send a message to the server to notify of the change.
+     *
+     * @param index The index of the IndexedPathNode for which to set the position.
+     * @param x The new X position of the IndexedPathNode.
+     * @param y The new Y position of the IndexedPathNode.
+     * @param z The new Z position of the IndexedPathNode.
+     * @return True of the new IndexedPathNode position was able to be set and a notification was sent to the server.
+     */
+    public boolean setNodePosition(int index, float x, float y, float z);
+
+    /**
+     * Get the NodeStyleType of the PathNode at the specified NodeIndex.
+     *
+     * @param nodeIndex The index of the PathNode for which the NodeStyleType is to be retrieved.
+     * @return The NodeStyleType of the PathNode at the specified index (if set).
+     * @throws IndexOutOfBoundsException If the specified PathNode index is outside the range of
+     *                                   valid PathNode indices.
+     */
+    public NodeStyleType getNodeStyleType(int nodeIndex) throws IndexOutOfBoundsException;
+
+    /**
+     * Get the NodeStyle of the PathNode at the specified index.
+     *
+     * @param nodeIndex The index of the PathNode for which the NodeStyle is to be retrieved.
+     * @return The NodeStyle of the PathNode at the specified index (if set).
+     * @throws IndexOutOfBoundsException If the specified PathNode index is outside the range of
+     *                                   valid PathNode indices.
+     */
+    public NodeStyle getNodeStyle(int nodeIndex) throws IndexOutOfBoundsException;
+
+    /**
+     * Get the SegmentStyleType for the path segment at the specified segment index.
+     *
+     * @param segmentIndex The index of the path segment for which the SegmentStyle is to be retrieved.
+     * @return The SegmentStyleType for the path segment
+     * @throws IndexOutOfBoundsException If the specified path segment index is outside the range of
+     *                                   valid path segment indices.
+     */
+    public SegmentStyleType getSegmentStyleType(int segmentIndex) throws IndexOutOfBoundsException;
+
+    /**
+     * Get the SegmentStyle for the path segment at the specified segment index.
+     *
+     * @param segmentIndex The index of the path segment for which the SegmentStyle is to be retrieved.
+     * @return The SegmentStyle of the path segment at the specified index (if set).
+     * @throws IndexOutOfBoundsException If the specified path segment index is outside the range of
+     *                                   valid path segment indices.
+     */
+    public SegmentStyle getSegmentStyle(int segmentIndex) throws IndexOutOfBoundsException;
+
+    /**
+     * Set the state of this ClientNodePath using the specified PathCellState.
+     * Any changes should update the graphical representation of the ClientNodePath.
+     *
+     * @param state The PathCellState to use to set the values within this ClientNodePath.
+     */
+    public void setFrom(PathCellState state);
 }

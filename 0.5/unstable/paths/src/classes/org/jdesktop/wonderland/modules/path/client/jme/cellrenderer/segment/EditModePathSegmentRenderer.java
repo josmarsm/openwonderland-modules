@@ -8,7 +8,6 @@ import com.jme.scene.Node;
 import com.jme.scene.state.MaterialState;
 import com.jme.system.DisplaySystem;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.modules.path.client.ClientNodePath;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.common.style.segment.CoreSegmentStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
@@ -31,8 +30,8 @@ public class EditModePathSegmentRenderer extends AbstractPathSegmentRenderer {
          * {@inheritDoc}
          */
         @Override
-        public PathSegmentRenderer createRenderer(ClientNodePath path, int segmentIndex, int startNodeIndex, int endNodeIndex) throws IllegalArgumentException {
-            return new EditModePathSegmentRenderer(path, segmentIndex, startNodeIndex, endNodeIndex);
+        public PathSegmentRenderer createRenderer(ClientPathNode startNode) throws IllegalArgumentException {
+            return new EditModePathSegmentRenderer(startNode);
         }
 
         /**
@@ -48,13 +47,11 @@ public class EditModePathSegmentRenderer extends AbstractPathSegmentRenderer {
     /**
      * Create a new instance of EditModePathSegmentRenderer to render the path segment with the specified attributes.
      * 
-     * @param segmentNodePath The NodePath to which the path segment to be rendered belongs.
-     * @param segmentIndex The index of the path segment to be rendered.
-     * @param startNodeIndex The index of the PathNode at which the path segment to be rendered begins.
-     * @param endNodeIndex The index of the PathNode at which the path segment ends.
+     * @param startNode The ClientPathNode to which the path segment belongs which is to be rendered.
+     * @throws IllegalArgumentException If the specified start ClientPathNode was null.
      */
-    public EditModePathSegmentRenderer(ClientNodePath segmentNodePath, int segmentIndex, int startNodeIndex, int endNodeIndex) {
-        super(segmentNodePath, segmentIndex, startNodeIndex, endNodeIndex);
+    public EditModePathSegmentRenderer(ClientPathNode startNode) {
+        super(startNode);
     }
 
     /**
@@ -63,20 +60,15 @@ public class EditModePathSegmentRenderer extends AbstractPathSegmentRenderer {
     @Override
     public Node createSceneGraph(Entity entity) {
         Node editSegmentNode = new Node(entity.getName());
-        if (segmentNodePath != null && startNodeIndex >= 0 && endNodeIndex >= 0) {
-            final int noOfNodes = segmentNodePath.noOfNodes();
-            if (startNodeIndex < noOfNodes && endNodeIndex < noOfNodes) {
-                ClientPathNode startNode = segmentNodePath.getPathNode(startNodeIndex);
-                ClientPathNode endNode = segmentNodePath.getPathNode(endNodeIndex);
-                editSegmentNode = new Node("Connector");
-                Line connectorLine = new Line(editSegmentNode.getName(),
-                                              new Vector3f[] { startNode.getPosition(), endNode.getPosition() },
-                                              null,
-                                              new ColorRGBA[] { CONNECTOR_LINE_COLOR, CONNECTOR_LINE_COLOR },
-                                              null);
-                editSegmentNode.attachChild(connectorLine);
-                initMaterial(editSegmentNode);
-            }
+        if (startNode != null && startNode.hasNext()) {
+            editSegmentNode = new Node("Connector");
+            Line connectorLine = new Line(editSegmentNode.getName(),
+                                          new Vector3f[] { startNode.getPosition(), startNode.getNext().getPosition() },
+                                          null,
+                                          new ColorRGBA[] { CONNECTOR_LINE_COLOR, CONNECTOR_LINE_COLOR },
+                                          null);
+            editSegmentNode.attachChild(connectorLine);
+            initMaterial(editSegmentNode);
         }
         return editSegmentNode;
     }

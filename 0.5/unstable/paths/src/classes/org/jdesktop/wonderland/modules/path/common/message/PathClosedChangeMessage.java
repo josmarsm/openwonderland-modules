@@ -16,15 +16,15 @@ public class PathClosedChangeMessage extends CellMessage implements Serializable
      */
     private static final long serialVersionUID = 1L;
 
-    private boolean pathClosed;
+    private final boolean pathClosed;
 
     /**
-     * This is a message to set the edit mode of the PathCell.
+     * This is a message to set whether the PathCell should be represented as a closed path..
      *
      * @param cellID The id of the cell to be changed.
      * @param pathClosed Whether the PathCell should be a closed path.
      */
-    public PathClosedChangeMessage(CellID cellID, boolean pathClosed) {
+    public PathClosedChangeMessage(CellID cellID, final boolean pathClosed) {
         super(cellID);
         this.pathClosed = pathClosed;
     }
@@ -36,14 +36,5 @@ public class PathClosedChangeMessage extends CellMessage implements Serializable
      */
     public boolean isPathClosed() {
         return pathClosed;
-    }
-
-    /**
-     * Set whether the PathCell should be a closed path.
-     *
-     * @param pathClosed True if the PathCell should be a closed path.
-     */
-    public void setPathClosed(boolean pathClosed) {
-        this.pathClosed = pathClosed;
     }
 }

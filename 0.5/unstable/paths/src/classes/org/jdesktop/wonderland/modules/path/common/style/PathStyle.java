@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.path.common.style;
 
+import java.util.Arrays;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyle;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
 import java.io.Serializable;
@@ -29,7 +30,7 @@ public class PathStyle implements Serializable {
      * More complex styling may have multiple NodeStyles
      * or even per node styling.
      */
-    protected List<NodeStyle> nodeStyles;
+    private final List<NodeStyle> nodeStyles;
 
     /**
      * An array of the SegmentStyles within this PathStyle.
@@ -38,7 +39,7 @@ public class PathStyle implements Serializable {
      * More complex styling may have multiple SegmentStyles
      * or even per segment styling.
      */
-    protected List<SegmentStyle> segmentStyles;
+    private final List<SegmentStyle> segmentStyles;
 
     /**
      * Initialize this PathStyle to be blank i.e. no style information for PathNodes or
@@ -75,19 +76,14 @@ public class PathStyle implements Serializable {
      * @throws IllegalArgumentException If the specified NodeStyles or SegmentStyles are null or empty.
      */
     public PathStyle(final NodeStyle[] nodeStyles, final SegmentStyle[] segmentStyles) throws IllegalArgumentException {
-        this();
         if (nodeStyles == null || nodeStyles.length == 0) {
             throw new IllegalArgumentException("The node styles of this PathStyle cannot be null!");
         }
         if (segmentStyles == null || nodeStyles.length == 0) {
             throw new IllegalArgumentException("The segment styless of this PathStyle cannot be null!");
         }
-        for (NodeStyle nodeStyle : nodeStyles) {
-            this.nodeStyles.add(nodeStyle);
-        }
-        for (SegmentStyle segmentStyle : segmentStyles) {
-            this.segmentStyles.add(segmentStyle);
-        }
+        this.nodeStyles = new ArrayList<NodeStyle>(Arrays.asList(nodeStyles));
+        this.segmentStyles = new ArrayList<SegmentStyle>(Arrays.asList(segmentStyles));
     }
 
     /**
@@ -98,19 +94,14 @@ public class PathStyle implements Serializable {
      * @throws IllegalArgumentException If the specified NodeStyles or SegmentStyles are null or empty.
      */
     public PathStyle(final List<NodeStyle> nodeStyles, final List<SegmentStyle> segmentStyles) throws IllegalArgumentException {
-        this();
         if (nodeStyles == null || nodeStyles.isEmpty()) {
             throw new IllegalArgumentException("The node styles of this PathStyle cannot be null!");
         }
         if (segmentStyles == null || nodeStyles.isEmpty()) {
             throw new IllegalArgumentException("The segment styless of this PathStyle cannot be null!");
         }
-        for (NodeStyle nodeStyle : nodeStyles) {
-            this.nodeStyles.add(nodeStyle);
-        }
-        for (SegmentStyle segmentStyle : segmentStyles) {
-            this.segmentStyles.add(segmentStyle);
-        }
+        this.nodeStyles = new ArrayList<NodeStyle>(nodeStyles);
+        this.segmentStyles = new ArrayList<SegmentStyle>(segmentStyles);
     }
 
     /**
@@ -119,7 +110,9 @@ public class PathStyle implements Serializable {
      * @return True if any SegmentStyle is set.
      */
     public boolean isSegmentStyleSet() {
-        return !segmentStyles.isEmpty();
+        synchronized (segmentStyles) {
+            return !segmentStyles.isEmpty();
+        }
     }
 
     /**
@@ -128,7 +121,9 @@ public class PathStyle implements Serializable {
      * @return True if any NodeStyle is set.
      */
     public boolean isNodeStyleSet() {
-        return !nodeStyles.isEmpty();
+        synchronized (nodeStyles) {
+            return !nodeStyles.isEmpty();
+        }
     }
 
     /**
@@ -138,13 +133,15 @@ public class PathStyle implements Serializable {
      * @return The start SegmentStyle for this PathStyle.
      */
     public SegmentStyle getStartSegmentStyle() {
-        if (segmentStyles.isEmpty()) {
-            //No SegmentStyle available.
-            return null;
-        }
-        else {
-            //If any SegmentStyle exists always use the first SegmentStyle.
-            return segmentStyles.get(0);
+        synchronized(segmentStyles) {
+            if (segmentStyles.isEmpty()) {
+                //No SegmentStyle available.
+                return null;
+            }
+            else {
+                //If any SegmentStyle exists always use the first SegmentStyle.
+                return segmentStyles.get(0);
+            }
         }
     }
 
@@ -155,13 +152,15 @@ public class PathStyle implements Serializable {
      * @return The start NodeStyle for this PathStyle.
      */
     public NodeStyle getStartNodeStyle() {
-        if (nodeStyles.isEmpty()) {
-            //No NodeStyle available.
-            return null;
-        }
-        else {
-            //If any NodeStyle exists always use the first NodeStyle.
-            return nodeStyles.get(0);
+        synchronized(nodeStyles) {
+            if (nodeStyles.isEmpty()) {
+                //No NodeStyle available.
+                return null;
+            }
+            else {
+                //If any NodeStyle exists always use the first NodeStyle.
+                return nodeStyles.get(0);
+            }
         }
     }
 
@@ -173,13 +172,15 @@ public class PathStyle implements Serializable {
      * @return The end SegmentStyle for the PathStyle.
      */
     public SegmentStyle getEndSegmentStyle() {
-        if (segmentStyles.isEmpty()) {
-            //No SegmentStyle available.
-            return null;
-        }
-        else {
-            //If any SegmentStyle exists always use the last SegmentStyle.
-            return segmentStyles.get(segmentStyles.size() - 1);
+        synchronized(segmentStyles) {
+            if (segmentStyles.isEmpty()) {
+                //No SegmentStyle available.
+                return null;
+            }
+            else {
+                //If any SegmentStyle exists always use the last SegmentStyle.
+                return segmentStyles.get(segmentStyles.size() - 1);
+            }
         }
     }
 
@@ -192,13 +193,15 @@ public class PathStyle implements Serializable {
      * @return The end NodeStyle for the PathStyle.
      */
     public NodeStyle getEndNodeStyle() {
-        if (nodeStyles.isEmpty()) {
-            //No NodeStyle available.
-            return null;
-        }
-        else {
-            //Several node styles therefore use the last NodeStyle.
-            return nodeStyles.get(nodeStyles.size() - 1);
+        synchronized(nodeStyles) {
+            if (nodeStyles.isEmpty()) {
+                //No NodeStyle available.
+                return null;
+            }
+            else {
+                //Several node styles therefore use the last NodeStyle.
+                return nodeStyles.get(nodeStyles.size() - 1);
+            }
         }
     }
 
@@ -208,7 +211,9 @@ public class PathStyle implements Serializable {
      * @return True if the PathStyle has just one SegmentStyle.
      */
     public boolean isSingleSegmentStyle() {
-        return segmentStyles.size() == 1;
+        synchronized (segmentStyles) {
+            return segmentStyles.size() == 1;
+        }
     }
 
     /**
@@ -217,7 +222,9 @@ public class PathStyle implements Serializable {
      * @return True if the PathStyle has just one NodeStyle.
      */
     public boolean isSingleNodeStyle() {
-        return nodeStyles.size() == 1;
+        synchronized (nodeStyles) {
+            return nodeStyles.size() == 1;
+        }
     }
 
     /**
@@ -226,7 +233,9 @@ public class PathStyle implements Serializable {
      * @return The number of SegmentStyles which are used within this PathStyle.
      */
     public int noOfSegmentStyles() {
-        return segmentStyles.size();
+        synchronized(segmentStyles) {
+            return segmentStyles.size();
+        }
     }
 
     /**
@@ -235,7 +244,9 @@ public class PathStyle implements Serializable {
      * @return The number of NodeStyles which are used within this PathStyle.
      */
     public int noOfNodeStyles() {
-        return nodeStyles.size();
+        synchronized(nodeStyles) {
+            return nodeStyles.size();
+        }
     }
 
     /**
@@ -254,33 +265,35 @@ public class PathStyle implements Serializable {
      *                                   range of NodeStyle indices.
      */
     public NodeStyle getNodeStyle(int index, boolean relativeToNodes) throws IndexOutOfBoundsException {
-        if (relativeToNodes) {
-            if (index >= 0) {
-                if (nodeStyles.isEmpty()) {
-                    return null;
+        synchronized(nodeStyles) {
+            if (relativeToNodes) {
+                if (index >= 0) {
+                    if (nodeStyles.isEmpty()) {
+                        return null;
+                    }
+                    else {
+                        int currentIndex = 0;
+                        for (NodeStyle style : nodeStyles) {
+                            currentIndex += style.span();
+                            if (currentIndex < index) {
+                                return style;
+                            }
+                        }
+                        return nodeStyles.get(nodeStyles.size() - 1);
+                    }
+
                 }
                 else {
-                    int currentIndex = 0;
-                    for (NodeStyle style : nodeStyles) {
-                        currentIndex += style.span();
-                        if (currentIndex < index) {
-                            return style;
-                        }
-                    }
-                    return nodeStyles.get(nodeStyles.size() - 1);
+                    throw new IndexOutOfBoundsException(String.format("The node index %d is invalid as node indices cannot be negative!", index));
                 }
-
             }
             else {
-                throw new IndexOutOfBoundsException(String.format("The node index %d is invalid as node indices cannot be negative!", index));
-            }
-        }
-        else {
-            if (index >= 0 && index < nodeStyles.size()) {
-                return nodeStyles.get(index);
-            }
-            else {
-                throw new IndexOutOfBoundsException(String.format("The node style index: %d is outside the range of the %d node styles!", index, nodeStyles.size()));
+                if (index >= 0 && index < nodeStyles.size()) {
+                    return nodeStyles.get(index);
+                }
+                else {
+                    throw new IndexOutOfBoundsException(String.format("The node style index: %d is outside the range of the %d node styles!", index, nodeStyles.size()));
+                }
             }
         }
     }
@@ -301,33 +314,35 @@ public class PathStyle implements Serializable {
      *                                   range of NodeStyle indices.
      */
     public SegmentStyle getSegmentStyle(int index, boolean relativeToSegments) throws IndexOutOfBoundsException {
-        if (relativeToSegments) {
-            if (index >= 0) {
-                if (segmentStyles.isEmpty()) {
-                    return null;
+        synchronized(segmentStyles) {
+            if (relativeToSegments) {
+                if (index >= 0) {
+                    if (segmentStyles.isEmpty()) {
+                        return null;
+                    }
+                    else {
+                        int currentIndex = 0;
+                        for (SegmentStyle style : segmentStyles) {
+                            currentIndex += style.span();
+                            if (currentIndex < index) {
+                                return style;
+                            }
+                        }
+                        return segmentStyles.get(segmentStyles.size() - 1);
+                    }
+
                 }
                 else {
-                    int currentIndex = 0;
-                    for (SegmentStyle style : segmentStyles) {
-                        currentIndex += style.span();
-                        if (currentIndex < index) {
-                            return style;
-                        }
-                    }
-                    return segmentStyles.get(segmentStyles.size() - 1);
+                    throw new IndexOutOfBoundsException(String.format("The segment index %d is invalid as node indices cannot be negative!", index));
                 }
-
             }
             else {
-                throw new IndexOutOfBoundsException(String.format("The segment index %d is invalid as node indices cannot be negative!", index));
-            }
-        }
-        else {
-            if (index >= 0 && index < segmentStyles.size()) {
-                return segmentStyles.get(index);
-            }
-            else {
-                throw new IndexOutOfBoundsException(String.format("The segment style index: %d is outside the range of the %d segment styles!", index, nodeStyles.size()));
+                if (index >= 0 && index < segmentStyles.size()) {
+                    return segmentStyles.get(index);
+                }
+                else {
+                    throw new IndexOutOfBoundsException(String.format("The segment style index: %d is outside the range of the %d segment styles!", index, nodeStyles.size()));
+                }
             }
         }
     }
@@ -339,7 +354,9 @@ public class PathStyle implements Serializable {
      * @return True if the SegmentStyle was able to be appended successfully.
      */
     public boolean append(SegmentStyle style) {
-        return style != null && segmentStyles.add(style);
+        synchronized(segmentStyles) {
+            return style != null && segmentStyles.add(style);
+        }
     }
 
     /**
@@ -349,7 +366,9 @@ public class PathStyle implements Serializable {
      * @return True if the NodeStyle was able to be appended successfully.
      */
     public boolean append(NodeStyle style) {
-        return style != null && nodeStyles.add(style);
+        synchronized(nodeStyles) {
+            return style != null && nodeStyles.add(style);
+        }
     }
 
     /**
@@ -359,11 +378,13 @@ public class PathStyle implements Serializable {
      * @return True if the SegmentStyle was able to be inserted at the start of the SegmentStyles successfully.
      */
     public boolean insertFirst(SegmentStyle style) {
-        if (style != null) {
-            segmentStyles.add(0, style);
-            return true;
+        synchronized(nodeStyles) {
+            if (style != null) {
+                segmentStyles.add(0, style);
+                return true;
+            }
+            return false;
         }
-        return false;
     }
 
     /**
@@ -373,11 +394,13 @@ public class PathStyle implements Serializable {
      * @return True if the NodeStyle was able to be inserted at the start of the NodeStyles successfully.
      */
     public boolean insertFirst(NodeStyle style) {
-        if (style != null) {
-            nodeStyles.add(0, style);
-            return true;
+        synchronized(nodeStyles) {
+            if (style != null) {
+                nodeStyles.add(0, style);
+                return true;
+            }
+            return false;
         }
-        return false;
     }
 
     /**
@@ -389,16 +412,18 @@ public class PathStyle implements Serializable {
      * @throws IndexOutOfBoundsException If the specified index at which to insert was outside the valid range.
      */
     public boolean insertAt(int index, SegmentStyle style) throws IndexOutOfBoundsException {
-        if (style != null) {
-            if (index >= 0 && index < segmentStyles.size()) {
-                segmentStyles.add(index, style);
-                return true;
+        synchronized(segmentStyles) {
+            if (style != null) {
+                if (index >= 0 && index < segmentStyles.size()) {
+                    segmentStyles.add(index, style);
+                    return true;
+                }
+                else {
+                    throw new IndexOutOfBoundsException(String.format("The index: %d at which the segment style was to be added is outside the valid range of segment style indices!", index));
+                }
             }
-            else {
-                throw new IndexOutOfBoundsException(String.format("The index: %d at which the segment style was to be added is outside the valid range of segment style indices!", index));
-            }
+            return false;
         }
-        return false;
     }
 
     /**
@@ -410,16 +435,18 @@ public class PathStyle implements Serializable {
      * @throws IndexOutOfBoundsException If the specified index at which to insert was outside the valid range.
      */
     public boolean insertAt(int index, NodeStyle style) throws IndexOutOfBoundsException {
-        if (style != null) {
-            if (index >= 0 && index < nodeStyles.size()) {
-                nodeStyles.add(index, style);
-                return true;
+        synchronized(nodeStyles) {
+            if (style != null) {
+                if (index >= 0 && index < nodeStyles.size()) {
+                    nodeStyles.add(index, style);
+                    return true;
+                }
+                else {
+                    throw new IndexOutOfBoundsException(String.format("The index: %d at which the node style was to be added is outside the valid range of node style indices!", index));
+                }
             }
-            else {
-                throw new IndexOutOfBoundsException(String.format("The index: %d at which the node style was to be added is outside the valid range of node style indices!", index));
-            }
+            return false;
         }
-        return false;
     }
 
     /**
@@ -429,7 +456,9 @@ public class PathStyle implements Serializable {
      * @return True if the specified SegmentStyle was present in this PathStyle and was able to be removed successfully.
      */
     public boolean remove(SegmentStyle style) {
-        return style != null && segmentStyles.remove(style);
+        synchronized(segmentStyles) {
+            return style != null && segmentStyles.remove(style);
+        }
     }
 
     /**
@@ -439,7 +468,9 @@ public class PathStyle implements Serializable {
      * @return True if the specified NodeStyle was present in this PathStyle and was able to be removed successfully.
      */
     public boolean remove(NodeStyle style) {
-        return style != null && nodeStyles.remove(style);
+        synchronized(nodeStyles) {
+            return style != null && nodeStyles.remove(style);
+        }
     }
 
     /**
@@ -451,11 +482,13 @@ public class PathStyle implements Serializable {
      *                                   the valid range of SegmentStyle indices.
      */
     public SegmentStyle removeSegmentStyleAt(int index) throws IndexOutOfBoundsException {
-        if (index >= 0 && index < segmentStyles.size()) {
-            return segmentStyles.remove(index);
-        }
-        else {
-            throw new IndexOutOfBoundsException(String.format("The index: %d from which the segment style was to be removed is outside the valid range of segment style indices!", index));
+        synchronized(segmentStyles) {
+            if (index >= 0 && index < segmentStyles.size()) {
+                return segmentStyles.remove(index);
+            }
+            else {
+                throw new IndexOutOfBoundsException(String.format("The index: %d from which the segment style was to be removed is outside the valid range of segment style indices!", index));
+            }
         }
     }
 
@@ -468,11 +501,13 @@ public class PathStyle implements Serializable {
      *                                   the valid range of NodeStyle indices.
      */
     public NodeStyle removeNodeStyleAt(int index) throws IndexOutOfBoundsException {
-        if (index >= 0 && index < nodeStyles.size()) {
-            return nodeStyles.remove(index);
-        }
-        else {
-            throw new IndexOutOfBoundsException(String.format("The index: %d from which the node style was to be removed is outside the valid range of node style indices!", index));
+        synchronized(nodeStyles) {
+            if (index >= 0 && index < nodeStyles.size()) {
+                return nodeStyles.remove(index);
+            }
+            else {
+                throw new IndexOutOfBoundsException(String.format("The index: %d from which the node style was to be removed is outside the valid range of node style indices!", index));
+            }
         }
     }
 }

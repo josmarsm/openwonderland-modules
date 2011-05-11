@@ -196,6 +196,32 @@ public abstract class AbstractChildComponentRenderer implements ChildRenderer {
     protected abstract Node createSceneGraph(Entity entity);
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Node updateScene() {
+        if (entity != null) {
+            if (sceneRoot != null) {
+                sceneRoot.removeFromParent();
+                sceneRoot.detachAllChildren();
+                sceneRoot = null;
+            }
+            sceneRoot = createSceneGraph(entity);
+            RenderComponent renderComponent = entity.getComponent(RenderComponent.class);
+            if (renderComponent == null) {
+                renderComponent = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(sceneRoot);
+            }
+            else {
+                renderComponent.setSceneRoot(sceneRoot);
+            }
+        }
+        else {
+            createEntity();
+        }
+        return sceneRoot;
+    }
+
+    /**
      * Cleanup the scene graph, allowing resources to be gc'ed
      * TODO - should be abstract, but don't want to break compatability in 0.5 API
      *

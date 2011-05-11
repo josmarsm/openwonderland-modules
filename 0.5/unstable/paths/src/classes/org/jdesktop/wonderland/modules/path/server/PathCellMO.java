@@ -13,8 +13,13 @@ import org.jdesktop.wonderland.modules.path.common.PathCellServerState;
 import org.jdesktop.wonderland.modules.path.common.PathCellState;
 import org.jdesktop.wonderland.modules.path.common.PathNodeGroup;
 import org.jdesktop.wonderland.modules.path.common.PathNodeState;
+import org.jdesktop.wonderland.modules.path.common.message.PathClosedChangeMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodePositionChangeMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathStyleChangeMessage;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
-import org.jdesktop.wonderland.modules.path.server.receivers.EditModeChangedMessageReceiver;
+import org.jdesktop.wonderland.modules.path.server.receiver.StateFlagChangeMessageReceiver;
+import org.jdesktop.wonderland.modules.path.server.receiver.PathNodeChangeMessageReceiver;
+import org.jdesktop.wonderland.modules.path.server.receiver.PathStyleChangeMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
@@ -105,10 +110,17 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
         super.setLive(live);
         ChannelComponentMO channel = this.getComponent(ChannelComponentMO.class);
         if (live) {
-            channel.addMessageReceiver(EditModeChangeMessage.class, new EditModeChangedMessageReceiver(this));
+            StateFlagChangeMessageReceiver stateFlagReceiver = new StateFlagChangeMessageReceiver(this);
+            channel.addMessageReceiver(EditModeChangeMessage.class, stateFlagReceiver);
+            channel.addMessageReceiver(PathClosedChangeMessage.class, stateFlagReceiver);
+            channel.addMessageReceiver(PathNodePositionChangeMessage.class, new PathNodeChangeMessageReceiver(this));
+            channel.addMessageReceiver(PathStyleChangeMessage.class, new PathStyleChangeMessageReceiver(this));
         }
         else {
             channel.removeMessageReceiver(EditModeChangeMessage.class);
+            channel.removeMessageReceiver(PathClosedChangeMessage.class);
+            channel.removeMessageReceiver(PathNodePositionChangeMessage.class);
+            channel.removeMessageReceiver(PathStyleChangeMessage.class);
         }
     }
 
