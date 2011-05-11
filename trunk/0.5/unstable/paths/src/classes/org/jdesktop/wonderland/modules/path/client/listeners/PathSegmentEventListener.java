@@ -6,8 +6,8 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
+import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.common.Disposable;
-import org.jdesktop.wonderland.modules.path.common.NodePath;
 
 /**
  * This class represents an event listener which listens for events such as mouse clicks on a path segment.
@@ -18,14 +18,16 @@ public class PathSegmentEventListener extends EventClassListener implements Disp
 
     private static final Logger logger = Logger.getLogger(PathSegmentEventListener.class.getName());
 
-    private int segmentIndex;
-    private NodePath owner;
-    private ClickTest test;
+    private ClientPathNode startNode;
 
-    public PathSegmentEventListener(NodePath owner, int segmentIndex) {
-        this.owner = owner;
-        this.segmentIndex = segmentIndex;
-        test = new ClickTest(segmentIndex);
+    /**
+     * Create a new SegmentEventListeners to listen for events on the NodePath segment with the specified
+     * start PathNode.
+     *
+     * @param startNode The start ClientPathNode of the segment for which to listen to events.
+     */
+    public PathSegmentEventListener(ClientPathNode startNode) {
+        this.startNode = startNode;
     }
 
     /**
@@ -45,33 +47,11 @@ public class PathSegmentEventListener extends EventClassListener implements Disp
      */
     @Override
     public void commitEvent(Event event) {
-        logger.warning(String.format("Path segment has received event: %s", event.toString()));
-        if (event instanceof MouseButtonEvent3D) {
-            logger.warning("Path segment event is confirment to be a Mouse 3D event.");
-            MouseButtonEvent3D mouseButtonEvent = (MouseButtonEvent3D) event;
-            if (mouseButtonEvent.isClicked() && mouseButtonEvent.getButton() == ButtonId.BUTTON1) {
-                SwingUtilities.invokeLater(test);
-            }
-        }
+        
     }
 
     @Override
     public void dispose() {
-        owner = null;
-        segmentIndex = -1;
-    }
-
-    private static class ClickTest implements Runnable {
-
-        private int segmentIndex;
-
-        public ClickTest(int segmentIndex) {
-            this.segmentIndex = segmentIndex;
-        }
-
-        @Override
-        public void run() {
-            javax.swing.JOptionPane.showMessageDialog(null, String.format("Segment Clicked: %d.", segmentIndex));
-        }
+        startNode = null;
     }
 }

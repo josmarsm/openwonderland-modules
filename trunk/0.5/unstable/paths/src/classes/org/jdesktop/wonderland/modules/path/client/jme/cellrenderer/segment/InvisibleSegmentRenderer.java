@@ -2,8 +2,7 @@ package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment;
 
 import com.jme.scene.Node;
 import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.common.cell.CellStatus;
-import org.jdesktop.wonderland.modules.path.client.ClientNodePath;
+import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.common.style.segment.CoreSegmentStyleType;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
 
@@ -23,8 +22,8 @@ public class InvisibleSegmentRenderer extends AbstractPathSegmentRenderer {
          * {@inheritDoc}
          */
         @Override
-        public PathSegmentRenderer createRenderer(ClientNodePath path, int segmentIndex, int startNodeIndex, int endNodeIndex) throws IllegalArgumentException {
-            return new InvisibleSegmentRenderer(path, segmentIndex, startNodeIndex, endNodeIndex);
+        public PathSegmentRenderer createRenderer(ClientPathNode startNode) throws IllegalArgumentException {
+            return new InvisibleSegmentRenderer(startNode);
         }
 
         /**
@@ -40,13 +39,11 @@ public class InvisibleSegmentRenderer extends AbstractPathSegmentRenderer {
     /**
      * Create a new instance of InvisibleSegmentRenderer to render the path segment with the specified attributes.
      *
-     * @param segmentNodePath The NodePath to which the path segment to be rendered belongs.
-     * @param segmentIndex The index of the path segment to be rendered.
-     * @param startNodeIndex The index of the PathNode at which the path segment to be rendered begins.
-     * @param endNodeIndex The index of the PathNode at which the path segment ends.
+     * @param startNode The ClientPathNode to which the path segment belongs which is to be rendered.
+     * @throws IllegalArgumentException If the specified start ClientPathNode was null.
      */
-    public InvisibleSegmentRenderer(ClientNodePath segmentNodePath, int segmentIndex, int startNodeIndex, int endNodeIndex) {
-        super(segmentNodePath, segmentIndex, startNodeIndex, endNodeIndex);
+    public InvisibleSegmentRenderer(ClientPathNode startNode) {
+        super(startNode);
     }
 
     /**

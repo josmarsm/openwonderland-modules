@@ -16,7 +16,7 @@ public class EditModeChangeMessage extends CellMessage implements Serializable {
      */
     private static final long serialVersionUID = 1L;
 
-    private boolean editMode;
+    private final boolean editMode;
 
     /**
      * This is a message to set the edit mode of the PathCell.
@@ -24,7 +24,7 @@ public class EditModeChangeMessage extends CellMessage implements Serializable {
      * @param cellID The id of the cell to be changed.
      * @param editMode Whether the PathCell should be in edit mode.
      */
-    public EditModeChangeMessage(CellID cellID, boolean editMode) {
+    public EditModeChangeMessage(CellID cellID, final boolean editMode) {
         super(cellID);
         this.editMode = editMode;
     }
@@ -36,14 +36,5 @@ public class EditModeChangeMessage extends CellMessage implements Serializable {
      */
     public boolean isEditMode() {
         return editMode;
-    }
-
-    /**
-     * Set whether the PathCell should be in EditMode.
-     *
-     * @param editMode True if the PathCell should be in edit mode.
-     */
-    public void setEditMode(boolean editMode) {
-        this.editMode = editMode;
     }
 }

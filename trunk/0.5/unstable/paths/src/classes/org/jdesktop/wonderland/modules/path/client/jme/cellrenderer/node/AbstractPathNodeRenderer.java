@@ -1,7 +1,10 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.node;
 
+import com.jme.scene.Node;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
+import org.jdesktop.wonderland.modules.path.client.PathNodeComponent;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.AbstractChildComponentRenderer;
 import org.jdesktop.wonderland.modules.path.client.listeners.PathNodeEventListener;
 import org.jdesktop.wonderland.modules.path.common.NodePath;
@@ -85,7 +88,16 @@ public abstract class AbstractPathNodeRenderer extends AbstractChildComponentRen
     protected String getOwnerName() {
         return pathNode != null ? (pathNode.isNamed() ? pathNode.getName() : String.format("Path Node %d", pathNode.getSequenceIndex())) : "Null Node";
     }
-    
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void addComponents(Entity entity, Node childTopNode) {
+        super.addComponents(entity, childTopNode);
+        entity.addComponent(PathNodeComponent.class, new PathNodeComponent(pathNode));
+    }
+
     /**
      * {@inheritDoc}
      */

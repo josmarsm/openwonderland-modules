@@ -59,6 +59,13 @@ public interface ChildRenderer extends Disposable {
     public Entity getEntity();
 
     /**
+     * Update the child component's scene after some change has occurred requiring the scene to be updated.
+     *
+     * @return The JME node of the updated scene.
+     */
+    public Node updateScene();
+
+    /**
      * Notify the renderer of a cell status change
      * @param status
      */

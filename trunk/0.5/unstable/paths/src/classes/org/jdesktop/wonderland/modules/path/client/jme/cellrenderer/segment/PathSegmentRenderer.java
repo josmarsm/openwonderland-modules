@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.segment;
 
+import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.client.jme.cellrenderer.ChildRenderer;
 import org.jdesktop.wonderland.modules.path.common.style.segment.SegmentStyleType;
 
@@ -18,4 +19,11 @@ public interface PathSegmentRenderer extends ChildRenderer {
      *         is not specific to any given SegmentStyleType.
      */
     public SegmentStyleType getRenderedType();
+
+    /**
+     * Get the ClientPathNode which is the start node for the rendered NodePath segment.
+     *
+     * @return The ClientPathNode which is the start node for the rendered NodePath
+     */
+    public ClientPathNode getStartNode();
 }

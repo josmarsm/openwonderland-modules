@@ -3,6 +3,8 @@ package org.jdesktop.wonderland.modules.path.client;
 import java.io.Serializable;
 import org.jdesktop.wonderland.modules.path.common.NodePath;
 import org.jdesktop.wonderland.modules.path.common.PathNode;
+import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
+import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
 
 /**
  * This interface extends the basic PathNode interface to provide ease of access to
@@ -43,6 +45,17 @@ public interface ClientPathNode extends PathNode, Serializable {
      */
     public boolean hasNext();
 
+    /**
+     * Get the sequence index of the next ClientPathNode.
+     * This may simply be one more than the sequence index of
+     * this ClientPathNode or if the nodes are in a closed loop it may loop
+     * to back to the lowest index. If this ClientPathNode has
+     * no next ClientPathNode then -1 will be returned.
+     *
+     * @return The sequence index of the next ClientPathNode in the NodePath or -1 if
+     *         this ClientPathNode has no next ClientPathNode.
+     */
+    public int getNextIndex();
 
     /**
      * Get the first node in the chain of ClientPathNodes. This method
@@ -70,6 +83,18 @@ public interface ClientPathNode extends PathNode, Serializable {
     public boolean hasPrevious();
 
     /**
+     * Get the sequence index of the previous ClientPathNode.
+     * This may simply be one less than the sequence index of
+     * this ClientPathNode or if the nodes are in a closed loop it may loop
+     * to back to the highest index. If this ClientPathNode has
+     * no previous ClientPathNode then -1 will be returned.
+     *
+     * @return The sequence index of the previous ClientPathNode in the NodePath or -1 if
+     *         this ClientPathNode has no previous ClientPathNode.
+     */
+    public int getPreviousIndex();
+
+    /**
      * Whether this ClientPathNode is a sentinel node.
      * This is relevant to closed paths where the links from previous to next
      * ClientPathNodes loop around. In these cases another means is needed
@@ -78,6 +103,20 @@ public interface ClientPathNode extends PathNode, Serializable {
      * @return True if this node is a sentinel node in a ClosedPath. 
      */
     public boolean isSentinel();
+
+    /**
+     * Get the NodeStyle for this PathNode if available.
+     *
+     * @return The NodeStyle for this PathNode if available or null if the PathNode has no NodeStyle.
+     */
+    public NodeStyle getStyle();
+
+    /**
+     * Get the NodeStyleType for this PathNode if available.
+     *
+     * @return The NodeStyleType of this PathNode if available.
+     */
+    public NodeStyleType getStyleType();
 
     /**
      * Clear out the internal state of this ClientPathNode prior to deletion.

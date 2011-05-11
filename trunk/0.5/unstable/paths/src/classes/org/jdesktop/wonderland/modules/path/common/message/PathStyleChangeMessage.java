@@ -11,22 +11,24 @@ import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
  *
  * @author Carl Jokl
  */
-public class PathStyleChangedMessage extends CellMessage implements Serializable {
+public class PathStyleChangeMessage extends CellMessage implements Serializable {
 
     /**
      * The version number for serialization.
      */
     private static final long serialVersionUID = 1L;
 
-    private PathStyle pathStyle;
+    private final PathStyle pathStyle;
 
     /**
-     * Create a new instance of PathStyleChangedMessage.
+     * Create a new instance of PathStyleChangeMessage.
      *
      * @param cellID The id of the cell which has changed.
+     * @param pathStyle The new PathStyle which the PathCell now has.
      */
-    public PathStyleChangedMessage(CellID cellID) {
+    public PathStyleChangeMessage(CellID cellID, final PathStyle pathStyle) {
         super(cellID);
+        this.pathStyle = pathStyle;
     }
 
     /**
