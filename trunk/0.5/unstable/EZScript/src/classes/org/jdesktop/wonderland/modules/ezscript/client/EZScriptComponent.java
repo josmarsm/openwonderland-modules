@@ -5,7 +5,6 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
-import java.awt.Container;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,10 +46,8 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
-import org.jdesktop.wonderland.modules.ezscript.client.SPI.FarCellEventSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
-import org.jdesktop.wonderland.modules.ezscript.client.annotation.TriggerCellEvent;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.common.CellTriggerEventMessage;
@@ -754,17 +751,17 @@ public class EZScriptComponent extends CellComponent {
 
                 if(m.isClicked() && m.getButton() == ButtonId.BUTTON1) {
                     executeOnClick(true);
-                    callbacksMap.put("onClick", new SharedString());
+                    callbacksMap.put("onClick", new SharedString().valueOf(""+System.currentTimeMillis()));
                 }
             }
             else if(event instanceof MouseEnterExitEvent3D) {
                 MouseEnterExitEvent3D m = (MouseEnterExitEvent3D)event;
                 if(m.isEnter()) {
-                    executeOnMouseEnter(true);
-                    callbacksMap.put("onMouseEnter", new SharedString());
+                    executeOnMouseEnter(true);                    
+                    callbacksMap.put("onMouseEnter", new SharedString().valueOf(""+System.currentTimeMillis()));
                 } else {
                     executeOnMouseExit(true);
-                    callbacksMap.put("onMouseExit", new SharedString());
+                    callbacksMap.put("onMouseExit",new SharedString().valueOf(""+System.currentTimeMillis()));
                 }
             }
 
@@ -877,11 +874,11 @@ public class EZScriptComponent extends CellComponent {
         public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
             if(entered) {
                 executeOnApproach(true);
-                callbacksMap.put("onApproach", new SharedString());
+                callbacksMap.put("onApproach", new SharedString().valueOf(""+System.currentTimeMillis()));
             }
             else {
                 executeOnLeave(true);
-                callbacksMap.put("onLeave", new SharedString());
+                callbacksMap.put("onLeave", new SharedString().valueOf(""+System.currentTimeMillis()));
             }
         }
    }
