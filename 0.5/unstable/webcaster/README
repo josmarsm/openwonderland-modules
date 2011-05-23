@@ -34,6 +34,8 @@ Download and Install Red5 as an OWL Component
 4. In the red5-server module, open build.xml
    # Edit red5.dir property so it points to the Red5 source folder
    # Comment out references to the Red5 examples and oflaDemo
+   # Run ant dist
+   # Run ant deploy
 
 5. Install Red5 as an Open Wonderland component
    # Open the Open Wonderland web administration and select 'Server Components'
@@ -44,7 +46,7 @@ Download and Install Red5 as an OWL Component
 	Component Class: org.jdesktop.wonderland.modules.red5.weblib.Red5Runner
 	Location:        Local
 
-   # Click 'Add Component'
+   # Click 'Save'
 
    To test Red5 is operational, go to http://localhost:5080. If it is working, a test page will be visible.
 
