@@ -20,6 +20,9 @@ package org.jdesktop.wonderland.modules.webcaster.client;
 
 import java.awt.image.BufferedImage;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
@@ -53,22 +56,27 @@ import org.jdesktop.wonderland.modules.webcaster.client.utils.RTMPOut;
 public class WebcasterCell extends Cell
 {
     private static final boolean VIDEO_AVAILABLE = VideoLibraryLoader.loadVideoLibraries();
-    private static String SERVER_URL;
+
+    private static final String SERVER_URL;
 
     static
     {
-        String url = "";
-        try{
-            url = System.getProperty("wonderland.server.url").substring(System.getProperty("wonderland.server.url").indexOf(":") + 3);
+        String sgs_server = System.getProperty("sgs.server");
+        logger.warning("sgs.server: " + sgs_server);
+        URL sgs_serverURL = null;
+        String host = "127.0.0.1";
+        try {
+            sgs_serverURL = new URL(sgs_server);
+            logger.warning("sgs_serverURL: " + sgs_serverURL);
+        } catch (MalformedURLException ex) {
+            logger.log(Level.SEVERE, null, ex);
         }
-        catch (NullPointerException e){
-            url = System.getProperty("wonderland.server.url");
+        if (sgs_serverURL != null) {
+            host = sgs_serverURL.getHost();
         }
-
-        try{url = url.substring(0, url.lastIndexOf(":"));}catch (NullPointerException e){}
-        if (url == ""){url = "127.0.0.1";}
-
-        SERVER_URL = "rtmp://" + url + ":1935/";
+        logger.warning("host: " + host);
+        SERVER_URL = "rtmp://" + host + ":1935/";
+        logger.warning("SERVER_URL: " + SERVER_URL);
     }
 
     private WebcasterCellRenderer renderer = null;
