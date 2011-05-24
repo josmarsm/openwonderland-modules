@@ -41,6 +41,7 @@ public class WebcasterCellFactory implements CellFactorySPI {
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         WebcasterCellServerState state = new WebcasterCellServerState();
+        state.setName("Webcaster");
         return (T)state;
     }
 
