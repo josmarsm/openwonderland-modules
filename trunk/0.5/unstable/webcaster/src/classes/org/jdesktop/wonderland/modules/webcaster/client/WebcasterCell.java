@@ -86,7 +86,7 @@ public class WebcasterCell extends Cell
 
     private HUD mainHUD;
     private HUDComponent hudComponent;
-    private ControlPanel controlPanel;
+    private WebcasterControlPanel controlPanel;
 
     private boolean isRecording = false;
     private RTMPOut streamOutput;
@@ -160,9 +160,10 @@ public class WebcasterCell extends Cell
                         {
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    controlPanel = new ControlPanel(WebcasterCell.this);
+                                    controlPanel = new WebcasterControlPanel(WebcasterCell.this);
                                     hudComponent = mainHUD.createComponent(controlPanel);
-                                    hudComponent.setPreferredLocation(Layout.SOUTHWEST);
+                                    hudComponent.setPreferredLocation(Layout.NORTHWEST);
+                                    hudComponent.setName("Webcaster Control Panel");
                                     mainHUD.addComponent(hudComponent);
                                 }
                             });
