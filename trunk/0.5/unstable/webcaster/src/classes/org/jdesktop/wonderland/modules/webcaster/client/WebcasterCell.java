@@ -262,7 +262,7 @@ public class WebcasterCell extends Cell
         remoteWebcasting = b;
     }
 
-    boolean isRemoteWebcasting() {
+    public boolean isRemoteWebcasting() {
         return remoteWebcasting;
     }
 
