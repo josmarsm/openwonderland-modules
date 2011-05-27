@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.modules.webcaster.client.WebcasterCell;
 import com.jme.math.Quaternion;
 import com.jme.scene.CameraNode;
+import com.jme.scene.SharedMesh;
 import com.jme.scene.Spatial;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -235,16 +236,17 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
             TriMesh mesh = mbe.getPickDetails().getTriMesh();
             
             switch (mbe.getID()) {
-                case MouseEvent.MOUSE_PRESSED:
-                    mousePressed(mesh);
+                case MouseEvent.MOUSE_CLICKED:
+                    mouseClicked(mesh);
                     break;
             }
         }
 
-        private void mousePressed(TriMesh mesh)
-        {
-            if (mesh.toString().equals("ID627-Material3 (com.jme.scene.SharedMesh)")){
-                ((WebcasterCell)cell).setRecording(!((WebcasterCell)cell).getRecording());
+        private void mouseClicked(TriMesh mesh) {
+            if (mesh.toString().equals("ID627-Material3 (com.jme.scene.SharedMesh)")) {
+                if (((WebcasterCell) cell).isRemoteWebcasting()) {
+                    ((WebcasterCell) cell).setRecording(!((WebcasterCell) cell).getRecording());
+                }
             }
         }
     }
