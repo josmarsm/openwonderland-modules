@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.webcaster.client;
 
 import java.awt.image.BufferedImage;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -31,6 +32,8 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
+import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
@@ -48,8 +51,10 @@ import org.jdesktop.wonderland.client.utils.AudioResource;
 import org.jdesktop.wonderland.client.utils.VideoLibraryLoader;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.webcaster.client.utils.RTMPOut;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellChangeMessage;
+import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellClientState;
 
 /**
  * @author Christian O'Connell
@@ -90,9 +95,12 @@ public class WebcasterCell extends Cell
     private WebcasterControlPanel controlPanel;
 
     private boolean localRecording = false;
+    private boolean remoteWebcasting = false;
     private RTMPOut streamOutput;
 
     private AudioResource startSound = null;
+    /** the message handler, or null if no message handler is registered */
+    private WebcasterCellMessageReceiver receiver = null;
 
     public WebcasterCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -146,21 +154,18 @@ public class WebcasterCell extends Cell
     }
     
     @Override
-    public void setStatus(CellStatus status, boolean increasing)
-    {
+    public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
-        switch (status)
-        {
+        switch (status) {
             case RENDERING:
-                if (increasing)
-                {
-                    if (mainHUD == null){
+                if (increasing) {
+                    if (mainHUD == null) {
                         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
-                        try
-                        {
+                        try {
                             SwingUtilities.invokeLater(new Runnable() {
+
                                 public void run() {
                                     controlPanel = new WebcasterControlPanel(WebcasterCell.this);
                                     hudComponent = mainHUD.createComponent(controlPanel);
@@ -169,31 +174,30 @@ public class WebcasterCell extends Cell
                                     mainHUD.addComponent(hudComponent);
                                 }
                             });
-                        }
-                        catch (Exception x) {
+                        } catch (Exception x) {
                             throw new RuntimeException("Cannot create construct panel");
                         }
                     }
 
-                    if (menuFactory == null)
-                    {
-                        menuFactory = new ContextMenuFactorySPI()
-                        {
+                    if (menuFactory == null) {
+                        menuFactory = new ContextMenuFactorySPI() {
+
                             public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                                return new ContextMenuItem[]{new SimpleContextMenuItem("Control Panel", new ContextMenuActionListener(){
-                                    public void actionPerformed(ContextMenuItemEvent event){
-                                        try
-                                        {
-                                            SwingUtilities.invokeLater(new Runnable () {
-                                                public void run () {
-                                                    hudComponent.setVisible(true);
-                                                }
-                                            });
-                                        } catch (Exception x) {
-                                            throw new RuntimeException("Cannot add hud component to main hud");
+                                return new ContextMenuItem[]{new SimpleContextMenuItem("Control Panel", new ContextMenuActionListener() {
+
+                                        public void actionPerformed(ContextMenuItemEvent event) {
+                                            try {
+                                                SwingUtilities.invokeLater(new Runnable() {
+
+                                                    public void run() {
+                                                        hudComponent.setVisible(true);
+                                                    }
+                                                });
+                                            } catch (Exception x) {
+                                                throw new RuntimeException("Cannot add hud component to main hud");
+                                            }
                                         }
-                                    }
-                                })};
+                                    })};
                             }
                         };
                         contextComp.addContextMenuFactory(menuFactory);
@@ -201,9 +205,28 @@ public class WebcasterCell extends Cell
                 }
 
                 break;
+            case ACTIVE: {
+                if (increasing) {
+                    //About to become visible, so add the message receiver
+                    if (receiver == null) {
+                        receiver = new WebcasterCellMessageReceiver();
+                        getChannel().addMessageReceiver(WebcasterCellChangeMessage.class, receiver);
+                    }
+                }
+            }
             case DISK:
-                if (!increasing){
+                if (!increasing) {
                     setRecording(false);
+                    if (getChannel() != null) {
+                        getChannel().removeMessageReceiver(WebcasterCellChangeMessage.class);
+                    }
+                    receiver = null;
+                    if (menuFactory != null) {
+                        contextComp.removeContextMenuFactory(menuFactory);
+                        menuFactory = null;
+                    }
+                    controlPanel.setVisible(false);
+                    controlPanel = null;
                 }
                 break;
         }
@@ -212,6 +235,11 @@ public class WebcasterCell extends Cell
     @Override
     public void setClientState(CellClientState state){
         super.setClientState(state);
+        remoteWebcasting = ((WebcasterCellClientState) state).isWebcasting();
+    }
+
+    private ChannelComponent getChannel() {
+        return getComponent(ChannelComponent.class);
     }
 
     @Override
@@ -225,6 +253,35 @@ public class WebcasterCell extends Cell
         else
         {
             return super.createCellRenderer(rendererType);
+        }
+    }
+
+    private void setRemoteWebcasting(boolean b) {
+        logger.info("setRemoteWebcasting: " + b);
+        controlPanel.setRemoteWebcasting(b);
+        remoteWebcasting = b;
+    }
+
+    boolean isRemoteWebcasting() {
+        return remoteWebcasting;
+    }
+
+    class WebcasterCellMessageReceiver implements ComponentMessageReceiver {
+
+        public void messageReceived(CellMessage message) {
+            WebcasterCellChangeMessage wccm = (WebcasterCellChangeMessage) message;
+            BigInteger senderID = wccm.getSenderID();
+            if (senderID == null) {
+                //Broadcast from server
+                senderID = BigInteger.ZERO;
+            }
+            if (!senderID.equals(getCellCache().getSession().getID())) {
+                setRemoteWebcasting(wccm.isWebcasting());
+
+            } else {
+                logger.warning("it's from me to me!");
+                
+            }
         }
     }
 }
