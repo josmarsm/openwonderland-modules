@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.webcaster.client;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.logging.Logger;
 
 /**
  * Control panel for Webcaster. Provides button to start & stop webcasting,
@@ -40,6 +41,7 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         dirField.setText("wonderland");
         previewPanel.setLayout(new BorderLayout());
         previewPanel.add(cell.getCaptureComponent(), BorderLayout.CENTER);
+        setRemoteWebcasting(cell.isRemoteWebcasting());
     }
 
     public String getStreamName(){
@@ -117,6 +119,12 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
     private javax.swing.JLabel streamBox;
     // End of variables declaration//GEN-END:variables
 
+    void setRemoteWebcasting(boolean b) {
+        Logger.getLogger(WebcasterControlPanel.class.getSimpleName()).warning("remoteWebcasting: " + b);
+        dirField.setEnabled(!b);
+        recordButton.setEnabled(!b);
+        streamBox.setEnabled(!b);
+    }
 
     // End of variables declaration
 
