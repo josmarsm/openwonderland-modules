@@ -19,19 +19,49 @@
 package org.jdesktop.wonderland.modules.webcaster.server;
 
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellChangeMessage;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellClientState;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellServerState;
+import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
+import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
  * @author Christian O'Connell
+ * @author Bernard Horan
  */
 public class WebcasterCellMO extends CellMO
 {
+    private boolean isWebcasting;
+    
     public WebcasterCellMO(){
+        super();
+        isWebcasting = false;
+    }
+
+    @Override
+    protected void setLive(boolean live) {
+        super.setLive(live);
+        if (live) {
+            ChannelComponentMO channel = getChannel();
+            if (channel == null) {
+                throw new IllegalStateException("Cell does not have a ChannelComponent");
+            }
+            //Add the message receiver to the channel
+            channel.addMessageReceiver(WebcasterCellChangeMessage.class,
+                    (ChannelComponentMO.ComponentMessageReceiver) new WebcasterCellMOMessageReceiver(this));
+        } else {
+            getChannel().removeMessageReceiver(WebcasterCellChangeMessage.class);
+        }
+    }
+
+    private ChannelComponentMO getChannel() {
+        return getComponent(ChannelComponentMO.class);
     }
 
     @Override
@@ -58,9 +88,26 @@ public class WebcasterCellMO extends CellMO
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities)
     {
         if (cellClientState == null){
-            cellClientState = new WebcasterCellClientState();
+            cellClientState = new WebcasterCellClientState(isWebcasting);
         }
 
         return super.getClientState(cellClientState, clientID, capabilities);
+    }
+
+    private void setWebcasting(boolean isWebcasting) {
+        logger.warning("isWebcasting: " + isWebcasting);
+        this.isWebcasting = isWebcasting;
+    }
+
+    private static class WebcasterCellMOMessageReceiver extends AbstractComponentMessageReceiver {
+        public WebcasterCellMOMessageReceiver(WebcasterCellMO cellMO) {
+            super(cellMO);
+        }
+        public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
+            WebcasterCellMO cellMO = (WebcasterCellMO)getCell();
+            WebcasterCellChangeMessage wccm = (WebcasterCellChangeMessage)message;
+            cellMO.setWebcasting(wccm.isWebcasting());
+            cellMO.getChannel().sendAll(clientID, wccm);
+        }
     }
 }
