@@ -49,6 +49,7 @@ import org.jdesktop.wonderland.client.utils.VideoLibraryLoader;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.modules.webcaster.client.utils.RTMPOut;
+import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellChangeMessage;
 
 /**
  * @author Christian O'Connell
@@ -88,7 +89,7 @@ public class WebcasterCell extends Cell
     private HUDComponent hudComponent;
     private WebcasterControlPanel controlPanel;
 
-    private boolean isRecording = false;
+    private boolean localRecording = false;
     private RTMPOut streamOutput;
 
     private AudioResource startSound = null;
@@ -116,9 +117,10 @@ public class WebcasterCell extends Cell
     }
 
     public void setRecording(boolean isRecording){
-        this.isRecording = isRecording;
+        this.localRecording = isRecording;
         renderer.setButtonRecordingState(isRecording);
-        
+        WebcasterCellChangeMessage msg = new WebcasterCellChangeMessage(localRecording);
+        sendCellMessage(msg);
         if (!isRecording){
             try{
                 streamOutput.close();
@@ -131,7 +133,7 @@ public class WebcasterCell extends Cell
     }
 
     public boolean getRecording(){
-        return isRecording;
+        return localRecording;
     }
 
     public void write(BufferedImage frame)

@@ -18,17 +18,16 @@
 
 package org.jdesktop.wonderland.modules.webcaster.common;
 
-import org.jdesktop.wonderland.common.cell.state.CellClientState;
+import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- * @author Christian O'Connell
+ *
  * @author Bernard Horan
  */
-public class WebcasterCellClientState extends CellClientState
-{
+public class WebcasterCellChangeMessage extends CellMessage {
     private final boolean isWebcasting;
 
-    public WebcasterCellClientState(boolean isWebcasting){
+    public WebcasterCellChangeMessage(boolean isWebcasting) {
         super();
         this.isWebcasting = isWebcasting;
     }
@@ -37,4 +36,3 @@ public class WebcasterCellClientState extends CellClientState
         return isWebcasting;
     }
 }
-
