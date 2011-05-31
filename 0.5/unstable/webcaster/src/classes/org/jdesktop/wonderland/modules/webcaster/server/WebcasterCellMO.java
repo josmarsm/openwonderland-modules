@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class WebcasterCellMO extends CellMO
 {
-    private boolean isWebcasting;
+    private transient boolean isWebcasting;
     
     public WebcasterCellMO(){
         super();
