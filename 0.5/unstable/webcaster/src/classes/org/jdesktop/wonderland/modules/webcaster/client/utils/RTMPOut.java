@@ -76,7 +76,7 @@ public class RTMPOut
 
     public void write(BufferedImage frame)
     {
-        if (outContainer == null){
+        if (outContainer == null || outStreamCoder == null){
             initOutput();
         }
         
