@@ -21,6 +21,8 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 
 /**
  * Control panel for Webcaster. Provides button to start & stop webcasting,
@@ -98,17 +100,16 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     
-    private void record(ActionEvent evt)
+    private void record(boolean state)
     {
-        streamBox.setEnabled(cell.getRecording());
-        dirField.setEnabled(cell.getRecording());
-
         //recordButton.setText(!cell.getRecording()?"Stop Capture":"Begin Capture");
-        cell.setRecording(!cell.getRecording());
+        cell.setRecording(state);
+        streamBox.setEnabled(!cell.getRecording());
+        dirField.setEnabled(!cell.getRecording());
     }
 
     private void recordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recordButtonActionPerformed
-        record(evt);
+        record(recordButton.isSelected());
     }//GEN-LAST:event_recordButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -120,13 +121,22 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     void setRemoteWebcasting(boolean b) {
-        Logger.getLogger(WebcasterControlPanel.class.getSimpleName()).warning("remoteWebcasting: " + b);
+        //Logger.getLogger(WebcasterControlPanel.class.getSimpleName()).warning("remoteWebcasting: " + b);
         dirField.setEnabled(!b);
         recordButton.setEnabled(!b);
         streamBox.setEnabled(!b);
     }
 
-    // End of variables declaration
+    void updateWebcasting() {
+        SwingUtilities.invokeLater(new Runnable() {
 
+            public void run() {
+                recordButton.setSelected(cell.getRecording());
+                streamBox.setEnabled(!cell.getRecording());
+                dirField.setEnabled(!cell.getRecording());
+            }
+        });
+        
+    }
     
 }
