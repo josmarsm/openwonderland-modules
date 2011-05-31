@@ -30,6 +30,7 @@ import com.jme.math.Quaternion;
 import com.jme.scene.CameraNode;
 import com.jme.scene.SharedMesh;
 import com.jme.scene.Spatial;
+import com.sun.xml.internal.bind.v2.runtime.reflect.Accessor.SetterOnlyReflection;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -47,10 +48,12 @@ import org.jdesktop.mtgame.RenderBuffer;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.TextureRenderBuffer;
 import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.artimport.DeployedModel;
 import org.jdesktop.wonderland.client.jme.artimport.LoaderManager;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -192,10 +195,21 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
         return image;
     }
 
-    public void setButtonRecordingState(Boolean state)
+    public void setButtonRecordingState(final boolean state)
     {
         WorldManager wm = ClientContextJME.getWorldManager();
-        videoSpatial.setLocalTranslation(0f, 0f, -0.15f * (state?1:0));
+        SceneWorker.addWorker(new WorkCommit() {
+
+            public void commit() {
+                float z = 0;
+                if (state) {
+                    z = -0.15f;
+                }
+                logger.warning("z: " + z);
+                videoSpatial.setLocalTranslation(0f, 0f, z);
+            }
+        });
+        
         wm.addToUpdateList(videoSpatial);
     }
 
@@ -244,8 +258,10 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
 
         private void mouseClicked(TriMesh mesh) {
             if (mesh.toString().equals("ID627-Material3 (com.jme.scene.SharedMesh)")) {
-                if (((WebcasterCell) cell).isRemoteWebcasting()) {
+                if (!((WebcasterCell) cell).isRemoteWebcasting()) {
                     ((WebcasterCell) cell).setRecording(!((WebcasterCell) cell).getRecording());
+                    ((WebcasterCell) cell).updateControlPanel();
+
                 }
             }
         }

@@ -58,6 +58,7 @@ import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellClientState
 
 /**
  * @author Christian O'Connell
+ * @author Bernard Horan
  */
 public class WebcasterCell extends Cell
 {
@@ -67,22 +68,24 @@ public class WebcasterCell extends Cell
 
     static
     {
+        //This seems to be the wrong property, why isn't it the web server?
+        //Because the web server url doesn't seem to be available from the client
         String sgs_server = System.getProperty("sgs.server");
-        logger.warning("sgs.server: " + sgs_server);
+        //logger.warning("sgs.server: " + sgs_server);
         URL sgs_serverURL = null;
         String host = "127.0.0.1";
         try {
             sgs_serverURL = new URL(sgs_server);
-            logger.warning("sgs_serverURL: " + sgs_serverURL);
+            //logger.warning("sgs_serverURL: " + sgs_serverURL);
         } catch (MalformedURLException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            //logger.log(Level.SEVERE, null, ex);
         }
         if (sgs_serverURL != null) {
             host = sgs_serverURL.getHost();
         }
-        logger.warning("host: " + host);
+        //logger.warning("host: " + host);
         SERVER_URL = "rtmp://" + host + ":1935/";
-        logger.warning("SERVER_URL: " + SERVER_URL);
+        //logger.warning("SERVER_URL: " + SERVER_URL);
     }
 
     private WebcasterCellRenderer renderer = null;
@@ -124,19 +127,19 @@ public class WebcasterCell extends Cell
         return renderer.getCaptureComponent();
     }
 
-    public void setRecording(boolean isRecording){
-        this.localRecording = isRecording;
+    public void setRecording(boolean isRecording) {
         renderer.setButtonRecordingState(isRecording);
         WebcasterCellChangeMessage msg = new WebcasterCellChangeMessage(localRecording);
         sendCellMessage(msg);
-        if (!isRecording){
-            try{
+        if (!isRecording & localRecording) {
+            try {
                 streamOutput.close();
                 streamOutput = null;
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "problem closing stream", e);
             }
-            catch(Exception e){}
         }
-
+        localRecording = isRecording;
         startSound.play();
     }
 
@@ -175,7 +178,7 @@ public class WebcasterCell extends Cell
                                 }
                             });
                         } catch (Exception x) {
-                            throw new RuntimeException("Cannot create construct panel");
+                            throw new RuntimeException("Cannot create control panel");
                         }
                     }
 
@@ -183,7 +186,7 @@ public class WebcasterCell extends Cell
                         menuFactory = new ContextMenuFactorySPI() {
 
                             public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                                return new ContextMenuItem[]{new SimpleContextMenuItem("Control Panel", new ContextMenuActionListener() {
+                                return new ContextMenuItem[]{new SimpleContextMenuItem("Open Control Panel", new ContextMenuActionListener() {
 
                                         public void actionPerformed(ContextMenuItemEvent event) {
                                             try {
@@ -202,7 +205,7 @@ public class WebcasterCell extends Cell
                         };
                         contextComp.addContextMenuFactory(menuFactory);
                     }
-                }
+                } 
 
                 break;
             case ACTIVE: {
@@ -225,8 +228,13 @@ public class WebcasterCell extends Cell
                         contextComp.removeContextMenuFactory(menuFactory);
                         menuFactory = null;
                     }
-                    controlPanel.setVisible(false);
-                    controlPanel = null;
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            hudComponent.setVisible(false);
+                        }
+                    });
+                    
                 }
                 break;
         }
@@ -257,13 +265,17 @@ public class WebcasterCell extends Cell
     }
 
     private void setRemoteWebcasting(boolean b) {
-        logger.info("setRemoteWebcasting: " + b);
+        //logger.info("setRemoteWebcasting: " + b);
         controlPanel.setRemoteWebcasting(b);
         remoteWebcasting = b;
     }
 
     public boolean isRemoteWebcasting() {
         return remoteWebcasting;
+    }
+
+    public void updateControlPanel() {
+        controlPanel.updateWebcasting();
     }
 
     class WebcasterCellMessageReceiver implements ComponentMessageReceiver {
