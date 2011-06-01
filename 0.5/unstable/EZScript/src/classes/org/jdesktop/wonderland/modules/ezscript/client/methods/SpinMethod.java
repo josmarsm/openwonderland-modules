@@ -5,6 +5,8 @@ import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.scene.Node;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -16,8 +18,12 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 //import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 //import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
-import org.jdesktop.wonderland.modules.ezscript.client.StringStateMachine;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
@@ -32,6 +38,7 @@ public class SpinMethod implements ScriptMethodSPI {
     float rotations;
     float time; //in seconds, assume 30 frames per second
     private Semaphore lock;
+    private final static Logger logger = Logger.getLogger(SpinMethod.class.getName());
     public String getFunctionName() {
         return "spin";
     }
@@ -50,6 +57,11 @@ public class SpinMethod implements ScriptMethodSPI {
                 BasicRenderer r = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
                 Node node = r.getSceneRoot();                
 
+                if(r.getEntity().hasComponent(SpinProcessor.class)) {
+                    lock.release();
+                    return;
+                }
+                
                 r.getEntity().addComponent(SpinProcessor.class,
                         new SpinProcessor("Spin",
                                            node,
@@ -76,31 +88,50 @@ public class SpinMethod implements ScriptMethodSPI {
         return "animation";
     }
 
+    public MovableComponent getMovable(Cell cell) {
+        if (cell.getComponent(MovableComponent.class) != null) {
+            return cell.getComponent(MovableComponent.class);
+        }
+
+
+        //try and add MovableComponent manually
+        String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
+        CellServerComponentMessage cscm =
+                CellServerComponentMessage.newAddMessage(
+                cell.getCellID(), className);
+
+        ResponseMessage response = cell.sendCellMessageAndWait(cscm);
+        if (response instanceof ErrorMessage) {
+            logger.log(Level.WARNING, "Unable to add movable component "
+                    + "for Cell " + cell.getName() + " with ID "
+                    + cell.getCellID(),
+                    ((ErrorMessage) response).getErrorCause());
+
+            return null;
+        } else {
+            return cell.getComponent(MovableComponent.class);
+        }
+    }
+
     class SpinProcessor extends ProcessorComponent {
 
-        private WorldManager worldManager = null;
-
-        private float radians = 0.0f;
-
         private float increment = 0.0f;
-
         private Quaternion quaternion = new Quaternion();
-
-        private Node target = null;
-
         private String name = null;
         private float[] angles;
         int frameIndex = 0;
         private boolean done = false;
+        CellTransform transform;
 
         public SpinProcessor(String name, Node target, float increment) {
-            this.worldManager = ClientContextJME.getWorldManager();
-            this.target = target;
             this.increment = increment;
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
-            quaternion = target.getWorldRotation();//cell.getLocalTransform().getRotation(null);
+            
+            transform = cell.getLocalTransform();
+            quaternion = transform.getRotation(null);
             angles = quaternion.toAngles(null);
+
             for(float f: angles)
                 System.out.println(f);
         }
@@ -119,12 +150,12 @@ public class SpinMethod implements ScriptMethodSPI {
                 lock.release();
                 done = true;
             }
-            radians += increment;
+            angles[1] += increment;
             //1 revolution = (3.14 * 2) ~ 6.28
             //
-            System.out.println("current radians: "+radians);
+            System.out.println("current radians: "+angles[1]);
             //quaternion.fromAngles(0.0f, increment, 0.0f);
-            quaternion = new Quaternion(new float[] {angles[0], radians, angles[2] });
+            quaternion = new Quaternion(new float[] {angles[0], angles[1], angles[2] });
             frameIndex +=1;
         }
 
@@ -132,8 +163,9 @@ public class SpinMethod implements ScriptMethodSPI {
             if(done)
                 return;
 
-            target.setLocalRotation(quaternion);
-            worldManager.addToUpdateList(target);
+            CellTransform transform = cell.getLocalTransform();
+            transform.setRotation(quaternion);
+            getMovable(cell).localMoveRequest(transform);
         }
     }
 }
