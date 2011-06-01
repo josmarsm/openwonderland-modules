@@ -6,6 +6,7 @@
 package org.jdesktop.wonderland.modules.genericnpc.client.ezscripting;
 
 import imi.character.avatar.AvatarContext.TriggerNames;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
@@ -39,7 +40,10 @@ public class MoveNpcForward implements ScriptMethodSPI {
     }
 
     public String getDescription() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //throw new UnsupportedOperationException("Not supported yet.");
+        return "Move an NPC forward one unit.\n" +
+                "usage: MoveNpcForward(cell);";
+
     }
 
     public String getCategory() {
@@ -51,6 +55,11 @@ public class MoveNpcForward implements ScriptMethodSPI {
             return;
         }
         controls.triggerActionStart(TriggerNames.Move_Forward);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MoveNpcForward.class.getName()).log(Level.SEVERE, null, ex);
+        }
         controls.triggerActionStop(TriggerNames.Move_Forward);
     }
 }

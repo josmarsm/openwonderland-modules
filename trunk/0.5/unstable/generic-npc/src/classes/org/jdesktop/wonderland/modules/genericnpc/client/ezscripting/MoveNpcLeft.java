@@ -6,6 +6,7 @@
 package org.jdesktop.wonderland.modules.genericnpc.client.ezscripting;
 
 import imi.character.avatar.AvatarContext.TriggerNames;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
@@ -50,7 +51,13 @@ public class MoveNpcLeft implements ScriptMethodSPI {
         if(fail) {
             return;
         }
+
         controls.triggerActionStart(TriggerNames.Move_Left);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MoveNpcLeft.class.getName()).log(Level.SEVERE, null, ex);
+        }
         controls.triggerActionStop(TriggerNames.Move_Left);
     }
 
