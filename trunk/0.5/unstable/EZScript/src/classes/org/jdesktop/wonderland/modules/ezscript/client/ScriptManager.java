@@ -78,6 +78,7 @@ public class ScriptManager {
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
         Iterator<ScriptMethodSPI> iter = loader.getInstances(ScriptMethod.class,
                                                         ScriptMethodSPI.class);
+        
         //grab all global void methods
         while(iter.hasNext()) {
             final ScriptMethodSPI method = iter.next();

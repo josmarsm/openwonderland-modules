@@ -7,19 +7,26 @@ package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
-import com.jme.scene.Spatial.CullHint;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
+import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
+import org.jdesktop.wonderland.common.messages.ErrorMessage;
+import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
@@ -39,16 +46,15 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
     private float z;
     private float seconds;
     private Semaphore lock;
-    private Node node;
+
+    private static Logger logger = Logger.getLogger(AnimateMoveMethod.class.getName());
+    
     public String getFunctionName() {
         return "animateMove";
     }
 
     public void setArguments(Object[] args) {
-        cell = (Cell)args[0];
-        BasicRenderer r = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-        node = r.getSceneRoot();
-        
+        cell = (Cell)args[0];      
         x = ((Double)args[1]).floatValue();// + node.getLocalTranslation().x;
         y = ((Double)args[2]).floatValue();// + node.getLocalTranslation().y;
         z = ((Double)args[3]).floatValue();// + node.getLocalTranslation().z;
@@ -63,10 +69,14 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         SceneWorker.addWorker(new WorkCommit() {        
             public void commit() {
                 BasicRenderer r = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                node = r.getSceneRoot();
+
+                if(r.getEntity().hasComponent(TranslationProcessor.class)) {
+                    lock.release();
+                    return;
+                }
                 
                 r.getEntity().addComponent(TranslationProcessor.class,
-                                           new TranslationProcessor("trans", node,0));
+                                           new TranslationProcessor("trans",0));
             }
         });
 
@@ -83,7 +93,10 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
     public String getDescription() {
         return "usage: animateMove(cell, x, y, z, seconds);\n\n"
                 +"-animate a cell moving to the x,y,z coordinates in the duration of seconds."
-                +"-moves relative to the current position";
+                +"-moves relative to the current position\n" +
+                "-Because this function uses network synchronization automatically, it is STRONGLY encouraged that this function be used in conjunction to local callbacks.\n" +
+                " For example: Context.onClick(function_name, true); This will ensure that the callback\n";
+
     }
 
     public String getCategory() {
@@ -91,10 +104,28 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
     }
 
     public MovableComponent getMovable(Cell cell) {
-        if(cell.getComponent(MovableComponent.class) != null) {
+        if (cell.getComponent(MovableComponent.class) != null) {
             return cell.getComponent(MovableComponent.class);
         }
-        return null;
+
+
+        //try and add MovableComponent manually
+        String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
+        CellServerComponentMessage cscm =
+                CellServerComponentMessage.newAddMessage(
+                                                   cell.getCellID(), className);
+
+        ResponseMessage response = cell.sendCellMessageAndWait(cscm);
+        if (response instanceof ErrorMessage) {
+            logger.log(Level.WARNING, "Unable to add movable component "
+                    + "for Cell " + cell.getName() + " with ID "
+                    + cell.getCellID(),
+                    ((ErrorMessage) response).getErrorCause());
+
+                    return null;
+        } else {
+            return cell.getComponent(MovableComponent.class);
+        }
     }
 
     class TranslationProcessor extends ProcessorComponent {
@@ -113,18 +144,13 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         float zInc = 0;
         private boolean done = false;
 
-        //as a post process
-        private Node parent = null;
-        private Node targetClone = null;
-
-        public TranslationProcessor(String name, Node target, float increment) {
+        public TranslationProcessor(String name, float increment) {
             this.worldManager = ClientContextJME.getWorldManager();
-            this.target = target;
             
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
             //translate = target.getLocalTranslation();
-            translate = target.getLocalTranslation();
+            translate = cell.getLocalTransform().getTranslation(null);//target.getLocalTranslation();
             xInc = (float) (x / Double.valueOf(30*seconds));
             yInc = (float) (y / Double.valueOf(30*seconds));
             zInc = (float) (z / Double.valueOf(30*seconds));
@@ -137,16 +163,10 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
             return (name);
         }
 
-        /**
-         * The initialize method
-         */
+
         public void initialize() {
-            //setArmingCondition(new NewFrameCondition(this));
         }
 
-        /**
-         * The Calculate method
-         */
         public void compute(ProcessorArmingCollection collection) {
             if(frameIndex >=  30*seconds) {
                 done = true;
@@ -165,35 +185,9 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
 
         }
 
-        /**
-         * Currently, the cell's geometry gets moved without the cell.
-         * If we try to move the cell once the geometry has moved, the
-         * geometry's translation get's moved with it. -No bueno.
-         *
-         * If we try to 0 the translation before the cell gets moved, both the
-         * cell and geometry wind up at 0, 0, 0 - No bueno tambien.
-         *
-         * Other ideas?
-         */
         public void commit(ProcessorArmingCollection collection) {
             if(done) {
                 this.getEntity().removeComponent(TranslationProcessor.class);
-                
-                
-                CellTransform transform = cell.getLocalTransform();
-                Vector3f translation = target.getWorldTranslation();
-                Vector3f inverted = new Vector3f();
-//                translation.x += translate.x;
-//                translation.y += translate.y;
-//                translation.z += translate.z;
-                //inverted.x += translate.x * -1;
-                //inverted.y += translate.y * -1;
-                //inverted.z += translate.z * -1;
-                transform.setTranslation(translation);
-                target.setLocalTranslation(inverted);
-                worldManager.addToUpdateList(target);
-                getMovable(cell).localMoveRequest(transform);
-
                 lock.release(); //this should give control back to the state machine.
 //                String position = "X: " + translate.x + "\n"
 //                        +       "Y: " + translate.y + "\n"
@@ -208,14 +202,10 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
 //                System.out.println("Incs: "+ incs);
                 return;
             }
-            
-            //CellTransform transform = cell.getWorldTransform();
-            
-           // transform.setTranslation(translate);
-            //getMovable(cell).localMoveRequest(transform);
-            
-            target.setLocalTranslation(translate);            
-            worldManager.addToUpdateList(target);
+
+            CellTransform transform = cell.getLocalTransform();
+            transform.setTranslation(translate);
+            getMovable(cell).localMoveRequest(transform);
         }
     }
 }
