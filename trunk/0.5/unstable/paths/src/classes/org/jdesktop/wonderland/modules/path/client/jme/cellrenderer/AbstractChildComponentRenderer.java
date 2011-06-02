@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import org.jdesktop.mtgame.CollisionComponent;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.Entity;
+import org.jdesktop.mtgame.EntityComponent;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.WorldManager;
@@ -200,23 +201,25 @@ public abstract class AbstractChildComponentRenderer implements ChildRenderer {
      */
     @Override
     public Node updateScene() {
+        if (sceneRoot != null) {
+            sceneRoot.removeFromParent();
+            sceneRoot.detachAllChildren();
+            sceneRoot = null;
+        }
         if (entity != null) {
-            if (sceneRoot != null) {
-                sceneRoot.removeFromParent();
-                sceneRoot.detachAllChildren();
-                sceneRoot = null;
-            }
             sceneRoot = createSceneGraph(entity);
             RenderComponent renderComponent = entity.getComponent(RenderComponent.class);
             if (renderComponent == null) {
                 renderComponent = ClientContextJME.getWorldManager().getRenderManager().createRenderComponent(sceneRoot);
+                logger.warning("Creating render component as part of update!");
             }
             else {
                 renderComponent.setSceneRoot(sceneRoot);
             }
         }
         else {
-            createEntity();
+            logger.warning("No entity exists when updating scene!");
+            getEntity();
         }
         return sceneRoot;
     }

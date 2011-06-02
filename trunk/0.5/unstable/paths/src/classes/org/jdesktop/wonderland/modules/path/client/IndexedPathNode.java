@@ -12,7 +12,7 @@ class IndexedPathNode implements ClientPathNode {
 
     private ClientNodePath parent;
     private Vector3f position;
-    private String label;
+    private String name;
     private int sequenceIndex;
 
     /**
@@ -20,13 +20,13 @@ class IndexedPathNode implements ClientPathNode {
      *
      * @param parent The owning ClientNodePath of this ClientPathNode.
      * @param position The 3D position of the ClientPathNode.
-     * @param label The label (if any) of the ClientPathNode.
+     * @param name The name (if any) of the ClientPathNode.
      * @param sequenceIndex The sequence index of this ClientPathNode.
      */
-    public IndexedPathNode(ClientNodePath parent, Vector3f position, String label, int sequenceIndex) {
+    public IndexedPathNode(ClientNodePath parent, Vector3f position, String name, int sequenceIndex) {
         this.parent = parent;
         this.position = position != null ? position : new Vector3f();
-        this.label = label;
+        this.name = name;
         this.sequenceIndex = sequenceIndex;
     }
 
@@ -149,7 +149,15 @@ class IndexedPathNode implements ClientPathNode {
      */
     @Override
     public String getName() {
-        return label;
+        return name;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -157,7 +165,7 @@ class IndexedPathNode implements ClientPathNode {
      */
     @Override
     public boolean isNamed() {
-        return label != null;
+        return name != null;
     }
 
     /**
@@ -226,6 +234,6 @@ class IndexedPathNode implements ClientPathNode {
     public void dispose() {
         parent = null;
         position = null;
-        label = null;
+        name = null;
     }
 }

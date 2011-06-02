@@ -3,6 +3,12 @@ package org.jdesktop.wonderland.modules.path.common.style;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
+import org.jdesktop.wonderland.modules.path.common.Described;
+import org.jdesktop.wonderland.modules.path.common.MutableDescribed;
+import org.jdesktop.wonderland.modules.path.common.MutableNamed;
+import org.jdesktop.wonderland.modules.path.common.Named;
+import org.jdesktop.wonderland.modules.path.common.SimpleDescription;
+import org.jdesktop.wonderland.modules.path.common.SimpleName;
 
 /**
  * This is an abstract base class for attribute of styles.
@@ -10,7 +16,18 @@ import javax.xml.bind.annotation.XmlTransient;
  *
  * @author Carl Jokl
  */
-public abstract class StyleAttribute implements Serializable {
+public abstract class StyleAttribute implements Named, MutableDescribed, Cloneable, Comparable<StyleAttribute>, Serializable {
+
+    /**
+     * Check whether the two objects are equal protecting against null values.
+     *
+     * @param object1 The first object to compare.
+     * @param object2 The second object to compare.
+     * @return True if the two objects are considered equal or false otherwise.
+     */
+    protected static boolean equal(Object object1, String object2) {
+        return object1 != null ? object1.equals(object2) : object2 == null;
+    }
 
     /**
      * The version number for serialization.
@@ -18,9 +35,9 @@ public abstract class StyleAttribute implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @XmlTransient
-    private String name;
+    private final Named name;
     @XmlTransient
-    private String description;
+    private final Described description;
 
     /**
      * No argument constructor for use with
@@ -28,50 +45,61 @@ public abstract class StyleAttribute implements Serializable {
      * constructors. The attribute name must
      * be set separately.
      */
-    protected StyleAttribute() {}
+    protected StyleAttribute() {
+        name = new SimpleName();
+        description = new SimpleDescription();
+    }
 
     /**
-     * A constructor for use when the name of
-     * the StyleAttribute is intended to be know
-     * at the time of creation of an instance
-     * of this class.
-     * 
-     * @param name The name of she StyleAttribute.
-     * @throws IllegalArgumentException
+     * A constructor for use when the name and description of the StyleAttribute is
+     * intended to be known at the time of creation of an instance of this class.
+     *
+     * @param name The name of the StyleAttribute.
+     * @param description The description of the StyleAttribute or null if the description
+     *                    is not known or blank.
+     * @throws IllegalArgumentException If the specified StyleAttribute name was null.
      */
-    protected StyleAttribute(String name) throws IllegalArgumentException {
+    protected StyleAttribute(String name, String description) throws IllegalArgumentException {
         if (name == null) {
             throw new IllegalArgumentException("The name of this style attribute cannot be null!");
         }
-        this.name = name;
+        this.name = new SimpleName(name);
+        this.description = new SimpleDescription(description);
     }
 
     /**
-     * Get the name of this Float based style attribute.
+     * This constructor is for use when creating StyleAttributes which act as wrappers
+     * around other StyleAttributes such that the Name and Description can be taken
+     * indirectly from somewhere else.
+     *
+     * @param name The name of the StyleAttribute.
+     * @param description The description of the StyleAttribute.
+     */
+    protected StyleAttribute(Named name, Described description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    /**
+     * Get the name of this style attribute.
      *
      * @return The name of this style attribute.
      */
+    @Override
     @XmlAttribute(name="name")
     public String getName() {
-        return name;
+        return name != null ? name.getName() : null;
     }
 
     /**
-     * Set the name of this FloatStyleAttribute.
+     * Protected attribute setter for the sake of JAXB.
      *
-     * @param name The name of this FloatStyleAttribute.
-     * @throws IllegalArgumentException If the specified name is null.
-     *                                  In spite of the fact that when this
-     *                                  FloatStyleAttribute is created, the name
-     *                                  may be null (as for compatibility with
-     *                                  JAXB a default no-argument constructor is
-     *                                  required) the name should never be left
-     *                                  as null and so trying to set a null name
-     *                                  causes an exception.
-     *
+     * @param name The name to be set via JAXB de-serialization.
      */
-    public void setName(String name) throws IllegalArgumentException {
-        this.name = name;
+    protected void setName(String name) {
+        if (this.name instanceof MutableNamed) {
+            ((MutableNamed) this.name).setName(name);
+        }
     }
 
     /**
@@ -79,9 +107,10 @@ public abstract class StyleAttribute implements Serializable {
      *
      * @return A user readable description of what this StyleAttribute represents.
      */
+    @Override
     @XmlAttribute(name="description")
     public String getDescription() {
-        return description;
+        return description != null ? description.getDescription() : null;
     }
 
     /**
@@ -89,7 +118,89 @@ public abstract class StyleAttribute implements Serializable {
      *
      * @param description A user readable description of what this StyleAttribute represents.
      */
-    public void setDecription(String description) {
-        this.description = description;
+    @Override
+    public void setDescription(String description) {
+        if (this.description instanceof MutableDescribed) {
+            ((MutableDescribed) this.description).setDescription(description);
+        }
     }
+
+    /**
+     * Get whether the description of this StyleAttribute is set.
+     *
+     * @return True if the description of this StyleAttribute is set. False otherwise.
+     */
+    @Override
+    public boolean isDescriptionSet() {
+        return description != null && description.getDescription() != null;
+    }
+
+    /**
+     * Implements the clone functionality simply by internally calling the copyOf() method.
+     *
+     * @return A clone of the StyleAttribute.
+     */
+    @Override
+    protected Object clone() {
+        return copyOf();
+    }
+
+    /**
+     * Compare this StyleAttribute against another StyleAttribute for ordering.
+     * ordering.
+     *
+     * @param styleAttribute The other StyleAttribute with which this StyleAttribute will be compared.
+     * @return Positive if the specified StyleAttribute object is greater than this object.
+     *         Negative if the specified StyleAttribute object is less that this object.
+     *         Zero if the specified StyleAttribute object has the same description as this object.
+     */
+    @Override
+    public int compareTo(StyleAttribute styleAttribute) {
+        if (styleAttribute == null) {
+            return 1;
+        }
+        else if (name == null || name.getName() == null) {
+            return -1;
+        }
+        else {
+            String otherName = styleAttribute.getName();
+            if (otherName == null) {
+                return 1;
+            }
+            else {
+                return name.getName().compareTo(otherName);
+            }
+        }
+    }
+
+
+    /**
+     * Set the value of this StyleAttribute using the specified other StyleAttribute.
+     * This method does not inform of a change to the value of the attribute. The reason
+     * for not informing of the change is that this method is intended for use in response
+     * to an event elsewhere where the value was changed. Firing a notification that the value
+     * changed could result in a never ending cycle of notifications.
+     *
+     * @param otherAttribute The other StyleAttribute from which to set this StyleAttribute.
+     * @return True if the specified other attribute was not null and was the same type of StyleAttribute
+     *         and the value of this StyleAttribute was able to be set from the specified StyleAttribute successfully.
+     */
+    @XmlTransient
+    public abstract boolean setFrom(StyleAttribute otherAttribute);
+
+    /**
+     * Create a copy of this StyleAttribute.
+     *
+     * @return A copy of this StyleAttribute.
+     */
+    public abstract StyleAttribute copyOf();
+
+    /**
+     * Create a listening wrapper around this StyleAttribute which informs of changes
+     * when the value is changed.
+     *
+     * @param listener The ValueChangeListener which will listen for changes being made to the value of this StyleAttribute.
+     * @return A listening wrapper which listens for changes being made to the the value of the specified StyleAttribute.
+     */
+    public abstract StyleAttribute listeningWrapper(StyleAttributeChangeListener listener);
 }

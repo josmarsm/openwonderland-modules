@@ -17,9 +17,14 @@ import org.jdesktop.wonderland.modules.path.client.receiver.PathNodeChangeMessag
 import org.jdesktop.wonderland.modules.path.client.receiver.PathStyleChangeMessageReceiver;
 import org.jdesktop.wonderland.modules.path.client.ui.NodePathContextMenuFactory;
 import org.jdesktop.wonderland.modules.path.common.PathCellState;
+import org.jdesktop.wonderland.modules.path.common.message.AllPathNodesRemovedMessage;
 import org.jdesktop.wonderland.modules.path.common.message.EditModeChangeMessage;
 import org.jdesktop.wonderland.modules.path.common.message.PathClosedChangeMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeAddedMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeInsertedMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeNameChangeMessage;
 import org.jdesktop.wonderland.modules.path.common.message.PathNodePositionChangeMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeRemovedMessage;
 import org.jdesktop.wonderland.modules.path.common.message.PathStyleChangeMessage;
 
 /**
@@ -123,6 +128,11 @@ public class PathCell extends Cell {
             }
             nodeChangeMessageReceiver = new PathNodeChangeMessageReceiver(this, internalPath);
             channelComponent.addMessageReceiver(PathNodePositionChangeMessage.class, nodeChangeMessageReceiver);
+            channelComponent.addMessageReceiver(PathNodeAddedMessage.class, nodeChangeMessageReceiver);
+            channelComponent.addMessageReceiver(PathNodeInsertedMessage.class, nodeChangeMessageReceiver);
+            channelComponent.addMessageReceiver(PathNodeRemovedMessage.class, nodeChangeMessageReceiver);
+            channelComponent.addMessageReceiver(AllPathNodesRemovedMessage.class, nodeChangeMessageReceiver);
+            channelComponent.addMessageReceiver(PathNodeNameChangeMessage.class, nodeChangeMessageReceiver);
             if (styleChangeMessageReceiver != null) {
                 styleChangeMessageReceiver.dispose();
                 styleChangeMessageReceiver = null;
@@ -146,6 +156,11 @@ public class PathCell extends Cell {
                 flagChangeMessageReceiver = null;
             }
             channelComponent.removeMessageReceiver(PathNodePositionChangeMessage.class);
+            channelComponent.removeMessageReceiver(PathNodeAddedMessage.class);
+            channelComponent.removeMessageReceiver(PathNodeInsertedMessage.class);
+            channelComponent.removeMessageReceiver(PathNodeRemovedMessage.class);
+            channelComponent.removeMessageReceiver(AllPathNodesRemovedMessage.class);
+            channelComponent.removeMessageReceiver(PathNodeNameChangeMessage.class);
             if (nodeChangeMessageReceiver != null) {
                 nodeChangeMessageReceiver.dispose();
                 nodeChangeMessageReceiver = null;

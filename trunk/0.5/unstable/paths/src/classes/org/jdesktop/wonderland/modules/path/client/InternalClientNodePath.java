@@ -50,7 +50,10 @@ class InternalClientNodePath implements ClientNodePath {
      */
     @Override
     public void setPathStyle(PathStyle pathStyle) {
-        this.pathStyle = pathStyle;
+        if (this.pathStyle != pathStyle) {
+            this.pathStyle = pathStyle;
+            parent.updatePathUI();
+        }
     }
 
     /**
@@ -176,6 +179,7 @@ class InternalClientNodePath implements ClientNodePath {
         synchronized(pathNodes) {
             if (node != null && pathNodes.add(node)) {
                 node.setSequenceIndex(pathNodes.size() - 1);
+                parent.updatePathUI();
                 return true;
             }
             else {
@@ -190,7 +194,11 @@ class InternalClientNodePath implements ClientNodePath {
     @Override
     public boolean addNode(Vector3f position, String name) {
         synchronized(pathNodes) {
-            return position != null && pathNodes.add(new IndexedPathNode(this, position, name, pathNodes.size()));
+            if (position != null && pathNodes.add(new IndexedPathNode(this, position, name, pathNodes.size()))) {
+                parent.updatePathUI();
+                return true;
+            }
+            return false;
         }
     }
 
@@ -200,7 +208,11 @@ class InternalClientNodePath implements ClientNodePath {
     @Override
     public boolean addNode(float x, float y, float z, String name) {
         synchronized(pathNodes) {
-            return pathNodes.add(new IndexedPathNode(this, new Vector3f(x, y, z), name, pathNodes.size()));
+            if (pathNodes.add(new IndexedPathNode(this, new Vector3f(x, y, z), name, pathNodes.size()))) {
+                parent.updatePathUI();
+                return true;
+            }
+            return false;
         }
     }
 
@@ -234,10 +246,12 @@ class InternalClientNodePath implements ClientNodePath {
                         nodeIndex++;
                         previous.setSequenceIndex(nodeIndex);
                         nodeIndex++;
-                        while (nodeIndex < noOfNodes) {
+                        //Use less than or equal as the number of nodes has gone up by one.
+                        while (nodeIndex <= noOfNodes) {
                             pathNodes.get(nodeIndex).setSequenceIndex(nodeIndex);
                             nodeIndex++;
                         }
+                        parent.updatePathUI();
                         return previous;
                     }
                 }
@@ -283,6 +297,7 @@ class InternalClientNodePath implements ClientNodePath {
                 final int nodeIndex = pathNodes.indexOf(node);
                 if (nodeIndex >= 0) {
                     removeNodeAt(nodeIndex);
+                    parent.updatePathUI();
                     return true;
                 }
             }
@@ -309,6 +324,7 @@ class InternalClientNodePath implements ClientNodePath {
                     pathNodes.get(nodeIndex).setSequenceIndex(nodeIndex);
                     nodeIndex++;
                 }
+                parent.updatePathUI();
             }
             return node;
         }
@@ -327,29 +343,52 @@ class InternalClientNodePath implements ClientNodePath {
                     current = pathNodes.remove(pathNodes.size() - 1);
                     current.dispose();
                 }
+                parent.updatePathUI();
             }
         }
     }
 
     /**
-     * Set the IndexedPathNode position and send a message to the server to notify of the change.
+     * Set the IndexedPathNode position.
      *
-     * @param index The index of the IndexedPathNode for which to set the position.
-     * @param x The new X position of the IndexedPathNode.
-     * @param y The new Y position of the IndexedPathNode.
-     * @param z The new Z position of the IndexedPathNode.
-     * @return True of the new IndexedPathNode position was able to be set and a notification was sent to the server.
+     * @param index The index of the PathNode for which to set the position.
+     * @param x The new X position of the PathNode.
+     * @param y The new Y position of the PathNode.
+     * @param z The new Z position of the PathNode.
+     * @throws IndexOutOfBoundsException If the specified index of the PathNode to be updated was outside the valid range.
      */
     @Override
-    public boolean setNodePosition(int index, float x, float y, float z) {
+    public void setNodePosition(int index, float x, float y, float z) throws IndexOutOfBoundsException {
         synchronized(pathNodes) {
             if (index >= 0 && index < pathNodes.size()) {
                 ClientPathNode node = pathNodes.get(index);
                 node.getPosition().set(x, y, z);
-                parent.updateNodeUI(index, true);
-                return true;
+                //Not working properly yet
+                //parent.updateNodeUI(index, true);
+                //Update the whole path as a temporary measure.
+                parent.updatePathUI();
             }
-            return false;
+            else {
+                throw new IndexOutOfBoundsException("The index of the PathNode to have its position updated was outside the valid range!");
+            }
+        }
+    }
+
+    /**
+     * Set the name of the PathNode at the specified index.
+     *
+     * @param index The index of the PathNode which is to have its name set.
+     * @param name The new name to be given to the PathNode.
+     */
+    @Override
+    public void setNodeName(int index, String name) throws IndexOutOfBoundsException {
+        synchronized(pathNodes) {
+            if (index >= 0 && index < pathNodes.size()) {
+                pathNodes.get(index).setName(name);
+            }
+            else {
+                throw new IndexOutOfBoundsException("The index of the PathNode to have its name updated was outside the valid range!");
+            }
         }
     }
 

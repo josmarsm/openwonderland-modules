@@ -72,17 +72,6 @@ public interface ClientNodePath extends NodePath, PathNodeGroup, Serializable {
     public boolean addNode(Vector3f position, String name);
 
     /**
-     * Add a new node to this PathCell.
-     *
-     * @param x The x position of the of the new node to be added to this ClientNodePath.
-     * @param y The y position of the of the new node to be added to this ClientNodePath.
-     * @param z The z position of the of the new node to be added to this ClientNodePath.
-     * @param name The name of the new node to be added to this ClientNodePath (optional).
-     * @return True if the node was able to be added successfully.
-     */
-    public boolean addNode(float x, float y, float z, String name);
-
-    /**
      * Insert the specified ClientPathNode at the specified node index.
      *
      * @param nodeIndex The index at which the ClientPathNode is to be inserted. If the insertion index is the
@@ -115,7 +104,6 @@ public interface ClientNodePath extends NodePath, PathNodeGroup, Serializable {
      * @param nodeIndex The index at which the ClientPathNode is to be inserted. If the insertion index is the
      *                  same as the number of nodes before insertion then the method is essentially like addNode
      *                  except there is no ClientPathNode to be returned by the method in that case.
-     * @param node The ClientPathNode to be inserted at the specified index.
      * @param x The x position of the of the new node to be added to this ClientNodePath.
      * @param y The y position of the of the new node to be added to this ClientNodePath.
      * @param z The z position of the of the new node to be added to this ClientNodePath.
@@ -123,7 +111,8 @@ public interface ClientNodePath extends NodePath, PathNodeGroup, Serializable {
      * @return The ClientPathNode which used to be at the specified index (if any).
      * @throws IndexOutOfBoundsException If the specified nodeIndex at which to insert the node is invalid.
      */
-    public ClientPathNode insertNode(int nodeIndex, float x, float y, float z, String name) throws IllegalArgumentException, IndexOutOfBoundsException;
+    @Override
+    public ClientPathNode insertNode(int nodeIndex, float x, float y, float z, String name) throws IndexOutOfBoundsException;
 
     /**
      * Remove the specified PathNode from the PathCell.
@@ -142,23 +131,27 @@ public interface ClientNodePath extends NodePath, PathNodeGroup, Serializable {
      * @throws IndexOutOfBoundsException If the specified node index of the ClientPathNode
      *                                   to be removed is outside the range of valid node indices.
      */
+    @Override
     public ClientPathNode removeNodeAt(int nodeIndex) throws IndexOutOfBoundsException;
 
     /**
-     * Remove all of the PathNodes which are part of this ClientNodePath.
+     * Set the IndexedPathNode position.
+     *
+     * @param index The index of the PathNode for which to set the position.
+     * @param x The new X position of the PathNode.
+     * @param y The new Y position of the PathNode.
+     * @param z The new Z position of the PathNode.
+     * @throws IndexOutOfBoundsException If the specified index of the PathNode to be updated was outside the valid range.
      */
-    public void removeAllNodes();
+    public void setNodePosition(int index, float x, float y, float z);
 
     /**
-     * Set the IndexedPathNode position and send a message to the server to notify of the change.
+     * Set the name of the PathNode at the specified index.
      *
-     * @param index The index of the IndexedPathNode for which to set the position.
-     * @param x The new X position of the IndexedPathNode.
-     * @param y The new Y position of the IndexedPathNode.
-     * @param z The new Z position of the IndexedPathNode.
-     * @return True of the new IndexedPathNode position was able to be set and a notification was sent to the server.
+     * @param index The index of the PathNode which is to have its name set.
+     * @param name The new name to be given to the PathNode.
      */
-    public boolean setNodePosition(int index, float x, float y, float z);
+    public void setNodeName(int index, String name);
 
     /**
      * Get the NodeStyleType of the PathNode at the specified NodeIndex.

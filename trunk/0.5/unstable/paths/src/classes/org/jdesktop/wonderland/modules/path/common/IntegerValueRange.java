@@ -1,11 +1,11 @@
-package org.jdesktop.wonderland.modules.path.common.style;
+package org.jdesktop.wonderland.modules.path.common;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * This class is used to represent a value range for a float value comprising of a lower limit and upper limit for the range.
+ * This class is used to represent a value range for an integer value comprising of a lower limit and upper limit for the range.
  *
  * @author Carl Jokl
  */
@@ -92,5 +92,25 @@ public class IntegerValueRange implements Serializable {
     @Override
     public String toString() {
         return String.format("%s %d & %s %d", minInclusive ? "≥" : ">", min, maxInclusive ? "≤" : "<", max);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof IntegerValueRange) {
+            IntegerValueRange otherRange = (IntegerValueRange) obj;
+            return otherRange.min == min && otherRange.max == max && otherRange.minInclusive == minInclusive && otherRange.maxInclusive == maxInclusive;
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return ((min * max) / 11);
     }
 }

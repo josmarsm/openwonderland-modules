@@ -3,9 +3,14 @@ package org.jdesktop.wonderland.modules.path.client;
 import com.jme.math.Vector3f;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.modules.path.common.PathCellState;
+import org.jdesktop.wonderland.modules.path.common.message.AllPathNodesRemovedMessage;
 import org.jdesktop.wonderland.modules.path.common.message.EditModeChangeMessage;
 import org.jdesktop.wonderland.modules.path.common.message.PathClosedChangeMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeAddedMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeInsertedMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeNameChangeMessage;
 import org.jdesktop.wonderland.modules.path.common.message.PathNodePositionChangeMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeRemovedMessage;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyle;
 import org.jdesktop.wonderland.modules.path.common.style.node.NodeStyleType;
@@ -73,7 +78,11 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     @Override
     public boolean addNode(ClientPathNode node) {
         if (internalPath.addNode(node)) {
-            //ToDo send message.
+            ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+            if (channelComponent != null) {
+                Vector3f position = node.getPosition();
+                channelComponent.send(new PathNodeAddedMessage(parent.getCellID(), position.x, position.y, position.z, node.getName()));
+            }
         }
         return false;
     }
@@ -84,7 +93,10 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     @Override
     public boolean addNode(Vector3f position, String name) {
         if (internalPath.addNode(position, name)) {
-            //ToDo send message.
+            ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+            if (channelComponent != null) {
+                channelComponent.send(new PathNodeAddedMessage(parent.getCellID(), position.x, position.y, position.z, name));
+            }
         }
         return false;
     }
@@ -95,7 +107,10 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     @Override
     public boolean addNode(float x, float y, float z, String name) {
         if (internalPath.addNode(x, y, z, name)) {
-            //ToDo send message.
+            ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+            if (channelComponent != null) {
+                channelComponent.send(new PathNodeAddedMessage(parent.getCellID(), x, y, z, name));
+            }
         }
         return false;
     }
@@ -106,7 +121,11 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     @Override
     public ClientPathNode insertNode(int nodeIndex, ClientPathNode node) throws IllegalArgumentException, IndexOutOfBoundsException {
         ClientPathNode replacedNode = internalPath.insertNode(nodeIndex, node);
-        //ToDo send message.
+        ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+        if (channelComponent != null) {
+            Vector3f position = node.getPosition();
+            channelComponent.send(new PathNodeInsertedMessage(parent.getCellID(), nodeIndex, position.x, position.y, position.z, node.getName()));
+        }
         return replacedNode;
     }
 
@@ -116,7 +135,10 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     @Override
     public ClientPathNode insertNode(int nodeIndex, Vector3f position, String name) throws IllegalArgumentException, IndexOutOfBoundsException {
         ClientPathNode replacedNode = internalPath.insertNode(nodeIndex, position, name);
-        //ToDo send message.
+        ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+        if (channelComponent != null) {
+            channelComponent.send(new PathNodeInsertedMessage(parent.getCellID(), nodeIndex, position.x, position.y, position.z, name));
+        }
         return replacedNode;
     }
 
@@ -124,9 +146,12 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
      * {@inheritDoc}
      */
     @Override
-    public ClientPathNode insertNode(int nodeIndex, float x, float y, float z, String name) throws IllegalArgumentException, IndexOutOfBoundsException {
+    public ClientPathNode insertNode(int nodeIndex, float x, float y, float z, String name) throws IndexOutOfBoundsException {
         ClientPathNode replacedNode = internalPath.insertNode(nodeIndex, x, y, z, name);
-        //ToDo send message.
+        ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+        if (channelComponent != null) {
+            channelComponent.send(new PathNodeInsertedMessage(parent.getCellID(), nodeIndex, x, y, z, name));
+        }
         return replacedNode;
     }
 
@@ -136,7 +161,10 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     @Override
     public boolean removeNode(ClientPathNode node) {
         if (internalPath.removeNode(node)) {
-            //ToDo send message.
+            ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+            if (channelComponent != null) {
+                channelComponent.send(new PathNodeRemovedMessage(parent.getCellID(), node.getSequenceIndex()));
+            }
         }
         return false;
     }
@@ -147,7 +175,10 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     @Override
     public ClientPathNode removeNodeAt(int nodeIndex) throws IndexOutOfBoundsException {
         ClientPathNode removedNode = internalPath.removeNodeAt(nodeIndex);
-        //ToDo send message.
+        ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+        if (channelComponent != null) {
+            channelComponent.send(new PathNodeRemovedMessage(parent.getCellID(), nodeIndex));
+        }
         return removedNode;
     }
 
@@ -157,7 +188,10 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     @Override
     public void removeAllNodes() {
         internalPath.removeAllNodes();
-        //ToDo send message.
+        ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+        if (channelComponent != null) {
+            channelComponent.send(new AllPathNodesRemovedMessage(parent.getCellID()));
+        }
     }
 
     /**
@@ -272,16 +306,26 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
      * {@inheritDoc}
      */
     @Override
-    public boolean setNodePosition(int index, float x, float y, float z) {
-        if (internalPath.setNodePosition(index, x, y, z)) {
-            ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
-            if (channelComponent != null) {
-                channelComponent.send(new PathNodePositionChangeMessage(parent.getCellID(), index, x, y, z));
-                return true;
-            }
+    public void setNodePosition(int index, float x, float y, float z) throws IndexOutOfBoundsException {
+        internalPath.setNodePosition(index, x, y, z);
+        ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+        if (channelComponent != null) {
+            channelComponent.send(new PathNodePositionChangeMessage(parent.getCellID(), index, x, y, z));
         }
-        return false;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setNodeName(int index, String name) {
+        internalPath.setNodeName(index, name);
+        ChannelComponent channelComponent = parent.getComponent(ChannelComponent.class);
+        if (channelComponent != null) {
+            channelComponent.send(new PathNodeNameChangeMessage(parent.getCellID(), index, name));
+        }
+    }
+    
 
     /**
      * {@inheritDoc}

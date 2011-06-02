@@ -5,7 +5,7 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 
 /**
- * This is a message used to change the whether the PathCell is in edit mode.
+ * This is a message used to notify that a PathNode has changed position.
  *
  * @author Carl Jokl
  */
@@ -16,7 +16,7 @@ public class PathNodePositionChangeMessage extends CellMessage implements Serial
      */
     private static final long serialVersionUID = 1L;
 
-    private int nodeIndex;
+    private final int nodeIndex;
     private final float x;
     private final float y;
     private final float z;

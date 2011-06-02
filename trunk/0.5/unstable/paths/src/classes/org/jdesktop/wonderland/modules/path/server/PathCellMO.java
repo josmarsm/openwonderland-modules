@@ -13,8 +13,13 @@ import org.jdesktop.wonderland.modules.path.common.PathCellServerState;
 import org.jdesktop.wonderland.modules.path.common.PathCellState;
 import org.jdesktop.wonderland.modules.path.common.PathNodeGroup;
 import org.jdesktop.wonderland.modules.path.common.PathNodeState;
+import org.jdesktop.wonderland.modules.path.common.message.AllPathNodesRemovedMessage;
 import org.jdesktop.wonderland.modules.path.common.message.PathClosedChangeMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeAddedMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeInsertedMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeNameChangeMessage;
 import org.jdesktop.wonderland.modules.path.common.message.PathNodePositionChangeMessage;
+import org.jdesktop.wonderland.modules.path.common.message.PathNodeRemovedMessage;
 import org.jdesktop.wonderland.modules.path.common.message.PathStyleChangeMessage;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
 import org.jdesktop.wonderland.modules.path.server.receiver.StateFlagChangeMessageReceiver;
@@ -41,6 +46,9 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
     private PathStyle pathStyle;
     private List<PathNodeState> nodes;
 
+    /**
+     * Create a new instance of a PathCell managed object.
+     */
     public PathCellMO() {
         nodes = new ArrayList<PathNodeState>();
     }
@@ -111,15 +119,26 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
         ChannelComponentMO channel = this.getComponent(ChannelComponentMO.class);
         if (live) {
             StateFlagChangeMessageReceiver stateFlagReceiver = new StateFlagChangeMessageReceiver(this);
+            PathNodeChangeMessageReceiver nodeChangeReceiver = new PathNodeChangeMessageReceiver(this);
             channel.addMessageReceiver(EditModeChangeMessage.class, stateFlagReceiver);
             channel.addMessageReceiver(PathClosedChangeMessage.class, stateFlagReceiver);
-            channel.addMessageReceiver(PathNodePositionChangeMessage.class, new PathNodeChangeMessageReceiver(this));
+            channel.addMessageReceiver(PathNodePositionChangeMessage.class, nodeChangeReceiver);
+            channel.addMessageReceiver(PathNodeAddedMessage.class, nodeChangeReceiver);
+            channel.addMessageReceiver(PathNodeInsertedMessage.class, nodeChangeReceiver);
+            channel.addMessageReceiver(PathNodeRemovedMessage.class, nodeChangeReceiver);
+            channel.addMessageReceiver(AllPathNodesRemovedMessage.class, nodeChangeReceiver);
+            channel.addMessageReceiver(PathNodeNameChangeMessage.class, nodeChangeReceiver);
             channel.addMessageReceiver(PathStyleChangeMessage.class, new PathStyleChangeMessageReceiver(this));
         }
         else {
             channel.removeMessageReceiver(EditModeChangeMessage.class);
             channel.removeMessageReceiver(PathClosedChangeMessage.class);
             channel.removeMessageReceiver(PathNodePositionChangeMessage.class);
+            channel.removeMessageReceiver(PathNodeAddedMessage.class);
+            channel.removeMessageReceiver(PathNodeInsertedMessage.class);
+            channel.removeMessageReceiver(PathNodeRemovedMessage.class);
+            channel.removeMessageReceiver(AllPathNodesRemovedMessage.class);
+            channel.removeMessageReceiver(PathNodeNameChangeMessage.class);
             channel.removeMessageReceiver(PathStyleChangeMessage.class);
         }
     }
@@ -181,8 +200,62 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
             return nodes.get(index);
         }
         else {
-            throw new IndexOutOfBoundsException(String.format("The specified index: %d is outside the range of node states! No of node states %d.", index, nodes.size()));
+            throw new IndexOutOfBoundsException(String.format("The specified index: %d is outside the range of node states! No of node states: %d.", index, nodes.size()));
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean addNode(float x, float y, float z, String name) {
+        return nodes.add(new PathNodeState(x, y, z, name, nodes.size()));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PathNode insertNode(int nodeIndex, float x, float y, float z, String name) throws IndexOutOfBoundsException {
+        final int noOfNodes = nodes.size();
+        if (nodeIndex == noOfNodes) {
+            addNode(x, y, z, name);
+            return null;
+        }
+        else if (nodeIndex >= 0 && nodeIndex < noOfNodes) {
+            PathNode existing = nodes.get(nodeIndex);
+            nodes.add(nodeIndex, new PathNodeState(x, y, z, name, nodeIndex));
+            //Upper limit is one greater due to inserted node.
+            for (int currentNodeIndex = nodeIndex + 1; nodeIndex <= noOfNodes; currentNodeIndex++) {
+                nodes.get(nodeIndex).setSequenceIndex(currentNodeIndex);
+            }
+            return existing;
+        }
+        else {
+            throw new IndexOutOfBoundsException(String.format("The specified index: %d at which to insert a path node was outside the range of valid node indices! No of node states: %d.", nodeIndex, noOfNodes));
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PathNode removeNodeAt(int nodeIndex) throws IndexOutOfBoundsException {
+        final int noOfNodes = nodes.size();
+        if (nodeIndex >= 0 && nodeIndex < noOfNodes) {
+            return nodes.remove(nodeIndex);
+        }
+        else {
+            throw new IndexOutOfBoundsException(String.format("The specified index: %d at which to remove a path node was outside the range of valid node indices! No of node states: %d.", nodeIndex, noOfNodes));
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void removeAllNodes() {
+        nodes.clear();
     }
 
     /**

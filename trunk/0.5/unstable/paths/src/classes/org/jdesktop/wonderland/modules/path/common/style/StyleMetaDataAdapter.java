@@ -1,5 +1,16 @@
 package org.jdesktop.wonderland.modules.path.common.style;
 
+import java.net.URI;
+import org.jdesktop.wonderland.modules.path.common.FloatValue;
+import org.jdesktop.wonderland.modules.path.common.IntegerValueRange;
+import org.jdesktop.wonderland.modules.path.common.FloatValueRange;
+import org.jdesktop.wonderland.modules.path.common.IntegerValue;
+import org.jdesktop.wonderland.modules.path.common.MutableFloatValue;
+import org.jdesktop.wonderland.modules.path.common.MutableIntegerValue;
+import org.jdesktop.wonderland.modules.path.common.MutableTextValue;
+import org.jdesktop.wonderland.modules.path.common.TextValue;
+import org.jdesktop.wonderland.modules.path.common.URIValue;
+
 /**
  * This class is an adapter wrapper / decorator around an ItemStyle for use to retrieve or set different style information
  * which may or may not actually be present in the specific ItemStyle.
@@ -40,8 +51,8 @@ public class StyleMetaDataAdapter {
     public float getFloatAttribute(String attributeName, float defaultValue) {
         if (wrappedStyle != null) {
             StyleAttribute floatAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (floatAttribute instanceof FloatStyleAttribute) {
-                return ((FloatStyleAttribute) floatAttribute).getValue();
+            if (floatAttribute instanceof FloatValue) {
+                return ((FloatValue) floatAttribute).getFloat();
             }
         }
         return defaultValue;
@@ -57,8 +68,8 @@ public class StyleMetaDataAdapter {
     public boolean setFloatAttribute(String attributeName, float value) throws IllegalArgumentException {
         if (wrappedStyle != null) {
             StyleAttribute floatAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (floatAttribute instanceof FloatStyleAttribute) {
-                ((FloatStyleAttribute) floatAttribute).setValue(value);
+            if (floatAttribute instanceof MutableFloatValue) {
+                ((MutableFloatValue) floatAttribute).setFloat(value);
                 return true;
             }
         }
@@ -79,8 +90,8 @@ public class StyleMetaDataAdapter {
     public boolean setFloatAttribute(String attributeName, float value, FloatValueRange range) throws IllegalArgumentException {
         if (wrappedStyle != null && attributeName != null) {
             StyleAttribute floatAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (floatAttribute instanceof FloatStyleAttribute) {
-                ((FloatStyleAttribute) floatAttribute).setValue(value);
+            if (floatAttribute instanceof MutableFloatValue) {
+                ((MutableFloatValue) floatAttribute).setFloat(value);
                 return true;
             }
             else if (floatAttribute == null) {
@@ -100,8 +111,8 @@ public class StyleMetaDataAdapter {
     public FloatValueRange getSupportedFloatAttributeRange(String attributeName) {
         if (wrappedStyle != null) {
             StyleAttribute floatAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (floatAttribute instanceof FloatStyleAttribute) {
-                return ((FloatStyleAttribute) floatAttribute).getPermittedRange();
+            if (floatAttribute instanceof MutableFloatValue) {
+                return ((MutableFloatValue) floatAttribute).getConstraint();
             }
         }
         return null;
@@ -115,7 +126,7 @@ public class StyleMetaDataAdapter {
      *         StyleAttribute exists with that name or an attribute which is not a FloatStyleAttribute exists.
      */
     public boolean isFloatAttributePresent(String attributeName) {
-        return wrappedStyle != null && wrappedStyle.getStyleAttribute(attributeName) instanceof FloatStyleAttribute;
+        return wrappedStyle != null && wrappedStyle.getStyleAttribute(attributeName) instanceof FloatValue;
     }
 
     /**
@@ -129,8 +140,8 @@ public class StyleMetaDataAdapter {
     public int getIntegerAttribute(String attributeName, int defaultValue) {
         if (wrappedStyle != null) {
             StyleAttribute integerAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (integerAttribute instanceof IntegerStyleAttribute) {
-                return ((IntegerStyleAttribute) integerAttribute).getValue();
+            if (integerAttribute instanceof IntegerValue) {
+                return ((IntegerValue) integerAttribute).getInteger();
             }
         }
         return defaultValue;
@@ -146,8 +157,8 @@ public class StyleMetaDataAdapter {
     public boolean setIntegerAttribute(String attributeName, int value) throws IllegalArgumentException {
         if (wrappedStyle != null) {
             StyleAttribute integerAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (integerAttribute instanceof IntegerStyleAttribute) {
-                ((IntegerStyleAttribute) integerAttribute).setValue(value);
+            if (integerAttribute instanceof MutableIntegerValue) {
+                ((MutableIntegerValue) integerAttribute).setInteger(value);
                 return true;
             }
         }
@@ -168,8 +179,8 @@ public class StyleMetaDataAdapter {
     public boolean setIntegerAttribute(String attributeName, int value, IntegerValueRange range) throws IllegalArgumentException {
         if (wrappedStyle != null && attributeName != null) {
             StyleAttribute integerAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (integerAttribute instanceof IntegerStyleAttribute) {
-                ((IntegerStyleAttribute) integerAttribute).setValue(value);
+            if (integerAttribute instanceof MutableIntegerValue) {
+                ((MutableIntegerValue) integerAttribute).setInteger(value);
                 return true;
             }
             else if (integerAttribute == null) {
@@ -189,8 +200,8 @@ public class StyleMetaDataAdapter {
     public IntegerValueRange getSupportedIntegerAttributeRange(String attributeName) {
         if (wrappedStyle != null) {
             StyleAttribute integerAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (integerAttribute instanceof IntegerStyleAttribute) {
-                return ((IntegerStyleAttribute) integerAttribute).getPermittedRange();
+            if (integerAttribute instanceof MutableIntegerValue) {
+                return ((MutableIntegerValue) integerAttribute).getConstraint();
             }
         }
         return null;
@@ -204,7 +215,7 @@ public class StyleMetaDataAdapter {
      *         StyleAttribute exists with that name or an attribute which is not an IntegerStyleAttribute exists.
      */
     public boolean isIntegerAttributePresent(String attributeName) {
-        return wrappedStyle != null && wrappedStyle.getStyleAttribute(attributeName) instanceof IntegerStyleAttribute;
+        return wrappedStyle != null && wrappedStyle.getStyleAttribute(attributeName) instanceof IntegerValue;
     }
 
     /**
@@ -218,8 +229,8 @@ public class StyleMetaDataAdapter {
     public String getTextAttribute(String attributeName, String defaultValue) {
         if (wrappedStyle != null) {
             StyleAttribute textAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (textAttribute instanceof TextStyleAttribute) {
-                return ((TextStyleAttribute) textAttribute).getText();
+            if (textAttribute instanceof TextValue) {
+                return ((TextValue) textAttribute).getText();
             }
         }
         return defaultValue;
@@ -235,8 +246,8 @@ public class StyleMetaDataAdapter {
     public boolean setTextAttribute(String attributeName, String value, boolean createIfMissing) {
         if (wrappedStyle != null && attributeName != null) {
             StyleAttribute textAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if(textAttribute instanceof TextStyleAttribute) {
-                ((TextStyleAttribute) textAttribute).setText(value);
+            if(textAttribute instanceof MutableTextValue) {
+                ((MutableTextValue) textAttribute).setText(value);
                 return true;
             }
             else if(createIfMissing && textAttribute == null) {
@@ -255,7 +266,7 @@ public class StyleMetaDataAdapter {
      *         with that name exists or a StyleAttribute which is not a TextStyleAttribute exists.
      */
     public boolean isTextAttributePresent(String attributeName) {
-        return wrappedStyle != null && wrappedStyle.getStyleAttribute(attributeName) instanceof TextStyleAttribute;
+        return wrappedStyle != null && wrappedStyle.getStyleAttribute(attributeName) instanceof TextValue;
     }
 
     /**
@@ -266,11 +277,11 @@ public class StyleMetaDataAdapter {
      * @return The value of the TextureStyleAttribute or the default value if no TextStyleAttribute exists in the style with
      *         the specified name.
      */
-    public String getTextureAttribute(String attributeName, String defaultURI) {
+    public URI getTextureAttribute(String attributeName, URI defaultURI) {
         if (wrappedStyle != null) {
             StyleAttribute textureAttribute = wrappedStyle.getStyleAttribute(attributeName);
-            if (textureAttribute instanceof TextureStyleAttribute) {
-                return ((TextureStyleAttribute) textureAttribute).getURI();
+            if (textureAttribute instanceof URIValue) {
+                return ((URIValue) textureAttribute).getURI();
             }
         }
         return defaultURI;
@@ -283,7 +294,7 @@ public class StyleMetaDataAdapter {
      * @param createIfMissing Whether a TextureStyleAttribute should be created if no existing attribute exists with the specified name.
      * @return True if the TextureStyleAttribute was available to use to set the texture URI value.
      */
-    public boolean setTextureAttribute(String attributeName, String uri, boolean createIfMissing) {
+    public boolean setTextureAttribute(String attributeName, URI uri, boolean createIfMissing) {
         if (wrappedStyle != null && attributeName != null) {
             StyleAttribute textureAttribute = wrappedStyle.getStyleAttribute(attributeName);
             if (textureAttribute instanceof TextureStyleAttribute) {
@@ -923,7 +934,7 @@ public class StyleMetaDataAdapter {
      * @return The URI of the main texture from a TextureStyleAttribute set within the style or the specified
      *         default texture URI supplied.
      */
-    public String getMainTexture(String defaultTextureURI) {
+    public URI getMainTexture(URI defaultTextureURI) {
         return getTextureAttribute(StandardStyleAttribute.TEXTURE.getName(), defaultTextureURI);
     }
 

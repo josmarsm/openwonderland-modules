@@ -7,21 +7,7 @@ import java.io.Serializable;
  *
  * @author Carl Jokl
  */
-public interface PathNode extends Positioned, Serializable {
-
-    /**
-     * Get the label of the node (if any).
-     *
-     * @return The label of the node (if any).
-     */
-    public String getName();
-
-    /**
-     * Whether the node is named.
-     *
-     * @return True if the node has a name or false otherwise.
-     */
-    public boolean isNamed();
+public interface PathNode extends Positioned, MutableNamed, Serializable {
 
     /**
      * Get the sequence index of this node in the path.

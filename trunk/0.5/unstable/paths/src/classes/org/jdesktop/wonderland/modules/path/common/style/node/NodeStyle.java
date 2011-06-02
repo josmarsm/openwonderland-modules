@@ -22,20 +22,33 @@ public class NodeStyle extends AbstractItemStyle<NodeStyleType> implements Seria
     private static final long serialVersionUID = 1L;
 
     @XmlTransient
-    private NodeStyleType styleType;
+    private final NodeStyleTypeHolder styleTypeHolder;
 
     /**
      * No argument constructor for JAXB.
      */
-    public NodeStyle() {}
+    public NodeStyle() {
+        styleTypeHolder = new NodeStyleTypeHolder();
+    }
 
     /**
      * Create a new instance of a NodeStyle for the specified NodeStyleType.
      *
-     * @param styleType The type of NodeStyle for which this NodeStyle holds meta-data.
+     * @param styleTypeHolder The type of NodeStyle for which this NodeStyle holds meta-data.
      */
     public NodeStyle(NodeStyleType styleType) {
-        this.styleType = styleType;
+        styleTypeHolder = new NodeStyleTypeHolder(styleType);
+    }
+
+    /**
+     * Create a new instance of a NodeStyle which wraps the specified NodeStyle.
+     *
+     * @param wrappedStyle The NodeStyle which is wrapped by this NodeStyle.
+     * @throws IllegalArgumentException If the specified NodeStyle to be wrapped was null.
+     */
+    protected NodeStyle(NodeStyle wrappedStyle) throws IllegalArgumentException {
+        super(wrappedStyle);
+        styleTypeHolder = wrappedStyle.getNodeStyleTypeHolder();
     }
 
     /**
@@ -46,15 +59,52 @@ public class NodeStyle extends AbstractItemStyle<NodeStyleType> implements Seria
     @Override
     @XmlAttribute(name="type")
     public NodeStyleType getStyleType() {
-        return styleType;
+        return styleTypeHolder.styleType;
     }
 
     /**
      * Set the NodeStyleType of this NodeStyle.
      *
-     * @param styleType The NodeStyleType of this NodeStyle.
+     * @param styleTypeHolder The NodeStyleType of this NodeStyle.
      */
     public void setStyleType(NodeStyleType styleType) {
-        this.styleType = styleType;
-    }    
+        styleTypeHolder.styleType = styleType;
+    }
+
+    /**
+     * Get the internal NodeStyleTypeHolder which is used to provide a level of indirection
+     * to the NodeStyleType in order that the NodeStyleType can be kept in synch between a
+     * NodeStyle and a NodeStyle wrapper class.
+     *
+     * @return The NodeStyleTypeHolder which provides indirection for the NodeStyleType so that
+     *         both a NodeStyle and a wrapper class can refer to the same NodeStyleType and
+     *         when it is changed in one it is changed in the other.
+     */
+    @XmlTransient
+    private NodeStyleTypeHolder getNodeStyleTypeHolder() {
+        return styleTypeHolder;
+    }
+
+    /**
+     * This class is used as an extra level of indirection so that a NodeStyle wrapper can share a reference to a wrapped
+     * NodeStyle and when one is updated then the other will be updated as well.
+     */
+    private static class NodeStyleTypeHolder {
+
+        /**
+         * Create a new NodeStyleTypeHolder with no NodeStyleType set.
+         */
+        public NodeStyleTypeHolder() { }
+
+        /**
+         * Create a new NodeStyleTypeHolder set to the specified NodeStyleType.
+         *
+         * @param styleTypeHolder The NodeStyleType to which the NodeStyleTypeHolder is to be set.
+         */
+        public NodeStyleTypeHolder(NodeStyleType styleType) {
+            this.styleType = styleType;
+        }
+
+        public NodeStyleType styleType;
+    }
 }

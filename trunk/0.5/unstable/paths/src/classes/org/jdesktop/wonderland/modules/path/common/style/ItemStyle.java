@@ -33,6 +33,13 @@ public interface ItemStyle<T extends StyleType> extends Serializable {
     public T getStyleType();
 
     /**
+     * Set the StyleType for this ItemStyle meta-data object.
+     *
+     * @param styleType The StyleType of this ItemStyle meta-data object.
+     */
+    public void setStyleType(T styleType);
+
+    /**
      * The number of style attributes which are part of this ItemStyle.
      * 
      * @return The number of StyleAttributes which are part of this ItemStyle.
