@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -21,7 +22,7 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
      */
     private static final long serialVersionUID = 1L;
 
-    private int span;
+    private final Span span;
     @XmlElement(name="style-attributes")
     private List<StyleAttribute> attributes;
     @XmlTransient
@@ -31,9 +32,23 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
      * Initialize this AbstractItemStyle with the default span of 1.
      */
     protected AbstractItemStyle() {
-        span = 1;
+        span = new Span();
         attributes = new ArrayList<StyleAttribute>();
         attributesByName = new HashMap<String, StyleAttribute>();
+    }
+
+    /**
+     * Protected constructor used by derived classes which are intended to be used as wrappers around another ItemStyle.
+     *
+     * @param wrappedStyle The style to be wrapped by this AbstractItemStyle.
+     */
+    protected AbstractItemStyle(AbstractItemStyle<T> wrappedStyle) {
+        if (wrappedStyle == null) {
+            throw new IllegalArgumentException("The specified item style to be wrapped by this item style cannot be null!");
+        }
+        span = wrappedStyle.getInternalSpan();
+        attributes = wrappedStyle.getInternalStyleAttributeList();
+        attributesByName = wrappedStyle.getInternalStyleAttributeMap();
     }
 
     /**
@@ -44,19 +59,38 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
      */
     protected AbstractItemStyle(int span) throws IllegalArgumentException {
         this();
-        if (span > 0) {
-            this.span = span;
-        }
-        else {
-            throw new IllegalArgumentException(String.format("The specified span %d is invalid because the span must be greater than zero!", span));
-        }
+        this.span.setSpan(span);
     }
 
     /**
-     * {@inheritDoc}
+     * Get the internal list of StyleAttributes for this AbstractItemStyle. This is used for wrapper classes such as those which also send
+     * update messages to the server when attributes are changed.
+     *
+     * @return The internal list representation of the StyleAttribute of this AbstractItemStyle.
      */
-    @Override
-    public int span() {
+    @XmlTransient
+    private List<StyleAttribute> getInternalStyleAttributeList() {
+        return attributes;
+    }
+
+    /**
+     * Get the internal mapping of StyleAttribute names to StyleAttributes for this AbstractItemStyle. This is used for wrapper classes such
+     * as those which also send update messages to the server when attributes are changed.
+     *
+     * @return The internal mapping of StyleAttribute names to StyleAttributes for this AbstractItemStyle.
+     */
+    @XmlTransient
+    private Map<String, StyleAttribute> getInternalStyleAttributeMap() {
+        return attributesByName;
+    }
+
+    /**
+     * Get the internal Span object reference. This can be used for wrapper classes.
+     *
+     * @return A reference to the internal Span object.
+     */
+    @XmlTransient
+    private Span getInternalSpan() {
         return span;
     }
 
@@ -64,13 +98,17 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
      * {@inheritDoc}
      */
     @Override
+    @XmlAttribute(name="span")
+    public int span() {
+        return span.getSpan();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void setSpan(int span) throws IllegalArgumentException {
-        if (span > 0) {
-            this.span = span;
-        }
-        else {
-            throw new IllegalArgumentException(String.format("The specified span %d is invalid because the span must be greater than zero!", span));
-        }
+        this.span.setSpan(span);
     }
     
     /**
@@ -181,6 +219,20 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
     }
 
     /**
+     * Get the index of the specified style attribute within the list of StyleAttributes.
+     *
+     * @param attribute The StyleAttribute for which to find the index in the list of attributes.
+     * @return The index of the specified StyleAttribute in the list of StyleAttributes or -1 if
+     *         the StyleAttribute was null or was not present in the list of StyleAttributes.
+     */
+    public int indexOf(StyleAttribute attribute) {
+        if (attribute != null) {
+            return attributes.indexOf(attribute);
+        }
+        return -1;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -207,6 +259,58 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
         attributesByName.clear();
         for (StyleAttribute attribute : attributes) {
             attributesByName.put(attribute.getName(), attribute);
+        }
+    }
+
+    /**
+     * This private class represents the span of an ItemStyle. Using an object for this
+     * means that the Span can be referenced from more than one object i.e. when using
+     * a wrapper and when the span is updated in either ItemStyle then both ItemStyles
+     * will reflect the changed value.
+     */
+    private static class Span {
+
+        private int span;
+
+        /**
+         * Create a new instance of a Span with the default value of 1.
+         */
+        public Span() {
+            span = 1;
+        }
+
+        /**
+         * Create a new instance of a Span with the specified number of items to span.
+         *
+         * @param span The number of items to Span.
+         * @throws IllegalArgumentException If the number of items to span is not greater than zero.
+         */
+        public Span(int span) throws IllegalArgumentException {
+            setSpan(span);
+        }
+
+        /**
+         * Get the number of items spanned.
+         *
+         * @return The number of items spanned.
+         */
+        public int getSpan() {
+            return span;
+        }
+
+        /**
+         * Set the number of items spanned.
+         *
+         * @param span The number of items spanned which should be greater than zero.
+         * @throws IllegalArgumentException If the specified span is not greater than zero.
+         */
+        public final void setSpan(int span) throws IllegalArgumentException {
+            if (span > 0) {
+                this.span = span > 0 ? span : 1;
+            }
+            else {
+                throw new IllegalArgumentException(String.format("The specified span %d is invalid because the span must be greater than zero!", span));
+            }
         }
     }
 }

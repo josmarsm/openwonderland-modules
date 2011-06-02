@@ -51,6 +51,48 @@ public class PathStyle implements Serializable {
     }
 
     /**
+     * This is a constructor for use by extending classes which are used to wrap
+     * another PathStyle instance. This can for example be used in the
+     * ServerMessageSendingPathStyle so that a PathStyle's internal lists can be
+     * reused in the ServerMessageSendingPathStyle to provide some level of
+     * wrapper / decorator / proxy functionality.
+     *
+     * @param PathStyle The PathStyle which is to be wrapped by this PathStyle.
+     * @throws IllegalArgumentException If the specified wrapped style is null.
+     */
+    protected PathStyle(PathStyle wrappedStyle) throws IllegalArgumentException {
+        if (wrappedStyle == null) {
+            throw new IllegalArgumentException("The PathStyle which is to be wrapped by this PathStyle cannot be null!");
+        }
+        this.nodeStyles = wrappedStyle.getInternalNodeStyles();
+        this.segmentStyles = wrappedStyle.getInternalSegmentStyles();
+    }
+
+    /**
+     * This private method allows direct access to the PathStyle's internal NodeStyle list.
+     * This method is intended to be used in classes like the ServerMessageSendingClientNodePath
+     * which can reference the NodeStyle list from another PathStyle and then the method calls of
+     * that class will manipulates the values of both PathStyles.
+     *
+     * @return The internal NodeStyle list for use by wrapper classes / proxies.
+     */
+    private List<NodeStyle> getInternalNodeStyles() {
+        return nodeStyles;
+    }
+
+    /**
+     * This private method allows direct access to the PathStyle's internal SegmentStyle list.
+     * This method is intended to be used in classes like the ServerMessageSendingClientNodePath
+     * which can reference the SegmentStyle list from another PathStyle and then the method calls of
+     * that class will manipulate the values of both PathStyles.
+     *
+     * @return The internal SegmentStyle list for use by wrapper classes / proxies.
+     */
+    private List<SegmentStyle> getInternalSegmentStyles() {
+        return segmentStyles;
+    }
+
+    /**
      * Initialize this PathStyle to have the specified pathType which cannot be null.
      * 
      * @param nodeStyle The NodeStyle of the PathNodes styled by this PathStyle, this cannot be null.
@@ -509,5 +551,27 @@ public class PathStyle implements Serializable {
                 throw new IndexOutOfBoundsException(String.format("The index: %d from which the node style was to be removed is outside the valid range of node style indices!", index));
             }
         }
+    }
+
+    /**
+     * Get the index of the specified SegmentStyle within the PathStyle's list of SegmentStyles.
+     *
+     * @param style The SegmentStyle for which to find the index in the SegmentStyles or this PathStyle.
+     * @return The index of the SegmentStyle within the PathStyle's SegmentStyles or -1 if the SegmentStyle
+     *         is not present.
+     */
+    public int indexOf(SegmentStyle style) {
+        return segmentStyles.indexOf(style);
+    }
+
+    /**
+     * Get the index of the specified NodeStyle within the PathStyle's list of NodeStyles.
+     *
+     * @param style The NodeStyle for which to find the index in the NodeStyles or this PathStyle.
+     * @return The index of the SegmentStyle within the PathStyle's NodeStyles or -1 if the NodeStyle
+     *         is not present.
+     */
+    public int indexOf(NodeStyle style) {
+        return nodeStyles.indexOf(style);
     }
 }

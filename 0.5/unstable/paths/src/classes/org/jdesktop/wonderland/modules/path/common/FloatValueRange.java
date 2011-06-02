@@ -1,4 +1,4 @@
-package org.jdesktop.wonderland.modules.path.common.style;
+package org.jdesktop.wonderland.modules.path.common;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -93,5 +93,25 @@ public class FloatValueRange implements Serializable {
     @Override
     public String toString() {
         return String.format("%s %f & %s %f", minInclusive ? "≥" : ">", min, maxInclusive ? "≤" : "<", max);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof FloatValueRange) {
+            FloatValueRange otherRange = (FloatValueRange) obj;
+            return otherRange.min == min && otherRange.max == max && otherRange.minInclusive == minInclusive && otherRange.maxInclusive == maxInclusive;
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode() {
+        return (int) ((min * max) / 11);
     }
 }

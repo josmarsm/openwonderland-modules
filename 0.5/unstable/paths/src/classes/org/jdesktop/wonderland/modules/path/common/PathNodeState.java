@@ -88,10 +88,9 @@ public class PathNodeState implements PathNode, Serializable {
     }
 
     /**
-     * Set the name to be used to label this PathNode.
-     *
-     * @param name The name used to label this PathNode.
+     * {@inheritDoc}
      */
+    @Override
     public void setName(String name) {
         this.name = name;
     }

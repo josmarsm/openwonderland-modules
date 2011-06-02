@@ -346,7 +346,7 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
     public PathSegmentRenderer getRenderer(int segmentIndex) {
         PathSegmentRendererFactory segmentRendererFactory = getRendererFactory(segmentIndex);
         if (segmentRendererFactory != null) {
-            segmentRendererFactory.createRenderer(getPathNode(segmentIndex));
+            return segmentRendererFactory.createRenderer(getPathNode(segmentIndex));
         }
         return null;
     }
@@ -437,25 +437,24 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
         return false;
     }
 
+    /**
+     * Update the graphical representation of the path segment with the specified index.
+     *
+     * @param index The index of the segment to be updated.
+     * @return True if the request to update to the path segment was updated successfully.
+     */
     public boolean updatePathSegment(int index) {
         return false;
     }
 
-    public boolean updatePath() {
-        return false;
-    }
-
     /**
-     * Update the representation of this PathCell after a state change.
+     * Update the graphical representation of the entire path.
+     *
+     * @return True if the request to update the graphical representation of the NodePath is submitted successfully.
      */
-    public void updateUI() {
-        if (cell != null && cellRootNode != null) {
-            final String name = cell.getCellID().toString();
-            if (cell instanceof PathCell) {
-                SceneWorker.addWorker(new PathCellUpdateWorker());
-            }
-            cellRootNode.setName(String.format("Path Cell: %s (%s)", name, cell.getCellID().toString()));
-        }
+    public boolean updatePath() {
+        SceneWorker.addWorker(new PathUpdateWorker(this));
+        return true;
     }
 
     /**
@@ -551,15 +550,33 @@ public class PathCellRenderer extends BasicRenderer implements CellRetriever {
         }
     }
 
-    private static class PathCellUpdateWorker implements WorkCommit {
+    /**
+     * This class is used for performing graphical updates of the NodePath on the proper
+     * graphics thread.
+     */
+    private static class PathUpdateWorker implements WorkCommit {
+
+        private PathCellRenderer owner;
+
+        /**
+         * Create a new PathNodeUpdateWorker to perform a graphical update of the entire NodePath on the
+         * graphics thread.
+         *
+         * @param owner The owning PathCellRender which needs to render the PathNode update.
+         */
+        public PathUpdateWorker(PathCellRenderer owner) {
+            this.owner = owner;
+        }
 
         /**
          * Commit update changes to the PathCell rendering.
          */
         @Override
         public void commit() {
-            
+            if (owner != null) {
+                owner.cleanupSceneGraph(owner.getEntity());
+                owner.createSceneGraph(owner.getEntity());
+            }
         }
-
     }
 }

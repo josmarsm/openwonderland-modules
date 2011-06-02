@@ -2,7 +2,7 @@ package org.jdesktop.wonderland.modules.path.common.style.node;
 
 import org.jdesktop.wonderland.modules.path.common.style.ColorStyleAttribute;
 import org.jdesktop.wonderland.modules.path.common.style.FloatStyleAttribute;
-import org.jdesktop.wonderland.modules.path.common.style.FloatValueRange;
+import org.jdesktop.wonderland.modules.path.common.FloatValueRange;
 import org.jdesktop.wonderland.modules.path.common.style.StandardStyleAttribute;
 import org.jdesktop.wonderland.modules.path.common.style.TextureStyleAttribute;
 
