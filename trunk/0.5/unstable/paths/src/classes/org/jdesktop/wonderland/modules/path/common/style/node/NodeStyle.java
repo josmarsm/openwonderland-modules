@@ -67,6 +67,7 @@ public class NodeStyle extends AbstractItemStyle<NodeStyleType> implements Seria
      *
      * @param styleTypeHolder The NodeStyleType of this NodeStyle.
      */
+    @Override
     public void setStyleType(NodeStyleType styleType) {
         styleTypeHolder.styleType = styleType;
     }
@@ -89,7 +90,7 @@ public class NodeStyle extends AbstractItemStyle<NodeStyleType> implements Seria
      * This class is used as an extra level of indirection so that a NodeStyle wrapper can share a reference to a wrapped
      * NodeStyle and when one is updated then the other will be updated as well.
      */
-    private static class NodeStyleTypeHolder {
+    private static class NodeStyleTypeHolder implements Serializable {
 
         /**
          * Create a new NodeStyleTypeHolder with no NodeStyleType set.

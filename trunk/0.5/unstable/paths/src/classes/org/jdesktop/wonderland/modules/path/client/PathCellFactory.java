@@ -6,7 +6,6 @@ import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.path.common.PathCellServerState;
-import org.jdesktop.wonderland.modules.path.common.PathNodeState;
 import org.jdesktop.wonderland.modules.path.common.style.DefaultStyleFactory;
 import org.jdesktop.wonderland.modules.path.common.style.StyleFactory;
 
@@ -21,7 +20,7 @@ public class PathCellFactory implements CellFactorySPI {
     /**
      * The display name for the PathCell.
      */
-    public static final String DISPLAY_NAME = "Path of Nodes";
+    public static final String DISPLAY_NAME = "Fence / Cordon / Path";
 
     private StyleFactory styleFactory;
 

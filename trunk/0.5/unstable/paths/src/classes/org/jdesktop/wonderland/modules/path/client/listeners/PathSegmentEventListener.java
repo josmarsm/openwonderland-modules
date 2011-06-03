@@ -1,11 +1,9 @@
 package org.jdesktop.wonderland.modules.path.client.listeners;
 
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.modules.path.client.ClientPathNode;
 import org.jdesktop.wonderland.modules.path.common.Disposable;
 

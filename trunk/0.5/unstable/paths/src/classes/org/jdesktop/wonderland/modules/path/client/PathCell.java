@@ -53,6 +53,7 @@ public class PathCell extends Cell {
         super(cellID, cellCache);
         internalPath = new InternalClientNodePath(this);
         messageSendingPath = new ServerMessageSendingClientNodePath(this, internalPath);
+        setName(String.format("Fence / Cordon / Path (%s)", cellID.toString()));
     }
 
     /**
