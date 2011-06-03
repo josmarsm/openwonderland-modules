@@ -53,16 +53,16 @@ public class DefaultStyleFactory implements StyleFactory {
      * Create and initialize the DefaultStyleFactory.
      */
     public DefaultStyleFactory() {
-        defaultNodeStyleBuilder = new InvisibleNodeStyleBuilder();
-        defaultSegmentStyleBuilder = new InvisibleSegmentStyleBuilder();
+        defaultNodeStyleBuilder = new PoleNodeStyleBuilder();
+        defaultSegmentStyleBuilder = new TapeSegmentStyleBuilder();
         nodeStyleBuilders = new HashMap<NodeStyleType, NodeStyleBuilder>();
         segmentStyleBuilders = new HashMap<SegmentStyleType, SegmentStyleBuilder>();
         add(defaultNodeStyleBuilder, nodeStyleBuilders);
         add(defaultSegmentStyleBuilder, segmentStyleBuilders);
-        add(new PoleNodeStyleBuilder(), nodeStyleBuilders);
+        add(new InvisibleNodeStyleBuilder(), nodeStyleBuilders);
+        add(new InvisibleSegmentStyleBuilder(), segmentStyleBuilders);
         add(new SquarePostNodeStyleBuilder(), nodeStyleBuilders);
         add(new HazardConeNodeStyleBuilder(), nodeStyleBuilders);
-        add(new TapeSegmentStyleBuilder(), segmentStyleBuilders);
     }
 
     /**

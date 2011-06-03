@@ -268,7 +268,12 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
      * a wrapper and when the span is updated in either ItemStyle then both ItemStyles
      * will reflect the changed value.
      */
-    private static class Span {
+    private static class Span implements Serializable {
+
+        /**
+         * The version number for serialization.
+         */
+        private static final long serialVersionUID = 1L;
 
         private int span;
 

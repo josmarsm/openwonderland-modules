@@ -66,6 +66,7 @@ public class SegmentStyle extends AbstractItemStyle<SegmentStyleType> implements
      *
      * @param styleTypeHolder The NodeStyleType of this NodeStyle.
      */
+    @Override
     public void setStyleType(SegmentStyleType styleType) {
         styleTypeHolder.styleType = styleType;
     }
@@ -89,7 +90,7 @@ public class SegmentStyle extends AbstractItemStyle<SegmentStyleType> implements
      * SegmentStyles to share a common SegmentStyleType and when one is
      * changed the the other is changed also.
      */
-    private static class SegmentStyleTypeHolder {
+    private static class SegmentStyleTypeHolder implements Serializable {
 
         /**
          * Create a new SegmentStyleTypeHolder which does not have a SegmentStyleType set.
