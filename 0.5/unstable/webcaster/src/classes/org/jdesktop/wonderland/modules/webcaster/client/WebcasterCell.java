@@ -19,6 +19,7 @@
 package org.jdesktop.wonderland.modules.webcaster.client;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -52,6 +53,7 @@ import org.jdesktop.wonderland.client.utils.VideoLibraryLoader;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
+import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.webcaster.client.utils.RTMPOut;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellChangeMessage;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellClientState;
@@ -84,7 +86,7 @@ public class WebcasterCell extends Cell
             host = sgs_serverURL.getHost();
         }
         //logger.warning("host: " + host);
-        SERVER_URL = "rtmp://" + host + ":1935/";
+        SERVER_URL = host;
         //logger.warning("SERVER_URL: " + SERVER_URL);
     }
 
@@ -104,6 +106,8 @@ public class WebcasterCell extends Cell
     private AudioResource startSound = null;
     /** the message handler, or null if no message handler is registered */
     private WebcasterCellMessageReceiver receiver = null;
+
+    private String streamID = "";
 
     public WebcasterCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
@@ -150,12 +154,12 @@ public class WebcasterCell extends Cell
     public void write(BufferedImage frame)
     {
         if (streamOutput == null){
-            streamOutput = new RTMPOut(SERVER_URL + "live/" + controlPanel.getStreamName());
+            streamOutput = new RTMPOut("rtmp://" + SERVER_URL + ":1935/live/" + controlPanel.getStreamName());
         }
         
         streamOutput.write(frame);
     }
-    
+
     @Override
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
@@ -170,7 +174,7 @@ public class WebcasterCell extends Cell
                             SwingUtilities.invokeLater(new Runnable() {
 
                                 public void run() {
-                                    controlPanel = new WebcasterControlPanel(WebcasterCell.this);
+                                    controlPanel = new WebcasterControlPanel(WebcasterCell.this, streamID);
                                     hudComponent = mainHUD.createComponent(controlPanel);
                                     hudComponent.setPreferredLocation(Layout.NORTHWEST);
                                     hudComponent.setName("Webcaster Control Panel");
@@ -198,6 +202,27 @@ public class WebcasterCell extends Cell
                                                 });
                                             } catch (Exception x) {
                                                 throw new RuntimeException("Cannot add hud component to main hud");
+                                            }
+                                        }
+                                    }),
+
+                                    new SimpleContextMenuItem("Open Browser Viewer", new ContextMenuActionListener(){
+                                        public void actionPerformed(ContextMenuItemEvent event) {
+                                            try {
+                                                SwingUtilities.invokeLater(new Runnable() {
+
+                                                    public void run() {
+
+                                                        try{
+                                                            java.awt.Desktop.getDesktop().browse(java.net.URI.create("http://" + SERVER_URL + ":8080/webcaster/webcaster/"));
+                                                        }
+                                                        catch (IOException e) {
+                                                            throw new RuntimeException("Error opening browser");
+                                                        }
+                                                    }
+                                                });
+                                            } catch (Exception x) {
+                                                throw new RuntimeException("Cannot find browser");
                                             }
                                         }
                                     })};
@@ -244,8 +269,9 @@ public class WebcasterCell extends Cell
     public void setClientState(CellClientState state){
         super.setClientState(state);
         remoteWebcasting = ((WebcasterCellClientState) state).isWebcasting();
+        streamID = ((WebcasterCellClientState)state).getStreamID();
     }
-
+    
     private ChannelComponent getChannel() {
         return getComponent(ChannelComponent.class);
     }
@@ -292,7 +318,6 @@ public class WebcasterCell extends Cell
 
             } else {
                 logger.warning("it's from me to me!");
-                
             }
         }
     }

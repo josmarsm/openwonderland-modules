@@ -38,7 +38,8 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 public class WebcasterCellMO extends CellMO
 {
     private transient boolean isWebcasting;
-    
+    private String streamID;
+
     public WebcasterCellMO(){
         super();
         isWebcasting = false;
@@ -72,6 +73,7 @@ public class WebcasterCellMO extends CellMO
     @Override
     public void setServerState(CellServerState state){
         super.setServerState(state);
+        this.streamID = ((WebcasterCellServerState)state).getStreamID();
     }
 
     @Override
@@ -80,7 +82,7 @@ public class WebcasterCellMO extends CellMO
         if (state == null) {
             state = new WebcasterCellServerState();
         }
-
+        
         return super.getServerState(state);
     }
 
@@ -88,7 +90,7 @@ public class WebcasterCellMO extends CellMO
     public CellClientState getClientState(CellClientState cellClientState, WonderlandClientID clientID, ClientCapabilities capabilities)
     {
         if (cellClientState == null){
-            cellClientState = new WebcasterCellClientState(isWebcasting);
+            cellClientState = new WebcasterCellClientState(isWebcasting, streamID);
         }
 
         return super.getClientState(cellClientState, clientID, capabilities);

@@ -51,7 +51,7 @@ public class WebcasterCellFactory implements CellFactorySPI {
 
     public Image getPreviewImage() {
         try{
-            URL url = AssetUtils.getAssetURL("wla://webcaster/icon.jpg");
+            URL url = AssetUtils.getAssetURL("wla://webcaster/icon.gif");
             return Toolkit.getDefaultToolkit().createImage(url);
         }catch(MalformedURLException e){
             return null;
