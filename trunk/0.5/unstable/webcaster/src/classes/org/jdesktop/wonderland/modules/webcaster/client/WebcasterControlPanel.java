@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import org.jdesktop.wonderland.common.cell.state.CellClientState;
 
 /**
  * Control panel for Webcaster. Provides button to start & stop webcasting,
@@ -33,23 +34,24 @@ import javax.swing.SwingWorker;
 public class WebcasterControlPanel extends javax.swing.JPanel {
 
     private final WebcasterCell cell;
+    private String streamID;
 
     /** Creates new form WebcasterControlPanel
      * @param cell the movie recorder cell controlled by this panel
      */
-    public WebcasterControlPanel(WebcasterCell cell) {
+    public WebcasterControlPanel(WebcasterCell cell, String streamID) {
         this.cell = cell;
+        this.streamID = streamID;
         initComponents();
-        dirField.setText("wonderland");
+        dirField.setText(this.streamID);
         previewPanel.setLayout(new BorderLayout());
         previewPanel.add(cell.getCaptureComponent(), BorderLayout.CENTER);
         setRemoteWebcasting(cell.isRemoteWebcasting());
     }
 
     public String getStreamName(){
-        return dirField.getText();
+        return streamID;
     }
-
     
 
     /** This method is called from within the constructor to
@@ -84,11 +86,11 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         streamBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         jPanel1.add(streamBox);
 
-        dirField.setText("wonderland"); // NOI18N
+        dirField.setEditable(false);
         dirField.setMaximumSize(new Dimension(Integer.MAX_VALUE, dirField.getPreferredSize().height) );
         jPanel1.add(dirField);
 
-        recordButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/webcaster/client/resources/icon.jpg"))); // NOI18N
+        recordButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/webcaster/client/resources/icon.gif"))); // NOI18N
         recordButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 recordButtonActionPerformed(evt);
