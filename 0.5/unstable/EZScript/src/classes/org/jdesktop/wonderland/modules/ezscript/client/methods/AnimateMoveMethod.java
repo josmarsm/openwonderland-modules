@@ -143,6 +143,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         float yInc = 0;
         float zInc = 0;
         private boolean done = false;
+        private CellTransform transform = null;
 
         public TranslationProcessor(String name, float increment) {
             this.worldManager = ClientContextJME.getWorldManager();
@@ -150,7 +151,8 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
             //translate = target.getLocalTranslation();
-            translate = cell.getLocalTransform().getTranslation(null);//target.getLocalTranslation();
+            transform = cell.getLocalTransform();
+            translate = transform.getTranslation(null);//cell.getLocalTransform().getTranslation(null);//target.getLocalTranslation();
             xInc = (float) (x / Double.valueOf(30*seconds));
             yInc = (float) (y / Double.valueOf(30*seconds));
             zInc = (float) (z / Double.valueOf(30*seconds));
@@ -203,7 +205,6 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
                 return;
             }
 
-            CellTransform transform = cell.getLocalTransform();
             transform.setTranslation(translate);
             getMovable(cell).localMoveRequest(transform);
         }
