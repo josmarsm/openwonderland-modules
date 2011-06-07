@@ -21,30 +21,27 @@ import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
- * Method to set the camera to a chase cam that always looks at the avatar from
- * the right.
  *
  * @author jagwire
  */
 @ScriptMethod
-public class SetRightCameraMethod implements ScriptMethodSPI {
+public class SetLeftCameraMethod implements ScriptMethodSPI {
 
     private ChaseCamState cameraState = null;
     private ChaseCamModel cameraModel = null;
-    private static final Logger logger = Logger.getLogger(SetRightCameraMethod.class.getName());
+    private static final Logger logger = Logger.getLogger(SetLeftCameraMethod.class.getName());
 
     public String getFunctionName() {
-        return "SetRightCamera";
+        return "SetLeftCamera";
     }
 
     public void setArguments(Object[] args) {
-        //no arguments
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public String getDescription() {
-        return "Sets the camera to a chase camerea that always looks at the avatar" +
-                "from the right.\n" +
-                "-usage: SetRightCamera();";
+        return "Set the current camera to be facing the avatar from the left.\n\n" +
+                "-usage: SetLeftCamera();";
     }
 
     public String getCategory() {
@@ -52,10 +49,9 @@ public class SetRightCameraMethod implements ScriptMethodSPI {
     }
 
     public void run() {
-        setCamera(CameraUtils.RIGHT_OFFSET, CameraUtils.DEFAULT_LOOK_OFFSET);
+        setCamera(CameraUtils.LEFT_OFFSET, CameraUtils.DEFAULT_LOOK_OFFSET);
     }
-
-
+    
     public void setCamera(Vector3f positionOffset, Vector3f lookOffset) {
              //taken from AvatarClientPlugin.java:234-259
         ViewManager viewManager = ViewManager.getViewManager();
@@ -82,5 +78,4 @@ public class SetRightCameraMethod implements ScriptMethodSPI {
                                                                       cameraState);
         viewManager.setCameraController(chaseCamera);
     }
-
 }

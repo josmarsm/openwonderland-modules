@@ -21,30 +21,28 @@ import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
 /**
- * Method to set the camera to a chase cam that always looks at the avatar from
- * the right.
  *
  * @author jagwire
  */
 @ScriptMethod
-public class SetRightCameraMethod implements ScriptMethodSPI {
+public class SetTopDownCameraMethod implements ScriptMethodSPI {
 
     private ChaseCamState cameraState = null;
     private ChaseCamModel cameraModel = null;
-    private static final Logger logger = Logger.getLogger(SetRightCameraMethod.class.getName());
+    private static final Logger logger = Logger.getLogger(SetTopDownCameraMethod.class.getName());
 
     public String getFunctionName() {
-        return "SetRightCamera";
+        return "SetTopDownCamera";
     }
 
+
     public void setArguments(Object[] args) {
-        //no arguments
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public String getDescription() {
-        return "Sets the camera to a chase camerea that always looks at the avatar" +
-                "from the right.\n" +
-                "-usage: SetRightCamera();";
+        return "Sets the camera to a chase camera looking at the avatar from above\n" +
+                "-usage: SetTopDownCamera();";
     }
 
     public String getCategory() {
@@ -52,9 +50,8 @@ public class SetRightCameraMethod implements ScriptMethodSPI {
     }
 
     public void run() {
-        setCamera(CameraUtils.RIGHT_OFFSET, CameraUtils.DEFAULT_LOOK_OFFSET);
+        setCamera(CameraUtils.TOP_OFFSET, CameraUtils.DEFAULT_LOOK_OFFSET);
     }
-
 
     public void setCamera(Vector3f positionOffset, Vector3f lookOffset) {
              //taken from AvatarClientPlugin.java:234-259
