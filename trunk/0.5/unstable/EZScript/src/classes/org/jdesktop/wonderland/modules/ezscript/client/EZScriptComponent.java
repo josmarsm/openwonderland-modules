@@ -236,25 +236,8 @@ public class EZScriptComponent extends CellComponent {
             panel.addLibraryEntry(method);
         }
 
-        //grab all events
-//        Iterator<FarCellEventSPI> eventIter = loader.getInstances(TriggerCellEvent.class,
-//                                                             FarCellEventSPI.class);
-//        while(eventIter.hasNext()) {
-//            FarCellEventSPI spi = eventIter.next();
-//            if(spi.getCellClassName().equals(cell.getClass().getName())) {
-//                if(!triggerCellEvents.containsKey(spi.getEventName())) {
-//                    triggerCellEvents.put(spi.getEventName(), spi);
-//                }
-//                else {
-//                    logger.info("Cell already has event defined: "
-//                                                           +spi.getEventName());
-//                }
-//            }
-//            else {
-//                logger.finest("This event is not for our cell: "
-//                                                           +spi.getEventName());
-//            }
-//        }    
+        //add $() function to script bindings
+        this.addGetFunction();
     }
 
     @Override
@@ -1024,5 +1007,17 @@ public class EZScriptComponent extends CellComponent {
 
     public CellID getCellIDByName(String name) {
         return ScriptManager.getInstance().getCellID(name);
+    }
+
+    public void addGetFunction() {
+        String scriptx = "function $(cellname) { " +
+                "\treturn Context.getCellIDByName(cellname);" +
+                "}";
+
+        try {
+            scriptEngine.eval(scriptx, scriptBindings);
+        } catch(ScriptException e) {
+            e.printStackTrace();
+        }
     }
 }
