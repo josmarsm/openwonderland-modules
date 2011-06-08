@@ -162,7 +162,7 @@ public class TextStyleAttribute extends StyleAttribute implements MutableTextVal
      * {@inheritDoc}
      */
     @Override
-    public StyleAttribute copyOf() {
+    public StyleAttribute clone() {
         return new TextStyleAttribute(getName(), getDescription(), getText());
     }
 

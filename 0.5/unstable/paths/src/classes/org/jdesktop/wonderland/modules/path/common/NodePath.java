@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.path.common;
 
+import java.io.Serializable;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
 
 /**
@@ -8,7 +9,7 @@ import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
  *
  * @author Carl Jokl
  */
-public interface NodePath {
+public interface NodePath extends Cloneable, Serializable {
 
     /**
      * Get the PathStyle of this PathInfoHolder.
@@ -53,4 +54,12 @@ public interface NodePath {
      * @param pathStyle Set the PathStyle of this PathCell.
      */
     public void setPathStyle(PathStyle pathStyle);
+
+    /**
+     * Covariant override of the Object.clone() method to make it public and to make the
+     * cloned type more specific.
+     *
+     * @return A NodePath which is a clone of this NodePath.
+     */
+    public NodePath clone();
 }

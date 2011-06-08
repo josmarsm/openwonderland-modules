@@ -220,7 +220,7 @@ public class IntegerStyleAttribute extends StyleAttribute implements MutableInte
      * {@inheritDoc}
      */
     @Override
-    public StyleAttribute copyOf() {
+    public StyleAttribute clone() {
         return new IntegerStyleAttribute(getName(), getDescription(), getConstraint(), getInteger());
     }
 

@@ -1,9 +1,12 @@
 package org.jdesktop.wonderland.modules.path.common.style.segment;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.modules.path.common.style.AbstractItemStyle;
+import org.jdesktop.wonderland.modules.path.common.style.StyleAttribute;
 
 /**
  * This interface represents meta data information about the styling of a path segment.
@@ -12,7 +15,7 @@ import org.jdesktop.wonderland.modules.path.common.style.AbstractItemStyle;
  *
  * @author Carl Jokl
  */
-public class SegmentStyle extends AbstractItemStyle<SegmentStyleType> implements Serializable {
+public class SegmentStyle extends AbstractItemStyle<SegmentStyleType> implements Cloneable, Serializable {
 
     /**
      * The version number for serialization.
@@ -51,6 +54,19 @@ public class SegmentStyle extends AbstractItemStyle<SegmentStyleType> implements
     }
 
     /**
+     * Private constructor used for creating clones of this SegmentStyle.
+     *
+     * @param styleAttributes The StyleAttributes which this SegmentStyle is to have. This list will have been cloned already.
+     * @param styleType The SegmentStyleType which represents the kind of SegmentStyle this SegmentStyle represents.
+     * @param getSpan The number of segments to be spanned by this SegmentStyle.
+     * @throw IllegalArgumentException If the supplied StyleAttributes are null.
+     */
+    private SegmentStyle(final List<StyleAttribute> styleAttributes, final SegmentStyleType styleType, int span) {
+        super(styleAttributes, span);
+        styleTypeHolder = new SegmentStyleTypeHolder(styleType);
+    }
+
+    /**
      * Get the SegmentStyleType of this NodeStyle.
      *
      * @return The SegmentStyleType of this NodeStyle (if set).
@@ -83,6 +99,21 @@ public class SegmentStyle extends AbstractItemStyle<SegmentStyleType> implements
     @XmlTransient
     private SegmentStyleTypeHolder getStyleTypeHolder() {
         return styleTypeHolder;
+    }
+
+    /**
+     * Create a clone of this NodeStyle.
+     *
+     * @return A clone of this NodeStyle.
+     */
+    @Override
+    public SegmentStyle clone() {
+        List<StyleAttribute> attributes = this.getInternalStyleAttributeList();
+        List<StyleAttribute> clonedAttributes = new ArrayList<StyleAttribute>(attributes.size());
+        for (StyleAttribute attribute : attributes) {
+            clonedAttributes.add(attribute.clone());
+        }
+        return new SegmentStyle(clonedAttributes, getStyleType(), getSpan());
     }
 
     /**

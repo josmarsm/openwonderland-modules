@@ -27,6 +27,21 @@ public class PathCellClientState extends CellClientState implements PathCellStat
     }
 
     /**
+     * Private constructor used for cloning of instances of this class.
+     *
+     * @param nodes A list of the PathNodeStates which this PathCellClientState is to have. Any cloning of the list will have taken place already.
+     * @param editMode Whether the NodePath is in edit mode.
+     * @param closedPath Whether the NodePath is a closed path.
+     * @param pathStyle The PathStyle that this PathCellClientState is to have. Any cloning of the PathStyle will have taken place already.
+     */
+    private PathCellClientState(final List<PathNodeState> nodes, final boolean editMode, final boolean closedPath, final PathStyle pathStyle) {
+        this.nodes = nodes;
+        this.editMode = editMode;
+        this.closedPath = closedPath;
+        this.pathStyle = pathStyle;
+    }
+
+    /**
      * Create a new PathCellClientState with the specified PathStyle
      * and using the default NodeStyleType for the specified SegmentStyleType
      * for all the nodes.
@@ -229,5 +244,50 @@ public class PathCellClientState extends CellClientState implements PathCellStat
     @Override
     public void removeAllPathNodeStates() {
         nodes.clear();
+    }
+
+    /**
+     * Create a clone of this PathCellClientState.
+     *  
+     * @return A clone of this PathCellClientState.
+     */
+    @Override
+    public PathCellClientState clone() {
+        List<PathNodeState> clonedNodes = new ArrayList<PathNodeState>(nodes.size());
+        for (PathNodeState state : nodes) {
+            clonedNodes.add(state.clone());
+        }
+        return new PathCellClientState(clonedNodes, editMode, closedPath, pathStyle != null ? pathStyle.clone() : null);
+    }
+
+    /**
+     * Get the positions of all the nodes in the NodePath.
+     *
+     * @return An array containing vectors representing the 3D positions within the NodePath relative to the local coordinate space.
+     */
+    @Override
+    public Vector3f[] getNodePositions() {
+        Vector3f[] positions = new Vector3f[nodes.size()];
+        for (int nodeIndex = 0; nodeIndex < positions.length; nodeIndex++) {
+            positions[nodeIndex] = nodes.get(nodeIndex).getPosition();
+        }
+        return positions;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setFrom(PathCellState state) {
+        if (state != null) {
+            editMode = state.isEditMode();
+            closedPath = state.isClosedPath();
+            pathStyle = state.getPathStyle();
+            nodes.clear();
+            final int noOfNodes = state.noOfNodeStates();
+            for (int nodeIndex = 0; nodeIndex < noOfNodes; nodeIndex++) {
+                addPathNodeState(state.getPathNodeState(nodeIndex));
+            }
+        }
     }
 }

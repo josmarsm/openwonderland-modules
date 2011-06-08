@@ -186,7 +186,7 @@ public class TextureStyleAttribute extends StyleAttribute implements MutableURIV
      * {@inheritDoc}
      */
     @Override
-    public StyleAttribute copyOf() {
+    public StyleAttribute clone() {
         return new TextureStyleAttribute(getName(), getDescription(), getURI());
     }
 

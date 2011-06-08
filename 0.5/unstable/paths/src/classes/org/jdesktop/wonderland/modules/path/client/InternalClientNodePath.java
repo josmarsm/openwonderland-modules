@@ -38,6 +38,23 @@ class InternalClientNodePath implements ClientNodePath {
     }
 
     /**
+     * Create a new InternalClientNodePath for the following PathCell.
+     *
+     * @param parent The owning PathCell to which requests will be made
+     *               to perform graphical updates as needed.
+     * @param editMode Whether this ClientNodePath is in edit mode.
+     * @param closedPath Whether this ClientNodePath is a closed path.
+     * @param pathStyle The PathStyle of this ClientNodePath.
+     */
+    public InternalClientNodePath(final PathCell parent, final boolean editMode, final boolean closedPath, PathStyle pathStyle) {
+        this.parent = parent;
+        pathNodes = new ArrayList<ClientPathNode>();
+        this.editMode = editMode;
+        this.closedPath = closedPath;
+        this.pathStyle = pathStyle;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -506,5 +523,19 @@ class InternalClientNodePath implements ClientNodePath {
                 pathNodes.add(new IndexedPathNode(this, currentNodeState.getPosition(), currentNodeState.getName(), nodeIndex));
             }
         }
+    }
+
+    /**
+     * Create a clone of this ClientNodePath.
+     *
+     * @return A clone of this ClientNodePath.
+     */
+    @Override
+    public synchronized ClientNodePath clone() {
+        ClientNodePath clonedPath = new InternalClientNodePath(parent, editMode, closedPath, pathStyle != null ? pathStyle.clone() : null);
+        for (ClientPathNode node : pathNodes) {
+            node.clone(clonedPath);
+        }
+        return clonedPath;
     }
 }

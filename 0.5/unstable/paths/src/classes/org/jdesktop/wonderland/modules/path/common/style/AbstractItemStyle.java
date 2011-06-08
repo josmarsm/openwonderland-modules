@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlTransient;
  *
  * @author Carl Jokl
  */
-public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyle<T>, Serializable {
+public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyle<T>, Cloneable, Serializable {
 
     /**
      * The version number for serialization.
@@ -29,7 +29,7 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
     private Map<String, StyleAttribute> attributesByName;
 
     /**
-     * Initialize this AbstractItemStyle with the default span of 1.
+     * Initialize this AbstractItemStyle with the default getSpan of 1.
      */
     protected AbstractItemStyle() {
         span = new Span();
@@ -52,10 +52,29 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
     }
 
     /**
-     * Initialize this AbstractItemStyle to span the specified number of items.
+     * Protected constructor for use in derived classes for cloning themselves.
      *
-     * @param span The number of items which are to be spanned by this style which must be 1 or greater.
-     * @throws IllegalArgumentException If the specified span is not greater than zero.
+     * @param styleAttribues A list of StyleAttributes to be used in this ItemStyle. The list will have been cloned already.
+     * @param getSpan The number of items to be spanned by this ItemStyle.
+     * @throw IllegalArgumentException If the specified styleAttributes are null.
+     */
+    protected AbstractItemStyle(final List<StyleAttribute> styleAttributes, int span) {
+        if (styleAttributes == null) {
+            throw new IllegalArgumentException("The specified style attributes to use for cloning this item style cannot be null!");
+        }
+        this.span = new Span(span);
+        attributes = styleAttributes;
+        attributesByName = new HashMap<String, StyleAttribute>(styleAttributes.size());
+        for (StyleAttribute attribute : styleAttributes) {
+            attributesByName.put(attribute.getName(), attribute);
+        }
+    }
+
+    /**
+     * Initialize this AbstractItemStyle to getSpan the specified number of items.
+     *
+     * @param getSpan The number of items which are to be spanned by this style which must be 1 or greater.
+     * @throws IllegalArgumentException If the specified getSpan is not greater than zero.
      */
     protected AbstractItemStyle(int span) throws IllegalArgumentException {
         this();
@@ -69,7 +88,7 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
      * @return The internal list representation of the StyleAttribute of this AbstractItemStyle.
      */
     @XmlTransient
-    private List<StyleAttribute> getInternalStyleAttributeList() {
+    protected List<StyleAttribute> getInternalStyleAttributeList() {
         return attributes;
     }
 
@@ -99,7 +118,7 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
      */
     @Override
     @XmlAttribute(name="span")
-    public int span() {
+    public int getSpan() {
         return span.getSpan();
     }
 
@@ -263,9 +282,9 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
     }
 
     /**
-     * This private class represents the span of an ItemStyle. Using an object for this
+     * This private class represents the getSpan of an ItemStyle. Using an object for this
      * means that the Span can be referenced from more than one object i.e. when using
-     * a wrapper and when the span is updated in either ItemStyle then both ItemStyles
+     * a wrapper and when the getSpan is updated in either ItemStyle then both ItemStyles
      * will reflect the changed value.
      */
     private static class Span implements Serializable {
@@ -285,10 +304,10 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
         }
 
         /**
-         * Create a new instance of a Span with the specified number of items to span.
+         * Create a new instance of a Span with the specified number of items to getSpan.
          *
-         * @param span The number of items to Span.
-         * @throws IllegalArgumentException If the number of items to span is not greater than zero.
+         * @param getSpan The number of items to Span.
+         * @throws IllegalArgumentException If the number of items to getSpan is not greater than zero.
          */
         public Span(int span) throws IllegalArgumentException {
             setSpan(span);
@@ -306,8 +325,8 @@ public abstract class AbstractItemStyle<T extends StyleType> implements ItemStyl
         /**
          * Set the number of items spanned.
          *
-         * @param span The number of items spanned which should be greater than zero.
-         * @throws IllegalArgumentException If the specified span is not greater than zero.
+         * @param getSpan The number of items spanned which should be greater than zero.
+         * @throws IllegalArgumentException If the specified getSpan is not greater than zero.
          */
         public final void setSpan(int span) throws IllegalArgumentException {
             if (span > 0) {

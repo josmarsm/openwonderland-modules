@@ -141,7 +141,7 @@ public class TapeSegmentRenderer extends AbstractPathSegmentRenderer {
         ColorRGBA tapeColor = new ColorRGBA(rgbaValues[0], rgbaValues[1], rgbaValues[2], rgbaValues[3]);
         segmentMaterial.setAmbient(tapeColor);
         segmentMaterial.setDiffuse(tapeColor);
-        segmentMaterial.setSpecular(new ColorRGBA(0.1f, 0.1f, 0.1f, 1.0f));
+        segmentMaterial.setSpecular(new ColorRGBA(tapeColor.r * 0.75f, tapeColor.g * 0.75f, tapeColor.b * 0.75f, 1.0f));
         segmentMaterial.setShininess(0.6f);
         URI textureURI = adapter.getMainTexture(null);
         if (textureURI != null) {
