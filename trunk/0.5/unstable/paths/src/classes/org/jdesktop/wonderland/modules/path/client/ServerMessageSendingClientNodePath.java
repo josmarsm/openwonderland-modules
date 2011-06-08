@@ -325,7 +325,6 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
             channelComponent.send(new PathNodeNameChangeMessage(parent.getCellID(), index, name));
         }
     }
-    
 
     /**
      * {@inheritDoc}
@@ -334,4 +333,18 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     public void setFrom(PathCellState state) {
         internalPath.setFrom(state);
     }
+
+    /**
+     * Create a clone of this ServerMessageSengingClientNodePath.
+     * As this class is a wrapper only the wrapper will be cloned but
+     * the wrapped ClientNodePath will not be cloned.
+     *
+     * @return A clone of this ServerMessageSendingClientNodePath.
+     */
+    @Override
+    public ClientNodePath clone() {
+        return new ServerMessageSendingClientNodePath(parent, internalPath);
+    }
+
+
 }

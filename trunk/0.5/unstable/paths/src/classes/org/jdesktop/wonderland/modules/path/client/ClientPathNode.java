@@ -119,6 +119,26 @@ public interface ClientPathNode extends PathNode, Serializable {
     public NodeStyleType getStyleType();
 
     /**
+     * Create a clone of this ClientPathNode.
+     *
+     * @return A clone of this ClientPathNode.
+     */
+    @Override
+    public ClientPathNode clone();
+
+    /**
+     * This method is used when cloning a ClientNodePath to clone the individual
+     * ClientPathNodes but set their parent to be the cloned ClientNodePath rather
+     * than the original ClientNodePath. The cloned ClientPathNode will be added to
+     * the specified ClientNodePath.
+     *
+     * @param parent The new ClientNodePath which will be the parent of the cloned ClientPathNode.
+     * @return The cloned ClientPathNode with the specified parent.
+     * @throws IllegalArgumentException If the specified ClientNodePath parent is null.
+     */
+    public ClientPathNode clone(ClientNodePath parent) throws IllegalArgumentException;
+
+    /**
      * Clear out the internal state of this ClientPathNode prior to deletion.
      * This helps the node or attached references be garbage collected.
      */

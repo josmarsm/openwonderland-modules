@@ -7,7 +7,7 @@ import java.io.Serializable;
  *
  * @author Carl Jokl
  */
-public interface PathNode extends Positioned, MutableNamed, Serializable {
+public interface PathNode extends Positioned, MutableNamed, Cloneable, Serializable {
 
     /**
      * Get the sequence index of this node in the path.
@@ -24,4 +24,11 @@ public interface PathNode extends Positioned, MutableNamed, Serializable {
      *                      parent path.
      */
     public void setSequenceIndex(int sequenceIndex);
+
+    /**
+     * Create a copy of this PathNode.
+     *
+     * @return A copy of this PathNode.
+     */
+    public PathNode clone();
 }

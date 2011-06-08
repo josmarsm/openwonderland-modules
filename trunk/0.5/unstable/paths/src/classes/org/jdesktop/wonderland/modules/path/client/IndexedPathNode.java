@@ -55,7 +55,8 @@ class IndexedPathNode implements ClientPathNode {
         if (noOfNodes > 1 && sequenceIndex >= 0) {
             if ((sequenceIndex + 1) < noOfNodes) {
                 return parent.getPathNode(sequenceIndex + 1);
-            } else if (sequenceIndex == (noOfNodes - 1) && parent.isClosedPath()) {
+            }
+            else if (sequenceIndex == (noOfNodes - 1) && parent.isClosedPath()) {
                 return parent.getFirstPathNode();
             }
         }
@@ -225,6 +226,28 @@ class IndexedPathNode implements ClientPathNode {
         } else {
             return null;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ClientPathNode clone() {
+        return new IndexedPathNode(parent, position.clone(), name, sequenceIndex);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ClientPathNode clone(ClientNodePath parent) throws IllegalArgumentException, IndexOutOfBoundsException {
+        if (parent == null) {
+            ClientPathNode clonedNode = new IndexedPathNode(parent, position.clone(), name, parent.noOfNodes());
+            if (parent.addNode(clonedNode)) {
+                return clonedNode;
+            }
+        }
+        return null;
     }
 
     /**

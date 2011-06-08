@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author Carl Jokl
  */
 @XmlRootElement(name="path-node")
-public class PathNodeState implements PathNode, Serializable {
+public class PathNodeState implements PathNode, Cloneable, Serializable {
 
     @XmlTransient
     private Vector3f position;
@@ -199,6 +199,21 @@ public class PathNodeState implements PathNode, Serializable {
         }
         else {
             position = new Vector3f(0.0f, 0.0f, z);
+        }
+    }
+
+    /**
+     * Create a clone of this PathNodeState.
+     *
+     * @return A clone of this PathNodeState.
+     */
+    @Override
+    public PathNodeState clone() {
+        if (position != null) {
+            return new PathNodeState(position.x, position.y, position.z, name, sequenceIndex);
+        }
+        else {
+            return new PathNodeState(0.0f, 0.0f, 0.0f, name, sequenceIndex);
         }
     }
 }

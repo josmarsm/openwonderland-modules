@@ -136,14 +136,12 @@ public abstract class StyleAttribute implements Named, MutableDescribed, Cloneab
     }
 
     /**
-     * Implements the clone functionality simply by internally calling the copyOf() method.
+     * Create a clone of this StyleAttribute. Any concrete subclasses must implement this method.
      *
      * @return A clone of the StyleAttribute.
      */
     @Override
-    protected Object clone() {
-        return copyOf();
-    }
+    public abstract StyleAttribute clone();
 
     /**
      * Compare this StyleAttribute against another StyleAttribute for ordering.
@@ -187,13 +185,6 @@ public abstract class StyleAttribute implements Named, MutableDescribed, Cloneab
      */
     @XmlTransient
     public abstract boolean setFrom(StyleAttribute otherAttribute);
-
-    /**
-     * Create a copy of this StyleAttribute.
-     *
-     * @return A copy of this StyleAttribute.
-     */
-    public abstract StyleAttribute copyOf();
 
     /**
      * Create a listening wrapper around this StyleAttribute which informs of changes

@@ -1,10 +1,13 @@
 package org.jdesktop.wonderland.modules.path.common.style.node;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.modules.path.common.style.AbstractItemStyle;
+import org.jdesktop.wonderland.modules.path.common.style.StyleAttribute;
 
 /**
  * This interface represents meta-data information about styling of a node in a path.
@@ -14,7 +17,7 @@ import org.jdesktop.wonderland.modules.path.common.style.AbstractItemStyle;
  * @author Carl Jokl
  */
 @XmlRootElement(name="node-style")
-public class NodeStyle extends AbstractItemStyle<NodeStyleType> implements Serializable {
+public class NodeStyle extends AbstractItemStyle<NodeStyleType> implements Cloneable, Serializable {
 
     /**
      * The version number for serialization.
@@ -52,6 +55,19 @@ public class NodeStyle extends AbstractItemStyle<NodeStyleType> implements Seria
     }
 
     /**
+     * Private constructor used for creating clones of this NodeStyle.
+     *
+     * @param styleAttributes The StyleAttributes which this NodeStyle is to have. This list will have been cloned already.
+     * @param styleType The NodeStyleType which represents the kind of NodeStyle this NodeStyle represents.
+     * @param getSpan The number of PathNodes to be spanned by this NodeStyle.
+     * @throw IllegalArgumentException If the supplied StyleAttributes are null.
+     */
+    private NodeStyle(final List<StyleAttribute> styleAttributes, final NodeStyleType styleType, int span) {
+        super(styleAttributes, span);
+        styleTypeHolder = new NodeStyleTypeHolder(styleType);
+    }
+
+    /**
      * Get the NodeStyleType of this NodeStyle.
      *
      * @return The NodeStyleType of this NodeStyle (if set).
@@ -84,6 +100,21 @@ public class NodeStyle extends AbstractItemStyle<NodeStyleType> implements Seria
     @XmlTransient
     private NodeStyleTypeHolder getNodeStyleTypeHolder() {
         return styleTypeHolder;
+    }
+
+    /**
+     * Create a clone of this NodeStyle.
+     *
+     * @return A clone of this NodeStyle.
+     */
+    @Override
+    public NodeStyle clone() {
+        List<StyleAttribute> attributes = this.getInternalStyleAttributeList();
+        List<StyleAttribute> clonedAttributes = new ArrayList<StyleAttribute>(attributes.size());
+        for (StyleAttribute attribute : attributes) {
+            clonedAttributes.add(attribute.clone());
+        }
+        return new NodeStyle(clonedAttributes, getStyleType(), getSpan());
     }
 
     /**

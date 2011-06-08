@@ -499,7 +499,7 @@ public class ColorStyleAttribute extends StyleAttribute implements ColorComponen
      * @return A copy of this ColorStyleAttribute.
      */
     @Override
-    public StyleAttribute copyOf() {
+    public StyleAttribute clone() {
         return new ColorStyleAttribute(getName(), getDescription(), components.getRed(), components.getGreen(), components.getBlue(), components.getAlpha());
     }
 

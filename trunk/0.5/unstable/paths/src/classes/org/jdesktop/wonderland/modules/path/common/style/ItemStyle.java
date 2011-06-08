@@ -14,13 +14,13 @@ public interface ItemStyle<T extends StyleType> extends Serializable {
      *
      * @return The number of items over which the style spans.
      */
-    public int span();
+    public int getSpan();
 
     /**
      * Set the number of items over which the style spans.
      *
-     * @param span The number of items over which the style spans which must be
-     * @throws IllegalArgumentException If the specified span is not 1 or greater.
+     * @param getSpan The number of items over which the style spans which must be
+     * @throws IllegalArgumentException If the specified getSpan is not 1 or greater.
      */
     public void setSpan(int span) throws IllegalArgumentException;
 

@@ -98,7 +98,7 @@ public class PoleNodeRenderer extends AbstractPathNodeRenderer implements PathNo
         ColorRGBA poleColor = new ColorRGBA(rgbaValues[0], rgbaValues[1], rgbaValues[2], rgbaValues[3]);
         nodeMaterial.setAmbient(poleColor);
         nodeMaterial.setDiffuse(poleColor);
-        nodeMaterial.setSpecular(new ColorRGBA(0.1f, 0.1f, 0.1f, 1.0f));
+        nodeMaterial.setSpecular(new ColorRGBA(poleColor.r * 0.8f, poleColor.g * 0.8f, poleColor.b * 0.8f, 1.0f));
         nodeMaterial.setShininess(0.8f);
         node.setRenderState(nodeMaterial);
     }

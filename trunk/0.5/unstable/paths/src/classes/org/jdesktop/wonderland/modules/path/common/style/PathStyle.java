@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Carl Jokl
  */
 @XmlRootElement(name="style")
-public class PathStyle implements Serializable {
+public class PathStyle implements Cloneable, Serializable {
 
     /**
      * The version number for serialization.
@@ -316,7 +316,7 @@ public class PathStyle implements Serializable {
                     else {
                         int currentIndex = 0;
                         for (NodeStyle style : nodeStyles) {
-                            currentIndex += style.span();
+                            currentIndex += style.getSpan();
                             if (currentIndex < index) {
                                 return style;
                             }
@@ -365,7 +365,7 @@ public class PathStyle implements Serializable {
                     else {
                         int currentIndex = 0;
                         for (SegmentStyle style : segmentStyles) {
-                            currentIndex += style.span();
+                            currentIndex += style.getSpan();
                             if (currentIndex < index) {
                                 return style;
                             }
@@ -573,5 +573,23 @@ public class PathStyle implements Serializable {
      */
     public int indexOf(NodeStyle style) {
         return nodeStyles.indexOf(style);
+    }
+
+    /**
+     * Create a clone of this PathStyle, cloning the child style items as needed.
+     *
+     * @return A clone of this PathStyle.
+     */
+    @Override
+    public PathStyle clone() {
+        List<NodeStyle> clonedNodeStyles = new ArrayList<NodeStyle>(nodeStyles.size());
+        List<SegmentStyle> clonedSegmentStyles = new ArrayList<SegmentStyle>(segmentStyles.size());
+        for (NodeStyle nodeStyle : nodeStyles) {
+            clonedNodeStyles.add(nodeStyle.clone());
+        }
+        for (SegmentStyle segmentStyle : segmentStyles) {
+            clonedSegmentStyles.add(segmentStyle.clone());
+        }
+        return new PathStyle(clonedNodeStyles, clonedSegmentStyles);
     }
 }

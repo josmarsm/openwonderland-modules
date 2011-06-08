@@ -1,13 +1,14 @@
 package org.jdesktop.wonderland.modules.path.common;
 
 import com.jme.math.Vector3f;
+import java.io.Serializable;
 
 /**
  * The Cell State of a Path Cell.
  *
  * @author Carl Jokl
  */
-public interface PathCellState extends NodePath {
+public interface PathCellState extends NodePath, Cloneable, Serializable {
 
     /**
      * Get the number of PathNodes in the PathNodes in the PathCell.
@@ -119,4 +120,30 @@ public interface PathCellState extends NodePath {
      * Remove all of the PathNodeStates within this PathCellState.
      */
     public void removeAllPathNodeStates();
+
+    /**
+     * Covariant overload to return a more specific clone of this object from the Object.clone() method,
+     * i.e. return the PathCellState.
+     *
+     * @return A clone of this PathCellState.
+     */
+    @Override
+    public PathCellState clone();
+
+    /**
+     * Set the PathCellState using the values from the specified PathCellState. This can be useful when restoring
+     * the PathCellState back to a previous saved state.
+     *
+     * @param state The PathCellState to use to set the state of this PathCellState. If the specified PathCellState is null
+     *              then the value is ignored and no changes are made.
+     */
+    public void setFrom(PathCellState state);
+
+    /**
+     * Get an array containing the positions of all the PathNodes which can be used for such things
+     * as animations.
+     *
+     * @return An array of all the 3D positions of the PathNodes in the NodePath.
+     */
+    public Vector3f[] getNodePositions();
 }

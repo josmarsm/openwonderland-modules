@@ -234,7 +234,7 @@ public class FloatStyleAttribute extends StyleAttribute implements MutableFloatV
      * @return A copy of this FloatStyleAttribute.
      */
     @Override
-    public StyleAttribute copyOf() {
+    public StyleAttribute clone() {
         return new FloatStyleAttribute(getName(), getDescription(), getConstraint(), getFloat());
     }
 

@@ -414,7 +414,7 @@ public class ServerMessageSendingPathStyle extends PathStyle {
          */
         @Override
         public void setSpan(int span) throws IllegalArgumentException {
-            if (span != span()) {
+            if (span != getSpan()) {
                 super.setSpan(span);
                 ChannelComponent channelComponent = messagingCell.getComponent(ChannelComponent.class);
                 if (channelComponent != null) {
@@ -604,7 +604,7 @@ public class ServerMessageSendingPathStyle extends PathStyle {
          */
         @Override
         public void setSpan(int span) throws IllegalArgumentException {
-            if (span != span()) {
+            if (span != getSpan()) {
                 super.setSpan(span);
                 ChannelComponent channelComponent = messagingCell.getComponent(ChannelComponent.class);
                 if (channelComponent != null) {

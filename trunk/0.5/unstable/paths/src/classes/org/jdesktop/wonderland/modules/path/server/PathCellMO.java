@@ -54,6 +54,25 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
     }
 
     /**
+     * Private constructor used in cloning instances of PathCellMO.
+     *
+     * @param nodes A List of the PathNodeStates to use in this PathCellMO.
+     * @param editMode Whether the PathCell is in edit mode.
+     * @param closedPath Whether the NodePath is a closed path.
+     * @param pathStyle The PathStyle of the NodePath.
+     * @throws IllegalArgumentException If the specified PathNodeState list is null.
+     */
+    private PathCellMO(final List<PathNodeState> nodes, boolean editMode, boolean closedPath, final PathStyle pathStyle) throws IllegalArgumentException {
+        if (nodes == null) {
+            throw new IllegalArgumentException("The path node states for this path cell state managed object cannot be null!");
+        }
+        this.nodes = nodes;
+        this.editMode = editMode;
+        this.closedPath = closedPath;
+        this.pathStyle = pathStyle;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -272,6 +291,20 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
     @Override
     public boolean isEmpty() {
         return nodes.isEmpty();
+    }
+
+    /**
+     * Create a clone of this PathCellMO.
+     *
+     * @return A clone of this PathCellMO.
+     */
+    @Override
+    public PathCellMO clone() {
+        List<PathNodeState> clonedNodes = new ArrayList<PathNodeState>(nodes.size());
+        for (PathNodeState state : nodes) {
+            clonedNodes.add(state);
+        }
+        return new PathCellMO(clonedNodes, editMode, closedPath, pathStyle != null ? pathStyle.clone() : null);
     }
 }
 
