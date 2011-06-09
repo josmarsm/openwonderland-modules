@@ -335,6 +335,14 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getCoordRange(Vector3f min, Vector3f max) {
+        internalPath.getCoordRange(min, max);
+    }
+
+    /**
      * Create a clone of this ServerMessageSengingClientNodePath.
      * As this class is a wrapper only the wrapper will be cloned but
      * the wrapped ClientNodePath will not be cloned.
@@ -345,6 +353,4 @@ class ServerMessageSendingClientNodePath implements ClientNodePath {
     public ClientNodePath clone() {
         return new ServerMessageSendingClientNodePath(parent, internalPath);
     }
-
-
 }

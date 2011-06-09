@@ -526,6 +526,25 @@ class InternalClientNodePath implements ClientNodePath {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getCoordRange(Vector3f min, Vector3f max) {
+        for (ClientPathNode node : pathNodes) {
+            if (min != null) {
+                min.x = Math.min(min.x, node.getPosition().x);
+                min.y = Math.min(min.y, node.getPosition().y);
+                min.z = Math.min(min.z, node.getPosition().z);
+            }
+            if (max != null) {
+                max.x = Math.max(max.x, node.getPosition().x);
+                max.y = Math.max(max.y, node.getPosition().y);
+                max.z = Math.max(max.z, node.getPosition().z);
+            }
+        }
+    }
+
+    /**
      * Create a clone of this ClientNodePath.
      *
      * @return A clone of this ClientNodePath.
