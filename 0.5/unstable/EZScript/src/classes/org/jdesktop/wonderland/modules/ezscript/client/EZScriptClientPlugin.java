@@ -45,7 +45,6 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
                 ScriptManager.getInstance().showScriptEditor();
             }
         });
-
         JmeClientMain.getFrame().addToToolsMenu(menuItem);
         
     }

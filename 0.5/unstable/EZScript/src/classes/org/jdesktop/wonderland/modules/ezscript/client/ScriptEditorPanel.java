@@ -1,9 +1,4 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * ScriptEditorPanel.java
  *
  * Created on Jan 9, 2011, 11:21:04 AM
@@ -12,7 +7,16 @@
 package org.jdesktop.wonderland.modules.ezscript.client;
 
 import java.awt.Dimension;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JDialog;
+import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
@@ -51,7 +55,46 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         this.dialog = dialog;
         this.setMinimumSize(new Dimension(600, 400));
         this.setPreferredSize(new Dimension(600, 400));
+
+        String script = new String();
+        try {
+            //grab startup script
+            script = retrieveStartupScript();
+        } catch (IOException ex) {
+            Logger.getLogger(ScriptEditorPanel.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            scriptArea.setText(script);
+        }
+     
     }
+    /**
+     * This is a bit ugly, it could use some attention.
+     * @return the full contents of the file.
+     * @throws IOException if something goes wrong.
+     */
+    public String retrieveStartupScript() throws IOException {
+        File dir = ClientContext.getUserDirectory("scripts");
+        String script = new String();
+
+        File startup = new File(dir, "startup.ez");
+        if (!startup.exists()) {
+            startup.createNewFile();
+            return "";
+        }
+
+        //so the script definitely exists...
+        FileInputStream in = new FileInputStream(startup);
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+
+        String line;
+        while ((line = br.readLine()) != null) {
+            script += "\n" + line;
+
+        }
+        br.close();
+        return script;
+    }
+    
 
     public void addLibraryEntry(ReturnableScriptMethodSPI method) {
         library.addEntry(method);
@@ -159,14 +202,15 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
-        // TODO add your handling code here:
-        if(!isGlobal) {
+
+        if (!isGlobal) {
             System.out.println("executed button press!");
             new Thread(new Runnable() {
+
                 public void run() {
                     scriptComponent.getScriptMap().put("editor", SharedString.valueOf(scriptArea.getText()));
                     scriptComponent.getStateMap().put("script", SharedString.valueOf(scriptArea.getText())); // for persistenceh
-                  //  scriptComponent.clearCallbacks();
+                    //  scriptComponent.clearCallbacks();
 
                     //scriptComponent.evaluateScript(scriptArea.getText());
                 }
@@ -174,9 +218,21 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         } else {
             //TODO execute on client, not over network.
             ScriptManager.getInstance().evaluate(scriptArea.getText());
-        }
+            File dir = ClientContext.getUserDirectory("scripts");
+            try {
+                File startup = new File(dir, "startup.ez");
+                if (!startup.exists()) {
+                    startup.createNewFile();
+                }
 
-        
+                FileWriter out = new FileWriter(startup);
+
+                out.write(scriptArea.getText());
+                out.close();
+            } catch (IOException iOException) {
+                iOException.printStackTrace();
+            }
+        }
     }//GEN-LAST:event_executeButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
