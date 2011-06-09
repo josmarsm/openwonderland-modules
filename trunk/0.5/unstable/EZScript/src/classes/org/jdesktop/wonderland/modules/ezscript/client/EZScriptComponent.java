@@ -58,6 +58,8 @@ import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
+import sun.org.mozilla.javascript.internal.EcmaError;
+import sun.org.mozilla.javascript.internal.WrappedException;
 
 /**
  * Client-side scripting cell component
@@ -1017,6 +1019,10 @@ public class EZScriptComponent extends CellComponent {
         try {
             scriptEngine.eval(scriptx, scriptBindings);
         } catch(ScriptException e) {
+           if(e.getCause() instanceof WrappedException) {
+               WrappedException we = (WrappedException)e.getCause();
+               //java issue
+           } else if(e.getCause() instanceof EcmaError)
             e.printStackTrace();
         }
     }
