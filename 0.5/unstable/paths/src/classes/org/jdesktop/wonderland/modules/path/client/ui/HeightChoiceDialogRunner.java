@@ -2,8 +2,8 @@ package org.jdesktop.wonderland.modules.path.client.ui;
 
 import com.jme.math.Ray;
 import com.jme.math.Vector3f;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import org.jdesktop.mtgame.CollisionSystem;
 import org.jdesktop.mtgame.JMECollisionSystem;
 import org.jdesktop.mtgame.PickDetails;
@@ -39,6 +39,26 @@ public class HeightChoiceDialogRunner implements Runnable, Disposable {
     private static final float DEFAULT_AVATAR_OFFSET = 0.5f;
     private static final float DEFAULT_HEIGHT = 0.5f;
 
+    protected static final Logger logger = Logger.getLogger(HeightChoiceDialogRunner.class.getName());
+
+    /**
+     * Get the Cell which represents the Avatar.
+     * 
+     * @return The Avatar cell.
+     */
+    public static Cell getAvatarCell() {
+        return ClientContextJME.getViewManager().getPrimaryViewCell();
+    }
+
+    /**
+     * Try and get the outer JFrame for the Wonderland Client application.
+     *
+     * @return The JFrame for the Wonderland Client.
+     */
+    public static JFrame tryGetParentFrame() {
+        return (ClientContext.getRendererType() == RendererType.RENDERER_JME) ? JmeClientMain.getFrame().getFrame() : null;
+    }
+
     /**
      * Get the Avatar position (offset as necessary).
      * 
@@ -47,21 +67,22 @@ public class HeightChoiceDialogRunner implements Runnable, Disposable {
      * @return The position of the Avatar, offset if requested.
      */
     public static Vector3f getAvatarPosition(float offset, CellTransform transform) {
-        Cell avatarCell = ClientContextJME.getViewManager().getPrimaryViewCell();
         Vector3f avatarPosition = new Vector3f();
+        Cell avatarCell = getAvatarCell();
         if (avatarCell != null) {
             CellTransform avatar = avatarCell.getWorldTransform();
             Vector3f avatarLookVector = new Vector3f();
             avatar.getLookAt(avatarPosition, avatarLookVector);
-            Logger.getLogger(HeightChoiceDialogRunner.class.getName()).log(Level.WARNING, String.format("Avatar position: (%f, %f, %f) Avatar look direction: (%f, %f, %f)", avatarPosition.x, avatarPosition.y, avatarPosition.z, avatarLookVector.x, avatarLookVector.y, avatarLookVector.z));
-            /*if (offset != 0.0f) {
+            logger.warning(String.format("Start avatar position: (%f, %f, %f) and look direction: (%f, %f, %f).", avatarPosition.x, avatarPosition.y, avatarPosition.z, avatarLookVector.x, avatarLookVector.y, avatarLookVector.z));
+            if (offset != 0.0f) {
                 avatarLookVector.multLocal(offset);
-                Logger.getLogger(HeightChoiceDialogRunner.class.getName()).log(Level.WARNING, String.format("scaled look direction: (%f, %f, %f)", avatarLookVector.x, avatarLookVector.y, avatarLookVector.z));
+                logger.warning(String.format("Offset vector: (%f, %f, %f).", avatarLookVector.x, avatarLookVector.y, avatarLookVector.z));
                 avatarPosition.addLocal(avatarLookVector);
-                Logger.getLogger(HeightChoiceDialogRunner.class.getName()).log(Level.WARNING, String.format("Offset Avatar Position: (%f, %f, %f)", avatarPosition.x, avatarPosition.y, avatarPosition.z));
-            }*/
+                logger.warning(String.format("Position after offset: (%f, %f, %f).", avatarPosition.x, avatarPosition.y, avatarPosition.z));
+            }
             if (transform != null) {
                 avatarPosition = transform.transform(avatarPosition);
+                logger.warning(String.format("Transformed avatar position: (%f, %f, %f).", avatarPosition.x, avatarPosition.y, avatarPosition.z));
             }
         }
         return avatarPosition;
@@ -194,8 +215,8 @@ public class HeightChoiceDialogRunner implements Runnable, Disposable {
             }
             defaultOption = MOVE_DEFAULT_OPTION;
         }
-        java.awt.Component parent = (ClientContext.getRendererType() == RendererType.RENDERER_JME) ? JmeClientMain.getFrame().getFrame() : null;
-        Object selection = javax.swing.JOptionPane.showInputDialog(parent, "Which value should be used for the destination height?", "Select Destination Height.", javax.swing.JOptionPane.QUESTION_MESSAGE, null, options, defaultOption);
+        
+        Object selection = javax.swing.JOptionPane.showInputDialog(tryGetParentFrame(), "Which value should be used for the destination height?", "Select Destination Height.", javax.swing.JOptionPane.QUESTION_MESSAGE, null, options, defaultOption);
         if (selection != null) {
             if (SAME_RELATIVE_HEIGHT_OPTION.equals(selection)) {
                 positionable.usePosition(destination.x, destinationGroundLevel + (origin.y - startGroundLevel), destination.z);

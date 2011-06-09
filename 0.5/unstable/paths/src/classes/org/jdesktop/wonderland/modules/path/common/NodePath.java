@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.path.common;
 
+import com.jme.math.Vector3f;
 import java.io.Serializable;
 import org.jdesktop.wonderland.modules.path.common.style.PathStyle;
 
@@ -62,4 +63,12 @@ public interface NodePath extends Cloneable, Serializable {
      * @return A NodePath which is a clone of this NodePath.
      */
     public NodePath clone();
+
+    /**
+     * Get the range of Coordinates for the PathNodes in this NodePath.
+     *
+     * @param min A 3D Vector to be populated with the minimum values of the range of 3D coordinates in the path.
+     * @param max A 3D Vector to be populated with the maximum values of the range of 3D coordinates in the path.
+     */
+    public void getCoordRange(Vector3f min, Vector3f max);
 }

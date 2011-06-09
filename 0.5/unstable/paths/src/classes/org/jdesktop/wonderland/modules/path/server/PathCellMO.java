@@ -1,5 +1,6 @@
 package org.jdesktop.wonderland.modules.path.server;
 
+import com.jme.math.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
@@ -291,6 +292,25 @@ public class PathCellMO extends CellMO implements NodePath, PathNodeGroup {
     @Override
     public boolean isEmpty() {
         return nodes.isEmpty();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getCoordRange(Vector3f min, Vector3f max) {
+        for (PathNodeState node : nodes) {
+            if (min != null) {
+                min.x = Math.min(min.x, node.getX());
+                min.y = Math.min(min.y, node.getY());
+                min.z = Math.min(min.z, node.getZ());
+            }
+            if (max != null) {
+                max.x = Math.max(max.x, node.getX());
+                max.y = Math.max(max.y, node.getY());
+                max.z = Math.max(max.z, node.getZ());
+            }
+        }
     }
 
     /**

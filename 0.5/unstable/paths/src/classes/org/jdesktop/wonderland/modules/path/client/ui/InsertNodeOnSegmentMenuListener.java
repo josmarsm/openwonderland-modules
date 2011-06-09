@@ -38,7 +38,7 @@ public class InsertNodeOnSegmentMenuListener implements ContextMenuActionListene
                 Cell cell = event.getCell();
                 if (startNode!= null && cell instanceof PathCell) {
                     ClientNodePath path = ((PathCell) cell).getNodePath();
-                    HeightChoiceDialogRunner.showHeightSelectionUsingAvatar(new InsertNodePositionable(path, false, startNode.getSequenceIndex()), startNode.getPosition(), cell.getWorldTransform());
+                    HeightChoiceDialogRunner.showHeightSelectionUsingAvatar(new InsertNodePositionable(path, false, startNode.getSequenceIndex()), startNode.getPosition(), cell.getLocalToWorldTransform());
                 }
             }
         }

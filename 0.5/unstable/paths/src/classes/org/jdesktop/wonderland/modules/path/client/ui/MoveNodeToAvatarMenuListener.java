@@ -1,11 +1,13 @@
 package org.jdesktop.wonderland.modules.path.client.ui;
 
+import com.jme.math.Vector3f;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.path.client.ClientNodePath;
 import org.jdesktop.wonderland.modules.path.client.PathCell;
 import org.jdesktop.wonderland.modules.path.client.PathNodeComponent;
@@ -42,7 +44,7 @@ public class MoveNodeToAvatarMenuListener implements ContextMenuActionListener {
                 Cell cell = event.getCell();
                 if (node != null && cell instanceof PathCell) {
                     ClientNodePath path = ((PathCell) cell).getNodePath();
-                    HeightChoiceDialogRunner.showHeightSelectionUsingAvatar(new NodeMovePositionable(node.getSequenceIndex(), path), node.getPosition(), cell.getWorldTransform());
+                    HeightChoiceDialogRunner.showHeightSelectionUsingAvatar(new NodeMovePositionable(node.getSequenceIndex(), path), node.getPosition(), cell.getLocalToWorldTransform());
                 }
             }
         }
