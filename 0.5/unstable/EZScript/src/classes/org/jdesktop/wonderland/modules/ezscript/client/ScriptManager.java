@@ -5,9 +5,11 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client;
 
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -15,14 +17,24 @@ import javax.script.ScriptException;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.FriendlyErrorInfoSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
+import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyErrorInfo;
+import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavaErrorInfo;
+import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavascriptErrorInfo;
+import sun.org.mozilla.javascript.internal.EcmaError;
+import sun.org.mozilla.javascript.internal.WrappedException;
 
 /**
  *
@@ -36,6 +48,7 @@ public class ScriptManager {
     private ScriptEngineManager engineManager;// = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
     private ScriptEngine scriptEngine = null;
     private Bindings scriptBindings = null;
+    private static final Logger logger = Logger.getLogger(ScriptManager.class.getName());
 
     //utilities
     private Map<String, CellID> stringToCellID;
@@ -104,9 +117,46 @@ public class ScriptManager {
         try {
             scriptEngine.eval(script, scriptBindings);
         } catch (ScriptException ex) {
+            processException(ex);
             ex.printStackTrace();
-            //Logger.getLogger(ScriptManager.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public void processException(Exception e) {
+
+        final ErrorWindow window;
+        FriendlyErrorInfoSPI info = null;
+        if (e.getMessage().contains("WrappedException")) {
+            WrappedException we = (WrappedException) e.getCause();
+            //java issue
+            info = new DefaultFriendlyJavaErrorInfo();
+
+        } else if (e.getMessage().contains("EcmaError")) {
+            info = new DefaultFriendlyJavascriptErrorInfo();
+        } else {
+            info = new DefaultFriendlyErrorInfo();
+        }
+         window = new ErrorWindow(info.getSummary(), info.getSolutions());
+         TextAreaOutputStream output = new TextAreaOutputStream(window.getDetailsArea());
+         e.printStackTrace(new PrintStream(output));
+         SwingUtilities.invokeLater(new Runnable() {
+         
+            public void run() {
+                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+
+                HUDComponent component = mainHUD.createComponent(window);
+                window.setHUDComponent(component);
+                component.setDecoratable(true);
+                component.setPreferredLocation(Layout.CENTER);
+
+                mainHUD.addComponent(component);
+
+                component.setVisible(true);
+            }
+         });
+         logger.warning("Error in evaluation()!");
+      
+
     }
 
     public void showScriptEditor() {
