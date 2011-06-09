@@ -11,9 +11,9 @@ import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.content.ContentImportManager;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.login.ServerStatusListener;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
@@ -29,6 +29,7 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
     JMenuItem menuItem;
     JDialog dialog;
     private ServerSessionManager manager;
+    private ScriptImporter importer = null;
 
     @Override
     public void initialize(ServerSessionManager loginInfo) {
@@ -40,18 +41,22 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
     }
     @Override
     public void activate() {
+        importer = new ScriptImporter();
         menuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ScriptManager.getInstance().showScriptEditor();
             }
         });
         JmeClientMain.getFrame().addToToolsMenu(menuItem);
+        ContentImportManager.getContentImportManager().registerContentImporter(importer);
         
     }
 
     @Override
     public void deactivate() {
         JmeClientMain.getFrame().removeFromToolsMenu(menuItem);
+        ContentImportManager.getContentImportManager().unregisterContentImporter(importer);
+        importer = null;
     }
 
     @Override
