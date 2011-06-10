@@ -14,6 +14,16 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
+    <!--jars for weblib -->
+    <pathconvert property="module-weblib.classpath">
+        <path location="${web.dir}/asset/dist/wonderland-asset-core.jar"/>
+        <path location="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
+        <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
+        <path location="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
+        <path location="${core.dir}/build/lib/wonderland-common.jar"/>
+        <path location="${current.dir}/lib/winp-1.5.jar"/>
+    </pathconvert>
+
     <!--Add jars for client-->
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
@@ -23,7 +33,20 @@
         <path location="lib/httpclient-4.1.1.jar"/>
     </pathconvert>
 
-    <target name="build" depends="-module-init, -module-compile-client"/>
+    <target name="build" depends="-module-init, -module-compile-client,
+                                                -openoffice-compile-weblib"/>
+
+    <target name="-openoffice-compile-weblib" depends="-module-init, -module-compile-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/weblib/**"/>
+            </compile-classes>
+
+            <compile-classpath>
+                <pathelement path="${module-weblib.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
 
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
@@ -38,6 +61,14 @@
                     <include name="${module.src}/client/**"/>
                 </clientjar>
             </client>
+
+            <part name="weblib">
+                <jar name="${module.name}-weblib" basedir="${build.classes.dir}">
+                    <include name="${module.src}/weblib/**"/>
+                    <include name="${module.src}/common/**"/>
+                </jar>
+            </part>
+            
             <!--Add WAR file to be deployed-->
             <part name="web" dir="lib">
                 <include name="converter.war"/>
