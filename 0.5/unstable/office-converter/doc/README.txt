@@ -14,7 +14,6 @@ Location:        Local
 
 4. Click OK, then Save.
 
-At this point, the Red5 server should be visible on the "Manage Server" page.
+At this point, the OpenOffice server should be visible on the "Manage Server" page.
 You can start and stop it using the controls on the page, and view the log
-using the "log" link. You can also edit startup properties using the "edit"
-link.
+using the "log" link. 

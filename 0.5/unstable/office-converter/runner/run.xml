@@ -1,0 +1,23 @@
+
+<project basedir="." default="run" name="openoffice.run">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="current.dir" file="${ant.file.openoffice.run}"/>
+
+    <!-- override to fix library locations in core -->
+    <property name="core.lib.dir" location="${current.dir}/core/lib"/>
+    <property name="core.build.lib.dir" location="${current.dir}/core/lib"/>
+
+    <!-- import common setup -->
+    <!--<import file="${current.dir}/build-tools/build-scripts/run-setup.xml"/>-->
+
+    <!-- import core setup -->
+    <!--<import file="${current.dir}/core/build-tools/build-scripts/core-setup.xml"/>-->
+
+    <target name="run">
+        
+        <chmod file="${current.dir}/startMacOO.sh" perm="ugo+x"/>
+        <exec dir="${current.dir}" executable="startMacOO.sh"/>
+    </target>
+
+    
+</project>
