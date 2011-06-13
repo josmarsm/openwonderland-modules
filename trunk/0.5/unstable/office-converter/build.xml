@@ -34,7 +34,8 @@
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-client,
-                                                -openoffice-compile-weblib"/>
+                                                -openoffice-compile-weblib,
+                                                -openoffice-package-server"/>
 
     <target name="-openoffice-compile-weblib" depends="-module-init, -module-compile-common">
         <wl-compile>
@@ -46,6 +47,13 @@
                 <pathelement path="${module-weblib.classpath}"/>
             </compile-classpath>
         </wl-compile>
+    </target>
+
+    <target name="-openoffice-package-server">
+        <mkdir dir="${build.dir}/openoffice"/>
+        <zip file="${build.dir}/openoffice/openoffice-dist.zip">
+            <fileset dir="${current.dir}/runner"/>
+        </zip>
     </target>
 
     <target name="dist" depends="build">
@@ -67,6 +75,10 @@
                     <include name="${module.src}/weblib/**"/>
                     <include name="${module.src}/common/**"/>
                 </jar>
+            </part>
+
+            <part name="runner" dir="${build.dir}/openoffice">
+                <include name="openoffice-dist.zip"/>
             </part>
             
             <!--Add WAR file to be deployed-->
