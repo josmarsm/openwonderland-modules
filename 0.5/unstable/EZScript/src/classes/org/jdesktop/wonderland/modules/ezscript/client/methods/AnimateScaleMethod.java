@@ -107,8 +107,12 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
             this.scale = scale;
             this.name = name;
             setArmingCondition(new NewFrameCondition(this));
-            currentScale = target.getLocalScale().length();
-            target.getLocalScale().length();
+
+            transform = cell.getLocalTransform();
+            currentScale = transform.getScaling();
+
+            //currentScale = target.getLocalScale().length();
+            //target.getLocalScale().length();
 
             // s = 5; scale = 12
             // 12 - 5 = 6
@@ -119,7 +123,7 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
             // 3 - 5 = -2
             // -2/(30*3) = -1/30
             //5 += (-1/30)
-            Vector3f scaleVector = new Vector3f();
+            
             float scaleDifference = scale - currentScale;
             inc = scaleDifference/(30*seconds);
         }
