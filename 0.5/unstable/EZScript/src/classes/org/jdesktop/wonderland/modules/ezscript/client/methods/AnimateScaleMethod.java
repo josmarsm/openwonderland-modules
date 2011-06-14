@@ -53,6 +53,10 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
             public void commit() {
                 BasicRenderer r = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
                 Node n = r.getSceneRoot();
+                if(r.getEntity().hasComponent(ScaleProcessor.class)) {
+                    lock.release();
+                    return;
+                }
                 r.getEntity().addComponent(ScaleProcessor.class, new ScaleProcessor("scale", n, scale));
             }
         });
@@ -95,7 +99,8 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
         int frameIndex = 0;
         private float currentScale; //scale
         private float inc;
-
+        private boolean done = false;
+        private CellTransform transform = null;
         public ScaleProcessor(String name, Node target, float scale) {
             this.worldManager = ClientContextJME.getWorldManager();
             this.target = target;
@@ -135,21 +140,22 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
          */
         public void compute(ProcessorArmingCollection collection) {
             if(frameIndex >= 30*seconds) {
-                this.getEntity().removeComponent(ScaleProcessor.class);
-                lock.release();
-                CellTransform transform = cell.getLocalTransform();
-                transform.setScaling(this.scale);
-                getMovable(cell).localMoveRequest(transform);
+                done = true;
                 return;
             }
+
             currentScale += inc;
             frameIndex +=1;
         }
 
         public void commit(ProcessorArmingCollection collection) {
+           if(done) {
+                this.getEntity().removeComponent(ScaleProcessor.class);
+                lock.release();
+            }
+           transform.setScaling(currentScale);
+            getMovable(cell).localMoveRequest(transform);
 
-            target.setLocalScale(currentScale);
-            worldManager.addToUpdateList(target);
         }
     }
 }
