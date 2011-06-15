@@ -33,7 +33,10 @@ public class SharedBounds  extends SharedData {
                                                      new float[] { 1, 0, 0});
 
     public SharedBounds() {
-
+        value = "BOX";
+        extents[0] = 1;
+        extents[1] = 1;
+        extents[2] = 1;
     }
 
     private SharedBounds(String value, float[] extents) {
@@ -50,6 +53,10 @@ public class SharedBounds  extends SharedData {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public void setExtents(float[] extents) {
+        this.extents = extents;
     }
 
     @Override

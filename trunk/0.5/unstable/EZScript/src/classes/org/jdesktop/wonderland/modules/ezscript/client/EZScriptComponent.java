@@ -358,6 +358,21 @@ public class EZScriptComponent extends CellComponent {
                 enableKeyEvents();
             }
         }
+
+        if(states.containsKey("bounds")) {
+            SharedBounds bounds = (SharedBounds)states.get("bounds");
+            BoundingVolume volume = null;
+            if(bounds.getValue().equals("BOX")) {
+                volume = new BoundingBox(new Vector3f(),
+                                         bounds.getExtents()[0],
+                                         bounds.getExtents()[1],
+                                         bounds.getExtents()[2]);
+
+            } else {
+                volume = new BoundingSphere(bounds.getExtents()[0],
+                        new Vector3f());
+            }
+        }
     }
 
     public void handleScript(SharedMapCli states) {

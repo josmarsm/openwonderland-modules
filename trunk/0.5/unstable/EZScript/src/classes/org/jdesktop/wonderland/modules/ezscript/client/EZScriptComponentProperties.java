@@ -20,6 +20,7 @@ package org.jdesktop.wonderland.modules.ezscript.client;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
@@ -59,6 +60,7 @@ public class EZScriptComponentProperties
     private SharedBounds originalBounds = SharedBounds.BOX;
     private BoundsViewerEntity boundsEntity;
     private boolean originalShowBounds = false;
+    private static final Logger logger = Logger.getLogger(EZScriptComponentProperties.class.getName());
 
     /** Creates new form SampleComponentProperties */
     public EZScriptComponentProperties() {
@@ -125,10 +127,15 @@ public class EZScriptComponentProperties
             if(states.get("farcell") != null)
                 originalFarCellEnabled = (SharedBoolean)states.get("farcell");
 
-            if(states.get("bounds") != null)
+            if(states.get("bounds") != null) {
                 originalBounds = (SharedBounds)states.get("bounds");
+            } else {
+                logger.warning("Bounds not found in state. Defaulting to SPHERE.");
+                originalBounds = SharedBounds.SPHERE;
+            }
 
-            originalBounds = SharedBounds.valueOf(editor.getCell().getLocalBounds());
+            
+            //originalBounds = SharedBounds.valueOf(editor.getCell().getLocalBounds());
            
             if(originalBounds.getValue().equals("BOX")) {
                 boxButton.setSelected(true);
