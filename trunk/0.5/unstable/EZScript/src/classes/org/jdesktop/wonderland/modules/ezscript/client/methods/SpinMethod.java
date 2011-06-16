@@ -4,15 +4,15 @@ package org.jdesktop.wonderland.modules.ezscript.client.methods;
 import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.scene.Node;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
-import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 //import org.jdesktop.wonderland.common.wfs.CellList.Cell;
@@ -166,6 +166,8 @@ public class SpinMethod implements ScriptMethodSPI {
             CellTransform transform = cell.getLocalTransform();
             transform.setRotation(quaternion);
             getMovable(cell).localMoveRequest(transform);
+            Set<String> s = new HashSet<String>();
+            
         }
     }
 }

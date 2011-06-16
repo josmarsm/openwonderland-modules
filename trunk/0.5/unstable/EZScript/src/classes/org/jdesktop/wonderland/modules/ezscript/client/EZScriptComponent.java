@@ -847,19 +847,19 @@ public class EZScriptComponent extends CellComponent {
                     updateCellBounds(b.getValue(), b.getExtents());
                     return;
                 }
-                SharedBoolean p = (SharedBoolean)event.getNewValue();
+                //SharedBoolean p = (SharedBoolean)event.getNewValue();
                 if(property.equals("proximity")) {
-                    if(p.getValue())
+                    if(((SharedBoolean)event.getNewValue()).getValue())
                         enableProximityEvents();
                     else
                         disableProximityEvents();
                 } else if(property.equals("mouse")) {
-                    if(p.getValue())
+                    if(((SharedBoolean)event.getNewValue()).getValue())
                         enableMouseEvents();
                     else
                         disableMouseEvents();
                 } else if(property.equals("keyboard")) {
-                    if(p.getValue())
+                    if(((SharedBoolean)event.getNewValue()).getValue())
                         enableKeyEvents();
                     else
                         disableKeyEvents();
