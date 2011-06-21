@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.modules.ezscript.client.EZScriptComponent;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
@@ -27,6 +28,7 @@ public class IncludeMethod implements ScriptMethodSPI {
     private boolean fail = false;
     private String filename = "";
     private boolean isGlobal = false;
+    private static final Logger logger = Logger.getLogger(IncludeMethod.class.getName());
     //private ScriptManager manager = null;
 
     public String getFunctionName() {
@@ -37,12 +39,15 @@ public class IncludeMethod implements ScriptMethodSPI {
         //throw new UnsupportedOperationException("Not supported yet.");
         if(!(args[0] instanceof EZScriptComponent)) {
            isGlobal = true;
+           filename = (String)args[0];
            //ScriptManager.getInstance().evaluate(filename);
         } else {
             context = ((EZScriptComponent)args[0]);
+            filename = (String)args[1];
         }
 
-        filename = (String)args[1];
+        //filename = (String)args[1];
+        logger.warning("Include: setArguments");
     }
 
     public String getDescription() {
@@ -66,14 +71,17 @@ public class IncludeMethod implements ScriptMethodSPI {
         try {
             String script = retrieveStartupScript();
             if (!isGlobal) {
+                logger.warning("Include: non-global execution.");
                 context.evaluateScript(script);
             } else {
+                logger.warning("Include: global execution.");
                 ScriptManager.getInstance().evaluate(script);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-        }        
+        }
+        logger.warning("Include: run");
     }
 
     public String retrieveStartupScript() throws IOException {
@@ -85,6 +93,7 @@ public class IncludeMethod implements ScriptMethodSPI {
         if (!startup.exists()) {
             //if not...
             //fail gracefully
+            logger.warning("Include: file does not exist: "+filename);
             return "";
         }
 
@@ -97,7 +106,9 @@ public class IncludeMethod implements ScriptMethodSPI {
             script += "\n" + line;
 
         }
+        logger.warning("Include: retrieveStartupScript");
         br.close();
+
         return script;
     }
 
