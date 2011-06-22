@@ -29,6 +29,11 @@
 
     <target name="doWindows" if="isWindows">
         <echo message="Came into the Windows target" />
+        <exec dir="." executable="cmd">
+            <arg value="/c"/>
+            <arg value="startWinOO.bat"/>
+            <arg value="-p"/>
+        </exec>
     </target>
 
     <target name="doUnix" if="isUnix">
