@@ -18,6 +18,7 @@ import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableModel;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -75,8 +76,11 @@ public class ShowMethod extends javax.swing.JPanel implements ScriptMethodSPI {
 
         if(args[0] instanceof Collection) {
             Collection c = (Collection)args[0];
-             contents = new JTable(new Object[][] { c.toArray() }, new String[] {"contents" });
-            jScrollPane1.setViewportView(contents);
+             contents = new JTable();
+             //contents.addColumn(new TableColumn());
+            DefaultTableModel m = (DefaultTableModel)contents.getModel();
+            m.addColumn("contents", c.toArray());
+             jScrollPane1.setViewportView(contents);
             contents.setFillsViewportHeight(true);
         } else if(args[0] instanceof Map) {
             Map m = (Map)args[0];
