@@ -50,15 +50,16 @@ public class GetMyGroupsMethod implements ReturnableScriptMethodSPI {
     public void run() {
         Set<GroupDTO> userGroups = new LinkedHashSet<GroupDTO>();
         try {
-        userGroups.addAll(GroupUtils.getGroupsForUser(session.getServerURL(),
-                                                      username,
-                                                      false,
-                                                      session.getCredentialManager()));
-        for(GroupDTO d : userGroups) {
+
+            userGroups.addAll(GroupUtils.getGroupsForUser(session.getServerURL(),
+                    username,
+                    false,
+                    session.getCredentialManager()));
+            for (GroupDTO d : userGroups) {
                 groups.add(d.getId());
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
