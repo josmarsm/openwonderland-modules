@@ -6,7 +6,6 @@
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.util.concurrent.Semaphore;
 import org.jdesktop.mtgame.NewFrameCondition;

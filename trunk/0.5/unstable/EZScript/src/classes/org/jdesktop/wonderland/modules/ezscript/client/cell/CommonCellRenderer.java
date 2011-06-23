@@ -18,6 +18,7 @@ public class CommonCellRenderer extends BasicRenderer {
 
     @Override
     protected Node createSceneGraph(Entity entity) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new Node();
+        //throw new UnsupportedOperationException("Not supported yet.");
     }
 }
