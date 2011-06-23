@@ -38,8 +38,9 @@
 
     <target name="doUnix" if="isUnix">
         <echo message="Came into the Unix target" />
-        <chmod file="${current.dir}/startMacOO.sh" perm="ugo+x"/>
-        <exec dir="${current.dir}" executable="startUnixOO.sh"/>
+        <echo message="Current dir: ${current.dir}"/>
+        <chmod file="${current.dir}/startUnixOO.sh" perm="ugo+x"/>
+        <exec dir="${current.dir}" executable="./startUnixOO.sh"/>
     </target>
 
     <target name="run" depends="doMac, doWindows, doUnix">
