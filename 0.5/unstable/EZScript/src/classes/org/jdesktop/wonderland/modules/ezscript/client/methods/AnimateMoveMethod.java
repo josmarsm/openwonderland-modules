@@ -16,19 +16,19 @@ import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
-import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
 import org.jdesktop.wonderland.client.cell.MovableComponent;
+import org.jdesktop.wonderland.client.cell.TransformChangeListener.ChangeSource;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.ExperimentalAPI;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
 import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
+import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableComponent;
 
 /**
  * Usage: animateMove(cell, x, y, z, time);
@@ -37,6 +37,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
  *
  * @author JagWire
  */
+@ExperimentalAPI
 @ScriptMethod
 public class AnimateMoveMethod implements ScriptMethodSPI {
 
@@ -109,7 +110,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         }
 
 
-        //try and add MovableComponent manually
+        //try and add AnotherMovableComponent manually
         String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
         CellServerComponentMessage cscm =
                 CellServerComponentMessage.newAddMessage(
@@ -190,6 +191,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
         public void commit(ProcessorArmingCollection collection) {
             if(done) {
                 this.getEntity().removeComponent(TranslationProcessor.class);
+                
                 lock.release(); //this should give control back to the state machine.
 //                String position = "X: " + translate.x + "\n"
 //                        +       "Y: " + translate.y + "\n"
@@ -207,6 +209,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
 
             transform.setTranslation(translate);
             getMovable(cell).localMoveRequest(transform);
+            //cell.setLocalTransform(transform, ChangeSource.LOCAL);
         }
     }
 }

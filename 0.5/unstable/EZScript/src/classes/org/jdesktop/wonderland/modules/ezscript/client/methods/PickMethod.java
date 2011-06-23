@@ -58,25 +58,29 @@ public class PickMethod implements ReturnableScriptMethodSPI {
         try {
             lock.acquire();
             InputManager.inputManager().removeGlobalEventListener(listener);
+            listener = null;
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
     class MousePickEventListener extends EventClassFocusListener {
+        @Override
         public Class[] eventClassesToConsume () {
             return new Class[] { MouseEvent3D.class };
         }
 
+        @Override
         public void commitEvent (Event event) {
             if(event instanceof MouseButtonEvent3D) {
               MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
                 if(mbe.isClicked()) {
-                    
-                    pickPosition = mbe.getPickDetails().getPosition();
-                    if(pickPosition == null)
+
+                    if(mbe.getPickDetails() == null)
                         return;
-                    
+
+                    pickPosition = mbe.getPickDetails().getPosition();
+                                       
                     logger.warning("Pick(): received pickPosition "+pickPosition);
                     lock.release();
                 }
