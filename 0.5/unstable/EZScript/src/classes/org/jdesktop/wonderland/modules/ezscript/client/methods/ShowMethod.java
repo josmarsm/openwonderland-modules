@@ -86,6 +86,10 @@ public class ShowMethod extends javax.swing.JPanel implements ScriptMethodSPI {
             Map m = (Map)args[0];
             contents = new JTable(new Object[][] { m.values().toArray() },
                                         getStringsFromSet(m));
+            DefaultTableModel model = (DefaultTableModel)contents.getModel();
+            model.addColumn("keys", m.keySet().toArray());
+            model.addColumn("values", m.values().toArray());
+
             jScrollPane1.setViewportView(contents);
             contents.setFillsViewportHeight(true);
         }
