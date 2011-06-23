@@ -917,7 +917,7 @@ public class EZScriptComponent extends CellComponent {
             if(message instanceof CellTriggerEventMessage) {
                 CellTriggerEventMessage eventMessage = (CellTriggerEventMessage)message;
                 String name = eventMessage.getEventName();
-
+                
                 if(triggerCellEvents.containsKey(name)) {
                     threadedExecute(triggerCellEvents.get(name));
                     //triggerCellEvents.get(name).setArguments(eventMessage.getArguments());
