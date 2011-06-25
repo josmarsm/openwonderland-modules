@@ -1,4 +1,4 @@
-#!/bin/sh -xv
+#!/bin/sh
 if [ -d /tmp/OfficeConverter ]
 then
 echo deleting /tmp/OfficeConverter
