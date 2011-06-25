@@ -24,7 +24,7 @@
     <target name="doMac" if="isMac">
         <echo message="Came into the Mac target" />
         <chmod file="${current.dir}/startMacOO.sh" perm="ugo+x"/>
-        <exec dir="${current.dir}" executable="startMacOO.sh"/>
+        <exec dir="${current.dir}" executable="./startMacOO.sh"/>
     </target>
 
     <target name="doWindows" if="isWindows">
@@ -38,7 +38,6 @@
 
     <target name="doUnix" if="isUnix">
         <echo message="Came into the Unix target" />
-        <echo message="Current dir: ${current.dir}"/>
         <chmod file="${current.dir}/startUnixOO.sh" perm="ugo+x"/>
         <exec dir="${current.dir}" executable="./startUnixOO.sh"/>
     </target>
