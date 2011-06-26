@@ -28,7 +28,6 @@
     </target>
 
     <target name="doWindows" if="isWindows">
-        <echo message="Came into the Windows target" />
         <exec dir="." executable="cmd">
             <arg value="/c"/>
             <arg value="startWinOO.bat"/>
@@ -37,7 +36,6 @@
     </target>
 
     <target name="doUnix" if="isUnix">
-        <echo message="Came into the Unix target" />
         <chmod file="${current.dir}/startUnixOO.sh" perm="ugo+x"/>
         <exec dir="${current.dir}" executable="./startUnixOO.sh"/>
     </target>
