@@ -24,7 +24,7 @@ CONFIGURING THE PATHS TO OPENOFFICE
 This module assumes that the executables for OpenOffice are as described below. If your installation differs from these, please edit the appropriate files AFTER they are deployed. They will be in ~/.wonderland-server/0.5-dev/run/openoffice_server/run, or equivalent.
 
 Windows:
-Used in the DOS BATch file startWinOO.bat
+Used in the DOS BATch file startWinOO.bat, works for Windows7
 "C:\Program Files\OpenOffice.org 3\program\soffice.exe"
 
 Unix (Ubuntu)

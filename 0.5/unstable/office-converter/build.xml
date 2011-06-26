@@ -16,12 +16,9 @@
 
     <!--jars for weblib -->
     <pathconvert property="module-weblib.classpath">
-        <path location="${web.dir}/asset/dist/wonderland-asset-core.jar"/>
         <path location="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
         <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
-        <path location="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
         <path location="${core.dir}/build/lib/wonderland-common.jar"/>
-        <path location="${current.dir}/lib/winp-1.5.jar"/>
     </pathconvert>
 
     <!--Add jars for client-->

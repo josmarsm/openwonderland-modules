@@ -62,7 +62,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/modules/foundation/content-repository/build/client/contentrepo-client.jar:../../../wonderland/web/runner/dist/wonderland-runner-api.jar:lib/commons-io-1.4.jar:lib/jodconverter-2.2.2.jar:lib/commons-codec-1.4.jar:lib/commons-logging-1.1.1.jar:lib/httpclient-4.1.1.jar:lib/httpclient-cache-4.1.1.jar:lib/httpcore-4.1.jar:lib/httpmime-4.1.1.jar:lib/winp-1.5.jar:../../../wonderland/web/utils/dist/wonderland-web-utils.jar</classpath>
+                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/modules/foundation/content-repository/build/client/contentrepo-client.jar:../../../wonderland/web/runner/dist/wonderland-runner-api.jar:lib/commons-io-1.4.jar:lib/jodconverter-2.2.2.jar:lib/commons-codec-1.4.jar:lib/commons-logging-1.1.1.jar:lib/httpclient-4.1.1.jar:lib/httpclient-cache-4.1.1.jar:lib/httpcore-4.1.jar:lib/httpmime-4.1.1.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
