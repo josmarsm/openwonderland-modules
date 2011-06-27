@@ -252,57 +252,79 @@ public class EZScriptComponent extends CellComponent {
         super.setStatus(status, increasing);
         switch(status) {
             case RENDERING:
-                    if (increasing) {
-                        renderer = (BasicRenderer) cell.getCellRenderer(RendererType.RENDERER_JME);
-                        if (mouseEventsEnabled) {
-                            mouseEventListener = new MouseEventListener();
-                            mouseEventListener.addToEntity(renderer.getEntity());
-                        }
-                        if(keyEventsEnabled) {
-                            keyEventListener = new KeyboardEventListener();
-                            keyEventListener.addToEntity(renderer.getEntity());
-                        }
-                        if (menuFactory == null) {
-                            menuListener = new MenuItemListener();
-                            menuFactory = new ContextMenuFactorySPI() {
-                                public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                                    return new ContextMenuItem[] {
-                                        new SimpleContextMenuItem("Script", menuListener)
-                                    };
-                                }
-                            };
-                            contextMenuComponent.addContextMenuFactory(menuFactory);
-                        }
+                if (increasing) {
+                    renderer = (BasicRenderer) cell.getCellRenderer(RendererType.RENDERER_JME);
+                    if (mouseEventsEnabled) {
+                        mouseEventListener = new MouseEventListener();
+                        mouseEventListener.addToEntity(renderer.getEntity());
                     }
+                    if (keyEventsEnabled) {
+                        keyEventListener = new KeyboardEventListener();
+                        keyEventListener.addToEntity(renderer.getEntity());
+                    }
+                    if (menuFactory == null) {
+                        menuListener = new MenuItemListener();
+                        menuFactory = new ContextMenuFactorySPI() {
+
+                            public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
+                                return new ContextMenuItem[]{
+                                            new SimpleContextMenuItem("Script", menuListener)
+                                        };
+                            }
+                        };
+                        contextMenuComponent.addContextMenuFactory(menuFactory);
+                    }
+
+
+                    //intialize shared state component and map                                       
+                    new Thread(new Runnable() {
+                        public void run() {
+                            //grab the "callbacks" map in order to hopefully
+                            //use an additional map for "state" if needed
+                            callbacksMap = sharedStateComponent.get("callbacks");
+                            scriptsMap = sharedStateComponent.get("scripts");
+                            stateMap = sharedStateComponent.get("state");
+                            callbacksMap.addSharedMapListener(mapListener);
+                            scriptsMap.addSharedMapListener(mapListener);
+                            stateMap.addSharedMapListener(mapListener);
+
+                            //process the states map
+                            handleStates(stateMap);
+                            handleScript(stateMap);
+
+                            //get other maps here.
+                        }
+                    }).start();
+                }
                
                 break;
             case ACTIVE:
                 if(increasing) {
                     channelComponent.addMessageReceiver(CellTriggerEventMessage.class,
                                                         new TriggerCellEventReceiver());
-                    //intialize shared state component and map
-                    
+//                    //intialize shared state component and map
+//                    
                     scriptBindings.put("cell", this.cell);
                     scriptBindings.put("Context", this);
                     
-                    new Thread(new Runnable() {
-                        public void run() {
-                            //grab the "callbacks" map in order to hopefully
-                            //use an additional map for "state" if needed
-                           callbacksMap = sharedStateComponent.get("callbacks");
-                           scriptsMap = sharedStateComponent.get("scripts");
-                           stateMap = sharedStateComponent.get("state");
-                           callbacksMap.addSharedMapListener(mapListener);
-                           scriptsMap.addSharedMapListener(mapListener);
-                           stateMap.addSharedMapListener(mapListener);
-
-                           //process the states map
-                           handleStates(stateMap);
-                           handleScript(stateMap);
-
-                           //get other maps here.
-                        }
-                    }).start();                    
+//                    new Thread(new Runnable() {
+//                        public void run() {
+//                            //grab the "callbacks" map in order to hopefully
+//                            //use an additional map for "state" if needed
+//                           callbacksMap = sharedStateComponent.get("callbacks");
+//                           scriptsMap = sharedStateComponent.get("scripts");
+//                           stateMap = sharedStateComponent.get("state");
+//                           callbacksMap.addSharedMapListener(mapListener);
+//                           scriptsMap.addSharedMapListener(mapListener);
+//                           stateMap.addSharedMapListener(mapListener);
+//
+//                           //process the states map
+//                           handleStates(stateMap);
+//                           handleScript(stateMap);
+//
+//                           //get other maps here.
+//                        }
+//                    }).start();                    
                 }
                 break;
             case INACTIVE:
