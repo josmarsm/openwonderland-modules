@@ -42,6 +42,7 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         this.dialog = dialog;
         this.setMinimumSize(new Dimension(600, 400));
         this.setPreferredSize(new Dimension(600, 400));
+        scriptArea.setTabSize(4);
 
     }
 
@@ -55,7 +56,8 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         this.dialog = dialog;
         this.setMinimumSize(new Dimension(600, 400));
         this.setPreferredSize(new Dimension(600, 400));
-
+        scriptArea.setTabSize(4)
+        
         String script = new String();
         try {
             //grab startup script
