@@ -14,6 +14,7 @@ import org.jdesktop.wonderland.client.input.EventClassFocusListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseMovedEvent3D;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 
@@ -24,7 +25,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScri
 @ReturnableScriptMethod
 public class PickMethod implements ReturnableScriptMethodSPI {
 
-    private MousePickEventListener listener;
+    private MouseClickPickEventListener listener;
     private Vector3f pickPosition;
     private Semaphore lock = new Semaphore(0);
     private static final Logger logger = Logger.getLogger(PickMethod.class.getName());
@@ -45,7 +46,8 @@ public class PickMethod implements ReturnableScriptMethodSPI {
 
     public void setArguments(Object[] args) {
         //no arguments
-        listener = new MousePickEventListener();
+        //listener = new MouseClickPickEventListener();
+        listener = new MouseClickPickEventListener();
     }
 
     public Object returns() {
@@ -64,7 +66,7 @@ public class PickMethod implements ReturnableScriptMethodSPI {
         }
     }
 
-    class MousePickEventListener extends EventClassFocusListener {
+    class MouseClickPickEventListener extends EventClassFocusListener {
         @Override
         public Class[] eventClassesToConsume () {
             return new Class[] { MouseEvent3D.class };
@@ -76,8 +78,11 @@ public class PickMethod implements ReturnableScriptMethodSPI {
               MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
                 if(mbe.isClicked()) {
 
-                    if(mbe.getPickDetails() == null)
+                    if(mbe.getPickDetails() == null) {
+                        lock.release();
+                        logger.warning("Pick(): received null pick details!");
                         return;
+                    }
 
                     pickPosition = mbe.getPickDetails().getPosition();
                                        
@@ -87,5 +92,29 @@ public class PickMethod implements ReturnableScriptMethodSPI {
             }
         }
     }
+
+    class MouseMovePickEventListener extends EventClassFocusListener {
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[] { MouseMovedEvent3D.class };
+        }
+
+        @Override
+        public void commitEvent(Event event) {
+
+            MouseMovedEvent3D m = (MouseMovedEvent3D)event;
+            if(m.getPickDetails() == null) {
+                lock.release();
+                logger.warning("Pick(): received null pick details!");
+                return;
+            }
+            
+            pickPosition = m.getPickDetails().getPosition();
+            logger.warning("Pick(): received pickPosition "+pickPosition);
+            lock.release();
+        }
+    }
+
+
 
 }
