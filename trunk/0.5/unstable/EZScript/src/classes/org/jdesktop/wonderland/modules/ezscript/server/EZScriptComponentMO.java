@@ -27,6 +27,7 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.modules.ezscript.common.EZScriptComponentClientState;
 import org.jdesktop.wonderland.modules.ezscript.common.EZScriptComponentServerState;
 import org.jdesktop.wonderland.modules.ezscript.common.CellTriggerEventMessage;
+import org.jdesktop.wonderland.modules.ezscript.server.cell.AnotherMovableComponentMO;
 import org.jdesktop.wonderland.modules.sharedstate.server.SharedStateComponentMO;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
@@ -52,6 +53,9 @@ public class EZScriptComponentMO extends CellComponentMO {
 
     @UsesCellComponentMO(ChannelComponentMO.class)
     private ManagedReference<ChannelComponentMO> channelComponentRef;
+
+    @UsesCellComponentMO(AnotherMovableComponentMO.class)
+    private ManagedReference<AnotherMovableComponentMO> anotherMovableRef;
     
     public EZScriptComponentMO(CellMO cell) {
         super(cell);
