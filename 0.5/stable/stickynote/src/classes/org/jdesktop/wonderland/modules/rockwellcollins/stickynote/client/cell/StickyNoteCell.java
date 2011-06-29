@@ -166,7 +166,7 @@ public class StickyNoteCell extends App2DCell {
 
     public void processMessage(final StickyNoteSyncMessage m) {
         WonderlandSession session = getCellCache().getSession();
-        if (!m.getSenderID().equals(session.getID())) {
+        if (!session.getID().equals(m.getSenderID())) {
             window.getStickynoteParentPanel().getChild().processMessage(m);
         } else {
             // Color messages are special
