@@ -50,6 +50,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMetho
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
+import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableComponent;
 import org.jdesktop.wonderland.modules.ezscript.common.CellTriggerEventMessage;
 import org.jdesktop.wonderland.modules.ezscript.common.SharedBounds;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
@@ -158,6 +159,8 @@ public class EZScriptComponent extends CellComponent {
     @UsesCellComponent
     private ChannelComponent channelComponent;
 
+    @UsesCellComponent
+    private AnotherMovableComponent anotherMovable;
     //state variables
     private boolean mouseEventsEnabled = false;
     private boolean proximityEventsEnabled = false;
