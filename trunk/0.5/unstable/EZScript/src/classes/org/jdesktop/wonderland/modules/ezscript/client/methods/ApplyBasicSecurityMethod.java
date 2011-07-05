@@ -52,7 +52,7 @@ public class ApplyBasicSecurityMethod implements ScriptMethodSPI {
         WonderlandSession session = manager.getPrimarySession();
         Collection<Cell> cs = ClientContextJME.getCellCache(session).getRootCells();
 
-        System.out.println("[EZScript] size of root cell collection: "+cs.size());
+        
         for(Cell c : cs) {
             if(c instanceof AvatarCell) {
                 continue;
