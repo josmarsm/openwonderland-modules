@@ -5,6 +5,7 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
+import java.awt.BorderLayout;
 import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -39,7 +40,7 @@ public class ToggleMenuBarMethod implements ScriptMethodSPI {
     public void run() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                menuBar.setVisible(menuBar.isShowing());
+                menuBar.setVisible(!menuBar.isShowing());
             }
         });
     }
