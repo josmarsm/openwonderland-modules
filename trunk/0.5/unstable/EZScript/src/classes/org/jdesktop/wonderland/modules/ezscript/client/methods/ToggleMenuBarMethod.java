@@ -5,10 +5,10 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
-import java.awt.BorderLayout;
 import javax.swing.JMenuBar;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 
@@ -26,6 +26,7 @@ public class ToggleMenuBarMethod implements ScriptMethodSPI {
 
     public void setArguments(Object[] args) {
         menuBar = ClientContextJME.getClientMain().getFrame().getFrame().getJMenuBar();
+        
     }
 
     public String getDescription() {
