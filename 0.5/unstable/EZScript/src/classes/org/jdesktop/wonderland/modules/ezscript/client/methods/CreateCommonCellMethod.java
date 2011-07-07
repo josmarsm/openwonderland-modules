@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.ezscript.client.EZScriptComponentFactory;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
@@ -72,6 +73,7 @@ public class CreateCommonCellMethod implements ReturnableScriptMethodSPI {
         } catch (CellCreationException ex) {
             Logger.getLogger(CreateCommonCellMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }
 
 }
