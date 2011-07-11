@@ -50,7 +50,7 @@ public class CommonCell extends Cell {
         switch(status) {
             case ACTIVE:
                 if(increasing) {
-                    channelComponent.addMessageReceiver(AttachModelMessage.class, null);
+                    channelComponent.addMessageReceiver(AttachModelMessage.class, new ModelAttachmentReceiver());
                 }
 
                 break;
@@ -95,6 +95,7 @@ public class CommonCell extends Cell {
                 LoaderManager manager = LoaderManager.getLoaderManager();
                 URL url = AssetUtils.getAssetURL(msg.getModelURL());
                 DeployedModel model = manager.getLoaderFromDeployment(url);
+                logger.warning("Received message to process model: "+model.getModelURL());
                 renderer.getModelsMap().put(msg.getModelID(), model);
                 renderer.update();
             } catch(MalformedURLException ex) {
