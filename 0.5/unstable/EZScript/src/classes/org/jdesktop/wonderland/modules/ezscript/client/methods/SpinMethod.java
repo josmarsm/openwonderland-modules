@@ -2,29 +2,16 @@
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import com.jme.math.FastMath;
-import com.jme.math.Quaternion;
 import com.jme.scene.Node;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jdesktop.mtgame.NewFrameCondition;
-import org.jdesktop.mtgame.ProcessorArmingCollection;
-import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 //import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 //import org.jdesktop.wonderland.common.wfs.CellList.Cell;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.common.cell.CellTransform;
-import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
-import org.jdesktop.wonderland.common.messages.ErrorMessage;
-import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
-import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableComponent;
 
 /**
@@ -32,7 +19,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableCompon
  *
  * @author JagWire
  */
-@ScriptMethod
+//@ScriptMethod
 public class SpinMethod implements ScriptMethodSPI {
 
     Cell cell;
@@ -53,30 +40,30 @@ public class SpinMethod implements ScriptMethodSPI {
     }
 
     public void run() {
-        SceneWorker.addWorker(new WorkCommit() {
-
-            public void commit() {
-                BasicRenderer r = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                Node node = r.getSceneRoot();                
-
-                if(r.getEntity().hasComponent(SpinProcessor.class)) {
-                    lock.release();
-                    return;
-                }
-                
-                r.getEntity().addComponent(SpinProcessor.class,
-                        new SpinProcessor("Spin",
-                                           node,
-                                           (rotations * FastMath.PI * 2)/(30.0f*time)));
-            }
-        });
-        try {
-            lock.acquire();
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            System.out.println("spin finished...");
-        }
+//        SceneWorker.addWorker(new WorkCommit() {
+//
+//            public void commit() {
+//                BasicRenderer r = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+//                Node node = r.getSceneRoot();
+//
+//                if(r.getEntity().hasComponent(SpinProcessor.class)) {
+//                    lock.release();
+//                    return;
+//                }
+//
+//                r.getEntity().addComponent(SpinProcessor.class,
+//                        new SpinProcessor("Spin",
+//                                           node,
+//                                           (rotations * FastMath.PI * 2)/(30.0f*time)));
+//            }
+//        });
+//        try {
+//            lock.acquire();
+//        } catch(InterruptedException e) {
+//            e.printStackTrace();
+//        } finally {
+//            System.out.println("spin finished...");
+//        }
     }
 
     public String getDescription() {
@@ -90,110 +77,7 @@ public class SpinMethod implements ScriptMethodSPI {
         return "animation";
     }
 
-    public AnotherMovableComponent getMovable(final Cell cell) {
-        if (cell.getComponent(AnotherMovableComponent.class) != null) {
-            return cell.getComponent(AnotherMovableComponent.class);
-        }
-
-        final Semaphore movableLock = new Semaphore(0);
 
 
 
-
-        new Thread(new Runnable() {
-
-            public void run() {
-                //try and add MovableComponent manually
-                //String className = "org.jdesktop.wonderland.server.cell.MovableComponentMO";
-                String className = "org.jdesktop.wonderland.modules.ezscript.server.cell.AnotherMovableComponentMO";
-                CellServerComponentMessage cscm =
-                        CellServerComponentMessage.newAddMessage(
-                        cell.getCellID(), className);
-                logger.warning("Requesting AnotherMovableComponent...");
-
-                ResponseMessage response = cell.sendCellMessageAndWait(cscm);
-                if (response instanceof ErrorMessage) {
-                    logger.log(Level.WARNING, "Unable to add movable component "
-                            + "for Cell " + cell.getName() + " with ID "
-                            + cell.getCellID(),
-                            ((ErrorMessage) response).getErrorCause());
-
-                    logger.warning("AnotherMovableComponent request failed!");
-                    lock.release();
-                    
-                } else {
-                    logger.warning("returning AnotherMovableComponent");
-                    lock.release();
-                    amc = cell.getComponent(AnotherMovableComponent.class);
-                }
-            }
-        }).start();
-
-        try {
-            logger.warning("Acquiring lock in getMovable()!");
-            movableLock.acquire();
-        } catch(Exception e) {
-            e.printStackTrace();
-        } finally {
-            return amc;
-        }
-    }
-
-    class SpinProcessor extends ProcessorComponent {
-
-        private float increment = 0.0f;
-        private Quaternion quaternion = new Quaternion();
-        private String name = null;
-        private float[] angles;
-        int frameIndex = 0;
-        private boolean done = false;
-        CellTransform transform;
-
-        public SpinProcessor(String name, Node target, float increment) {
-            this.increment = increment;
-            this.name = name;
-            setArmingCondition(new NewFrameCondition(this));
-            
-            transform = cell.getLocalTransform();
-            quaternion = transform.getRotation(null);
-            angles = quaternion.toAngles(null);
-
-            for(float f: angles)
-                System.out.println(f);
-        }
-
-        @Override
-        public String toString() {
-            return (name);
-        }
-
-        public void initialize() {
-        }
-
-        public void compute(ProcessorArmingCollection collection) {
-            if(frameIndex >= 30*time) {
-                this.getEntity().removeComponent(SpinProcessor.class);
-                lock.release();
-                done = true;
-            }
-            angles[1] += increment;
-            //1 revolution = (3.14 * 2) ~ 6.28
-            //
-            System.out.println("current radians: "+angles[1]);
-            //quaternion.fromAngles(0.0f, increment, 0.0f);
-            quaternion = new Quaternion(new float[] {angles[0], angles[1], angles[2] });
-            frameIndex +=1;
-        }
-
-        public void commit(ProcessorArmingCollection collection) {
-            if(done)
-                return;
-
-            CellTransform transform = cell.getLocalTransform();
-            transform.setRotation(quaternion);
-            getMovable(cell).localMoveRequest(transform, false);//transform);
-            Set<String> s = new HashSet<String>();
-            
-        }
-    }
 }

@@ -5,7 +5,6 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,6 +14,7 @@ import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 
@@ -52,6 +52,8 @@ public class ShowHUDImageMethod implements ReturnableScriptMethodSPI {
         if(fail)
             return null;
 
+        
+
 
         return component;
         //throw new UnsupportedOperationException("Not supported yet.");
@@ -63,7 +65,7 @@ public class ShowHUDImageMethod implements ReturnableScriptMethodSPI {
         }
 
         try {
-            final URL url = new URL(urlName);
+            final URL url =  new URL(urlName);
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
@@ -76,7 +78,8 @@ public class ShowHUDImageMethod implements ReturnableScriptMethodSPI {
                     component.setVisible(true);
                 }
             });
-        } catch (MalformedURLException ex) {
+      //  } catch (MalformedURLException ex) {
+        } catch(Exception ex) {
             Logger.getLogger(ShowHUDImageMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
