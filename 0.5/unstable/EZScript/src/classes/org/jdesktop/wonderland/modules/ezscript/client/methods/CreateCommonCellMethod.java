@@ -25,11 +25,14 @@ import org.jdesktop.wonderland.modules.ezscript.common.cell.CommonCellServerStat
 public class CreateCommonCellMethod implements ReturnableScriptMethodSPI {
 
     private CellID cellID;
+    private String name;
     public String getDescription() {
         return "Creates a cell with no renderable geometry. Used for purposes of" +
                 "grouping cells together and creating multiple transformable composites.\n" +
                 "-- usage: CreateCommonCell();\n" +
                 "-- usage: CreateCommonCell(aCellID);\n" +
+                "-- usage: CreateCommonCell('mycell');" +
+                "-- usage: CreateCommonCell(aCellID,'mycell);" +                
                 "-- automatically adds the EZScript capability to the cell.";
     }
 
@@ -44,8 +47,11 @@ public class CreateCommonCellMethod implements ReturnableScriptMethodSPI {
     public void setArguments(Object[] args) {
         if(args.length == 0)
             return;
-
-        cellID = (CellID)args[0];
+        if(args.length >= 1)
+            cellID = (CellID)args[0];
+        
+        if(args.length > 1)
+            name = (String)args[1];
     }
 
     /**
@@ -61,15 +67,21 @@ public class CreateCommonCellMethod implements ReturnableScriptMethodSPI {
     public void run() {
         CommonCellFactory factory = new CommonCellFactory();
         CommonCellServerState state = factory.getDefaultCellServerState(null);
+        
         EZScriptComponentFactory ezFactory = new EZScriptComponentFactory();
+        if(name != null)
+            state.setName(name);
+        
         state.addComponentServerState(ezFactory.getDefaultCellComponentServerState());
-
+                
         try {
             if(cellID == null) {
                 CellUtils.createCell(state);
             } else {
                 CellUtils.createCell(state, cellID);
             }
+            
+            
         } catch (CellCreationException ex) {
             Logger.getLogger(CreateCommonCellMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
