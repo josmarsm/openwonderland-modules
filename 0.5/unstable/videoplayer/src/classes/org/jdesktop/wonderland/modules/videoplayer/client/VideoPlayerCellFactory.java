@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -54,7 +54,7 @@ import org.jdesktop.wonderland.modules.videoplayer.common.cell.VideoPlayerCellSe
 public class VideoPlayerCellFactory implements CellFactorySPI {
     private static final String[] EXTENSIONS = new String[] { 
         "mov", "mp4", "avi", "ogg", "flv", "m4a", "3gp", "3g2", "mj2", "m4v",
-        "wmv"
+        "wmv", "mpeg"
     };
 
     /**

@@ -19,16 +19,15 @@
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
+    <property name="video.dir" value="${wonderland.dir}/../wonderland-video"/>
+   
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${modules.dir}/foundation/hud/build/client/hud-client.jar"/>
-        <path location="${current.dir}/lib/commons-cli.jar"/>
-        <path location="${current.dir}/lib/logback-classinc.jar"/>
-        <path location="${current.dir}/lib/logback-core.jar"/>
-        <path location="${current.dir}/lib/slf4j-api.jar"/>
-        <path location="${current.dir}/lib/xuggle-xuggler.jar"/>
+        <path location="${video.dir}/lib/xuggle-xuggler.jar"/>
+        <path location="${video.dir}/build/lib/wonderland-video.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
@@ -50,10 +49,10 @@
         <module name="${module.name}" majorVersion="1" minorVersion="0" jarfile="${module.dist.dir}/${module.name}.jar"
  	                moduleDescription="${module.description}" builddir="${build.dir}">
 
-            <client dir="${current.dir}/lib">
-                <include name="*.ini"/>
-                <!--include name="*.jar"/-->
-
+            <client dir="${video.dir}/build/lib">
+                <!-- core video infrastructure -->
+                <include name="wonderland-video.jar"/>
+                
                 <clientjar name="videoplayer-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
                     <fileset dir="${current.dir}/src/classes">

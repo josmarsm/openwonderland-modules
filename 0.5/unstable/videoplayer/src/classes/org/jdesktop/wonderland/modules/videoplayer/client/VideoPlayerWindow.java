@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -56,6 +56,9 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 import org.jdesktop.wonderland.modules.videoplayer.client.cell.VideoPlayerCell;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerConstants;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerActions;
+import org.jdesktop.wonderland.video.client.VideoPlayer;
+import org.jdesktop.wonderland.video.client.VideoPlayer.VideoPlayerState;
+import org.jdesktop.wonderland.video.client.VideoStateListener;
 
 /**
  * A Video Player window.
@@ -85,7 +88,7 @@ public class VideoPlayerWindow extends Window2D implements VideoPlayer {
     private DisplayMode displayMode;
 
     private final VideoPlayerToolManager toolManager;
-    private final VideoPlayerImpl mediaPlayer;
+    private final WonderlandVideoPlayerImpl mediaPlayer;
     private final VideoMeter timeline;
 
     /**
@@ -228,8 +231,8 @@ public class VideoPlayerWindow extends Window2D implements VideoPlayer {
     /**
      * Create the video player
      */
-    protected VideoPlayerImpl createVideoPlayer() {
-        final VideoPlayerImpl out = new VideoPlayerImpl();
+    protected WonderlandVideoPlayerImpl createVideoPlayer() {
+        final WonderlandVideoPlayerImpl out = new WonderlandVideoPlayerImpl();
         out.addTimeListener(timeline);
 
         out.addStateListener(new VideoStateListener() {
@@ -242,11 +245,16 @@ public class VideoPlayerWindow extends Window2D implements VideoPlayer {
                             break;
                         case MEDIA_READY:
                             timeline.setDuration(out.getDuration());
+                            
+                            // update controls for seeking
+                            controls.setSeekEnabled(mediaPlayer.isSeekEnabled());
+                            timeline.setEnabled(mediaPlayer.isSeekEnabled()); 
+                            
                             //videoPlayerPanel.showSource(out.getMedia());
                             //videoPlayerPanel.setConnected(true);
                             //videoPlayerPanel.resizeToFit(out.getFrameSize());
                             showHUDMessage(BUNDLE.getString("LOADED"), 3000);
-                            if (isSynced()) {
+                            if (isSynced() && mediaPlayer.isSeekEnabled()) {
                                 double position = Double.valueOf(((SharedString) statusMap.get(VideoPlayerConstants.MEDIA_POSITION)).getValue());
 
                                 String state = ((SharedString) statusMap.get(VideoPlayerConstants.PLAYER_STATE)).getValue();
@@ -396,6 +404,14 @@ public class VideoPlayerWindow extends Window2D implements VideoPlayer {
             LOGGER.info("stop");
             mediaPlayer.stop();
         }
+    }
+
+    /**
+     * Determine if seek is enabled
+     * @return true if seek is enabled
+     */
+    public boolean isSeekEnabled() {
+        return playerReady() ? false : mediaPlayer.isSeekEnabled();
     }
 
     /**

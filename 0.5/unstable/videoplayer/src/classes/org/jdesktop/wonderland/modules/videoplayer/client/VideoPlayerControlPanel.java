@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -118,6 +118,15 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
             default:
                 break;
         }
+    }
+    
+    /**
+     * Update control panel to reflect seek capabilities of the video
+     * @param seekEnabled true if the video supports seeking, or false if not
+     */
+    public void setSeekEnabled(boolean seekEnabled) {
+        fwdHUDButton.setEnabled(seekEnabled);
+        rewHUDButton.setEnabled(seekEnabled);
     }
 
     /**
