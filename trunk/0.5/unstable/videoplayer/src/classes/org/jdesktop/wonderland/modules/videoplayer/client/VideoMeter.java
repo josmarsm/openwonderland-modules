@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -50,6 +50,11 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
     private static final Color ELAPSED_COLOR_DEFAULT = Color.DARK_GRAY;
     private static final Color UNELAPSED_COLOR_DEFAULT = Color.LIGHT_GRAY;
     private static final Color PUCK_COLOR_DEFAULT = Color.BLUE;
+    
+    private static final Color ELAPSED_COLOR_DISABLED = Color.GRAY;
+    private static final Color UNELAPSED_COLOR_DISABLED = Color.LIGHT_GRAY;
+    private static final Color PUCK_COLOR_DISABLED = Color.LIGHT_GRAY;
+    
     private static final String DEFAULT_FONT = "SansSerif";
     private static final int DEFAULT_FONT_SIZE = 12;
     private Stroke timelineStroke;
@@ -234,6 +239,25 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
         setTime(time);
     }
 
+    /**
+     * Enable or disable this component
+     * @param enabled true if the component is enabled, or false if not
+     */
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        
+        if (enabled) {
+            setElapsedColor(ELAPSED_COLOR_DEFAULT);
+            setUnelapsedColor(UNELAPSED_COLOR_DEFAULT);
+            setPuckColor(PUCK_COLOR_DEFAULT);
+        } else {
+            setElapsedColor(ELAPSED_COLOR_DISABLED);
+            setUnelapsedColor(UNELAPSED_COLOR_DISABLED);
+            setPuckColor(PUCK_COLOR_DISABLED);
+        }
+    }
+    
     /**
      * Set the color of the puck
      *
@@ -454,6 +478,10 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
     }// </editor-fold>//GEN-END:initComponents
 
     private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
+        if (!isEnabled()) {
+            return;
+        }
+        
         int x = evt.getX();
         int y = evt.getY();
         Point puckXY = new Point();
@@ -480,6 +508,10 @@ public class VideoMeter extends javax.swing.JPanel implements TimedEventSource, 
     }//GEN-LAST:event_formMouseReleased
 
     private void formMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
+        if (!isEnabled()) {
+            return;
+        }
+        
         dragTime = getPositionAsTime(evt.getX());
 
         // don't update until drag is finished

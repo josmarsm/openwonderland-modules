@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -50,9 +50,9 @@ import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
-import org.jdesktop.wonderland.modules.videoplayer.client.VideoPlayer.VideoPlayerState;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerConstants;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerActions;
+import org.jdesktop.wonderland.video.client.VideoPlayer.VideoPlayerState;
 
 /**
  * Class to manage the selected tool.
