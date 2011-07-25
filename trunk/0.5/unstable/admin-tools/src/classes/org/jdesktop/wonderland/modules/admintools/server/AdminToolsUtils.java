@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -22,7 +22,9 @@ import com.sun.mpk20.voicelib.app.VoiceManager;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ClientSession;
 import com.sun.sgs.app.ManagedReference;
+import com.sun.sgs.app.NameNotBoundException;
 import com.sun.sgs.app.Task;
+import com.sun.sgs.app.util.ScalableHashSet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
@@ -42,10 +44,12 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 /**
  * Utility methods used by admin tools
  * @author Jonathan Kaplan <jonathankap@gmail.com>
+ * @author Bernard Horan <bernard@ellesley.com>
  */
 public class AdminToolsUtils {
     private static final Logger LOGGER =
             Logger.getLogger(AdminToolsUtils.class.getName());
+    private static final String DISCONNECT_LISTENERS_BINDING = "AdminToolsUtils.DisconnectListenerBinding";
 
     static void handleDisconnect(WonderlandClientSender sender,
                                  DisconnectMessage disconnect)
@@ -67,6 +71,8 @@ public class AdminToolsUtils {
             // preceding message gets sent before the actual disconnect happens
             AppContext.getTaskManager().scheduleTask(
                     new DisconnectTask(remote.getSession()), 2000);
+            notifyDisconnectListeners(remote);
+
         } else {
             LOGGER.warning("No clientID found for " + disconnect.getSessionID());
         }
@@ -117,6 +123,64 @@ public class AdminToolsUtils {
                 cm.getSender(AdminToolsConnectionType.CONNECTION_TYPE);
 
         noticeSender.send(broadcast);
+    }
+
+
+    /**
+     * Add a forced disconnection listener
+     * @param listener an implementation of ForceDisconnetListener
+     */
+    @SuppressWarnings("unchecked")
+    public static void addDisconnectListener(ForceDisconnectListener listener) {
+        ScalableHashSet<ForceDisconnectListener> disconnectListeners;
+        //Do this lazily
+        try {
+            disconnectListeners = (ScalableHashSet<ForceDisconnectListener>) AppContext.getDataManager().getBindingForUpdate(DISCONNECT_LISTENERS_BINDING);
+        } catch (NameNotBoundException nnbe) {
+            disconnectListeners = createDisconnectListenersSet();
+        }
+        disconnectListeners.add(listener);
+    }
+
+    /**
+     * Remove a forced disconnection listener
+     * @param listener an implementation of ForceDisconnetListener
+     */
+    public static void removeDisconnectListener(ForceDisconnectListener listener) {
+        @SuppressWarnings("unchecked")
+        ScalableHashSet<ForceDisconnectListener> disconnectListeners = (ScalableHashSet<ForceDisconnectListener>) AppContext.getDataManager().getBindingForUpdate(DISCONNECT_LISTENERS_BINDING);
+        disconnectListeners.remove(listener);
+    }
+
+    private static ScalableHashSet<ForceDisconnectListener> createDisconnectListenersSet() {
+        ScalableHashSet<ForceDisconnectListener> disconnectListeners = new ScalableHashSet<ForceDisconnectListener>();
+        AppContext.getDataManager().setBinding(DISCONNECT_LISTENERS_BINDING, disconnectListeners);
+        return disconnectListeners;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void notifyDisconnectListeners(WonderlandClientID remote) {
+        ScalableHashSet<ForceDisconnectListener> disconnectListeners;
+        try {
+            disconnectListeners = (ScalableHashSet<ForceDisconnectListener>) AppContext.getDataManager().getBindingForUpdate(DISCONNECT_LISTENERS_BINDING);
+        } catch (NameNotBoundException nnbe) {
+            LOGGER.warning("No disconnect listeners");
+            return;
+        }
+        for (ForceDisconnectListener forceDisconnectListener : disconnectListeners) {
+            forceDisconnectListener.disconnect(remote);
+        }
+    }
+
+    /**
+     * An interface that represents a listener that is called when a user is forcibly disconnected
+     */
+    public static interface ForceDisconnectListener extends Serializable {
+        /**
+         * Notification that a wonderland client has been forcibly disconnected
+         * @param remote the wonderland client id that represents the client that has been forcibly disconnected
+         */
+        public void disconnect(WonderlandClientID remote);
     }
 
     private static class DisconnectTask implements Task, Serializable {
