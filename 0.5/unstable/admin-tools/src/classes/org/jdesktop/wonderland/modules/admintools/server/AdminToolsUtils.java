@@ -62,7 +62,7 @@ public class AdminToolsUtils {
                 cm.getWonderlandClientID(disconnect.getSessionID());
         WonderlandClientSender noticeSender =
                 cm.getSender(AdminToolsConnectionType.CONNECTION_TYPE);
-
+        
         if (remote != null) {
             // notify the client
             noticeSender.send(remote, disconnect);
@@ -71,7 +71,7 @@ public class AdminToolsUtils {
             // preceding message gets sent before the actual disconnect happens
             AppContext.getTaskManager().scheduleTask(
                     new DisconnectTask(remote.getSession()), 2000);
-            notifyDisconnectListeners(remote);
+            notifyDisconnectListeners(remote, disconnect);
 
         } else {
             LOGGER.warning("No clientID found for " + disconnect.getSessionID());
@@ -159,7 +159,7 @@ public class AdminToolsUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static void notifyDisconnectListeners(WonderlandClientID remote) {
+    private static void notifyDisconnectListeners(WonderlandClientID remote, DisconnectMessage disconnect) {
         ScalableHashSet<ForceDisconnectListener> disconnectListeners;
         try {
             disconnectListeners = (ScalableHashSet<ForceDisconnectListener>) AppContext.getDataManager().getBindingForUpdate(DISCONNECT_LISTENERS_BINDING);
@@ -168,7 +168,7 @@ public class AdminToolsUtils {
             return;
         }
         for (ForceDisconnectListener forceDisconnectListener : disconnectListeners) {
-            forceDisconnectListener.disconnect(remote);
+            forceDisconnectListener.disconnect(remote, disconnect);
         }
     }
 
@@ -179,8 +179,9 @@ public class AdminToolsUtils {
         /**
          * Notification that a wonderland client has been forcibly disconnected
          * @param remote the wonderland client id that represents the client that has been forcibly disconnected
+         * @param disconnect the disconnect message
          */
-        public void disconnect(WonderlandClientID remote);
+        public void disconnect(WonderlandClientID remote, DisconnectMessage disconnect);
     }
 
     private static class DisconnectTask implements Task, Serializable {
