@@ -50,6 +50,7 @@ public class AdminToolsUtils {
     private static final Logger LOGGER =
             Logger.getLogger(AdminToolsUtils.class.getName());
     private static final String DISCONNECT_LISTENERS_BINDING = "AdminToolsUtils.DisconnectListenerBinding";
+    private static final String MUTE_LISTENERS_BINDING = "AdminToolsUtils.MuteListenerBinding";
 
     static void handleDisconnect(WonderlandClientSender sender,
                                  DisconnectMessage disconnect)
@@ -101,6 +102,7 @@ public class AdminToolsUtils {
                     call.mute(true);
 
                     noticeSender.send(remote, mute);
+                    notifyMuteListeners(remote, mute);
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, "Unable to mute call " +
                                pi.getCallID(), ex);
@@ -143,6 +145,22 @@ public class AdminToolsUtils {
     }
 
     /**
+     * Add a forced mute listener
+     * @param listener an implementation of ForceMutetListener
+     */
+    @SuppressWarnings("unchecked")
+    public static void addMuteListener(ForceMuteListener listener) {
+        ScalableHashSet<ForceMuteListener> muteListeners;
+        //Do this lazily
+        try {
+            muteListeners = (ScalableHashSet<ForceMuteListener>) AppContext.getDataManager().getBindingForUpdate(MUTE_LISTENERS_BINDING);
+        } catch (NameNotBoundException nnbe) {
+            muteListeners = createMuteListenersSet();
+        }
+        muteListeners.add(listener);
+    }
+
+    /**
      * Remove a forced disconnection listener
      * @param listener an implementation of ForceDisconnetListener
      */
@@ -152,10 +170,26 @@ public class AdminToolsUtils {
         disconnectListeners.remove(listener);
     }
 
+    /**
+     * Remove a forced mute listener
+     * @param listener an implementation of ForceMuteListener
+     */
+    public static void removeMuteListener(ForceMuteListener listener) {
+        @SuppressWarnings("unchecked")
+        ScalableHashSet<ForceMuteListener> muteListeners = (ScalableHashSet<ForceMuteListener>) AppContext.getDataManager().getBindingForUpdate(MUTE_LISTENERS_BINDING);
+        muteListeners.remove(listener);
+    }
+
     private static ScalableHashSet<ForceDisconnectListener> createDisconnectListenersSet() {
         ScalableHashSet<ForceDisconnectListener> disconnectListeners = new ScalableHashSet<ForceDisconnectListener>();
         AppContext.getDataManager().setBinding(DISCONNECT_LISTENERS_BINDING, disconnectListeners);
         return disconnectListeners;
+    }
+
+    private static ScalableHashSet<ForceMuteListener> createMuteListenersSet() {
+        ScalableHashSet<ForceMuteListener> muteListeners = new ScalableHashSet<ForceMuteListener>();
+        AppContext.getDataManager().setBinding(MUTE_LISTENERS_BINDING, muteListeners);
+        return muteListeners;
     }
 
     @SuppressWarnings("unchecked")
@@ -172,6 +206,20 @@ public class AdminToolsUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private static void notifyMuteListeners(WonderlandClientID remote, MuteMessage mute) {
+        ScalableHashSet<ForceMuteListener> muteListeners;
+        try {
+            muteListeners = (ScalableHashSet<ForceMuteListener>) AppContext.getDataManager().getBindingForUpdate(MUTE_LISTENERS_BINDING);
+        } catch (NameNotBoundException nnbe) {
+            LOGGER.warning("No mute listeners");
+            return;
+        }
+        for (ForceMuteListener muteListener : muteListeners) {
+            muteListener.mute(remote, mute);
+        }
+    }
+
     /**
      * An interface that represents a listener that is called when a user is forcibly disconnected
      */
@@ -182,6 +230,18 @@ public class AdminToolsUtils {
          * @param disconnect the disconnect message
          */
         public void disconnect(WonderlandClientID remote, DisconnectMessage disconnect);
+    }
+
+    /**
+     * An interface that represents a listener that is called when a user is forcibly muted
+     */
+    public static interface ForceMuteListener extends Serializable {
+        /**
+         * Notification that a wonderland client has been forcibly muted
+         * @param remote the wonderland client id that represents the client that has been forcibly muted
+         * @param mute the mute message
+         */
+        public void mute(WonderlandClientID remote, MuteMessage mute);
     }
 
     private static class DisconnectTask implements Task, Serializable {
