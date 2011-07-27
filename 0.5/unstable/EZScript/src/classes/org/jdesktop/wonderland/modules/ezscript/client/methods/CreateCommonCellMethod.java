@@ -31,8 +31,8 @@ public class CreateCommonCellMethod implements ReturnableScriptMethodSPI {
                 "grouping cells together and creating multiple transformable composites.\n" +
                 "-- usage: CreateCommonCell();\n" +
                 "-- usage: CreateCommonCell(aCellID);\n" +
-                "-- usage: CreateCommonCell('mycell');" +
-                "-- usage: CreateCommonCell(aCellID,'mycell);" +                
+                "-- usage: CreateCommonCell('mycell');\n" +
+                "-- usage: CreateCommonCell(aCellID,'mycell);\n" +                
                 "-- automatically adds the EZScript capability to the cell.";
     }
 
@@ -47,8 +47,14 @@ public class CreateCommonCellMethod implements ReturnableScriptMethodSPI {
     public void setArguments(Object[] args) {
         if(args.length == 0)
             return;
-        if(args.length >= 1)
-            cellID = (CellID)args[0];
+        if(args.length >= 1) {
+            
+            if(!(args[0] instanceof String)) 
+                cellID = (CellID)args[0];
+            else
+                name = (String)args[0];
+        
+        }
         
         if(args.length > 1)
             name = (String)args[1];
