@@ -38,13 +38,14 @@ package org.jdesktop.wonderland.modules.ezscript.client;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
+import com.jme.renderer.ColorRGBA;
 import com.jme.scene.Node;
 import com.jme.scene.shape.Box;
 import com.jme.scene.shape.Sphere;
+import com.jme.scene.state.BlendState;
+import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState.StateType;
-import com.jme.scene.state.WireframeState;
 import com.jme.scene.state.ZBufferState;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
@@ -104,9 +105,25 @@ public class BoundsViewerEntity extends Entity {
         rootNode.setRenderState(zbuf);
 
         // Set the wireframe state on the root node
-        WireframeState wf = (WireframeState)rm.createRendererState(StateType.Wireframe);
-        wf.setEnabled(true);
-        rootNode.setRenderState(wf);
+//        WireframeState wf = (WireframeState)rm.createRendererState(StateType.Wireframe);
+//        wf.setEnabled(true);
+//        rootNode.setRenderState(wf);
+        MaterialState ms = (MaterialState)rm.createRendererState(StateType.Material);
+        ms.setAmbient(new ColorRGBA(0.5f, 0, 0.5f, 0.9f));
+        ms.setDiffuse(new ColorRGBA(0.5f, 0, 0.5f, 0.1f));
+        //ms.setSpecular(new ColorRGBA(0.5f, 0, 0.5f, 0.1f));
+        
+        ms.setEnabled(true);
+        rootNode.setRenderState(ms);
+        
+        BlendState bs = (BlendState)rm.createRendererState(StateType.Blend);
+        bs.setEnabled(true);
+        bs.setBlendEnabled(true);
+        bs.setSourceFunction(BlendState.SourceFunction.SourceAlpha);
+        bs.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
+        bs.setTestEnabled(true);
+        bs.setTestFunction(BlendState.TestFunction.GreaterThan);
+        rootNode.setRenderState(bs);
 
         CellTransform transform = cell.getWorldTransform();
         // Draw some geometry that mimics the bounds, either a sphere or a
