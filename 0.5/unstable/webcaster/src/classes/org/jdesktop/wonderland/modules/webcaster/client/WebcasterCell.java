@@ -53,7 +53,6 @@ import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.webcaster.client.utils.RTMPOut;
-import org.jdesktop.wonderland.modules.webcaster.client.utils.MediaOutput;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellChangeMessage;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellClientState;
 
@@ -100,7 +99,7 @@ public class WebcasterCell extends Cell
 
     private boolean localRecording = false;
     private boolean remoteWebcasting = false;
-    private MediaOutput streamOutput;
+    private RTMPOut streamOutput;
 
     private AudioResource startSound = null;
     /** the message handler, or null if no message handler is registered */
@@ -146,7 +145,7 @@ public class WebcasterCell extends Cell
         }
 
         startSound.play();
-        localRecording = isRecording;        
+        localRecording = isRecording;
     }
 
     public boolean getRecording(){
@@ -158,7 +157,7 @@ public class WebcasterCell extends Cell
         if (streamOutput == null){
             streamOutput = new RTMPOut("rtmp://" + SERVER_URL + ":1935/live/" + controlPanel.getStreamName());
         }
-        
+
         streamOutput.write(frame);
     }
 
@@ -232,7 +231,7 @@ public class WebcasterCell extends Cell
                         };
                         contextComp.addContextMenuFactory(menuFactory);
                     }
-                } 
+                }
 
                 break;
             case ACTIVE: {
@@ -261,19 +260,19 @@ public class WebcasterCell extends Cell
                             hudComponent.setVisible(false);
                         }
                     });
-                    
+
                 }
                 break;
         }
     }
-    
+
     @Override
     public void setClientState(CellClientState state){
         super.setClientState(state);
         remoteWebcasting = ((WebcasterCellClientState) state).isWebcasting();
         streamID = ((WebcasterCellClientState)state).getStreamID();
     }
-    
+
     private ChannelComponent getChannel() {
         return getComponent(ChannelComponent.class);
     }
