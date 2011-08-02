@@ -62,6 +62,7 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
  * a sphere or box.
  * 
  * @author Jordan Slott <jslott@dev.java.net>
+ * @author JagWire
  */
 public class BoundsViewerEntity extends Entity {
 
@@ -97,11 +98,12 @@ public class BoundsViewerEntity extends Entity {
         RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
         RenderComponent rc = rm.createRenderComponent(rootNode);
         this.addComponent(RenderComponent.class, rc);
-
+        
         // Set the Z-buffer state on the root node
         ZBufferState zbuf = (ZBufferState)rm.createRendererState(StateType.ZBuffer);
         zbuf.setEnabled(true);
         zbuf.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+        
         rootNode.setRenderState(zbuf);
 
         // Set the wireframe state on the root node
@@ -109,9 +111,10 @@ public class BoundsViewerEntity extends Entity {
 //        wf.setEnabled(true);
 //        rootNode.setRenderState(wf);
         MaterialState ms = (MaterialState)rm.createRendererState(StateType.Material);
-        ms.setAmbient(new ColorRGBA(0.5f, 0, 0.5f, 0.9f));
-        ms.setDiffuse(new ColorRGBA(0.5f, 0, 0.5f, 0.1f));
-        //ms.setSpecular(new ColorRGBA(0.5f, 0, 0.5f, 0.1f));
+        ms.setAmbient(new ColorRGBA(0.25f, 0, 0.5f, 0.40f));
+        ms.setDiffuse(new ColorRGBA(0.25f, 0, 0.5f, 0.40f));
+        ms.setMaterialFace(MaterialState.MaterialFace.FrontAndBack);;
+        //ms.setSpecular(new ColorRGBA(1f, 1, 1f, 1f));
         
         ms.setEnabled(true);
         rootNode.setRenderState(ms);
