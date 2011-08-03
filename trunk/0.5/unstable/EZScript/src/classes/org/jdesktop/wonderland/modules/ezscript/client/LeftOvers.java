@@ -114,7 +114,7 @@ public abstract class LeftOvers {
                                           overlappingPairCache,
                                           solver,
                                           collisionConfiguration);
-
+  
         world.setGravity(new Vector3f(0, -2, 0));
         bodiesToNodes = new HashMap<CollisionObject, Node>();
         //TESTING
@@ -296,6 +296,7 @@ public abstract class LeftOvers {
             groundBody.setRestitution(0.5f);
 
             // add the body to the dynamics world
+            
             groundBody.setFriction(0.1f);
             world.addRigidBody(groundBody);
             bodiesToNodes.put(groundBody, groundNode);
