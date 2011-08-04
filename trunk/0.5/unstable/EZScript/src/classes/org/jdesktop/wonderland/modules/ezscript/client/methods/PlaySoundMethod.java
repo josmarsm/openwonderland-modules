@@ -60,7 +60,7 @@ public class PlaySoundMethod implements ScriptMethodSPI {
     }
 
     public String getDescription() {
-        return "usage: PlaySound(stringURL)\n\n"
+        return "usage: PlaySound(stringURL, volume)\n\n"
                 +"-plays a sound file from the specified file URL.";
     }
 

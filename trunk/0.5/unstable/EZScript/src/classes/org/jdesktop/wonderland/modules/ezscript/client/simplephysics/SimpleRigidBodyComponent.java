@@ -56,6 +56,9 @@ public class SimpleRigidBodyComponent extends CellComponent {
     @UsesCellComponent
     private AnotherMovableComponent movableComponent;
     
+    
+    //HAX
+    private boolean ready = false;
     private static final Logger logger = Logger.getLogger(SimpleRigidBodyComponent.class.getName());
     public SimpleRigidBodyComponent(Cell cell) {
         super(cell);
@@ -67,15 +70,18 @@ public class SimpleRigidBodyComponent extends CellComponent {
     
     public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
-
+        
         switch (status) {
             case ACTIVE:
                 if (increasing) {
                     new Thread(new Runnable() {
 
-                        public void run() {
+                        public void run() {                            
+                            logger.warning("before map acquisition.");
                             stateMap = stateComponent.get("physics-state");
+                            logger.warning("after map acquisition.");
                             handleStates();
+                            ready = true;
                         }
                     }).start();
 
@@ -97,6 +103,7 @@ public class SimpleRigidBodyComponent extends CellComponent {
                 break;
 
             case DISK:
+                
                 break;
         }
     }
@@ -111,7 +118,7 @@ public class SimpleRigidBodyComponent extends CellComponent {
         }
     }
     
-    public void initialize() {
+    private void initialize() {
         
         //first initialize collision object
         float[] extents = new float[3];
@@ -138,7 +145,7 @@ public class SimpleRigidBodyComponent extends CellComponent {
         
         //next initialize the shape's transform
         CellTransform cellTransform = cell.getLocalTransform();
-        
+        shapeTransform = new Transform();
         shapeTransform.setIdentity();
         shapeTransform.origin.set(cellTransform.getTranslation(null).x,
                                   cellTransform.getTranslation(null).y,
@@ -167,71 +174,82 @@ public class SimpleRigidBodyComponent extends CellComponent {
     }
     
     //netbeans generated
+    //<editor-fold defaultstate="collapsed" desc="getters and setters">
     public Vector3f getInertia() {
         return inertia;
     }
-
+    
     public void setInertia(Vector3f inertia) {
         this.inertia = inertia;
     }
-
+    
     public RigidBodyConstructionInfo getInfo() {
         return info;
     }
-
+    
     public void setInfo(RigidBodyConstructionInfo info) {
         this.info = info;
     }
-
+    
     public float getMass() {
         return mass;
     }
-
+    
     public void setMass(float mass) {
         this.mass = mass;
         stateMap.put("mass", SharedFloat.valueOf(mass));
     }
-
+    
     public DefaultMotionState getMotionState() {
         return motionState;
     }
-
+    
     public void setMotionState(DefaultMotionState motionState) {
         this.motionState = motionState;
     }
-
+    
     public RigidBody getRigidBody() {
         return rigidBody;
     }
-
+    
     public void setRigidBody(RigidBody rigidBody) {
         this.rigidBody = rigidBody;
     }
-
+    
     public CollisionShape getShape() {
         return shape;
     }
-
+    
     public void setShape(CollisionShape shape) {
         this.shape = shape;
     }
-
+    
     public Transform getShapeTransform() {
         return shapeTransform;
     }
-
+    
     public void setShapeTransform(Transform shapeTransform) {
         this.shapeTransform = shapeTransform;
     }
-
+    
     public String getShapeType() {
         return shapeType;
     }
-
+    
     public void setShapeType(String shapeType) {
         this.shapeType = shapeType;
+        
         stateMap.put("type", SharedString.valueOf(shapeType));
     }
     
+    //</editor-fold>
+
+    public boolean isReady() {
+        return ready;
+    }
+
+    public void setReady(boolean ready) {
+        this.ready = ready;
+    }
     
 }

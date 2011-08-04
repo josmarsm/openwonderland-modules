@@ -35,7 +35,7 @@ public class SimpleRigidBodyMO extends CellComponentMO {
     
     @Override
     protected String getClientClass() {
-        return "org.jdesktop.wonderland.modules.ezscript.simplephysics.SimpleRigidBodyComponent";
+        return "org.jdesktop.wonderland.modules.ezscript.client.simplephysics.SimpleRigidBodyComponent";
     }
 
     @Override
