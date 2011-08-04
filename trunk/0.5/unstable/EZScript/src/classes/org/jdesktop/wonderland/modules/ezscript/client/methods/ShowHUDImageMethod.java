@@ -5,6 +5,7 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,7 +15,6 @@ import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 
@@ -69,14 +69,14 @@ public class ShowHUDImageMethod implements ReturnableScriptMethodSPI {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
-                    component = hud.createImageComponent(new ImageIcon(url));
-                    component.setDecoratable(true);
-                    component.setPreferredLocation(Layout.CENTER);
+                        HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
+                        component = hud.createImageComponent(new ImageIcon(url));                        
+                        component.setDecoratable(true);
+                        component.setPreferredLocation(Layout.CENTER);
 
-                    hud.addComponent(component);
-                    component.setVisible(true);
-                }
+                        hud.addComponent(component);
+                        component.setVisible(true);
+                }                        
             });
       //  } catch (MalformedURLException ex) {
         } catch(Exception ex) {

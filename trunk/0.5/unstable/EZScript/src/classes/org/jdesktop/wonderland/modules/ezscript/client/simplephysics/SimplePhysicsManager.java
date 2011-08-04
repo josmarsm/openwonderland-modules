@@ -14,13 +14,16 @@ import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.ObjectArrayList;
+import com.jme.math.Quaternion;
 import java.util.HashMap;
 import java.util.Map;
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  *
@@ -73,7 +76,18 @@ public enum SimplePhysicsManager {
     }
     
     public SimpleRigidBodyComponent createRigidBody(String bodyType) {
-        
+        return null;
+    }
+    
+    public void addRigidBody(RigidBody body) {
+        synchronized(world) {
+            world.addRigidBody(body);
+        }
+    }
+    
+    public void addRigidBody(RigidBody body, SimpleRigidBodyComponent component) {
+        bodies.put(body, component);
+        addRigidBody(body);
     }
     
     public void applyForce(SimpleRigidBodyComponent body) {
@@ -132,10 +146,20 @@ public enum SimplePhysicsManager {
                 RigidBody body = RigidBody.upcast(o);
                 if(body != null && body.getMotionState() != null) {
                     Transform t = new Transform();
+                    CellTransform cellTransform = bodies.get(o).getCellTransform();
                     body.getMotionState().getWorldTransform(t);
+                    cellTransform.setTranslation(new com.jme.math.Vector3f(t.origin.x,
+                                                                           t.origin.y,
+                                                                           t.origin.z));
+                    Quat4f rotation = t.getRotation(null);
+                    cellTransform.setRotation(new Quaternion(rotation.x,
+                                                             rotation.y,
+                                                             rotation.z,
+                                                             rotation.w));
                     
-                    //TODO: get AnotherMovableComponent from cell and apply
-                    //the transform: t 
+                    //for smooth animation, this applies the transform locally,
+                    //but does not get propogated to other clients
+                    bodies.get(o).getMovable().localMoveRequest(cellTransform, false); 
                 }
                 
             }
