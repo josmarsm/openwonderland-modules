@@ -16,6 +16,7 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
+import org.jdesktop.wonderland.modules.ezscript.client.simplephysics.SimplePhysicsManager;
 
 
 /**
@@ -26,7 +27,8 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 @Plugin
 public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLifecycleListener {
 
-    JMenuItem menuItem;
+    JMenuItem physicsMenuItem;
+    JMenuItem editorMenuItem;
     JDialog dialog;
     private ServerSessionManager manager;
     private ScriptImporter importer = null;
@@ -34,7 +36,8 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
     @Override
     public void initialize(ServerSessionManager loginInfo) {
         //ScriptManager.getInstance();
-        menuItem = new JMenuItem("Script Editor");
+        physicsMenuItem = new JMenuItem("Simple Physics");
+        editorMenuItem = new JMenuItem("Script Editor");
         loginInfo.addLifecycleListener(this);
         super.initialize(loginInfo);
 
@@ -42,26 +45,38 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
     @Override
     public void activate() {
         importer = new ScriptImporter();
-        menuItem.addActionListener(new ActionListener() {
+        
+        physicsMenuItem.addActionListener(new ActionListener() { 
+            public void actionPerformed(ActionEvent e) {
+                //show physics control panel here.
+                SimplePhysicsManager.INSTANCE.showControlPanel();
+            }
+        });
+        
+        editorMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ScriptManager.getInstance().showScriptEditor();
             }
         });
-        JmeClientMain.getFrame().addToToolsMenu(menuItem);
+        
+        JmeClientMain.getFrame().addToToolsMenu(physicsMenuItem);
+        JmeClientMain.getFrame().addToToolsMenu(editorMenuItem);
         ContentImportManager.getContentImportManager().registerContentImporter(importer);
         
     }
 
     @Override
     public void deactivate() {
-        JmeClientMain.getFrame().removeFromToolsMenu(menuItem);
+        JmeClientMain.getFrame().removeFromToolsMenu(physicsMenuItem);
+        JmeClientMain.getFrame().removeFromToolsMenu(editorMenuItem);
         ContentImportManager.getContentImportManager().unregisterContentImporter(importer);
         importer = null;
     }
 
     @Override
     public void cleanup() {
-        menuItem = null;
+        physicsMenuItem = null;
+        editorMenuItem = null;
         super.cleanup();
     }
 

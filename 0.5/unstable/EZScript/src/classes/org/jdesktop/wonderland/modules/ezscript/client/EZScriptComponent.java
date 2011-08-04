@@ -284,13 +284,15 @@ public class EZScriptComponent extends CellComponent {
                         public void run() {
                             //grab the "callbacks" map in order to hopefully
                             //use an additional map for "state" if needed
-                            callbacksMap = sharedStateComponent.get("callbacks");
-                            scriptsMap = sharedStateComponent.get("scripts");
-                            stateMap = sharedStateComponent.get("state");
+                            synchronized(sharedStateComponent) {
+                                callbacksMap = sharedStateComponent.get("callbacks");
+                                scriptsMap = sharedStateComponent.get("scripts");
+                                stateMap = sharedStateComponent.get("state");
+                            }
                             callbacksMap.addSharedMapListener(mapListener);
                             scriptsMap.addSharedMapListener(mapListener);
                             stateMap.addSharedMapListener(mapListener);
-
+                            
                             //process the states map
                             handleStates(stateMap);
                             handleScript(stateMap);
