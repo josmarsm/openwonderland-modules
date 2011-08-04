@@ -73,10 +73,8 @@ public class OpenOfficeRunner extends BaseRunner {
         // add all the files from the superclass
         Collection<String> files = super.getDeployFiles();
 
-        // and the Darkstar server jar
-        files.add("wonderland-client-dist.zip");
+        //files.add("wonderland-client-dist.zip");
         files.add("openoffice-dist.zip");
-
         return files;
     }
 
@@ -85,8 +83,8 @@ public class OpenOfficeRunner extends BaseRunner {
     public Properties getDefaultProperties() {
         Properties props = new Properties();
         props.setProperty("wonderland.web.server.url", webserverURL);
-        props.setProperty("java.security.debug", "failure");
-        props.setProperty("catalina.useNaming", "true");
+        //props.setProperty("java.security.debug", "failure");
+        //props.setProperty("catalina.useNaming", "true");
         
         return props;
     }

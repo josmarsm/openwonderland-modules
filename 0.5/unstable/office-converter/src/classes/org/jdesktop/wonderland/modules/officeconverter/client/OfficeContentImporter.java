@@ -40,6 +40,11 @@ import org.jdesktop.wonderland.client.jme.content.AbstractContentImporter;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
+/**
+ * ContentImporter that doesn't actually import, but converts from
+ * a format understood by openoffice to PDF.
+ * @author Bernard Horan
+ */
 @Plugin
 public class OfficeContentImporter extends AbstractContentImporter
         implements ClientPlugin {
@@ -142,34 +147,31 @@ public class OfficeContentImporter extends AbstractContentImporter
     @Override
     public String uploadContent(File inputFile) throws IOException {
         //Convert the file
-        File outputFile = convertFile(inputFile);
-        System.out.println("Converted file: " + outputFile);
-        if (outputFile == null) {
-            return null;
-        }
-        // Otherwise, ask the content manager for whom handles this kind of
-        // file and dispatch there.
+        File convertedFile = convertFile(inputFile);
+        LOGGER.warning("Converted file: " + convertedFile);
+        // Ask the content manager for whom handles PDFs
+        // and dispatch there.
         ContentImportManager cim = ContentImportManager.getContentImportManager();
         final AbstractContentImporter importer = (AbstractContentImporter) cim.getContentImporter("pdf", true);
         if (importer == null) {
-            LOGGER.severe("No importer found for " + outputFile.getName());
-            return null;
+            LOGGER.severe("No importer found for " + convertedFile.getName());
+            throw new IOException("No importer found for " + convertedFile.getName());
         }
-        return importer.uploadContent(outputFile);
+        return importer.uploadContent(convertedFile);
     }
 
-    private File convertFile(File inputFile) {
+    private File convertFile(File inputFile) throws IOException {
         try {
             HttpClient httpClient = new DefaultHttpClient();
             String serverURL = loginInfo.getServerURL();
             HttpPost post = new HttpPost(serverURL + "/office-converter/converter/service");
-            LOGGER.warning("URI: " + post.getURI());
+            //LOGGER.warning("URI: " + post.getURI());
             post.addHeader("Accept", "application/pdf");
 
             String extension = FilenameUtils.getExtension(inputFile.getName());
-            LOGGER.warning("Extension: " + extension);
+            //LOGGER.warning("Extension: " + extension);
             DocumentFormat format = new DefaultDocumentFormatRegistry().getFormatByFileExtension(extension);
-            LOGGER.warning("Format: " + format.getMimeType());
+            //LOGGER.warning("Format: " + format.getMimeType());
 
             HttpEntity postEntity = new FileEntity(inputFile, format.getMimeType());
             post.setEntity(postEntity);
@@ -180,7 +182,7 @@ public class OfficeContentImporter extends AbstractContentImporter
             if (statusLine.getStatusCode() != HttpStatus.SC_OK) {
                 LOGGER.warning("Status Code: " + statusLine.getStatusCode());
                 LOGGER.warning("Status: " + statusLine.getReasonPhrase());
-                return null;
+                throw new IOException(statusLine.getReasonPhrase());
             }
 
             File outputFile = new File(inputFile.getName() + ".pdf");
@@ -194,7 +196,7 @@ public class OfficeContentImporter extends AbstractContentImporter
             return outputFile;
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "failed to convert file", e);
-            return null;
+            throw new IOException("Failed to convert file", e);
         }
     }
 
