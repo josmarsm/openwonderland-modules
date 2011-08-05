@@ -14,8 +14,13 @@ import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.ObjectArrayList;
+import com.jme.bounding.BoundingBox;
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.Quaternion;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -28,10 +33,7 @@ import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.CellStatusChangeListener;
-import org.jdesktop.wonderland.client.cell.ComponentChangeListener;
-import org.jdesktop.wonderland.client.cell.ComponentChangeListener.ChangeType;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
@@ -39,11 +41,17 @@ import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+import org.jdesktop.wonderland.client.input.Event;
+import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
+import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
+import org.jdesktop.wonderland.client.jme.input.MouseMovedEvent3D;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.modules.ezscript.client.EZScriptComponentFactory;
 import org.jdesktop.wonderland.modules.ezscript.client.ScriptManager;
 import org.jdesktop.wonderland.modules.ezscript.client.cell.CommonCellFactory;
@@ -54,7 +62,7 @@ import org.jdesktop.wonderland.modules.ezscript.common.cell.CommonCellServerStat
  *
  * @author JagWire
  */
-public enum SimplePhysicsManager {
+public enum SimplePhysicsManager implements MouseMovedListener {
     INSTANCE;
     
     //physics configuration variables
@@ -74,9 +82,11 @@ public enum SimplePhysicsManager {
     private PhysicsControlPanel controlPanel = null;
     private HUDComponent hudComponent = null;
     private static final Logger logger = Logger.getLogger(SimplePhysicsManager.class.getName());
+    private IndependentBoundsViewerEntity boundsView;
     
     //HAX
     private Semaphore lock = new Semaphore(0);
+    private com.jme.math.Vector3f mousePosition;
     
     public void initialize() {
         configuration = new DefaultCollisionConfiguration();
@@ -103,6 +113,69 @@ public enum SimplePhysicsManager {
         bodies = new HashMap<CollisionObject, SimpleRigidBodyComponent>();                        
     }
     
+    public BoundingVolumeHint createBounds(String type)  {        
+        if(type.toUpperCase().equals("BOX") 
+            || type.toUpperCase().equals("PLANE")) {
+            BoundingBox box = new BoundingBox(new com.jme.math.Vector3f(0,0.5f,0),
+                                              0.5f,
+                                              0.5f,
+                                              0.5f);
+            
+            boundsView = new IndependentBoundsViewerEntity();
+            boundsView.showBounds(box);
+            MousePickEventListener l = new MousePickEventListener();
+            l.addListener(this);
+            
+            InputManager.inputManager().addGlobalEventListener(l);
+            
+            /** BLOCK */
+            l.acquireLock();
+            InputManager.inputManager().removeGlobalEventListener(l);
+            return new BoundingVolumeHint(false, box);
+            
+            
+        } else if(type.toUpperCase().equals("SPHERE")) {
+            BoundingSphere sphere = new BoundingSphere(1, new com.jme.math.Vector3f(0,1,0));
+            boundsView = new IndependentBoundsViewerEntity();
+            boundsView.showBounds(sphere);
+            MousePickEventListener l = new MousePickEventListener();
+            l.addListener(this);
+            
+            InputManager.inputManager().addGlobalEventListener(l);
+            
+            /** BLOCK */
+            l.acquireLock();
+            return new BoundingVolumeHint(false, sphere);
+        }
+        return null;
+    }
+    
+    public SimpleRigidBodyComponent createRigidBody(final String bodyType, boolean notused) {
+        if(bodies == null) {
+            initialize();
+        }
+        
+        //Let the user create the bounds
+        logger.warning("Creating bounds hint...");
+        BoundingVolumeHint hint = createBounds(bodyType);
+        String name = "RigidBody-"+bodies.size();
+        CommonCellFactory factory = new CommonCellFactory();
+        
+        CommonCellServerState state = factory.getDefaultCellServerState(null);
+        state.setBoundingVolumeHint(hint);
+        state.setName(name);
+        
+        //
+        
+        return null;
+    }
+    
+    /**
+     * Create a rigid body given an explicit body type: BOX or SPHERE
+     * @param bodyType "BOX" or "SPHERE"
+     * 
+     * @return The component and cell attached.
+     */
     public SimpleRigidBodyComponent createRigidBody(final String bodyType) {
 
         if(bodies == null) {
@@ -112,7 +185,7 @@ public enum SimplePhysicsManager {
         String name = "RigidBody-"+bodies.size();
         CommonCellFactory factory = new CommonCellFactory();
         CommonCellServerState state = factory.getDefaultCellServerState(null);
-        
+                
         EZScriptComponentFactory ezFactory = new EZScriptComponentFactory();
         SimpleRigidBodyFactory rbFactory = new SimpleRigidBodyFactory();
         state.setName(name);
@@ -129,7 +202,9 @@ public enum SimplePhysicsManager {
             CellUtils.createCell(state);            
             // wait until we can access the cell 
             
-            while(ScriptManager.getInstance().getCellID(name) == null) { }
+            while(ScriptManager.getInstance().getCellID(name) == null) { 
+                Thread.currentThread().wait(500);
+            }
                 //spin wheels
             logger.warning("...cell creation finished.");
             //aquire the CellID in order to grab the cell.
@@ -154,8 +229,17 @@ public enum SimplePhysicsManager {
                 public void cellStatusChanged(Cell cell, CellStatus status) {
                     if(status == status.RENDERING) {
                         //return from listener and allow us to remove it. 
-                        lock.release();
-                        logger.warning("Lock released!");
+
+                        try {
+                            //wait just a bit so our component has time to 
+                            //catch up.
+                            Thread.currentThread().wait(500);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(SimplePhysicsManager.class.getName()).log(Level.SEVERE, null, ex);
+                        } finally {
+                            lock.release();
+                            logger.warning("Lock released!");   
+                        }
                     }
                 }
             };
@@ -163,7 +247,7 @@ public enum SimplePhysicsManager {
             //apply the listener
             cell.addStatusChangeListener(l);
             
-            //wait for lock to be released, signally cell has reached the right
+            //wait for lock to be released, signaling cell has reached the right
             //status.
             lock.acquire();
             
@@ -258,11 +342,12 @@ public enum SimplePhysicsManager {
         return running;
     }
     
-    public void showControlPanel() {                
+    public void showControlPanel() {
+        //if the panel hasn't been created yet, create it.
         if (controlPanel == null) {
             controlPanel = new PhysicsControlPanel();
             SwingUtilities.invokeLater(new Runnable() {
-
+                //create the hud component also, add it to the HUD
                 public void run() {
                     HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
                     hudComponent = mainHUD.createComponent(controlPanel);
@@ -274,7 +359,7 @@ public enum SimplePhysicsManager {
                 }
             });
         }
-        
+        //if the panel already exists, skip creating it and show it on the HUD.
         SwingUtilities.invokeLater(new Runnable() { 
             public void run() {
                 hudComponent.setVisible(true);
@@ -283,6 +368,89 @@ public enum SimplePhysicsManager {
                 
     }
     
+    public void mouseMoved(com.jme.math.Vector3f position) {
+        if(boundsView == null)
+            return;
+        
+        Quaternion q = boundsView.getRootNode().getLocalRotation();
+        boundsView.updateTransform(position, q);
+    }
+    
+    class MousePickEventListener extends EventClassListener {
+        private Semaphore lock = new Semaphore(0);
+        private com.jme.math.Vector3f position = null;
+        private final List<MouseMovedListener> listeners = new ArrayList<MouseMovedListener>();
+        private boolean moved = false;
+        /**
+         * 
+         * @param lock should always have 0 contracts when it's passed.
+         */
+
+
+        
+        @Override
+        public Class[] eventClassesToConsume() {
+            return new Class[] { MouseMovedEvent3D.class, MouseButtonEvent3D.class };                        
+        }
+        
+        @Override
+        public void commitEvent(Event event) {
+            
+            if (event instanceof MouseMovedEvent3D) {
+                MouseMovedEvent3D me = (MouseMovedEvent3D) event;
+                if (me.getPickDetails() == null) {
+                    logger.warning("No pick details!");
+                    return;
+                }
+                logger.warning("Fire MouseMovedEvent!");
+                fireMouseMovedEvent(me.getPickDetails().getPosition());
+                moved = true;
+                
+            } else if(event instanceof MouseButtonEvent3D) {
+                if(!moved)
+                    return;
+                
+                MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
+                if(mbe.isClicked()) {
+                    lock.release();                    
+                    return;
+                }
+            }          
+        }
+        
+        /**
+         * Use to block thread until user clicks mouse.
+         */
+        public void acquireLock() {
+            try {
+                lock.acquire();
+                logger.warning("Lock acquired!");
+            } catch (InterruptedException ex) {
+                Logger.getLogger(SimplePhysicsManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        public void addListener(MouseMovedListener listener) {
+            synchronized(listeners) {
+                listeners.add(listener);
+            }
+        }
+        
+        public void removeListener(MouseMovedListener listener) {
+            synchronized(listeners) {
+                listeners.remove(listener);
+            }
+        }
+        
+        public void fireMouseMovedEvent(com.jme.math.Vector3f position) {
+            synchronized(listeners) {
+                for(MouseMovedListener listener: listeners) {
+                    listener.mouseMoved(position);
+                }
+            }
+        }
+    }
+        
     class SimplePhysicsProcessor extends ProcessorComponent {
 
         private String name;
@@ -297,8 +465,7 @@ public enum SimplePhysicsManager {
             
         }
         
-        
-        
+               
         @Override
         public void compute(ProcessorArmingCollection pac) {
             if(frameIndex > (30*seconds)) {
