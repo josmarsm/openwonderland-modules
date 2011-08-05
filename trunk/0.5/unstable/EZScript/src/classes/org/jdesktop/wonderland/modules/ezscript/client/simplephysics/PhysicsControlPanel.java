@@ -1,13 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 
-/*
- * PhysicsControlPanel.java
- *
- * Created on Aug 4, 2011, 1:47:07 PM
- */
 package org.jdesktop.wonderland.modules.ezscript.client.simplephysics;
 
 /**
@@ -60,10 +51,10 @@ public class PhysicsControlPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        // TODO add your handling code here:
+
         new Thread(new Runnable() { 
             public void run() { 
-                SimplePhysicsManager.INSTANCE.createRigidBody("BOX");
+                SimplePhysicsManager.INSTANCE.createRigidBody("BOX", false);
             }
         }).start();
 
