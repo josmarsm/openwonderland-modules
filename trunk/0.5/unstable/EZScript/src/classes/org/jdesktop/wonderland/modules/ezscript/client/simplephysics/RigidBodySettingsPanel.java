@@ -1,24 +1,52 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
  * RigidBodySettingsPanel.java
  *
  * Created on Aug 5, 2011, 9:50:47 AM
  */
 package org.jdesktop.wonderland.modules.ezscript.client.simplephysics;
 
+import com.jme.bounding.BoundingSphere;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
+
 /**
  *
- * @author ryan
+ * @author JagWire
  */
 public class RigidBodySettingsPanel extends javax.swing.JPanel {
 
-    /** Creates new form RigidBodySettingsPanel */
-    public RigidBodySettingsPanel() {
+    
+    private BoundingVolumeHint hint;
+    private HUDComponent component;
+    private IndependentBoundsViewerEntity e;
+
+
+    /** Creates new form RigidBodySettingsPanel */    
+    public RigidBodySettingsPanel(BoundingVolumeHint hint) {
         initComponents();
+        
+        this.hint = hint;
+        
+        if(hint.getBoundsHint() instanceof BoundingSphere) {
+            ySpinner.setEnabled(false);
+            zSpinner.setEnabled(false);
+        }
+    }
+    
+    public HUDComponent getComponent() {
+        return component;
+    }
+
+    public void setComponent(HUDComponent component) {
+        this.component = component;
+    }
+
+    public BoundingVolumeHint getHint() {
+        return hint;
+    }
+
+    public void setHint(BoundingVolumeHint hint) {
+        this.hint = hint;
     }
 
     /** This method is called from within the constructor to
@@ -55,8 +83,18 @@ public class RigidBodySettingsPanel extends javax.swing.JPanel {
         jLabel3.setText("z-extent:");
 
         okButton.setText("OK");
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
+            }
+        });
 
         cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -115,6 +153,17 @@ public class RigidBodySettingsPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        // TODO add your handling code here:
+        component.setVisible(false);
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+        // TODO add your handling code here:
+        component.setVisible(false);
+    }//GEN-LAST:event_okButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
