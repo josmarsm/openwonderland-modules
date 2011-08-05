@@ -1,6 +1,12 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.simplephysics;
 
+import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
+
 /**
  *
  * @author JagWire
@@ -8,6 +14,11 @@ package org.jdesktop.wonderland.modules.ezscript.client.simplephysics;
 public class PhysicsControlPanel extends javax.swing.JPanel {
 
     /** Creates new form PhysicsControlPanel */
+    private HUDComponent hudComponent = null;
+
+    public void setHudComponent(HUDComponent hudComponent) {
+        this.hudComponent = hudComponent;
+    }
     public PhysicsControlPanel() {
         initComponents();
     }
@@ -42,23 +53,59 @@ public class PhysicsControlPanel extends javax.swing.JPanel {
         applyForceButton.setText("ACF");
         applyForceButton.setToolTipText("Apply Central Force");
         applyForceButton.setPreferredSize(new java.awt.Dimension(64, 64));
+        applyForceButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyForceButtonActionPerformed(evt);
+            }
+        });
         add(applyForceButton, new java.awt.GridBagConstraints());
 
         applyImpulseButton.setText("AIF");
         applyImpulseButton.setToolTipText("Apply Impulse Force");
         applyImpulseButton.setPreferredSize(new java.awt.Dimension(64, 64));
+        applyImpulseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyImpulseButtonActionPerformed(evt);
+            }
+        });
         add(applyImpulseButton, new java.awt.GridBagConstraints());
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
 
-        new Thread(new Runnable() { 
-            public void run() { 
-                SimplePhysicsManager.INSTANCE.createRigidBody("BOX", false);
+//        new Thread(new Runnable() { 
+//            public void run() { 
+//                SimplePhysicsManager.INSTANCE.createRigidBody("BOX", false);
+//            }
+//        }).start();
+        SwingUtilities.invokeLater(new Runnable() { 
+            public void run() {
+                HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
+                AddRigidBodyPanel panel = new AddRigidBodyPanel();
+                HUDComponent comp = hud.createComponent(panel);
+                comp.setDecoratable(true);
+                comp.setPreferredLocation(Layout.NORTH);
+                hud.addComponent(comp);
+                panel.setHUDComponent(comp);
+                        
+                comp.setVisible(true);
             }
-        }).start();
+        });
+        
+        hudComponent.setVisible(false);
+        
 
     }//GEN-LAST:event_addButtonActionPerformed
+
+    private void applyForceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyForceButtonActionPerformed
+        // TODO add your handling code here:
+        hudComponent.setVisible(false);
+    }//GEN-LAST:event_applyForceButtonActionPerformed
+
+    private void applyImpulseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyImpulseButtonActionPerformed
+        // TODO add your handling code here:
+        hudComponent.setVisible(false);
+    }//GEN-LAST:event_applyImpulseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;

@@ -201,5 +201,42 @@ public class IndependentBoundsViewerEntity extends Entity {
             }
         });
     }
+    
+    public synchronized void updateBounds(final BoundingVolume bounds) {
+        SceneWorker.addWorker(new WorkCommit() {
+
+            public void commit() {
+                rootNode.detachAllChildren();
+                // Draw some geometry that mimics the bounds, either a sphere or a
+                // box. Add to the scene graph of this Entity.
+                Vector3f current = rootNode.getLocalTranslation();
+                if (bounds instanceof BoundingSphere) {
+                    float radius = ((BoundingSphere) bounds).radius;
+                    Vector3f center = ((BoundingSphere) bounds).getCenter();
+                    Sphere sphere = new Sphere("Sphere", center, 30, 30, radius);
+
+                    rootNode.attachChild(sphere);
+                    current.y = radius;
+                    //rootNode.getChild("Sphere").setLocalTranslation(center);
+                } else if (bounds instanceof BoundingBox) {
+                    float xExtent = ((BoundingBox) bounds).xExtent;
+                    float yExtent = ((BoundingBox) bounds).yExtent;
+                    float zExtent = ((BoundingBox) bounds).zExtent;
+                    Vector3f origin = ((BoundingBox) bounds).getCenter();
+                    Box box = new Box("Box", origin, xExtent, yExtent, zExtent);
+                    current.y = yExtent;
+                    rootNode.attachChild(box);
+                    // rootNode.getChild("Box").setLocalTranslation(origin);
+
+                }                
+                 
+                rootNode.setLocalTranslation(current);
+                //rootNode.setLocalRotation(new Quaternion());
+                // OWL issue #61: make sure to take scale into account
+                rootNode.setLocalScale(1);
+                WorldManager.getDefaultWorldManager().addToUpdateList(rootNode);
+            }
+        });
+    }
 
 }

@@ -145,6 +145,7 @@ public enum SimplePhysicsManager implements MouseMovedListener {
             
             /** BLOCK */
             l.acquireLock();
+            InputManager.inputManager().removeGlobalEventListener(l);
             return new BoundingVolumeHint(false, sphere);
         }
         return null;
@@ -355,6 +356,7 @@ public enum SimplePhysicsManager implements MouseMovedListener {
                     hudComponent.setDecoratable(true);
                     hudComponent.setPreferredLocation(Layout.NORTH);
                     mainHUD.addComponent(hudComponent);
+                    controlPanel.setHudComponent(hudComponent);
                     hudComponent.setVisible(true);
                 }
             });
