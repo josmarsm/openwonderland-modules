@@ -151,4 +151,12 @@ public class StickyNoteCellMO extends App2DCellMO {
         stateHolder.copyLocal(message.getState());
         //stateHolder = message.getState();
     }
+
+    /**
+     * Set the note text of the sticky note, BUT do not update clients
+     * @param noteText the new text for the sticky note
+     */
+    public void setNoteText(String noteText) {
+        stateHolder.setNoteText(noteText);
+    }
 }

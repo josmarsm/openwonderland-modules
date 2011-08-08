@@ -39,7 +39,7 @@
         <mkdir dir="${module.dist.dir}"/>
         
     	
-        <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}" jarfile="${module.dist.dir}/${module.jarname}.jar" description="${module.description}" builddir="${build.dir}">
+        <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}" miniVersion="${module.version.mini}" jarfile="${module.dist.dir}/${module.jarname}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
             <client>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
