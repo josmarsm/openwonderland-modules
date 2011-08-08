@@ -27,6 +27,14 @@ public class AddRigidBodyPanel extends javax.swing.JPanel {
     private HUDComponent component;
     public AddRigidBodyPanel() {
         initComponents();
+                
+        if(SimplePhysicsManager.INSTANCE.bodiesExist()) {
+            addBoxButton.setEnabled(false);
+            addSphereButton.setEnabled(false);
+        } else {
+            addBoxButton.setEnabled(true);
+            addSphereButton.setEnabled(true);
+        }
     }
 
     public void setHUDComponent(HUDComponent component) {
@@ -82,21 +90,28 @@ public class AddRigidBodyPanel extends javax.swing.JPanel {
 
     private void addBoxButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBoxButtonActionPerformed
         // TODO add your handling code here:
-        final BoundingVolumeHint hint = SimplePhysicsManager.INSTANCE.createBounds("BOX");
-        
-        SwingUtilities.invokeLater(new Runnable() { 
+        new Thread(new Runnable() {
+
             public void run() {
-                HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
-                RigidBodySettingsPanel panel = new RigidBodySettingsPanel(hint);
-                HUDComponent comp = hud.createComponent(panel);
-                comp.setDecoratable(true);
-                comp.setPreferredLocation(Layout.NORTH);
-                hud.addComponent(comp);
-                panel.setComponent(comp);
-                        
-                comp.setVisible(true);
+                final BoundingVolumeHint hint = SimplePhysicsManager.INSTANCE.createBounds("BOX");
+
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
+                        RigidBodySettingsPanel panel = new RigidBodySettingsPanel(hint);
+                        HUDComponent comp = hud.createComponent(panel);
+                        comp.setDecoratable(true);
+                        comp.setPreferredLocation(Layout.NORTH);
+                        hud.addComponent(comp);
+                        panel.setComponent(comp);
+
+                        comp.setVisible(true);
+                        //component.setVisible(false);
+                    }
+                });
             }
-        });
+        }).start();
         
     }//GEN-LAST:event_addBoxButtonActionPerformed
 
@@ -119,7 +134,7 @@ public class AddRigidBodyPanel extends javax.swing.JPanel {
                         panel.setComponent(comp);
 
                         comp.setVisible(true);
-                        component.setVisible(false);
+                        //component.setVisible(false);
                     }
                 });
             }
@@ -129,6 +144,31 @@ public class AddRigidBodyPanel extends javax.swing.JPanel {
 
     private void addPlaneButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPlaneButtonActionPerformed
         // TODO add your handling code here:
+        
+        addBoxButton.setEnabled(true);
+        addSphereButton.setEnabled(true);
+        new Thread(new Runnable() {
+
+            public void run() {
+                final BoundingVolumeHint hint = SimplePhysicsManager.INSTANCE.createBounds("PLANE");
+
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    public void run() {
+                        HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
+                        RigidBodySettingsPanel panel = new RigidBodySettingsPanel(hint);
+                        HUDComponent comp = hud.createComponent(panel);
+                        comp.setDecoratable(true);
+                        comp.setPreferredLocation(Layout.NORTH);
+                        hud.addComponent(comp);
+                        panel.setComponent(comp);
+
+                        comp.setVisible(true);
+                       // component.setVisible(false);
+                    }
+                });
+            }
+        }).start();
     }//GEN-LAST:event_addPlaneButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

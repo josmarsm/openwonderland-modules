@@ -113,13 +113,24 @@ public enum SimplePhysicsManager implements MouseMovedListener {
         bodies = new HashMap<CollisionObject, SimpleRigidBodyComponent>();                        
     }
     
-    public BoundingVolumeHint createBounds(String type)  {        
+    public BoundingVolumeHint createBounds(String type)  {
+//        if(bodies == null || bodies.isEmpty()) {
+//            type = "PLANE";
+//        }
+        
         if(type.toUpperCase().equals("BOX") 
             || type.toUpperCase().equals("PLANE")) {
             BoundingBox box = new BoundingBox(new com.jme.math.Vector3f(0,0.5f,0),
                                               0.5f,
                                               0.5f,
                                               0.5f);
+            
+            if(type.toUpperCase().equals("PLANE")) {
+                box.xExtent = 250.0f;
+                box.yExtent = 0.01f;
+                box.zExtent = 250.0f;
+                box.setCenter(new com.jme.math.Vector3f(0, 0.01f, 0));
+            }
             
             boundsView = new IndependentBoundsViewerEntity();
             boundsView.showBounds(box);
@@ -368,6 +379,14 @@ public enum SimplePhysicsManager implements MouseMovedListener {
             }
         });
                 
+    }
+    
+    public boolean bodiesExist() {
+        if(bodies == null) {
+            return false;
+        }
+        
+        return bodies.isEmpty();
     }
     
     public void mouseMoved(com.jme.math.Vector3f position) {
