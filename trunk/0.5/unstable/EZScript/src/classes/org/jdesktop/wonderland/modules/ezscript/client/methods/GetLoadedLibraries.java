@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import java.util.ArrayList;
@@ -80,6 +77,10 @@ public class GetLoadedLibraries implements ReturnableScriptMethodSPI {
     }
     
     public String process(String in) {
+        if(in.contains(".dll")) {
+            
+            return in.substring(in.lastIndexOf("\\")+1, in.length());
+        }
         return in.substring(in.lastIndexOf("/")+1, in.length());
     }
     
