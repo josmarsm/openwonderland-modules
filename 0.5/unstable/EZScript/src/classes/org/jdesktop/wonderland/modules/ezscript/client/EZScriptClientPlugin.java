@@ -18,6 +18,7 @@ import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.ezscript.client.simplephysics.SimplePhysicsManager;
 
+/** Testing online googlecode editing feature. */
 
 /**
  *
