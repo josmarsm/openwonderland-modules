@@ -1068,4 +1068,8 @@ public class EZScriptComponent extends CellComponent {
             e.printStackTrace();
         }
     }
+    
+    public SharedStateComponent getSharedStateComponent() {
+        return this.sharedStateComponent;
+    }
 }

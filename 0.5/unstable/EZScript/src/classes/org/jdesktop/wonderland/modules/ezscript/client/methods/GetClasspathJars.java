@@ -39,10 +39,13 @@ public class GetClasspathJars implements ReturnableScriptMethodSPI {
 
     public void run() {
         String s = System.getProperty("java.class.path");
+        System.out.println("OS name: " +System.getProperty("os.name"));
+        System.out.println(System.getProperty("java.class.path"));
         
-        if(System.getProperty("os.name").contains("win")) {
+        if(System.getProperty("os.name").toUpperCase().contains("WIN")) {
             //we're in Windows land... just print out the string.
             System.out.println("In Windows...");
+            
             jars.add(s);
             return;
         }
