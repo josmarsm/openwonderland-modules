@@ -60,8 +60,12 @@ import com.sun.mpk20.voicelib.app.Recorder;
 import com.sun.mpk20.voicelib.app.RecorderSetup;
 import com.sun.mpk20.voicelib.app.Spatializer;
 import com.sun.mpk20.voicelib.app.VoiceManager;
+import com.sun.sgs.app.ClientSession;
+import com.sun.sgs.app.ManagedReference;
 import com.sun.voip.client.connector.CallStatus;
 import java.io.File;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
 import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
 import org.jdesktop.wonderland.modules.audiorecorder.common.AudioRecorderCellServerState;
@@ -85,6 +89,8 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
     private AudioRecorderCellServerState serverState;
     private String recordingDirectory;
     private String selectedTapeName;
+    private final Set<RecordingStoppedListener> recordingStoppedListeners =
+            new LinkedHashSet<RecordingStoppedListener>();
 
     public AudioRecorderCellMO() {
         super();
@@ -161,6 +167,14 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
         return "org.jdesktop.wonderland.modules.audiorecorder.client.AudioRecorderCell";
     }
 
+    public void addRecordingStoppedListener(RecordingStoppedListener listener) {
+        recordingStoppedListeners.add(listener);
+    }
+
+    public void removeRecordingStoppedListener(RecordingStoppedListener listener) {
+        recordingStoppedListeners.remove(listener);
+    }
+
     private String getRecorderFilename(Tape aTape) {
         //MUST end in '.au'
         return recordingDirectory + File.separator + aTape.getTapeName() + ".au";
@@ -187,7 +201,7 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
             //Already recording
             if (!r) {
                 //Stop recording
-                stopRecording();
+                stopRecording(aTape);
             }
         } else {
             //Not recording
@@ -257,10 +271,11 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
         }
     }
 
-    private void stopRecording() {
+    private void stopRecording(Tape aTape) {
         audioRecorderLogger.fine("Stop Recording");
         try {
             recorder.stopRecording();
+            notifyRecordingStoppedListeners(aTape);
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -320,6 +335,12 @@ public class AudioRecorderCellMO extends CellMO implements ManagedCallStatusList
 
     private ChannelComponentMO getChannel() {
         return getComponent(ChannelComponentMO.class);
+    }
+
+    private void notifyRecordingStoppedListeners(Tape aTape) {
+        for (RecordingStoppedListener listener : recordingStoppedListeners) {
+            listener.recordingStopped(aTape);
+        }
     }
 
     private static class AudioRecorderCellMOMessageReceiver extends AbstractComponentMessageReceiver {
