@@ -104,33 +104,35 @@ public class SpinXProcessor extends ProcessorComponent {
         }
 
         final Semaphore movableLock = new Semaphore(0);
-        new Thread(new Runnable() {
-
-            public void run() {
-                //try and add MovableComponent manually
-                String className = "org.jdesktop.wonderland.modules.ezscript.server.cell.AnotherMovableComponentMO";
-                CellServerComponentMessage cscm =
-                        CellServerComponentMessage.newAddMessage(
-                        cell.getCellID(), className);
-                logger.warning("Requesting AnotherMovableComponent...");
-
-                ResponseMessage response = cell.sendCellMessageAndWait(cscm);
-                if (response instanceof ErrorMessage) {
-                    logger.log(Level.WARNING, "Unable to add movable component "
-                            + "for Cell " + cell.getName() + " with ID "
-                            + cell.getCellID(),
-                            ((ErrorMessage) response).getErrorCause());
-
-                    logger.warning("AnotherMovableComponent request failed!");
-                    movableLock.release();
-
-                } else {
-                    logger.warning("returning AnotherMovableComponent");
-                    movableLock.release();
-                    amc = cell.getComponent(AnotherMovableComponent.class);
-                }
-            }
-        }).start();
+        //<editor-fold defaultstate="collapsed" desc="legacy">
+//        new Thread(new Runnable() {
+//            
+//            public void run() {
+//                //try and add MovableComponent manually
+//                String className = "org.jdesktop.wonderland.modules.ezscript.server.cell.AnotherMovableComponentMO";
+//                CellServerComponentMessage cscm =
+//                        CellServerComponentMessage.newAddMessage(
+//                        cell.getCellID(), className);
+//                logger.warning("Requesting AnotherMovableComponent...");
+//                
+//                ResponseMessage response = cell.sendCellMessageAndWait(cscm);
+//                if (response instanceof ErrorMessage) {
+//                    logger.log(Level.WARNING, "Unable to add movable component "
+//                            + "for Cell " + cell.getName() + " with ID "
+//                            + cell.getCellID(),
+//                            ((ErrorMessage) response).getErrorCause());
+//                    
+//                    logger.warning("AnotherMovableComponent request failed!");
+//                    movableLock.release();
+//                    
+//                } else {
+//                    logger.warning("returning AnotherMovableComponent");
+//                    movableLock.release();
+//                    amc = cell.getComponent(AnotherMovableComponent.class);
+//                }
+//            }
+//        }).start();
+        //</editor-fold>
 
         try {
             logger.warning("Acquiring lock in getMovable()!");

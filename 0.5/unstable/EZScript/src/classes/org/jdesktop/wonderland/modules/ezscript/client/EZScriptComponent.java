@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
+import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
@@ -161,6 +162,11 @@ public class EZScriptComponent extends CellComponent {
 
     @UsesCellComponent
     private AnotherMovableComponent anotherMovable;
+    
+    //dislike this.
+    @UsesCellComponent
+    private MovableComponent movable;
+    
     //state variables
     private boolean mouseEventsEnabled = false;
     private boolean proximityEventsEnabled = false;
