@@ -99,6 +99,7 @@ public class SpinXProcessor extends ProcessorComponent {
 
     public AnotherMovableComponent getMovable(final Cell cell) {
         if (cell.getComponent(AnotherMovableComponent.class) != null) {
+//            logger.warning("Got AnotherMovableComponent!");
             return cell.getComponent(AnotherMovableComponent.class);
         }
 
