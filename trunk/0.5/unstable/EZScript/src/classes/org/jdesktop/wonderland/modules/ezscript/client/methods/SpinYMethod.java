@@ -39,7 +39,8 @@ public class SpinYMethod implements ScriptMethodSPI {
 
     public String getDescription() {
         //throw new UnsupportedOperationException("Not supported yet.");
-        return "";
+        return "Spin a cell on the y-axis, like a top.\n"
+                + "-- usage: SpinY(cell, <rotations>, <seconds>);";
     }
 
     public String getCategory() {

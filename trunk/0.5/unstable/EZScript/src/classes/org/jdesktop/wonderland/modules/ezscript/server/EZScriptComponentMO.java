@@ -35,6 +35,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.MovableComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 
 /**
@@ -57,6 +58,9 @@ public class EZScriptComponentMO extends CellComponentMO {
     @UsesCellComponentMO(AnotherMovableComponentMO.class)
     private ManagedReference<AnotherMovableComponentMO> anotherMovableRef;
     
+    //I dislike having to forcibly attach this...
+    @UsesCellComponentMO(MovableComponentMO.class)
+    private ManagedReference<MovableComponentMO> movableComponentRef;
     public EZScriptComponentMO(CellMO cell) {
         super(cell);
        
