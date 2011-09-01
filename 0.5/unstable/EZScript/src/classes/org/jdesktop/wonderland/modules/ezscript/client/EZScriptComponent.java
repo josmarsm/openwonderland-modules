@@ -405,6 +405,7 @@ public class EZScriptComponent extends CellComponent {
                 volume = new BoundingSphere(bounds.getExtents()[0],
                         new Vector3f());
             }
+            cell.setLocalBounds(volume);
         }
     }
 

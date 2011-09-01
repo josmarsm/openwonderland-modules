@@ -164,6 +164,14 @@ public class CommonCell extends Cell {
         }
         return m;                
     }
+    
+    public void clearRendererModels() {
+        renderer.clearModels();
+    }
+    
+    public void forceUpdate() {
+        renderer.update();
+    }
     class ModelAttachmentReceiver implements ComponentMessageReceiver {
 
         public void messageReceived(CellMessage message) {

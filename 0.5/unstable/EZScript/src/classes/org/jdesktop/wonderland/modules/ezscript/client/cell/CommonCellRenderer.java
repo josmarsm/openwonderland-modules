@@ -52,6 +52,10 @@ public class CommonCellRenderer extends BasicRenderer {
     public Map getModelsMap() {
         return models;
     }
+    
+    public void clearModels() {
+        models.clear();
+    }
 
     public void update() {
         SceneWorker.addWorker(new WorkCommit() {
@@ -63,6 +67,8 @@ public class CommonCellRenderer extends BasicRenderer {
                     //finish up here
                     modelsRoot.updateModelBound();
                     modelsRoot.updateGeometricState(0, true);
+                    ClientContextJME.getWorldManager().addToUpdateList(modelsRoot);
+                    return;
                 }
 
                 for(DeployedModel model: models.values()) {
