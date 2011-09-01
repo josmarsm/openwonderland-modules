@@ -19,6 +19,7 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
+import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
@@ -26,6 +27,7 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -34,6 +36,7 @@ import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
@@ -1007,6 +1010,38 @@ public class EZScriptComponent extends CellComponent {
         }
     }
 
+    public void triggerLocalCell(CellID cellID, String label, Object[] args) {
+        //obtain primary session so we can get the cell cache.
+        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+        
+        //acquire the cell cache for the primary session.
+        CellCache cache = ClientContextJME.getCellCache(session);        
+        
+        //get the cell we're looking for from the cell cache.
+        Cell cell = cache.getCell(cellID);
+        
+        //grab the ezscript component from the cell we're looking for.
+        EZScriptComponent ez = cell.getComponent(EZScriptComponent.class);
+        if(ez == null) {
+            //oh noes!
+            //fail gracefully
+            logger.warning("OH NOES!!!");
+            return;
+        }
+        //acquire the map of triggers for the cell we're looking for.
+        Map<String, List<Runnable>> triggers = ez.triggerCellEvents;
+        
+        //check to see if the trigger we're executing is relevant. That is to 
+        //say, a trigger has been registered with that name.
+        if(triggers.containsKey(label)) {
+            ez.threadedExecute(ez.triggerCellEvents.get(label));
+        } else {
+            //fail gracefully.
+            logger.warning("Received a trigger request with no associated trigger: "+label);
+            return;
+        }                        
+    }
+    
     public void triggerCell(CellID cellID, String label, Object[] args) {
 
         channelComponent.send(new CellTriggerEventMessage(cellID, label, args));
