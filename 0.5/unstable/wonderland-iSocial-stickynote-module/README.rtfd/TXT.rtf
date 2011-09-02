@@ -1,0 +1,121 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww14160\viewh10200\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 Sticky Note Module\
+
+\b0\fs24 \
+The sticky note module adds four new cell types to the world. \
+\
+1.) Sticky note: A simple text box where you can write plain text notes. \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 {{\NeXTGraphic Screen shot 2011-09-02 at 10.22.04 AM.png \width4620 \height4600
+}¬}\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+2.) Task sticky note: Tracks the status of a to-do item. \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 {{\NeXTGraphic Screen shot 2011-09-02 at 10.22.47 AM.png \width7260 \height2000
+}¬}\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+3.) Styled sticky note: A simple text box where you can write styled text notes\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 {{\NeXTGraphic Screen shot 2011-09-01 at 4.44.28 PM.png \width6200 \height6960
+}¬}\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+4.) Sectioned sticky note: A sectioned text box where you can write styled text notes in the top portion and plain text notes in the bottom portion and intended for presenting open-ended questions in-world.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 {{\NeXTGraphic Screen shot 2011-09-01 at 4.44.22 PM.png \width6620 \height10480
+}¬}\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 \
+How do I build the module?\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 Instructions:\
+1.) Download from SVN\
+2.) Enter the stickynote directory\
+3.) Type the following at the command prompt and press enter:\
+\
+ant clean && ant\
+\
+4.) Install the module as follows\
+\
+4a.) If your OWL server is running, execute the following from within the stickynote directory:\
+\
+ant deploy\
+\
+4b.) Alternately, you can install from the "Manage Modules" section of the server admin pages by selecting "Browse" under the "Install a New Module" section. Navigate to the "dist" subdirectory of the stickynote directory. Select the "stickynote.jar" file. Select "Open". Then select "Install" and follow the on-screen instructions.\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 \
+How do I insert it in world?\
+\
+
+\b0 To add any type of sticky note in world, the sticky note module must first be installed on your server. Installation instructions are included below.\
+\
+Sticky notes are added by selecting "Insert"-->"Object" and then selecting the type of sticky note you wish to insert from the list of objects. Following this, select "Insert". You will be presented with your selection in world.\
+
+\b \
+How do I use it?
+\b0 \
+\
+To edit any type of sticky note, take control by right clicking on the note and selecting "Take Control". Alternately, you can hold the shift button while selecting the note with the left mouse button.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 {{\NeXTGraphic Screen shot 2011-09-02 at 10.22.17 AM.png \width4600 \height4560
+}¬}\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 When you are done you can release control by clicking the "Release Control" button in the top right corner of the 3D window. Alternately, you can hold the shift button while selecting anywhere on the screen outside of the sticky note area with the left mouse button.\
+\
+To add quick access to status information you can adjust the color of sticky note notes using the "Change Color" item in the context menu of sticky notes.\
+\
+
+\i\b Task sticky note
+\i0\b0 \
+The task note has fields for tracking the status of a to-do item. The sticky note has two different view states. The default state is "Collapsed". When the note is collapsed you will only see the task name. You can take control of a sticky note to expand it to view all of the task details. Click the down arrow to expand the note. Note: Only you will see the note has been expanded. You can click the "up" arrow or the "x" to collapse the sticky note back to its original state.\
+\
+
+\i\b Styled sticky note
+\i0\b0 \
+The styled sticky note has controls for changing the style of text in the note. To change the style of text in the note, click and drag to select the text you wish to style, then select one of the style buttons. See figure below.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 {{\NeXTGraphic styled_sticky_note_annotated.png \width6216 \height8117
+}¬}\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+\
+
+\i\b Sectioned Sticky Note
+\i0\b0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 The sectioned sticky note has controls for changing the style of text in the note 
+\i only in the top panel
+\i0 . Text in the bottom panel is not able to be styled. To change the style of text in the note, click and drag to select the text you wish to style, then select one of the style buttons. See figure below.\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 {{\NeXTGraphic sectioned_sticky_note_annotated.png \width9197 \height11117
+}¬}\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 \
+
+\b Known Issues
+\b0 \
+In order to add multiple styles to a text selection, the text must be selected again after each style is added.\
+\
+
+\b Contacts \
+
+\b0 For sticky note and styled sticky note:\
+mymegabyte@dev.java.net\
+For styled sticky note and sectioned sticky note:\
+http://isocial.missouri.edu\
+}

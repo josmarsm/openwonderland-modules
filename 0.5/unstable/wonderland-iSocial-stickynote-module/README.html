@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="1038.36">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+  </style>
+</head>
+<body>
+<p class="p1"><b>Sticky Note Module</b></p>
+<p class="p2"><br></p>
+<p class="p3">The sticky note module adds four new cell types to the world.<span class="Apple-converted-space"> </span></p>
+<p class="p2"><br></p>
+<p class="p3">1.) Sticky note: A simple text box where you can write plain text notes.<span class="Apple-converted-space"> </span></p>
+<p class="p3"><img src="images/Screen%20shot%202011-09-02%20at%2010.22.04%20AM.png" alt="Screen shot 2011-09-02 at 10.22.04 AM.png"></p>
+<p class="p2"><br></p>
+<p class="p3">2.) Task sticky note: Tracks the status of a to-do item.<span class="Apple-converted-space"> </span></p>
+<p class="p3"><img src="images/Screen%20shot%202011-09-02%20at%2010.22.47%20AM.png" alt="Screen shot 2011-09-02 at 10.22.47 AM.png"></p>
+<p class="p2"><br></p>
+<p class="p3">3.) Styled sticky note: A simple text box where you can write styled text notes</p>
+<p class="p3"><img src="images/Screen%20shot%202011-09-01%20at%204.44.28%20PM.png" alt="Screen shot 2011-09-01 at 4.44.28 PM.png"></p>
+<p class="p2"><br></p>
+<p class="p3">4.) Sectioned sticky note: A sectioned text box where you can write styled text notes in the top portion and plain text notes in the bottom portion and intended for presenting open-ended questions in-world.</p>
+<p class="p3"><img src="images/Screen%20shot%202011-09-01%20at%204.44.22%20PM.png" alt="Screen shot 2011-09-01 at 4.44.22 PM.png"></p>
+<p class="p2"><b></b><br></p>
+<p class="p3"><b>How do I build the module?</b></p>
+<p class="p3">Instructions:</p>
+<p class="p3">1.) Download from SVN</p>
+<p class="p3">2.) Enter the stickynote directory</p>
+<p class="p3">3.) Type the following at the command prompt and press enter:</p>
+<p class="p2"><br></p>
+<p class="p3">ant clean &amp;&amp; ant</p>
+<p class="p2"><br></p>
+<p class="p3">4.) Install the module as follows</p>
+<p class="p2"><br></p>
+<p class="p3">4a.) If your OWL server is running, execute the following from within the stickynote directory:</p>
+<p class="p2"><br></p>
+<p class="p3">ant deploy</p>
+<p class="p2"><br></p>
+<p class="p3">4b.) Alternately, you can install from the "Manage Modules" section of the server admin pages by selecting "Browse" under the "Install a New Module" section. Navigate to the "dist" subdirectory of the stickynote directory. Select the "stickynote.jar" file. Select "Open". Then select "Install" and follow the on-screen instructions.</p>
+<p class="p2"><b></b><br></p>
+<p class="p3"><b>How do I insert it in world?</b></p>
+<p class="p2"><b></b><br></p>
+<p class="p3">To add any type of sticky note in world, the sticky note module must first be installed on your server. Installation instructions are included below.</p>
+<p class="p2"><br></p>
+<p class="p3">Sticky notes are added by selecting "Insert"--&gt;"Object" and then selecting the type of sticky note you wish to insert from the list of objects. Following this, select "Insert". You will be presented with your selection in world.</p>
+<p class="p2"><b></b><br></p>
+<p class="p3"><b>How do I use it?</b></p>
+<p class="p2"><br></p>
+<p class="p3">To edit any type of sticky note, take control by right clicking on the note and selecting "Take Control". Alternately, you can hold the shift button while selecting the note with the left mouse button.</p>
+<p class="p2"><br></p>
+<p class="p3"><img src="images/Screen%20shot%202011-09-02%20at%2010.22.17%20AM.png" alt="Screen shot 2011-09-02 at 10.22.17 AM.png"></p>
+<p class="p2"><br></p>
+<p class="p3">When you are done you can release control by clicking the "Release Control" button in the top right corner of the 3D window. Alternately, you can hold the shift button while selecting anywhere on the screen outside of the sticky note area with the left mouse button.</p>
+<p class="p2"><br></p>
+<p class="p3">To add quick access to status information you can adjust the color of sticky note notes using the "Change Color" item in the context menu of sticky notes.</p>
+<p class="p2"><br></p>
+<p class="p3"><b><i>Task sticky note</i></b></p>
+<p class="p3">The task note has fields for tracking the status of a to-do item. The sticky note has two different view states. The default state is "Collapsed". When the note is collapsed you will only see the task name. You can take control of a sticky note to expand it to view all of the task details. Click the down arrow to expand the note. Note: Only you will see the note has been expanded. You can click the "up" arrow or the "x" to collapse the sticky note back to its original state.</p>
+<p class="p2"><br></p>
+<p class="p3"><b><i>Styled sticky note</i></b></p>
+<p class="p3">The styled sticky note has controls for changing the style of text in the note. To change the style of text in the note, click and drag to select the text you wish to style, then select one of the style buttons. See figure below.</p>
+<p class="p2"><br></p>
+<p class="p3"><img src="images/styled_sticky_note_annotated.png" alt="styled_sticky_note_annotated.png"></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p3"><b><i>Sectioned Sticky Note</i></b></p>
+<p class="p3">The sectioned sticky note has controls for changing the style of text in the note <i>only in the top panel</i>. Text in the bottom panel is not able to be styled. To change the style of text in the note, click and drag to select the text you wish to style, then select one of the style buttons. See figure below.</p>
+<p class="p2"><br></p>
+<p class="p3"><img src="images/sectioned_sticky_note_annotated.png" alt="sectioned_sticky_note_annotated.png"></p>
+<p class="p2"><br></p>
+<p class="p3"><b>Known Issues</b></p>
+<p class="p3">In order to add multiple styles to a text selection, the text must be selected again after each style is added.</p>
+<p class="p2"><br></p>
+<p class="p3"><b>Contacts<span class="Apple-converted-space"> </span></b></p>
+<p class="p3">For sticky note and styled sticky note:</p>
+<p class="p3">mymegabyte@dev.java.net</p>
+<p class="p3">For styled sticky note and sectioned sticky note:</p>
+<p class="p3">http://isocial.missouri.edu</p>
+</body>
+</html>
