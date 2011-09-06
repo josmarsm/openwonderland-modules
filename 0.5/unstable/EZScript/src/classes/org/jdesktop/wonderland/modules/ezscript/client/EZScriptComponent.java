@@ -374,6 +374,28 @@ public class EZScriptComponent extends CellComponent {
 //</editor-fold>
 
     public void handleStates(SharedMapCli states) {
+
+        //Handle "bounds" first, since it is a dependency of "proximity".
+        //What this means is that if there exists information for bounds from
+        //the ezscript component, make sure it trumps the cell's bounds.
+        
+        if(states.containsKey("bounds")) {
+            SharedBounds bounds = (SharedBounds)states.get("bounds");
+            BoundingVolume volume = null;
+            if(bounds.getValue().equals("BOX")) {
+                volume = new BoundingBox(new Vector3f(),
+                                         bounds.getExtents()[0],
+                                         bounds.getExtents()[1],
+                                         bounds.getExtents()[2]);
+
+            } else {
+                volume = new BoundingSphere(bounds.getExtents()[0],
+                        new Vector3f());
+            }
+            cell.setLocalBounds(volume);
+        }
+        
+        //see above comment for handling "bounds".
         if(states.containsKey("proximity")) {
             SharedBoolean enabled = (SharedBoolean)states.get("proximity");
             if(enabled.getValue()) {
@@ -395,21 +417,6 @@ public class EZScriptComponent extends CellComponent {
             }
         }
 
-        if(states.containsKey("bounds")) {
-            SharedBounds bounds = (SharedBounds)states.get("bounds");
-            BoundingVolume volume = null;
-            if(bounds.getValue().equals("BOX")) {
-                volume = new BoundingBox(new Vector3f(),
-                                         bounds.getExtents()[0],
-                                         bounds.getExtents()[1],
-                                         bounds.getExtents()[2]);
-
-            } else {
-                volume = new BoundingSphere(bounds.getExtents()[0],
-                        new Vector3f());
-            }
-            cell.setLocalBounds(volume);
-        }
     }
 
     public void handleScript(SharedMapCli states) {
@@ -417,7 +424,7 @@ public class EZScriptComponent extends CellComponent {
             final SharedString script = (SharedString)states.get("script");
             new Thread(new Runnable() {
                 public void run() {
-                    System.out.println("[EZScript] handling persisted script");
+                    //System.out.println("[EZScript] handling persisted script");
                     evaluateScript(script.getValue());
                 }
             }).start();
