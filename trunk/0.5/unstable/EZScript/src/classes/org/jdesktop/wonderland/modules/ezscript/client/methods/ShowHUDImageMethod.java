@@ -5,7 +5,6 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,13 +23,13 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScri
  */
 @ReturnableScriptMethod
 public class ShowHUDImageMethod implements ReturnableScriptMethodSPI {
-
+    
     private HUDComponent component;
     private String urlName;
     private boolean fail = false;
     public String getDescription() {
         return "Shows an image on the Head's Up Display.\n" +
-                "--usage: ShowHUDImageMethod('www.openwonderland.org/image.jpg');\n" +
+                "-- usage: ShowHUDImageMethod('www.openwonderland.org/image.jpg');\n" +
                 "-- returns a HUDComponent object.";
 
     }
@@ -44,19 +43,16 @@ public class ShowHUDImageMethod implements ReturnableScriptMethodSPI {
     }
 
     public void setArguments(Object[] args) {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        urlName = (String)args[0];
+        fail = false;
+        urlName = (String)args[0];        
+        component = null;
     }
 
     public Object returns() {
         if(fail)
             return null;
 
-        
-
-
         return component;
-        //throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void run() {
@@ -65,21 +61,21 @@ public class ShowHUDImageMethod implements ReturnableScriptMethodSPI {
         }
 
         try {
-            final URL url =  new URL(urlName);
+            final URL url = new URL(urlName);
+
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                        HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
-                        component = hud.createImageComponent(new ImageIcon(url));                        
-                        component.setDecoratable(true);
-                        component.setPreferredLocation(Layout.CENTER);
+                    HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
+                    component = hud.createImageComponent(new ImageIcon(url));
+                    component.setDecoratable(true);
+                    component.setPreferredLocation(Layout.NORTH);
 
-                        hud.addComponent(component);
-                        component.setVisible(true);
-                }                        
+                    hud.addComponent(component);
+                    component.setVisible(true);
+                }
             });
-      //  } catch (MalformedURLException ex) {
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             Logger.getLogger(ShowHUDImageMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

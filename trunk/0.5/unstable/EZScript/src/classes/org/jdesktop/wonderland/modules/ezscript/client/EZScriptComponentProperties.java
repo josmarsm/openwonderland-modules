@@ -200,6 +200,7 @@ public class EZScriptComponentProperties
             editor.setPanelDirty(EZScriptComponentProperties.class,
                                 false);
         }
+      
     }
 
     /**
