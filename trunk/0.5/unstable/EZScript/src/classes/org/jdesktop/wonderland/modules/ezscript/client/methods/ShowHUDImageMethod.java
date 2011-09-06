@@ -29,7 +29,7 @@ public class ShowHUDImageMethod implements ReturnableScriptMethodSPI {
     private boolean fail = false;
     public String getDescription() {
         return "Shows an image on the Head's Up Display.\n" +
-                "-- usage: ShowHUDImageMethod('www.openwonderland.org/image.jpg');\n" +
+                "-- usage: ShowHUDImage(\"www.openwonderland.org/image.jpg\");\n" +
                 "-- returns a HUDComponent object.";
 
     }
@@ -67,7 +67,8 @@ public class ShowHUDImageMethod implements ReturnableScriptMethodSPI {
 
                 public void run() {
                     HUD hud = HUDManagerFactory.getHUDManager().getHUD("main");
-                    component = hud.createImageComponent(new ImageIcon(url));
+                    ImageIcon i = new ImageIcon(url);
+                    component = hud.createImageComponent(i);
                     component.setDecoratable(true);
                     component.setPreferredLocation(Layout.NORTH);
 
