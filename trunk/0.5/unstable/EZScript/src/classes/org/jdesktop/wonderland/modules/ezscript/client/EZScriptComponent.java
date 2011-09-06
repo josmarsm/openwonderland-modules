@@ -513,6 +513,22 @@ public class EZScriptComponent extends CellComponent {
         proximityComponent.removeProximityListener(proximityListener);
         proximityEventsEnabled = false;
     }
+    
+    public boolean areMouseEventsEnabled() {
+        return this.mouseEventsEnabled;
+    }
+    
+    public boolean areProximityEventsEnabled() {
+        return this.proximityEventsEnabled;
+    }
+    
+    public boolean areKeyEventsEnabled() {
+        return this.keyEventsEnabled;
+    }
+    
+    public boolean areTriggersEnabled() {
+        return true;
+    }
     //</editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Callback Assignments">

@@ -16,6 +16,8 @@ import java.io.InputStreamReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
@@ -33,6 +35,32 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
     private boolean isGlobal = false;
     private ScriptLibraryPanel library;
     private CommandPanel commandPanel;
+    private static final Logger logger = Logger.getLogger(ScriptEditorPanel.class.getName());
+    
+    private static final String MOUSE_EVENT_TEMPLATE = 
+            "\n"
+            + "Context.enableMouseEvents();\n"
+            + "function clicky() {\n"
+            + "    //TODO: respond to event here.\n"
+            + "}\n"
+            + "\n"
+            + "Context.onClick(clicky, false);\n";
+    
+    private static final String PROXIMITY_EVENT_TEMPLATE = 
+            "\n"
+            + "Context.enableProximityEvents();\n"
+            + ""
+            + "function enter() {\n"
+            + "    //TODO: respond to event here.\n"
+            + "}\n\n"
+            + "function exit() {\n"
+            + "    //TODO: respond to event here.\n"
+            + "}\n\n"
+            + "Context.onApproach(enter, false);\n"
+            + "Context.onLeave(exit, false);\n";
+    private static final String KEY_EVENT_TEMPLATE = "";
+    private static final String TRIGGER_EVENT_TEMPLATE = "";
+    
     public ScriptEditorPanel(EZScriptComponent component, JDialog dialog) {
         initComponents();
         library = new ScriptLibraryPanel();
@@ -43,6 +71,22 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         this.setMinimumSize(new Dimension(600, 400));
         this.setPreferredSize(new Dimension(600, 400));
         scriptArea.setTabSize(4);
+        this.addAncestorListener(new AncestorListener() {
+           
+            public void ancestorAdded(AncestorEvent ae) {            
+                addTemplates();
+                logger.warning("Ancestor moved!");
+            }
+
+            public void ancestorRemoved(AncestorEvent ae) {
+//                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public void ancestorMoved(AncestorEvent ae) {
+//                throw new UnsupportedOperationException("Not supported yet.");
+               
+            }
+ });
 
     }
 
@@ -69,6 +113,41 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         }
      
     }
+    
+    public void addTemplates() {
+        
+        if(this.scriptComponent == null 
+                //if a script larger than 5 characters is there, don't add a
+                //template, it could be legit.
+                || scriptArea.getText().length() > 5)
+            return;
+        
+        //clear any gibberish
+        scriptArea.setText("");
+        
+        /**
+         * We use append here instead of setText() in case multiple templates
+         * should be added.
+         */
+        if(scriptComponent.areMouseEventsEnabled()) {
+            logger.warning("ADDING MOUSE TEMPLATE!");
+            scriptArea.append(MOUSE_EVENT_TEMPLATE);
+        }
+        
+        if(scriptComponent.areProximityEventsEnabled()) {
+            logger.warning("ADDING PROXIMITY TEMPLATE!");
+            scriptArea.append(PROXIMITY_EVENT_TEMPLATE);
+        }
+        
+        if(scriptComponent.areKeyEventsEnabled()) {
+            //TODO
+        }
+        
+        if(scriptComponent.areTriggersEnabled()) {
+            //TODO
+        }                
+    }
+    
     /**
      * This is a bit ugly, it could use some attention.
      * @return the full contents of the file.

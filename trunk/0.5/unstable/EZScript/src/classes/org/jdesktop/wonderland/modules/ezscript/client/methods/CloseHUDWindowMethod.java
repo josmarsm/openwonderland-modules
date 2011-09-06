@@ -50,7 +50,7 @@ public class CloseHUDWindowMethod implements ScriptMethodSPI {
             public void run() {
                 HUD main = HUDManagerFactory.getHUDManager().getHUD("main");
                 component.setVisible(false);
-                main.removeComponent(component);
+                //main.removeComponent(component);
             }
         });
     }
