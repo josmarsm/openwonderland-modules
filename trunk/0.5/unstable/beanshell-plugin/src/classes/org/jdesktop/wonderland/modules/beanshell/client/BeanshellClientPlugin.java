@@ -96,8 +96,6 @@ public class BeanshellClientPlugin extends BaseClientPlugin {
      * Creates and returns the beanshell HUD component.
      */
     private HUDComponent createHUDComponent(ServerSessionManager loginInfo) {
-        pluginLogger.warning("CREATING BEAN SHELL HUD");
-
         // Create the HUD Panel that displays the beanshell console.
         HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
         JConsole console = new JConsole();
@@ -137,6 +135,7 @@ public class BeanshellClientPlugin extends BaseClientPlugin {
      */
     @Override
     public void cleanup() {
+        super.cleanup();
         // If there is a HUD Component, then remove it from the HUD and clean
         // it up. This really should happen when the primary view cell is
         // disconnected, but we do this here just in case.
@@ -144,6 +143,7 @@ public class BeanshellClientPlugin extends BaseClientPlugin {
             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
             mainHUD.removeComponent(hudComponent);
         }
+        JmeClientMain.getFrame().removeFromToolsMenu(beanShellMI);
     }
 
     @Override
