@@ -215,9 +215,13 @@ public class VideoDrawingTexture implements FrameListener {
     }
 
     protected synchronized void renderImage(Image i) {
+        renderImage(i, 0, 0);
+    }
+    
+    protected synchronized void renderImage(Image i, int x, int y) {
         // now draw the updated texture
         DisplaySystem.getDisplaySystem().getRenderer().updateTextureSubImage(
-                getTexture(), 0, 0, i, 0, 0, i.getWidth(), i.getHeight());
+                getTexture(), x, y, i, 0, 0, i.getWidth(), i.getHeight());
     }
 
     protected boolean checkResampler() {
