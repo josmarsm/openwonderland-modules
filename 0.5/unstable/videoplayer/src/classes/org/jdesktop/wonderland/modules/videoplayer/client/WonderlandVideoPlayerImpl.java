@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.videoplayer.client;
 
 import com.xuggle.xuggler.IContainer;
-import com.xuggle.xuggler.IStreamCoder;
 import com.xuggle.xuggler.IVideoPicture;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -38,7 +37,6 @@ import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.common.ContentURI;
 import org.jdesktop.wonderland.video.client.VideoPlayerImpl;
 import org.jdesktop.wonderland.video.client.VideoQueueFiller;
-import org.jdesktop.wonderland.video.client.VideoQueueFiller.AudioFrame;
 import org.jdesktop.wonderland.video.client.VideoQueueFiller.VideoQueue;
 
 /**
@@ -113,6 +111,25 @@ public class WonderlandVideoPlayerImpl extends VideoPlayerImpl
         public WonderlandVideoQueueFiller(VideoQueue queue) {
             super (queue);
         }
+    
+        @Override
+        protected String prepareContent(String uri) throws IOException {
+            if (uri.startsWith("wlcontent:")) {
+                // resolve as an asset
+                Asset asset = getAssetFor(uri);
+                if (asset == null) {
+                    throw new IOException("Unable to get asset for " + uri);
+                }
+                
+                // wait for the asset to be downloaded
+                if (!AssetManager.getAssetManager().waitForAsset(asset)) {
+                    throw new IOException("Unable to download asset for " + 
+                                          uri + ": " + asset.getFailureInfo());
+                }
+            }
+        
+            return uri;
+        }
         
         @Override
         protected IContainer openContainer(String uri) {
@@ -130,14 +147,14 @@ public class WonderlandVideoPlayerImpl extends VideoPlayerImpl
          */
         protected IContainer openAssetContainer(String uri) {
             try {
+                // at this point, we should have a completely downloaded
+                // asset
                 Asset asset = getAssetFor(uri);
-                if (asset == null) {
-                    return null;
-                }
                 
-                // wait for the asset to be downloaded
+                // wait for the asset to be ready
                 if (!AssetManager.getAssetManager().waitForAsset(asset)) {
-                    return null;
+                    throw new IOException("Unable to download asset for " + 
+                                          uri + ": " + asset.getFailureInfo());
                 }
                 
                 // now open the file as a random access file
