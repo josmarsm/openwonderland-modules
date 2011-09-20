@@ -1,0 +1,15 @@
+EZClick
+By Ryan Babiuch
+http://isocial.missouri.edu
+
+The iSocial EZClick capability is intended to make taking control of shared applications more user friendly by removing the need to right-click and select "Take control" or to hold shift while selecting a shared application. EZClick makes it possible to take control of a shared application by simply left-clicking on it. Control can be released by clicking anywhere outside of the shared application.
+
+EZClick is installed like any other Open Wonderland module. Ensure that the path to the Wonderland directory is correctly defined in my.module.properties under the wonderland.dir entry. Then execute the following command from a shell:
+
+ant clean && ant
+
+If your Wonderland server is running, you can deploy the module by executing the command "ant deploy".
+
+If you prefer to install the module in the Server Admin pages, you can do so by navigating to the "Manage Modules" section of the server admin pages and selecting "Browse" under the "Install a New Module" section. Navigate to the "dist" subdirectory of the stickynote directory. Select the .jar file. Select "Open". Then select "Install" and follow the on-screen instructions.
+
+To add EZClick capability to shared applications, right-click on the application you wish to apply EZClick to. From the context menu, select "Properties". You are presented with the Object Editor. In the "Capabilities" panel of the Object Editor window, select the "+" button at the bottom left. From the list, select "EZClick" and then "OK". Select "Apply" in the Object Editor window. Test that EZClick was applied by left-clicking on the shared application that you applied the EZClick capability to. You should take control of the application. 
