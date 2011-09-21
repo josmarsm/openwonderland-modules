@@ -230,5 +230,9 @@ import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
         public void removeFromHelpMenu(JMenuItem menuItem) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+    public void addToPlacemarksMenu(JMenuItem menuItem, int index, PlacemarkType placemarktype) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     }
 

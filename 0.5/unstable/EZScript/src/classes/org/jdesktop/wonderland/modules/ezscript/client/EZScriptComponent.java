@@ -131,9 +131,6 @@ public class EZScriptComponent extends CellComponent {
     //only one runnable per name, no overloading supported as of yet...
     private Map<String, List<Runnable>> triggerCellEvents;
     private Map<String, List<Runnable>> localTriggerEvents;
-
-    //List of behaviors
-    private List<Behavior> behaviors;
     
     //event listeners
     private MouseEventListener mouseEventListener;
@@ -174,6 +171,17 @@ public class EZScriptComponent extends CellComponent {
     private boolean mouseEventsEnabled = false;
     private boolean proximityEventsEnabled = false;
     private boolean keyEventsEnabled = false;
+    
+    //intiation/response variables
+
+    private boolean initiatesMouseEvents = false;
+    private boolean respondsToMouseEvents = false;
+    private boolean initiatesProximityEvents = false;
+    private boolean respondsToProximityEvents = false;
+    private boolean initiatesKeyEvents = false;
+    private boolean respondsToKeyEvents = false;
+    
+    
 //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Wonderland Boilerplate">
@@ -213,7 +221,7 @@ public class EZScriptComponent extends CellComponent {
 
         triggerCellEvents = new HashMap<String, List<Runnable>>();
         localTriggerEvents = new HashMap<String, List<Runnable>>();
-        behaviors = new ArrayList();
+
         //intialize listeners
         mouseEventListener = new MouseEventListener();
         keyEventListener = new KeyboardEventListener();
@@ -443,12 +451,17 @@ public class EZScriptComponent extends CellComponent {
     public void enableMouseEvents() {
         if(mouseEventListener == null) {
             mouseEventListener = new MouseEventListener();
+            initiatesMouseEvents = true;
+            respondsToMouseEvents = true;
         }
 
         if(!mouseEventListener.isListeningForEntity(renderer.getEntity())) {
             mouseEventListener.addToEntity(renderer.getEntity());
             mouseEventsEnabled = true;
+
         }
+        initiatesMouseEvents = true;
+        respondsToMouseEvents = true;
     }
 
     public void disableMouseEvents() {
@@ -457,6 +470,8 @@ public class EZScriptComponent extends CellComponent {
         }
         mouseEventListener = null;
         mouseEventsEnabled = false;
+        initiatesMouseEvents = false;
+        respondsToMouseEvents = false;
     }
 
     public void enableKeyEvents() {
@@ -805,26 +820,28 @@ public class EZScriptComponent extends CellComponent {
 
         @Override
         public void commitEvent(Event event) {
-            if(event instanceof MouseButtonEvent3D) {
-                //MouseButtonEvent3D m = (MouseButtonEvent3D)event;
-                MouseButtonEvent3D m = (MouseButtonEvent3D)event;
+            if (isInitiatesMouseEvents()) {
+                if (event instanceof MouseButtonEvent3D) {
+                    //MouseButtonEvent3D m = (MouseButtonEvent3D)event;
+                    MouseButtonEvent3D m = (MouseButtonEvent3D) event;
 
-                if(m.isClicked() && m.getButton() == ButtonId.BUTTON1) {
-                    executeOnClick(true);
-                    callbacksMap.put("onClick", new SharedString().valueOf(""+System.currentTimeMillis()));
+                    if (m.isClicked() && m.getButton() == ButtonId.BUTTON1) {
+                        if(isRespondsToMouseEvents()) {
+                            executeOnClick(true);
+                        }
+                        callbacksMap.put("onClick", new SharedString().valueOf("" + System.currentTimeMillis()));
+                    }
+                } else if (event instanceof MouseEnterExitEvent3D) {
+                    MouseEnterExitEvent3D m = (MouseEnterExitEvent3D) event;
+                    if (m.isEnter()) {
+                        executeOnMouseEnter(true);
+                        callbacksMap.put("onMouseEnter", new SharedString().valueOf("" + System.currentTimeMillis()));
+                    } else {
+                        executeOnMouseExit(true);
+                        callbacksMap.put("onMouseExit", new SharedString().valueOf("" + System.currentTimeMillis()));
+                    }
                 }
             }
-            else if(event instanceof MouseEnterExitEvent3D) {
-                MouseEnterExitEvent3D m = (MouseEnterExitEvent3D)event;
-                if(m.isEnter()) {
-                    executeOnMouseEnter(true);                    
-                    callbacksMap.put("onMouseEnter", new SharedString().valueOf(""+System.currentTimeMillis()));
-                } else {
-                    executeOnMouseExit(true);
-                    callbacksMap.put("onMouseExit",new SharedString().valueOf(""+System.currentTimeMillis()));
-                }
-            }
-
         }
     }
 
@@ -858,7 +875,9 @@ public class EZScriptComponent extends CellComponent {
             //callbacks are most likely to be called the most frequently.
             if(name.equals("callbacks")) {
                 if(property.equals("onClick")) {
-                    executeOnClick(false);
+                    if(isRespondsToMouseEvents()) {
+                        executeOnClick(false);
+                    }
                 } else if(property.equals("onMouseEnter")) {
                     executeOnMouseEnter(false);
                 } else if(property.equals("onMouseExit")) {
@@ -1137,4 +1156,55 @@ public class EZScriptComponent extends CellComponent {
     public SharedStateComponent getSharedStateComponent() {
         return this.sharedStateComponent;
     }
+
+    //<editor-fold defaultstate="collapsed" desc="getters/setters">
+    public boolean isInitiatesKeyEvents() {
+        return initiatesKeyEvents;
+    }
+    
+    public void setInitiatesKeyEvents(boolean initiatesKeyEvents) {
+        this.initiatesKeyEvents = initiatesKeyEvents;
+    }
+    
+    public boolean isInitiatesMouseEvents() {
+        return initiatesMouseEvents;
+    }
+    
+    public void setInitiatesMouseEvents(boolean initiatesMouseEvents) {
+        this.initiatesMouseEvents = initiatesMouseEvents;
+    }
+    
+    public boolean isInitiatesProximityEvents() {
+        return initiatesProximityEvents;
+    }
+    
+    public void setInitiatesProximityEvents(boolean initiatesProximityEvents) {
+        this.initiatesProximityEvents = initiatesProximityEvents;
+    }
+    
+    public boolean isRespondsToKeyEvents() {
+        return respondsToKeyEvents;
+    }
+    
+    public void setRespondsToKeyEvents(boolean respondsToKeyEvents) {
+        this.respondsToKeyEvents = respondsToKeyEvents;
+    }
+    
+    public boolean isRespondsToMouseEvents() {
+        return respondsToMouseEvents;
+    }
+    
+    public void setRespondsToMouseEvents(boolean respondsToMouseEvents) {
+        this.respondsToMouseEvents = respondsToMouseEvents;
+    }
+    
+    public boolean isRespondsToProximityEvents() {
+        return respondsToProximityEvents;
+    }
+    
+    public void setRespondsToProximityEvents(boolean respondsToProximityEvents) {
+        this.respondsToProximityEvents = respondsToProximityEvents;
+    }
+    //</editor-fold>
+    
 }
