@@ -15,6 +15,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.MainFrame;
 import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 
@@ -31,6 +33,7 @@ import org.jdesktop.wonderland.client.jme.MainFrame.ServerURLListener;
 
         public FakeMainFrame() {
             try {
+                
                 frame = new JFrame();
             } catch (HeadlessException he) {
                 // ignore

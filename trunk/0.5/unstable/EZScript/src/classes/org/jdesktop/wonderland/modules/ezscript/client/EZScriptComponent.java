@@ -501,6 +501,8 @@ public class EZScriptComponent extends CellComponent {
                                                     cell.getLocalBounds()
                                                 });
         proximityEventsEnabled = true;
+        initiatesProximityEvents = true;
+        respondsToProximityEvents = true;
     }
     
     /**
@@ -534,6 +536,8 @@ public class EZScriptComponent extends CellComponent {
     public void disableProximityEvents() {
         proximityComponent.removeProximityListener(proximityListener);
         proximityEventsEnabled = false;
+        initiatesProximityEvents = false;
+        respondsToProximityEvents = false;
     }
     
     public boolean areMouseEventsEnabled() {
@@ -826,7 +830,7 @@ public class EZScriptComponent extends CellComponent {
                     MouseButtonEvent3D m = (MouseButtonEvent3D) event;
 
                     if (m.isClicked() && m.getButton() == ButtonId.BUTTON1) {
-                        if(isRespondsToMouseEvents()) {
+                        if(respondsToMouseEvents) {
                             executeOnClick(true);
                         }
                         callbacksMap.put("onClick", new SharedString().valueOf("" + System.currentTimeMillis()));
@@ -834,10 +838,14 @@ public class EZScriptComponent extends CellComponent {
                 } else if (event instanceof MouseEnterExitEvent3D) {
                     MouseEnterExitEvent3D m = (MouseEnterExitEvent3D) event;
                     if (m.isEnter()) {
-                        executeOnMouseEnter(true);
+                        if(respondsToMouseEvents) {
+                            executeOnMouseEnter(true);
+                        }
                         callbacksMap.put("onMouseEnter", new SharedString().valueOf("" + System.currentTimeMillis()));
                     } else {
-                        executeOnMouseExit(true);
+                        if(respondsToMouseEvents) {
+                            executeOnMouseExit(true);
+                        }
                         callbacksMap.put("onMouseExit", new SharedString().valueOf("" + System.currentTimeMillis()));
                     }
                 }
@@ -873,22 +881,30 @@ public class EZScriptComponent extends CellComponent {
             String name = event.getMap().getName();
 
             //callbacks are most likely to be called the most frequently.
-            if(name.equals("callbacks")) {
-                if(property.equals("onClick")) {
-                    if(isRespondsToMouseEvents()) {
+            if (name.equals("callbacks")) { //if it's the callbacks map
+                if (property.equals("onClick")) { //if someone clicked the mouse
+                    if (respondsToMouseEvents) { //and I'm allowed to respond
                         executeOnClick(false);
                     }
-                } else if(property.equals("onMouseEnter")) {
-                    executeOnMouseEnter(false);
-                } else if(property.equals("onMouseExit")) {
-                    executeOnMouseExit(false);
-                } else if(property.equals("onApproach")) {
-                    executeOnApproach(false);
-                } else if(property.equals("onLeave")) {
-                    executeOnLeave(false);
-                } else if(property.equals("onKeyPress")) {                
+                } else if (property.equals("onMouseEnter")) {//if someone moved the mouse
+                    if (respondsToMouseEvents) { //and I'm allowed to respond
+                        executeOnMouseEnter(false);
+                    }
+                } else if (property.equals("onMouseExit")) { //if someone moved the mouse away
+                    if (respondsToMouseEvents) { //and I'm allowed to respond
+                        executeOnMouseExit(false);
+                    }
+                } else if (property.equals("onApproach")) { //if someone entered bounds
+                    if (respondsToProximityEvents) { //and I'm allowed to respond
+                        executeOnApproach(false);
+                    }
+                } else if (property.equals("onLeave")) { //if someone entered bounds
+                    if (respondsToProximityEvents) { //and I'm allowed to respond
+                        executeOnLeave(false);
+                    }
+                } else if (property.equals("onKeyPress")) {
                     executeOnKeyPress(event.getNewValue().toString(), false);
-                } else if(property.equals("clear")) {
+                } else if (property.equals("clear")) {
                     clearCallbacks();
                 }
                 return;
@@ -951,13 +967,18 @@ public class EZScriptComponent extends CellComponent {
     class ProximityListenerImpl implements ProximityListener {
 
         public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) {
-            if(entered) {
-                executeOnApproach(true);
-                callbacksMap.put("onApproach", new SharedString().valueOf(""+System.currentTimeMillis()));
-            }
-            else {
-                executeOnLeave(true);
-                callbacksMap.put("onLeave", new SharedString().valueOf(""+System.currentTimeMillis()));
+            if (initiatesProximityEvents) {
+                if (entered) {
+                    if(respondsToProximityEvents) {
+                        executeOnApproach(true);
+                    }
+                    callbacksMap.put("onApproach", new SharedString().valueOf("" + System.currentTimeMillis()));
+                } else {
+                    if(respondsToProximityEvents) {
+                        executeOnLeave(true);
+                    }
+                    callbacksMap.put("onLeave", new SharedString().valueOf("" + System.currentTimeMillis()));
+                }
             }
         }
    }
