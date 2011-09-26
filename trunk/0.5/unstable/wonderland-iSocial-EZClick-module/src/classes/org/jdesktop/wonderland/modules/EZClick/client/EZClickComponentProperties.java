@@ -33,13 +33,12 @@ import org.jdesktop.wonderland.modules.EZClick.common.EZClickComponentServerStat
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-@PropertiesFactory(EZClickComponentServerState.class)
+//@PropertiesFactory(EZClickComponentServerState.class)
 public class EZClickComponentProperties
         extends JPanel implements PropertiesFactorySPI {
 
     private CellPropertiesEditor editor = null;
-    private String originalInfo = null;
-
+    private String originalInfo = "";
     /** Creates new form SampleComponentProperties */
     public EZClickComponentProperties() {
         // Initialize the GUI
@@ -81,7 +80,7 @@ public class EZClickComponentProperties
         if (state != null) {
             EZClickComponentServerState sampleCellComponentServerState =
                     (EZClickComponentServerState) compState;
-            originalInfo = sampleCellComponentServerState.getInfo();
+//            originalInfo = sampleCellComponentServerState.getInfo();
             infoTextField.setText(originalInfo);
         }
     }
@@ -101,8 +100,8 @@ public class EZClickComponentProperties
         CellServerState state = editor.getCellServerState();
         CellComponentServerState compState = state.getComponentServerState(
                 EZClickComponentServerState.class);
-        ((EZClickComponentServerState) compState).setInfo(
-                infoTextField.getText());
+//        ((EZClickComponentServerState) compState).setInfo(
+//                infoTextField.getText());
         editor.addToUpdateList(compState);
     }
 
@@ -151,8 +150,8 @@ public class EZClickComponentProperties
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
         infoTextField = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
 
         jLabel1.setText("Info:");
 
@@ -160,21 +159,11 @@ public class EZClickComponentProperties
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(infoTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
-                .addContainerGap())
+            .add(0, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(infoTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(252, Short.MAX_VALUE))
+            .add(0, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -53,9 +53,8 @@ public class EZClickComponentMO extends CellComponentMO {
     @Override
     protected void setLive(boolean live) {
         super.setLive(live);
-        logger.warning("Setting EZClickComponentMO to live = " + live);
+        
     }
-
 
     @Override
     public CellComponentClientState getClientState(CellComponentClientState state, WonderlandClientID clientID, ClientCapabilities capabilities) {
