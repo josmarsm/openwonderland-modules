@@ -32,8 +32,6 @@ import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 @ServerState
 public class EZClickComponentServerState extends CellComponentServerState {
 
-    private String info;
-
     /** Default constructor */
     public EZClickComponentServerState() {
     }
@@ -41,14 +39,5 @@ public class EZClickComponentServerState extends CellComponentServerState {
     @Override
     public String getServerComponentClassName() {
         return "org.jdesktop.wonderland.modules.EZClick.server.EZClickComponentMO";
-    }
-
-    public String getInfo() {
-        return info;
-    }
-
-    public void setInfo(String info) {
-        Logger.getLogger(EZClickComponentServerState.class.getName()).warning("SETTING INFO TO " + info);
-        this.info = info;
     }
 }

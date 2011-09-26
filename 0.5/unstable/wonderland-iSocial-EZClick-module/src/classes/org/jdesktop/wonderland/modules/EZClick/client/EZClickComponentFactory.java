@@ -41,7 +41,6 @@ public class EZClickComponentFactory implements CellComponentFactorySPI {
 
     public <T extends CellComponentServerState> T getDefaultCellComponentServerState() {
         EZClickComponentServerState state = new EZClickComponentServerState();
-        state.setInfo("Default");
         return (T) state;
     }
 
