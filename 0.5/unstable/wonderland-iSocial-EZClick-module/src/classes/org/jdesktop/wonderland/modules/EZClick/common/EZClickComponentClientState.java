@@ -27,17 +27,9 @@ import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
  */
 public class EZClickComponentClientState extends CellComponentClientState {
 
-    private String info;
 
     /** Default constructor */
     public EZClickComponentClientState() {
     }
 
-    public String getInfo() {
-        return info;
-    }
-
-    public void setInfo(String info) {
-        this.info = info;
-    }
 }

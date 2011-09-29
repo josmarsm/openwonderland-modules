@@ -33,20 +33,17 @@ import org.jdesktop.wonderland.modules.EZClick.common.EZClickComponentServerStat
  * @author Jordan Slott <jslott@dev.java.net>
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  */
-//@PropertiesFactory(EZClickComponentServerState.class)
+@PropertiesFactory(EZClickComponentServerState.class)
 public class EZClickComponentProperties
         extends JPanel implements PropertiesFactorySPI {
 
     private CellPropertiesEditor editor = null;
-    private String originalInfo = "";
+
     /** Creates new form SampleComponentProperties */
     public EZClickComponentProperties() {
         // Initialize the GUI
         initComponents();
 
-        // Listen for changes to the info text field
-        infoTextField.getDocument().addDocumentListener(
-                new InfoTextFieldListener());
     }
 
     /**
@@ -74,15 +71,8 @@ public class EZClickComponentProperties
      * @inheritDoc()
      */
     public void open() {
-        CellServerState state = editor.getCellServerState();
-        CellComponentServerState compState = state.getComponentServerState(
-                EZClickComponentServerState.class);
-        if (state != null) {
-            EZClickComponentServerState sampleCellComponentServerState =
-                    (EZClickComponentServerState) compState;
-//            originalInfo = sampleCellComponentServerState.getInfo();
-            infoTextField.setText(originalInfo);
-        }
+        
+        
     }
 
     /**
@@ -97,12 +87,6 @@ public class EZClickComponentProperties
      */
     public void apply() {
         // Fetch the latest from the info text field and set it.
-        CellServerState state = editor.getCellServerState();
-        CellComponentServerState compState = state.getComponentServerState(
-                EZClickComponentServerState.class);
-//        ((EZClickComponentServerState) compState).setInfo(
-//                infoTextField.getText());
-        editor.addToUpdateList(compState);
     }
 
     /**
@@ -110,36 +94,9 @@ public class EZClickComponentProperties
      */
     public void restore() {
         // Restore from the original state stored.
-        infoTextField.setText(originalInfo);
+
     }
 
-    /**
-     * Inner class to listen for changes to the text field and fire off dirty
-     * or clean indications to the cell properties editor.
-     */
-    class InfoTextFieldListener implements DocumentListener {
-
-        public void insertUpdate(DocumentEvent e) {
-            checkDirty();
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            checkDirty();
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-            checkDirty();
-        }
-
-        private void checkDirty() {
-            String name = infoTextField.getText();
-            if (editor != null && name.equals(originalInfo) == false) {
-                editor.setPanelDirty(EZClickComponentProperties.class, true);
-            } else if (editor != null) {
-                editor.setPanelDirty(EZClickComponentProperties.class, false);
-            }
-        }
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
