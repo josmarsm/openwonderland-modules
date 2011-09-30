@@ -185,7 +185,7 @@ public class OfficeContentImporter extends AbstractContentImporter
                 throw new IOException(statusLine.getReasonPhrase());
             }
 
-            File outputFile = new File(inputFile.getName() + ".pdf");
+            File outputFile = File.createTempFile(inputFile.getName(), ".pdf");
             outputFile.deleteOnExit();
             LOGGER.warning("Output filename: " + outputFile.getName());
             FileOutputStream outputStream = new FileOutputStream(outputFile);
