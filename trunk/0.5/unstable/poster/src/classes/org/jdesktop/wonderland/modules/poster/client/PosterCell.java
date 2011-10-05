@@ -35,12 +35,8 @@
  */
 package org.jdesktop.wonderland.modules.poster.client;
 
-import java.awt.Image;
 import java.awt.Rectangle;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -70,6 +66,7 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
  * Adapted from the "generic" cell facility originally written by Jordan Slott
  * 
  * @author Bernard Horan
+ * @author Jon Kaplan
  */
 public class PosterCell extends App2DCell {
 
@@ -106,21 +103,8 @@ public class PosterCell extends App2DCell {
     public PosterCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         mapListener = new MySharedMapListener();
-        try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-
-                    public void run() {
-                        posterForm = new PosterForm(PosterCell.this);
                     }
-                });
-            } catch (InterruptedException ex) {
-                logger.log(Level.SEVERE, "Failed to create poster form", ex);
-            } catch (InvocationTargetException ex) {
-                logger.log(Level.SEVERE, "Failed to create poster form", ex);
-            }
         
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -128,6 +112,11 @@ public class PosterCell extends App2DCell {
     protected void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
         if (increasing && status == CellStatus.ACTIVE) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    posterForm = new PosterForm(PosterCell.this);
+                }
+            });
 
             // Create the shared hash map and initialize the poster text
             // if it does not already exist.
@@ -188,9 +177,12 @@ public class PosterCell extends App2DCell {
         }
         if (status == CellStatus.RENDERING && increasing == true) {
             // Initialize the render with the current poster text
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
             posterForm.updateForm();
             window.updateLabel();
-
+                }
+            });
 
             // Listen for changes in the poster text from other clients
             SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
@@ -210,11 +202,15 @@ public class PosterCell extends App2DCell {
             }
             window.setVisibleApp(false);
             window = null;
+            
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (posterForm != null) {
+                        posterForm.dispose();
         }
     }
-
-    Image getPosterImage() {
-        return posterForm.getPreviewImage();
+            });
+    }
     }
 
     String getPosterText() {
@@ -226,13 +222,13 @@ public class PosterCell extends App2DCell {
     }
 
     void openPosterForm() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
         Rectangle parentBounds = getParentFrame().getBounds();
         Rectangle formBounds = posterForm.getBounds();
-        posterForm.setLocation(parentBounds.width / 2 - formBounds.width / 2 + parentBounds.x, parentBounds.height - formBounds.height - parentBounds.y);
+                posterForm.setLocation(parentBounds.width / 2 - formBounds.width / 2 + parentBounds.x, 
+                                       parentBounds.height - formBounds.height - parentBounds.y);
 
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
                 posterForm.setVisible(true);
             }
         });
@@ -285,8 +281,13 @@ public class PosterCell extends App2DCell {
                 SharedBoolean billboardModeBoolean = (SharedBoolean) event.getNewValue();
                 billboardMode = billboardModeBoolean.getValue();
             }
+            
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
             posterForm.updateForm();
             window.updateLabel();
         }
+            });
     }
+}
 }
