@@ -18,21 +18,23 @@
 
 package org.jdesktop.wonderland.modules.poster.client;
 
+import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+
 /**
- *
+ * Panel to render a poster.
  * @author Bernard Horan
+ * @author Jon Kaplan
  */
 public class PosterPanel extends javax.swing.JPanel {
-    private PosterCell cell;
+    private static final Logger LOGGER =
+            Logger.getLogger(PosterPanel.class.getName());
 
-    /** Creates new form PosterPanel */
-    public PosterPanel() {
-        initComponents();
-    }
+    private final PosterCell cell;
 
     PosterPanel(PosterCell cell) {
-        this();
         this.cell = cell;
+        initComponents();
     }
 
     /** This method is called from within the constructor to
@@ -44,31 +46,36 @@ public class PosterPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        posterLabel = new javax.swing.JLabel();
+        posterPane = new PosterEditorPane(cell);
 
-        posterLabel.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
-        posterLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        posterLabel.setText("jLabel1");
+        setFocusable(false);
+
+        posterPane.setBorder(null);
+        posterPane.setEditable(false);
+        posterPane.setFocusable(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(posterLabel)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, posterPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(posterLabel)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, posterPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel posterLabel;
+    private javax.swing.JEditorPane posterPane;
     // End of variables declaration//GEN-END:variables
 
     void updateLabel() {
-        posterLabel.setText(cell.getPosterText());
+        posterPane.setText(cell.getPosterText());
     }
 
+    JEditorPane getPosterPane() {
+        return posterPane;
 }
+ }
