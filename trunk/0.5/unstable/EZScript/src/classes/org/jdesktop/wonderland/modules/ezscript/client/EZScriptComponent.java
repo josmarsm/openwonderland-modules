@@ -925,6 +925,7 @@ public class EZScriptComponent extends CellComponent {
                         System.out.println("executing script...");
                         //scriptEngine.eval(script.getValue(), scriptBindings);
                         //Need to add this script to the script editor panel.
+                        clearCallbacks();
                         evaluateScript(script.getValue());
                     } catch(Exception e) {
                         e.printStackTrace();
