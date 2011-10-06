@@ -372,7 +372,13 @@ public class EZScriptComponent extends CellComponent {
                         keyEventListener.removeFromEntity(renderer.getEntity());
                         keyEventListener = null;
                     }
+                    
+                    if(proximityListener != null) {
+                        proximityComponent.removeProximityListener(proximityListener);
+                        proximityListener = null;
+                    }
                     ScriptManager.getInstance().removeCell(this.cell);
+                    clearCallbacks();
                   //  callbacksMap.clear();
                    // scriptsMap.clear();
                     renderer = null;
