@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerActions;
 
@@ -50,7 +51,9 @@ import org.jdesktop.wonderland.modules.videoplayer.common.VideoPlayerActions;
  *
  * @author nsimpson
  */
-public class VideoPlayerControlPanel extends javax.swing.JPanel {
+public class VideoPlayerControlPanel extends javax.swing.JPanel 
+    implements VideoPlayerControls 
+{
 
     private static final Logger logger = Logger.getLogger(VideoPlayerControlPanel.class.getName());
     protected boolean fillMode = false;
@@ -70,6 +73,14 @@ public class VideoPlayerControlPanel extends javax.swing.JPanel {
         pauseIcon = new ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/videoplayer/client/resources/VideoPlayerPause32x32.png"));
     }
 
+    /**
+     * Get the component associated with these controls
+     * @return the associated component
+     */
+    public JComponent getComponent() {
+        return this;
+    }
+    
     public JPanel getPanel() {
        return timelinePanel;
     }

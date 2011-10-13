@@ -175,7 +175,7 @@ public class VideoPlayerCell extends App2DCell
                 // the cell is now visible
                 if (increasing) {
                     if (this.getApp() == null) {
-                        videoPlayerApp = new VideoPlayerApp(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/videoplayer/client/resources/Bundle").getString("VIDEO"), clientState.getPixelScale());
+                        videoPlayerApp = createApp(java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/videoplayer/client/resources/Bundle").getString("VIDEO"), clientState.getPixelScale());
                         setApp(videoPlayerApp);
                     }
                     // tell the app to be displayed in this cell.
@@ -188,7 +188,7 @@ public class VideoPlayerCell extends App2DCell
 
                     // this app has only one window, so it is always top-level
                     try {
-                        videoPlayerWindow = new VideoPlayerWindow(this, videoPlayerApp,
+                        videoPlayerWindow = createWindow(this, videoPlayerApp,
                                 clientState.getPreferredWidth(), clientState.getPreferredHeight(),
                                 true, clientState.getPixelScale());
                         videoPlayerWindow.setDecorated(clientState.getDecorated());
@@ -270,6 +270,18 @@ public class VideoPlayerCell extends App2DCell
         }
     }
 
+    protected VideoPlayerApp createApp(String name, Vector2f pixelScale) {
+        return new VideoPlayerApp(name, pixelScale);
+    }
+
+    protected VideoPlayerWindow createWindow(VideoPlayerCell cell, App2D app,
+            int width, int height,
+            boolean topLevel, Vector2f pixelScale)
+        throws InstantiationException
+    {
+        return new VideoPlayerWindow(cell, app, width, height, topLevel, pixelScale);
+    }
+    
     public void propertyChanged(SharedMapEventCli event) {
         SharedMapCli map = event.getMap();
         if (map.getName().equals(VideoPlayerConstants.STATUS_MAP)) {
