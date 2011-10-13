@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="library" default="dist" basedir=".">
+<project name="quickstartguide" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.library}"/>
+    <dirname property="current.dir" file="${ant.file.quickstartguide}"/>
 
     <!-- import properties from the common modules properties. These values
          may overwrite some values in my.module.properties, such as the

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="wonderland-poster-module" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.admin-tools}"/>
+    <dirname property="current.dir" file="${ant.file.wonderland-poster-module}"/>
 
     <!-- import properties from the common modules properties. These values
          may overwrite some values in my.module.properties, such as the
