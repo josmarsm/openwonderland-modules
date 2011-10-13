@@ -3,22 +3,53 @@
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderland-modules-stable}"/>
     
-    <!-- all projects -->
-    <fileset dir="${current.dir}" id="all.projects">
+    <!-- all projects with no dependencies (build first) -->
+    <fileset dir="${current.dir}" id="nodep.projects">
         <include name="*/**/build.xml"/>
+    
+        <!-- exclude projects with dependencies -->
+        <exclude name="best-view/**/build.xml"/>
+ 
+        <!-- special case: ignore video -->
+        <exclude name="videoplayer/**/build.xml"/>
     </fileset> 
+   
+    <!-- ordered list of projects with dependencies -->
+    <filelist dir="${current.dir}" id="dep.projects">
+        <file name="best-view/build.xml"/>
+    </filelist>
 
-    <target name="dist" depends="-modules-stable-dist-build, 
+    <!-- video projects -->
+    <filelist dir="${current.dir}" id="video.projects">
+       <file name="videoplayer/build.xml"/>
+    </filelist>
+
+    <target name="dist" depends="-modules-stable-dist-build,
+                                 -modules-stable-dist-check-video,
+                                 -modules-stable-dist-build-video,
                                  -modules-stable-dist-copy-selected,
+                                 -modules-stable-dist-copy-video,
                                  -modules-stable-dist-copy-all"/>
     <target name="-modules-stable-dist-build">
         <!-- build all projects -->
-        <build-subprojects fileset="all.projects" target="dist"/>
+        <build-subprojects fileset="nodep.projects" target="dist"/>
+        <build-subprojects filelist="dep.projects" target="dist"/>
 
         <!-- create the dist directory that is used by the wonderland project
              build scripts to find modules to include in a core build
         -->
         <mkdir dir="dist"/>
+    </target>
+
+    <target name="-modules-stable-dist-check-video">
+        <!-- check if the video client library exists -->
+        <condition property="video.available">
+            <available file="${current.dir}/../../wonderland-video/build/lib/wonderland-video.jar"/>
+        </condition>
+    </target>
+   
+    <target name="-modules-stable-dist-build-video" if="video.available">
+        <build-subprojects filelist="video.projects" target="dist"/>
     </target>
 
     <!--
@@ -43,9 +74,25 @@
                 <file name="stickynote/dist/stickynote.jar"/>
                 <file name="clickablelink/dist/clickable-link.jar"/>
 		<file name="quick-reference/dist/quick-reference.jar"/>
+                <file name="quickstartguide/dist/quickstartguide.jar"/>
+                <file name="admin-tools/dist/admin-tools.jar"/>
+                <file name="poster/dist/poster.jar"/>
+                <file name="tooltip-component/dist/tooltip-component.jar"/>
+                <file name="microphone/dist/microphone.jar"/>
+                <file name="best-view/dist/best-view.jar"/>
+                <file name="sittingComponent/dist/Sittable.jar"/>
             </filelist>
             <mapper type="flatten"/>
         </copy> 
+    </target>
+
+    <target name="-modules-stable-dist-copy-video" if="video.available">
+        <copy todir="dist">
+            <filelist dir=".">
+                <file name="videoplayer/dist/videoplayer.jar"/>
+            </filelist>
+            <mapper type="flatten"/>
+        </copy>
     </target>
 
     <!-- copy all the modules into a common dist directory -->
@@ -66,7 +113,9 @@
         <delete dir="dist" failonerror="false"/>
         
         <!-- clean sub-projects -->
-        <build-subprojects fileset="all.projects" target="clean"/>
+        <build-subprojects fileset="nodep.projects" target="clean"/>
+        <build-subprojects filelist="dep.projects" target="clean"/>
+        <build-subprojects filelist="video.projects" target="clean"/>
  
         <!-- delete leftover module dist directories. This will guarantee
              that modules that have been deleted do not show up in our
@@ -78,16 +127,23 @@
         </delete>
     </target>
 
+    <fileset dir="${current.dir}" id="empty.fileset">
+        <exclude name="**"/>
+    </fileset>
+    <filelist id="empty.filelist"/>
+
     <!-- macro to iterate across all subprojects -->
     <macrodef name="build-subprojects">
         <!-- the reference id of the fileset to iterate over -->
-        <attribute name="fileset"/>
-        
+        <attribute name="fileset" default="empty.fileset"/>
+        <attribute name="filelist" default="empty.filelist"/>
+ 
         <!-- the build target to run -->
         <attribute name="target"/>
         <sequential>
             <subant target="@{target}" inheritall="false">
                 <fileset refid="@{fileset}"/>
+                <filelist refid="@{filelist}"/>
             </subant>
         </sequential>
     </macrodef>

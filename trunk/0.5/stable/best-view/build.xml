@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="admin-tools" default="dist" basedir=".">
+<project name="best-view" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
-    <dirname property="current.dir" file="${ant.file.admin-tools}"/>
+    <dirname property="current.dir" file="${ant.file.best-view}"/>
 
     <!-- import properties from the common modules properties. These values
          may overwrite some values in my.module.properties, such as the
          location of the Wonderland directory in the case of the entire modules
          directory being checked out instead of an individual file -->
-    <property file="${current.dir}/../modules-unstable.properties"/>
+    <property file="${current.dir}/../modules-stable.properties"/>
 
     <!-- import properties for this module -->
     <property file="${current.dir}/my.module.properties"/>
@@ -17,12 +17,8 @@
     <property name="module.jarname" value="${module.name}"/>
 
     <pathconvert property="module-client.classpath">
-        <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
-        <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
-        <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
-        <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
-        <path location="${modules.dir}/tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
+        <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
@@ -31,18 +27,9 @@
 
     <pathconvert property="module-server.classpath">
         <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
-        <path location="${modules.dir}/tools/audio-manager/lib/voicelib.jar"/>
-        <path location="${modules.dir}/tools/audio-manager/lib/bridge_connector.jar"/>
-        <path location="${modules.dir}/tools/presence-manager/build/lib/server/presencemanager-server.jar"/>
         <path location="${modules.dir}/foundation/security/build/lib/server/security-server.jar"/>
-    </pathconvert>
-
-    <pathconvert property="module-web.classpath">
-        <path location="${wonderland.dir}/web/front/dist/wonderland-webadmin-core.jar"/>
-        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
-        <path location="${wonderland.dir}/web/runner/dist/wonderland-runner-api.jar"/>
-        <path location="${wonderland.dir}/core/build/lib/wonderland-client.jar"/>
-        <path location="${wonderland.dir}/core/build/lib/wonderland-common.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/server/appbase-server.jar"/>
+        <path location="${current.dir}/../image-viewer/build/server/imageviewer-server.jar"/>
     </pathconvert>
 
 
@@ -51,17 +38,16 @@
 
     <target name="build" depends="-module-init, -module-compile-common, 
                                                 -module-compile-server,
-                                                -module-compile-client,
-                                                -module-compile-web"/>
+                                                -module-compile-client"/>
     
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
 
-        <module name="${module.name}" majorVersion="0" minorVersion="5" miniversion="1" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
-            <requires name="avatarbase" majorversion="0" minorversion="5" miniVersion="1"/>
+        <module name="${module.name}" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
+            <requires name="sharedstate" majorversion="0" minorversion="5" miniversion="1"/>
             <requires name="security" majorversion="0" minorversion="5"/>
-            <requires name="presencemanager" majorversion="0" minorversion="5"/>
-            <requires name="audiomanager" majorversion="0" minorversion="5" miniVersion="3"/>
+            <requires name="appbase" majorversion="0" minorversion="5"/>
+            <requires name="imageviewer" majorversion="1" minorversion="0"/>
 
             <client>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
@@ -81,18 +67,6 @@
                     <include name="${module.src}/common/**"/>
                 </serverjar>
             </server>
-
-            <part name="web">
-                <jar name="${module.name}.war">
-                    <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
-                        <include name="${module.src}/web/**"/>
-                        <include name="${module.src}/common/**"/>
-                    </zipfileset>
-                    <fileset dir="${current.dir}/web"/>
-                </jar>
-            </part>
-
-            <art dir="${current.dir}/art"/>
         </module>
     </target>                                  
                                            
