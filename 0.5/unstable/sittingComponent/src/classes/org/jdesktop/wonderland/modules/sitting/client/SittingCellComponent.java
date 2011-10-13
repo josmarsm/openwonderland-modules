@@ -1,7 +1,7 @@
 /**
- * Project Wonderland
+ * Open Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,9 +11,9 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath"
- * exception as provided by Sun in the License file that accompanied
- * this code.
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
  */
 
 package org.jdesktop.wonderland.modules.sitting.client;
@@ -27,6 +27,7 @@ import imi.character.behavior.GoSit;
 import imi.character.statemachine.GameContext;
 import java.awt.event.MouseEvent;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
@@ -44,7 +45,6 @@ import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
@@ -64,7 +64,6 @@ public class SittingCellComponent extends CellComponent
     {
 
     private static Logger logger = Logger.getLogger(SittingCellComponent.class.getName());
-    private int traceLevel = 1;
     private MouseEventListener myListener = null;
     private WlAvatarCharacter myAvatar;
     private CellRendererJME ret = null;
@@ -150,9 +149,6 @@ public class SittingCellComponent extends CellComponent
 
     public void goSit()
         {
-        BasicRenderer br = (BasicRenderer) cell.getCellRenderer(RendererType.RENDERER_JME);
-        br.setCollisionEnabled(false);
-
         ret = (CellRendererJME) cell.getCellRenderer(RendererType.RENDERER_JME);
         Entity mye = ret.getEntity();
         RenderComponent rc = (RenderComponent)mye.getComponent(RenderComponent.class);
@@ -163,8 +159,8 @@ public class SittingCellComponent extends CellComponent
 
         Vector3f v3fa = localNode.getWorldTranslation();
         Quaternion quata = localNode.getWorldRotation();
-        System.out.println("Model local - trans = " + v3f + " - local rot = " + quat);
-        System.out.println("Model world - trans = " + v3fa + " - world rot = " + quata);
+        //System.out.println("Model local - trans = " + v3f + " - local rot = " + quat);
+        //System.out.println("Model world - trans = " + v3fa + " - world rot = " + quata);
 
         Vector3f axis = new Vector3f();
         float angle;
@@ -186,10 +182,10 @@ public class SittingCellComponent extends CellComponent
         Cell avatarCell = ClientContextJME.getViewManager().getPrimaryViewCell();
         CellRenderer rend = avatarCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         myAvatar = ((AvatarImiJME)rend).getAvatarCharacter();
-        if(traceLevel > 3)
-            {
-            System.out.println(" avatar X = " + myAvatar.getPositionRef().getX() + " - Y = " + myAvatar.getPositionRef().getY() + " - Z = " + myAvatar.getPositionRef().getZ());
-            }
+
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info(" avatar X = " + myAvatar.getPositionRef().getX() + " - Y = " + myAvatar.getPositionRef().getY() + " - Z = " + myAvatar.getPositionRef().getZ());
+        }
 
         GameContext context = myAvatar.getContext();
         CharacterBehaviorManager helm = context.getBehaviorManager();
@@ -213,30 +209,30 @@ public class SittingCellComponent extends CellComponent
     protected void setStatus(CellStatus status, boolean increasing)
         {
         super.setStatus(status, increasing);
-        logger.warning("Setting status on SittingCellComponent to " + status);
+        logger.info("Setting status on SittingCellComponent to " + status);
         switch(status)
             {
             case DISK:
                 {
-                if(traceLevel > 4)
+                if(logger.isLoggable(Level.FINE))
                     {
-                    System.out.println("SittingComponent - DISK - increasing = " + increasing);
+                    logger.fine("SittingComponent - DISK - increasing = " + increasing);
                     }
                 break;
                 }
             case INACTIVE:
                 {
-                if(traceLevel > 4)
+                if(logger.isLoggable(Level.FINE))
                     {
-                    System.out.println("SittingComponent - INACTIVE - increasing = " + increasing);
+                    logger.fine("SittingComponent - INACTIVE - increasing = " + increasing);
                     }
                 break;
                 }
             case VISIBLE:
                 {
-                if(traceLevel > 4)
+                if(logger.isLoggable(Level.FINE))
                     {
-                    System.out.println("SittingComponent - VISIBLE - increasing = " + increasing);
+                    logger.fine("SittingComponent - VISIBLE - increasing = " + increasing);
                     }
                 break;
                 }
@@ -245,9 +241,9 @@ public class SittingCellComponent extends CellComponent
 /* Get local node */
                 if(increasing)
                     {
-                    if(traceLevel > 4)
+                    if(logger.isLoggable(Level.FINE))
                         {
-                        System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - increasing ");
+                        logger.fine("ScriptingComponent : Cell " + cell.getCellID() + " : setStatus = RENDERING - increasing ");
                         }
                     if(myListener == null)
                         {
@@ -272,8 +268,6 @@ public class SittingCellComponent extends CellComponent
                             };
                         contextComp.addContextMenuFactory(menuFactory);
                         }
-                    BasicRenderer br = (BasicRenderer) cell.getCellRenderer(RendererType.RENDERER_JME);
-                    br.setCollisionEnabled(false);
                     }
                 else
                     {
@@ -297,16 +291,16 @@ public class SittingCellComponent extends CellComponent
                 }
             case ACTIVE:
                 {
-                if(traceLevel > 4)
+                if(logger.isLoggable(Level.FINE))
                     {
-                    System.out.println("SittingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE - increasing = " + increasing);
+                    logger.fine("SittingComponent : Cell " + cell.getCellID() + " : setStatus = ACTIVE - increasing = " + increasing);
                     }
                 }
             default:
                 {
-                if(traceLevel > 4)
+                if(logger.isLoggable(Level.FINE))
                     {
-                    System.out.println("SittingComponent : Cell " + cell.getCellID() + " : In default for setStatus - status other than ACTIVE");
+                    logger.fine("SittingComponent : Cell " + cell.getCellID() + " : In default for setStatus - status other than ACTIVE");
                     }
                 }
             }
