@@ -1,7 +1,7 @@
 /**
- * Project Wonderland
+ * Open Wonderland
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -11,13 +11,14 @@
  * except in compliance with the License. A copy of the License is
  * available at http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath"
- * exception as provided by Sun in the License file that accompanied
- * this code.
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
  */
 
 package org.jdesktop.wonderland.modules.sitting.server;
 
+import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -26,6 +27,8 @@ import org.jdesktop.wonderland.modules.sitting.common.SittingCellComponentClient
 import org.jdesktop.wonderland.modules.sitting.common.SittingCellComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.InteractionComponentMO;
+import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**
@@ -40,6 +43,9 @@ public class SittingCellComponentMO extends CellComponentMO
     private float offset = 0.1f;
     private String mouse = "Left Mouse";
     private boolean mouseEnable = false;
+
+    @UsesCellComponentMO(InteractionComponentMO.class)
+    private ManagedReference<InteractionComponentMO> interactionRef;
 
     public SittingCellComponentMO(CellMO cell)
         {
@@ -56,7 +62,12 @@ public class SittingCellComponentMO extends CellComponentMO
     protected void setLive(boolean live)
         {
         super.setLive(live);
-        logger.warning("Setting SittingCellComponentMO to live = " + live);
+        logger.fine("Setting SittingCellComponentMO to live = " + live);
+
+        // make sure the cell is not collidable
+        if (live) {
+            interactionRef.get().setCollidable(false);
+        }
         }
 
 
