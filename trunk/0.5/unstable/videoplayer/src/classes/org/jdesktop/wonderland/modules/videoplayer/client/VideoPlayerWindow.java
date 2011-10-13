@@ -81,7 +81,7 @@ public class VideoPlayerWindow extends Window2D implements VideoPlayer {
     private SharedMapCli statusMap;
     protected static final float ACTIVE_FRAME_RATE = 10.0f;
     protected static final float INACTIVE_FRAME_RATE = 2.0f;
-    private VideoPlayerControlPanel controls;
+    private VideoPlayerControls controls;
     private HUDMessage messageComponent;
     private HUDComponent controlComponent;
     private boolean synced = true;
@@ -582,8 +582,10 @@ public class VideoPlayerWindow extends Window2D implements VideoPlayer {
 
         if (controlComponent == null) {
             // create control panel
-            controls = new VideoPlayerControlPanel(VideoPlayerWindow.this);
-
+            VideoPlayerControlPanel controlPanel = 
+                    new VideoPlayerControlPanel(VideoPlayerWindow.this);
+            controls = controlPanel;
+            
             // add a timeline to the control panel
             // listen for user actions on the timeline
             timeline.addTimeListener(new TimeListener() {
@@ -591,13 +593,13 @@ public class VideoPlayerWindow extends Window2D implements VideoPlayer {
                     toolManager.setPositionAction(newTime);
                 }
             });
-            controls.getPanel().add(timeline, BorderLayout.CENTER);
+            controlPanel.getPanel().add(timeline, BorderLayout.CENTER);
 
             // add event listeners
             controls.addCellMenuListener(toolManager);
 
             // create HUD control panel
-            controlComponent = mainHUD.createComponent(controls, cell);
+            controlComponent = mainHUD.createComponent(controlPanel, cell);
             controlComponent.setPreferredLocation(Layout.SOUTH);
 
             // add HUD control panel to HUD
@@ -636,5 +638,9 @@ public class VideoPlayerWindow extends Window2D implements VideoPlayer {
         controls.setSynced(isSynced());
 
         controls.setOnHUD(!toolManager.isOnHUD());
+    }
+    
+    protected VideoPlayerControls createControls(VideoPlayerWindow window) {
+        return new VideoPlayerControlPanel(window);
     }
 }
