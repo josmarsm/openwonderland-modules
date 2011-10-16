@@ -28,7 +28,7 @@ public class WebcasterCellClientState extends CellClientState
 {
     private final boolean isWebcasting;
     private String streamID;
-
+    
     public WebcasterCellClientState(boolean isWebcasting, String streamID){
         super();
         this.isWebcasting = isWebcasting;

@@ -73,3 +73,11 @@ native RTMP support and a sample app is included. To use the app:
 3. Once connected you can view any stream currently being broadcast
    # Enter the stream name you defined in the Webcaster's control panel
    # Press 'Play'
+   
+
+----------------
+Note About Audio
+----------------
+
+To use audio with the webcaster, the most recent version of jVoiceBridge needs to be installed from the svn
+repository; otherwise please ensure that audio is turned off from the webcaster control panel.

@@ -65,7 +65,7 @@ public class WebcasterCell extends Cell
     private static final boolean VIDEO_AVAILABLE = VideoLibraryLoader.loadVideoLibraries();
 
     private static final String SERVER_URL;
-
+    
     static
     {
         //This seems to be the wrong property, why isn't it the web server?
@@ -107,11 +107,15 @@ public class WebcasterCell extends Cell
 
     private String streamID = "";
 
+    enum AudioEnv{
+        OFF, MIC_ONLY, ENVIROMENT_ONLY, BOTH;
+    }
+    
     public WebcasterCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         try{startSound = new AudioResource(AssetUtils.getAssetURL("wla://webcaster/startsound.au"));}catch(MalformedURLException e){}
     }
-
+    
     public void showControlPanel(){
         try
         {
@@ -145,7 +149,7 @@ public class WebcasterCell extends Cell
         }
 
         startSound.play();
-        localRecording = isRecording;
+        localRecording = isRecording;        
     }
 
     public boolean getRecording(){
@@ -155,9 +159,9 @@ public class WebcasterCell extends Cell
     public void write(BufferedImage frame)
     {
         if (streamOutput == null){
-            streamOutput = new RTMPOut("rtmp://" + SERVER_URL + ":1935/live/" + controlPanel.getStreamName());
+            streamOutput = new RTMPOut(SERVER_URL, controlPanel.getStreamName(), controlPanel.getAudioState());
         }
-
+        
         streamOutput.write(frame);
     }
 
@@ -213,7 +217,7 @@ public class WebcasterCell extends Cell
                                                 SwingUtilities.invokeLater(new Runnable() {
 
                                                     public void run() {
-
+                                                        
                                                         try{
                                                             java.awt.Desktop.getDesktop().browse(java.net.URI.create("http://" + SERVER_URL + ":8080/webcaster/webcaster/index.html?server=" + SERVER_URL + "&stream=" + streamID));
                                                         }
@@ -231,7 +235,7 @@ public class WebcasterCell extends Cell
                         };
                         contextComp.addContextMenuFactory(menuFactory);
                     }
-                }
+                } 
 
                 break;
             case ACTIVE: {
@@ -260,19 +264,19 @@ public class WebcasterCell extends Cell
                             hudComponent.setVisible(false);
                         }
                     });
-
+                    
                 }
                 break;
         }
     }
-
+    
     @Override
     public void setClientState(CellClientState state){
         super.setClientState(state);
         remoteWebcasting = ((WebcasterCellClientState) state).isWebcasting();
         streamID = ((WebcasterCellClientState)state).getStreamID();
     }
-
+    
     private ChannelComponent getChannel() {
         return getComponent(ChannelComponent.class);
     }
