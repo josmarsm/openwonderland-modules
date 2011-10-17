@@ -48,13 +48,13 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.utils.AudioResource;
-import org.jdesktop.wonderland.client.utils.VideoLibraryLoader;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.webcaster.client.utils.RTMPOut;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellChangeMessage;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellClientState;
+import org.jdesktop.wonderland.video.client.VideoLibraryLoader;
 
 /**
  * @author Christian O'Connell

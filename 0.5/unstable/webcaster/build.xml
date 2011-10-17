@@ -21,7 +21,7 @@
     <pathconvert property="module-client.classpath">
             <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
             <path location="${modules.dir}/foundation/hud/build/client/hud-client.jar"/>
-            <path location="${current.dir}/lib/jmf.jar"/>
+            <path location="${wonderland.dir}/../wonderland-video/build/lib/wonderland-video.jar"/>
     </pathconvert>
        
    <!-- import web build file -->
