@@ -81,7 +81,6 @@
                 <file name="microphone/dist/microphone.jar"/>
                 <file name="best-view/dist/best-view.jar"/>
                 <file name="sittingComponent/dist/Sittable.jar"/>
-                <file name="security-session-auth/dist/security-session-auth.jar"/>
             </filelist>
             <mapper type="flatten"/>
         </copy> 
