@@ -15,7 +15,6 @@
  * subject to the "Classpath" exception as provided by the Open Wonderland
  * Foundation in the License file that accompanied this code.
  */
-
 /**
  * Project Wonderland
  *
@@ -70,27 +69,18 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
  */
 public class PosterCell extends App2DCell {
 
-    final private static String SHARED_MAP_KEY = "Poster";
-    final private static String TEXT_LABEL_KEY = "text";
-    final private static String MODE_LABEL_KEY = "mode";
-
     @UsesCellComponent
     private ContextMenuComponent contextComp = null;
     private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/poster/client/resources/Bundle");
-
     private ContextMenuFactorySPI menuFactory = null;
-
     // The "shared state" Cell component
     @UsesCellComponent
     protected SharedStateComponent sharedStateComp;
-
     // The listener for changes to the shared map
     private SharedMapListenerCli mapListener = null;
-    
     private String posterText;
     private boolean billboardMode = false;
     private PosterForm posterForm;
-
     /** The (singleton) window created by the Poster app */
     private PosterWindow window;
     /** The cell client state message received from the server cell */
@@ -103,8 +93,8 @@ public class PosterCell extends App2DCell {
     public PosterCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
         mapListener = new MySharedMapListener();
-                    }
-        
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -113,6 +103,7 @@ public class PosterCell extends App2DCell {
         super.setStatus(status, increasing);
         if (increasing && status == CellStatus.ACTIVE) {
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     posterForm = new PosterForm(PosterCell.this);
                 }
@@ -120,19 +111,18 @@ public class PosterCell extends App2DCell {
 
             // Create the shared hash map and initialize the poster text
             // if it does not already exist.
-            SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
-            SharedString posterString = sharedMap.get(TEXT_LABEL_KEY, SharedString.class);
+            SharedMapCli sharedMap = sharedStateComp.get(PosterCellClientState.SHARED_MAP_KEY);
+            SharedString posterString = sharedMap.get(PosterCellClientState.TEXT_LABEL_KEY, SharedString.class);
             if (posterString == null) {
                 posterString = SharedString.valueOf(bundle.getString("HELLO_WORLD!"));
-                sharedMap.put(TEXT_LABEL_KEY, posterString);
+                sharedMap.put(PosterCellClientState.TEXT_LABEL_KEY, posterString);
             }
-
             posterText = posterString.toString();
 
-            SharedBoolean billboardModeBoolean = sharedMap.get(MODE_LABEL_KEY, SharedBoolean.class);
+            SharedBoolean billboardModeBoolean = sharedMap.get(PosterCellClientState.MODE_LABEL_KEY, SharedBoolean.class);
             if (billboardModeBoolean == null) {
                 billboardModeBoolean = SharedBoolean.FALSE;
-                sharedMap.put(MODE_LABEL_KEY, billboardModeBoolean);
+                sharedMap.put(PosterCellClientState.MODE_LABEL_KEY, billboardModeBoolean);
             }
             billboardMode = billboardModeBoolean.getValue();
 
@@ -178,23 +168,24 @@ public class PosterCell extends App2DCell {
         if (status == CellStatus.RENDERING && increasing == true) {
             // Initialize the render with the current poster text
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
-            posterForm.updateForm();
-            window.updateLabel();
+                    posterForm.updateForm();
+                    window.updateLabel();
                 }
             });
 
             // Listen for changes in the poster text from other clients
-            SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
-            sharedMap.addSharedMapListener(TEXT_LABEL_KEY, mapListener);
-            sharedMap.addSharedMapListener(MODE_LABEL_KEY, mapListener);
+            SharedMapCli sharedMap = sharedStateComp.get(PosterCellClientState.SHARED_MAP_KEY);
+            sharedMap.addSharedMapListener(PosterCellClientState.TEXT_LABEL_KEY, mapListener);
+            sharedMap.addSharedMapListener(PosterCellClientState.MODE_LABEL_KEY, mapListener);
 
         }
         if (!increasing && status == CellStatus.DISK) {
             // Remove the listener for changes to the shared map
-            SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
-            sharedMap.removeSharedMapListener(TEXT_LABEL_KEY, mapListener);
-            sharedMap.removeSharedMapListener(MODE_LABEL_KEY, mapListener);
+            SharedMapCli sharedMap = sharedStateComp.get(PosterCellClientState.SHARED_MAP_KEY);
+            sharedMap.removeSharedMapListener(PosterCellClientState.TEXT_LABEL_KEY, mapListener);
+            sharedMap.removeSharedMapListener(PosterCellClientState.MODE_LABEL_KEY, mapListener);
             //Cleanup menu
             if (menuFactory != null) {
                 contextComp.removeContextMenuFactory(menuFactory);
@@ -202,15 +193,16 @@ public class PosterCell extends App2DCell {
             }
             window.setVisibleApp(false);
             window = null;
-            
+
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     if (posterForm != null) {
                         posterForm.dispose();
-        }
-    }
+                    }
+                }
             });
-    }
+        }
     }
 
     String getPosterText() {
@@ -223,11 +215,12 @@ public class PosterCell extends App2DCell {
 
     void openPosterForm() {
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
-        Rectangle parentBounds = getParentFrame().getBounds();
-        Rectangle formBounds = posterForm.getBounds();
-                posterForm.setLocation(parentBounds.width / 2 - formBounds.width / 2 + parentBounds.x, 
-                                       parentBounds.height - formBounds.height - parentBounds.y);
+                Rectangle parentBounds = getParentFrame().getBounds();
+                Rectangle formBounds = posterForm.getBounds();
+                posterForm.setLocation(parentBounds.width / 2 - formBounds.width / 2 + parentBounds.x,
+                        parentBounds.height - formBounds.height - parentBounds.y);
 
                 posterForm.setVisible(true);
             }
@@ -241,18 +234,18 @@ public class PosterCell extends App2DCell {
     void setPosterText(String text) {
         if (!text.equals(posterText)) {
             posterText = text;
-            SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
+            SharedMapCli sharedMap = sharedStateComp.get(PosterCellClientState.SHARED_MAP_KEY);
             SharedString labelTextString = SharedString.valueOf(posterText);
-            sharedMap.put(TEXT_LABEL_KEY, labelTextString);
+            sharedMap.put(PosterCellClientState.TEXT_LABEL_KEY, labelTextString);
         }
     }
 
     void setBillboardMode(boolean mode) {
         if (billboardMode != mode) {
             billboardMode = mode;
-            SharedMapCli sharedMap = sharedStateComp.get(SHARED_MAP_KEY);
+            SharedMapCli sharedMap = sharedStateComp.get(PosterCellClientState.SHARED_MAP_KEY);
             SharedBoolean billboardModeBoolean = SharedBoolean.valueOf(billboardMode);
-            sharedMap.put(MODE_LABEL_KEY, billboardModeBoolean);
+            sharedMap.put(PosterCellClientState.MODE_LABEL_KEY, billboardModeBoolean);
         }
     }
 
@@ -273,21 +266,22 @@ public class PosterCell extends App2DCell {
     class MySharedMapListener implements SharedMapListenerCli {
 
         public void propertyChanged(SharedMapEventCli event) {
-            if (event.getPropertyName().equals(TEXT_LABEL_KEY)) {
+            if (event.getPropertyName().equals(PosterCellClientState.TEXT_LABEL_KEY)) {
                 SharedString posterTextString = (SharedString) event.getNewValue();
                 posterText = posterTextString.getValue();
             }
-            if (event.getPropertyName().equals(MODE_LABEL_KEY)) {
+            if (event.getPropertyName().equals(PosterCellClientState.MODE_LABEL_KEY)) {
                 SharedBoolean billboardModeBoolean = (SharedBoolean) event.getNewValue();
                 billboardMode = billboardModeBoolean.getValue();
             }
-            
+
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
-            posterForm.updateForm();
-            window.updateLabel();
-        }
+                    posterForm.updateForm();
+                    window.updateLabel();
+                }
             });
+        }
     }
-}
 }

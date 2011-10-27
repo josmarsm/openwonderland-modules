@@ -44,6 +44,9 @@ import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
 import org.jdesktop.wonderland.modules.poster.common.PosterCellClientState;
 import org.jdesktop.wonderland.modules.sharedstate.server.SharedStateComponentMO;
 import org.jdesktop.wonderland.modules.poster.common.PosterCellServerState;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
+import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
+import org.jdesktop.wonderland.modules.sharedstate.server.SharedMapSrv;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
@@ -108,5 +111,45 @@ public class PosterCellMO extends App2DCellMO {
         state.setPreferredHeight(preferredHeight);
 
         return stateToFill;
+    }
+
+    /**
+     * Set the text in the poster, causing clients to update
+     * @param text a string containing the text for the poster, may be HTML
+     */
+    public void setPosterText(String text) {
+        SharedMapSrv sharedMap = sharedStateCompRef.get().get(PosterCellClientState.SHARED_MAP_KEY);
+        SharedString labelTextString = SharedString.valueOf(text);
+        sharedMap.put(PosterCellClientState.TEXT_LABEL_KEY, labelTextString);
+}
+
+    /**
+     * Get the current text in the poster
+     * @return the string of the text in the poster, may be HTML
+     */
+    public String getPosterText() {
+        SharedMapSrv sharedMap = sharedStateCompRef.get().get(PosterCellClientState.SHARED_MAP_KEY);
+        SharedString sharedString = (SharedString) sharedMap.get(PosterCellClientState.TEXT_LABEL_KEY);
+        return sharedString.getValue();
+    }
+
+    /**
+     * Set the "billboard" mode for the poster, causing clients to update
+     * @param mode if true, poster is in billboard mode, otherwise false
+     */
+    public void setBillboardMode(boolean mode) {
+        SharedMapSrv sharedMap = sharedStateCompRef.get().get(PosterCellClientState.SHARED_MAP_KEY);
+        SharedBoolean billboardModeBoolean = SharedBoolean.valueOf(mode);
+        sharedMap.put(PosterCellClientState.MODE_LABEL_KEY, billboardModeBoolean);
+    }
+
+    /**
+     * Get the "billboard" mode for the poster
+     * @return if true, the poster is in "billboard" mode, false otherwise
+     */
+    public boolean getBillboardMode() {
+        SharedMapSrv sharedMap = sharedStateCompRef.get().get(PosterCellClientState.SHARED_MAP_KEY);
+        SharedBoolean sharedBoolean = (SharedBoolean) sharedMap.get(PosterCellClientState.MODE_LABEL_KEY);
+        return sharedBoolean.getValue();
     }
 }

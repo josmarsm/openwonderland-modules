@@ -27,6 +27,9 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellClientState;
  */
 
 public class PosterCellClientState extends App2DCellClientState {    
+    final public static String SHARED_MAP_KEY = "Poster";
+    final public static String TEXT_LABEL_KEY = "text";
+    final public static String MODE_LABEL_KEY = "mode";
     private static final int DEFAULT_WIDTH = 640;
     private static final int DEFAULT_HEIGHT = 480;
     
