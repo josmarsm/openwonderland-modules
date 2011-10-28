@@ -130,10 +130,10 @@ public class WebcasterCellMO extends CellMO implements ManagedCallStatusListener
         this.isWebcasting = isWebcasting;
 
         if (!isWebcasting){
-            startRecording("webcaster" + this.streamID);
+            startWebcasting("webcaster" + this.streamID);
         }
         else{
-            stopRecording();
+            stopWebcasting();
         }
     }
     
@@ -148,7 +148,7 @@ public class WebcasterCellMO extends CellMO implements ManagedCallStatusListener
         setup.y = origin.y;
         setup.z = origin.z;
 
-        logger.fine("Recorder Origin is " + "(" + origin.x + ":" + origin.y + ":" + origin.z + ")");
+        logger.warning("Recorder Origin is " + "(" + origin.x + ":" + origin.y + ":" + origin.z + ")");
 
         setup.spatializer = vm.getVoiceManagerParameters().livePlayerSpatializer;
 
@@ -159,7 +159,8 @@ public class WebcasterCellMO extends CellMO implements ManagedCallStatusListener
         }
     }
     
-    private void startRecording(String recordingName) {
+    private void startWebcasting(String recordingName) {
+        logger.warning("recordingName: " + recordingName);
         try {
             recorder.startRecording("../../content/system/AudioRecordings/webcaster1.au");//recordingName + ".au");   //../../content/system/AudioRecordings/" + recordingName + ".au"
         } catch (IOException e) {
@@ -167,7 +168,8 @@ public class WebcasterCellMO extends CellMO implements ManagedCallStatusListener
         }
     }
 
-    private void stopRecording() {
+    private void stopWebcasting() {
+        logger.warning("stopWebcasting");
         try {
             recorder.stopRecording();
         } catch (IOException e) {

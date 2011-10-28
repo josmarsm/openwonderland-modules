@@ -162,7 +162,7 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
             throw new RuntimeException("Cannot capture texture buffer image");
         }
 
-        if (((WebcasterCell) cell).getRecording()){
+        if (((WebcasterCell) cell).isWebcasting()){
             ((WebcasterCell) cell).write(captureImage);
         }
     }
@@ -193,7 +193,7 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
         return image;
     }
 
-    public void setButtonRecordingState(final boolean state)
+    public void setButtonWebcastingState(final boolean state)
     {
         WorldManager wm = ClientContextJME.getWorldManager();
         SceneWorker.addWorker(new WorkCommit() {
@@ -204,7 +204,7 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
                     z = -0.15f;
                 }
                 logger.warning("z: " + z);
-                videoSpatial.setLocalTranslation(0f, 0f, z);
+                //videoSpatial.setLocalTranslation(0f, 0f, z);
             }
         });
         
@@ -257,7 +257,7 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
         private void mouseClicked(TriMesh mesh) {
             if (mesh.toString().equals("ID627-Material3 (com.jme.scene.SharedMesh)")) {
                 if (!((WebcasterCell) cell).isRemoteWebcasting()) {
-                    ((WebcasterCell) cell).setRecording(!((WebcasterCell) cell).getRecording());
+                    ((WebcasterCell) cell).setWebcasting(!((WebcasterCell) cell).isWebcasting());
                     ((WebcasterCell) cell).updateControlPanel();
 
                 }

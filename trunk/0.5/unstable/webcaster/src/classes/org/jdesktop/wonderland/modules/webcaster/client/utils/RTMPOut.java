@@ -36,6 +36,8 @@ import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 
 /**
@@ -43,6 +45,7 @@ import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
  */
 public class RTMPOut
 {
+    protected static final Logger logger = Logger.getLogger(RTMPOut.class.getName());
     private String path;
     private String server;
     private long startstamp = -1;
@@ -64,22 +67,27 @@ public class RTMPOut
     
     public RTMPOut(String server, String file, String audioState)
     {     
+        logger.warning("server: " + server + ", file: " + file + ", audioState: " + audioState);
         this.server = server;
         this.path = "rtmp://" + server + ":1935/live/" + file;
+        logger.warning("path: " + path);
         
         if (audioState == null){
             useAudio = false;
         }
         else {
             try{
+                logger.warning("sending command to softphone: " + audioState);
                 SoftphoneControlImpl.getInstance().sendCommandToSoftphone(audioState);
             }
             catch (IOException e){
+                logger.log(Level.SEVERE, "failed to communicate with softphone", e);
                 useAudio = false;
             }
             
             useAudio = true;
         }
+        logger.warning("useAudio: " + useAudio);
     }
 
     private void initOutput()
@@ -186,11 +194,59 @@ public class RTMPOut
         public void run()
         {
             try{
-                clientSocket = new Socket(server, 31271);
+                clientSocket = new Socket("localhost", 31271)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        ;
                 is = new DataInputStream(clientSocket.getInputStream());
             }
             catch (Exception e){
                 useAudio = false;
+                logger.log(Level.SEVERE, "Failed to read audio data", e);
                 return;
             }
 

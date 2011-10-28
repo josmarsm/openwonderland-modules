@@ -30,10 +30,10 @@ import javax.swing.SwingUtilities;
 public class WebcasterControlPanel extends javax.swing.JPanel {
 
     private final WebcasterCell cell;
-    private String streamID;
+    private final String streamID;
        
     /** Creates new form WebcasterControlPanel
-     * @param cell the movie recorder cell controlled by this panel
+     * @param cell the webcaster cell controlled by this panel
      */
     public WebcasterControlPanel(WebcasterCell cell, String streamID) {
         this.cell = cell;
@@ -64,7 +64,7 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         streamBox = new javax.swing.JLabel();
         dirField = new javax.swing.JTextField();
         jComboBox1 = new javax.swing.JComboBox();
-        recordButton = new javax.swing.JToggleButton();
+        webcastButton = new javax.swing.JToggleButton();
 
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
 
@@ -78,7 +78,8 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
 
         streamBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        streamBox.setText("Stream Name:");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcaster/client/resources/Bundle"); // NOI18N
+        streamBox.setText(bundle.getString("WebcasterControlPanel.streamBox.text")); // NOI18N
         streamBox.setAlignmentX(0.5f);
         streamBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         jPanel1.add(streamBox);
@@ -90,24 +91,24 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Audio Off", "Microphone Only", "Enviroment Only", "Audio On" }));
         jPanel1.add(jComboBox1);
 
-        recordButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/webcaster/client/resources/icon.gif"))); // NOI18N
-        recordButton.addActionListener(new java.awt.event.ActionListener() {
+        webcastButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/webcaster/client/resources/icon.gif"))); // NOI18N
+        webcastButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                recordButtonActionPerformed(evt);
+                webcastButtonActionPerformed(evt);
             }
         });
-        jPanel1.add(recordButton);
+        jPanel1.add(webcastButton);
 
         add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
 
     
-    private void record(boolean state)
+    private void webcast(boolean state)
     {
-        cell.setRecording(state);
-        streamBox.setEnabled(!cell.getRecording());
-        dirField.setEnabled(!cell.getRecording());
-        jComboBox1.setEnabled(!cell.getRecording());
+        cell.setWebcasting(state);
+        streamBox.setEnabled(!cell.isWebcasting());
+        dirField.setEnabled(!cell.isWebcasting());
+        jComboBox1.setEnabled(!cell.isWebcasting());
     }
     
     public String getAudioState()
@@ -125,23 +126,23 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         return null;
     }
 
-    private void recordButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recordButtonActionPerformed
-        record(recordButton.isSelected());
-    }//GEN-LAST:event_recordButtonActionPerformed
+    private void webcastButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webcastButtonActionPerformed
+        webcast(webcastButton.isSelected());
+    }//GEN-LAST:event_webcastButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField dirField;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel previewPanel;
-    private javax.swing.JToggleButton recordButton;
     private javax.swing.JLabel streamBox;
+    private javax.swing.JToggleButton webcastButton;
     // End of variables declaration//GEN-END:variables
 
     void setRemoteWebcasting(boolean b) {
         //Logger.getLogger(WebcasterControlPanel.class.getSimpleName()).warning("remoteWebcasting: " + b);
         dirField.setEnabled(!b);
-        recordButton.setEnabled(!b);
+        webcastButton.setEnabled(!b);
         streamBox.setEnabled(!b);
     }
 
@@ -149,9 +150,9 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                recordButton.setSelected(cell.getRecording());
-                streamBox.setEnabled(!cell.getRecording());
-                dirField.setEnabled(!cell.getRecording());
+                webcastButton.setSelected(cell.isWebcasting());
+                streamBox.setEnabled(!cell.isWebcasting());
+                dirField.setEnabled(!cell.isWebcasting());
             }
         });
         
