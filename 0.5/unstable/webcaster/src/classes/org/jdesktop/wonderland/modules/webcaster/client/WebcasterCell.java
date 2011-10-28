@@ -15,7 +15,6 @@
  * subject to the "Classpath" exception as provided by the Open Wonderland
  * Foundation in the License file that accompanied this code.
  */
-
 package org.jdesktop.wonderland.modules.webcaster.client;
 
 import java.awt.image.BufferedImage;
@@ -60,14 +59,12 @@ import org.jdesktop.wonderland.video.client.VideoLibraryLoader;
  * @author Christian O'Connell
  * @author Bernard Horan
  */
-public class WebcasterCell extends Cell
-{
-    private static final boolean VIDEO_AVAILABLE = VideoLibraryLoader.loadVideoLibraries();
+public class WebcasterCell extends Cell {
 
+    private static final boolean VIDEO_AVAILABLE = VideoLibraryLoader.loadVideoLibraries();
     private static final String SERVER_URL;
-    
-    static
-    {
+
+    static {
         //This seems to be the wrong property, why isn't it the web server?
         //Because the web server url doesn't seem to be available from the client
         String sgs_server = System.getProperty("sgs.server");
@@ -78,7 +75,7 @@ public class WebcasterCell extends Cell
             sgs_serverURL = new URL(sgs_server);
             //logger.warning("sgs_serverURL: " + sgs_serverURL);
         } catch (MalformedURLException ex) {
-            //logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
         if (sgs_serverURL != null) {
             host = sgs_serverURL.getHost();
@@ -87,40 +84,41 @@ public class WebcasterCell extends Cell
         SERVER_URL = host;
         //logger.warning("SERVER_URL: " + SERVER_URL);
     }
-
     private WebcasterCellRenderer renderer = null;
-
-    @UsesCellComponent private ContextMenuComponent contextComp = null;
+    @UsesCellComponent
+    private ContextMenuComponent contextComp = null;
     private ContextMenuFactorySPI menuFactory = null;
-
     private HUD mainHUD;
     private HUDComponent hudComponent;
     private WebcasterControlPanel controlPanel;
-
-    private boolean localRecording = false;
+    private boolean localWebcasting = false;
     private boolean remoteWebcasting = false;
     private RTMPOut streamOutput;
-
     private AudioResource startSound = null;
     /** the message handler, or null if no message handler is registered */
     private WebcasterCellMessageReceiver receiver = null;
-
     private String streamID = "";
 
-    enum AudioEnv{
+    enum AudioEnv {
+
         OFF, MIC_ONLY, ENVIROMENT_ONLY, BOTH;
     }
-    
+
     public WebcasterCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        try{startSound = new AudioResource(AssetUtils.getAssetURL("wla://webcaster/startsound.au"));}catch(MalformedURLException e){}
+        //TODO
+        try {
+            startSound = new AudioResource(AssetUtils.getAssetURL("wla://webcaster/startsound.au"));
+        } catch (MalformedURLException e) {
+            logger.log(Level.SEVERE, "Failed to get startsound", e);
+        }
     }
-    
-    public void showControlPanel(){
-        try
-        {
-            SwingUtilities.invokeLater(new Runnable () {
-                public void run () {
+
+    public void showControlPanel() {
+        try {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
                     hudComponent.setVisible(true);
                 }
             });
@@ -129,17 +127,18 @@ public class WebcasterCell extends Cell
         }
     }
 
-    public JComponent getCaptureComponent(){
+    public JComponent getCaptureComponent() {
         return renderer.getCaptureComponent();
     }
 
-    public void setRecording(boolean isRecording)
-    {
-        renderer.setButtonRecordingState(isRecording);
-        WebcasterCellChangeMessage msg = new WebcasterCellChangeMessage(localRecording);
+    public void setWebcasting(boolean isWebcasting) {
+        logger.warning("isWebcasting: " + isWebcasting);
+        renderer.setButtonWebcastingState(isWebcasting);
+        //TODO
+        WebcasterCellChangeMessage msg = new WebcasterCellChangeMessage(localWebcasting);
         sendCellMessage(msg);
 
-        if (!isRecording & localRecording) {
+        if (!isWebcasting & localWebcasting) {
             try {
                 streamOutput.close();
                 streamOutput = null;
@@ -149,19 +148,19 @@ public class WebcasterCell extends Cell
         }
 
         startSound.play();
-        localRecording = isRecording;        
+        localWebcasting = isWebcasting;
     }
 
-    public boolean getRecording(){
-        return localRecording;
+    public boolean isWebcasting() {
+        return localWebcasting;
     }
 
-    public void write(BufferedImage frame)
-    {
-        if (streamOutput == null){
+    public void write(BufferedImage frame) {
+        if (streamOutput == null) {
             streamOutput = new RTMPOut(SERVER_URL, controlPanel.getStreamName(), controlPanel.getAudioState());
+            logger.warning("creating new streamOutput: " + streamOutput);
         }
-        
+
         streamOutput.write(frame);
     }
 
@@ -210,18 +209,17 @@ public class WebcasterCell extends Cell
                                             }
                                         }
                                     }),
+                                            new SimpleContextMenuItem("Open Browser Viewer", new ContextMenuActionListener() {
 
-                                    new SimpleContextMenuItem("Open Browser Viewer", new ContextMenuActionListener(){
                                         public void actionPerformed(ContextMenuItemEvent event) {
                                             try {
                                                 SwingUtilities.invokeLater(new Runnable() {
 
                                                     public void run() {
-                                                        
-                                                        try{
+
+                                                        try {
                                                             java.awt.Desktop.getDesktop().browse(java.net.URI.create("http://" + SERVER_URL + ":8080/webcaster/webcaster/index.html?server=" + SERVER_URL + "&stream=" + streamID));
-                                                        }
-                                                        catch (IOException e) {
+                                                        } catch (IOException e) {
                                                             throw new RuntimeException("Error opening browser");
                                                         }
                                                     }
@@ -235,7 +233,7 @@ public class WebcasterCell extends Cell
                         };
                         contextComp.addContextMenuFactory(menuFactory);
                     }
-                } 
+                }
 
                 break;
             case ACTIVE: {
@@ -249,7 +247,7 @@ public class WebcasterCell extends Cell
             }
             case DISK:
                 if (!increasing) {
-                    setRecording(false);
+                    setWebcasting(false);
                     if (getChannel() != null) {
                         getChannel().removeMessageReceiver(WebcasterCellChangeMessage.class);
                     }
@@ -264,39 +262,35 @@ public class WebcasterCell extends Cell
                             hudComponent.setVisible(false);
                         }
                     });
-                    
+
                 }
                 break;
         }
     }
-    
+
     @Override
-    public void setClientState(CellClientState state){
+    public void setClientState(CellClientState state) {
         super.setClientState(state);
         remoteWebcasting = ((WebcasterCellClientState) state).isWebcasting();
-        streamID = ((WebcasterCellClientState)state).getStreamID();
+        streamID = ((WebcasterCellClientState) state).getStreamID();
     }
-    
+
     private ChannelComponent getChannel() {
         return getComponent(ChannelComponent.class);
     }
 
     @Override
-    protected CellRenderer createCellRenderer(RendererType rendererType)
-    {
-        if (rendererType == RendererType.RENDERER_JME)
-        {
+    protected CellRenderer createCellRenderer(RendererType rendererType) {
+        if (rendererType == RendererType.RENDERER_JME) {
             this.renderer = new WebcasterCellRenderer(this);
             return this.renderer;
-        }
-        else
-        {
+        } else {
             return super.createCellRenderer(rendererType);
         }
     }
 
     private void setRemoteWebcasting(boolean b) {
-        //logger.info("setRemoteWebcasting: " + b);
+        logger.warning("setRemoteWebcasting: " + b);
         controlPanel.setRemoteWebcasting(b);
         remoteWebcasting = b;
     }

@@ -39,6 +39,7 @@ public class WebcasterCellFactory implements CellFactorySPI {
         return new String[]{};
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         WebcasterCellServerState state = new WebcasterCellServerState();
         state.setName("Webcaster");

@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.common.cell.state.CellClientState;
 public class WebcasterCellClientState extends CellClientState
 {
     private final boolean isWebcasting;
-    private String streamID;
+    private final String streamID;
     
     public WebcasterCellClientState(boolean isWebcasting, String streamID){
         super();
@@ -37,10 +37,6 @@ public class WebcasterCellClientState extends CellClientState
 
     public boolean isWebcasting() {
         return isWebcasting;
-    }
-
-    public void setStreamID(String streamID){
-        this.streamID = streamID;
     }
 
     public String getStreamID(){
