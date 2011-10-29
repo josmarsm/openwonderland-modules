@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="client-test" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.client-test}"/>
+
+    <!-- import properties from the common modules properties. These values
+         may overwrite some values in my.module.properties, such as the
+         location of the Wonderland directory in the case of the entire modules
+         directory being checked out instead of an individual file -->
+    <property file="${current.dir}/../modules-unstable.properties"/>
+
+    <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
+        <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
+        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
+        <path location="${modules.dir}/tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-ui.classpath">
+        <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
+        <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
+        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
+        <path location="${modules.dir}/tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
+        <path location="${current.dir}/lib/json_simple-1.1.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-common.classpath">
+        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-server.classpath">
+        <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/tools/audio-manager/lib/voicelib.jar"/>
+        <path location="${modules.dir}/tools/audio-manager/lib/bridge_connector.jar"/>
+        <path location="${modules.dir}/tools/presence-manager/build/lib/server/presencemanager-server.jar"/>
+        <path location="${modules.dir}/foundation/security/build/lib/server/security-server.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-web.classpath">
+        <path location="${wonderland.dir}/web/front/dist/wonderland-webadmin-core.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
+        <path location="${wonderland.dir}/web/runner/dist/wonderland-runner-api.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-client.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-common.jar"/>
+    </pathconvert>
+
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client,
+                                                -module-compile-web,
+                                                -clienttest-compile-ui"/>
+                                                
+    <target name="-clienttest-compile-ui">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/test/**"/>
+            </compile-classes>
+
+            <compile-classpath>
+                <pathelement path="${module-ui.classpath}"/>
+                <pathelement path="${core-client.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+    
+    <target name="-clienttest-create-client-jar">
+        <jar jarfile="build/lib/client-test-ui.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="${module.src}/test/**"/>
+                <include name="${module.src}/common/**"/>
+            </fileset>
+            
+            <fileset dir="${current.dir}/src/classes">
+                <include name="${module.src}/test/ui/resources/**"/>
+            </fileset>
+        </jar>
+    </target>
+    
+    <target name="-clienttest-prepare-jnlp" depends="-clienttest-create-jnlp,
+                                                     -clienttest-sign-jars,
+                                                     -clienttest-copy-files"/>
+    
+    <target name="-clienttest-create-jnlp">
+        <!-- copy the Wonderland .jnlp file -->
+        <copy tofile="build/web/app/ClientTest.jnlp" 
+              file="${wonderland.dir}/web/front/build/web/app/Wonderland.jnlp" 
+              overwrite="true"/>
+        
+        <!-- make all existing jar paths relative to wonderland-web-front -->
+        <replaceregexp file="build/web/app/ClientTest.jnlp" byline="true">
+            <regexp pattern="&lt;jar href=&quot;([^&quot;]*)&quot;/&gt;"/>
+            <substitution expression="&lt;jar href=&quot;../../../wonderland-web-front/app/\1&quot;/&gt;"/>
+        </replaceregexp>
+        <replaceregexp file="build/web/app/ClientTest.jnlp" byline="true">
+            <regexp pattern="&lt;nativelib href=&quot;(.*)&quot;/&gt;"/>
+            <substitution expression="&lt;nativelib href=&quot;../../../wonderland-web-front/app/\1&quot;/&gt;"/>
+        </replaceregexp>
+        
+        <!-- rewrite properties -->
+        <replace file="build/web/app/ClientTest.jnlp">
+            <replacefilter>
+                <replacetoken><![CDATA[href="Wonderland.jnlp"]]></replacetoken>
+                <replacevalue><![CDATA[href="ClientTest.jnlp"]]></replacevalue>
+            </replacefilter>
+            <replacefilter>
+                <replacetoken><![CDATA[<title>Open Wonderland 0.5</title>]]></replacetoken>
+                <replacevalue><![CDATA[<title>Open Wonderland 0.5 Client Test</title>]]></replacevalue>
+            </replacefilter>
+            <replacefilter>
+                <replacetoken><![CDATA[<jar href="wonderland-client.jar" main="true"/>]]></replacetoken>
+                <replacevalue><![CDATA[<jar href="../../../wonderland-web-front/app/wonderland-client.jar"/>
+    <jar href="client-test-ui.jar" main="true"/>
+    <jar href="json_simple-1.1.jar"/>]]></replacevalue>
+            </replacefilter>
+            <replacefilter>
+                <replacetoken><![CDATA[main-class="org.jdesktop.wonderland.client.jme.JmeClientMain"]]></replacetoken>
+                <replacevalue><![CDATA[main-class="org.jdesktop.wonderland.modules.clienttest.test.ui.ClientTestUI"]]></replacevalue>
+            </replacefilter>
+        </replace>
+        
+        
+    </target>
+    
+    <target name="-clienttest-sign-jars">
+        <copy todir="build/lib">
+            <fileset dir="lib"/>
+        </copy>
+        
+        <pathconvert property="common.jars" pathsep=",">
+            <fileset dir="build/lib">
+                <include name="*.jar"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </pathconvert>
+        
+        <for param="sign.jar.name" list="${common.jars}">
+            <sequential>
+                <signjarnopack src.jar="build/lib/@{sign.jar.name}"
+                               dest.jar="build/web/app/@{sign.jar.name}"/>
+            </sequential>
+        </for>
+    </target>
+    
+    <target name="-clienttest-copy-files">
+        <mkdir dir="build/web/WEB-INF/classes"/>
+        <mkdir dir="build/web/WEB-INF/lib"/>
+        
+        <copy todir="build/web/WEB-INF/classes">
+            <fileset dir="${wonderland.dir}/web/front/build/classes">
+                <include name="**/WonderlandSubstitutionHandler**.class"/>
+            </fileset>
+        </copy>
+        
+        <copy todir="build/web/WEB-INF/lib">
+            <fileset dir="${wonderland.dir}/web/front/lib">
+                <include name="deployment-servlet**.jar"/>
+            </fileset>
+        </copy>
+        
+    </target>
+    
+    <target name="dist" depends="build, -clienttest-create-client-jar, -clienttest-prepare-jnlp">
+        <mkdir dir="${module.dist.dir}"/>
+
+        <module name="${module.name}" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
+            <requires name="avatarbase" majorversion="0" minorversion="5" miniVersion="1"/>
+            <requires name="security" majorversion="0" minorversion="5"/>
+            <requires name="presencemanager" majorversion="0" minorversion="5"/>
+            <requires name="audiomanager" majorversion="0" minorversion="5" miniVersion="3"/>
+
+            <!--client>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/**/*.properties"/>
+                    </fileset>
+                </clientjar> 
+            </client>
+
+            <server>
+                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server-->
+
+            <part name="web">
+                <jar name="${module.name}.war">
+                    <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
+                        <include name="${module.src}/web/**"/>
+                        <include name="${module.src}/common/**"/>
+                    </zipfileset>
+                    <fileset dir="${current.dir}/web"/>
+                    <fileset dir="${current.dir}/build/web">
+                        <include name="app/**"/>
+                        <include name="WEB-INF/**"/>
+                    </fileset>
+                </jar>
+            </part>
+
+            <art dir="${current.dir}/art"/>
+        </module>
+    </target>                                  
+                                  
+    <target name="run" depends="dist">
+        <property file="${wonderland.dir}/core/run-client.properties"/>
+        
+        <java fork="true"
+              classname="org.jdesktop.wonderland.modules.clienttest.test.ui.ClientTestUI">
+            <classpath>
+                <pathelement path="${module-ui.classpath}"/>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement location="build/lib/client-test-ui.jar"/>
+            </classpath>
+            
+            <jvmarg line="-Dwonderland.server.url=${sgs.server}"/>
+        </java>
+    </target>
+    
+    <target name="debug" depends="dist">
+        <property file="${wonderland.dir}/core/run-client.properties"/>
+        
+        <nbjpdastart addressproperty="jpda.address" name="client-test" transport="dt_socket">
+            <classpath>
+                <pathelement path="${module-ui.classpath}"/>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement location="build/lib/client-test-ui.jar"/>
+            </classpath>
+        </nbjpdastart>
+        <java classname="org.jdesktop.wonderland.modules.clienttest.test.ui.ClientTestUI" fork="true">
+            <classpath>
+                <pathelement path="${module-ui.classpath}"/>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement location="build/lib/client-test-ui.jar"/>
+            </classpath>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <jvmarg line="-Dwonderland.server.url=${sgs.server}"/>
+        </java>
+    </target>
+                                  
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+    
+    <!-- macro for signing jars without pack200 -->
+    <macrodef name="signjarnopack">
+        <attribute name="src.jar"/>
+        <attribute name="dest.jar"/>
+        
+        <sequential>
+            <signjar jar="@{src.jar}"
+                     keystore="${wonderland.keystore}"
+                     alias="${wonderland.keystore.alias}"
+                     storepass="${wonderland.keystore.password}"
+                     signedjar="@{dest.jar}"/>        
+        </sequential>
+    </macrodef>
+</project>
