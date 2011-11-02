@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.logging.Level;
 import javax.swing.JComponent;
@@ -123,7 +124,7 @@ public class WebcasterCell extends Cell {
                 }
             });
         } catch (Exception x) {
-            throw new RuntimeException("Cannot add hud component to main hud");
+            throw new RuntimeException("Cannot add hud component to main hud", x);
         }
     }
 
@@ -133,11 +134,8 @@ public class WebcasterCell extends Cell {
 
     public void setWebcasting(boolean isWebcasting) {
         logger.warning("isWebcasting: " + isWebcasting);
+        //TODO need to check if remote webcasting
         renderer.setButtonWebcastingState(isWebcasting);
-        //TODO
-        WebcasterCellChangeMessage msg = new WebcasterCellChangeMessage(localWebcasting);
-        sendCellMessage(msg);
-
         if (!isWebcasting & localWebcasting) {
             try {
                 streamOutput.close();
@@ -149,6 +147,9 @@ public class WebcasterCell extends Cell {
 
         startSound.play();
         localWebcasting = isWebcasting;
+        //TODO
+        WebcasterCellChangeMessage msg = new WebcasterCellChangeMessage(localWebcasting);
+        sendCellMessage(msg);
     }
 
     public boolean isWebcasting() {
@@ -186,7 +187,7 @@ public class WebcasterCell extends Cell {
                                 }
                             });
                         } catch (Exception x) {
-                            throw new RuntimeException("Cannot create control panel");
+                            throw new RuntimeException("Cannot create control panel", x);
                         }
                     }
 
@@ -205,11 +206,11 @@ public class WebcasterCell extends Cell {
                                                     }
                                                 });
                                             } catch (Exception x) {
-                                                throw new RuntimeException("Cannot add hud component to main hud");
+                                                throw new RuntimeException("Cannot add hud component to main hud", x);
                                             }
                                         }
                                     }),
-                                            new SimpleContextMenuItem("Open Browser Viewer", new ContextMenuActionListener() {
+                                            new SimpleContextMenuItem("Open Web Browser", new ContextMenuActionListener() {
 
                                         public void actionPerformed(ContextMenuItemEvent event) {
                                             try {
@@ -218,14 +219,14 @@ public class WebcasterCell extends Cell {
                                                     public void run() {
 
                                                         try {
-                                                            java.awt.Desktop.getDesktop().browse(java.net.URI.create("http://" + SERVER_URL + ":8080/webcaster/webcaster/index.html?server=" + SERVER_URL + "&stream=" + streamID));
+                                                            java.awt.Desktop.getDesktop().browse(URI.create("http://" + SERVER_URL + ":8080/webcaster/webcaster/index.html?server=" + SERVER_URL + "&stream=" + streamID));
                                                         } catch (IOException e) {
-                                                            throw new RuntimeException("Error opening browser");
+                                                            throw new RuntimeException("Error opening browser", e);
                                                         }
                                                     }
                                                 });
                                             } catch (Exception x) {
-                                                throw new RuntimeException("Cannot find browser");
+                                                throw new RuntimeException("Cannot find browser", x);
                                             }
                                         }
                                     })};
@@ -244,6 +245,7 @@ public class WebcasterCell extends Cell {
                         getChannel().addMessageReceiver(WebcasterCellChangeMessage.class, receiver);
                     }
                 }
+                break;
             }
             case DISK:
                 if (!increasing) {
@@ -316,7 +318,7 @@ public class WebcasterCell extends Cell {
                 setRemoteWebcasting(wccm.isWebcasting());
 
             } else {
-                logger.warning("it's from me to me!");
+                logger.warning("it's from me to me, ignored");
             }
         }
     }
