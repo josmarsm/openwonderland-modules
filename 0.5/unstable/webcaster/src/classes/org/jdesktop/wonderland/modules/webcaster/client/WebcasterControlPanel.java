@@ -144,6 +144,7 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         dirField.setEnabled(!b);
         webcastButton.setEnabled(!b);
         streamBox.setEnabled(!b);
+        jComboBox1.setEnabled(!b);
     }
 
     void updateWebcasting() {
@@ -153,6 +154,7 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
                 webcastButton.setSelected(cell.isWebcasting());
                 streamBox.setEnabled(!cell.isWebcasting());
                 dirField.setEnabled(!cell.isWebcasting());
+                jComboBox1.setEnabled(!cell.isWebcasting());
             }
         });
         
