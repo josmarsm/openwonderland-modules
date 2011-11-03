@@ -15,9 +15,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.io.PrintStream;
 import javax.swing.AbstractAction;
+import javax.swing.JDialog;
 import javax.swing.KeyStroke;
 
 /**
@@ -29,6 +31,7 @@ public class CommandPanel extends javax.swing.JPanel {
     /** Creates new form CommandPanel */
     private TextAreaOutputStream redirectedOutput;
     private PrintStream originalOut;
+    private JDialog parentDialog;
     public CommandPanel() {
         initComponents();
         jTextArea1.getInputMap().put(KeyStroke.getKeyStroke(">"), "none");
@@ -49,6 +52,7 @@ public class CommandPanel extends javax.swing.JPanel {
         redirectedOutput = new TextAreaOutputStream(jTextArea1);
         //System.setOut(new PrintStream(redirectedOutput, true));
         jTextArea1.addFocusListener(new CustomFocusListener());
+        makeKeyListener();
     }
 
     public void evaluate(String string) {
@@ -62,6 +66,34 @@ public class CommandPanel extends javax.swing.JPanel {
 
        ScriptManager.getInstance().evaluate(string);
         
+    }
+    
+    private void makeKeyListener() {
+        jTextArea1.addKeyListener(new KeyListener() {
+
+            public void keyTyped(KeyEvent ke) {
+                if(ke.getKeyChar() == '`' || ke.getKeyChar() == '~') {
+                    
+                    parentDialog.setVisible(!parentDialog.isVisible());
+                    jTextArea1.setText(jTextArea1.getText().replace("`", ""));
+                    jTextArea1.setText(jTextArea1.getText().replace("~", ""));
+                    
+                }
+            }
+
+            public void keyPressed(KeyEvent ke) {
+//                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public void keyReleased(KeyEvent ke) {
+//                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        });
+        
+    }
+    
+    public void setDialog(JDialog parentDialog) {
+        this.parentDialog = parentDialog;
     }
 
     /** This method is called from within the constructor to

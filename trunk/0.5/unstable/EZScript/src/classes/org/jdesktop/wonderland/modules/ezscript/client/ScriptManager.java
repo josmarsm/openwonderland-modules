@@ -5,7 +5,6 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client;
 
-import java.awt.image.BufferedImage;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,7 +14,6 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -35,7 +33,6 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavaErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavascriptErrorInfo;
-import sun.org.mozilla.javascript.internal.WrappedException;
 
 /**
  *
@@ -128,7 +125,7 @@ public class ScriptManager {
         final ErrorWindow window;
         FriendlyErrorInfoSPI info = null;
         if (e.getMessage().contains("WrappedException")) {
-            WrappedException we = (WrappedException) e.getCause();
+            //WrappedException we = (WrappedException) e.getCause();
             //java issue
             info = new DefaultFriendlyJavaErrorInfo();
 

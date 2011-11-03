@@ -5,6 +5,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,6 +35,10 @@ import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
 import org.jdesktop.wonderland.client.contextmenu.SimpleContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.contextmenu.spi.ContextMenuFactorySPI;
+import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
@@ -50,11 +55,15 @@ import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.FriendlyErrorInfoSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableComponent;
+import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyErrorInfo;
+import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavaErrorInfo;
+import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavascriptErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.common.CellTriggerEventMessage;
 import org.jdesktop.wonderland.modules.ezscript.common.SharedBounds;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
@@ -63,8 +72,6 @@ import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapCli;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedBoolean;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
-import sun.org.mozilla.javascript.internal.EcmaError;
-import sun.org.mozilla.javascript.internal.WrappedException;
 
 /**
  * Client-side scripting cell component
@@ -806,7 +813,7 @@ public class EZScriptComponent extends CellComponent {
         try {
             scriptEngine.eval(script, scriptBindings);
         } catch(Exception e) {
-            e.printStackTrace();
+            processException(e);
         } finally {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -1052,9 +1059,9 @@ public class EZScriptComponent extends CellComponent {
 
         try {
             //System.out.println("evaluating script: \n"+scriptx);
-            scriptEngine.eval(scriptx, scriptBindings);
+            scriptEngine.eval(scriptx, scriptBindings);            
         } catch (ScriptException e) {
-            e.printStackTrace();
+            processException(e);
         }
     }
 
@@ -1076,7 +1083,7 @@ public class EZScriptComponent extends CellComponent {
            // System.out.println("evaluating script: \n"+scriptx);
             scriptEngine.eval(scriptx, scriptBindings);
         } catch (ScriptException e) {
-            e.printStackTrace();
+            processException(e);
         }
     }
 
@@ -1170,15 +1177,43 @@ public class EZScriptComponent extends CellComponent {
                 "\treturn Context.getCellIDByName(cellname);" +
                 "}";
 
-        try {
+        try {            
             scriptEngine.eval(scriptx, scriptBindings);
         } catch(ScriptException e) {
-           if(e.getCause() instanceof WrappedException) {
-               WrappedException we = (WrappedException)e.getCause();
-               //java issue
-           } else if(e.getCause() instanceof EcmaError)
-            e.printStackTrace();
+            processException(e);
         }
+    }
+    
+    private void processException(Exception e) {
+        final ErrorWindow window;
+            FriendlyErrorInfoSPI info = null;
+            if(e.getMessage().contains("WrappedException")) {
+                //add default friendly java
+                info = new DefaultFriendlyJavaErrorInfo();
+                
+            } else if(e.getMessage().contains("EcmaError")) {
+                //add default friendly javascript
+                info = new DefaultFriendlyJavascriptErrorInfo();
+            } else {
+                //add default friendly
+                info = new DefaultFriendlyErrorInfo();
+            }
+            
+            window = new ErrorWindow(info.getSummary(), info.getSolutions());
+            TextAreaOutputStream output = new TextAreaOutputStream(window.getDetailsArea());
+            e.printStackTrace(new PrintStream(output));
+            SwingUtilities.invokeLater(new Runnable() { 
+                public void run() {
+                    HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+                    HUDComponent c = mainHUD.createComponent(window);
+                    window.setHUDComponent(c);
+                    c.setDecoratable(true);
+                    c.setPreferredLocation(Layout.CENTER);
+                    mainHUD.addComponent(c);
+                    c.setVisible(true);
+                }
+                
+            });
     }
     
     public SharedStateComponent getSharedStateComponent() {

@@ -95,8 +95,8 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         isGlobal = true;
         library = new ScriptLibraryPanel();
         jTabbedPane1.addTab("Library", library);
-        commandPanel = new CommandPanel();
-        jTabbedPane1.addTab("Command Line", commandPanel);
+//        commandPanel = new CommandPanel();
+//        jTabbedPane1.addTab("Command Line", commandPanel);
         this.dialog = dialog;
         this.setMinimumSize(new Dimension(600, 400));
         this.setPreferredSize(new Dimension(600, 400));
