@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -18,12 +18,14 @@
 package org.jdesktop.wonderland.modules.screenshare.common;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
 import org.jdesktop.wonderland.modules.webcamviewer.common.cell.WebcamViewerCellServerState;
 
 /**
  * Server state for screen sharing
  * @author Jonathan Kaplan <jonathankap@gmail.com>
  */
+@ServerState
 @XmlRootElement(name="screenshare-cell")
 public class ScreenShareServerState extends WebcamViewerCellServerState {
     @Override
