@@ -1,3 +1,13 @@
+INSTALLATION OF JAVACV
+The following files should be moved to your wonderland-core/ext/common directory.
+- javacv.jar
+- javacpp.jar
+
+Don't forget to edit wonderland-core/build-tools/build-scripts/classpath.xml
+to include the path to javacv.jar and javacpp.jar within the
+wonderland.lib.classpath section.
+
+
 INSTALLATION OF JAVACV.ZIP
 <jagwire>
 
