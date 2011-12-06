@@ -1,0 +1,13 @@
+INSTALLATION OF JAVACV.ZIP
+<jagwire>
+
+Within the following directories within zip/ you will find javacv.zip:
+- win32/
+- win64/
+- macosx/
+
+In order for the webcam tests found within the client-test project to pass,
+you will need to move the javacv.zip of your respective platform into the
+wonderland-core/ext/zip/<your-platform> directory. Afterward, you will need
+to clean and build your wonderland build. Any questions or comments should
+be posted to the openwonderland google group.
