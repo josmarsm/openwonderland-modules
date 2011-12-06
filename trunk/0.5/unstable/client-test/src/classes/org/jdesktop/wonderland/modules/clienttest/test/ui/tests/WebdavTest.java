@@ -44,6 +44,9 @@ public class WebdavTest extends BaseTest {
                 LOGGER.log(Level.WARNING, "No children found");
                 return TestResult.FAIL;
             }            
+            
+            LOGGER.log(Level.INFO, "Read resource with {0} children", 
+                       children.list().length);
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Error in TCP Ports Test", ex);
             return TestResult.FAIL;
