@@ -1,0 +1,4 @@
+The client-test module depends on the javacv-integration libraries found in wonderland-modules/unstable.
+Please follow the instructions found in javacv-integration/README
+
+
