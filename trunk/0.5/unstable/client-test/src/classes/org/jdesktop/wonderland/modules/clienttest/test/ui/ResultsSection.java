@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
  */
 
 /*
@@ -13,7 +26,6 @@ package org.jdesktop.wonderland.modules.clienttest.test.ui;
 import java.util.ResourceBundle;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import org.jdesktop.wonderland.client.jme.LogViewer;
 import org.json.simple.JSONObject;
 
 /**
@@ -73,7 +85,6 @@ public class ResultsSection extends javax.swing.JPanel
         jScrollPane1 = new javax.swing.JScrollPane();
         textPane = new javax.swing.JEditorPane();
         detailsButton = new javax.swing.JButton();
-        emailButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -91,39 +102,34 @@ public class ResultsSection extends javax.swing.JPanel
             }
         });
 
-        emailButton.setText(bundle.getString("ResultsSection.emailButton.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(76, 76, 76)
-                .addComponent(detailsButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(emailButton)
-                .addContainerGap(74, Short.MAX_VALUE))
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(257, Short.MAX_VALUE)
+                .addComponent(detailsButton)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(detailsButton)
-                    .addComponent(emailButton))
+                .addComponent(detailsButton)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void detailsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_detailsButtonActionPerformed
-        JOptionPane.showMessageDialog(this, TestManager.INSTANCE.getLog());
+        LogViewerFrame lvf = new LogViewerFrame(TestManager.INSTANCE.getLog());
+        lvf.pack();
+        lvf.setVisible(true);
     }//GEN-LAST:event_detailsButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton detailsButton;
-    private javax.swing.JButton emailButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JEditorPane textPane;
     // End of variables declaration//GEN-END:variables

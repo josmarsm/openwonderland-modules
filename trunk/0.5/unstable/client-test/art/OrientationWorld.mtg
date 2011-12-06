@@ -1,0 +1,13 @@
+DataDir 
+TextureDir /textures
+
+Geometry geometries_0-bldg_shelterA_001
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap bldg_shelterA_001.jpg 0
+	ShaderUniform NormalMap bldg_shelterA_N_001.jpg 1
+	ShaderUniform SpecularMap bldg_shelterA_S_001.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+
+Instance Shelter0 org.jdesktop.mtgame.ColladaInstance 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz

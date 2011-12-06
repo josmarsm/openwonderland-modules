@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
  */
 
 /*
@@ -10,8 +23,6 @@
  */
 package org.jdesktop.wonderland.modules.clienttest.test.ui;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -22,7 +33,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 import javax.swing.event.HyperlinkEvent;
@@ -45,8 +55,12 @@ public class TestsSection extends javax.swing.JPanel
     private String title;
     private final List<Test> tests = new ArrayList<Test>();
     
+    protected enum TestMode { SINGLE, SEQUENCE };
+    
     private SwingWorker worker;
     private TestResult result = TestResult.NOT_RUN;
+    private Test currentTest;
+    private TestMode mode = TestMode.SINGLE;
     
     /** Creates new form IntroTestSection */
     public TestsSection() {
@@ -90,6 +104,7 @@ public class TestsSection extends javax.swing.JPanel
             test.clearMessages();
         }
         setResult(TestResult.NOT_RUN);
+        setMode(TestMode.SEQUENCE);
         
         startTest(tests.get(0));
     }
@@ -101,6 +116,10 @@ public class TestsSection extends javax.swing.JPanel
         }
     }    
     
+    public Test getCurrentTest() {
+        return currentTest;
+    }
+    
     public TestResult getResult() {
         return result;
     }
@@ -109,13 +128,27 @@ public class TestsSection extends javax.swing.JPanel
         this.result = result;
     }
     
+    protected TestMode getMode() {
+        return mode;
+    }
+    
+    protected void setMode(TestMode mode) {
+        this.mode = mode;
+    }
+    
     protected void testComplete(Test test, TestResult result) {
+        currentTest = null;
+        
         Iterator<Test> ti = tests.iterator();
         while (ti.hasNext()) {
             if (test.equals(ti.next())) {
                 test.setResult(result);
                 
-                if (ti.hasNext()) {
+                // determine whether to continue on in the sequence of tests
+                if (result.ordinal() > TestResult.IN_PROGRESS.ordinal() && 
+                    ti.hasNext() && 
+                    getMode() == TestMode.SEQUENCE) 
+                {
                     startTest(ti.next());
                 } else {
                     testsComplete();
@@ -131,6 +164,8 @@ public class TestsSection extends javax.swing.JPanel
     
     protected void startTest(Test test) {
         test.setResult(TestResult.IN_PROGRESS);
+        currentTest = test;
+        
         LOGGER.log(Level.INFO, MessageFormat.format(
                 BUNDLE.getString("Starting_Test"), test.getName(), test.getId()));
                 
@@ -141,6 +176,9 @@ public class TestsSection extends javax.swing.JPanel
     }
     
     protected void testsComplete() {
+        currentTest = null;
+        setMode(TestMode.SINGLE);
+        
         // set the result to the worst of all test run
         TestResult worst = TestResult.NOT_RUN;
         for (Test test : tests) {
@@ -164,31 +202,53 @@ public class TestsSection extends javax.swing.JPanel
         
         out.append("<table cellpadding=\"5px\">");
         for (Test test : tests) {
-            out.append("<tr>").append("<td>");
-            out.append(resultImage(test.getResult()));
-            out.append("</td><td><font size=\"6\">");
-            
-            if (test.getMessages().length() != 0) {
-                out.append("<a href=").append(test.getId()).append(">");
-            }
-            
-            out.append(test.getName());
-            
-            if (test.getMessages().length() != 0) {
-                out.append("</a>");
-            }
-            
-            out.append("</font></td>").append("</tr>");
+            getTestText(test, out);
         }
         out.append("</table>");
         
         return out.toString();
     }
     
+    protected void getTestText(Test test, StringBuilder out) {
+        boolean moreInfo = (test.getResult().ordinal() > TestResult.IN_PROGRESS.ordinal());
+        
+        out.append("<tr>").append("<td>");
+        out.append(resultImage(test.getResult()));
+        out.append("</td><td><font size=\"6\">");
+
+        if (moreInfo) {
+            out.append("<a href=info:").append(test.getId()).append(">");
+        }
+
+        out.append(test.getName());
+
+        if (moreInfo) {
+            out.append("</a>");
+        }
+        out.append("</font></td>");
+
+        out.append("<td><font size=\"4\">");
+        if (getCurrentTest() == null) {
+            out.append("<a href=run:").append(test.getId()).append(">");
+            out.append(" Run").append("</a>");
+        }        
+        out.append("</font></td>").append("</tr>");
+    }
     
-    protected void handleLink(String testId) {
+    protected void handleLink(String link) {
+        String[] split = link.split(":");
+        String action = split[0];
+        String testId = split[1];
+        
         Test test = TestManager.INSTANCE.getTest(testId);
-        JOptionPane.showMessageDialog(this, test.getMessages());
+        
+        if (action.equals("info")) {
+            TestResultView view = new TestResultView(test);
+            view.pack();
+            view.setVisible(true);
+        } else if (action.equals("run")) {
+            startTest(test);
+        }
     }
     
     public static String resultImage(TestResult result) {

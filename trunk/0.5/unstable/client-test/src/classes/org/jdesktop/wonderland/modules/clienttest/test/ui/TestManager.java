@@ -1,19 +1,36 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
  */
 package org.jdesktop.wonderland.modules.clienttest.test.ui;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -118,6 +135,15 @@ public enum TestManager {
     }
     
     public void appendToLog(String message) {
+        // see if there is a currently running test
+        TestSection cur = getCurrentSection();
+        if (cur instanceof RunnableTestSection) {
+            Test curTest = ((RunnableTestSection) cur).getCurrentTest();
+            if (curTest != null) {
+                curTest.appendMessage(message);
+            }
+        }
+        
         logBuffer.append(message);
     }
     
@@ -209,7 +235,8 @@ public enum TestManager {
             config = new JSONObject();
         }
            
-        Test test = create(className, Test.class);
+        ClassLoader testClassLoader = createTestClassLoader(config);
+        Test test = create(className, Test.class, testClassLoader);
         test.initialize(config);
         
         // store our record of the test
@@ -218,11 +245,36 @@ public enum TestManager {
         return test;
     }
     
+    private ClassLoader createTestClassLoader(JSONObject config) 
+            throws IOException
+    {
+        List<URL> urls = new ArrayList<URL>(Arrays.asList(new URL[] {
+           getAssetURL("wla://client-test/client-test-tests.jar") 
+        }));
+        
+        if (config.containsKey("libraries")) {
+            JSONArray libraries = (JSONArray) config.get("libraries");
+            for (int i = 0; i < libraries.size(); i++) {
+                urls.add(getAssetURL((String) libraries.get(i)));
+            }
+        }
+        
+        return new ScannedClassLoader(urls.toArray(new URL[0]),
+                                      getClass().getClassLoader());
+    }
+    
     private <T> T create(String className, Class<T> clazz) 
             throws IOException
     {
+        return create(className, clazz, getClass().getClassLoader());
+    }
+    
+    private <T> T create(String className, Class<T> clazz,
+                         ClassLoader loader) 
+            throws IOException
+    {
         try {
-            Class<T> c = (Class<T>) Class.forName(className);
+            Class<T> c = (Class<T>) loader.loadClass(className);
             return c.newInstance();
         } catch (InstantiationException ex) {
             throw new IOException(ex);
@@ -231,6 +283,15 @@ public enum TestManager {
         } catch (ClassNotFoundException ex) {
             throw new IOException(ex);
         }
+    }
+    
+    public static URL getAssetURL(String asset) throws IOException {
+        return AssetUtils.getAssetURL(asset, getServerNameAndPort());
+    }
+    
+    private static String getServerNameAndPort() throws MalformedURLException {
+        URL serverURL = new URL(System.getProperty("wonderland.server.url"));
+        return serverURL.getHost() + ":" + serverURL.getPort();
     }
     
     public interface TestListener {
