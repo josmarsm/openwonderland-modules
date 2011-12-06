@@ -164,15 +164,28 @@ public abstract class BaseGraphicsTest extends BaseTest
     }
     
     protected void cleanup() {
+        final Semaphore lock = new Semaphore(1);
+        lock.drainPermits();
+        
         GraphicsUtils.workCommit(new WorkCommit() {
             public void commit() {
-                wm.getRenderManager().setFrameRateListener(null, 100);
+                try {
+                    wm.getRenderManager().setFrameRateListener(null, 100);
         
-                cleanupLights();
-                cleanupCameraEntity();
-                cleanupEntities();
+                    cleanupLights();
+                    cleanupCameraEntity();
+                    cleanupEntities();
+                } finally {
+                    lock.release();
+                }
             }
         });
+        
+        try {
+            lock.acquire();
+        } catch (InterruptedException ie) {
+            // ignore
+        }
     }
     
     protected void createLights() {

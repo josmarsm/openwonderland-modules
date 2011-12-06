@@ -33,6 +33,7 @@
         <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
         <path location="${modules.dir}/tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
         <path location="${current.dir}/lib/json_simple-1.1.jar"/>
+        <path location="${modules.dir}/tools/webdav/lib/webdavclient4j-core-0.92.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
@@ -241,9 +242,9 @@
         <java fork="true"
               classname="org.jdesktop.wonderland.modules.clienttest.test.ui.ClientTestUI">
             <classpath>
-                <pathelement path="${module-ui.classpath}"/>
                 <pathelement path="${core-client.classpath}"/>
                 <pathelement location="build/lib/client-test-ui.jar"/>
+                <path location="${current.dir}/lib/json_simple-1.1.jar"/>
             </classpath>
             
             <jvmarg line="-Dwonderland.server.url=${sgs.server}"/>
@@ -255,16 +256,16 @@
         
         <nbjpdastart addressproperty="jpda.address" name="client-test" transport="dt_socket">
             <classpath>
-                <pathelement path="${module-ui.classpath}"/>
                 <pathelement path="${core-client.classpath}"/>
                 <pathelement location="build/lib/client-test-ui.jar"/>
+                <path location="${current.dir}/lib/json_simple-1.1.jar"/>
             </classpath>
         </nbjpdastart>
         <java classname="org.jdesktop.wonderland.modules.clienttest.test.ui.ClientTestUI" fork="true">
             <classpath>
-                <pathelement path="${module-ui.classpath}"/>
                 <pathelement path="${core-client.classpath}"/>
                 <pathelement location="build/lib/client-test-ui.jar"/>
+                <path location="${current.dir}/lib/json_simple-1.1.jar"/>
             </classpath>
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>

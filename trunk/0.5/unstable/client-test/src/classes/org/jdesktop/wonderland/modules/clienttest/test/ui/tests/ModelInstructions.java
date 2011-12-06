@@ -22,18 +22,25 @@ public class ModelInstructions extends BaseTest {
     }
         
     public TestResult run() {
+        frame.reset();
+                
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 frame.setVisible(true);
             }
         });
         
+        boolean result = false;
         try {
-            frame.waitForAnswer();
+            result = frame.waitForAnswer();
         } catch (InterruptedException ie) {
             // ignore
         }
         
-        return TestResult.PASS;
+        if (result) {
+            return TestResult.PASS;
+        } else {
+            return TestResult.NOT_RUN;
+        }
     }
 }
