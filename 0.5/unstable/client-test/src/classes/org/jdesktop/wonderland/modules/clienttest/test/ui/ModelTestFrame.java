@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
  */
 
 /*
@@ -27,7 +40,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
             "org/jdesktop/wonderland/modules/clienttest/test/ui/resources/Bundle");
     
     private boolean answered = false;
-    private boolean answer = false;
+    private TestResult answer;
     private boolean loading = true;
     
     /** Creates new form ModelTestFrame */
@@ -37,7 +50,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                setAnswer(false);
+                setAnswer(TestResult.NOT_RUN);
             }
         });
     }
@@ -50,7 +63,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
         testPanel.add(component, BorderLayout.CENTER);
     }
     
-    public boolean waitForAnswer() throws InterruptedException {
+    public TestResult waitForAnswer() throws InterruptedException {
         synchronized (this) {
             while (!isAnswered()) {
                 wait();
@@ -62,7 +75,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
     
     public synchronized void reset() {
         answered = false;
-        answer = false;
+        answer = TestResult.NOT_RUN;
         
         loading = true;
         yesButton.setEnabled(false);
@@ -118,6 +131,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
         testHolder = new javax.swing.JPanel();
         testLabel = new javax.swing.JLabel();
         testPanel = new javax.swing.JPanel();
+        cancelButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -150,8 +164,8 @@ public class ModelTestFrame extends javax.swing.JFrame {
         referenceHolder.setLayout(referenceHolderLayout);
         referenceHolderLayout.setHorizontalGroup(
             referenceHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-            .addComponent(referenceLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+            .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
+            .addComponent(referenceLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
         );
         referenceHolderLayout.setVerticalGroup(
             referenceHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -173,8 +187,8 @@ public class ModelTestFrame extends javax.swing.JFrame {
         testHolder.setLayout(testHolderLayout);
         testHolderLayout.setHorizontalGroup(
             testHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(testLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-            .addComponent(testPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+            .addComponent(testLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
+            .addComponent(testPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
         );
         testHolderLayout.setVerticalGroup(
             testHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -185,6 +199,13 @@ public class ModelTestFrame extends javax.swing.JFrame {
         );
 
         mainPanel.add(testHolder);
+
+        cancelButton.setText(bundle.getString("ModelTestFrame.cancelButton.text")); // NOI18N
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -197,8 +218,10 @@ public class ModelTestFrame extends javax.swing.JFrame {
                 .addComponent(noButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(yesButton)
-                .addContainerGap(56, Short.MAX_VALUE))
-            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(cancelButton)
+                .addContainerGap())
+            .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 693, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -208,7 +231,8 @@ public class ModelTestFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(questionLabel)
                     .addComponent(noButton)
-                    .addComponent(yesButton))
+                    .addComponent(yesButton)
+                    .addComponent(cancelButton))
                 .addContainerGap())
         );
 
@@ -216,16 +240,21 @@ public class ModelTestFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void noButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noButtonActionPerformed
-        setAnswer(false);
+        setAnswer(TestResult.FAIL);
         setVisible(false);
     }//GEN-LAST:event_noButtonActionPerformed
 
     private void yesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_yesButtonActionPerformed
-        setAnswer(true);
+        setAnswer(TestResult.PASS);
         setVisible(false);
     }//GEN-LAST:event_yesButtonActionPerformed
 
-    protected synchronized void setAnswer(boolean answer) {
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        setAnswer(TestResult.NOT_RUN);
+        setVisible(false);
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
+    protected synchronized void setAnswer(TestResult answer) {
         if (this.answered) {
             return;
         }
@@ -239,7 +268,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
         return answered;
     }
     
-    protected synchronized boolean getAnswer() {
+    protected synchronized TestResult getAnswer() {
         return answer;
     }
     
@@ -279,6 +308,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JButton noButton;

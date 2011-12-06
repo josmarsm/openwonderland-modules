@@ -1,8 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above
+ * copyright and this condition.
+ *
+ * The contents of this file are subject to the GNU General Public
+ * License, Version 2 (the "License"); you may not use this file
+ * except in compliance with the License. A copy of the License is
+ * available at http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as
+ * subject to the "Classpath" exception as provided by the Open Wonderland
+ * Foundation in the License file that accompanied this code.
  */
-
 /*
  * ClientTestUI.java
  *
@@ -11,16 +23,15 @@
 package org.jdesktop.wonderland.modules.clienttest.test.ui;
 
 import java.awt.CardLayout;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URL;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -31,6 +42,7 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.SwingUtilities;
+import org.jdesktop.wonderland.client.jme.Webstart.JnlpSecurityManager;
 import org.jdesktop.wonderland.client.jme.WonderlandURLStreamHandlerFactory;
 import org.jdesktop.wonderland.modules.clienttest.test.ui.TestManager.TestListener;
 
@@ -367,6 +379,9 @@ public class ClientTestUI extends javax.swing.JFrame
 
         // set up resolving Wonderland URLs
         URL.setURLStreamHandlerFactory(new WonderlandURLStreamHandlerFactory());
+        
+        // set security manager
+        System.setSecurityManager(new JnlpSecurityManager());
         
         // set up our custom log handler to pipe messages to the LogViewerFrame.
         // We need to do this to work around the fact that Web Start won't
