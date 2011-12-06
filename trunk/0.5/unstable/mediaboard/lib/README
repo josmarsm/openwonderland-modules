@@ -1,0 +1,58 @@
+MEDIABOARD README
+<jagwire>
+
+INSTALLATION OF MEDIABOARD
+The installation of the mediaboard requires the installation of javacv as well
+ as javacv.zip as described below.
+
+In addition, a server wanting to use the mediaboard should:
+* Have authentication enabled
+* A group entitled "media" should be created, and all users added
+* Have a groups/ directory added to the content folder on the server
+--This can be done via the web administration page
+* Inside the groups/ directory, there should be a media directory
+added.
+
+********************
+* IMPORTANT!!!!    *
+********************
+Double check that via the "Manage content" tab in the web administration
+page that you can see the following links: 
+* checksums
+* groups
+* modules
+* system
+* users
+
+When clicking the groups link, make sure you can see the following links:
+* media
+
+When clicking the media link, make sure you can see the following links:
+* boards
+* images
+* photos
+* videos
+
+INSTALLATION OF JAVACV
+
+The following files should be moved to your wonderland-core/ext/common directory.
+- javacv.jar
+- javacpp.jar
+
+Don't forget to edit wonderland-core/build-tools/build-scripts/classpath.xml
+to include the path to javacv.jar and javacpp.jar within the
+wonderland.lib.classpath section.
+
+
+INSTALLATION OF JAVACV.ZIP
+
+Within the following directories within zip/ you will find javacv.zip:
+- win32/
+- win64/
+- macosx/
+
+In order for the webcam tests found within the client-test project to pass,
+you will need to move the javacv.zip of your respective platform into the
+wonderland-core/ext/zip/<your-platform> directory. Afterward, you will need
+to clean and build your wonderland build. Any questions or comments should
+be posted to the openwonderland google group.
