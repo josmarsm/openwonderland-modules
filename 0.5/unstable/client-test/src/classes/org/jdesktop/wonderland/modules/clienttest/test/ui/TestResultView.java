@@ -26,6 +26,8 @@ public class TestResultView extends javax.swing.JFrame {
     
     private final Test test;
     
+    private boolean messagesHidden = false;
+    
     /** Creates new form TestResultView */
     public TestResultView(Test test) {
         this.test = test;
@@ -60,6 +62,10 @@ public class TestResultView extends javax.swing.JFrame {
             messagesSP.setVisible(false);
             showButton.setVisible(false);
         }
+        
+        // TODO: make the UI work
+        showButton.setVisible(false);
+        setMessagesHidden(false);
     }
 
     /** This method is called from within the constructor to
@@ -89,10 +95,15 @@ public class TestResultView extends javax.swing.JFrame {
 
         bgPanel.setBackground(new java.awt.Color(255, 255, 255));
 
-        nameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 18)); // NOI18N
+        nameLabel.setFont(new java.awt.Font("Lucida Grande", 1, 18));
         nameLabel.setText(bundle.getString("TestResultView.nameLabel.text")); // NOI18N
 
         showButton.setText(bundle.getString("TestResultView.showButton.text")); // NOI18N
+        showButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showButtonActionPerformed(evt);
+            }
+        });
 
         okButton.setText(bundle.getString("TestResultView.okButton.text")); // NOI18N
         okButton.addActionListener(new java.awt.event.ActionListener() {
@@ -101,7 +112,7 @@ public class TestResultView extends javax.swing.JFrame {
             }
         });
 
-        headlineLabel.setFont(new java.awt.Font("Lucida Grande", 0, 24)); // NOI18N
+        headlineLabel.setFont(new java.awt.Font("Lucida Grande", 0, 24));
         headlineLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/clienttest/test/ui/resources/bullet_red.png"))); // NOI18N
         headlineLabel.setText(bundle.getString("TestResultView.headlineLabel.text")); // NOI18N
 
@@ -110,7 +121,7 @@ public class TestResultView extends javax.swing.JFrame {
         fixesTF.setText("");
         fixesSP.setViewportView(fixesTF);
 
-        messagesLabel.setFont(new java.awt.Font("Lucida Grande", 1, 18)); // NOI18N
+        messagesLabel.setFont(new java.awt.Font("Lucida Grande", 1, 18));
         messagesLabel.setText(bundle.getString("TestResultView.messagesLabel.text")); // NOI18N
 
         messagesTF.setColumns(20);
@@ -118,7 +129,7 @@ public class TestResultView extends javax.swing.JFrame {
         messagesTF.setRows(5);
         messagesSP.setViewportView(messagesTF);
 
-        causesLabel.setFont(new java.awt.Font("Lucida Grande", 1, 18)); // NOI18N
+        causesLabel.setFont(new java.awt.Font("Lucida Grande", 1, 18));
         causesLabel.setText(bundle.getString("TestResultView.causesLabel.text")); // NOI18N
 
         javax.swing.GroupLayout bgPanelLayout = new javax.swing.GroupLayout(bgPanel);
@@ -179,6 +190,37 @@ public class TestResultView extends javax.swing.JFrame {
         setVisible(false);
     }//GEN-LAST:event_okButtonActionPerformed
 
+    private void showButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showButtonActionPerformed
+        setMessagesHidden(!isMessagesHidden());
+    }//GEN-LAST:event_showButtonActionPerformed
+
+    private void setMessagesHidden(boolean messagesHidden) {
+        this.messagesHidden = messagesHidden;
+        
+        if (messagesTF.getText().isEmpty()) {
+            // don't show an empty dialog
+            return;
+        }
+        
+        if (messagesHidden) {
+            showButton.setText(BUNDLE.getString("Show_Button"));
+            messagesSP.setVisible(false);
+        } else {
+            showButton.setText(BUNDLE.getString("Hide_Button"));
+            messagesSP.setVisible(true);
+        }
+        
+        if (isVisible()) {
+            setVisible(false);
+            pack();
+            setVisible(true);
+        }
+    }
+    
+    private boolean isMessagesHidden() {
+        return messagesHidden;
+    }
+    
     /**
      * @param args the command line arguments
      */

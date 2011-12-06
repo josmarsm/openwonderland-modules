@@ -4,6 +4,10 @@
         {   "title" : "Network_Tests",
             "tests" : [
                 "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.TCPPortsTest",
+                [ "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.TCPBandwidthTest",
+                    { "failRate" : "400000", 
+                      "warningRate" : "1000000" }
+                ],
                 [ "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.WebdavTest",
                     { "libraries" : [ "wlj://webdav/client/webdavclient4j-core-0.92.jar",
                                       "wlj://webdav/client/jdom-1.0.jar"],
