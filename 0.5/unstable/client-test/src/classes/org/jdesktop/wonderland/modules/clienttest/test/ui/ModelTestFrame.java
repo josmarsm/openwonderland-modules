@@ -57,6 +57,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
     
     public void setReferenceImage(ImageIcon image) {
         referenceLabel.setIcon(image);
+        repaint();
     }
     
     public void setTestPane(Component component) {
@@ -241,17 +242,14 @@ public class ModelTestFrame extends javax.swing.JFrame {
 
     private void noButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noButtonActionPerformed
         setAnswer(TestResult.FAIL);
-        setVisible(false);
     }//GEN-LAST:event_noButtonActionPerformed
 
     private void yesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_yesButtonActionPerformed
         setAnswer(TestResult.PASS);
-        setVisible(false);
     }//GEN-LAST:event_yesButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         setAnswer(TestResult.NOT_RUN);
-        setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     protected synchronized void setAnswer(TestResult answer) {

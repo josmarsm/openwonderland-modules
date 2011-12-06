@@ -28,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
@@ -258,6 +259,9 @@ public enum TestManager {
                 urls.add(getAssetURL((String) libraries.get(i)));
             }
         }
+        
+        LOGGER.log(Level.INFO, "Creating test with classpath: {0}",
+                   urls.toString());
         
         return new ScannedClassLoader(urls.toArray(new URL[0]),
                                       getClass().getClassLoader());

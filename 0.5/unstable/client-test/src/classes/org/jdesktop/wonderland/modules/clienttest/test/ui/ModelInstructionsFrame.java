@@ -44,6 +44,11 @@ public class ModelInstructionsFrame extends javax.swing.JFrame {
         }
     }
     
+    public synchronized void reset() {
+        setAnswer(false);
+        this.answered = false;
+    }
+    
     protected synchronized void setAnswer(boolean answer) {
         if (this.answered) {
             return;
@@ -74,6 +79,7 @@ public class ModelInstructionsFrame extends javax.swing.JFrame {
         okButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         textPane = new javax.swing.JEditorPane();
+        cancelButton = new javax.swing.JButton();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/clienttest/test/ui/resources/Bundle"); // NOI18N
         setTitle(bundle.getString("ModelInstructionsFrame.title")); // NOI18N
@@ -88,12 +94,21 @@ public class ModelInstructionsFrame extends javax.swing.JFrame {
         textPane.setContentType(bundle.getString("ModelInstructionsFrame.textPane.contentType")); // NOI18N
         jScrollPane1.setViewportView(textPane);
 
+        cancelButton.setText(bundle.getString("ModelInstructionsFrame.cancelButton.text")); // NOI18N
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(524, Short.MAX_VALUE)
+                .addContainerGap(420, Short.MAX_VALUE)
+                .addComponent(cancelButton)
+                .addGap(18, 18, 18)
                 .addComponent(okButton))
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 633, Short.MAX_VALUE)
         );
@@ -102,7 +117,9 @@ public class ModelInstructionsFrame extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 540, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(okButton))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(okButton)
+                    .addComponent(cancelButton)))
         );
 
         pack();
@@ -112,6 +129,11 @@ public class ModelInstructionsFrame extends javax.swing.JFrame {
         setVisible(false);
         setAnswer(true);
     }//GEN-LAST:event_okButtonActionPerformed
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        setVisible(false);
+        setAnswer(false);
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -149,6 +171,7 @@ public class ModelInstructionsFrame extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton okButton;
     private javax.swing.JEditorPane textPane;
