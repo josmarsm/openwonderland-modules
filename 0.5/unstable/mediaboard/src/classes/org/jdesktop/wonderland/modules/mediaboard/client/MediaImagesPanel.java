@@ -1,0 +1,275 @@
+/**
+  * iSocial Project
+  * http://isocial.missouri.edu
+  *
+  * Copyright (c) 2011, University of Missouri iSocial Project, All 
+  * Rights Reserved
+  *
+  * Redistributions in source code form must reproduce the above
+  * copyright and this condition.
+  *
+  * The contents of this file are subject to the GNU General Public
+  * License, Version 2 (the "License"); you may not use this file
+  * except in compliance with the License. A copy of the License is
+  * available at http://www.opensource.org/licenses/gpl-license.php.
+  *
+  * The iSocial project designates this particular file as
+  * subject to the "Classpath" exception as provided by the iSocial
+  * project in the License file that accompanied this code.
+  */
+
+package org.jdesktop.wonderland.modules.mediaboard.client;
+
+import java.awt.Component;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import org.apache.batik.ext.awt.image.spi.ImageTagRegistry;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
+import org.w3c.dom.Element;
+
+
+/**
+ *
+ * @author ryan
+ */
+public class MediaImagesPanel extends javax.swing.JPanel {
+
+    /** Creates new form MediaImagesPanel */
+    ContentCollection imagesRoot = null;
+    Map<ImageIcon, String> images = null;
+    DefaultListModel model = null;
+    ImageIcon[] icons;// = new ImageIcon[10];
+    Integer index = new Integer(0);
+    private WhiteboardDocument document = null;
+    private HUDComponent component = null;
+
+    public MediaImagesPanel(ContentCollection imagesRoot,
+                            WhiteboardDocument document,
+                            HUDComponent component) {
+        initComponents();
+        this.document = document;
+        this.component = component;
+        System.out.println("Media Images panel constructor!");
+        MediaCellRenderer renderer = new MediaCellRenderer();
+        model = new DefaultListModel();
+        images = new HashMap<ImageIcon, String>();
+        this.imagesRoot = imagesRoot;
+        jList1.setModel(model);
+        DefaultListModel x = new DefaultListModel();
+
+        System.out.println("Trying to populate list...");
+        try {
+            populateList();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        
+        jList1.setCellRenderer(renderer);
+        
+
+    }
+
+    public void populateList() throws ContentRepositoryException, IOException {
+
+        if(imagesRoot == null) {
+            return;
+        }
+        if(imagesRoot.getChildren() == null || imagesRoot.getChildren().isEmpty()) {
+            return;
+        }
+
+//        ContentCollection photosRoot = (ContentCollection)imagesRoot.getParent().getChild("photos");
+//        if(photosRoot == null) {
+//            System.out.println("Photos directory does not exist!");
+//            return;
+//        }
+
+        icons = new ImageIcon[imagesRoot.getChildren().size()];
+        int i = 0;
+        //load images
+        for(ContentNode node : imagesRoot.getChildren()) {
+            if(node instanceof ContentResource) {
+                System.out.println("Found an image!");
+                ContentResource resource = (ContentResource)node;
+                System.out.println(resource.getURL());
+                //File tmpFile = new File("");
+                //resource.get(tmpFile);
+                System.out.println(resource.getURL().toString());
+                ImageIcon tmpIcon = new ImageIcon(resource.getURL());
+                images.put(tmpIcon, resource.getURL().toString());
+                model.addElement(tmpIcon);
+                //icons[i] = new ImageIcon(resource.getURL());
+                //images.put(index, new ImageIcon(resource.getURL()));
+
+            }
+        }
+        //load photos
+//        for(ContentNode node: photosRoot.getChildren()) {
+//            if(node instanceof ContentResource) {
+//                System.out.println("Found a photo!");
+//                ContentResource resource = (ContentResource)node;
+//                System.out.println(resource.getURL());
+//                ImageIcon tmpIcon = new ImageIcon(resource.getURL());
+//
+//                images.put(tmpIcon, resource.getURL().toString());
+//                model.addElement(tmpIcon);
+//            }
+//        }
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+
+        jScrollPane1.setHorizontalScrollBar(null);
+
+        jList1.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane1.setViewportView(jList1);
+
+        jButton1.setText("Open");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("Cancel");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jButton1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jButton2)
+                .add(22, 22, 22))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jButton1)
+                    .add(jButton2)))
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        ImageTagRegistry.getRegistry().flushCache();
+        ImageIcon i = (ImageIcon)jList1.getSelectedValue();
+        
+        String s = images.get(i);
+        System.out.println(s);
+
+       WhiteboardWindow w = document.getWindow();
+       Element element = null;
+       if(s.contains("photos")) {
+            int width = w.getWidth();
+            if(width > 1200) {
+                element = document.createImageElement(150, 250, s);
+            }
+            else {
+                element = document.createImageElement(300, 500, s);
+            }
+        }
+        else {
+            try {
+                ImageIcon icon = new ImageIcon(new URL(s));
+                element = document.createImageElement(icon.getIconHeight(),
+                                                   icon.getIconWidth(),
+                                                   s);
+                
+               } catch(Exception e) {
+                   e.printStackTrace();
+               }
+        }
+        w.addElement(element, true);
+
+       component.setVisible(false);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // TODO add your handling code here:
+        component.setVisible(false);
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JList jList1;
+    private javax.swing.JScrollPane jScrollPane1;
+    // End of variables declaration//GEN-END:variables
+
+
+    class MediaCellRenderer extends JLabel implements ListCellRenderer {
+
+        public MediaCellRenderer() {
+            setOpaque(true);
+            setHorizontalAlignment(CENTER);
+            setVerticalAlignment(CENTER);
+        }
+        public Component getListCellRendererComponent(JList list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean hasFocus) {
+
+            //Get the selected index. (The index param isn't
+            //always valid, so just use the value.)
+            ImageIcon icon = (ImageIcon) value;
+
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            //System.out.println("INSIDE CELL RENDERER!");
+            //Set the icon and text.  If icon was null, say so.
+            //ImageIcon icon = images.get(selectedIndex);
+            setIcon(icon);
+            if (icon == null) {
+                setText("(Image unavailable)");
+            }
+
+            return this;
+        }
+    }
+}
