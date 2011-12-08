@@ -28,8 +28,8 @@
         <path location="${current.dir}/lib/batik-all.jar"/>
         <path location="${current.dir}/lib/xml-apis-ext.jar"/>
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
-        <path location="${current.dir}/lib/javacv.jar"/>
-        <path location="${current.dir}/lib/javacpp.jar"/>
+        <path location="${current.dir}/../javacv-integration/javacv.jar"/>
+        <path location="${current.dir}/../javacv-integration/javacpp.jar"/>
 	
     </pathconvert>
 
