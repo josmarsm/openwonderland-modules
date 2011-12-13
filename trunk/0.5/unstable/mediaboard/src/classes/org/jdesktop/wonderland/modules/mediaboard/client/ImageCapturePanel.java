@@ -230,8 +230,8 @@ public class ImageCapturePanel extends javax.swing.JPanel implements ControlChan
             resource.put(file);
             URLAsString=resource.getURL().toString();
 
-            ImageIcon icon = new ImageIcon(resource.getURL());
-            BufferedImage sourceImage = CameraUtils.CaptureImage();//ImageIO.read(file);
+//            ImageIcon icon = new ImageIcon(ImageIO.read(file));
+            BufferedImage sourceImage =ImageIO.read(file);// CameraUtils.CaptureImage();//ImageIO.read(file);
             
             if(sourceImage == null) {
                 logger.warning("source Image is null!");
