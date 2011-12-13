@@ -17,33 +17,20 @@
  */
 package org.jdesktop.wonderland.modules.ezscript.client.headless;
 
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.HeadlessException;
+import com.jme.scene.Node;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.LinkedList;
 import java.util.Properties;
-import java.util.concurrent.Semaphore;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.ClientContext;
-import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCacheBasicImpl;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
-import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveListener;
-import org.jdesktop.wonderland.client.cell.MovableComponent.CellMoveSource;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 import org.jdesktop.wonderland.client.comms.SessionStatusListener;
@@ -53,17 +40,11 @@ import org.jdesktop.wonderland.client.comms.WonderlandSession.Status;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.LoginFailureException;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.jme.MainFrame;
+import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.login.LoginManager;
-import org.jdesktop.wonderland.client.login.LoginUI;
-import org.jdesktop.wonderland.client.login.PluginFilter;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.EitherLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.NoAuthLoginControl;
-import org.jdesktop.wonderland.client.login.ServerSessionManager.UserPasswordLoginControl;
 import org.jdesktop.wonderland.client.login.SessionCreator;
-import org.jdesktop.wonderland.common.JarURI;
-import org.jdesktop.wonderland.common.cell.CellTransform;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
 
 /**
  * A test client that simulates a 3D client
@@ -140,7 +121,12 @@ public class Client3DSim
                                 @Override
                                 protected CellRenderer createCellRenderer(Cell cell) {
                                     logger.warning("INSIDE createCellRenderer");
-                                    return null;
+                                    
+                                    if(cell instanceof AvatarCell) {
+                                        logger.warning("Creating avatar cell renderer!");
+                                        return new AvatarImiJME(cell);
+                                    }
+                                    return new MockRenderer(cell);
                                 }
                             };
 
@@ -149,7 +135,7 @@ public class Client3DSim
                         }
                     };
                     ccs.addSessionStatusListener(Client3DSim.this);
-
+                    
                     final LocalAvatar avatar = ccs.getLocalAvatar();
                     avatar.addViewCellConfiguredListener(new ViewCellConfiguredListener() {
 
@@ -168,6 +154,7 @@ public class Client3DSim
                     return ccs;
                 }
             });
+            
         } catch (IOException ioe) {
             ioe.printStackTrace();
             throw new ProcessingException(ioe);
@@ -221,4 +208,18 @@ public class Client3DSim
         // wait for the thread to end
         userSim.join();
     }
+    
+    
+    private static class MockRenderer extends BasicRenderer {
+        
+        public MockRenderer(Cell cell) {
+            super(cell);
+        }
+
+        @Override
+        protected Node createSceneGraph(Entity entity) {
+            return new Node();
+        }
+    
+}
 }

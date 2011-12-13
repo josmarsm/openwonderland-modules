@@ -34,7 +34,7 @@ public class WaitMethod implements ScriptMethodSPI {
     @Override
     public void setArguments(Object[] args) {
         //super.setArguments(args);
-       seconds = ((Double)args[1]).intValue();
+       seconds = ((Double)args[0]).intValue();
     }
 
     public String getDescription() {

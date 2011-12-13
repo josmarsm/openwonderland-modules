@@ -102,7 +102,7 @@ public class IndependentBoundsViewerEntity extends Entity {
         MaterialState ms = (MaterialState)rm.createRendererState(StateType.Material);
         ms.setAmbient(new ColorRGBA(0.25f, 0, 0.5f, 0.40f));
         ms.setDiffuse(new ColorRGBA(0.25f, 0, 0.5f, 0.40f));
-        ms.setMaterialFace(MaterialState.MaterialFace.FrontAndBack);;
+        ms.setMaterialFace(MaterialState.MaterialFace.FrontAndBack);
         //ms.setSpecular(new ColorRGBA(1f, 1, 1f, 1f));
         
         ms.setEnabled(true);
