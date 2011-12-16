@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="wonderland-sample-module" default="dist" basedir=".">
+<project name="wonderland-ezscript-module" default="dist" basedir=".">
     <!-- current directory needed in all scripts -->
     <dirname property="current.dir" file="${ant.file.wonderland-sample-module}"/>
 
