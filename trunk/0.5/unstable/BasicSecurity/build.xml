@@ -22,6 +22,8 @@
     <!-- this module depends on the content repository module -->
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${modules.dir}/tools/security-group/build/lib/client/securitygroups-client.jar"/>
+        <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">

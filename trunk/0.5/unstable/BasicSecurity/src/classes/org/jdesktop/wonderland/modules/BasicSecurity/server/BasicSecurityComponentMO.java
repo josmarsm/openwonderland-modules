@@ -19,16 +19,7 @@
 package org.jdesktop.wonderland.modules.BasicSecurity.server;
 
 
-import org.jdesktop.wonderland.common.cell.ComponentLookupClass;
-import org.jdesktop.wonderland.common.cell.security.ModifyAction;
-import org.jdesktop.wonderland.common.cell.security.ViewAction;
-import org.jdesktop.wonderland.common.cell.state.CellComponentServerState;
-import org.jdesktop.wonderland.modules.security.common.ActionDTO;
-import org.jdesktop.wonderland.modules.security.common.CellPermissions;
-import org.jdesktop.wonderland.modules.security.common.Permission;
-import org.jdesktop.wonderland.modules.security.common.Principal;
-import org.jdesktop.wonderland.modules.security.common.SecurityComponentServerState;
-import org.jdesktop.wonderland.modules.security.server.SecurityComponentMO;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
 
 /**
@@ -38,41 +29,39 @@ import org.jdesktop.wonderland.server.cell.CellMO;
  *
  * @author jagwire 
  */
-@ComponentLookupClass(SecurityComponentMO.class)
-public class BasicSecurityComponentMO extends SecurityComponentMO {
+
+
+
+/** As of December 20th, 2011, this class should be ignored. Security will now
+ * be handled on the client.
+ * 
+ * @author JagWire
+ */
+public class BasicSecurityComponentMO extends CellComponentMO {
    
     public BasicSecurityComponentMO(CellMO cell) {
         super(cell);
-        SecurityComponentServerState state = new SecurityComponentServerState();
-        setServerState(state);
+//        SecurityComponentServerState state = new SecurityComponentServerState();
+//        setServerState(state);
 
     }
-
+//
+//
+//    @Override
+//    public void setServerState(CellComponentServerState state) {
+//        
+//        super.setServerState(state);
+//    }
+//    
+//    @Override
+//    public String getClientClass() {
+//        return "org.jdesktop.wonderland.modules.BasicSecurity"
+//    }
+//    
 
     @Override
-    public void setServerState(CellComponentServerState state) {
-
-        SecurityComponentServerState scss = (SecurityComponentServerState) state;
-        CellPermissions perms = scss.getPermissions();
-
-        System.out.println("*** Inside BasicSecurityComponentMO ***");
-
-        Principal v = new Principal("visitors", Principal.Type.EVERYBODY);
-
-        //allow all users to view cells
-        ActionDTO view = new ActionDTO(new ViewAction());
-        perms.getPermissions().add(new Permission(v,
-                                                  view,
-                                                  Permission.Access.GRANT));
-        //deny all visitors to modify cells
-        ActionDTO modify = new ActionDTO(new ModifyAction());
-        perms.getPermissions().add(new Permission(v,
-                                                  modify,
-                                                  Permission.Access.DENY));
-
-        
-        scss.setPermissions(perms);
-
-        super.setServerState(state);
+    protected String getClientClass() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
+    
 }
