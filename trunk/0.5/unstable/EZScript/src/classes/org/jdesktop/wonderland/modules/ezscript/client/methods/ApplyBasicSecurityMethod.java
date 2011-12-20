@@ -38,7 +38,10 @@ public class ApplyBasicSecurityMethod implements ScriptMethodSPI {
 
     public String getDescription() {
        return "usage: ApplyBasicSecurity();\n\n"
-               +"- applies a security component to all cells in the current cell cache.";
+               +"- applies a security component to all cells in the current cell cache.\n"
+               +"- only applies to currently loaded cells. i.e. if you have objects\n"
+               +"  far away from each other, you will need to execute the command\n"
+               +"  again near those far away objects.";
     }
 
     public String getCategory() {
