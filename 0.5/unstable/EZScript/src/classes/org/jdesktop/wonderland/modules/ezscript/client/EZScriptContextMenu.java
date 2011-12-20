@@ -77,6 +77,7 @@ public class EZScriptContextMenu implements ContextMenuFactorySPI {
 
     public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
         if(hasEZScript(event.getPrimaryCell())) {
+            
             return new ContextMenuItem[] { };
         }
 
