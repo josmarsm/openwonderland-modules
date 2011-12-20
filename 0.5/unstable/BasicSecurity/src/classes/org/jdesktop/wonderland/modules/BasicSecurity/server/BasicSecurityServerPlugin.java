@@ -14,12 +14,12 @@ import org.jdesktop.wonderland.server.cell.CellManagerMO;
  * Meh...
  * @author JagWire
  */
-@Plugin
+//@Plugin
 public class BasicSecurityServerPlugin implements ServerPlugin {
 
     public void initialize() {
 
-        CellManagerMO.getCellManager().registerCellComponent(CellMO.class, BasicSecurityComponentMO.class);
+//        CellManagerMO.getCellManager().registerCellComponent(CellMO.class, BasicSecurityComponentMO.class);
 
     }
 }
