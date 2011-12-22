@@ -24,7 +24,6 @@
 package org.jdesktop.wonderland.modules.clienttest.test.ui;
 
 import java.util.ResourceBundle;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.json.simple.JSONObject;
 
@@ -85,6 +84,7 @@ public class ResultsSection extends javax.swing.JPanel
         jScrollPane1 = new javax.swing.JScrollPane();
         textPane = new javax.swing.JEditorPane();
         detailsButton = new javax.swing.JButton();
+        postButton = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
@@ -102,14 +102,23 @@ public class ResultsSection extends javax.swing.JPanel
             }
         });
 
+        postButton.setText(bundle.getString("ResultsSection.postButton.text")); // NOI18N
+        postButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                postButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(257, Short.MAX_VALUE)
+                .addContainerGap(136, Short.MAX_VALUE)
                 .addComponent(detailsButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(postButton)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -117,7 +126,9 @@ public class ResultsSection extends javax.swing.JPanel
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 247, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(detailsButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(postButton)
+                    .addComponent(detailsButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -128,9 +139,16 @@ public class ResultsSection extends javax.swing.JPanel
         lvf.setVisible(true);
     }//GEN-LAST:event_detailsButtonActionPerformed
 
+    private void postButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_postButtonActionPerformed
+        SubmitLogFrame slf = new SubmitLogFrame(TestManager.INSTANCE.getLog());
+        slf.pack();
+        slf.setVisible(true);
+    }//GEN-LAST:event_postButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton detailsButton;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton postButton;
     private javax.swing.JEditorPane textPane;
     // End of variables declaration//GEN-END:variables
 

@@ -34,6 +34,7 @@
         <path location="${modules.dir}/tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
         <path location="${current.dir}/lib/json_simple-1.1.jar"/>
         <path location="${modules.dir}/tools/webdav/lib/webdavclient4j-core-0.92.jar"/>
+        <path location="${wonderland.dir}/web/webstart/build/lib/wonderland-web-webstart.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
@@ -50,8 +51,9 @@
 
     <pathconvert property="module-web.classpath">
         <path location="${wonderland.dir}/web/front/dist/wonderland-webadmin-core.jar"/>
-        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
         <path location="${wonderland.dir}/web/runner/dist/wonderland-runner-api.jar"/>
+        <path location="${wonderland.dir}/web/front/build/classes"/>
+        <path location="${wonderland.dir}/web/front/lib/deployment-servlet-1.0beta.jar"/>
         <path location="${wonderland.dir}/core/build/lib/wonderland-client.jar"/>
         <path location="${wonderland.dir}/core/build/lib/wonderland-common.jar"/>
     </pathconvert>
@@ -177,6 +179,9 @@
             <fileset dir="${wonderland.dir}/web/front/build/classes">
                 <include name="**/WonderlandSubstitutionHandler**.class"/>
             </fileset>
+            <fileset dir="build/classes">
+                <include name="${module.src}/web/**"/>
+            </fileset>
         </copy>
         
         <copy todir="build/web/WEB-INF/lib">
@@ -245,9 +250,11 @@
                 <pathelement path="${core-client.classpath}"/>
                 <pathelement location="build/lib/client-test-ui.jar"/>
                 <path location="${current.dir}/lib/json_simple-1.1.jar"/>
+                <pathelement location="${wonderland.dir}/core/ext/softphone/softphone.jar"/>
             </classpath>
             
             <jvmarg line="-Dwonderland.server.url=${sgs.server}"/>
+            <!--jvmarg line="-Dsoftphone.debug=true"/-->
         </java>
     </target>
     

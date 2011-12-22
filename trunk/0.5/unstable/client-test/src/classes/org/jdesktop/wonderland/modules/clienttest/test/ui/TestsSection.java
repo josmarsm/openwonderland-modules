@@ -55,7 +55,7 @@ public class TestsSection extends javax.swing.JPanel
     private String title;
     private final List<Test> tests = new ArrayList<Test>();
     
-    protected enum TestMode { SINGLE, SEQUENCE };
+    public enum TestMode { SINGLE, SEQUENCE };
     
     private SwingWorker worker;
     private TestResult result = TestResult.NOT_RUN;
@@ -128,11 +128,11 @@ public class TestsSection extends javax.swing.JPanel
         this.result = result;
     }
     
-    protected TestMode getMode() {
+    public TestMode getMode() {
         return mode;
     }
     
-    protected void setMode(TestMode mode) {
+    public void setMode(TestMode mode) {
         this.mode = mode;
     }
     
@@ -163,14 +163,20 @@ public class TestsSection extends javax.swing.JPanel
     }
     
     protected void startTest(Test test) {
-        test.setResult(TestResult.IN_PROGRESS);
-        currentTest = test;
+        if (test.isRunnable()) {
+            test.setResult(TestResult.IN_PROGRESS);
+            currentTest = test;
         
-        LOGGER.log(Level.INFO, MessageFormat.format(
-                BUNDLE.getString("Starting_Test"), test.getName(), test.getId()));
+            LOGGER.log(Level.INFO, MessageFormat.format(
+                    BUNDLE.getString("Starting_Test"), test.getName(), test.getId()));
                 
-        worker = new TestWorker(test);
-        worker.execute();
+            worker = new TestWorker(test);
+            worker.execute();
+        } else {
+            LOGGER.log(Level.INFO, MessageFormat.format(
+                    BUNDLE.getString("Test_Not_Runnable"), test.getName(), test.getId()));
+            testComplete(test, TestResult.FAIL);
+        }
         
         update();
     }
@@ -228,7 +234,7 @@ public class TestsSection extends javax.swing.JPanel
         out.append("</font></td>");
 
         out.append("<td><font size=\"4\">");
-        if (getCurrentTest() == null) {
+        if (getCurrentTest() == null && test.isRunnable()) {
             out.append("<a href=run:").append(test.getId()).append(">");
             out.append(" Run").append("</a>");
         }        

@@ -13,6 +13,7 @@
                                       "wlj://webdav/client/jdom-1.0.jar"],
                     }
                 ],
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.UDPPortsTest",
               
             ]
         }
@@ -76,6 +77,16 @@
                       "reference" : "wla://client-test/Avatar.png",
                       "avatar" : "wla://client-test/FemaleStaffer-3_1.xml"
                   }],
+            ]
+        }
+    ],
+    [ "org.jdesktop.wonderland.modules.clienttest.test.ui.TestsSection", 
+        {   "title" : "Audio_Tests",
+            "tests" : [
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.LocalRecordingTest",
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.LocalPlaybackTest",
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.RemoteAudioTest",
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.RemoteEchoTest",
             ]
         }
     ],
