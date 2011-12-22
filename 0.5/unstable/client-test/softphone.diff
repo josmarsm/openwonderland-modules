@@ -1,0 +1,59 @@
+Index: core/src/classes/org/jdesktop/wonderland/client/softphone/SoftphoneControl.java
+===================================================================
+--- core/src/classes/org/jdesktop/wonderland/client/softphone/SoftphoneControl.java	(revision 4754)
++++ core/src/classes/org/jdesktop/wonderland/client/softphone/SoftphoneControl.java	(working copy)
+@@ -55,13 +55,13 @@
+ 
+     public void setAudioQuality(AudioQuality quality) throws IOException;
+ 
+-    public void recordReceivedAudio(String recordingPath) throws IOException;
++    public void recordAudio(String recordingPath, boolean recordMic) throws IOException;
+ 
+-    public void pauseRecordingReceivedAudio() throws IOException;
++    public void pauseRecordingAudio() throws IOException;
+ 
+-    public void resumeRecordingReceivedAudio() throws IOException;
++    public void resumeRecordingAudio() throws IOException;
+ 
+-    public void stopRecordingReceivedAudio() throws IOException;
++    public void stopRecordingAudio() throws IOException;
+ 
+     public void sendCommandToSoftphone(String cmd) throws IOException;
+     
+Index: core/src/classes/org/jdesktop/wonderland/client/softphone/SoftphoneControlImpl.java
+===================================================================
+--- core/src/classes/org/jdesktop/wonderland/client/softphone/SoftphoneControlImpl.java	(revision 4754)
++++ core/src/classes/org/jdesktop/wonderland/client/softphone/SoftphoneControlImpl.java	(working copy)
+@@ -482,23 +482,23 @@
+ 	}
+     }
+ 
+-    public void recordReceivedAudio(String recordingPath)
++    public void recordAudio(String recordingPath, boolean recordMic)
+             throws IOException {
+ 
+-        sendCommandToSoftphone("recordReceivedAudio="
+-            + recordingPath);
++        sendCommandToSoftphone("recordAudio="
++            + recordingPath + ":" + recordMic);
+     }
+ 
+-    public void pauseRecordingReceivedAudio() throws IOException {
+-        sendCommandToSoftphone("pauseRecordingReceivedAudio");
++    public void pauseRecordingAudio() throws IOException {
++        sendCommandToSoftphone("pauseRecordingAudio");
+     }
+ 
+-    public void resumeRecordingReceivedAudio() throws IOException {
+-        sendCommandToSoftphone("resumeRecordingReceivedAudio");
++    public void resumeRecordingAudio() throws IOException {
++        sendCommandToSoftphone("resumeRecordingAudio");
+     }
+ 
+-    public void stopRecordingReceivedAudio() throws IOException {
+-        sendCommandToSoftphone("stopRecordingReceivedAudio");
++    public void stopRecordingAudio() throws IOException {
++        sendCommandToSoftphone("stopRecordingAudio");
+     }
+ 
+     public void sendCommandToSoftphone(String cmd) throws IOException {

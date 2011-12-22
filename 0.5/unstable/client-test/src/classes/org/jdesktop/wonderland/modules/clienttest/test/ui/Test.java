@@ -17,6 +17,7 @@
  */
 package org.jdesktop.wonderland.modules.clienttest.test.ui;
 
+import java.util.Map;
 import org.json.simple.JSONObject;
 
 /**
@@ -40,6 +41,11 @@ public interface Test {
      * Get the internationalized display name for this test
      */
     String getName();
+    
+    /**
+     * Return true if the test is runnable, or false if not
+     */
+    boolean isRunnable();
     
     /**
      * Run the test and return a result.
@@ -90,4 +96,9 @@ public interface Test {
      * Clear messages
      */
     void clearMessages();
+    
+    /**
+     * Get properties of this test
+     */
+    Map<String, Object> getProperties();
 }

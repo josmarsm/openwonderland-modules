@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+    <head>
+        <link href="/wonderland-web-front/css/base.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="/wonderland-web-front/css/module.css" rel="stylesheet" type="text/css" media="screen" />
+<script src="/wonderland-web-front/javascript/prototype.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var hide = true;
+    var updating = false;
+
+    function update() {
+        if (updating) {
+            return;
+        }
+
+        updating = true;
+
+        new Ajax.Request('resources/clientLog/list', {
+            method:'get', 
+            requestHeaders: { Accept:'application/json' },
+            onSuccess: function(response) {
+                var response = response.responseText.evalJSON(true);
+                updateLogs(response.logs);
+            },
+            onFailure: function(response) {
+                var row = new Element('tr');
+                var td = new Element('td', { 'class': 'installed',
+                                             'colspan': 3});
+                td.update("Server unavailable");
+
+                row.insert(td);
+                var t = $('logsTable').down('tr', 1);
+                while (t != null) {
+                    var n = t.next();
+                    t.remove();
+                    t = n;
+                }
+                $('logsTable').insert(row);
+            },
+            onComplete: function() {
+                updating = false;
+            }
+        });
+
+        setTimeout(update, 5000);
+    }
+    
+    function updateLogs(logs) {
+        var t = $('logsTable').down('tr', 1);
+        while (t != null) {
+            var n = t.next();
+            t.remove();
+            t = n;
+        }
+
+        if (!(logs instanceof Array)) {
+            logs = [ logs ];
+        }
+
+        for (var i = 0; i < logs.length; i++) {
+            var log = logs[i];
+            processLog(log);
+            
+            var row = new Element('tr');
+            row.insert(new Element('td', { 'class': 'installed' }));
+            row.insert(new Element('td', { 'class': 'installed' }));
+            row.insert(new Element('td', { 'class': 'installed' }));
+            $('logsTable').insert(row);
+            
+            row.down('td', 0).update(log.timeStamp);
+            row.down('td', 1).update(log.creator);
+
+            var actions = row.down('td', 2);
+            actions.update();
+            for (var l = 0; l < log.link.length; l++) {
+                actions.insert(log.link[l]);
+                actions.insert(' ');
+            }
+        }
+    }
+    
+    function processLog(log) {
+        log.link = [];
+        log.link.push(new Element('a', { 'href': 'resources/clientLog/get/' + log.ID}).update("view"));
+    }
+</script>
+</head>
+<body onload="update();">
+    <h3>Client logs</h3>
+
+    <table class="installed" id="logsTable">
+        <tr class="header">
+            <td class="installed">Date</td>
+            <td class="installed">Submitter</td>
+            <td class="installed">Actions</td>
+        </tr>
+    </table>
+</body>

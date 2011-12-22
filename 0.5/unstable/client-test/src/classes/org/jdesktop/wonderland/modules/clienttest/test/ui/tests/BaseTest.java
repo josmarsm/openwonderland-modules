@@ -17,7 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.clienttest.test.ui.tests;
 
-import java.util.Locale;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.clienttest.test.ui.Test;
@@ -35,6 +36,9 @@ public abstract class BaseTest implements Test {
     private static final String BUNDLE_PREFIX = 
             BaseTest.class.getPackage().getName() + ".resources.";
     
+    private final Map<String, Object> properties =
+            new LinkedHashMap<String, Object>();
+    
     private String id;
     private TestResult result = TestResult.NOT_RUN;
     private StringBuilder messages = new StringBuilder();
@@ -48,6 +52,10 @@ public abstract class BaseTest implements Test {
     
     public String getId() {
         return id;
+    }
+
+    public boolean isRunnable() {
+        return true;
     }
     
     public String getName() {
@@ -90,6 +98,10 @@ public abstract class BaseTest implements Test {
 
     public void clearMessages() {
         messages = new StringBuilder();
+    }
+    
+    public Map<String, Object> getProperties() {
+        return properties;
     }
     
     protected String getBundleName() {

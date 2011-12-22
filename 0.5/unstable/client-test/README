@@ -1,4 +1,56 @@
-The client-test module depends on the javacv-integration libraries found in wonderland-modules/unstable.
+Wonderland Client Test
+----------------------
+
+The Wonderland client test is a standalone web application designed to test
+if a given computer is capable of running Wonderland, and diagnose problems
+if it is not.
+
+The Wonderland client test installs as a regular module on the Wonderland
+web server. Once installed, it can be accessed by url at:
+
+http://<wonderland_server>:<wonderland_port>/client-test/client-test
+
+Clicking on "Launch" will start the test.
+
+After tests are run, the log can be uploaded to the Wonderland server.
+Logs can be accessed by administrators using the "Client Test Logs"
+link in the Wonderland Web Administration UI.
+
+JAVACV INTEGRATION
+------------------
+
+The client-test module depends on the javacv-integration libraries found in
+wonderland-modules/unstable.
+
 Please follow the instructions found in javacv-integration/README
 
+REQUIRED CORE CHANGES
+---------------------
 
+As of 12/22/2011, a number of core changes are required to Wonderland for
+the audio tests to work correctly. It is expected these changes will be
+merged into Wonderland core shortly after the new year. In the interim,
+use the following steps to update a standard Wonderland source tree
+with these changes:
+
+1. change to the wonderland source directory (e.g. ~/0.5-dev/wonderland)
+
+2. copy the diff files from this directory - softphone.diff and 
+   voicebridge.diff - into the wonderland directory
+
+3. download the bridge update file from the following URL into the wonderland
+   directory:
+
+   https://docs.google.com/open?id=0Bw3xjThmUnnpNTdiMDI0ZGItNDJmMC00NmRlLTkyMzEtZWM3Yjk4NDk0Yjhk
+
+4. apply the diffs in the wonderland/ directory:
+   
+   # patch -p0 < softphone.diff
+   # patch -p0 < voicebridge.diff
+
+5. unzip the bridge-update.zip file in the wonderland/ directory, overwriting 
+   several libraries:
+
+   # unzip bridge-update.zip
+
+6. rebuild Wonderland and install the client-test module.
