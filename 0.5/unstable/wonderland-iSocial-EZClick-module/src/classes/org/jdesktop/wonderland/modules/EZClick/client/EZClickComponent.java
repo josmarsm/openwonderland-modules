@@ -22,8 +22,10 @@ package org.jdesktop.wonderland.modules.EZClick.client;
 import com.jme.scene.Node;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
@@ -45,6 +47,7 @@ import org.jdesktop.wonderland.modules.appbase.client.App2D;
 import org.jdesktop.wonderland.modules.appbase.client.ControlArb;
 import org.jdesktop.wonderland.modules.appbase.client.Window2D;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
+import org.jdesktop.wonderland.modules.appbase.client.cell.view.viewdefault.View2DCell;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 
 /**
@@ -57,6 +60,7 @@ public class EZClickComponent extends CellComponent {
     private static Logger logger = Logger.getLogger(EZClickComponent.class.getName());
     //private EZClickMouseListener listener = null;
     private EZWindowSwingEventConsumer eventConsumer;
+    private Map<View2D, WindowSwingEventConsumer> priorConsumers = new HashMap<View2D, WindowSwingEventConsumer>();
     public EZClickComponent(Cell cell) {
         super(cell);
     }
@@ -141,6 +145,12 @@ public class EZClickComponent extends CellComponent {
                 //getView2D().removeEntityComponent(EZWindowSwingEventConsumer.class);
                 for(View2D view: getView2D()) {
                     view.removeEntityComponent(EZWindowSwingEventConsumer.class);
+                    view.removeEntityComponent(WindowSwingEventConsumer.class);
+                    
+                    WindowSwingEventConsumer tmp = priorConsumers.get(view);
+                    view.addEntityComponent(WindowSwingEventConsumer.class, tmp);
+                    
+                    
                 }
 
 
@@ -162,6 +172,8 @@ public class EZClickComponent extends CellComponent {
                 eventConsumer = new EZWindowSwingEventConsumer(getApp2D());
                 for(View2D view: getView2D()) {
                     //remove any already in place event consumers...
+                    
+                    priorConsumers.put(view, ((View2DCell)view).getEntity().getComponent(WindowSwingEventConsumer.class));
                     view.removeEntityComponent(WindowSwingEventConsumer.class);
                     view.addEntityComponent(WindowSwingEventConsumer.class,
                                         eventConsumer);
@@ -230,6 +242,7 @@ public class EZClickComponent extends CellComponent {
         @Override
         public void commitEvent(Event event) {
             final MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
+           
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     Cell otherCell = SceneManager.getCellForEntity(mbe.getEntity());
@@ -279,7 +292,13 @@ public class EZClickComponent extends CellComponent {
         public boolean isEZClickChangeControlEvent(MouseEvent me) {
 
             return me.getID() == MouseEvent.MOUSE_PRESSED &&
-                me.getButton() == MouseEvent.BUTTON1;//  &&
+//                me.getButton() == MouseEvent.BUTTON1;//  &&
+                  //FIX FOR EZMOVE
+                  me.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK;
+                    
+                    
+                    
+                    
               // (me.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0;
             //return false;
         }
