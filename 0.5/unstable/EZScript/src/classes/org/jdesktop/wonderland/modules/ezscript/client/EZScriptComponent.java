@@ -5,6 +5,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -47,7 +48,6 @@ import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.client.jme.input.KeyEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEnterExitEvent3D;
-import org.jdesktop.wonderland.client.jme.input.MouseEvent3D.ButtonId;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.common.cell.CellID;
@@ -104,6 +104,9 @@ public class EZScriptComponent extends CellComponent {
     private String[] alphabet = {"a", "b", "c", "d", "e", "f", "g", "h", "i",
                                  "j", "k", "l", "m", "n", "o", "p", "q", "r",
                                  "s", "t", "u", "v", "w", "x", "y", "z", " "};
+    
+    private String[] modifiers = {"none","shift", "alt", "ctrl" };
+    
 
     private static Logger logger = Logger.getLogger(EZScriptComponent.class.getName());
     private BasicRenderer renderer = null;
@@ -114,7 +117,7 @@ public class EZScriptComponent extends CellComponent {
     // - it's important to note that one can not pick and choose which runnables
     //   per container get executed, all of a container's runnables will be
     //   executed per event.
-    private List<Runnable> callbacksOnClick;        //mouse click
+    private Map<String,List<Runnable>> callbacksOnClick;        //mouse click
     private List<Runnable> callbacksOnLoad;         //cell load
     private List<Runnable> callbacksOnUnload;       //cell unload
     private List<Runnable> callbacksOnMouseEnter;   //mouse enter
@@ -126,7 +129,7 @@ public class EZScriptComponent extends CellComponent {
     //local callback containers
     // - these Runnables only get executed on the local client, they do not get
     // propogated across the network.
-    private List<Runnable> localOnClick;
+    private Map<String, List<Runnable>> localOnClick;
     private List<Runnable> localOnLoad;
     private List<Runnable> localOnUnload;
     private List<Runnable> localOnMouseEnter;
@@ -197,7 +200,7 @@ public class EZScriptComponent extends CellComponent {
         super(cell);
         
         //initialize callback containers
-        callbacksOnClick = new ArrayList<Runnable>();
+//        callbacksOnClick = new ArrayList<Runnable>();
         callbacksOnLoad = new ArrayList<Runnable>();
         callbacksOnUnload = new ArrayList<Runnable>();
         callbacksOnMouseEnter = new ArrayList<Runnable>();
@@ -212,9 +215,16 @@ public class EZScriptComponent extends CellComponent {
             List<Runnable> l = new ArrayList<Runnable>();
             callbacksOnKeyPress.put(letter, l);
         }
+        
+        callbacksOnClick = new HashMap<String, List<Runnable>>();
+        for(String modifier: modifiers) {
+            List<Runnable> l = new ArrayList<Runnable>();
+            callbacksOnClick.put(modifier, l);
+        }
+        
 
         //initialize local callbacks
-        localOnClick = new ArrayList<Runnable>();
+//        localOnClick = new ArrayList<Runnable>();
         localOnLoad = new ArrayList<Runnable>();
         localOnUnload = new ArrayList<Runnable>();
         localOnMouseEnter = new ArrayList<Runnable>();
@@ -225,6 +235,12 @@ public class EZScriptComponent extends CellComponent {
         for(String letter: alphabet) {
             List<Runnable> l = new ArrayList<Runnable>();
             localOnKeyPress.put(letter, l);
+        }
+        
+        localOnClick = new HashMap<String, List<Runnable>>();
+        for(String modifier: modifiers) {
+            List<Runnable> l = new ArrayList<Runnable>();
+            localOnClick.put(modifier, l);
         }
 
         triggerCellEvents = new HashMap<String, List<Runnable>>();
@@ -595,10 +611,26 @@ public class EZScriptComponent extends CellComponent {
     }
 
     public void onClick(Runnable r, boolean local) {
+        onClick("none", r, local);
+    }
+    
+    public void onClick(String modifier, Runnable r, boolean local) {
+        List<Runnable> rs;
+        modifier = modifier.toLowerCase();
         if(local) {
-            localOnClick.add(r);
+            rs = localOnClick.get(modifier);
+            if(rs == null) {
+                rs = new ArrayList<Runnable>();
+            }
+            rs.add(r);
+            localOnClick.put(modifier, rs);                    
         } else {
-            callbacksOnClick.add(r);
+            rs = callbacksOnClick.get(modifier);
+            if(rs == null) {
+                rs = new ArrayList<Runnable>();
+            }
+            rs.add(r);
+            callbacksOnClick.put(modifier, rs);
         }
     }
 
@@ -698,13 +730,20 @@ public class EZScriptComponent extends CellComponent {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Event Executors">
-    public void executeOnClick(boolean local) {
+    public void executeOnClick(String modifier, boolean local) {
+        final List<Runnable> rs;
         if(local) {
-            threadedExecute(localOnClick);
+            rs = localOnClick.get(modifier);
 
         } else {
-            threadedExecute(callbacksOnClick);
+            rs = callbacksOnClick.get(modifier);
         }
+        if(rs == null) {
+            return;
+        }
+        
+        threadedExecute(rs);
+        
     }
 
     public void executeOnMouseEnter(boolean local) {
@@ -845,12 +884,41 @@ public class EZScriptComponent extends CellComponent {
 
 //                    if (m.isClicked() && m.getButton() == ButtonId.BUTTON1) {
                    //FIX FOR EZMOVE
-                    if(m.getAwtEvent().getID() == MouseEvent.MOUSE_PRESSED &&
-                       m.getAwtEvent().getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
+                    InputEvent awtEvent = m.getAwtEvent();
+                    if(awtEvent.getID() == MouseEvent.MOUSE_PRESSED &&
+                       awtEvent.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
                         if(respondsToMouseEvents) {
-                            executeOnClick(true);
+                            executeOnClick("none",true);
                         }
-                        callbacksMap.put("onClick", new SharedString().valueOf("" + System.currentTimeMillis()));
+                        callbacksMap.put("onClick", new SharedString().valueOf("none"));
+                    } else if(awtEvent.getID() == MouseEvent.MOUSE_PRESSED &&
+                              awtEvent.getModifiersEx() == (MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.ALT_DOWN_MASK)) {
+                        //alt events
+                        if(respondsToMouseEvents) {
+                            executeOnClick("alt",true);
+                        }
+                        callbacksMap.put("onClick", new SharedString().valueOf("alt"));
+                        
+                        
+                        
+                    } else if(awtEvent.getID() == MouseEvent.MOUSE_PRESSED &&
+                              awtEvent.getModifiersEx() == (MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK)) {
+                        //ctrl events
+                        if(respondsToMouseEvents) {
+                            executeOnClick("ctrl",true);
+                        }
+                        callbacksMap.put("onClick", new SharedString().valueOf("ctrl"));
+                        
+                        
+                        
+                        
+                    } else if(awtEvent.getID() == MouseEvent.MOUSE_PRESSED &&
+                              awtEvent.getModifiersEx() == (MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK)) {
+                        //shift events
+                        if(respondsToMouseEvents) {
+                            executeOnClick("shift",true);
+                        }
+                        callbacksMap.put("onClick", new SharedString().valueOf("shift"));
                     }
                 } else if (event instanceof MouseEnterExitEvent3D) {
                     MouseEnterExitEvent3D m = (MouseEnterExitEvent3D) event;
@@ -901,7 +969,8 @@ public class EZScriptComponent extends CellComponent {
             if (name.equals("callbacks")) { //if it's the callbacks map
                 if (property.equals("onClick")) { //if someone clicked the mouse
                     if (respondsToMouseEvents) { //and I'm allowed to respond
-                        executeOnClick(false);
+                        String modifier = ((SharedString)event.getNewValue()).getValue();
+                        executeOnClick(modifier, false);
                     }
                 } else if (property.equals("onMouseEnter")) {//if someone moved the mouse
                     if (respondsToMouseEvents) { //and I'm allowed to respond
