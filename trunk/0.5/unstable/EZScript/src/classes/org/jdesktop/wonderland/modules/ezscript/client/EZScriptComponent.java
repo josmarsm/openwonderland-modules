@@ -5,6 +5,7 @@ import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import java.awt.event.MouseEvent;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -842,7 +843,10 @@ public class EZScriptComponent extends CellComponent {
                     //MouseButtonEvent3D m = (MouseButtonEvent3D)event;
                     MouseButtonEvent3D m = (MouseButtonEvent3D) event;
 
-                    if (m.isClicked() && m.getButton() == ButtonId.BUTTON1) {
+//                    if (m.isClicked() && m.getButton() == ButtonId.BUTTON1) {
+                   //FIX FOR EZMOVE
+                    if(m.getAwtEvent().getID() == MouseEvent.MOUSE_PRESSED &&
+                       m.getAwtEvent().getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
                         if(respondsToMouseEvents) {
                             executeOnClick(true);
                         }
