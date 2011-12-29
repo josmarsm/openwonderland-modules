@@ -1,0 +1,20 @@
+Index: core/build-tools/build-scripts/core-setup.xml
+===================================================================
+--- core/build-tools/build-scripts/core-setup.xml	(revision 4755)
++++ core/build-tools/build-scripts/core-setup.xml	(working copy)
+@@ -47,6 +47,15 @@
+                         srcdir="${top.dir}/../wonderland-video/lib/zip/${ostype}" destdir="${core.lib.os.dir}/.."/>
+             </then>
+         </if>
++
++        <!-- javacv -->
++        <if>
++           <available file="${core.lib.zip.os.dir}/javacv.zip"/>
++           <then>
++               <unpack-lib-zip pkgname="javacv"
++                       srcdir="${core.lib.zip.os.dir}" destdir="${core.lib.os.dir}/.."/>
++           </then>
++        </if>
+     </target>
+ 
+     <!--
