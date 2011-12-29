@@ -141,20 +141,26 @@ public class EZClickComponent extends CellComponent {
 
         if(status == CellStatus.INACTIVE && increasing == false) {
             if(eventConsumer != null) {
-                System.out.println("Removing EZClickMouseListener");
-                //getView2D().removeEntityComponent(EZWindowSwingEventConsumer.class);
+
+                logger.warning("Removing Event Consumer.");
+                //for every view2D in this cell...                               
                 for(View2D view: getView2D()) {
+                    //remove both our consumer and the WindowSwingEventConsumer...
                     view.removeEntityComponent(EZWindowSwingEventConsumer.class);
                     view.removeEntityComponent(WindowSwingEventConsumer.class);
                     
+                    //retrieve any old consumer that EZCick replaced for this
+                    //view2d and put it back in place to cover out tracks.
                     WindowSwingEventConsumer tmp = priorConsumers.get(view);
-                    view.addEntityComponent(WindowSwingEventConsumer.class, tmp);
                     
-                    
+                    //apparently tmp can be null...check to make sure.
+                    if(tmp != null) {
+                        view.addEntityComponent(WindowSwingEventConsumer.class, tmp);
+                    }                                        
                 }
 
 
-                System.out.println("SwingEventConsumer removed.");
+//                System.out.println("SwingEventConsumer removed.");
                 if(eventConsumer.getInternal() != null) {
                     InputManager3D.getInputManager().removeGlobalEventListener(
                             eventConsumer.getInternal());
@@ -164,25 +170,27 @@ public class EZClickComponent extends CellComponent {
             }
         }
         else if (status == CellStatus.RENDERING && increasing == true) {
-        //else if(status == CellStatus.ACTIVE && increasing == true) {
-            if(eventConsumer == null) {
-                System.out.println("Attaching EZClickMouseListener");
 
-                //listener = new EZClickMouseListener();
+            if(eventConsumer == null) {
+
+                logger.warning("Attaching Event consumer.");
+
                 eventConsumer = new EZWindowSwingEventConsumer(getApp2D());
+                //for every view2d in this cell...
                 for(View2D view: getView2D()) {
-                    //remove any already in place event consumers...
+                    //remove and store any existing event consumers for reattachment
+                    //when this component is removed.
                     
                     priorConsumers.put(view, ((View2DCell)view).getEntity().getComponent(WindowSwingEventConsumer.class));
                     view.removeEntityComponent(WindowSwingEventConsumer.class);
                     view.addEntityComponent(WindowSwingEventConsumer.class,
                                         eventConsumer);
-                    System.out.println("SwingEventConsumer added.");
+//                    System.out.println("SwingEventConsumer added.");
                 }                                                            
             }
         }
 
-        logger.warning("Setting status on EZClickComponent to " + status);
+//        logger.warning("Setting status on EZClickComponent to " + status);
     }
     /**
      * Class to check for
