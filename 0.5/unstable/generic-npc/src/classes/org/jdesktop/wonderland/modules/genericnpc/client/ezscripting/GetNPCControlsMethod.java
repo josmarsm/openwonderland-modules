@@ -17,8 +17,10 @@ import org.jdesktop.wonderland.modules.genericnpc.client.cell.NpcControls;
 @ReturnableScriptMethod
 public class GetNPCControlsMethod implements ReturnableScriptMethodSPI {
 
-    NpcCell cell;
-    NpcControls controls = null;
+    private NpcCell cell;
+    private NpcControls controls = null;
+    private boolean fail = false;
+    
     public Object returns() {
        return controls;
     }
@@ -31,17 +33,20 @@ public class GetNPCControlsMethod implements ReturnableScriptMethodSPI {
         if(os[0] instanceof NpcCell) {
             cell = (NpcCell)os[0];
         } else {
-            System.out.println("This cell is not an NPC!");
-            System.out.println("Possible script errors may appear!");
+            fail = true;
         }
     }
 
     public void run() {
+        if(fail)
+            return;
+        
         controls = cell.getControls();
     }
 
     public String getDescription() {
-        return "usage: getNpcControls(cell)\n\n"
+        return "usage: var controls = getNpcControls(cell)\n"
+                + "\t controls.playAnimation(\"Male_Wave\");\n"
                 +"- return an NpcControls object from the specified NpcCell.";
     }
 
