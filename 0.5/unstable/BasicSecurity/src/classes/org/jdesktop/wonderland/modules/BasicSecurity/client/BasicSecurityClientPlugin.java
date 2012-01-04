@@ -12,6 +12,8 @@ import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.CellCache.CellCacheListener;
+import org.jdesktop.wonderland.client.cell.EnvironmentCell;
+import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.contextmenu.cell.ContextMenuComponent;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
@@ -83,7 +85,14 @@ public class BasicSecurityClientPlugin implements ClientPlugin,
     }
 
     public void cellLoaded(CellID cellID, Cell cell) {
-
+        
+        if(cell instanceof AvatarCell ||
+           cell instanceof EnvironmentCell) {
+            //ignore avatar and environment cells, they shouldn't be secured, yet.
+            return;
+            
+        }
+        
         ContextMenuComponent cmc = new ContextMenuComponent(cell);
         if(!groups.contains("admin")) {
             cmc.setShowStandardMenuItems(false);
@@ -101,7 +110,7 @@ public class BasicSecurityClientPlugin implements ClientPlugin,
                             CellServerComponentMessage.newAddMessage(relevantCell.getCellID(), s);
                         ResponseMessage response = relevantCell.sendCellMessageAndWait(csm);
                         if(response instanceof ErrorMessage) {
-                            logger.warning("Unable to add secuirty component!");
+                            logger.warning("Unable to add security component!");
 //                            System.out.println("Unable to add security component.");
                            
                         }
