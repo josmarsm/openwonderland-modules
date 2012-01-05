@@ -29,13 +29,16 @@
 	<path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
         <path location="${modules.dir}/world/containercell/build/lib/client/container-cell-client.jar"/>
 	<path location="${current.dir}/lib/jbullet.jar"/>
-        <path location="${current.dir}/lib/lti-civil-no_s_w_t.jar"/>
-        <path location="${current.dir}/lib/lti-civil-noutils.jar"/>
-        <path location="${current.dir}/lib/lti-civil.jar"/>
 	<path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
 	<path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
+<!--        OpenCV for Java, integration below -->
         <path location="${wonderland.dir}/core/ext/common/javacpp.jar"/>
         <path location="${wonderland.dir}/core/ext/common/javacv.jar"/>
+<!--       all paths below  needed for videoplayer manipulation -->
+        <path location="${current.dir}/../../stable/videoplayer/build/client/videoplayer-client.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
+        
     </pathconvert>
     <pathconvert property="module-common.classpath">
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
