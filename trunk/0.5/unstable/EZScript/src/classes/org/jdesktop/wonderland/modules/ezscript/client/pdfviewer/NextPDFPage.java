@@ -2,6 +2,7 @@
 package org.jdesktop.wonderland.modules.ezscript.client.pdfviewer;
 
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.pdfviewer.client.PDFViewerApp;
 import org.jdesktop.wonderland.modules.pdfviewer.client.cell.PDFViewerCell;
 
@@ -9,6 +10,7 @@ import org.jdesktop.wonderland.modules.pdfviewer.client.cell.PDFViewerCell;
  *
  * @author JagWire
  */
+@ScriptMethod
 public class NextPDFPage  implements ScriptMethodSPI {
     
     private PDFViewerCell cell = null;
