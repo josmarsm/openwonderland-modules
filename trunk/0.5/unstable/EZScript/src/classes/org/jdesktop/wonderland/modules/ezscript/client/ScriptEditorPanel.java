@@ -188,6 +188,39 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
     public void setScriptTextArea(String s) {
         scriptArea.setText(s);
     }
+    private void threadedExecuteScript(final String script) {
+        new Thread(new Runnable() {
+            public void run() {
+                if(!isGlobal) {
+                    //cell execute
+                    scriptComponent.getScriptMap().put("editor", SharedString.valueOf(script));
+                    scriptComponent.getStateMap().put("script", SharedString.valueOf(script));
+                    
+                } else {
+                    //client execute
+                    ScriptManager.getInstance().evaluate(script);
+                }
+                        
+            }
+        }).start();
+        
+        if(isGlobal) {
+           File dir = ClientContext.getUserDirectory("scripts");
+            try {
+                File startup = new File(dir, "startup.ez");
+                if (!startup.exists()) {
+                    startup.createNewFile();
+                }
+
+                FileWriter out = new FileWriter(startup);
+
+                out.write(script);
+                out.close();
+            } catch (IOException iOException) {
+                iOException.printStackTrace();
+            }
+        }
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -284,36 +317,38 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
 
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
 
-        if (!isGlobal) {
-            System.out.println("executed button press!");
-            new Thread(new Runnable() {
-
-                public void run() {
-                    scriptComponent.getScriptMap().put("editor", SharedString.valueOf(scriptArea.getText()));
-                    scriptComponent.getStateMap().put("script", SharedString.valueOf(scriptArea.getText())); // for persistenceh
-                    //  scriptComponent.clearCallbacks();
-
-                    //scriptComponent.evaluateScript(scriptArea.getText());
-                }
-            }).start();
-        } else {
-            //TODO execute on client, not over network.
-            ScriptManager.getInstance().evaluate(scriptArea.getText());
-            File dir = ClientContext.getUserDirectory("scripts");
-            try {
-                File startup = new File(dir, "startup.ez");
-                if (!startup.exists()) {
-                    startup.createNewFile();
-                }
-
-                FileWriter out = new FileWriter(startup);
-
-                out.write(scriptArea.getText());
-                out.close();
-            } catch (IOException iOException) {
-                iOException.printStackTrace();
-            }
-        }
+//        if (!isGlobal) {
+//            System.out.println("executed button press!");
+//            new Thread(new Runnable() {
+//
+//                public void run() {
+//                    scriptComponent.getScriptMap().put("editor", SharedString.valueOf(scriptArea.getText()));
+//                    scriptComponent.getStateMap().put("script", SharedString.valueOf(scriptArea.getText())); // for persistenceh
+//                    //  scriptComponent.clearCallbacks();
+//
+//                    //scriptComponent.evaluateScript(scriptArea.getText());
+//                }
+//            }).start();
+//        } else {
+//            //TODO execute on client, not over network.
+//            
+//            ScriptManager.getInstance().evaluate(scriptArea.getText());
+//            File dir = ClientContext.getUserDirectory("scripts");
+//            try {
+//                File startup = new File(dir, "startup.ez");
+//                if (!startup.exists()) {
+//                    startup.createNewFile();
+//                }
+//
+//                FileWriter out = new FileWriter(startup);
+//
+//                out.write(scriptArea.getText());
+//                out.close();
+//            } catch (IOException iOException) {
+//                iOException.printStackTrace();
+//            }
+//        }
+        threadedExecuteScript(scriptArea.getText());
     }//GEN-LAST:event_executeButtonActionPerformed
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed

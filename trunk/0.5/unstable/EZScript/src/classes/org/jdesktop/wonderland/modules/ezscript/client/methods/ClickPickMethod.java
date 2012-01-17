@@ -11,6 +11,7 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;
+import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
@@ -51,12 +52,6 @@ public class ClickPickMethod implements ReturnableScriptMethodSPI {
     }
 
     public Object returns() {
-        return pickPosition;
-    }
-
-    public void run() {        
-        InputManager.inputManager().addGlobalEventListener(listener);
-
         try {
             lock.acquire();
             InputManager.inputManager().removeGlobalEventListener(listener);
@@ -64,9 +59,22 @@ public class ClickPickMethod implements ReturnableScriptMethodSPI {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
+        return pickPosition;
     }
 
-    class MouseClickPickEventListener extends EventClassFocusListener {
+    public void run() {
+        new Thread(new Runnable() {
+
+            public void run() {
+                InputManager.inputManager().addGlobalEventListener(listener);
+
+
+            }
+        }).start();
+    }
+
+    class MouseClickPickEventListener extends EventClassListener {
         @Override
         public Class[] eventClassesToConsume () {
             return new Class[] { MouseEvent3D.class };
