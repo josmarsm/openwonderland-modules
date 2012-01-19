@@ -12,6 +12,8 @@ import com.jme.scene.state.BlendState;
 import com.jme.scene.state.MaterialState;
 import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ZBufferState;
+import java.awt.Color;
+import java.awt.Font;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.RenderManager;
@@ -19,6 +21,7 @@ import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
+import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
 
 /**
  *
@@ -29,6 +32,9 @@ public class ShapeViewerEntity extends Entity {
     private Node rootNode = null;
     private boolean isVisible = false;
     private String shapeType = "";
+    private boolean labeled = false;
+    private String label = null;
+    
     
     public ShapeViewerEntity() {
         super("Shape Viewer");
@@ -47,7 +53,11 @@ public class ShapeViewerEntity extends Entity {
     }
     
     
-    
+    public void showShape(String shapeType, String label) {
+        labeled = true;
+        this.label = label;
+        showShape(shapeType);
+    }
     
     public void showShape(String shapeType) {
         if(rootNode != null) {
@@ -81,6 +91,21 @@ public class ShapeViewerEntity extends Entity {
         bs.setTestFunction(BlendState.TestFunction.GreaterThan);
         rootNode.setRenderState(bs);
 
+        if(labeled) {
+            TextLabel2D label2D = new TextLabel2D(label,
+                                                Color.black,
+                                                Color.white,
+                                                0.3f,
+                                                true,
+                                                Font.getFont("SANS_SERIF"));
+           
+            
+            Vector3f labelPosition = new Vector3f(0, 1.5f, 0);
+            label2D.setLocalTranslation(labelPosition);
+            rootNode.attachChild(label2D);
+            
+        }
+        
         rootNode.attachChild(ShapeUtils.INSTANCE.buildShape(shapeType));
         
         rootNode.setLocalTranslation(new Vector3f());
@@ -114,6 +139,26 @@ public class ShapeViewerEntity extends Entity {
             setVisible(false);
             
             rootNode = null;
+    }
+    
+    public synchronized void labelShape(final String label) {
+        labeled = true;
+        this.label = label;
+        SceneWorker.addWorker(new WorkCommit() {         
+            public void commit() {
+                TextLabel2D label2D = new TextLabel2D(label,
+                                                Color.black,
+                                                Color.white,
+                                                0.3f,
+                                                true,
+                                                Font.getFont("SANS_SERIF"));
+                Vector3f labelPosition = new Vector3f(0, 1.5f, 0);
+                label2D.setLocalTranslation(labelPosition);
+                rootNode.attachChild(label2D);
+                
+                WorldManager.getDefaultWorldManager().addToUpdateList(rootNode);
+            }
+        });
     }
     
     public synchronized void updateTransform(final Vector3f position,
