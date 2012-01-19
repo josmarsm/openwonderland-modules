@@ -97,7 +97,9 @@ public enum ShapeUtils {
                 //build a pyramid
                 Pyramid shape = new Pyramid("Pyramid", 1, 1);
                 
+                //Move it up half its length so we can see all of it.
                 shape.setLocalTranslation(0, 0.5f, 0);
+                
                 //rotate it upside down
                 shape.setLocalRotation(new Quaternion().fromAngleAxis(FastMath.DEG_TO_RAD*180, new Vector3f(0, 0, 1)));
                 
