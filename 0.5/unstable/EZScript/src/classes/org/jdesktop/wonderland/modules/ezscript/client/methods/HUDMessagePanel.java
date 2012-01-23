@@ -11,6 +11,9 @@
 
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 
 /**
@@ -20,7 +23,17 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 public class HUDMessagePanel extends javax.swing.JPanel {
 
     /** Creates new form HUDMessagePanel */
-    HUDComponent component;
+    private HUDComponent component;
+    private static final Logger logger = Logger.getLogger(HUDMessagePanel.class.getName());
+    public HUDMessagePanel(String message, float fontSize) {
+        initComponents();
+        jTextArea1.setText(message);
+        logger.warning("Setting font to: "+fontSize);
+        
+        //Font[] fonts  = GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts();
+        jTextArea1.setFont(new java.awt.Font("SansSerif", 0, new Float(fontSize).intValue()));
+    }
+    
     public HUDMessagePanel(String message) {
         initComponents();
         jTextArea1.setText(message);
@@ -45,6 +58,7 @@ public class HUDMessagePanel extends javax.swing.JPanel {
         jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
+        jTextArea1.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
         jTextArea1.setRows(5);
         jTextArea1.setBorder(null);
         jScrollPane1.setViewportView(jTextArea1);
