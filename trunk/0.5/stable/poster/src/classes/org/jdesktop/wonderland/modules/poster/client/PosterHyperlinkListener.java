@@ -36,9 +36,11 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.MainFrame.PlacemarkType;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistry;
 import org.jdesktop.wonderland.modules.placemarks.api.client.PlacemarkRegistryFactory;
 import org.jdesktop.wonderland.modules.placemarks.api.common.Placemark;
@@ -52,10 +54,12 @@ public class PosterHyperlinkListener implements HyperlinkListener {
             Logger.getLogger(PosterHyperlinkListener.class.getName());
     
     private final JEditorPane panel;
+    private final Cell cell;
     private boolean cursorSet;
     
-    public PosterHyperlinkListener(final JEditorPane panel) {
+    public PosterHyperlinkListener(JEditorPane panel, Cell cell) {
         this.panel = panel;
+        this.cell = cell;
     }
     
     public void hyperlinkUpdate(HyperlinkEvent e) {
@@ -99,10 +103,12 @@ public class PosterHyperlinkListener implements HyperlinkListener {
             return;
         }
         
-        // start with the starting location
+        // start with the poster's current location
+        CellTransform start = cell.getWorldTransform();
+        
         String server = u.getHost();
-        Vector3f loc = new Vector3f();
-        Quaternion look = new Quaternion();
+        Vector3f loc = start.getTranslation(null);
+        Quaternion look = start.getRotation(null);
         
         Map<String, String> parsed = parseQuery(u.getRawQuery());
         
@@ -142,21 +148,56 @@ public class PosterHyperlinkListener implements HyperlinkListener {
         }
         
         // set x, y and z
+        RelativeFloat relX = null;
+        RelativeFloat relY = null;
+        RelativeFloat relZ = null;   
+        
+        Vector3f relOffset = new Vector3f();
+        
         if (x != null) {
-            loc.setX(Float.parseFloat(x));
+            relX = RelativeFloat.parse(x);
+        
+            if (relX.relative) {
+                relOffset.setX(relX.value);
+            } else {
+                loc.setX(relX.value);
+            }
         }
+        
         if (y != null) {
-            loc.setY(Float.parseFloat(y));
+            relY = RelativeFloat.parse(y);
+            
+            if (relY.relative) {
+                relOffset.setY(relY.value);
+            } else {
+                loc.setY(relY.value);
+            }
         }
+        
         if (z != null) {
-            loc.setZ(Float.parseFloat(z));
+            relZ = RelativeFloat.parse(z);
+            
+            if (relZ.relative) {
+                relOffset.setZ(relZ.value);
+            } else {
+                loc.setX(relZ.value);
+            }
+        }
+        
+        // if ther relative offset is non-zero, rotate it based on the
+        // look direction of the poster, and then apply it
+        if (!relOffset.equals(Vector3f.ZERO)) {
+            relOffset = look.mult(relOffset);
+            loc.addLocal(relOffset);
         }
         
         // set the angle from a look property
         String angle = parsed.get("look");
         if (angle != null) {
-            float angDeg = Float.parseFloat(angle);
-            look.fromAngles(0, angDeg * FastMath.DEG_TO_RAD, 0);
+            float[] angles = look.toAngles(null);
+            float angDeg = angles[1] * FastMath.RAD_TO_DEG;
+            angDeg = RelativeFloat.parse(angle).apply(angDeg);
+            look.fromAngles(angles[0], angDeg * FastMath.DEG_TO_RAD, angles[2]);
         }
         
         try {
@@ -194,6 +235,35 @@ public class PosterHyperlinkListener implements HyperlinkListener {
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING, "Unable to open browser for " + 
                        u, ex);
+        }
+    }
+    
+    private static class RelativeFloat {
+        private final float value;
+        private final boolean relative;
+        
+        RelativeFloat(float value, boolean relative) {
+            this.value = value;
+            this.relative = relative;
+        }
+        
+        float apply(float current) {
+            if (relative) {
+                return current + value;
+            } else {
+                return value;
+            }
+        }
+        
+        public static RelativeFloat parse(String str) {
+            boolean relative = false;
+            
+            if (str.startsWith("@")) {
+                relative = true;
+                str = str.substring(1);
+            }
+            
+            return new RelativeFloat(Float.parseFloat(str), relative);
         }
     }
 }

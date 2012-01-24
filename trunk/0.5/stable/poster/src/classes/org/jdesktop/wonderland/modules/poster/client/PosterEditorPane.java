@@ -76,7 +76,7 @@ public class PosterEditorPane extends JEditorPane {
     }
     
     protected HyperlinkListener createHyperlinkListener() {
-        return new PosterHyperlinkListener(this);
+        return new PosterHyperlinkListener(this, cell);
     }
     
     class MyHTMLEditorKit extends HTMLEditorKit {
