@@ -72,15 +72,15 @@ public class ChangeNamePanel extends javax.swing.JPanel implements ChangeNameVie
         statusLabel = new javax.swing.JLabel();
 
         nameLabel.setFont(nameLabel.getFont());
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/audiomanager/client/resources/Bundle"); // NOI18N
-        nameLabel.setText(bundle.getString("ChangeNamePanel.nameLabel.text")); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/userlist/client/resources/Bundle"); // NOI18N
+        nameLabel.setText(bundle.getString("ChangeNameHUDPanel.nameLabel.text")); // NOI18N
 
-        cancelButton.setText(bundle.getString("ChangeNamePanel.cancelButton.text")); // NOI18N
+        cancelButton.setText(bundle.getString("ChangeNameHUDPanel.cancelButton.text")); // NOI18N
 
-        okButton.setText(bundle.getString("ChangeNamePanel.okButton.text")); // NOI18N
+        okButton.setText(bundle.getString("ChangeNameHUDPanel.okButton.text")); // NOI18N
 
         aliasLabel.setFont(aliasLabel.getFont().deriveFont(aliasLabel.getFont().getStyle() | java.awt.Font.BOLD));
-        aliasLabel.setText(bundle.getString("ChangeNamePanel.aliasLabel.text")); // NOI18N
+        aliasLabel.setText(bundle.getString("ChangeNameHUDPanel.aliasLabel.text")); // NOI18N
 
         statusLabel.setFont(statusLabel.getFont());
 
@@ -99,11 +99,11 @@ public class ChangeNamePanel extends javax.swing.JPanel implements ChangeNameVie
                                 .add(nameLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(usernameAliasTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 193, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(12, 12, 12)
-                        .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))
+                        .add(statusLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap(241, Short.MAX_VALUE)
+                        .add(0, 0, Short.MAX_VALUE)
                         .add(cancelButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(okButton)))
