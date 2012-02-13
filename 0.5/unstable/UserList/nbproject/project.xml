@@ -39,6 +39,9 @@
                     <target>clean</target>
                     <target>dist</target>
                 </action>
+                <action name="test">
+                    <target>test</target>
+                </action>
             </ide-actions>
             <view>
                 <items>
@@ -58,6 +61,7 @@
                     <ide-action name="build"/>
                     <ide-action name="rebuild"/>
                     <ide-action name="clean"/>
+                    <ide-action name="test"/>
                 </context-menu>
             </view>
             <subprojects/>
@@ -71,6 +75,7 @@
             <compilation-unit>
                 <package-root>src/tests</package-root>
                 <unit-tests/>
+                <classpath mode="compile">lib/junit-4.10.jar:build/classes:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
