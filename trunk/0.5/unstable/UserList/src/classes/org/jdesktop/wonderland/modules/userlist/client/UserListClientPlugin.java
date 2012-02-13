@@ -31,39 +31,9 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
 public class UserListClientPlugin extends BaseClientPlugin 
 implements ViewCellConfiguredListener, SessionLifecycleListener {
     
-    private JMenuItem userListMenuItem = null;
-    private UserListPresenter presenter = null;
-    private WonderlandUserList view = null;
-    private UserListManager manager = null;
-    private HUDComponent component = null;
-    private ImageIcon userListIcon = null;
-    
-    public static final String TABBED_PANEL_PROP = 
-            "AudioManagerClient.Tabbed.Panel";
-    public static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
-            "org/jdesktop/wonderland/modules/userlist/client/resources/Bundle");
-    
+
     public UserListClientPlugin() {
-        userListMenuItem = new JCheckBoxMenuItem();
-        userListMenuItem.setSelected(false);
-        userListMenuItem.setText("Users");
-        userListMenuItem.setEnabled(false);
         
-        userListIcon = new ImageIcon(getClass().getResource(
-                "/org/jdesktop/wonderland/modules/userlist/client/"+
-                "resources/GenericUsers32x32.png"));
-        
-        
-        
-        view = new WonderlandUserList(new UserListCellRenderer());
-        
-        
-        userListMenuItem.addActionListener(new ActionListener() { 
-            public void actionPerformed(ActionEvent event) {
-                handleMenuItemPress(event);
-            }
-        });
-        userListMenuItem.setEnabled(false);
         
     }
     
@@ -74,85 +44,33 @@ implements ViewCellConfiguredListener, SessionLifecycleListener {
     }
     
 
-    private void handleMenuItemPress(ActionEvent event) {
-        if(component == null) {
-            initializeHUD();
-        }
-        
 
-    }
     
     @Override
     public void activate() {
-        JmeClientMain.getFrame().addToWindowMenu(userListMenuItem, 5);
+        
     }
     
-    private void initializeHUD() {
-        HUD main = HUDManagerFactory.getHUDManager().getHUD("main");
-        
-        if(Boolean.parseBoolean(System.getProperty(TABBED_PANEL_PROP))) {
-            HUDTabbedPanel tabbedPanel = HUDTabbedPanel.getInstance();
-            component = main.createComponent(tabbedPanel);
-        } else {
-            component = main.createComponent(view);
-        }
-
-        component.setPreferredLocation(CompassLayout.Layout.NORTHWEST);
-        component.setName("bleah"+BUNDLE.getString("Users")+ " (0)");
-        component.setDecoratable(true);
-        component.setIcon(userListIcon);
-        component.addEventListener(new HUDEventListener() { 
-            public void HUDObjectChanged(HUDEvent event) {
-                HUDEventType type = event.getEventType();
-                if(type == HUDEventType.CLOSED
-                 ||type == HUDEventType.MINIMIZED
-                 ||type == HUDEventType.DISAPPEARED) {
-                    userListMenuItem.setSelected(false);
-                } else {
-                    userListMenuItem.setSelected(true);
-                }
-            }
-        });
-        
-        main.addComponent(component);        
-    }
     
     @Override
     public void deactivate() {
-        JmeClientMain.getFrame().removeFromWindowMenu(userListMenuItem);
-        if(component != null) {
-            presenter.setVisible(false);
-            HUD main = HUDManagerFactory.getHUDManager().getHUD("main");
-            main.removeComponent(component);
-            component = null;
-        }
+//        JmeClientMain.getFrame().removeFromWindowMenu(userListMenuItem);
+//        if(component != null) {
+//            presenter.setVisible(false);
+//            HUD main = HUDManagerFactory.getHUDManager().getHUD("main");
+//            main.removeComponent(component);
+//            component = null;
+//        }
         
     }
 
      
     
     public void viewConfigured(LocalAvatar localAvatar) {
-        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
-        
         UserListManager.INSTANCE.initialize();
-        SwingUtilities.invokeLater(new Runnable() { 
+        UserListPresenterManager.INSTANCE.intialize();
+        UserListPresenterManager.INSTANCE.showActivePresenter();
         
-            
-            
-            public void run() {
-                if(component == null) {
-                    initializeHUD();
-                }                
-                
-                component.setMaximized();                
-                if(presenter == null) {
-                    presenter = new UserListPresenter(view, component);
-                }
-                userListMenuItem.setSelected(true);
-                presenter.setVisible(true);
-                presenter.updateUserList();
-            }
-        });
     }
 
     public void sessionCreated(WonderlandSession session) {

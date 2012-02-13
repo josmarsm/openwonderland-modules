@@ -77,14 +77,16 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
         addListeners();
         
         SoftphoneControlImpl.getInstance().addSoftphoneListener(this);
+        
+        
+        
     }
 
     public void setVisible(boolean visible) {
         
         userListComponent.setVisible(visible);
     }
-    
-    
+       
     public void changeUsernameAlias(PresenceInfo info) {
         model.sendChangeUsernameAliasMessage(info);
     }
