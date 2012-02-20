@@ -54,7 +54,7 @@ import org.jdesktop.wonderland.modules.userlist.client.views.UserListView;
 public class UserListPresenter implements SoftphoneListener, ModelChangedListener  {
   
     
-    private UserListView view;
+    protected UserListView view;
     private PresenceControls presenceControls;
     private PresenceInfo presenceInfo;
     private UserListManager model;
@@ -71,6 +71,7 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
         model = UserListManager.INSTANCE;
         
         model.setVolumeConverter(view.getVolumeSliderMaximum());
+        model.addModelChangedListener(this);
         
         presenceControls = model.getPresenceControls();
         presenceInfo = model.getLocalPresenceInfo();
@@ -342,21 +343,6 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
         }
     }
             
-    private void handlePullToMeButtonPressed(ActionEvent e) {
-                        
-    }
-    
-    private void handleSecureClientButtonPressed(ActionEvent e) {
-        
-    }
-    
-    private void handleAdjustStudentAudioButtonPressed(ActionEvent e) {
-        
-    }
-    
-    private void handleGetScreenSnapshotButtonPressed(ActionEvent e) {
-        
-    }
     //<editor-fold defaultstate="collapsed" desc="Add Listeners Method">
     /**
      * Add control listeners to the view for this presenter. Protected so that
@@ -516,7 +502,7 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
                     if (inRange) {
                         //...and they are in range....
                         //...put them in the bottom of the "in range" list.
-                        desiredPosition = model.getLastPositionInList();
+                        desiredPosition = model.getLastPositionOfInRangeList();
                     } else {
                         //...and they are not in range.
                         //...put them in at the bottom of the overall list.
@@ -525,7 +511,7 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
                 }
 
                 if (inRange) {
-                    model.incrementLastPositionInList();
+                    model.incrementLastPositionOfInRangeList();
                 }
 
                 model.addUserToMap(username, displayName);
@@ -533,21 +519,31 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
 
             } //if this is an existing user in the model
             else {
+                //get current name
                 String oldName = model.getDisplayNameForUser(username);
+                
                 int currentIndex = view.getIndexForName(oldName);
-                boolean wasInRange = currentIndex < model.getLastPositionInList();
+                boolean wasInRange = currentIndex < model.getLastPositionOfInRangeList();
 
 
                 if (inRange != wasInRange) {
                     boolean reselect = view.isIndexCurrentlySelected(currentIndex);
                     view.removeEntryAtIndexFromView(currentIndex);
 
+                    //if they were in range, and moved out of range
                     if (wasInRange) {
-                        model.incrementLastPositionInList();
-                        desiredPosition = model.getLastPositionInList();
-                    } else {
-                        desiredPosition = model.getLastPositionInList();
+                        logger.warning("USER MOVED OUT OF RANGE!");
+//                        model.incrementLastPositionOfInRangeList();
+                        
+                        //decrement the in-range index, since there is an open spot.  
+                        model.decrementLastPositionOfInRangeList();
+                          
+                        desiredPosition = view.getNumberOfElements();
+                    } else { //otherwise they were out of range and moved in range.
+                        desiredPosition = model.getLastPositionOfInRangeList();
                     }
+                    //add the entry to the actual display
+                    logger.warning("ADDING "+displayName+" to position: "+desiredPosition+" of "+view.getNumberOfElements());
                     view.addEntryToView(displayName, desiredPosition);
 
                     if (reselect) {
@@ -582,12 +578,12 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
                 // user is no longer present, remove them from the user list
                 int index = view.getIndexForName(username);
 //                int index = userListModel.indexOf(usernameMap.get(username));
-                boolean wasInRange = index < model.getLastPositionInList();
+                boolean wasInRange = index < model.getLastPositionOfInRangeList();
 
                 view.removeEntryAtIndexFromView(index);
 //                userListModel.removeElement(usernameMap.get(username));
                 if (wasInRange) {
-                    model.decrementLastPositionInList();
+                    model.decrementLastPositionOfInRangeList();
                 }
 
             }

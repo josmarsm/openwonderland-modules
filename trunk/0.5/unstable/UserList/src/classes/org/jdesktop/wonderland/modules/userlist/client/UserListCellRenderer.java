@@ -29,7 +29,7 @@ public class UserListCellRenderer implements ListCellRenderer {
         JLabel renderer =
                 (JLabel) defaultRenderer.getListCellRendererComponent(
                 list, value, index, isSelected, cellHasFocus);
-        if (index < UserListManager.INSTANCE.getLastPositionInList()) {
+        if (index < UserListManager.INSTANCE.getLastPositionOfInRangeList()) {
             renderer.setFont(inRangeFont);
             renderer.setForeground(Color.BLUE);
         } else {

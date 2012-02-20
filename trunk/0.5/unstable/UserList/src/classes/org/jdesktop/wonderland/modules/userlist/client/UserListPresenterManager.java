@@ -6,9 +6,7 @@ package org.jdesktop.wonderland.modules.userlist.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
@@ -35,7 +33,7 @@ public enum UserListPresenterManager implements HUDEventListener {
     private ImageIcon userListIcon = null;
     private JMenuItem userListMenuItem = null;
     private boolean initialized = false;
-    
+    private List<DefaultUserListListener> listeners = new ArrayList<DefaultUserListListener>();
     
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/userlist/client/resources/Bundle");
@@ -46,7 +44,8 @@ public enum UserListPresenterManager implements HUDEventListener {
     
     public void intialize() {
         if (!initialized) {
-
+            logger.warning("INITIALIZING PRESENTER MANAGER");
+                    
             initializeMenuItem();
             
             userListIcon = new ImageIcon(getClass().getResource(
@@ -77,9 +76,8 @@ public enum UserListPresenterManager implements HUDEventListener {
 
             presenters.put("default", defaultPresenter);
 
-            
-
             initialized = true;
+            notifyListeners();
         }
     }
     
@@ -200,6 +198,34 @@ public enum UserListPresenterManager implements HUDEventListener {
         }
         
 
+    }
+    
+    public void addUserListListener(DefaultUserListListener l) {
+        synchronized(listeners) {
+            listeners.add(l);
+            
+            //if our listener has registered after we've been initialized, 
+            //go ahead and notify it of activation.
+            if(initialized) {
+                l.listActivated();
+            }
+        }
+    }
+    
+    public void removeUserListListener(DefaultUserListListener l) {
+        synchronized(listeners) {
+            if(listeners.contains(l)) {
+                listeners.remove(l);
+            }
+        }
+    }
+    
+    public void notifyListeners() {
+        synchronized(listeners) {
+            for(DefaultUserListListener l: listeners) {
+                l.listActivated();
+            }
+        }
     }
             
 }
