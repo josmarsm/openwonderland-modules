@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserList;
 
 /**
  *
- * @author Ryan Babiuch
+ * @author JagWire
  */
 public class HUDTabbedPanel extends javax.swing.JPanel
     

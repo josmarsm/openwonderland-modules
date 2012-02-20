@@ -35,7 +35,7 @@ public enum UserListManager implements PresenceManagerListener {
     private ModelChangedListener listener;
     private ArrayList<PresenceInfo> usersInRange = null;
     private ConcurrentHashMap<String, String> usernameMap;
-    private int lastPositionInList = 0;
+    private int lastPositionOfInRangeList = 0;
     private VolumeConverter converter;
     
     private static final Logger logger = Logger.getLogger(UserListManager.class.getName());
@@ -48,7 +48,10 @@ public enum UserListManager implements PresenceManagerListener {
         this.cell = ClientContextJME.getViewManager().getPrimaryViewCell();
         this.localPresenceInfo = manager.getPresenceInfo(cell.getCellID());
         
+        usersInRange = new ArrayList<PresenceInfo>();
         usernameMap = new ConcurrentHashMap<String, String>();
+        
+        manager.addPresenceManagerListener(this);
         
     }
     
@@ -91,35 +94,41 @@ public enum UserListManager implements PresenceManagerListener {
         this.listener = listener;
     }
     
-    public void incrementLastPositionInList() {
-        lastPositionInList += 1;
+    public void incrementLastPositionOfInRangeList() {
+        lastPositionOfInRangeList += 1;
     }
     
-    public void decrementLastPositionInList() {
-        lastPositionInList -= 1;
+    public void decrementLastPositionOfInRangeList() {
+        lastPositionOfInRangeList -= 1;
     }
     
-    public int getLastPositionInList() {
-        return lastPositionInList;
+    public int getLastPositionOfInRangeList() {
+        return lastPositionOfInRangeList;
     }
     
     public synchronized void presenceInfoChanged(PresenceInfo pi, ChangeType ct) {
+        
+        
         switch(ct) {
             case UPDATED:
+                logger.warning("INFO CHANGED: UPDATED: "+pi.getUsernameAlias());
                 break;
             case USER_ADDED:
+                logger.warning("INFO CHANGED: ADDED: "+pi.getUsernameAlias());
                 break;
             case USER_IN_RANGE:
-                
+                logger.warning("INFO CHANGED: MOVED_IN_RANGE: "+pi.getUsernameAlias());
                 usersInRange.add(pi);
                 listener.userMovedInRange(pi);
                 break;
             case USER_OUT_OF_RANGE:
+                logger.warning("INFO CHANGED: MOVED_OUT_OF_RANGE: "+pi.getUsernameAlias());
                 
                 usersInRange.remove(pi);
                 listener.userMovedOutOfRange(pi);
                 break;
             case USER_REMOVED:
+                logger.warning("INFO CHANGED: REMOVED: "+pi.getUsernameAlias());
                 break;
         };
     
