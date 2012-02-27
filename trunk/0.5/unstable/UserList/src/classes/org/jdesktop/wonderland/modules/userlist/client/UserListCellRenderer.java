@@ -11,6 +11,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  *
@@ -29,7 +30,18 @@ public class UserListCellRenderer implements ListCellRenderer {
         JLabel renderer =
                 (JLabel) defaultRenderer.getListCellRendererComponent(
                 list, value, index, isSelected, cellHasFocus);
-        if (index < UserListManager.INSTANCE.getLastPositionOfInRangeList()) {
+//        if (index < UserListManager.INSTANCE.getLastPositionOfInRangeList()) {
+//            renderer.setFont(inRangeFont);
+//            renderer.setForeground(Color.BLUE);
+//        } else {
+//            renderer.setFont(outOfRangeFont);
+//            renderer.setForeground(Color.BLACK);
+//        }
+        
+        
+        String name = (String)value;
+        PresenceInfo info = UserListManager.INSTANCE.getAliasInfo(name);
+        if(UserListManager.INSTANCE.isInRange(info)) {
             renderer.setFont(inRangeFont);
             renderer.setForeground(Color.BLUE);
         } else {

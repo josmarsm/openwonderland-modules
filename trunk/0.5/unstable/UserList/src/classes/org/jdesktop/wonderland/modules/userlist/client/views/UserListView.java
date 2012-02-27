@@ -11,6 +11,10 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
  * @author JagWire
  */
 public interface UserListView {
+    
+    public void addEntryToView(String username);
+    
+    public void removeAllEntries();
    
     public HUDComponent getUserListHUDComponent();            
     

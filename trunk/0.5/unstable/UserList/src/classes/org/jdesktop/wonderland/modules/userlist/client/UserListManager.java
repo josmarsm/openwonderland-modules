@@ -2,8 +2,10 @@
 package org.jdesktop.wonderland.modules.userlist.client;
 
 import com.jme.math.Vector3f;
-import java.util.ArrayList;
+import java.math.BigInteger;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.ClientContext;
@@ -33,7 +35,10 @@ public enum UserListManager implements PresenceManagerListener {
     private Cell cell;
     private PresenceInfo localPresenceInfo;
     private ModelChangedListener listener;
-    private ArrayList<PresenceInfo> usersInRange = null;
+    private LinkedHashSet<PresenceInfo> usersInRange = null;
+    private LinkedHashSet<PresenceInfo> usersNotInRange = null;
+    
+    
     private ConcurrentHashMap<String, String> usernameMap;
     private int lastPositionOfInRangeList = 0;
     private VolumeConverter converter;
@@ -48,11 +53,24 @@ public enum UserListManager implements PresenceManagerListener {
         this.cell = ClientContextJME.getViewManager().getPrimaryViewCell();
         this.localPresenceInfo = manager.getPresenceInfo(cell.getCellID());
         
-        usersInRange = new ArrayList<PresenceInfo>();
+        usersInRange = new LinkedHashSet<PresenceInfo>();
+        usersNotInRange = new LinkedHashSet<PresenceInfo>();
         usernameMap = new ConcurrentHashMap<String, String>();
         
         manager.addPresenceManagerListener(this);
         
+    }
+    
+    public String getMyDisplayName() {
+        return localPresenceInfo.getUsernameAlias();
+    }
+    
+    public Set<PresenceInfo> getUsersInRange() {
+        return usersInRange;
+    }
+    
+    public Set<PresenceInfo> getUsersNotInRange() {
+        return usersNotInRange;
     }
     
     public Cell getMyCell() {
@@ -111,24 +129,48 @@ public enum UserListManager implements PresenceManagerListener {
         
         switch(ct) {
             case UPDATED:
-                logger.warning("INFO CHANGED: UPDATED: "+pi.getUsernameAlias());
+//                logger.warning("INFO CHANGED: UPDATED: "+pi.getUsernameAlias());
                 break;
             case USER_ADDED:
                 logger.warning("INFO CHANGED: ADDED: "+pi.getUsernameAlias());
                 break;
             case USER_IN_RANGE:
                 logger.warning("INFO CHANGED: MOVED_IN_RANGE: "+pi.getUsernameAlias());
+                
+                //remove user from "out of range" list, if it exists in that set
+                usersNotInRange.remove(pi);
+                
+                //add user to "in range" list.
                 usersInRange.add(pi);
+                
+                //notify listener
                 listener.userMovedInRange(pi);
                 break;
             case USER_OUT_OF_RANGE:
                 logger.warning("INFO CHANGED: MOVED_OUT_OF_RANGE: "+pi.getUsernameAlias());
                 
-                usersInRange.remove(pi);
+                if(usersInRange.contains(pi)) {
+                    usersInRange.remove(pi);
+                }
+                
+                //remove user from "in range" list, if it exists.
+                usersInRange.remove(pi);                
+                
+                //add user to "out of range" list.
+                usersNotInRange.add(pi);
+                
+                //notify listener.
                 listener.userMovedOutOfRange(pi);
                 break;
             case USER_REMOVED:
                 logger.warning("INFO CHANGED: REMOVED: "+pi.getUsernameAlias());
+                
+                listener.userMovedOutOfRange(pi);
+                
+                //remove user from both lists if they exist in those lists
+                usersInRange.remove(pi);
+                usersNotInRange.remove(pi);
+                
                 break;
         };
     
@@ -212,6 +254,13 @@ public enum UserListManager implements PresenceManagerListener {
     
     public PresenceInfo getAliasInfo(String s) {
         return manager.getAliasPresenceInfo(s);
+    }
+    
+    public BigInteger getSessionIDFromName(String name) {
+        PresenceInfo info = manager.getUserPresenceInfo(name);
+        
+        
+        return info.getClientID();
     }
 
     public Vector3f getCellPositionForCellID(CellID cellID) {
