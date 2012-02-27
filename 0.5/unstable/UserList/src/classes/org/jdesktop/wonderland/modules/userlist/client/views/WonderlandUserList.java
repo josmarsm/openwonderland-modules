@@ -155,6 +155,14 @@ public class WonderlandUserList
     public Object getSelectedEntry() {
         return userList.getSelectedValue();
     }
+                   
+    public void addEntryToView(String username) {
+       getListModel().addElement(username);
+    }
+
+    public void removeAllEntries() {
+        getListModel().removeAllElements();
+    }
     
     public void addEntryToView(String username, int position) {
         //TODO: Add event handler 
