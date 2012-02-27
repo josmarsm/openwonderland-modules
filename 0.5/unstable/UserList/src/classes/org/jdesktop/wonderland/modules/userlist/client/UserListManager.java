@@ -56,6 +56,7 @@ public enum UserListManager implements PresenceManagerListener {
         usersInRange = new LinkedHashSet<PresenceInfo>();
         usersNotInRange = new LinkedHashSet<PresenceInfo>();
         usernameMap = new ConcurrentHashMap<String, String>();
+//        usersInRange.add(localPresenceInfo);
         
         manager.addPresenceManagerListener(this);
         
@@ -133,6 +134,9 @@ public enum UserListManager implements PresenceManagerListener {
                 break;
             case USER_ADDED:
                 logger.warning("INFO CHANGED: ADDED: "+pi.getUsernameAlias());
+                usersNotInRange.add(pi);
+                
+                listener.userMovedOutOfRange(pi);
                 break;
             case USER_IN_RANGE:
                 logger.warning("INFO CHANGED: MOVED_IN_RANGE: "+pi.getUsernameAlias());
@@ -177,6 +181,10 @@ public enum UserListManager implements PresenceManagerListener {
     }
     
     public boolean isMe(PresenceInfo info) {
+        if(info == null) {
+            return false;
+        }
+        
         if( cell != null && manager != null) {
             return info.equals(manager.getPresenceInfo(cell.getCellID()));
         }

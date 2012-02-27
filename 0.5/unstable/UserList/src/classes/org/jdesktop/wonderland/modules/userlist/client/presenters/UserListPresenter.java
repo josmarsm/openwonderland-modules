@@ -603,11 +603,22 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
         
         //add all users in range
         for(PresenceInfo info: model.getUsersInRange()) {
+            //we've already added me at the top, skip over if found here.
+            if(model.isMe(info)) {
+                continue;
+            }
+            
             String display = getDisplayName(info);
             view.addEntryToView(display);
         }
         //add all users not in range
         for(PresenceInfo info: model.getUsersNotInRange()) {
+            
+            //we've already added me at the top, skip over if found here.
+            if(model.isMe(info)) {
+                continue;
+            }
+            
             String display = getDisplayName(info);
             view.addEntryToView(display);
         }        
