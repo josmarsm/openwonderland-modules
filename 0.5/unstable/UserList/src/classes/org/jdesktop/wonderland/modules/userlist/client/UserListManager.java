@@ -136,7 +136,9 @@ public enum UserListManager implements PresenceManagerListener {
                 logger.warning("INFO CHANGED: ADDED: "+pi.getUsernameAlias());
                 usersNotInRange.add(pi);
                 
-                listener.userMovedOutOfRange(pi);
+                if(listener != null) {
+                    listener.userMovedOutOfRange(pi);
+                }
                 break;
             case USER_IN_RANGE:
                 logger.warning("INFO CHANGED: MOVED_IN_RANGE: "+pi.getUsernameAlias());
