@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011-12, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -16,14 +16,13 @@
  * Foundation in the License file that accompanied this code.
  */
 
-package org.jdesktop.wonderland.modules.webcaster.client.jme.cellrenderer;
+package org.jdesktop.wonderland.modules.webcaster.client;
 
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
-import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
+import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
@@ -31,9 +30,11 @@ import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellServerState
 
 /**
  * @author Christian O'Connell
+ * @author Bernard Horan
  */
 @CellFactory
 public class WebcasterCellFactory implements CellFactorySPI {
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcaster/client/resources/Bundle");
 
     public String[] getExtensions() {
         return new String[]{};
@@ -42,20 +43,16 @@ public class WebcasterCellFactory implements CellFactorySPI {
     @SuppressWarnings("unchecked")
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
         WebcasterCellServerState state = new WebcasterCellServerState();
-        state.setName("Webcaster");
+        state.setName(bundle.getString("WEBCASTER"));
         return (T)state;
     }
 
     public String getDisplayName() {
-        return "Webcaster";
+        return bundle.getString("WEBCASTER");
     }
 
-    public Image getPreviewImage() {
-        try{
-            URL url = AssetUtils.getAssetURL("wla://webcaster/icon.gif");
-            return Toolkit.getDefaultToolkit().createImage(url);
-        }catch(MalformedURLException e){
-            return null;
-        }
+    public Image getPreviewImage() {        
+        URL url = WebcasterCellFactory.class.getResource("resources/webcaster_preview.gif");
+        return Toolkit.getDefaultToolkit().createImage(url);
     }
 }

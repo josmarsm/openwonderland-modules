@@ -17,7 +17,7 @@
     
     <!-- import common build file -->
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
-    
+
     <pathconvert property="module-client.classpath">
             <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
             <path location="${modules.dir}/foundation/hud/build/client/hud-client.jar"/>
@@ -42,7 +42,6 @@
                     <include name="${module.src}/client/**"/>
                     <include name="${module.src}/common/**"/>
                     <fileset dir="${current.dir}/src/classes">
-                        <include name="${module.src}/client/resources/**/*.jpg"/>
                         <include name="${module.src}/client/resources/**/*.gif"/>
                         <include name="${module.src}/client/resources/**/*.au"/>
                         <include name="${module.src}/client/resources/**/*.properties"/>
@@ -59,12 +58,7 @@
 
             <part name="web">
                 <jar name="${module.name}.war">
-
-
                     <fileset dir="${current.dir}/web"/>
-
-
-
                 </jar>
             </part>
             

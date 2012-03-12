@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011-12, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -16,7 +16,7 @@
  * Foundation in the License file that accompanied this code.
  */
 
-package org.jdesktop.wonderland.modules.webcaster.client.jme.cellrenderer;
+package org.jdesktop.wonderland.modules.webcaster.client;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.math.Vector3f;
@@ -25,7 +25,6 @@ import com.jme.scene.TriMesh;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
-import org.jdesktop.wonderland.modules.webcaster.client.WebcasterCell;
 import com.jme.math.Quaternion;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Spatial;
@@ -60,6 +59,7 @@ import org.jdesktop.wonderland.client.jme.utils.ScenegraphUtils;
 
 /**
  * @author Christian O'Connell
+ * @author Bernard Horan
  */
 public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdater
 {
@@ -162,7 +162,7 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
             throw new RuntimeException("Cannot capture texture buffer image");
         }
 
-        if (((WebcasterCell) cell).isWebcasting()){
+        if (((WebcasterCell) cell).getWebcasting()){
             ((WebcasterCell) cell).write(captureImage);
         }
     }
@@ -257,7 +257,7 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
         private void mouseClicked(TriMesh mesh) {
             if (mesh.toString().equals("ID627-Material3 (com.jme.scene.SharedMesh)")) {
                 if (!((WebcasterCell) cell).isRemoteWebcasting()) {
-                    ((WebcasterCell) cell).setWebcasting(!((WebcasterCell) cell).isWebcasting());
+                    ((WebcasterCell) cell).setWebcasting(!((WebcasterCell) cell).getWebcasting());
                     ((WebcasterCell) cell).updateControlPanel();
 
                 }

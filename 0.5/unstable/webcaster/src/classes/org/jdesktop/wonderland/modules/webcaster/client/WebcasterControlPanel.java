@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011-12, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -19,6 +19,8 @@ package org.jdesktop.wonderland.modules.webcaster.client;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /**
@@ -29,26 +31,21 @@ import javax.swing.SwingUtilities;
  */
 public class WebcasterControlPanel extends javax.swing.JPanel {
 
-    private final WebcasterCell cell;
-    private final String streamID;
-       
+    private static final Logger LOGGER = Logger.getLogger(
+            WebcasterControlPanel.class.getName());
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcaster/client/resources/Bundle");
+    private final WebcasterCell webcasterCell;
+
     /** Creates new form WebcasterControlPanel
      * @param cell the webcaster cell controlled by this panel
      */
     public WebcasterControlPanel(WebcasterCell cell, String streamID) {
-        this.cell = cell;
-        this.streamID = streamID;
+        this.webcasterCell = cell;
         initComponents();
-        dirField.setText(this.streamID);
-        previewPanel.setLayout(new BorderLayout());
+        streamField.setText(streamID);
         previewPanel.add(cell.getCaptureComponent(), BorderLayout.CENTER);
         setRemoteWebcasting(cell.isRemoteWebcasting());
     }
-
-    public String getStreamName(){
-        return streamID;
-    }
-    
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -61,9 +58,8 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
 
         previewPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
-        streamBox = new javax.swing.JLabel();
-        dirField = new javax.swing.JTextField();
-        jComboBox1 = new javax.swing.JComboBox();
+        streamLabel = new javax.swing.JLabel();
+        streamField = new javax.swing.JTextField();
         webcastButton = new javax.swing.JToggleButton();
 
         setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.PAGE_AXIS));
@@ -71,25 +67,21 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         previewPanel.setMaximumSize(new java.awt.Dimension(640, 360));
         previewPanel.setMinimumSize(new java.awt.Dimension(640, 360));
         previewPanel.setPreferredSize(new java.awt.Dimension(640, 360));
-        previewPanel.setLayout(new java.awt.GridBagLayout());
+        previewPanel.setLayout(new java.awt.BorderLayout());
         add(previewPanel);
 
         jPanel1.setFocusable(false);
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
 
-        streamBox.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcaster/client/resources/Bundle"); // NOI18N
-        streamBox.setText(bundle.getString("WebcasterControlPanel.streamBox.text")); // NOI18N
-        streamBox.setAlignmentX(0.5f);
-        streamBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-        jPanel1.add(streamBox);
+        streamLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        streamLabel.setText(bundle.getString("STREAM NAME:")); // NOI18N
+        streamLabel.setAlignmentX(0.5f);
+        streamLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        jPanel1.add(streamLabel);
 
-        dirField.setEditable(false);
-        dirField.setMaximumSize(new Dimension(Integer.MAX_VALUE, dirField.getPreferredSize().height) );
-        jPanel1.add(dirField);
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Audio Off", "Microphone Only", "Enviroment Only", "Audio On" }));
-        jPanel1.add(jComboBox1);
+        streamField.setEditable(false);
+        streamField.setMaximumSize(new Dimension(Integer.MAX_VALUE, streamField.getPreferredSize().height) );
+        jPanel1.add(streamField);
 
         webcastButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/webcaster/client/resources/icon.gif"))); // NOI18N
         webcastButton.addActionListener(new java.awt.event.ActionListener() {
@@ -102,62 +94,43 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
         add(jPanel1);
     }// </editor-fold>//GEN-END:initComponents
 
-    
-    private void webcast(boolean state)
-    {
-        cell.setWebcasting(state);
-        streamBox.setEnabled(!cell.isWebcasting());
-        dirField.setEnabled(!cell.isWebcasting());
-        jComboBox1.setEnabled(!cell.isWebcasting());
+    private void webcast(boolean state) {
+        webcasterCell.setWebcasting(state);
+        //streamLabel.setEnabled(!webcasterCell.getWebcasting());
+        //streamField.setEnabled(!webcasterCell.getWebcasting());
     }
     
-    public String getAudioState()
-    {
-        if (jComboBox1.getSelectedIndex() == 1){
-            return "startAudioDataOutput=local";
-        }
-        else if (jComboBox1.getSelectedIndex() == 2){
-            return "startAudioDataOutput=remote";
-        }
-        else if (jComboBox1.getSelectedIndex() == 3){
-            return "startAudioDataOutput=local&remote";
-        }
-        
-        return null;
-    }
+    
 
     private void webcastButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webcastButtonActionPerformed
         webcast(webcastButton.isSelected());
     }//GEN-LAST:event_webcastButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField dirField;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel previewPanel;
-    private javax.swing.JLabel streamBox;
+    private javax.swing.JTextField streamField;
+    private javax.swing.JLabel streamLabel;
     private javax.swing.JToggleButton webcastButton;
     // End of variables declaration//GEN-END:variables
 
-    void setRemoteWebcasting(boolean b) {
-        //Logger.getLogger(WebcasterControlPanel.class.getSimpleName()).warning("remoteWebcasting: " + b);
-        dirField.setEnabled(!b);
-        webcastButton.setEnabled(!b);
-        streamBox.setEnabled(!b);
-        jComboBox1.setEnabled(!b);
+    final void setRemoteWebcasting(final boolean b) {
+        LOGGER.warning("remoteWebcasting: " + b);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                webcastButton.setEnabled(!b);
+            }
+        });
+        
     }
 
     void updateWebcasting() {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                webcastButton.setSelected(cell.isWebcasting());
-                streamBox.setEnabled(!cell.isWebcasting());
-                dirField.setEnabled(!cell.isWebcasting());
-                jComboBox1.setEnabled(!cell.isWebcasting());
+                webcastButton.setSelected(webcasterCell.getWebcasting());
             }
         });
-        
+
     }
-    
 }
